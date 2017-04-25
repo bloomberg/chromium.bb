@@ -35,7 +35,6 @@ class ExtensionOptionsGuest
   int GetTaskPrefix() const final;
   bool IsPreferredSizeModeEnabled() const final;
   void OnPreferredSizeChanged(const gfx::Size& pref_size) final;
-  bool ShouldHandleFindRequestsForEmbedder() const final;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(

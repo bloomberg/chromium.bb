@@ -74,13 +74,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) {}
 
-  // Find the given |search_text| in the page. Returns true if the find request
-  // is handled by this browser plugin guest delegate.
-  virtual bool HandleFindForEmbedder(int request_id,
-                                     const base::string16& search_text,
-                                     const blink::WebFindOptions& options);
-  virtual bool HandleStopFindingForEmbedder(StopFindAction action);
-
   // Provides the delegate with an interface with which to communicate with the
   // content module.
   virtual void SetGuestHost(GuestHost* guest_host) {}

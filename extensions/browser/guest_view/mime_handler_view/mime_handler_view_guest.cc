@@ -195,10 +195,6 @@ void MimeHandlerViewGuest::DidInitialize(
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 }
 
-bool MimeHandlerViewGuest::ShouldHandleFindRequestsForEmbedder() const {
-  return is_full_page_plugin();
-}
-
 bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
   return false;
 }

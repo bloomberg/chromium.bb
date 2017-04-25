@@ -191,7 +191,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   bool IsAutoSizeSupported() const final;
   void SetContextMenuPosition(const gfx::Point& position) final;
   void SignalWhenReady(const base::Closure& callback) final;
-  bool ShouldHandleFindRequestsForEmbedder() const final;
   void WillAttachToEmbedder() final;
   void WillDestroy() final;
 

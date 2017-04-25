@@ -2578,19 +2578,22 @@ function testZoomAPI() {
   document.body.appendChild(webview);
 };
 
+var testFindPage =
+    'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+    'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+    '<a href="about:blank">Click here!</a>';
+
 function testFindAPI() {
   var webview = new WebView();
-  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
-      '<a href="about:blank">Click here!</a>';
+  webview.src = testFindPage;
 
   var loadstopListener2 = function(e) {
     embedder.test.assertEq(webview.src, "about:blank");
@@ -2664,17 +2667,8 @@ function testFindAPI() {
 
 function testFindAPI_findupdate() {
   var webview = new WebView();
-  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
-      '<a href="about:blank">Click here!</a>';
+  webview.src = testFindPage;
+
   var canceledTest = false;
   webview.addEventListener('loadstop', function(e) {
     // Test the |findupdate| event.
@@ -2704,6 +2698,50 @@ function testFindAPI_findupdate() {
 
   document.body.appendChild(webview);
 };
+
+function testFindInMultipleWebViews() {
+  var webviews = [new WebView(), new WebView(), new WebView()];
+  var promises = [];
+
+  // Search in all WebViews simultaneously.
+  for (var i in webviews) {
+    webviews[i].src = testFindPage;
+    promises[i] = new Promise((resolve, reject) => {
+      webviews[i].addEventListener('loadstop', function(id, event) {
+        LOG("Searching WebView " + id + ".");
+
+        var webview = webviews[id];
+        webview.find("dog", {}, (results_a) => {
+          embedder.test.assertEq(results_a.numberOfMatches, 100);
+          embedder.test.assertTrue(results_a.selectionRect.width > 0);
+          embedder.test.assertTrue(results_a.selectionRect.height > 0);
+
+          // Test finding next active matches.
+          webview.find("dog");
+          webview.find("dog");
+          webview.find("dog");
+          webview.find("dog");
+          webview.find("dog", {}, (results_b) => {
+            embedder.test.assertEq(results_b.activeMatchOrdinal, 6);
+            LOG("Searched WebView " + id + " successfully.");
+            resolve();
+          });
+        });
+      }.bind(undefined, i));
+    });
+    document.body.appendChild(webviews[i]);
+  }
+
+  Promise.all(promises)
+      .then(() => {
+        LOG("All searches finished.");
+        embedder.test.succeed();
+      })
+      .catch((error) => {
+        LOG("Failing test.");
+        embedder.test.fail(error);
+      });
+}
 
 function testLoadDataAPI() {
   var webview = new WebView();
@@ -3165,6 +3203,7 @@ embedder.test.testList = {
   'testZoomAPI' : testZoomAPI,
   'testFindAPI': testFindAPI,
   'testFindAPI_findupdate': testFindAPI_findupdate,
+  'testFindInMultipleWebViews': testFindInMultipleWebViews,
   'testLoadDataAPI': testLoadDataAPI,
   'testResizeEvents': testResizeEvents,
   'testPerOriginZoomMode': testPerOriginZoomMode,

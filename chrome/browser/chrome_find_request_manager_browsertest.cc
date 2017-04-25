@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
@@ -83,7 +85,7 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
 // Tests searching in a full-page PDF.
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInPDF) {
   LoadAndWait("/find_in_pdf_page.pdf");
-  pdf_extension_test_util::EnsurePDFHasLoaded(contents());
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   blink::WebFindOptions options;
   Find("result", options);
@@ -96,6 +98,33 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInPDF) {
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(5, results.number_of_matches);
   EXPECT_EQ(3, results.active_match_ordinal);
+}
+
+// Tests searching in a page with embedded PDFs. Note that this test, the
+// FindInPDF test, and the find tests in web_view_browsertest.cc ensure that
+// find-in-page works across GuestViews.
+//
+// TODO(paulmeyer): Note that this is left disabled for now since
+// EnsurePDFHasLoaded() currently does not work for embedded PDFs. This will be
+// fixed and enabled in a subsequent patch.
+IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
+                       DISABLED_FindInEmbeddedPDFs) {
+  LoadAndWait("/find_in_embedded_pdf_page.html");
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
+
+  blink::WebFindOptions options;
+  Find("result", options);
+  options.find_next = true;
+  options.forward = false;
+  Find("result", options);
+  Find("result", options);
+  Find("result", options);
+  delegate()->WaitForFinalReply();
+
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(13, results.number_of_matches);
+  EXPECT_EQ(11, results.active_match_ordinal);
 }
 
 }  // namespace content

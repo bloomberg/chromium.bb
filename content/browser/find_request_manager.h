@@ -27,11 +27,12 @@ class WebContentsImpl;
 // initiated/received through a WebContents. It coordinates searching across
 // multiple (potentially out-of-process) frames, handles the aggregation of find
 // results from each frame, and facilitates active match traversal. It is
-// instantiated once per WebContents, and is owned by that WebContents.
-class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
+// instantiated once per top-level WebContents, and is owned by that
+// WebContents.
+class CONTENT_EXPORT FindRequestManager {
  public:
   explicit FindRequestManager(WebContentsImpl* web_contents);
-  ~FindRequestManager() override;
+  ~FindRequestManager();
 
   // Initiates a find operation for |search_text| with the options specified in
   // |options|. |request_id| uniquely identifies the find request.
@@ -84,6 +85,8 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   // frame ID, find request ID, or find match rects version number.
   static const int kInvalidId;
 
+  class FrameObserver;
+
   // The request data for a single find request.
   struct FindRequest {
     // The find request ID that uniquely identifies this find request.
@@ -101,13 +104,6 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
                 const blink::WebFindOptions& options)
         : id(id), search_text(search_text), options(options) {}
   };
-
-  // WebContentsObserver implementation.
-  void DidFinishLoad(RenderFrameHost* rfh, const GURL& validated_url) override;
-  void RenderFrameDeleted(RenderFrameHost* rfh) override;
-  void RenderFrameHostChanged(RenderFrameHost* old_host,
-                              RenderFrameHost* new_host) override;
-  void FrameDeleted(RenderFrameHost* rfh) override;
 
   // Resets all of the per-session state for a new find-in-page session.
   void Reset(const FindRequest& initial_request);
@@ -248,7 +244,9 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   } match_rects_;
 #endif
 
-  // The WebContents that owns this FindRequestManager.
+  // The WebContents that owns this FindRequestManager. This also defines the
+  // scope of all find sessions. Only frames in |contents_| and any inner
+  // WebContentses within it will be searched.
   WebContentsImpl* const contents_;
 
   // The request ID of the initial find request in the current find-in-page
@@ -306,6 +304,12 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   // Keeps track of the find request ID of the last find reply reported via
   // NotifyFindReply().
   int last_reported_id_;
+
+  // WebContentsObservers to observe frame changes in |contents_| and its inner
+  // WebContentses.
+  std::vector<std::unique_ptr<FrameObserver>> frame_observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(FindRequestManager);
 };
 
 }  // namespace content

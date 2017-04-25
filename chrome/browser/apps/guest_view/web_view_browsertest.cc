@@ -3144,6 +3144,10 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_Shim_TestFindAPI_findupdate) {
   TestHelper("testFindAPI_findupdate", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_testFindInMultipleWebViews) {
+  TestHelper("testFindInMultipleWebViews", "web_view/shim", NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadDataAPI) {
   TestHelper("testLoadDataAPI", "web_view/shim", NEEDS_TEST_SERVER);
 }

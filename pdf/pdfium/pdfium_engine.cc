@@ -2077,19 +2077,6 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   if (end_of_search) {
     // Send the final notification.
     client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
-
-    // When searching is complete, resume finding at a particular index.
-    // Assuming the user has not clicked the find button in the meanwhile.
-    if (resume_find_index_.valid() && !current_find_index_.valid()) {
-      size_t resume_index = resume_find_index_.GetIndex();
-      if (resume_index >= find_results_.size()) {
-        // This might happen if the PDF has some dynamically generated text?
-        resume_index = 0;
-      }
-      current_find_index_.SetIndex(resume_index);
-      client_->NotifySelectedFindResultChanged(resume_index);
-    }
-    resume_find_index_.Invalidate();
   } else {
     pp::CompletionCallback callback =
         find_factory_.NewCallback(&PDFiumEngine::ContinueFind);
@@ -2198,18 +2185,6 @@ void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
   }
   find_results_.insert(find_results_.begin() + result_index, result);
   UpdateTickMarks();
-
-  if (current_find_index_.valid()) {
-    if (result_index <= current_find_index_.GetIndex()) {
-      // Update the current match index
-      size_t find_index = current_find_index_.IncrementIndex();
-      DCHECK_LT(find_index, find_results_.size());
-      client_->NotifySelectedFindResultChanged(current_find_index_.GetIndex());
-    }
-  } else if (!resume_find_index_.valid()) {
-    // Both indices are invalid. Select the first match.
-    SelectFindResult(true);
-  }
   client_->NotifyNumberOfFindResultsChanged(find_results_.size(), false);
 }
 
@@ -2224,13 +2199,28 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   // Move back/forward through the search locations we previously found.
   size_t new_index;
   const size_t last_index = find_results_.size() - 1;
-  if (current_find_index_.valid()) {
+
+  if (resume_find_index_.valid()) {
+    new_index = resume_find_index_.GetIndex();
+    resume_find_index_.Invalidate();
+  } else if (current_find_index_.valid()) {
     size_t current_index = current_find_index_.GetIndex();
     if (forward) {
-      new_index = (current_index >= last_index) ? 0 : current_index + 1;
+      if (current_index >= last_index) {
+        current_find_index_.Invalidate();
+        client_->NotifySelectedFindResultChanged(-1);
+        client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
+        return true;
+      }
+      new_index = current_index + 1;
     } else {
-      new_index = (current_find_index_.GetIndex() == 0) ? last_index
-                                                        : current_index - 1;
+      if (current_find_index_.GetIndex() == 0) {
+        current_find_index_.Invalidate();
+        client_->NotifySelectedFindResultChanged(-1);
+        client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
+        return true;
+      }
+      new_index = current_index - 1;
     }
   } else {
     new_index = forward ? 0 : last_index;
