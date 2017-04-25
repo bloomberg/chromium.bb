@@ -92,7 +92,12 @@ PropertyTreeState::InnermostNode PropertyTreeState::GetInnermostNode() const {
   bool clip_ancestor_of_effect =
       IsAncestorOf<ClipPaintPropertyNode>(clip_.Get(), effect_->OutputClip());
 
-  if (!effect_->IsRoot() && clip_ancestor_of_effect) {
+  if (!effect_->IsRoot() &&
+      (clip_ancestor_of_effect ||
+       // Effects that don't move pixels commute with all clips, so always apply
+       // them first when inside compatible transforms.
+       (!effect_->HasFilterThatMovesPixels() &&
+        !effect_transform_strict_ancestor_of_transform))) {
     return kEffect;
   }
   if (!clip_->IsRoot())
