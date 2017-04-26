@@ -1,12 +1,9 @@
-CONSOLE WARNING: line 16: /deep/ combinator is deprecated and will be a no-op in M60, around August 2017. See https://www.chromestatus.com/features/4964279606312960 for more details.
 Test for casacde of treeboundary crossing rules.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 PASS borderColorOf(getNodeInComposedTree("target")) is "rgb(0, 128, 0)"
-PASS borderColorOf(getNodeInComposedTree("host/host2/target")) is "rgb(0, 128, 0)"
-PASS borderColorOf(getNodeInComposedTree("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInComposedTree("host/target")) is "rgb(0, 128, 0)"
 PASS successfullyParsed is true
 

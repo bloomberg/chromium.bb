@@ -57,53 +57,6 @@ borderColorShouldBe('target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-// Rules declared in outer treescope should win.
-sandbox.appendChild(
-    createDOM('div', {},
-        createDOM('style', {},
-            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
-        createDOM('div', {'id': 'host'},
-            createShadowRoot(
-                createDOM('style', {},
-                    document.createTextNode('div /deep/ span { border: 1px solid red; }')),
-                createDOM('div', {'id': 'host2'},
-                    createShadowRoot(
-                        createDOM('style', {},
-                            document.createTextNode('div > span { border: 1px solid yellow; }')),
-                        createDOM('div', {},
-                            createDOM('span', {'id': 'target'},
-                                document.createTextNode('Geen border')))))))));
-
-borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
-// Comparing rules declared in outer treescope with rules declared in inner treescope.
-// Outer's should win.
-sandbox.appendChild(
-    createDOM('div', {},
-        createDOM('style', {},
-            document.createTextNode('div /deep/ p:empty { border: 1px solid green; }')),
-        createDOM('div', {'id': 'host'},
-            createShadowRoot(
-                createDOM('div', {},
-                    createDOM('style', {},
-                        document.createTextNode('div > p:empty { border: 1px solid blue; }')),
-                    createShadowRoot(
-                        createDOM('style', {},
-                            document.createTextNode('content::content > p { border: 1px solid red; }')),
-                        createDOM('div', {},
-                            createShadowRoot(
-                                createDOM('style', {},
-                                    document.createTextNode('content::content > p { border: 1px solid yellow; }')),
-                                createDOM('content', {})),
-                            createDOM('content', {}))),
-                    createDOM('p', {'id': 'target'}))))));
-
-borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
 // Comparing important rules declared in outer treescope with important rules declared in inner treescope.
 // Inner's should win.
 sandbox.appendChild(
@@ -122,4 +75,3 @@ cleanUp();
 
 </script>
 </html>
-

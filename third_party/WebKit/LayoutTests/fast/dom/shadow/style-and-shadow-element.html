@@ -22,36 +22,6 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host::shadow div { background: green; }')),
-            createDOM('div', {},
-                document.createTextNode('older div'))),
-        createShadowRoot(
-            createDOM('div', {'id': 'target'},
-                document.createTextNode('younger div should be green')))));
-
-backgroundColorShouldBe('host//target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode(':host /deep/ div { background: green; }')),
-            createDOM('div', {},
-                document.createTextNode('older div'))),
-        createShadowRoot(
-            createDOM('div', {'id': 'target'},
-                document.createTextNode('younger div should be green')))));
-
-backgroundColorShouldBe('host//target', 'rgb(0, 128, 0)');
-
-cleanUp();
-
-sandbox.appendChild(
-    createDOM('div', {'id': 'host'},
-        createShadowRoot(
-            createDOM('style', {},
                 document.createTextNode(':host div { background: green; }')),
             createDOM('div', {},
                 document.createTextNode('older div'))),

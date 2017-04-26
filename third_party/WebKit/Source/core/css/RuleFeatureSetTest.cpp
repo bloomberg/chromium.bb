@@ -507,30 +507,6 @@ TEST_F(RuleFeatureSetTest, siblingRulesNthAfterContentPseudo) {
   ExpectSiblingRuleCount(1);
 }
 
-TEST_F(RuleFeatureSetTest, siblingRulesBeforeDeep) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures("a + b /deep/ .c"));
-  ExpectSiblingRuleCount(1);
-}
-
-TEST_F(RuleFeatureSetTest, siblingRulesAfterDeep) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a /deep/ .b + .c"));
-  ExpectSiblingRuleCount(1);
-}
-
-TEST_F(RuleFeatureSetTest, siblingRulesBeforeShadow) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a + .b::shadow .c"));
-  ExpectSiblingRuleCount(1);
-}
-
-TEST_F(RuleFeatureSetTest, siblingRulesAfterShadow) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a ::shadow .b + .c"));
-  ExpectSiblingRuleCount(1);
-}
-
 TEST_F(RuleFeatureSetTest, siblingRulesBeforeSlotted) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
             CollectFeatures(".a + ::slotted(.b)"));
