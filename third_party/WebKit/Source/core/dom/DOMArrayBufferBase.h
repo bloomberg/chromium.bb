@@ -24,12 +24,6 @@ class CORE_EXPORT DOMArrayBufferBase
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }
   unsigned ByteLength() const { return Buffer()->ByteLength(); }
-  bool Transfer(WTF::ArrayBufferContents& result) {
-    return Buffer()->Transfer(result);
-  }
-  bool ShareContentsWith(WTF::ArrayBufferContents& result) {
-    return Buffer()->ShareContentsWith(result);
-  }
   bool IsNeutered() const { return Buffer()->IsNeutered(); }
   bool IsShared() const { return Buffer()->IsShared(); }
 

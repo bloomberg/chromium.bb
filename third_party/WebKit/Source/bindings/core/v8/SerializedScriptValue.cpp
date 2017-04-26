@@ -272,19 +272,6 @@ void SerializedScriptValue::ToWireBytes(Vector<char>& result) const {
   }
 }
 
-static void AccumulateArrayBuffersForAllWorlds(
-    v8::Isolate* isolate,
-    DOMArrayBuffer* object,
-    Vector<v8::Local<v8::ArrayBuffer>, 4>& buffers) {
-  Vector<RefPtr<DOMWrapperWorld>> worlds;
-  DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
-  for (const auto& world : worlds) {
-    v8::Local<v8::Object> wrapper = world->DomDataStore().Get(object, isolate);
-    if (!wrapper.IsEmpty())
-      buffers.push_back(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
-  }
-}
-
 std::unique_ptr<SerializedScriptValue::ImageBitmapContentsArray>
 SerializedScriptValue::TransferImageBitmapContents(
     v8::Isolate* isolate,
@@ -480,14 +467,16 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
   for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
-    DOMArrayBufferBase* array_buffer = *it;
-    if (visited.Contains(array_buffer))
+    DOMArrayBufferBase* array_buffer_base = *it;
+    if (visited.Contains(array_buffer_base))
       continue;
-    visited.insert(array_buffer);
+    visited.insert(array_buffer_base);
 
     size_t index = std::distance(array_buffers.begin(), it);
-    if (array_buffer->IsShared()) {
-      if (!array_buffer->ShareContentsWith(contents->at(index))) {
+    if (array_buffer_base->IsShared()) {
+      DOMSharedArrayBuffer* shared_array_buffer =
+          static_cast<DOMSharedArrayBuffer*>(array_buffer_base);
+      if (!shared_array_buffer->ShareContentsWith(contents->at(index))) {
         exception_state.ThrowDOMException(kDataCloneError,
                                           "SharedArrayBuffer at index " +
                                               String::Number(index) +
@@ -495,30 +484,14 @@ SerializedScriptValue::TransferArrayBufferContents(
         return nullptr;
       }
     } else {
-      Vector<v8::Local<v8::ArrayBuffer>, 4> buffer_handles;
-      v8::HandleScope handle_scope(isolate);
-      AccumulateArrayBuffersForAllWorlds(
-          isolate, static_cast<DOMArrayBuffer*>(it->Get()), buffer_handles);
-      bool is_neuterable = true;
-      for (const auto& buffer_handle : buffer_handles)
-        is_neuterable &= buffer_handle->IsNeuterable();
+      DOMArrayBuffer* array_buffer =
+          static_cast<DOMArrayBuffer*>(array_buffer_base);
 
-      DOMArrayBufferBase* to_transfer = array_buffer;
-      if (!is_neuterable) {
-        to_transfer =
-            DOMArrayBuffer::Create(array_buffer->Buffer()->Data(),
-                                   array_buffer->Buffer()->ByteLength());
-      }
-      if (!to_transfer->Transfer(contents->at(index))) {
+      if (!array_buffer->Transfer(isolate, contents->at(index))) {
         exception_state.ThrowDOMException(
             kDataCloneError, "ArrayBuffer at index " + String::Number(index) +
                                  " could not be transferred.");
         return nullptr;
-      }
-
-      if (is_neuterable) {
-        for (const auto& buffer_handle : buffer_handles)
-          buffer_handle->Neuter();
       }
     }
   }

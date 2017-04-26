@@ -62,6 +62,19 @@
             .then(() => task.done());
       });
 
+      audit.define('decode neuters buffer and view', (task, should) => {
+        // The ArrayBuffer and any views of the ArrayBuffer must be neutered.
+        let buffer = new ArrayBuffer(1000);
+        let view = new Uint32Array(buffer);
+
+        context.decodeAudioData(buffer);
+
+        // Now buffer and view should be neutered.
+        should(buffer.byteLength, 'buffer.byteLength').beEqualTo(0);
+        should(view.length, 'view.length').beEqualTo(0);
+        task.done();
+      });
+
       audit.run();
     </script>
   </body>
