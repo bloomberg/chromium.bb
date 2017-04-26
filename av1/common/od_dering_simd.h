@@ -368,7 +368,7 @@ void SIMD_FUNC(copy_rect8_8bit_to_16bit)(uint16_t *dst, int dstride,
       v64 row = v64_load_unaligned(&src[i * sstride + j]);
       v128_store_unaligned(&dst[i * dstride + j], v128_unpack_u8_s16(row));
     }
-    while (j++ < h) {
+    for (; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
@@ -383,7 +383,7 @@ void SIMD_FUNC(copy_rect8_16bit_to_16bit)(uint16_t *dst, int dstride,
       v128 row = v128_load_unaligned(&src[i * sstride + j]);
       v128_store_unaligned(&dst[i * dstride + j], row);
     }
-    while (j++ < h) {
+    for (; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
