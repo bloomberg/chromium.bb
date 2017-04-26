@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -109,6 +110,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
   }
 
   bool AddNewFileInTestGallery() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath gallery_file =
         test_gallery_.GetPath().Append(FILE_PATH_LITERAL("test1.txt"));
     std::string content("new content");

@@ -77,9 +77,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   // A data URL. Data URLs should always be able to load chrome-extension://
   // resources.
   std::string file_source;
-  ASSERT_TRUE(base::ReadFileToString(
-      test_data_dir_.AppendASCII("extension_resource_request_policy")
-                    .AppendASCII("index.html"), &file_source));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("extension_resource_request_policy")
+            .AppendASCII("index.html"),
+        &file_source));
+  }
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(

@@ -9,17 +9,22 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 TestExtensionDir::TestExtensionDir() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(dir_.CreateUniqueTempDir());
   EXPECT_TRUE(crx_dir_.CreateUniqueTempDir());
 }
 
 TestExtensionDir::~TestExtensionDir() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ignore_result(dir_.Delete());
+  ignore_result(crx_dir_.Delete());
 }
 
 void TestExtensionDir::WriteManifest(base::StringPiece manifest) {
@@ -35,6 +40,7 @@ void TestExtensionDir::WriteManifestWithSingleQuotes(
 
 void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                                  base::StringPiece contents) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_EQ(base::checked_cast<int>(contents.size()),
             base::WriteFile(dir_.GetPath().Append(filename), contents.data(),
                             contents.size()));
@@ -43,6 +49,7 @@ void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
 // This function packs the extension into a .crx, and returns the path to that
 // .crx. Multiple calls to Pack() will produce extensions with the same ID.
 base::FilePath TestExtensionDir::Pack() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ExtensionCreator creator;
   base::FilePath crx_path =
       crx_dir_.GetPath().Append(FILE_PATH_LITERAL("ext.crx"));
@@ -67,6 +74,7 @@ base::FilePath TestExtensionDir::Pack() {
 }
 
 base::FilePath TestExtensionDir::UnpackedPath() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // We make this absolute because it's possible that dir_ contains a symlink as
   // part of it's path. When UnpackedInstaller::GetAbsolutePath() runs as part
   // of loading the extension, the extension's path is converted to an absolute

@@ -8,7 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -25,6 +27,7 @@ static_assert(CHAR_BIT == 8, "Assumed char was 8 bits.");
 
 void WriteRulesetContents(const std::vector<uint8_t>& contents,
                           base::FilePath path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   int ruleset_size_as_int = base::checked_cast<int>(contents.size());
   int num_bytes_written =
       base::WriteFile(path, reinterpret_cast<const char*>(contents.data()),
@@ -65,6 +68,7 @@ TestRuleset::~TestRuleset() = default;
 
 // static
 base::File TestRuleset::Open(const TestRuleset& ruleset) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::File file;
   file.Initialize(ruleset.path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                     base::File::FLAG_SHARE_DELETE);
@@ -105,8 +109,13 @@ TestRulesetPair::~TestRulesetPair() = default;
 
 // TestRulesetCreator ----------------------------------------------------------
 
-TestRulesetCreator::TestRulesetCreator() = default;
-TestRulesetCreator::~TestRulesetCreator() = default;
+TestRulesetCreator::TestRulesetCreator()
+    : scoped_temp_dir_(base::MakeUnique<base::ScopedTempDir>()) {}
+
+TestRulesetCreator::~TestRulesetCreator() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  scoped_temp_dir_.reset();
+}
 
 void TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
     base::StringPiece suffix,
@@ -161,9 +170,10 @@ void TestRulesetCreator::CreateUnindexedRulesetWithRules(
 
 void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
   DCHECK(path);
-  ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
-              scoped_temp_dir_.CreateUniqueTempDir());
-  *path = scoped_temp_dir_.GetPath().AppendASCII(
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ASSERT_TRUE(scoped_temp_dir_->IsValid() ||
+              scoped_temp_dir_->CreateUniqueTempDir());
+  *path = scoped_temp_dir_->GetPath().AppendASCII(
       base::IntToString(next_unique_file_suffix++));
 }
 

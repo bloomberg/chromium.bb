@@ -1504,6 +1504,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_TRUE(csd_service->enabled());
 
   // Add a new Profile. SBS should keep running.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   std::unique_ptr<Profile> profile2(Profile::CreateProfile(
       temp_profile_dir_.GetPath(), nullptr, Profile::CREATE_MODE_SYNCHRONOUS));
@@ -1603,7 +1604,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
   // Create an additional profile.  We need to use the ProfileManager so that
   // the profile will get destroyed in the normal browser shutdown process.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+  }
   profile_manager->CreateProfileAsync(
       temp_profile_dir_.GetPath(),
       base::Bind(&SafeBrowsingServiceShutdownTest::OnUnblockOnProfileCreation,

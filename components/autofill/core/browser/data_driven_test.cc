@@ -7,6 +7,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -35,6 +36,7 @@ void DataDrivenTest::RunDataDrivenTest(
     const base::FilePath& input_directory,
     const base::FilePath& output_directory,
     const base::FilePath::StringType& file_name_pattern) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(base::DirectoryExists(input_directory));
   ASSERT_TRUE(base::DirectoryExists(output_directory));
   base::FileEnumerator input_files(input_directory,
@@ -52,6 +54,7 @@ void DataDrivenTest::RunDataDrivenTest(
 void DataDrivenTest::RunOneDataDrivenTest(
     const base::FilePath& test_file_name,
     const base::FilePath& output_directory) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // iOS doesn't get rid of removed test files. TODO(estade): remove this after
   // all iOS bots are clobbered.
   if (test_file_name.BaseName().value() == FILE_PATH_LITERAL("multimerge.in"))
@@ -64,7 +67,9 @@ void DataDrivenTest::RunOneDataDrivenTest(
   ReadFile(test_file_name, &input);
 
   std::string output;
+  base::ThreadRestrictions::SetIOAllowed(false);
   GenerateResults(input, &output);
+  base::ThreadRestrictions::SetIOAllowed(true);
 
   base::FilePath output_file = output_directory.Append(
       test_file_name.BaseName().StripTrailingSeparators().ReplaceExtension(

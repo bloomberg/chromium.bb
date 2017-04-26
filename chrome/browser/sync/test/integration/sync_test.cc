@@ -25,6 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -338,6 +339,7 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
 }
 
 void SyncTest::CreateProfile(int index) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   tmp_profile_paths_[index] = new base::ScopedTempDir();
   if (UsingExternalServers() && num_clients_ > 1) {
     // For multi profile UI signin, profile paths should be outside user data
@@ -504,6 +506,7 @@ void SyncTest::DisableVerifier() {
 }
 
 bool SyncTest::SetupClients() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (num_clients_ <= 0)
     LOG(FATAL) << "num_clients_ incorrectly initialized.";
   if (!profiles_.empty() || !browsers_.empty() || !clients_.empty())
@@ -646,6 +649,7 @@ void SyncTest::InitializeInvalidations(int index) {
 }
 
 bool SyncTest::SetupSync() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
     if (!SetupClients()) {

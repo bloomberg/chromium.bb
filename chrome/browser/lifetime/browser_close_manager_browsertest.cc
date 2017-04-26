@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -1163,12 +1164,16 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
                        TestWithDownloadsFromDifferentProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath path =
-      profile_manager->user_data_dir().AppendASCII("test_profile");
-  if (!base::PathExists(path))
-    ASSERT_TRUE(base::CreateDirectory(path));
-  Profile* other_profile =
-      Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  Profile* other_profile = nullptr;
+  {
+    base::FilePath path =
+        profile_manager->user_data_dir().AppendASCII("test_profile");
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    if (!base::PathExists(path))
+      ASSERT_TRUE(base::CreateDirectory(path));
+    other_profile =
+        Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  }
   profile_manager->RegisterTestingProfile(other_profile, true, false);
   Browser* other_profile_browser = CreateBrowser(other_profile);
 

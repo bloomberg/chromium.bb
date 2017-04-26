@@ -12,6 +12,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/threading/thread_restrictions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,6 +101,7 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
 }
 
 bool CorruptSizeInHeaderWithLock(const base::FilePath& db_path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   sql::Connection db;
   if (!db.Open(db_path))
     return false;

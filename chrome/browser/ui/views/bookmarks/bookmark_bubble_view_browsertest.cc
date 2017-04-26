@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -82,17 +83,20 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_bookmark_details) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RunDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_bookmark_details_signed_in) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RunDialog();
 }
 
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleViewBrowserTest,
                        InvokeDialog_ios_promotion) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RunDialog();
 }
 #endif

@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -493,6 +494,7 @@ void WebUIBrowserTest::SetupHandlers() {
 
 GURL WebUIBrowserTest::WebUITestDataPathToURL(
     const base::FilePath::StringType& path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath dir_test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
   base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));

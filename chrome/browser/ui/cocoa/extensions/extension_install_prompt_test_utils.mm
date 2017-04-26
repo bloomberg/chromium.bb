@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "extensions/common/extension.h"
 
@@ -18,6 +19,7 @@ namespace chrome {
 scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
     const char* extension_dir_name,
     const char* manifest_file) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   scoped_refptr<Extension> extension;
 
   base::FilePath path;
@@ -49,6 +51,7 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
 }
 
 gfx::Image LoadInstallPromptIcon() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")

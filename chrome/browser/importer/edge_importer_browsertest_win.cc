@@ -203,8 +203,11 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
   data_path = data_path.AppendASCII("edge_profile");
 
   base::FilePath temp_path = temp_dir_.GetPath();
-  ASSERT_TRUE(base::CopyDirectory(data_path, temp_path, true));
-  ASSERT_TRUE(DecompressDatabase(temp_path.AppendASCII("edge_profile")));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(base::CopyDirectory(data_path, temp_path, true));
+    ASSERT_TRUE(DecompressDatabase(temp_path.AppendASCII("edge_profile")));
+  }
 
   base::string16 key_path(importer::GetEdgeSettingsKey());
   base::win::RegKey key;
@@ -243,8 +246,11 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("edge_profile");
 
-  ASSERT_TRUE(base::CopyDirectory(data_path, temp_dir_.GetPath(), true));
-  ASSERT_TRUE(importer::IsEdgeFavoritesLegacyMode());
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(base::CopyDirectory(data_path, temp_dir_.GetPath(), true));
+    ASSERT_TRUE(importer::IsEdgeFavoritesLegacyMode());
+  }
 
   // Starts to import the above settings.
   // Deletes itself.
@@ -256,10 +262,13 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_EDGE;
   base::FilePath source_path = temp_dir_.GetPath().AppendASCII("edge_profile");
-  ASSERT_NE(-1,
-            base::WriteFile(
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_NE(
+        -1, base::WriteFile(
                 source_path.AppendASCII("Favorites\\Google.url:favicon:$DATA"),
                 kDummyFaviconImageData, sizeof(kDummyFaviconImageData)));
+  }
   source_profile.source_path = source_path;
 
   host->StartImportSettings(source_profile, browser()->profile(),

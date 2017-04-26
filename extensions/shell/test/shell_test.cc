@@ -55,9 +55,6 @@ void AppShellTest::PreRunTestOnMainThread() {
   extension_system_->Init();
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::RunLoop().RunUntilIdle();
-
-  // TODO(jam): remove this.
-  disable_io_checks();
 }
 
 void AppShellTest::PostRunTestOnMainThread() {

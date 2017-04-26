@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
@@ -115,6 +116,7 @@ class UserDataDowngradeBrowserNoMSITest
 // Verify the user data directory has been renamed and created again after
 // downgrade.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
   ASSERT_FALSE(base::PathExists(other_file_));
@@ -122,12 +124,14 @@ IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
 
 // Verify the user data directory will not be reset without downgrade.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoResetTest, Test) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
   ASSERT_TRUE(base::PathExists(other_file_));
 }
 
 // Verify the "Last Version" file won't be created for non-msi install.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoMSITest, Test) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_FALSE(base::PathExists(last_version_file_path_));
   ASSERT_TRUE(base::PathExists(other_file_));
 }

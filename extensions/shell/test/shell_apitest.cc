@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -22,6 +23,7 @@ ShellApiTest::~ShellApiTest() {
 }
 
 const Extension* ShellApiTest::LoadApp(const std::string& app_dir) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath test_data_dir;
   PathService::Get(extensions::DIR_TEST_DATA, &test_data_dir);
   test_data_dir = test_data_dir.AppendASCII(app_dir);

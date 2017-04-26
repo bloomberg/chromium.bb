@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
@@ -68,6 +69,7 @@ const char ScopedTestNativeMessagingHost::kExtensionId[] =
 ScopedTestNativeMessagingHost::ScopedTestNativeMessagingHost() {}
 
 void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ScopedTestNativeMessagingHost test_host;
 
@@ -99,6 +101,9 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
       test_user_data_dir.AppendASCII("missing_nm_binary.exe"), user_level));
 }
 
-ScopedTestNativeMessagingHost::~ScopedTestNativeMessagingHost() {}
+ScopedTestNativeMessagingHost::~ScopedTestNativeMessagingHost() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ignore_result(temp_dir_.Delete());
+}
 
 }  // namespace extensions

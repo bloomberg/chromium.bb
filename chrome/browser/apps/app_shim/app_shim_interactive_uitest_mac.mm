@@ -18,6 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
@@ -261,6 +262,7 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
   // (always) in tests. If it wasn't the case, the following test would fail
   // (but flakily since the creation happens on the FILE thread).
   shim_path_ = GetAppShimPath(profile(), app);
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_FALSE(base::PathExists(shim_path_));
 
   // To create a shim in a test, instead call UpdateAllShortcuts, which has been

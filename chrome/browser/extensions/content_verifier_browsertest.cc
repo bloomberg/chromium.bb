@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
@@ -542,7 +543,10 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     // being what was signed by the webstore.
     base::FilePath scriptfile = extension->path().AppendASCII(script_relpath);
     std::string extra = "some_extra_function_call();";
-    ASSERT_TRUE(base::AppendToFile(scriptfile, extra.data(), extra.size()));
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      ASSERT_TRUE(base::AppendToFile(scriptfile, extra.data(), extra.size()));
+    }
     DisableExtension(id);
     job_observer.ExpectJobResult(id, script_relfilepath,
                                  JobObserver::Result::FAILURE);

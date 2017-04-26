@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/search.h"
@@ -40,6 +41,7 @@ namespace {
 
 // Switches the browser language to French, and returns true iff successful.
 bool SwitchToFrench() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Make sure the default language is not French.
   std::string default_locale = g_browser_process->GetApplicationLocale();
   EXPECT_NE("fr", default_locale);
@@ -305,6 +307,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   EXPECT_NE("fr", default_locale);
 
   // Switch browser language to French.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::string loaded_locale =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
 
@@ -349,6 +352,7 @@ class LocalNTPSmokeTest : public InProcessBrowserTest {
   }
 
   void SetUserSelectedDefaultSearchProvider(const std::string& base_url) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     TemplateURLData data;
     data.SetShortName(base::UTF8ToUTF16(base_url));
     data.SetKeyword(base::UTF8ToUTF16(base_url));

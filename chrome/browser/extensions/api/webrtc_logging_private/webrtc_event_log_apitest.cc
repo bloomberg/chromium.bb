@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
@@ -65,6 +66,7 @@ class FileWaiter : public base::RefCountedThreadSafe<FileWaiter> {
       : found_(false), path_(path) {}
 
   bool Start() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (base::PathExists(path_)) {
       found_ = true;
       return true;
@@ -233,6 +235,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
   ASSERT_TRUE(waiter->Start()) << "ERROR watching for "
                                << full_file_name.value();
   ASSERT_TRUE(waiter->WaitForFile());
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::GetFileSize(full_file_name, &file_size));
   EXPECT_GT(file_size, 0);
@@ -243,6 +246,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
 
 IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
                        TestStartTimedWebRtcEventLogging) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =

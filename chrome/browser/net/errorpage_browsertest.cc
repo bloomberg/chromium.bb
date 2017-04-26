@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -544,6 +545,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
 // button to launch a network diagnostics tool.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
   // Create an empty temp directory, to be sure there's no file in it.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   GURL non_existent_file_url =

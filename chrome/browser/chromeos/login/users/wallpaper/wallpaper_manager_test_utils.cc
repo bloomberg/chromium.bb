@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chromeos/chromeos_switches.h"
@@ -111,6 +112,7 @@ bool WriteJPEGFile(const base::FilePath& path,
                    int width,
                    int height,
                    SkColor color) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::vector<unsigned char> output;
   if (!CreateJPEGImage(width, height, color, &output))
     return false;

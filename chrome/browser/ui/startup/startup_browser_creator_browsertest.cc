@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -449,7 +450,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   base::FilePath dest_path = profile_manager->user_data_dir();
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile 1"));
 
-  Profile* other_profile = profile_manager->GetProfile(dest_path);
+  Profile* other_profile = nullptr;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    other_profile = profile_manager->GetProfile(dest_path);
+  }
   ASSERT_TRUE(other_profile);
 
   // Use a couple arbitrary URLs.
@@ -635,6 +640,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   base::FilePath dest_path4 = profile_manager->user_data_dir().Append(
       FILE_PATH_LITERAL("New Profile 4"));
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   Profile* profile_home1 = profile_manager->GetProfile(dest_path1);
   ASSERT_TRUE(profile_home1);
   Profile* profile_home2 = profile_manager->GetProfile(dest_path2);
@@ -743,12 +749,18 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   base::FilePath dest_path3 = profile_manager->user_data_dir().Append(
       FILE_PATH_LITERAL("New Profile 3"));
 
-  Profile* profile_home = profile_manager->GetProfile(dest_path1);
-  ASSERT_TRUE(profile_home);
-  Profile* profile_last = profile_manager->GetProfile(dest_path2);
-  ASSERT_TRUE(profile_last);
-  Profile* profile_urls = profile_manager->GetProfile(dest_path3);
-  ASSERT_TRUE(profile_urls);
+  Profile* profile_home = nullptr;
+  Profile* profile_last = nullptr;
+  Profile* profile_urls = nullptr;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    profile_home = profile_manager->GetProfile(dest_path1);
+    ASSERT_TRUE(profile_home);
+    profile_last = profile_manager->GetProfile(dest_path2);
+    ASSERT_TRUE(profile_last);
+    profile_urls = profile_manager->GetProfile(dest_path3);
+    ASSERT_TRUE(profile_urls);
+  }
 
   // Set the profiles to open the home page, last visited pages or URLs.
   SessionStartupPref pref_home(SessionStartupPref::DEFAULT);
@@ -1067,9 +1079,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
   // Open the two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
-  Profile* profile1 = Profile::CreateProfile(
-      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
-      Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+  Profile* profile1 = nullptr;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    profile1 = Profile::CreateProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
+        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+  }
   ASSERT_TRUE(profile1);
   profile_manager->RegisterTestingProfile(profile1, true, false);
 

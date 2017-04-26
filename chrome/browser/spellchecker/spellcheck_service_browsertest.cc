@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -269,10 +270,13 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   base::FilePath bdict_path =
       spellcheck::GetVersionedFileName("en-US", dict_dir);
 
-  size_t actual = base::WriteFile(bdict_path,
-      reinterpret_cast<const char*>(kCorruptedBDICT),
-      arraysize(kCorruptedBDICT));
-  EXPECT_EQ(arraysize(kCorruptedBDICT), actual);
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    size_t actual = base::WriteFile(
+        bdict_path, reinterpret_cast<const char*>(kCorruptedBDICT),
+        arraysize(kCorruptedBDICT));
+    EXPECT_EQ(arraysize(kCorruptedBDICT), actual);
+  }
 
   // Attach an event to the SpellcheckService object so we can receive its
   // status updates.
@@ -304,6 +308,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
   EXPECT_EQ(SpellcheckService::BDICT_CORRUPTED,
             SpellcheckService::GetStatusEvent());
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (base::PathExists(bdict_path)) {
     ADD_FAILURE();
     EXPECT_TRUE(base::DeleteFile(bdict_path, true));

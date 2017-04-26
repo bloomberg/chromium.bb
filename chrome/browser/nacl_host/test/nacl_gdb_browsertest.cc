@@ -8,6 +8,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
@@ -56,6 +57,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
         return;
     }
 #endif
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     EXPECT_TRUE(base::CreateTemporaryFile(&mock_nacl_gdb_file));
     env->SetVar("MOCK_NACL_GDB", mock_nacl_gdb_file.AsUTF8Unsafe());
     RunTestViaHTTP(test_name);

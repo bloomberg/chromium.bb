@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
@@ -65,6 +66,7 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
   base::FilePath socket_path;
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
   app_mode::VerifySocketPermissions(socket_path);
 
@@ -76,7 +78,10 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
       this, io_thread_.task_runner().get());
 }
 
-TestShimClient::~TestShimClient() {}
+TestShimClient::~TestShimClient() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  io_thread_.Stop();
+}
 
 bool TestShimClient::OnMessageReceived(const IPC::Message& message) {
   return true;
@@ -276,6 +281,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   directory_in_tmp_ = test_api.directory_in_tmp();
 
   // Check that socket files have been created.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(directory_in_tmp_));
   EXPECT_TRUE(base::PathExists(symlink_path_));
 

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -45,6 +46,7 @@ namespace extensions {
 typedef ExtensionApiTest CommandServiceTest;
 
 IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir scoped_temp_dir;
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath pem_path = test_data_dir_.

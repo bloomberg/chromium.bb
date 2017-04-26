@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
@@ -236,8 +237,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath path =
       profile_manager->user_data_dir().AppendASCII("test_profile");
-  Profile* other_profile =
-      Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
+  Profile* other_profile = nullptr;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    other_profile =
+        Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
+  }
   profile_manager->RegisterTestingProfile(other_profile, true, false);
 
   // Use a couple same-site HTTP URLs.

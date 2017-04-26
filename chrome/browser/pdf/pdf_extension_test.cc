@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -141,19 +142,23 @@ class PDFExtensionTest : public ExtensionApiTest,
     // loaded before continuing.
     WebContents* guest_contents = LoadPdfGetGuestContents(url);
     ASSERT_TRUE(guest_contents);
-
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
-    base::FilePath test_util_path = test_data_dir.AppendASCII("test_util.js");
     std::string test_util_js;
-    ASSERT_TRUE(base::ReadFileToString(test_util_path, &test_util_js));
 
-    base::FilePath test_file_path = test_data_dir.AppendASCII(filename);
-    std::string test_js;
-    ASSERT_TRUE(base::ReadFileToString(test_file_path, &test_js));
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::FilePath test_data_dir;
+      PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+      test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
+      base::FilePath test_util_path = test_data_dir.AppendASCII("test_util.js");
+      ASSERT_TRUE(base::ReadFileToString(test_util_path, &test_util_js));
 
-    test_util_js.append(test_js);
+      base::FilePath test_file_path = test_data_dir.AppendASCII(filename);
+      std::string test_js;
+      ASSERT_TRUE(base::ReadFileToString(test_file_path, &test_js));
+
+      test_util_js.append(test_js);
+    }
+
     ASSERT_TRUE(content::ExecuteScript(guest_contents, test_util_js));
 
     if (!catcher.GetNextResult())
@@ -188,6 +193,7 @@ class PDFExtensionTest : public ExtensionApiTest,
   // the test if base::Hash(filename) mod kNumberLoadTestParts == k in order
   // to shard the files evenly across values of k in [0, kNumberLoadTestParts).
   void LoadAllPdfsTest(const std::string& dir_name, int k) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     base::FileEnumerator file_enumerator(test_data_dir.AppendASCII(dir_name),
@@ -472,12 +478,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
 
 // This test ensures that PDF can be loaded from local file
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
-  base::FilePath test_data_file = test_data_dir.AppendASCII("test.pdf");
-  ASSERT_TRUE(PathExists(test_data_file));
-  GURL test_pdf_url("file://" + test_data_file.MaybeAsASCII());
+  GURL test_pdf_url;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
+    base::FilePath test_data_file = test_data_dir.AppendASCII("test.pdf");
+    ASSERT_TRUE(PathExists(test_data_file));
+    test_pdf_url = GURL("file://" + test_data_file.MaybeAsASCII());
+  }
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 }

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -316,6 +317,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
   base::Base64UrlEncode(
       kTestExtension, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
       &cache_subkey);
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath cache_path = browser()->profile()->GetPath()
       .Append(FILE_PATH_LITERAL("Policy"))
       .Append(FILE_PATH_LITERAL("Components"))

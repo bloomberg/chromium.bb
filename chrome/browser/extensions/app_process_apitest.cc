@@ -304,11 +304,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
 
   // Load an app as a bookmark app.
   std::string error;
-  scoped_refptr<const Extension> extension(extensions::file_util::LoadExtension(
-      test_data_dir_.AppendASCII("app_process"),
-      extensions::Manifest::UNPACKED,
-      Extension::FROM_BOOKMARK,
-      &error));
+  scoped_refptr<const Extension> extension;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    extension = extensions::file_util::LoadExtension(
+        test_data_dir_.AppendASCII("app_process"),
+        extensions::Manifest::UNPACKED, Extension::FROM_BOOKMARK, &error);
+  }
   service->OnExtensionInstalled(extension.get(),
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
                                 extensions::kInstallFlagInstallImmediately);

@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
@@ -695,6 +696,7 @@ class HTML5FileWriter {
                                    const storage::FileSystemURL& path,
                                    const char* data,
                                    int length) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     // Create a temp file.
     base::FilePath temp_file;
     if (!base::CreateTemporaryFile(&temp_file) ||
@@ -1050,9 +1052,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   base::FilePath real_path = all_downloads[0]->GetTargetFilePath();
   base::FilePath fake_path = all_downloads[1]->GetTargetFilePath();
 
-  EXPECT_EQ(0, base::WriteFile(real_path, "", 0));
-  ASSERT_TRUE(base::PathExists(real_path));
-  ASSERT_FALSE(base::PathExists(fake_path));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    EXPECT_EQ(0, base::WriteFile(real_path, "", 0));
+    ASSERT_TRUE(base::PathExists(real_path));
+    ASSERT_FALSE(base::PathExists(fake_path));
+  }
 
   for (DownloadManager::DownloadVector::iterator iter = all_downloads.begin();
        iter != all_downloads.end();
@@ -2582,6 +2587,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "    \"previous\": \"in_progress\","
                           "    \"current\": \"complete\"}}]",
                           result_id)));
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::string disk_data;
   EXPECT_TRUE(base::ReadFileToString(item->GetTargetFilePath(), &disk_data));
   EXPECT_STREQ(kPayloadData, disk_data.c_str());

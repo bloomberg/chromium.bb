@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -439,6 +440,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
                  &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
@@ -526,6 +528,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
   GetCurrentTab(browser())->Close();
   EXPECT_EQ(DownloadItem::CANCELLED, items[0]->GetState());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_FALSE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
 }
@@ -543,6 +546,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
                  &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
@@ -556,6 +560,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
                  &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
 
@@ -631,6 +636,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
 
@@ -659,6 +665,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   downloads[0]->Remove();
   removed.WaitForRemoved();
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
@@ -676,6 +683,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
       download_dir.AppendASCII(std::string("test.exe") + kAppendedExtension);
   base::FilePath dir = download_dir.AppendASCII("test.exe_files");
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_FALSE(base::PathExists(full_file_name));
   GURL url = URLRequestMockHTTPJob::GetMockUrl("save_page/c.htm");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -732,6 +740,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(base::PathExists(full_file_name));
   int64_t actual_file_size = -1;
   EXPECT_TRUE(base::GetFileSize(full_file_name, &actual_file_size));
@@ -757,6 +766,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
   base::FilePath filename = download_dir.AppendASCII("dataurl.txt");
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_TRUE(base::PathExists(filename));
   std::string contents;
   EXPECT_TRUE(base::ReadFileToString(filename, &contents));
@@ -776,6 +786,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DangerousSubresources) {
                  "dubious-subresources", 2, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir.AppendASCII("not-a-crx.crx.download")));
 }
@@ -810,6 +821,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
                  "iframe-src-is-a-download", 3, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir.AppendASCII("thisdayinhistory.html")));
   EXPECT_TRUE(base::PathExists(dir.AppendASCII("no-such-file.html")));
@@ -821,6 +833,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveUnauthorizedResource) {
   GURL url = NavigateToMockURL("unauthorized-access");
 
   // Create a test file (that the web page should not have access to).
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir2;
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   base::FilePath file_path =
@@ -888,6 +901,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
                  "frames-xsite-complete-html", 5, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::DirectoryExists(dir));
   base::FilePath expected_files[] = {
       full_file_name,
@@ -948,7 +962,10 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsMHTML) {
   ASSERT_FALSE(HasFailure());
 
   std::string mhtml;
-  ASSERT_TRUE(base::ReadFileToString(full_file_name, &mhtml));
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(base::ReadFileToString(full_file_name, &mhtml));
+  }
 
   // Verify content of main frame, subframes and some savable resources.
   EXPECT_THAT(
@@ -1014,6 +1031,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest,
   SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
                  "frames-xsite-complete-html", 5, &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::DirectoryExists(dir));
   EXPECT_TRUE(base::PathExists(full_file_name));
 }

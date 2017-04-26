@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -35,18 +36,21 @@ class ExtensionWebUITest : public ExtensionApiTest {
                                    const GURL& page_url,
                                    const GURL& frame_url,
                                    bool expected_result) {
-    // Tests are located in chrome/test/data/extensions/webui/$(name).
-    base::FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path =
-        path.AppendASCII("extensions").AppendASCII("webui").AppendASCII(name);
-
-    // Read the test.
-    if (!base::PathExists(path))
-      return testing::AssertionFailure() << "Couldn't find " << path.value();
     std::string script;
-    base::ReadFileToString(path, &script);
-    script = "(function(){'use strict';" + script + "}());";
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      // Tests are located in chrome/test/data/extensions/webui/$(name).
+      base::FilePath path;
+      PathService::Get(chrome::DIR_TEST_DATA, &path);
+      path =
+          path.AppendASCII("extensions").AppendASCII("webui").AppendASCII(name);
+
+      // Read the test.
+      if (!base::PathExists(path))
+        return testing::AssertionFailure() << "Couldn't find " << path.value();
+      base::ReadFileToString(path, &script);
+      script = "(function(){'use strict';" + script + "}());";
+    }
 
     // Run the test.
     bool actual_result = false;
