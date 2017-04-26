@@ -58,6 +58,10 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
                                        ResultAction result_action) {
   find_bar_->Hide(true);
 
+  // If the user searches again for this string, it should notify if the result
+  // comes back empty again.
+  alerted_search_.clear();
+
   // |web_contents_| can be NULL for a number of reasons, for example when the
   // tab is closing. We must guard against that case. See issue 8030.
   if (web_contents_) {
@@ -139,14 +143,24 @@ void FindBarController::Observe(int type,
     // are actively tracking.
     if (content::Source<WebContents>(source).ptr() == web_contents_) {
       UpdateFindBarForCurrentResult();
+
+      // A final update can occur multiple times if the document changes.
       if (find_tab_helper->find_result().final_update() &&
           find_tab_helper->find_result().number_of_matches() == 0) {
         const base::string16& last_search =
             find_tab_helper->previous_find_text();
         const base::string16& current_search = find_tab_helper->find_text();
-        if (!base::StartsWith(last_search, current_search,
-                              base::CompareCase::SENSITIVE)) {
-          find_bar_->AudibleAlert();
+
+        // Alert the user once per unique search, if they aren't backspacing.
+        if (current_search != alerted_search_) {
+          // Keep track of the last notified search string, even if the
+          // notification itself is elided.
+          if (!base::StartsWith(last_search, current_search,
+                                base::CompareCase::SENSITIVE)) {
+            find_bar_->AudibleAlert();
+          }
+
+          alerted_search_ = current_search;
         }
       }
     }
