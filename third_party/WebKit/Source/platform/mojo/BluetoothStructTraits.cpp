@@ -28,7 +28,7 @@ void StructTraits<bluetooth::mojom::UUIDDataView, WTF::String>::SetToNull(
   if (output->IsNull())
     return;
   WTF::String result;
-  output->Swap(result);
+  output->swap(result);
 }
 
 }  // namespace mojo

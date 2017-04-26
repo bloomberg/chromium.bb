@@ -47,7 +47,7 @@ void StringTraits<WTF::String>::SetToNull(WTF::String* output) {
     return;
 
   WTF::String result;
-  output->Swap(result);
+  output->swap(result);
 }
 
 // static
@@ -77,7 +77,7 @@ const char* StringTraits<WTF::String>::GetData(const WTF::String& input,
 bool StringTraits<WTF::String>::Read(StringDataView input,
                                      WTF::String* output) {
   WTF::String result = WTF::String::FromUTF8(input.storage(), input.size());
-  output->Swap(result);
+  output->swap(result);
   return true;
 }
 
