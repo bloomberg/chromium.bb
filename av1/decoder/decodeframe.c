@@ -4698,6 +4698,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         }
       }
     }
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
     if (cm->reference_mode != SINGLE_REFERENCE) {
       for (i = 0; i < BLOCK_SIZES; i++) {
         for (j = 0; j < COMPOUND_TYPES - 1; j++) {
@@ -4705,6 +4706,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         }
       }
     }
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION

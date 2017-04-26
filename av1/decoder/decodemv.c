@@ -2220,16 +2220,20 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       ) {
     if (is_any_masked_compound_used(bsize)) {
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
       mbmi->interinter_compound_data.type =
           aom_read_tree(r, av1_compound_type_tree,
                         cm->fc->compound_type_prob[bsize], ACCT_STR);
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#if CONFIG_WEDGE
       if (mbmi->interinter_compound_data.type == COMPOUND_WEDGE) {
         mbmi->interinter_compound_data.wedge_index =
             aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
         mbmi->interinter_compound_data.wedge_sign = aom_read_bit(r, ACCT_STR);
       }
+#endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
-      else if (mbmi->interinter_compound_data.type == COMPOUND_SEG) {
+      if (mbmi->interinter_compound_data.type == COMPOUND_SEG) {
         mbmi->interinter_compound_data.mask_type =
             aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
       }

@@ -203,15 +203,24 @@ static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE int use_masked_motion_search(COMPOUND_TYPE type) {
+#if CONFIG_WEDGE
   return (type == COMPOUND_WEDGE);
+#else
+  (void)type;
+  return 0;
+#endif
 }
 
 static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
-#if CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
   return (type == COMPOUND_WEDGE || type == COMPOUND_SEG);
-#else
+#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
   return (type == COMPOUND_WEDGE);
+#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
+  return (type == COMPOUND_SEG);
 #endif  // CONFIG_COMPOUND_SEGMENT
+  (void)type;
+  return 0;
 }
 #else
 
