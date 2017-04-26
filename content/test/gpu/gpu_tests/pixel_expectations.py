@@ -50,5 +50,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
+    # TODO(zakerinasab): check / generate reference images.
+    self.Fail('Pixel_Canvas2DUntagged', bug=713632)
+
     # TODO(jbauman): Fix this.
     self.Fail('Pixel_DirectComposition_Video_MP4', ['win', 'intel'], bug=704389)

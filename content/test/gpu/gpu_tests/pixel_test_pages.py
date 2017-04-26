@@ -55,6 +55,12 @@ def DefaultPages(base_name):
       revision=7),
 
     PixelTestPage(
+      'pixel_canvas2d_untagged.html',
+      base_name + '_Canvas2DUntagged',
+      test_rect=[0, 0, 257, 257],
+      revision=0),
+
+    PixelTestPage(
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],

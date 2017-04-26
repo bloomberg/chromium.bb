@@ -490,8 +490,7 @@ void ImageBuffer::PutByteArray(Multiply multiplied,
         surface_->color_params().GetSkColorSpaceForSkSurfaces());
   } else {
     info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
-                             kRGBA_8888_SkColorType, alpha_type,
-                             SkColorSpace::MakeSRGB());
+                             kRGBA_8888_SkColorType, alpha_type);
   }
   surface_->WritePixels(info, src_addr, src_bytes_per_row, dest_x, dest_y);
 }
