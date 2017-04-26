@@ -66,35 +66,31 @@ declare_args() {
   use_pic = true
 }
 
-# Determine the default setting for enable_frame_pointers, based on the platform
+# Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
 if (is_mac || is_ios) {
-  _default_enable_frame_pointers = true
+  enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.
   if (target_cpu == "x64") {
-    _default_enable_frame_pointers = false
+    enable_frame_pointers = false
   } else {
-    _default_enable_frame_pointers = true
+    enable_frame_pointers = true
   }
+} else if (is_chromeos) {
+  # ChromeOS requires frame pointers in x64 builds, to support CWP.
+  # TODO(711784): Building ARM Thumb without frame pointers can lead to code
+  # in ChromeOS which triggers some ARM A12/A17 errata. They can be disabled
+  # on non-x64 once that is resolved.
+  enable_frame_pointers = true
 } else if (current_cpu == "arm64") {
   # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
-  _default_enable_frame_pointers = true
-} else if (is_chromeos && current_cpu == "arm" && arm_use_thumb) {
-  # TODO(711784): Building ARM Thumb without frame pointers can lead to code
-  # in ChromeOS which triggers some ARM A12/A17 errata.
-  _default_enable_frame_pointers = true
+  enable_frame_pointers = true
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
   # * Debug tcmalloc can crash (crbug.com/636489).
-  _default_enable_frame_pointers =
-      using_sanitizer || enable_profiling || is_debug
-}
-
-declare_args() {
-  # True if frame pointers should be generated, false otherwise.
-  enable_frame_pointers = _default_enable_frame_pointers
+  enable_frame_pointers = using_sanitizer || enable_profiling || is_debug
 }
 
 # In general assume that if we have frame pointers then we can use them to
