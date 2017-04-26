@@ -84,6 +84,7 @@ class GpuVSyncWorker : public base::Thread,
                           base::TimeDelta interval);
   void InvokeCallbackAndReschedule(base::TimeTicks timestamp,
                                    base::TimeDelta interval);
+  void UseDelayBasedVSyncOnError();
   void ScheduleDelayBasedVSync(base::TimeTicks timebase,
                                base::TimeDelta interval);
 
@@ -189,10 +190,15 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
 
   HMONITOR monitor =
       MonitorFromWindow(surface_handle_, MONITOR_DEFAULTTONEAREST);
-  MONITORINFOEX monitor_info;
+  MONITORINFOEX monitor_info = {};
   monitor_info.cbSize = sizeof(MONITORINFOEX);
   BOOL success = GetMonitorInfo(monitor, &monitor_info);
-  CHECK(success);
+  if (!success) {
+    // This is possible when a monitor is switched off or disconnected.
+    CloseAdapter();
+    UseDelayBasedVSyncOnError();
+    return;
+  }
 
   if (current_device_name_.compare(monitor_info.szDevice) != 0) {
     // Monitor changed. Close the current adapter handle and open a new one.
@@ -204,11 +210,7 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
   if (wait_result != STATUS_SUCCESS) {
     if (wait_result == STATUS_GRAPHICS_PRESENT_OCCLUDED) {
       // This may be triggered by the monitor going into sleep.
-      // Use timer based mechanism as a backup, start with getting VSync
-      // parameters to determine timebase and interval.
-      // TODO(stanisc): Consider a slower v-sync rate in this particular case.
-      vsync_provider_->GetVSyncParameters(base::Bind(
-          &GpuVSyncWorker::ScheduleDelayBasedVSync, base::Unretained(this)));
+      UseDelayBasedVSyncOnError();
       return;
     } else {
       base::debug::Alias(&wait_result);
@@ -257,6 +259,15 @@ void GpuVSyncWorker::InvokeCallbackAndReschedule(base::TimeTicks timestamp,
   } else {
     running_ = false;
   }
+}
+
+void GpuVSyncWorker::UseDelayBasedVSyncOnError() {
+  // This is called in a case of an error.
+  // Use timer based mechanism as a backup for one v-sync cycle, start with
+  // getting VSync parameters to determine timebase and interval.
+  // TODO(stanisc): Consider a slower v-sync rate in this particular case.
+  vsync_provider_->GetVSyncParameters(base::Bind(
+      &GpuVSyncWorker::ScheduleDelayBasedVSync, base::Unretained(this)));
 }
 
 void GpuVSyncWorker::ScheduleDelayBasedVSync(base::TimeTicks timebase,
