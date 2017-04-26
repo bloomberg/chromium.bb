@@ -56,6 +56,10 @@ class MESSAGE_CENTER_EXPORT PopupAlignmentDelegate {
       views::Widget* widget,
       views::Widget::InitParams* init_params) = 0;
 
+  // Returns true if the display which notifications show on is the primary
+  // display.
+  virtual bool IsPrimaryDisplayForNotification() const = 0;
+
  protected:
   virtual ~PopupAlignmentDelegate();
 

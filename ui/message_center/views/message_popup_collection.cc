@@ -173,6 +173,10 @@ void MessagePopupCollection::UpdateWidgets() {
 
   bool top_down = alignment_delegate_->IsTopDown();
   int base = GetBaseLine(toasts_.empty() ? NULL : toasts_.back());
+#if defined(OS_CHROMEOS)
+  bool is_primary_display =
+      alignment_delegate_->IsPrimaryDisplayForNotification();
+#endif
 
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
@@ -180,6 +184,16 @@ void MessagePopupCollection::UpdateWidgets() {
            popups.rbegin(); iter != popups.rend(); ++iter) {
     if (FindToast((*iter)->id()))
       continue;
+
+#if defined(OS_CHROMEOS)
+    // Disables popup of custom notification on non-primary displays, since
+    // currently custom notification supports only on one display at the same
+    // time.
+    // TODO(yoshiki): Support custom popup notification on multiple display
+    // (crbug.com/715370).
+    if (!is_primary_display && (*iter)->type() == NOTIFICATION_TYPE_CUSTOM)
+      continue;
+#endif
 
     MessageView* view;
     // Create top-level notification.
