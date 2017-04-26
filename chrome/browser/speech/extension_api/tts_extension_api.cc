@@ -138,7 +138,7 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
   details->SetBoolean(constants::kIsFinalEventKey, utterance->finished());
 
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
-  arguments->Set(0, details.release());
+  arguments->Append(std::move(details));
 
   std::unique_ptr<extensions::Event> event(
       new extensions::Event(::extensions::events::TTS_ON_EVENT,

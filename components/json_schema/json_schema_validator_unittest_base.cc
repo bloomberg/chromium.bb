@@ -398,7 +398,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "1",
                  JSONSchemaValidator::kArrayItemRequired);
 
-  instance->Set(0, new base::Value(42));
+  instance->Set(0, base::MakeUnique<base::Value>(42));
   instance->AppendInteger(42);
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "0",
                  JSONSchemaValidator::FormatErrorMessage(
@@ -409,10 +409,10 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   base::DictionaryValue* additional_properties = new base::DictionaryValue();
   additional_properties->SetString(schema::kType, schema::kAny);
   schema->Set(schema::kAdditionalProperties, additional_properties);
-  instance->Set(0, new base::Value("42"));
+  instance->Set(0, base::MakeUnique<base::Value>("42"));
   instance->AppendString("anything");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Set(2, new base::ListValue());
+  instance->Set(2, base::MakeUnique<base::ListValue>());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
   additional_properties->SetString(schema::kType, schema::kBoolean);
@@ -421,7 +421,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
                      JSONSchemaValidator::kInvalidType,
                      schema::kBoolean,
                      schema::kArray));
-  instance->Set(2, new base::Value(false));
+  instance->Set(2, base::MakeUnique<base::Value>(false));
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
   base::ListValue* items_schema = NULL;
@@ -435,7 +435,7 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   // for objects.
   instance->Set(0, base::MakeUnique<base::Value>());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Set(0, new base::Value(42));
+  instance->Set(0, base::MakeUnique<base::Value>(42));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "0",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,

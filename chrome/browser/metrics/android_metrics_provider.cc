@@ -16,10 +16,8 @@
 namespace {
 
 // Increments a particular entry in the ListValue.
-void IncrementListValue(base::ListValue* counts, int index) {
-  int current_count = 0;
-  counts->GetInteger(index, &current_count);
-  counts->Set(index, new base::Value(current_count + 1));
+void IncrementListValue(base::Value* counts, int index) {
+  counts->GetList()[index] = base::Value(counts->GetList()[index].GetInt() + 1);
 }
 
 // Takes an int corresponding to a Type and returns the corresponding flag.

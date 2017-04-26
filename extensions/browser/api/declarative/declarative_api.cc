@@ -58,7 +58,7 @@ void ConvertBinaryListElementsToBase64(base::ListValue* args) {
     if (iter->IsType(base::Value::Type::BINARY)) {
       base::Value* binary = NULL;
       if (args->GetBinary(index, &binary))
-        args->Set(index, ConvertBinaryToBase64(binary).release());
+        args->Set(index, ConvertBinaryToBase64(binary));
     } else if (iter->IsType(base::Value::Type::LIST)) {
       base::ListValue* list;
       iter->GetAsList(&list);

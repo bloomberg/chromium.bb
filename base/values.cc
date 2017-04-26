@@ -1067,10 +1067,6 @@ void ListValue::Reserve(size_t n) {
   list_->reserve(n);
 }
 
-bool ListValue::Set(size_t index, Value* in_value) {
-  return Set(index, WrapUnique(in_value));
-}
-
 bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
   if (!in_value)
     return false;
