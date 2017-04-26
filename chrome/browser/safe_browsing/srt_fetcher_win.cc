@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/component_updater/pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
@@ -544,20 +545,6 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
     global_error->ShowBubbleView(browser);
 }
 
-// Handles the case when the remote end has been closed, by performing the
-// necessary cleanups if the prompt dialog is being shown to the user.
-void OnConnectionClosed() {
-  // Placeholder. This should handle cases when the reporter process is
-  // disconnected (e.g. due to a crash) and the prompt dialog is being shown
-  // to the user.
-}
-
-// Handles the case when a mojo::ReportBadMessage has been explicitly reported.
-void OnConnectionError(const std::string& message) {
-  // Placeholder. This should handle cases when the reporter process sends
-  // a bad message and the prompt dialog is being shown to the user.
-}
-
 // Class responsible for launching the reporter process and waiting for its
 // completion. If feature InBrowserCleanerUI is enabled, this object will also
 // be responsible for starting the ChromePromptImpl object on the IO thread and
@@ -604,8 +591,7 @@ class SwReporterProcess : public base::RefCountedThreadSafe<SwReporterProcess> {
   base::Process LaunchConnectedReporterProcess();
 
   // Starts a new instance of ChromePromptImpl to receive requests from the
-  // reporter and establishes the mojo connection to it.
-  // Must be run on the IO thread.
+  // reporter. Must be run on the IO thread.
   void CreateChromePromptImpl(
       chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request);
 
@@ -634,7 +620,7 @@ int SwReporterProcess::LaunchAndWaitForExitOnBackgroundThread() {
 
   // This exit code is used to identify that a reporter run didn't happen, so
   // the result should be ignored and a rerun scheduled for the usual delay.
-  int exit_code = kReporterNotLaunchedExitCode;
+  int exit_code = kReporterFailureExitCode;
   UMAHistogramReporter uma(invocation_.suffix);
   if (reporter_process.IsValid()) {
     uma.RecordReporterStep(SW_REPORTER_START_EXECUTION);
@@ -682,6 +668,10 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
   if (!reporter_process.IsValid())
     return reporter_process;
 
+  pending_process_connection.Connect(
+      reporter_process.Handle(),
+      mojo::edk::ConnectionParams(channel.PassServerHandle()));
+
   chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request;
   chrome_prompt_request.Bind(std::move(mojo_pipe));
 
@@ -693,16 +683,6 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
                  base::BindOnce(&SwReporterProcess::CreateChromePromptImpl,
                                 base::RetainedRef(this),
                                 std::move(chrome_prompt_request)));
-
-  mojo::edk::ProcessErrorCallback on_connection_error =
-      g_testing_delegate_
-          ? base::Bind(&SwReporterTestingDelegate::OnConnectionError,
-                       base::Unretained(g_testing_delegate_))
-          : base::Bind(&OnConnectionError);
-  pending_process_connection.Connect(
-      reporter_process.Handle(),
-      mojo::edk::ConnectionParams(channel.PassServerHandle()),
-      on_connection_error);
 
   return reporter_process;
 }
@@ -721,11 +701,7 @@ void SwReporterProcess::CreateChromePromptImpl(
   DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
 
   chrome_prompt_impl_ =
-      g_testing_delegate_
-          ? g_testing_delegate_->CreateChromePromptImpl(
-                std::move(chrome_prompt_request))
-          : base::MakeUnique<ChromePromptImpl>(std::move(chrome_prompt_request),
-                                               base::Bind(&OnConnectionClosed));
+      base::MakeUnique<ChromePromptImpl>(std::move(chrome_prompt_request));
 }
 
 void SwReporterProcess::ReleaseChromePromptImpl() {
@@ -958,7 +934,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     base::TimeDelta reporter_running_time = now - reporter_start_time;
 
     // Don't continue the current queue of reporters if one failed to launch.
-    if (exit_code == kReporterNotLaunchedExitCode)
+    if (exit_code == kReporterFailureExitCode)
       current_invocations_ = SwReporterQueue();
 
     // As soon as we're not running this queue, schedule the next overall queue
@@ -978,7 +954,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // code itself doesn't need to be logged in this case because
     // SW_REPORTER_FAILED_TO_START is logged in
     // |LaunchAndWaitForExitOnBackgroundThread|.)
-    if (exit_code == kReporterNotLaunchedExitCode)
+    if (exit_code == kReporterFailureExitCode)
       return;
 
     const auto& finished_invocation = sw_reporter_process->invocation();

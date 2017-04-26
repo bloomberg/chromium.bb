@@ -16,7 +16,6 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace base {
 class FilePath;
@@ -28,10 +27,8 @@ class Browser;
 
 namespace safe_browsing {
 
-class ChromePromptImpl;
-
 // A special exit code identifying a failure to run the reporter.
-const int kReporterNotLaunchedExitCode = INT_MAX;
+const int kReporterFailureExitCode = INT_MAX;
 
 // The number of days to wait before triggering another reporter run.
 const int kDaysBetweenSuccessfulSwReporterRuns = 7;
@@ -106,45 +103,25 @@ bool ReporterFoundUws();
 // run the cleaner, rather than checking if they've run it at all.
 bool UserHasRunCleaner();
 
-// A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
-// mocks).
+// Mocks and callbacks for the unit tests.
 class SwReporterTestingDelegate {
  public:
   virtual ~SwReporterTestingDelegate() {}
 
-  // Invoked by tests in places of base::LaunchProcess.
-  // See chrome_cleaner::mojom::ChromePromptRequest().
+  // Test mock for launching the reporter.
   virtual base::Process LaunchReporter(
       const SwReporterInvocation& invocation,
       const base::LaunchOptions& launch_options) = 0;
 
-  // Invoked by tests in place of the actual prompting logic.
-  // See MaybeFetchSRT().
+  // Test mock for showing the prompt.
   virtual void TriggerPrompt(Browser* browser,
                              const std::string& reporter_version) = 0;
 
-  // Invoked by tests to override the current time.
-  // See Now() in srt_fetcher_win.cc.
+  // Returns the test's idea of the current time.
   virtual base::Time Now() const = 0;
 
   // A task runner used to spawn the reporter process (which blocks).
-  // See ReporterRunner::ScheduleNextInvocation().
   virtual base::TaskRunner* BlockingTaskRunner() const = 0;
-
-  // Returns a ChromePromptImpl object that keeps track of specific
-  // actions during tests. Replaces the object returned by
-  // SwReporterProcess::CreateChromePromptImpl().
-  // See SwReporterProcess::LaunchConnectedReporterProcess().
-  virtual std::unique_ptr<ChromePromptImpl> CreateChromePromptImpl(
-      chrome_cleaner::mojom::ChromePromptRequest request) = 0;
-
-  // Connection closed callback defined by tests in place of the default
-  // error handler. See SRTFetcherTest::CreateChromePromptImpl().
-  virtual void OnConnectionClosed() = 0;
-
-  // Bad message handler callback defined by tests in place of the default
-  // error handler. See SwReporterProcess::LaunchConnectedReporterProcess().
-  virtual void OnConnectionError(const std::string& message) = 0;
 };
 
 // Set a delegate for testing. The implementation will not take ownership of
