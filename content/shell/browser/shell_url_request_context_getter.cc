@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -257,8 +257,12 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
         base::MakeUnique<net::FileProtocolHandler>(
-            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+            base::CreateTaskRunnerWithTraits(
+                base::TaskTraits()
+                    .MayBlock()
+                    .WithPriority(base::TaskPriority::USER_VISIBLE)
+                    .WithShutdownBehavior(
+                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
     DCHECK(set_protocol);
 #endif
 
