@@ -63,7 +63,7 @@ class BluetoothLowEnergyWeaveClientConnection
         BluetoothThrottler* bluetooth_throttler);
 
     // Exposed for testing.
-    static void SetInstanceForTesting(std::shared_ptr<Factory> factory);
+    static void SetInstanceForTesting(Factory* factory);
 
    protected:
     // Exposed for testing.
@@ -75,7 +75,7 @@ class BluetoothLowEnergyWeaveClientConnection
         BluetoothThrottler* bluetooth_throttler);
 
    private:
-    static std::shared_ptr<Factory> factory_instance_;
+    static Factory* factory_instance_;
   };
 
   // The sub-state of a BluetoothLowEnergyWeaveClientConnection

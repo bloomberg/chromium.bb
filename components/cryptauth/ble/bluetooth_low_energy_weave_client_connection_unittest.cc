@@ -369,9 +369,9 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         receiver_factory_(
             new MockBluetoothLowEnergyWeavePacketReceiverFactory()) {
     BluetoothLowEnergyWeavePacketGenerator::Factory::SetInstanceForTesting(
-        generator_factory_);
+        generator_factory_.get());
     BluetoothLowEnergyWeavePacketReceiver::Factory::SetInstanceForTesting(
-        receiver_factory_);
+        receiver_factory_.get());
   }
 
   ~CryptAuthBluetoothLowEnergyWeaveClientConnectionTest() override {
@@ -614,9 +614,9 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
   bool last_wire_message_success_;
-  std::shared_ptr<MockBluetoothLowEnergyWeavePacketGeneratorFactory>
+  std::unique_ptr<MockBluetoothLowEnergyWeavePacketGeneratorFactory>
       generator_factory_;
-  std::shared_ptr<MockBluetoothLowEnergyWeavePacketReceiverFactory>
+  std::unique_ptr<MockBluetoothLowEnergyWeavePacketReceiverFactory>
       receiver_factory_;
   MockConnectionObserver connection_observer_;
 
