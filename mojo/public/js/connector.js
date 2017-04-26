@@ -18,6 +18,7 @@ define("mojo/public/js/connector", [
     this.incomingReceiver_ = null;
     this.readWatcher_ = null;
     this.errorHandler_ = null;
+    this.paused_ = false;
 
     if (handle) {
       this.readWatcher_ = support.watch(handle,
@@ -34,6 +35,31 @@ define("mojo/public/js/connector", [
     if (this.handle_ != null) {
       core.close(this.handle_);
       this.handle_ = null;
+    }
+  };
+
+  Connector.prototype.pauseIncomingMethodCallProcessing = function() {
+    if (this.paused_) {
+      return;
+    }
+    this.paused_= true;
+
+    if (this.readWatcher_) {
+      support.cancelWatch(this.readWatcher_);
+      this.readWatcher_ = null;
+    }
+  };
+
+  Connector.prototype.resumeIncomingMethodCallProcessing = function() {
+    if (!this.paused_) {
+      return;
+    }
+    this.paused_= false;
+
+    if (this.handle_) {
+      this.readWatcher_ = support.watch(this.handle_,
+                                        core.HANDLE_SIGNAL_READABLE,
+                                        this.readMore_.bind(this));
     }
   };
 
@@ -85,6 +111,10 @@ define("mojo/public/js/connector", [
 
   Connector.prototype.readMore_ = function(result) {
     for (;;) {
+      if (this.paused_) {
+        return;
+      }
+
       var read = core.readMessage(this.handle_,
                                   core.READ_MESSAGE_FLAG_NONE);
       if (this.handle_ == null) // The connector has been closed.
