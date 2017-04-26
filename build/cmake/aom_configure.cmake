@@ -204,13 +204,17 @@ if (NOT MSVC)
   aom_pop_var(CMAKE_REQUIRED_LIBRARIES)
 endif()
 
-# TODO(tomfinegan): consume trailing whitespace after configure_file() when
-# target platform check produces empty INLINE and RESTRICT values (aka empty
-# values require special casing).
-configure_file("${AOM_ROOT}/build/cmake/aom_config.h.cmake"
-               "${AOM_CONFIG_DIR}/aom_config.h")
-configure_file("${AOM_ROOT}/build/cmake/aom_config.asm.cmake"
-               "${AOM_CONFIG_DIR}/aom_config.asm")
+# Generate aom_config templates.
+set(aom_config_asm_template "${AOM_CONFIG_DIR}/aom_config.asm.cmake")
+set(aom_config_h_template "${AOM_CONFIG_DIR}/aom_config.h.cmake")
+execute_process(COMMAND ${CMAKE_COMMAND}
+  -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+  -DAOM_ROOT=${AOM_ROOT}
+  -P "${AOM_ROOT}/build/cmake/generate_aom_config_templates.cmake")
+
+# Generate aom_config.{asm,h}.
+configure_file("${aom_config_asm_template}" "${AOM_CONFIG_DIR}/aom_config.asm")
+configure_file("${aom_config_h_template}" "${AOM_CONFIG_DIR}/aom_config.h")
 
 # Read the current git hash.
 find_package(Git)
