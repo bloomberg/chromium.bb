@@ -550,6 +550,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         getImageControl().hideCustomImage(true);
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
+        // Make sure the new Search Term draws.
+        requestUpdate();
     }
 
     /**
