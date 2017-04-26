@@ -49,8 +49,7 @@ TEST(PaymentRequestDataUtilTest, GetBasicCardResponseFromAutofillCreditCard) {
   card.set_billing_address_id(address.guid());
   std::unique_ptr<base::DictionaryValue> response_value =
       payments::data_util::GetBasicCardResponseFromAutofillCreditCard(
-          card, base::ASCIIToUTF16("123"),
-          std::vector<autofill::AutofillProfile*>{&address}, "en-US")
+          card, base::ASCIIToUTF16("123"), address, "en-US")
           .ToDictionaryValue();
   std::string json_response;
   base::JSONWriter::Write(*response_value, &json_response);

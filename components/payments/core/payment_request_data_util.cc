@@ -71,7 +71,7 @@ PaymentAddress GetPaymentAddressFromAutofillProfile(
 BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
     const autofill::CreditCard& card,
     const base::string16& cvc,
-    const std::vector<autofill::AutofillProfile*>& billing_profiles,
+    const autofill::AutofillProfile& billing_profile,
     const std::string& app_locale) {
   BasicCardResponse response;
   response.cardholder_name = card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL);
@@ -81,16 +81,8 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
       card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
   response.card_security_code = cvc;
 
-  // TODO(crbug.com/602666): Ensure we reach here only if the card has a billing
-  // address. Then add DCHECK(!card->billing_address_id().empty()).
-  if (!card.billing_address_id().empty()) {
-    const autofill::AutofillProfile* billing_address =
-        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            card.billing_address_id(), billing_profiles);
-    DCHECK(billing_address);
-    response.billing_address =
-        GetPaymentAddressFromAutofillProfile(*billing_address, app_locale);
-  }
+  response.billing_address =
+      GetPaymentAddressFromAutofillProfile(billing_profile, app_locale);
 
   return response;
 }

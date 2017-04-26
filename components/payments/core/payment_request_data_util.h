@@ -35,7 +35,7 @@ PaymentAddress GetPaymentAddressFromAutofillProfile(
 BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
     const autofill::CreditCard& card,
     const base::string16& cvc,
-    const std::vector<autofill::AutofillProfile*>& billing_profiles,
+    const autofill::AutofillProfile& billing_profile,
     const std::string& app_locale);
 
 // Parse the supported card networks from supportedMethods and  "basic-card"'s
