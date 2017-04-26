@@ -34,6 +34,7 @@ namespace blink {
 DOMWindow::DOMWindow(Frame& frame)
     : frame_(frame),
       window_proxy_manager_(frame.GetWindowProxyManager()),
+      location_(this, nullptr),
       window_is_closing_(false) {}
 
 DOMWindow::~DOMWindow() {
@@ -463,6 +464,11 @@ DEFINE_TRACE(DOMWindow) {
   visitor->Trace(input_capabilities_);
   visitor->Trace(location_);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(DOMWindow) {
+  visitor->TraceWrappers(location_);
+  EventTargetWithInlineData::TraceWrappers(visitor);
 }
 
 }  // namespace blink
