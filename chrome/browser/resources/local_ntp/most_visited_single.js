@@ -51,8 +51,8 @@ var TileVisualType = {
   ICON_REAL: 1,
   ICON_COLOR: 2,
   ICON_DEFAULT: 3,
-  THUMBNAIL: 4,
-  THUMBNAIL_FAILED: 5,
+  THUMBNAIL: 7,
+  THUMBNAIL_FAILED: 8,
 };
 
 
