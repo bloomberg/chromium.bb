@@ -70,4 +70,21 @@ TEST_F(RendererFactorySelectorTest, SetBaseFactory_MultipleFactory) {
   EXPECT_EQ(FactoryType::MOJO, GetCurrentlySelectedFactoryType());
 }
 
+#if defined(OS_ANDROID)
+TEST_F(RendererFactorySelectorTest, SetUseMediaPlayer) {
+  AddFactory(FactoryType::DEFAULT);
+  AddFactory(FactoryType::MEDIA_PLAYER);
+  selector_.SetBaseFactoryType(FactoryType::DEFAULT);
+
+  selector_.SetUseMediaPlayer(false);
+  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+
+  selector_.SetUseMediaPlayer(true);
+  EXPECT_EQ(FactoryType::MEDIA_PLAYER, GetCurrentlySelectedFactoryType());
+
+  selector_.SetUseMediaPlayer(false);
+  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+}
+#endif
+
 }  // namespace media

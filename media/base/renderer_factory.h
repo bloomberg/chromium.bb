@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/base/media_resource.h"
 #include "media/base/renderer.h"
 #include "media/base/surface_manager.h"
 
@@ -40,6 +41,11 @@ class MEDIA_EXPORT RendererFactory {
       AudioRendererSink* audio_renderer_sink,
       VideoRendererSink* video_renderer_sink,
       const RequestSurfaceCB& request_surface_cb) = 0;
+
+  // Returns the MediaResource::Type that should be used with the renderers
+  // created by this factory.
+  // NOTE: Returns Type::STREAM by default.
+  virtual MediaResource::Type GetRequiredMediaResourceType();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererFactory);

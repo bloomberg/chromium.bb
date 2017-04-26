@@ -235,7 +235,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
       suspend_enabled_(params->allow_suspend()),
-      use_fallback_path_(false),
       is_encrypted_(false),
       preroll_attempt_pending_(false),
       observer_(params->media_observer()),
@@ -405,8 +404,8 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
 
-  if (use_fallback_path_)
-    fallback_url_ = gurl;
+  // Used for HLS playback.
+  loaded_url_ = gurl;
 
   load_type_ = load_type;
 
@@ -816,9 +815,10 @@ blink::WebTimeRanges WebMediaPlayerImpl::Seekable() const {
   const bool is_finite_stream = data_source_ && data_source_->IsStreaming() &&
                                 std::isfinite(seekable_end);
 
-  // Do not change the seekable range when using the fallback path.
-  // The MediaPlayerRenderer will take care of dropping invalid seeks.
-  const bool force_seeks_to_zero = !use_fallback_path_ && is_finite_stream;
+  // Do not change the seekable range when using the MediaPlayerRenderer. It
+  // will take care of dropping invalid seeks.
+  const bool force_seeks_to_zero =
+      !using_media_player_renderer_ && is_finite_stream;
 
   // TODO(dalecurtis): Technically this allows seeking on media which return an
   // infinite duration so long as DataSource::IsStreaming() is false. While not
@@ -1611,10 +1611,6 @@ void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
   cast_impl_.SetDeviceScaleFactor(scale_factor);
 }
 
-void WebMediaPlayerImpl::SetUseFallbackPath(bool use_fallback_path) {
-  use_fallback_path_ = use_fallback_path;
-}
-
 void WebMediaPlayerImpl::SetPoster(const blink::WebURL& poster) {
   cast_impl_.setPoster(poster);
 }
@@ -1626,18 +1622,15 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 
 #if defined(OS_ANDROID)
   // We can't play HLS URLs with WebMediaPlayerImpl, so in cases where they are
-  // encountered, instruct the HTML media element to create a new WebMediaPlayer
-  // instance with the correct URL to trigger the creation of WMPI with a
-  // MediaPlayerRendererFactory instead.
+  // encountered, instruct the HTML media element to use the MediaPlayerRenderer
+  // instead.
   //
-  // TODO(tguilbert): Allow 'hotswapping' renderer factories to prevent reloads
-  // and/or rely on demuxer extracted MediaContainerNames. See crbug.com/663503.
-  if (data_source_ && !use_fallback_path_) {
+  // TODO(tguilbert): Detect the presence of HLS based on demuxing results,
+  // rather than the URL string. See crbug.com/663503.
+  if (data_source_) {
     const GURL url_after_redirects = data_source_->GetUrlAfterRedirects();
     if (MediaCodecUtil::IsHLSURL(url_after_redirects)) {
-      client_->RequestReload(url_after_redirects);
-      // |this| may be destructed, do nothing after this.
-      return;
+      renderer_factory_selector_->SetUseMediaPlayer(true);
     }
   }
 #endif
@@ -1683,7 +1676,6 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
     const SurfaceCreatedCB& set_surface_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(surface_manager_);
-  DCHECK(!use_fallback_path_);
 
   // A null callback indicates that the decoder is going away.
   if (set_surface_cb.is_null()) {
@@ -1733,9 +1725,20 @@ void WebMediaPlayerImpl::StartPipeline() {
       BindToCurrentLoop(base::Bind(
           &WebMediaPlayerImpl::OnEncryptedMediaInitData, AsWeakPtr()));
 
-  if (use_fallback_path_) {
+  if (renderer_factory_selector_->GetCurrentFactory()
+          ->GetRequiredMediaResourceType() == MediaResource::Type::URL) {
+    if (data_source_)
+      loaded_url_ = data_source_->GetUrlAfterRedirects();
+
+    // MediaPlayerRendererClient factory is the only factory that a
+    // MediaResource::Type::URL for the moment. This might no longer be true
+    // when we remove WebMediaPlayerCast.
+    //
+    // TODO(tguilbert/avayvod): Update this flag when removing |cast_impl_|.
+    using_media_player_renderer_ = true;
+
     demuxer_.reset(
-        new MediaUrlDemuxer(media_task_runner_, fallback_url_,
+        new MediaUrlDemuxer(media_task_runner_, loaded_url_,
                             frame_->GetDocument().FirstPartyForCookies()));
     pipeline_controller_.Start(demuxer_.get(), this, false, false);
     return;

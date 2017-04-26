@@ -43,4 +43,9 @@ MediaPlayerRendererClientFactory::CreateRenderer(
       std::move(stream_texture_wrapper), video_renderer_sink);
 }
 
+media::MediaResource::Type
+MediaPlayerRendererClientFactory::GetRequiredMediaResourceType() {
+  return media::MediaResource::Type::URL;
+}
+
 }  // namespace content

@@ -23,22 +23,38 @@ void RendererFactorySelector::AddFactory(
 void RendererFactorySelector::SetBaseFactoryType(FactoryType type) {
   DCHECK(factories_[type]);
   base_factory_type_ = type;
+  current_factory_needs_update_ = true;
 }
 
-RendererFactory* RendererFactorySelector::GetCurrentFactory() {
+// For the moment, this method should only be called once or twice.
+// This method will be regularly called whenever the logic in choosing a
+// renderer type is moved out of the AdaptiveRendererFactory, into this method.
+void RendererFactorySelector::UpdateCurrentFactory() {
   DCHECK(base_factory_type_);
   FactoryType next_factory_type = base_factory_type_.value();
 
-  RendererFactory* factory = factories_[next_factory_type].get();
+  if (use_media_player_)
+    next_factory_type = FactoryType::MEDIA_PLAYER;
 
-  if (factory == nullptr) {
-    NOTREACHED();
-    return nullptr;
-  }
+  DVLOG(1) << __func__ << " Selecting factory type: " << next_factory_type;
 
-  DVLOG(1) << __func__ << " Selected factory type: " << next_factory_type;
-
-  return factory;
+  current_factory_ = factories_[next_factory_type].get();
+  current_factory_needs_update_ = false;
 }
+
+RendererFactory* RendererFactorySelector::GetCurrentFactory() {
+  if (current_factory_needs_update_)
+    UpdateCurrentFactory();
+
+  DCHECK(current_factory_);
+  return current_factory_;
+}
+
+#if defined(OS_ANDROID)
+void RendererFactorySelector::SetUseMediaPlayer(bool use_media_player) {
+  use_media_player_ = use_media_player;
+  current_factory_needs_update_ = true;
+}
+#endif
 
 }  // namespace media

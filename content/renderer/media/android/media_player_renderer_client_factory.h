@@ -36,6 +36,9 @@ class CONTENT_EXPORT MediaPlayerRendererClientFactory
       media::VideoRendererSink* video_renderer_sink,
       const media::RequestSurfaceCB& request_surface_cb) override;
 
+  // The MediaPlayerRenderer uses a Type::URL.
+  media::MediaResource::Type GetRequiredMediaResourceType() override;
+
  private:
   GetStreamTextureWrapperCB get_stream_texture_wrapper_cb_;
 

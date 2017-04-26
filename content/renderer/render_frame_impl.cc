@@ -2895,63 +2895,67 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   std::unique_ptr<media::MediaLog> media_log(
       new RenderMediaLog(url::Origin(security_origin).GetURL()));
 
-  bool use_fallback_path = false;
+  auto factory_selector = base::MakeUnique<media::RendererFactorySelector>();
+
 #if defined(OS_ANDROID)
-  use_fallback_path = UseMediaPlayerRenderer(url);
+  // The only MojoRendererService that is registered at the RenderFrameHost
+  // level uses the MediaPlayerRenderer as its underlying media::Renderer.
+  auto mojo_media_player_renderer_factory =
+      base::MakeUnique<media::MojoRendererFactory>(
+          media::MojoRendererFactory::GetGpuFactoriesCB(),
+          GetRemoteInterfaces()->get());
+
+  // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
+  // might fallback to it if the final redirected URL is an HLS url.
+  factory_selector->AddFactory(
+      media::RendererFactorySelector::FactoryType::MEDIA_PLAYER,
+      base::MakeUnique<MediaPlayerRendererClientFactory>(
+          render_thread->compositor_task_runner(),
+          std::move(mojo_media_player_renderer_factory),
+          base::Bind(&StreamTextureWrapperImpl::Create,
+                     render_thread->EnableStreamTextureCopy(),
+                     render_thread->GetStreamTexureFactory(),
+                     base::ThreadTaskRunnerHandle::Get())));
+
+  factory_selector->SetUseMediaPlayer(UseMediaPlayerRenderer(url));
 #endif  // defined(OS_ANDROID)
 
+  // |factory_type| will be overwritten in all possible path below, and the
+  // DEFAULT value is not accurate. However, this prevents the compiler from
+  // issuing a -Wsometimes-uninitialized warning.
+  // TODO(tguilbert): Remove |factory_type|, and clean up the logic. The work is
+  // already completed and incrementally being submitted. See crbug.com/663503.
+  auto factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
   std::unique_ptr<media::RendererFactory> media_renderer_factory;
-  media::RendererFactorySelector::FactoryType factory_type;
-  if (use_fallback_path) {
-#if defined(OS_ANDROID)
-    auto mojo_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
-        media::MojoRendererFactory::GetGpuFactoriesCB(),
-        GetRemoteInterfaces()->get());
 
-    media_renderer_factory = base::MakeUnique<MediaPlayerRendererClientFactory>(
-        render_thread->compositor_task_runner(),
-        std::move(mojo_renderer_factory),
-        base::Bind(&StreamTextureWrapperImpl::Create,
-                   render_thread->EnableStreamTextureCopy(),
-                   render_thread->GetStreamTexureFactory(),
-                   base::ThreadTaskRunnerHandle::Get()));
-#endif  // defined(OS_ANDROID)
-
-    // TODO(tguilbert): Move this line back into an #if defined(OS_ANDROID).
-    // This will never be reached, unless we are on Android. Moving this line
-    // outside of the #if/#endif block fixes a "sometimes-uninitialized" error
-    // on desktop. This will be fixed with the next CL for crbug.com/663503.
-    factory_type = media::RendererFactorySelector::FactoryType::MEDIA_PLAYER;
-  } else {
 #if defined(ENABLE_MOJO_RENDERER)
 #if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableMojoRenderer)) {
-      media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-          media_log.get(), GetDecoderFactory(),
-          base::Bind(&RenderThreadImpl::GetGpuFactories,
-                     base::Unretained(render_thread)));
-
-      factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
-    }
-#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-    if (!media_renderer_factory) {
-      media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
-          base::Bind(&RenderThreadImpl::GetGpuFactories,
-                     base::Unretained(render_thread)),
-          GetMediaInterfaceProvider());
-
-      factory_type = media::RendererFactorySelector::FactoryType::MOJO;
-    }
-#else
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMojoRenderer)) {
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
         media_log.get(), GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
 
     factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
-#endif  // defined(ENABLE_MOJO_RENDERER)
   }
+#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+  if (!media_renderer_factory) {
+    media_renderer_factory = base::MakeUnique<media::MojoRendererFactory>(
+        base::Bind(&RenderThreadImpl::GetGpuFactories,
+                   base::Unretained(render_thread)),
+        GetMediaInterfaceProvider());
+
+    factory_type = media::RendererFactorySelector::FactoryType::MOJO;
+  }
+#else
+  media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
+      media_log.get(), GetDecoderFactory(),
+      base::Bind(&RenderThreadImpl::GetGpuFactories,
+                 base::Unretained(render_thread)));
+
+  factory_type = media::RendererFactorySelector::FactoryType::DEFAULT;
+#endif  // defined(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media_renderer_factory =
@@ -2963,8 +2967,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
-
-  auto factory_selector = base::MakeUnique<media::RendererFactorySelector>();
 
   factory_selector->AddFactory(factory_type, std::move(media_renderer_factory));
   factory_selector->SetBaseFactoryType(factory_type);
@@ -2995,7 +2997,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
   media_player->SetDeviceScaleFactor(render_view_->GetDeviceScaleFactor());
-  media_player->SetUseFallbackPath(use_fallback_path);
 #endif  // defined(OS_ANDROID)
 
   return media_player;

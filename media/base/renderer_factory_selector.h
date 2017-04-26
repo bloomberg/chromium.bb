@@ -36,11 +36,24 @@ class MEDIA_EXPORT RendererFactorySelector {
   // be used by default.
   void SetBaseFactoryType(FactoryType type);
 
-  // SetBaseFactoryType() must be called before calling this method.
-  // NOTE: This only returns the base factory type at the moment.
+  // Updates |current_factory_| if necessary, and returns its value.
+  // NOTE: SetBaseFactoryType() must be called before calling this method.
   RendererFactory* GetCurrentFactory();
 
+#if defined(OS_ANDROID)
+  // Sets whether we should be using the MEDIA_PLAYER factory instead of the
+  // base factory.
+  void SetUseMediaPlayer(bool use_media_player);
+#endif
+
  private:
+  void UpdateCurrentFactory();
+
+  bool use_media_player_ = false;
+
+  bool current_factory_needs_update_ = true;
+  RendererFactory* current_factory_ = nullptr;
+
   base::Optional<FactoryType> base_factory_type_;
   std::unique_ptr<RendererFactory> factories_[FACTORY_TYPE_MAX + 1];
   DISALLOW_COPY_AND_ASSIGN(RendererFactorySelector);
