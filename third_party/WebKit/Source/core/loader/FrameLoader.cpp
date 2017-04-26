@@ -260,7 +260,6 @@ DEFINE_TRACE(FrameLoader) {
   visitor->Trace(progress_tracker_);
   visitor->Trace(document_loader_);
   visitor->Trace(provisional_document_loader_);
-  visitor->Trace(deferred_history_load_);
 }
 
 void FrameLoader::Init() {
@@ -305,13 +304,6 @@ void FrameLoader::SetDefersLoading(bool defers) {
   }
 
   if (!defers) {
-    if (deferred_history_load_) {
-      Load(FrameLoadRequest(nullptr, deferred_history_load_->request_),
-           deferred_history_load_->load_type_,
-           deferred_history_load_->item_.Get(),
-           deferred_history_load_->history_load_type_);
-      deferred_history_load_.Clear();
-    }
     frame_->GetNavigationScheduler().StartTimer();
     ScheduleCheckCompleted();
   }
@@ -940,14 +932,6 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
 
   if (in_stop_all_loaders_)
     return;
-
-  if (frame_->GetPage()->Suspended() &&
-      IsBackForwardLoadType(frame_load_type)) {
-    deferred_history_load_ = DeferredHistoryLoad::Create(
-        passed_request.GetResourceRequest(), history_item, frame_load_type,
-        history_load_type);
-    return;
-  }
 
   FrameLoadRequest request(passed_request);
   request.GetResourceRequest().SetHasUserGesture(

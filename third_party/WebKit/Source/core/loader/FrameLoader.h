@@ -289,38 +289,6 @@ class CORE_EXPORT FrameLoader final {
   Member<DocumentLoader> document_loader_;
   Member<DocumentLoader> provisional_document_loader_;
 
-  class DeferredHistoryLoad
-      : public GarbageCollectedFinalized<DeferredHistoryLoad> {
-    WTF_MAKE_NONCOPYABLE(DeferredHistoryLoad);
-
-   public:
-    static DeferredHistoryLoad* Create(ResourceRequest request,
-                                       HistoryItem* item,
-                                       FrameLoadType load_type,
-                                       HistoryLoadType history_load_type) {
-      return new DeferredHistoryLoad(request, item, load_type,
-                                     history_load_type);
-    }
-
-    DeferredHistoryLoad(ResourceRequest request,
-                        HistoryItem* item,
-                        FrameLoadType load_type,
-                        HistoryLoadType history_load_type)
-        : request_(request),
-          item_(item),
-          load_type_(load_type),
-          history_load_type_(history_load_type) {}
-
-    DEFINE_INLINE_TRACE() { visitor->Trace(item_); }
-
-    ResourceRequest request_;
-    Member<HistoryItem> item_;
-    FrameLoadType load_type_;
-    HistoryLoadType history_load_type_;
-  };
-
-  Member<DeferredHistoryLoad> deferred_history_load_;
-
   bool in_stop_all_loaders_;
 
   TaskRunnerTimer<FrameLoader> check_timer_;
