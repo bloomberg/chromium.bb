@@ -890,31 +890,12 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 }
 
 #if CONFIG_EXT_INTRA
-#define MAX_ANGLE_DELTA_UV 3
-#define ANGLE_STEP_UV 3
-
-static const uint8_t av1_angle_step_y[TX_SIZES] = {
-  0, 3, 3, 3,
-};
-static const uint8_t av1_max_angle_delta_y[TX_SIZES] = {
-  0, 3, 3, 3,
-};
-
+#define MAX_ANGLE_DELTA 3
+#define ANGLE_STEP 3
 extern const int16_t dr_intra_derivative[90];
 static const uint8_t mode_to_angle_map[INTRA_MODES] = {
   0, 90, 180, 45, 135, 111, 157, 203, 67, 0,
 };
-
-static INLINE int av1_get_angle_step(BLOCK_SIZE sb_type, int plane) {
-  const TX_SIZE max_tx_size = max_txsize_lookup[sb_type];
-  return plane ? ANGLE_STEP_UV : av1_angle_step_y[max_tx_size];
-}
-
-static INLINE int av1_get_max_angle_delta(BLOCK_SIZE sb_type, int plane) {
-  const TX_SIZE max_tx_size = max_txsize_lookup[sb_type];
-  return plane ? MAX_ANGLE_DELTA_UV : av1_max_angle_delta_y[max_tx_size];
-}
-
 #if CONFIG_INTRA_INTERP
 // Returns whether filter selection is needed for a given
 // intra prediction angle.

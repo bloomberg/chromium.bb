@@ -1852,8 +1852,6 @@ static void build_intra_predictors_high(
   const uint16_t *above_ref = ref - ref_stride;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int angle_step = av1_get_angle_step(mbmi->sb_type, plane);
   const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
@@ -1874,7 +1872,7 @@ static void build_intra_predictors_high(
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * angle_step;
+              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)
@@ -2023,7 +2021,6 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int angle_step = av1_get_angle_step(mbmi->sb_type, plane);
   const int is_dr_mode = av1_is_directional_mode(mode, mbmi->sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
@@ -2044,7 +2041,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * angle_step;
+              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)

@@ -108,7 +108,7 @@ static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
   INTRA_FILTER ref_type = INTRA_FILTERS;
 
   if (ref_mbmi->sb_type >= BLOCK_8X8) {
-    PREDICTION_MODE mode = ref_mbmi->mode;
+    const PREDICTION_MODE mode = ref_mbmi->mode;
     if (is_inter_block(ref_mbmi)) {
 #if CONFIG_DUAL_FILTER
       switch (ref_mbmi->interp_filter[0]) {
@@ -123,9 +123,8 @@ static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
       }
     } else {
       if (av1_is_directional_mode(mode, ref_mbmi->sb_type)) {
-        const int angle_step = av1_get_angle_step(ref_mbmi->sb_type, 0);
-        int p_angle =
-            mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * angle_step;
+        const int p_angle =
+            mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * ANGLE_STEP;
         if (av1_is_intra_filter_switchable(p_angle)) {
           ref_type = ref_mbmi->intra_filter;
         }
