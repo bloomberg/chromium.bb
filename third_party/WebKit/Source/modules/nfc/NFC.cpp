@@ -622,6 +622,18 @@ ScriptPromise NFC::push(ScriptState* script_state,
                           "Invalid NFCPushMessage type was provided."));
   }
 
+  // https://w3c.github.io/web-nfc/#dom-nfc-push
+  // 9. If timeout value is NaN or negative, reject promise with "TypeError"
+  // and abort these steps.
+  if (options.hasTimeout() &&
+      (std::isnan(options.timeout()) || options.timeout() < 0)) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
+            "Invalid NFCPushOptions.timeout value was provided."));
+  }
+
   device::nfc::mojom::blink::NFCMessagePtr message =
       device::nfc::mojom::blink::NFCMessage::From(push_message);
   if (!message)
