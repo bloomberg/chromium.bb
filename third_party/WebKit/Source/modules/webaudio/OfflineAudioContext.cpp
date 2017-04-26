@@ -104,7 +104,7 @@ OfflineAudioContext* OfflineAudioContext::Create(
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: OfflineAudioContext::OfflineAudioContext()\n",
-          audioContext);
+          audio_context);
 #endif
   DEFINE_STATIC_LOCAL(SparseHistogram, offline_context_channel_count_histogram,
                       ("WebAudio.OfflineAudioContext.ChannelCount"));
