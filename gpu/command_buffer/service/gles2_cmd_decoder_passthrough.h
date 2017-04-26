@@ -123,7 +123,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // Restore States.
   void RestoreActiveTexture() const override;
-  void RestoreAllTextureUnitBindings(
+  void RestoreAllTextureUnitAndSamplerBindings(
       const ContextState* prev_state) const override;
   void RestoreActiveTextureUnitBinding(unsigned int target) const override;
   void RestoreBufferBinding(unsigned int target) override;

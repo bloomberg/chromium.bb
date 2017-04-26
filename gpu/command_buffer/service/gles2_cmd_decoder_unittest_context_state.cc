@@ -77,6 +77,10 @@ class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
   void InitializeContextState(ContextState* state,
                               uint32_t non_default_unit,
                               uint32_t active_unit);
+
+  // ES3 specific.
+  scoped_refptr<FeatureInfo> SetupForES3Test();
+  void AddExpectationsForBindSampler(GLuint unit, GLuint id);
 };
 
 INSTANTIATE_TEST_CASE_P(Service,
@@ -109,6 +113,30 @@ void GLES2DecoderRestoreStateTest::InitializeContextState(
     state->texture_units[tt].bound_texture_2d = ref_2d;
   }
   state->active_texture_unit = active_unit;
+
+  // Set up the sampler units just for convenience of the ES3-specific
+  // tests in this file.
+  state->sampler_units.resize(group().max_texture_units());
+}
+
+scoped_refptr<FeatureInfo> GLES2DecoderRestoreStateTest::SetupForES3Test() {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoder(init);
+
+  // Construct a previous ContextState assuming an ES3 context and with all
+  // texture bindings set to default textures.
+  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
+  TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
+      gl_.get(), "", "", "OpenGL ES 3.0", CONTEXT_TYPE_OPENGLES3);
+  feature_info->InitializeForTesting(CONTEXT_TYPE_OPENGLES3);
+  return feature_info;
+}
+
+void GLES2DecoderRestoreStateTest::AddExpectationsForBindSampler(GLuint unit,
+                                                                 GLuint id) {
+  EXPECT_CALL(*gl_, BindSampler(unit, id)).Times(1).RetiresOnSaturation();
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
@@ -136,7 +164,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NullPreviousStateBGR) {
   // Expect to restore the active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(NULL);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, NullPreviousState) {
@@ -160,7 +188,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NullPreviousState) {
   // Expect to restore the active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(NULL);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
@@ -184,7 +212,7 @@ TEST_P(GLES2DecoderRestoreStateTest, WithPreviousStateBGR) {
   // Expect to restore active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, WithPreviousState) {
@@ -207,7 +235,7 @@ TEST_P(GLES2DecoderRestoreStateTest, WithPreviousState) {
   // Expect to restore active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, ActiveUnit1) {
@@ -237,7 +265,7 @@ TEST_P(GLES2DecoderRestoreStateTest, ActiveUnit1) {
   // Expect to restore active texture unit to GL_TEXTURE1.
   AddExpectationsForActiveTexture(GL_TEXTURE1);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
@@ -275,7 +303,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit0BGR) {
   // Expect to restore active texture unit to GL_TEXTURE1.
   AddExpectationsForActiveTexture(GL_TEXTURE1);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
@@ -307,7 +335,7 @@ TEST_P(GLES2DecoderRestoreStateTest, NonDefaultUnit1BGR) {
   // Expect to restore active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit0) {
@@ -343,7 +371,7 @@ TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit0) {
   // Expect to restore active texture unit to GL_TEXTURE1.
   AddExpectationsForActiveTexture(GL_TEXTURE1);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
 }
 
 TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit1) {
@@ -373,7 +401,88 @@ TEST_P(GLES2DecoderRestoreStateTest, DefaultUnit1) {
   // Expect to restore active texture unit to GL_TEXTURE0.
   AddExpectationsForActiveTexture(GL_TEXTURE0);
 
-  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
+}
+
+TEST_P(GLES2DecoderRestoreStateTest, ES3NullPreviousStateWithSampler) {
+  // This ES3-specific test is scoped within GLES2DecoderRestoreStateTest
+  // to avoid doing large refactorings of these tests.
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoder(init);
+  SetupTexture();
+  SetupSampler();
+
+  InSequence sequence;
+  // Expect to restore texture bindings for unit GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+  AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  // Expect to restore sampler binding for unit GL_TEXTURE0.
+  AddExpectationsForBindSampler(0, kServiceSamplerId);
+
+  // Expect to restore texture bindings for remaining units.
+  for (uint32_t i = 1; i < group().max_texture_units(); ++i) {
+    AddExpectationsForActiveTexture(GL_TEXTURE0 + i);
+    AddExpectationsForBindTexture(GL_TEXTURE_2D, 0);
+    AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    AddExpectationsForBindSampler(i, 0);
+  }
+
+  // Expect to restore the active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(NULL);
+}
+
+TEST_P(GLES2DecoderRestoreStateTest, ES3RestoreExistingSampler) {
+  // This ES3-specific test is scoped within GLES2DecoderRestoreStateTest
+  // to avoid doing large refactorings of these tests.
+  auto feature_info = SetupForES3Test();
+  SetupSampler();
+
+  // Construct a previous ContextState assuming an ES3 context and with all
+  // texture bindings set to default textures.
+  ContextState prev_state(feature_info.get(), NULL, NULL);
+  InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
+
+  InSequence sequence;
+  // Expect to restore sampler binding for unit GL_TEXTURE0.
+  AddExpectationsForBindSampler(0, kServiceSamplerId);
+
+  // Expect to restore the active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
+}
+
+TEST_P(GLES2DecoderRestoreStateTest, ES3RestoreZeroSampler) {
+  // This ES3-specific test is scoped within GLES2DecoderRestoreStateTest
+  // to avoid doing large refactorings of these tests.
+  auto feature_info = SetupForES3Test();
+
+  // Construct a previous ContextState assuming an ES3 context and with all
+  // texture bindings set to default textures.
+  SamplerManager sampler_manager(feature_info.get());
+  ContextState prev_state(feature_info.get(), NULL, NULL);
+  InitializeContextState(&prev_state, std::numeric_limits<uint32_t>::max(), 0);
+  // Set up a sampler in the previous state. The client_id and service_id
+  // don't matter except that they're non-zero.
+  prev_state.sampler_units[0] = new Sampler(&sampler_manager, 1, 2);
+
+  InSequence sequence;
+  // Expect to restore the zero sampler on unit GL_TEXTURE0.
+  AddExpectationsForBindSampler(0, 0);
+
+  // Expect to restore the active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitAndSamplerBindings(&prev_state);
+
+  // Tell the sampler manager to destroy itself without a context so we
+  // don't have to set up more expectations.
+  sampler_manager.Destroy(false);
 }
 
 TEST_P(GLES2DecoderManualInitTest, ContextStateCapabilityCaching) {

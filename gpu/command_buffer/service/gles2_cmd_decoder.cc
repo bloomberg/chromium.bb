@@ -540,9 +540,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreState(const ContextState* prev_state) override;
 
   void RestoreActiveTexture() const override { state_.RestoreActiveTexture(); }
-  void RestoreAllTextureUnitBindings(
+  void RestoreAllTextureUnitAndSamplerBindings(
       const ContextState* prev_state) const override {
-    state_.RestoreAllTextureUnitBindings(prev_state);
+    state_.RestoreAllTextureUnitAndSamplerBindings(prev_state);
   }
   void RestoreActiveTextureUnitBinding(unsigned int target) const override {
     state_.RestoreActiveTextureUnitBinding(target);

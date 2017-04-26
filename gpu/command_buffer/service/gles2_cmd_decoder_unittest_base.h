@@ -250,6 +250,9 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void SetupSamplerExternalProgram();
   void SetupTexture();
 
+  // Sets up a sampler on texture unit 0 for certain ES3-specific tests.
+  void SetupSampler();
+
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
   // the error values GL_NO_ERROR, GL_INVALID_ENUM, etc. GLenum is

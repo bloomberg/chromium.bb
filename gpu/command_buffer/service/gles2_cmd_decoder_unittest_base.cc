@@ -2054,6 +2054,10 @@ void GLES2DecoderTestBase::SetupTexture() {
                kSharedMemoryId, kSharedMemoryOffset);
 };
 
+void GLES2DecoderTestBase::SetupSampler() {
+  DoBindSampler(0, client_sampler_id_, kServiceSamplerId);
+};
+
 void GLES2DecoderTestBase::DeleteVertexBuffer() {
   DoDeleteBuffer(client_buffer_id_, kServiceBufferId);
 }
