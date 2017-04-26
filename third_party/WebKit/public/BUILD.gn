@@ -342,6 +342,7 @@ source_set("blink_headers") {
     "platform/WebVector.h",
     "platform/WebViewScheduler.h",
     "platform/WebViewportStyle.h",
+    "platform/WebWorkerFetchContext.h",
     "platform/callback/WebClosure.h",
     "platform/linux/WebFallbackFont.h",
     "platform/linux/WebFontRenderStyle.h",

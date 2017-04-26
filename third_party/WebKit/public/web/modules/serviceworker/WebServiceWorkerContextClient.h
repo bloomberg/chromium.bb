@@ -35,6 +35,7 @@
 
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
@@ -241,6 +242,14 @@ class WebServiceWorkerContextClient {
   // This is called on the main thread.
   virtual WebServiceWorkerNetworkProvider*
   CreateServiceWorkerNetworkProvider() {
+    return nullptr;
+  }
+
+  // Creates a WebWorkerFetchContext for a service worker. Ownership of the
+  // returned object is transferred to the caller. This is called on the main
+  // thread. This is used only when off-main-thread-fetch is enabled.
+  virtual std::unique_ptr<blink::WebWorkerFetchContext>
+  CreateServiceWorkerFetchContext() {
     return nullptr;
   }
 

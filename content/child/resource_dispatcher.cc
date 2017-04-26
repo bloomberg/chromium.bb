@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -67,8 +68,8 @@ int MakeRequestID() {
   // NOTE: The resource_dispatcher_host also needs probably unique
   // request_ids, so they count down from -2 (-1 is a special we're
   // screwed value), while the renderer process counts up.
-  static int next_request_id = 0;
-  return next_request_id++;
+  static base::StaticAtomicSequenceNumber sequence;
+  return sequence.GetNext();  // We start at zero.
 }
 
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
@@ -88,13 +89,12 @@ void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
 
 ResourceDispatcher::ResourceDispatcher(
     IPC::Sender* sender,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
     : message_sender_(sender),
       delegate_(NULL),
       io_timestamp_(base::TimeTicks()),
-      main_thread_task_runner_(main_thread_task_runner),
-      weak_factory_(this) {
-}
+      thread_task_runner_(thread_task_runner),
+      weak_factory_(this) {}
 
 ResourceDispatcher::~ResourceDispatcher() {
 }
@@ -401,7 +401,7 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   // Always delete the pending_request asyncly so that cancelling the request
   // doesn't delete the request context info while its response is still being
   // handled.
-  main_thread_task_runner_->DeleteSoon(FROM_HERE, it->second.release());
+  thread_task_runner_->DeleteSoon(FROM_HERE, it->second.release());
   pending_requests_.erase(it);
 
   if (release_downloaded_file) {
@@ -470,7 +470,7 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 
     FollowPendingRedirect(request_id, request_info);
 
-    main_thread_task_runner_->PostTask(
+    thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ResourceDispatcher::FlushDeferredMessages,
                               weak_factory_.GetWeakPtr(), request_id));
   }
@@ -639,7 +639,7 @@ int ResourceDispatcher::StartAsync(
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      loading_task_runner ? loading_task_runner : main_thread_task_runner_;
+      loading_task_runner ? loading_task_runner : thread_task_runner_;
 
   if (consumer_handle.is_valid()) {
     pending_requests_[request_id]->url_loader_client =
@@ -655,7 +655,7 @@ int ResourceDispatcher::StartAsync(
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        loading_task_runner ? loading_task_runner : main_thread_task_runner_;
+        loading_task_runner ? loading_task_runner : thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(
         new URLLoaderClientImpl(request_id, this, std::move(task_runner)));
     mojom::URLLoaderAssociatedPtr url_loader;

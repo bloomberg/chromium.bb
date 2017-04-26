@@ -152,6 +152,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   RefPtr<WebTaskRunner> LoadingTaskRunner() const override;
 
+  std::unique_ptr<WebURLLoader> CreateURLLoader() override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

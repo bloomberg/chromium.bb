@@ -501,6 +501,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebApplicationCacheHostClient* client) override;
   blink::WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy() override;
+  std::unique_ptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
+      override;
   blink::WebExternalPopupMenu* CreateExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;

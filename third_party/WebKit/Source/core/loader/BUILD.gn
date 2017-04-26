@@ -65,6 +65,8 @@ blink_core_sources("loader") {
     "ThreadableLoaderClient.h",
     "ThreadableLoadingContext.cpp",
     "ThreadableLoadingContext.h",
+    "WorkerFetchContext.cpp",
+    "WorkerFetchContext.h",
     "WorkerThreadableLoader.cpp",
     "WorkerThreadableLoader.h",
     "WorkletScriptLoader.cpp",

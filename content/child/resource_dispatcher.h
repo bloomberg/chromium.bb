@@ -60,7 +60,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
   ResourceDispatcher(
       IPC::Sender* sender,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner);
   ~ResourceDispatcher() override;
 
   // IPC::Listener implementation.
@@ -135,9 +135,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     io_timestamp_ = io_timestamp;
   }
 
-  void SetMainThreadTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-    main_thread_task_runner_ = main_thread_task_runner;
+  void SetThreadTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner) {
+    thread_task_runner_ = thread_task_runner;
   }
 
   void SetResourceSchedulingFilter(
@@ -271,7 +271,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // IO thread timestamp for ongoing IPC message.
   base::TimeTicks io_timestamp_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
 
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;

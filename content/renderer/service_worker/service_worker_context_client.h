@@ -61,6 +61,7 @@ class ServiceWorkerProviderContext;
 class ServiceWorkerContextClient;
 class ThreadSafeSender;
 class EmbeddedWorkerInstanceClientImpl;
+class WebWorkerFetchContext;
 
 // This class provides access to/from an ServiceWorker's WorkerGlobalScope.
 // Unless otherwise noted, all methods are called on the worker thread.
@@ -197,6 +198,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // Called on the main thread.
   blink::WebServiceWorkerNetworkProvider* CreateServiceWorkerNetworkProvider()
       override;
+  std::unique_ptr<blink::WebWorkerFetchContext>
+  CreateServiceWorkerFetchContext() override;
   blink::WebServiceWorkerProvider* CreateServiceWorkerProvider() override;
 
   void PostMessageToClient(const blink::WebString& uuid,
@@ -328,6 +331,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
+  int network_provider_id_ = kInvalidServiceWorkerProviderId;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

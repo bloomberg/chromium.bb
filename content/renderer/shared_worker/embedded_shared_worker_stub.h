@@ -81,6 +81,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
                            const blink::WebString& state) override;
   blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
   CreateDevToolsMessageLoop() override;
+  std::unique_ptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
+      blink::WebServiceWorkerNetworkProvider*) override;
 
  private:
   ~EmbeddedSharedWorkerStub() override;

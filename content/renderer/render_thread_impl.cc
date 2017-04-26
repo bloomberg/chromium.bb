@@ -1161,7 +1161,7 @@ void RenderThreadImpl::InitializeWebKit(
   // same queue to ensure tasks are executed in the expected order.
   child_resource_message_filter()->SetMainThreadTaskRunner(
       resource_task_queue2);
-  resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue2);
+  resource_dispatcher()->SetThreadTaskRunner(resource_task_queue2);
 
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();

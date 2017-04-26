@@ -681,6 +681,9 @@
       status: "stable",
     },
     {
+      name: "OffMainThreadFetch",
+    },
+    {
       name: "OnDeviceChange",
       status: "stable",
     },

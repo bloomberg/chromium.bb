@@ -609,6 +609,7 @@ mojom("mojo_bindings") {
     "url_loader.mojom",
     "url_loader_factory.mojom",
     "video_capture.mojom",
+    "worker_url_loader_factory_provider.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

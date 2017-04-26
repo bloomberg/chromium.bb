@@ -913,4 +913,15 @@ void ServiceWorkerContextCore::OnRegistrationFinishedForCheckHasServiceWorker(
   CheckFetchHandlerOfInstalledServiceWorker(callback, registration);
 }
 
+void ServiceWorkerContextCore::BindWorkerFetchContext(
+    int render_process_id,
+    int service_worker_provider_id,
+    mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info) {
+  ServiceWorkerProviderHost* provider_host =
+      GetProviderHost(render_process_id, service_worker_provider_id);
+  if (!provider_host)
+    return;
+  provider_host->BindWorkerFetchContext(std::move(client_ptr_info));
+}
+
 }  // namespace content

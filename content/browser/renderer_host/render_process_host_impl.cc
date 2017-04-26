@@ -141,6 +141,7 @@
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
+#include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -178,6 +179,7 @@
 #include "media/media_features.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
@@ -470,6 +472,52 @@ void ForwardShapeDetectionRequest(R request) {
   connector->BindInterface(shape_detection::mojom::kServiceName,
                            std::move(request));
 }
+
+class WorkerURLLoaderFactoryProviderImpl
+    : public mojom::WorkerURLLoaderFactoryProvider {
+ public:
+  static void Create(
+      int render_process_id,
+      scoped_refptr<ResourceMessageFilter> resource_message_filter,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      mojom::WorkerURLLoaderFactoryProviderRequest request) {
+    DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<WorkerURLLoaderFactoryProviderImpl>(
+            render_process_id, resource_message_filter->GetWeakPtr(),
+            std::move(service_worker_context)),
+        std::move(request));
+  }
+  WorkerURLLoaderFactoryProviderImpl(
+      int render_process_id,
+      base::WeakPtr<ResourceMessageFilter> resource_message_filter,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+      : render_process_id_(render_process_id),
+        url_loader_factory_binding_(resource_message_filter.get()),
+        service_worker_context_(std::move(service_worker_context)) {}
+  ~WorkerURLLoaderFactoryProviderImpl() override {}
+
+  void GetURLLoaderFactoryAndRegisterClient(
+      mojom::URLLoaderFactoryAssociatedRequest loader_request,
+      mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info,
+      int service_worker_provider_id) override {
+    url_loader_factory_binding_.Bind(std::move(loader_request));
+    service_worker_context_->BindWorkerFetchContext(render_process_id_,
+                                                    service_worker_provider_id,
+                                                    std::move(client_ptr_info));
+  }
+
+  void GetURLLoaderFactory(
+      mojom::URLLoaderFactoryAssociatedRequest loader_request) override {
+    url_loader_factory_binding_.Bind(std::move(loader_request));
+  }
+
+ private:
+  const int render_process_id_;
+  mojo::AssociatedBinding<mojom::URLLoaderFactory> url_loader_factory_binding_;
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+};
 
 }  // namespace
 
@@ -1293,6 +1341,15 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,
                  BrowserMainLoop::GetInstance()->media_stream_manager()));
+
+  if (base::FeatureList::IsEnabled(features::kOffMainThreadFetch)) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
+        static_cast<ServiceWorkerContextWrapper*>(
+            storage_partition_impl_->GetServiceWorkerContext()));
+    registry->AddInterface(
+        base::Bind(&WorkerURLLoaderFactoryProviderImpl::Create, GetID(),
+                   resource_message_filter_, service_worker_context));
+  }
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).

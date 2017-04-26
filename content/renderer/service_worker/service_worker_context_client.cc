@@ -38,20 +38,25 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/worker_url_loader_factory_provider.mojom.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
+#include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -1064,6 +1069,7 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
           MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
           true /* is_parent_frame_secure */);
   provider_context_ = provider->context();
+  network_provider_id_ = provider->provider_id();
 
   // Tell the network provider about which version to load.
   provider->SetServiceWorkerVersionId(service_worker_version_id_,
@@ -1071,6 +1077,21 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerNetworkProviderImpl(std::move(provider));
+}
+
+std::unique_ptr<blink::WebWorkerFetchContext>
+ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
+  mojom::WorkerURLLoaderFactoryProviderPtr worker_url_loader_factory_provider;
+  RenderThreadImpl::current()
+      ->blink_platform_impl()
+      ->GetInterfaceProvider()
+      ->GetInterface(mojo::MakeRequest(&worker_url_loader_factory_provider));
+
+  // Blink is responsible for deleting the returned object.
+  return base::MakeUnique<ServiceWorkerFetchContextImpl>(
+      worker_url_loader_factory_provider.PassInterface(), network_provider_id_);
 }
 
 blink::WebServiceWorkerProvider*

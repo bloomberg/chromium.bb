@@ -65,6 +65,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/WebWorkerFetchContext.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -144,6 +145,13 @@ class BLINK_EXPORT WebFrameClient {
   virtual WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy() {
     return 0;
+  }
+
+  // Returns a new WebWorkerFetchContext for a dedicated worker. Ownership of
+  // the returned object is transferred to the caller. This is used only when
+  // off-main-thread-fetch is enabled.
+  virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+    return nullptr;
   }
 
   // Create a new WebPopupMenu. In the "createExternalPopupMenu" form, the

@@ -339,6 +339,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(
       base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload));
 
+  WebRuntimeFeatures::EnableOffMainThreadFetch(
+      base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
+
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::EnableGamepadExtensions(true);
 

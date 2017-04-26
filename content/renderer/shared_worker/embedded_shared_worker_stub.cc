@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
@@ -18,12 +19,17 @@
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
+#include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/common/appcache_info.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_content_settings_client_proxy.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -250,6 +256,30 @@ void EmbeddedSharedWorkerStub::SendDevToolsMessage(
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
 EmbeddedSharedWorkerStub::CreateDevToolsMessageLoop() {
   return DevToolsAgent::createMessageLoopWrapper();
+}
+
+std::unique_ptr<blink::WebWorkerFetchContext>
+EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
+    blink::WebServiceWorkerNetworkProvider* web_network_provider) {
+  DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
+  mojom::WorkerURLLoaderFactoryProviderPtr worker_url_loader_factory_provider;
+  RenderThreadImpl::current()
+      ->blink_platform_impl()
+      ->GetInterfaceProvider()
+      ->GetInterface(mojo::MakeRequest(&worker_url_loader_factory_provider));
+  std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
+      base::MakeUnique<WorkerFetchContextImpl>(
+          worker_url_loader_factory_provider.PassInterface());
+  if (web_network_provider) {
+    ServiceWorkerNetworkProvider* network_provider =
+        ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+            web_network_provider);
+    worker_fetch_context->set_service_worker_provider_id(
+        network_provider->provider_id());
+    worker_fetch_context->set_is_controlled_by_service_worker(
+        network_provider->IsControlledByServiceWorker());
+  }
+  return std::move(worker_fetch_context);
 }
 
 void EmbeddedSharedWorkerStub::Shutdown() {

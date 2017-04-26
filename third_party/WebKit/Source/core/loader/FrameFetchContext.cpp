@@ -79,6 +79,7 @@
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -763,6 +764,10 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     SecurityViolationReportingPolicy reporting_policy) const {
   return MixedContentChecker::ShouldBlockFetch(GetFrame(), resource_request,
                                                url, reporting_policy);
+}
+
+std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader() {
+  return Platform::Current()->CreateURLLoader();
 }
 
 DEFINE_TRACE(FrameFetchContext) {

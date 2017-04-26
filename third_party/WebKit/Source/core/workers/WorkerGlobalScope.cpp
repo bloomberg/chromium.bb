@@ -40,6 +40,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/loader/WorkerFetchContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerClients.h"
@@ -51,6 +52,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/InstanceCounters.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -300,6 +302,14 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
 
+WorkerFetchContext* WorkerGlobalScope::GetFetchContext() {
+  DCHECK(RuntimeEnabledFeatures::offMainThreadFetchEnabled());
+  if (fetch_context_)
+    return fetch_context_;
+  fetch_context_ = WorkerFetchContext::Create(*this);
+  return fetch_context_;
+}
+
 WorkerGlobalScope::WorkerGlobalScope(
     const KURL& url,
     const String& user_agent,
@@ -375,6 +385,7 @@ DEFINE_TRACE(WorkerGlobalScope) {
   visitor->Trace(timers_);
   visitor->Trace(event_listeners_);
   visitor->Trace(pending_error_events_);
+  visitor->Trace(fetch_context_);
   ExecutionContext::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
   SecurityContext::Trace(visitor);
