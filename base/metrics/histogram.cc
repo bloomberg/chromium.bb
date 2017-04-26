@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -718,7 +719,7 @@ void Histogram::GetCountAndBucketData(Count* count,
       if (i != bucket_count() - 1)
         bucket_value->SetInteger("high", ranges(i + 1));
       bucket_value->SetInteger("count", count_at_index);
-      buckets->Set(index, bucket_value.release());
+      buckets->Set(index, std::move(bucket_value));
       ++index;
     }
   }

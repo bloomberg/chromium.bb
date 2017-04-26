@@ -404,8 +404,6 @@ class BASE_EXPORT ListValue : public Value {
   // Values will be used to pad out the list.
   // Returns true if successful, or false if the index was negative or
   // the value is a null pointer.
-  bool Set(size_t index, Value* in_value);
-  // Preferred version of the above. TODO(estade): remove the above.
   bool Set(size_t index, std::unique_ptr<Value> in_value);
 
   // Gets the Value at the given index.  Modifies |out_value| (and returns true)

@@ -284,8 +284,8 @@ TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
 
 TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   base::ListValue expected_value;
-  expected_value.Set(0U, new base::Value("first"));
-  expected_value.Set(1U, new base::Value("second"));
+  expected_value.AppendString("first");
+  expected_value.AppendString("second");
   CheckValue(test_keys::kKeyStringList,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
@@ -302,8 +302,8 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   expected_value.SetString("string", "omg");
 
   base::ListValue* list = new base::ListValue();
-  list->Set(0U, new base::Value("first"));
-  list->Set(1U, new base::Value("second"));
+  list->AppendString("first");
+  list->AppendString("second");
   expected_value.Set("array", list);
 
   base::DictionaryValue* dict = new base::DictionaryValue();

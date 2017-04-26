@@ -371,13 +371,13 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
 Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
   base::DictionaryValue params;
   params.SetString("type", GetAsString(event.type));
-  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
-  std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue);
+  auto point = base::MakeUnique<base::DictionaryValue>();
   point->SetString("state", GetPointStateString(event.type));
   point->SetInteger("x", event.x);
   point->SetInteger("y", event.y);
-  point_list->Set(0, point.release());
-  params.Set("touchPoints", point_list.release());
+  auto point_list = base::MakeUnique<base::ListValue>();
+  point_list->Append(std::move(point));
+  params.Set("touchPoints", std::move(point_list));
   return client_->SendCommand("Input.dispatchTouchEvent", params);
 }
 
