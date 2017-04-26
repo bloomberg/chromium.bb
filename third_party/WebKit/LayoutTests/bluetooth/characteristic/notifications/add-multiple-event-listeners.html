@@ -14,11 +14,10 @@ promise_test(() => {
     .then(service => service.getCharacteristic('heart_rate_measurement'))
     .then(characteristic => {
       char = characteristic;
-      return assert_event_fires_after_promise(characteristic,
-                                              'startNotifications',
-                                              'characteristicvaluechanged',
-                                              3 /* add 3 listeners */,
-                                              false /* ignore_event_promise_order */);
+      return assert_promise_resolves_before_event(characteristic,
+                                                  'startNotifications',
+                                                  'characteristicvaluechanged',
+                                                  3 /* add 3 listeners */);
     })
     .then(() => char.stopNotifications())
     .then(() => assert_no_events(char, 'characteristicvaluechanged'));

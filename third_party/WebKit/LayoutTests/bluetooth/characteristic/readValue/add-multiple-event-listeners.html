@@ -12,20 +12,15 @@ promise_test(() => {
     .then(gattServer => gattServer.getPrimaryService('heart_rate'))
     .then(service => service.getCharacteristic('body_sensor_location'))
     .then(characteristic => {
-      return assert_event_fires_after_promise(characteristic,
-                                              'readValue',
-                                              'characteristicvaluechanged',
-                                              3 /* attach 3 listeners */,
-                                              true /* ignore_event_promise_order */);
+      return assert_promise_resolves_after_event(characteristic,
+                                                 'readValue',
+                                                 'characteristicvaluechanged',
+                                                 3 /* attach 3 listeners */);
     }).then(results => {
       let read_value = results[0].buffer;
       let event_values = results.slice(1).map(v => v.buffer);
       for (let event_value of event_values) {
-        // TODO(ortuno): The DataView used to resolve the promise
-        // should be the same DataView as the one saved in the
-        // characteristic.
-        // http://crbug.com/543347
-        // assert_equals(event.target.value, value);
+        assert_equals(event_value, read_value);
         assert_array_equals(event_value, read_value);
       }
     });

@@ -263,39 +263,64 @@ function eventPromise(target, type, options) {
   });
 }
 
-// Creates |num_listeners| promises. Each adds an event listener
-// to object. The promises resolve once the object fires |event| but
-// reject if the event is fired before |object|.|func|() resolves.
-// Returns a promise that fulfills with the result of |object|.|func()|
-// and |event.target.value| of each of the other promises.
-// If |ignore_event_promise_order| is set true, this function will ignore
-// the relative order of the event and the promise; otherwise it will assert
-// the event is triggered after the promise is resolved.
-function assert_event_fires_after_promise(object, func, event, num_listeners, ignore_event_promise_order) {
-  num_listeners = num_listeners !== undefined ? num_listeners : 1;
 
-  if (object[func] === undefined) {
-    return Promise.reject('Function \'' + func + '\' not available in object.');
-  }
-  let should_resolve = false;
-  let event_promises = [];
+
+// Helper function to assert that events are fired and a promise resolved
+// in the correct order.
+// 'event' should be passed as |should_be_first| to indicate that the events
+// should be fired first, otherwise 'promiseresolved' should be passed.
+// Attaches |num_listeners| |event| listeners to |object|. If all events have
+// been fired and the promise resolved in the correct order, returns a promise
+// that fulfills with the result of |object|.|func()| and |event.target.value|
+// of each of event listeners. Otherwise throws an error.
+function assert_promise_event_order_(should_be_first, object, func, event, num_listeners) {
+  let order = [];
+  let event_promises = []
   for (let i = 0; i < num_listeners; i++) {
-    event_promises.push(new Promise((resolve, reject) => {
+    event_promises.push(new Promise(resolve => {
       let event_listener = (e) => {
         object.removeEventListener(event, event_listener);
-        if (should_resolve || ignore_event_promise_order) {
-          resolve(e.target.value);
-        } else {
-          reject(event + ' was triggered before the promise resolved.');
-        }
-      };
+        order.push('event');
+        resolve(e.target.value);
+      }
       object.addEventListener(event, event_listener);
     }));
   }
-  return object[func]().then(result => {
-    should_resolve = true;
-    return Promise.all([result, ...event_promises]);
+
+  let func_promise = object[func]().then(result => {
+    order.push('promiseresolved');
+    return result;
   });
+
+  return Promise.all([func_promise, ...event_promises])
+    .then((result) => {
+      if (should_be_first !== order[0]) {
+        throw should_be_first === 'promiseresolved' ?
+                      `'${event}' was fired before promise resolved.` :
+                      `Promise resolved before '${event}' was fired.`;
+      }
+
+      if (order[0] !== 'promiseresolved' &&
+          order[order.length - 1] !== 'promiseresolved') {
+        throw 'Promise resolved in between event listeners.';
+      }
+
+      return result;
+    });
+}
+
+// See assert_promise_event_order_ above.
+function assert_promise_resolves_before_event(
+  object, func, event, num_listeners=1) {
+  return assert_promise_event_order_(
+    'promiseresolved', object, func, event, num_listeners);
+}
+
+// See assert_promise_event_order_ above.
+function assert_promise_resolves_after_event(
+  object, func, event, num_listeners=1) {
+  return assert_promise_event_order_(
+    'event', object, func, event, num_listeners);
 }
 
 // Returns a promise that resolves after 100ms unless
