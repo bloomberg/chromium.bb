@@ -321,6 +321,7 @@ EXPERIMENT_LIST="
     frame_superres
     new_multisymbol
     compound_singleref
+    aom_qm
 "
 CONFIG_LIST="
     dependency_tracking
@@ -371,7 +372,6 @@ CONFIG_LIST="
     highbitdepth
     experimental
     size_limit
-    aom_qm
     ${EXPERIMENT_LIST}
     analyzer
 "
@@ -429,8 +429,6 @@ CMDLINE_SELECT="
     aom_highbitdepth
     highbitdepth
     experimental
-    aom_qm
-    tile_groups
 "
 
 process_cmdline() {
