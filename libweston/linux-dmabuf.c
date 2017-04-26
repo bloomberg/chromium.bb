@@ -467,6 +467,11 @@ bind_linux_dmabuf(struct wl_client *client,
 {
 	struct weston_compositor *compositor = data;
 	struct wl_resource *resource;
+	int *formats = NULL;
+	uint64_t *modifiers = NULL;
+	int num_formats, num_modifiers;
+	uint64_t modifier_invalid = DRM_FORMAT_MOD_INVALID;
+	int i, j;
 
 	resource = wl_resource_create(client, &zwp_linux_dmabuf_v1_interface,
 				      version, id);
@@ -478,9 +483,35 @@ bind_linux_dmabuf(struct wl_client *client,
 	wl_resource_set_implementation(resource, &linux_dmabuf_implementation,
 				       compositor, NULL);
 
-	/* EGL_EXT_image_dma_buf_import does not provide a way to query the
-	 * supported pixel formats. */
-	/* XXX: send formats */
+	/*
+	 * Use EGL_EXT_image_dma_buf_import_modifiers to query and advertise
+	 * format/modifier codes.
+	 */
+	compositor->renderer->query_dmabuf_formats(compositor, &formats,
+						   &num_formats);
+
+	for (i = 0; i < num_formats; i++) {
+		compositor->renderer->query_dmabuf_modifiers(compositor,
+							     formats[i],
+							     &modifiers,
+							     &num_modifiers);
+
+		/* send DRM_FORMAT_MOD_INVALID token when no modifiers are supported
+		 * for this format */
+		if (num_modifiers == 0) {
+			num_modifiers = 1;
+			modifiers = &modifier_invalid;
+		}
+		for (j = 0; j < num_modifiers; j++) {
+			uint32_t modifier_lo = modifiers[j] & 0xFFFFFFFF;
+			uint32_t modifier_hi = modifiers[j] >> 32;
+			zwp_linux_dmabuf_v1_send_modifier(resource, formats[i],
+							  modifier_hi,
+							  modifier_lo);
+		}
+		free(modifiers);
+	}
+	free(formats);
 }
 
 /** Advertise linux_dmabuf support
@@ -498,7 +529,7 @@ WL_EXPORT int
 linux_dmabuf_setup(struct weston_compositor *compositor)
 {
 	if (!wl_global_create(compositor->wl_display,
-			      &zwp_linux_dmabuf_v1_interface, 2,
+			      &zwp_linux_dmabuf_v1_interface, 3,
 			      compositor, bind_linux_dmabuf))
 		return -1;
 
