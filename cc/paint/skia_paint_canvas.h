@@ -28,7 +28,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   explicit SkiaPaintCanvas(SkCanvas* canvas);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
+  explicit SkiaPaintCanvas(SkiaPaintCanvas&& other);
   ~SkiaPaintCanvas() override;
+
+  SkiaPaintCanvas& operator=(SkiaPaintCanvas&& other) = default;
 
   SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;
@@ -37,7 +40,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
   int save() override;
   int saveLayer(const SkRect* bounds, const PaintFlags* flags) override;
-  int saveLayerAlpha(const SkRect* bounds, uint8_t alpha) override;
+  int saveLayerAlpha(const SkRect* bounds, U8CPU alpha) override;
 
   void restore() override;
   int getSaveCount() const override;

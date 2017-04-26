@@ -17,6 +17,8 @@
 #include "platform/wtf/text/WTFString.h"
 #endif
 
+class SkPictureGpuAnalyzer;
+
 namespace blink {
 
 class GraphicsContext;
@@ -335,7 +337,7 @@ class PLATFORM_EXPORT DisplayItem {
   virtual bool DrawsContent() const { return false; }
 
   // Override to implement specific analysis strategies.
-  virtual int NumberOfSlowPaths() const { return 0; }
+  virtual void AnalyzeForGpuRasterization(SkPictureGpuAnalyzer&) const {}
 
 #ifndef NDEBUG
   static WTF::String TypeAsDebugString(DisplayItem::Type);
