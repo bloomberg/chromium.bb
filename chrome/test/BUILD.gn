@@ -977,20 +977,6 @@ if (!is_android) {
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
   }
-
-  # TODO(dpranke), TODO(crbug.com/714336): tab_capture_end2end_tests
-  # is really just browser_tests with some different flags. Figure out
-  # what the right way to run this is given the different ways to
-  # configure things in the //testing/buildbot/*.json files, here,
-  # gn_isolate_map.pyl, and mb.py. There's too many knobs and the interaction
-  # is strange and unclear at this point. For now, I *think* this will just
-  # have the effect of disabling the test in analyze. :(.
-  group("tab_capture_end2end_tests") {
-    testonly = true
-    deps = [
-      # ":browser_tests",
-    ]
-  }
 }
 
 static_library("browser_tests_runner") {

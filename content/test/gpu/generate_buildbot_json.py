@@ -1488,6 +1488,15 @@ COMMON_GTESTS = {
         'os_types': ['android'],
       },
     ],
+    'args': [
+      '--enable-gpu',
+      '--test-launcher-bot-mode',
+      '--test-launcher-jobs=1',
+      '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:' + \
+          'TabCaptureApiPixelTest.EndToEnd*'
+    ],
+    'linux_args': [ '--no-xvfb' ],
+    'test': 'browser_tests',
   },
   'video_decode_accelerator_d3d11_unittest': {
     'tester_configs': [
@@ -1565,6 +1574,7 @@ NON_SWARMED_GTESTS = {
     'test': 'browser_tests',
     'args': [
       '--enable-gpu',
+      '--no-xvfb',
       '--test-launcher-jobs=1',
       '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:' + \
           'TabCaptureApiPixelTest.EndToEnd*'
@@ -2104,6 +2114,9 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
 def is_android(tester_config):
   return tester_config['os_type'] == 'android'
 
+def is_linux(tester_config):
+  return tester_config['os_type'] == 'linux'
+
 def is_asan(tester_config):
   return tester_config.get('is_asan', False)
 
@@ -2218,20 +2231,20 @@ def generate_gtest(tester_name, tester_config, test, test_config):
           }
         ]
       })
-  if 'desktop_args' in result:
-    if not is_android(tester_config):
-      if not 'args' in result:
-        result['args'] = []
-      result['args'] += result['desktop_args']
-    # Don't put the desktop args in the JSON.
-    result.pop('desktop_args')
-  if 'android_args' in result:
-    if is_android(tester_config):
-      if not 'args' in result:
-        result['args'] = []
-      result['args'] += result['android_args']
-    # Don't put the android args in the JSON.
-    result.pop('android_args')
+
+  def add_conditional_args(key, fn):
+    if key in result:
+      if fn(tester_config):
+        if not 'args' in result:
+          result['args'] = []
+        result['args'] += result[key]
+      # Don't put the conditional args in the JSON.
+      result.pop(key)
+
+  add_conditional_args('desktop_args', lambda cfg: not is_android(cfg))
+  add_conditional_args('linux_args', is_linux)
+  add_conditional_args('android_args', is_android)
+
   if 'desktop_swarming' in result:
     if not is_android(tester_config):
       result['swarming'].update(result['desktop_swarming'])
