@@ -197,6 +197,7 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (
         r"^base[\\\/]memory[\\\/]shared_memory_posix\.cc$",
+        r"^base[\\\/]process[\\\/]internal_aix\.cc$",
         r"^base[\\\/]process[\\\/]process_linux\.cc$",
         r"^base[\\\/]process[\\\/]process_metrics_linux\.cc$",
         r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]boot_times_recorder\.cc$",
@@ -328,6 +329,7 @@ _IPC_ENUM_TRAITS_DEPRECATED = (
 
 _VALID_OS_MACROS = (
     # Please keep sorted.
+    'OS_AIX',
     'OS_ANDROID',
     'OS_BSD',
     'OS_CAT',       # For testing.
