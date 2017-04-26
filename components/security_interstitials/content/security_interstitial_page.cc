@@ -14,7 +14,6 @@
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/common_string_util.h"
-#include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -91,11 +90,6 @@ void SecurityInterstitialPage::Show() {
 
 SecurityInterstitialControllerClient* SecurityInterstitialPage::controller() {
   return controller_.get();
-}
-
-security_interstitials::MetricsHelper*
-SecurityInterstitialPage::metrics_helper() {
-  return controller_->metrics_helper();
 }
 
 void SecurityInterstitialPage::UpdateMetricsAfterSecurityInterstitial() {
