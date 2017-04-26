@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -127,8 +128,7 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
   if (delegate_ && !domain_name.empty()) {
     std::string enterprise_info;
     enterprise_info = l10n_util::GetStringFUTF8(
-        IDS_DEVICE_OWNED_BY_NOTICE,
-        base::UTF8ToUTF16(domain_name));
+        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY, base::UTF8ToUTF16(domain_name));
     delegate_->OnEnterpriseInfoUpdated(enterprise_info, asset_id);
   }
 }

@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -39,7 +38,6 @@ class SystemTrayDelegateChromeOS
       public ash::SystemTrayDelegate,
       public content::NotificationObserver,
       public input_method::InputMethodManager::Observer,
-      public policy::CloudPolicyStore::Observer,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
       public input_method::InputMethodManager::ImeMenuObserver {
@@ -50,9 +48,6 @@ class SystemTrayDelegateChromeOS
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;
   ash::LoginStatus GetUserLoginStatus() const override;
-  std::string GetEnterpriseDomain() const override;
-  base::string16 GetEnterpriseMessage() const override;
-  void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void GetCurrentIME(ash::IMEInfo* info) override;
   void GetAvailableIMEList(ash::IMEInfoList* list) override;
@@ -110,12 +105,6 @@ class SystemTrayDelegateChromeOS
   void InputMethodMenuItemChanged(
       ui::ime::InputMethodMenuManager* manager) override;
 
-  void UpdateEnterpriseDomain();
-
-  // Overridden from CloudPolicyStore::Observer
-  void OnStoreLoaded(policy::CloudPolicyStore* store) override;
-  void OnStoreError(policy::CloudPolicyStore* store) override;
-
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
@@ -142,8 +131,6 @@ class SystemTrayDelegateChromeOS
   base::TimeTicks session_start_time_;
   bool have_session_length_limit_ = false;
   base::TimeDelta session_length_limit_;
-  std::string enterprise_domain_;
-  bool is_active_directory_managed_ = false;
   bool session_started_ = false;
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;

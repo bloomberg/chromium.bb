@@ -51,19 +51,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Gets information about the active user.
   virtual LoginStatus GetUserLoginStatus() const;
 
-  // Returns the domain that manages the device, if it is enterprise-enrolled.
-  virtual std::string GetEnterpriseDomain() const;
-
-  // Returns the realm that manages the device, if it is enterprise enrolled
-  // with Active Directory and joined the realm (Active Directory domain).
-  virtual std::string GetEnterpriseRealm() const;
-
-  // Returns notification for enterprise enrolled devices.
-  virtual base::string16 GetEnterpriseMessage() const;
-
-  // Shows information about enterprise enrolled devices.
-  virtual void ShowEnterpriseInfo();
-
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();
 

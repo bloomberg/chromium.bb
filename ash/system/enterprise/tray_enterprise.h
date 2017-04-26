@@ -14,6 +14,8 @@ namespace ash {
 class LabelTrayView;
 class SystemTray;
 
+// System tray item that shows a message ("This device managed by example.com")
+// in the tray menu for enterprise enrolled devices.
 class TrayEnterprise : public SystemTrayItem,
                        public ViewClickListener,
                        public EnterpriseDomainObserver {
@@ -34,6 +36,8 @@ class TrayEnterprise : public SystemTrayItem,
 
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override;
+
+  LabelTrayView* tray_view() { return tray_view_; }
 
  private:
   LabelTrayView* tray_view_;

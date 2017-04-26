@@ -36,11 +36,8 @@
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/input_method/input_method_switch_recorder.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -50,18 +47,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
@@ -101,10 +94,6 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
   UserAddingScreen::Get()->Start();
-}
-
-bool IsSessionInSecondaryLoginScreen() {
-  return session_manager::SessionManager::Get()->IsInSecondaryLoginScreen();
 }
 
 }  // namespace
@@ -155,14 +144,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
       prefs::kSessionLengthLimit,
       base::Bind(&SystemTrayDelegateChromeOS::UpdateSessionLengthLimit,
                  base::Unretained(this)));
-
-  policy::BrowserPolicyConnectorChromeOS* policy_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      policy_connector->GetDeviceCloudPolicyManager();
-  if (policy_manager)
-    policy_manager->core()->store()->AddObserver(this);
-  UpdateEnterpriseDomain();
 }
 
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
@@ -181,47 +162,10 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      connector->GetDeviceCloudPolicyManager();
-  if (policy_manager)
-    policy_manager->core()->store()->RemoveObserver(this);
 }
 
 ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
   return SystemTrayClient::GetUserLoginStatus();
-}
-
-std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
-  return enterprise_domain_;
-}
-
-base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
-  if (is_active_directory_managed_)
-    return l10n_util::GetStringUTF16(IDS_DEVICE_ENTERPRISE_MANAGED_NOTICE);
-  if (!GetEnterpriseDomain().empty()) {
-    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
-                                      base::UTF8ToUTF16(GetEnterpriseDomain()));
-  }
-  return base::string16();
-}
-
-void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
-  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayClient.
-  ash::LoginStatus status = GetUserLoginStatus();
-  if (status == ash::LoginStatus::NOT_LOGGED_IN ||
-      status == ash::LoginStatus::LOCKED || IsSessionInSecondaryLoginScreen()) {
-    scoped_refptr<chromeos::HelpAppLauncher> help_app(
-        new chromeos::HelpAppLauncher(nullptr /* parent_window */));
-    help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
-  } else {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        ProfileManager::GetActiveUserProfile());
-    chrome::ShowSingletonTab(displayer.browser(),
-                             GURL(chrome::kLearnMoreEnterpriseURL));
-  }
 }
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
@@ -554,30 +498,6 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ui::ime::InputMethodMenuManager* manager) {
   GetSystemTrayNotifier()->NotifyRefreshIME();
-}
-
-void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  std::string old_enterprise_domain(std::move(enterprise_domain_));
-  enterprise_domain_ = connector->GetEnterpriseDomain();
-  bool old_is_active_directory_managed = is_active_directory_managed_;
-  is_active_directory_managed_ = connector->IsActiveDirectoryManaged();
-  if ((!is_active_directory_managed_ &&
-       enterprise_domain_ != old_enterprise_domain) ||
-      (is_active_directory_managed_ != old_is_active_directory_managed)) {
-    GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
-  }
-}
-
-// Overridden from CloudPolicyStore::Observer
-void SystemTrayDelegateChromeOS::OnStoreLoaded(
-    policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDomain();
-}
-
-void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
-  UpdateEnterpriseDomain();
 }
 
 // Overridden from chrome::BrowserListObserver.

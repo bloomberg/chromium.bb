@@ -27,6 +27,7 @@ class SystemTrayItem;
 class TrayAccessibility;
 class TrayAudio;
 class TrayCast;
+class TrayEnterprise;
 class TrayNetwork;
 class TraySupervisedUser;
 class TraySystemInfo;
@@ -141,7 +142,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
     return tray_accessibility_;
   }
 
+  // TODO(jamescook): Add a SystemTrayTestApi instead of these methods.
   TrayCast* GetTrayCastForTesting() const;
+  TrayEnterprise* GetTrayEnterpriseForTesting() const;
   TrayNetwork* GetTrayNetworkForTesting() const;
   TraySupervisedUser* GetTraySupervisedUserForTesting() const;
   TraySystemInfo* GetTraySystemInfoForTesting() const;
@@ -223,8 +226,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // These objects are not owned by this class.
   TrayAccessibility* tray_accessibility_ = nullptr;
-  TrayAudio* tray_audio_ = nullptr;  // May be null.
+  TrayAudio* tray_audio_ = nullptr;
   TrayCast* tray_cast_ = nullptr;
+  TrayEnterprise* tray_enterprise_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;
   TrayTiles* tray_tiles_ = nullptr;
   TraySupervisedUser* tray_supervised_user_ = nullptr;

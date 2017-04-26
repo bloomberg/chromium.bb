@@ -23,6 +23,11 @@ interface SystemTray {
   // Otherwise sets 12 hour time formatting.
   SetUse24HourClock(bool use_24_hour);
 
+  // Creates or updates an item in the system tray menu with information about
+  // enterprise management. The item appears if |enterprise_domain| is not empty
+  // or |active_directory_managed| is true.
+  SetEnterpriseDomain(string enterprise_domain, bool active_directory_managed);
+
   // Shows an icon in the system tray indicating that a software update is
   // available. Once shown the icon persists until reboot. |severity| and
   // |factory_reset_required| are used to set the icon, color, and tooltip.
@@ -85,7 +90,8 @@ interface SystemTrayClient {
   // Shows information about public account mode.
   ShowPublicAccountInfo();
 
-  // TODO(crbug.com/647412): ShowEnterpriseInfo();
+  // Shows information about enterprise enrolled devices.
+  ShowEnterpriseInfo();
 
   // Shows UI to configure or activate the network specified by |network_id|,
   // which may include showing payment or captive portal UI when appropriate.

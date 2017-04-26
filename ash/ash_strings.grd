@@ -368,6 +368,14 @@ Press Ctrl+Alt+Z to disable.
         Shut down
       </message>
 
+      <!-- Status tray enterprise management. -->
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
+        This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED" desc="Text for notifications showing that this device is enterprise managed. Used when the organization's domain name is not available (e.g. Active Directory).">
+        This device is enterprise managed
+      </message>
+
       <!-- Status tray supervised users. -->
       <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">
          Supervised user
