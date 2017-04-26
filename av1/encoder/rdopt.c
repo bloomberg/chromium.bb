@@ -9217,53 +9217,56 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   xd->mi[0]->mbmi.use_intrabc = 0;
 #endif  // CONFIG_INTRABC
 
-  if (bsize >= BLOCK_8X8 || unify_bsize) {
-    if (rd_pick_intra_sby_mode(cpi, x, &rate_y, &rate_y_tokenonly, &dist_y,
-                               &y_skip, bsize, best_rd) >= best_rd) {
-      rd_cost->rate = INT_MAX;
-      return;
-    }
-  } else {
-    if (rd_pick_intra_sub_8x8_y_mode(cpi, x, &rate_y, &rate_y_tokenonly,
-                                     &dist_y, &y_skip, best_rd) >= best_rd) {
-      rd_cost->rate = INT_MAX;
-      return;
-    }
-  }
-  max_uv_tx_size = uv_txsize_lookup[bsize][xd->mi[0]->mbmi.tx_size]
-                                   [pd[1].subsampling_x][pd[1].subsampling_y];
+  const int64_t intra_yrd =
+      (bsize >= BLOCK_8X8 || unify_bsize)
+          ? rd_pick_intra_sby_mode(cpi, x, &rate_y, &rate_y_tokenonly, &dist_y,
+                                   &y_skip, bsize, best_rd)
+          : rd_pick_intra_sub_8x8_y_mode(cpi, x, &rate_y, &rate_y_tokenonly,
+                                         &dist_y, &y_skip, best_rd);
+
+  if (intra_yrd < best_rd) {
+    max_uv_tx_size = uv_txsize_lookup[bsize][xd->mi[0]->mbmi.tx_size]
+                                     [pd[1].subsampling_x][pd[1].subsampling_y];
 
 #if CONFIG_CB4X4
 #if !CONFIG_CHROMA_2X2
-  max_uv_tx_size = AOMMAX(max_uv_tx_size, TX_4X4);
+    max_uv_tx_size = AOMMAX(max_uv_tx_size, TX_4X4);
 #endif  // !CONFIG_CHROMA_2X2
-  if (!x->skip_chroma_rd)
-    rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
-                            &uv_skip, bsize, max_uv_tx_size);
+    if (!x->skip_chroma_rd)
+      rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
+                              &uv_skip, bsize, max_uv_tx_size);
 #else
-  rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
-                          &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
+    rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
+                            &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
 #endif  // CONFIG_CB4X4
 
-  if (y_skip && uv_skip) {
-    rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
-                    av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
-    rd_cost->dist = dist_y + dist_uv;
+    if (y_skip && uv_skip) {
+      rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
+                      av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+      rd_cost->dist = dist_y + dist_uv;
+    } else {
+      rd_cost->rate =
+          rate_y + rate_uv + av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+      rd_cost->dist = dist_y + dist_uv;
+    }
+    rd_cost->rdcost = RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
   } else {
-    rd_cost->rate =
-        rate_y + rate_uv + av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
-    rd_cost->dist = dist_y + dist_uv;
+    rd_cost->rate = INT_MAX;
   }
 
 #if CONFIG_INTRABC
+  if (rd_cost->rate != INT_MAX && rd_cost->rdcost < best_rd)
+    best_rd = rd_cost->rdcost;
   if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
     ctx->skip = x->skip;  // FIXME where is the proper place to set this?!
+    assert(rd_cost->rate != INT_MAX);
+    rd_cost->rdcost = RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
   }
 #endif
+  if (rd_cost->rate == INT_MAX) return;
 
   ctx->mic = *xd->mi[0];
   ctx->mbmi_ext = *x->mbmi_ext;
-  rd_cost->rdcost = RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
 }
 
 // Do we have an internal image edge (e.g. formatting bars).
