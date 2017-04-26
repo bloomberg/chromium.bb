@@ -38,18 +38,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
 
-  // Initializes the widget as a bubble or fullscreen view depending on the
-  // presence of a cmd line switch. parent and initial_apps_page are used for
-  // both the bubble and fullscreen initialization.
-  void Initialize(gfx::NativeView parent, int initial_apps_page);
+  // Initializes the widget.
+  void InitAsBubble(gfx::NativeView parent, int initial_apps_page);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
-  void MaybeSetAnchorPoint(const gfx::Point& anchor_point);
+  void SetAnchorPoint(const gfx::Point& anchor_point);
 
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list. This has to be called after
-  // Initialize was called since the app list object needs to exist so that
+  // InitAsBubble was called since the app list object needs to exist so that
   // it can set the host.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
@@ -71,7 +69,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
 
   // WidgetDelegate overrides:
   bool ShouldHandleSystemCommands() const override;
@@ -95,12 +92,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void InitContents(gfx::NativeView parent, int initial_apps_page);
 
   void InitChildWidgets();
-
-  // Initializes the widget for fullscreen mode.
-  void InitializeFullscreen(gfx::NativeView parent, int initial_apps_page);
-
-  // Initializes the widget as a bubble.
-  void InitializeBubble(gfx::NativeView parent, int initial_apps_page);
 
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
@@ -126,8 +117,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   SpeechView* speech_view_;
 
   views::View* search_box_focus_host_;  // Owned by the views hierarchy.
-  views::Widget* search_box_widget_;    // Owned by the app list's widget.
-  SearchBoxView* search_box_view_;      // Owned by |search_box_widget_|.
+  views::Widget* search_box_widget_;  // Owned by the app list's widget.
+  SearchBoxView* search_box_view_;    // Owned by |search_box_widget_|.
 
   // A semi-transparent white overlay that covers the app list while dialogs are
   // open.

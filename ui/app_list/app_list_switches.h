@@ -18,7 +18,6 @@ APP_LIST_EXPORT extern const char kAnswerServerUrl[];
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kEnableAppList[];
-APP_LIST_EXPORT extern const char kEnableFullscreenAppList[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
@@ -41,8 +40,6 @@ bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
-
-bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 
 }  // namespace switches
 }  // namespace app_list

@@ -99,13 +99,11 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   aura::Window* root_window = wm_root_window->aura_window();
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
+  view->InitAsBubble(container, current_apps_page);
+  // The app list is centered over the display.
+  view->SetAnchorPoint(GetCenterOfDisplayForWindow(
+      wm_root_window, GetMinimumBoundsHeightForAppList(view)));
 
-  view->Initialize(container, current_apps_page);
-
-  if (!app_list::switches::IsFullscreenAppListEnabled()) {
-    view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
-        wm_root_window, GetMinimumBoundsHeightForAppList(view)));
-  }
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
@@ -150,7 +148,7 @@ void AppListPresenterDelegate::UpdateBounds() {
     return;
 
   view_->UpdateBounds();
-  view_->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
+  view_->SetAnchorPoint(GetCenterOfDisplayForWindow(
       WmWindow::Get(view_->GetWidget()->GetNativeWindow()),
       GetMinimumBoundsHeightForAppList(view_)));
 }

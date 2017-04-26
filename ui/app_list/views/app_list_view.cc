@@ -31,8 +31,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
@@ -131,7 +129,10 @@ class SearchBoxWindowTargeter : public wm::MaskedWindowTargeter {
 // An animation observer to hide the view at the end of the animation.
 class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
-  HideViewAnimationObserver() : frame_(NULL), target_(NULL) {}
+  HideViewAnimationObserver()
+      : frame_(NULL),
+        target_(NULL) {
+  }
 
   ~HideViewAnimationObserver() override {
     if (target_)
@@ -189,22 +190,37 @@ AppListView::~AppListView() {
   RemoveAllChildViews(true);
 }
 
-void AppListView::Initialize(gfx::NativeView parent, int initial_apps_page) {
+void AppListView::InitAsBubble(gfx::NativeView parent, int initial_apps_page) {
   base::Time start_time = base::Time::Now();
+
   InitContents(parent, initial_apps_page);
+
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  set_color(kContentsBackgroundColor);
+  set_margins(gfx::Insets());
   set_parent_window(parent);
+  set_close_on_deactivate(false);
+  set_shadow(views::BubbleBorder::NO_ASSETS);
+  set_color(kContentsBackgroundColor);
+  // This creates the app list widget. (Before this, child widgets cannot be
+  // created.)
+  views::BubbleDialogDelegateView::CreateBubble(this);
 
-  if (switches::IsFullscreenAppListEnabled())
-    InitializeFullscreen(parent, initial_apps_page);
-  else
-    InitializeBubble(parent, initial_apps_page);
-
+  SetBubbleArrow(views::BubbleBorder::FLOAT);
+  // We can now create the internal widgets.
   InitChildWidgets();
+
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  window->SetEventTargeter(base::MakeUnique<views::BubbleWindowTargeter>(this));
+
+  const int kOverlayCornerRadius =
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+  overlay_view_ = new AppListOverlayView(kOverlayCornerRadius);
+  overlay_view_->SetBoundsRect(GetContentsBounds());
   AddChildView(overlay_view_);
+
   if (delegate_)
     delegate_->ViewInitialized();
+
   UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
                       base::Time::Now() - start_time);
 }
@@ -215,10 +231,8 @@ void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
   GetBubbleFrameView()->SchedulePaint();
 }
 
-void AppListView::MaybeSetAnchorPoint(const gfx::Point& anchor_point) {
-  // if the AppListView is a bubble
-  if (!switches::IsFullscreenAppListEnabled())
-    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
+  SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
 void AppListView::SetDragAndDropHostOfCurrentAppList(
@@ -236,9 +250,7 @@ void AppListView::CloseAppList() {
 }
 
 void AppListView::UpdateBounds() {
-  // if the AppListView is a bubble
-  if (!switches::IsFullscreenAppListEnabled())
-    SizeToContents();
+  SizeToContents();
 }
 
 void AppListView::SetAppListOverlayVisible(bool visible) {
@@ -292,10 +304,6 @@ void AppListView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-const char* AppListView::GetClassName() const {
-  return "AppListView";
-}
-
 bool AppListView::ShouldHandleSystemCommands() const {
   return true;
 }
@@ -335,6 +343,7 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   app_list_main_view_->SetPaintToLayer();
   app_list_main_view_->layer()->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
+
   // This will be added to the |search_box_widget_| after the app list widget is
   // initialized.
   search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_);
@@ -401,49 +410,9 @@ void AppListView::InitChildWidgets() {
   app_list_main_view_->contents_view()->Layout();
 }
 
-void AppListView::InitializeFullscreen(gfx::NativeView parent,
-                                       int initial_apps_page) {
-  const gfx::Rect& display_work_area_bounds =
-      display::Screen::GetScreen()->GetDisplayNearestView(parent).work_area();
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams app_list_overlay_view_params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-
-  app_list_overlay_view_params.parent = parent;
-  app_list_overlay_view_params.delegate = this;
-  app_list_overlay_view_params.opacity =
-      views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  app_list_overlay_view_params.bounds = display_work_area_bounds;
-  widget->Init(app_list_overlay_view_params);
-  widget->GetLayer()->SetBackgroundBlur(10);
-
-  overlay_view_ = new AppListOverlayView(0 /* no corners */);
-}
-
-void AppListView::InitializeBubble(gfx::NativeView parent,
-                                   int initial_apps_page) {
-  set_margins(gfx::Insets());
-  set_close_on_deactivate(false);
-  set_shadow(views::BubbleBorder::NO_ASSETS);
-
-  // This creates the app list widget. (Before this, child widgets cannot be
-  // created.)
-  views::BubbleDialogDelegateView::CreateBubble(this);
-
-  SetBubbleArrow(views::BubbleBorder::FLOAT);
-  // We can now create the internal widgets.
-
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  window->SetEventTargeter(base::MakeUnique<views::BubbleWindowTargeter>(this));
-
-  const int kOverlayCornerRadius =
-      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
-  overlay_view_ = new AppListOverlayView(kOverlayCornerRadius);
-  overlay_view_->SetBoundsRect(GetContentsBounds());
-}
-
-void AppListView::OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
-                                           views::Widget* widget) const {
+void AppListView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
   if (!params->native_widget) {
     views::ViewsDelegate* views_delegate = views::ViewsDelegate::GetInstance();
     if (views_delegate && !views_delegate->native_widget_factory().is_null()) {
@@ -472,7 +441,8 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
   DCHECK(GetBubbleFrameView());
 
-  mask->addRect(gfx::RectToSkRect(GetBubbleFrameView()->GetContentsBounds()));
+  mask->addRect(gfx::RectToSkRect(
+      GetBubbleFrameView()->GetContentsBounds()));
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
@@ -505,8 +475,8 @@ void AppListView::Layout() {
     gfx::Rect speech_bounds = centered_bounds;
     int preferred_height = speech_view_->GetPreferredSize().height();
     speech_bounds.Inset(kSpeechUIMargin, kSpeechUIMargin);
-    speech_bounds.set_height(
-        std::min(speech_bounds.height(), preferred_height));
+    speech_bounds.set_height(std::min(speech_bounds.height(),
+                                      preferred_height));
     speech_bounds.Inset(-speech_view_->GetInsets());
     speech_view_->SetBoundsRect(speech_bounds);
   }
@@ -552,7 +522,8 @@ void AppListView::OnSpeechRecognitionStateChanged(
 
   animation_observer_->set_frame(GetBubbleFrameView());
   gfx::Transform speech_transform;
-  speech_transform.Translate(0, SkFloatToMScalar(kSpeechUIAppearingPosition));
+  speech_transform.Translate(
+      0, SkFloatToMScalar(kSpeechUIAppearingPosition));
   if (will_appear)
     speech_view_->layer()->SetTransform(speech_transform);
 
