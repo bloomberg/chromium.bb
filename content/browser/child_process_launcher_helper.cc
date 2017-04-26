@@ -104,27 +104,30 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
   AfterLaunchOnLauncherThread(process, options);
 
   if (is_synchronous_launch) {
-    PostLaunchOnLauncherThread(std::move(process), launch_result);
+    PostLaunchOnLauncherThread(std::move(process), launch_result, false);
   }
 }
 
 void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     ChildProcessLauncherHelper::Process process,
-    int launch_result) {
+    int launch_result,
+    bool post_launch_on_client_thread_called) {
   // Release the client handle now that the process has been started (the pipe
   // may not signal when the process dies otherwise and we would not detect the
   // child process died).
   mojo_client_handle_.reset();
 
   if (process.process.IsValid()) {
-    RecordHistogramsOnLauncherThread(base::TimeTicks::Now() -
-                                     begin_launch_time_);
+    RecordHistogramsOnLauncherThread(
+        base::TimeTicks::Now() - begin_launch_time_);
   }
 
-  BrowserThread::PostTask(
-      client_thread_id_, FROM_HERE,
-      base::Bind(&ChildProcessLauncherHelper::PostLaunchOnClientThread, this,
-                 base::Passed(&process), launch_result));
+  if (!post_launch_on_client_thread_called) {
+    BrowserThread::PostTask(
+        client_thread_id_, FROM_HERE,
+        base::Bind(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
+            this, base::Passed(&process), launch_result));
+  }
 }
 
 void ChildProcessLauncherHelper::PostLaunchOnClientThread(
