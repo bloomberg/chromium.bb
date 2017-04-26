@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon_menu.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -193,8 +193,10 @@ AppIndicatorIcon::~AppIndicatorIcon() {
   if (icon_) {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
     g_object_unref(icon_);
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::BindOnce(&DeleteTempDirectory, temp_dir_));
+    base::PostTaskWithTraits(FROM_HERE,
+                             base::TaskTraits().MayBlock().WithPriority(
+                                 base::TaskPriority::BACKGROUND),
+                             base::BindOnce(&DeleteTempDirectory, temp_dir_));
   }
 }
 
@@ -214,21 +216,23 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
   // another thread.
   SkBitmap safe_bitmap = *image.bitmap();
 
-  scoped_refptr<base::TaskRunner> task_runner =
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  const base::TaskTraits kTraits =
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::USER_VISIBLE)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN);
+
   if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
       desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
-    base::PostTaskAndReplyWithResult(
-        task_runner.get(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, kTraits,
         base::Bind(AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread,
                    safe_bitmap, temp_dir_),
         base::Bind(&AppIndicatorIcon::SetImageFromFile,
                    weak_factory_.GetWeakPtr()));
   } else {
-    base::PostTaskAndReplyWithResult(
-        task_runner.get(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, kTraits,
         base::Bind(AppIndicatorIcon::WriteUnityTempImageOnWorkerThread,
                    safe_bitmap, icon_change_count_, id_),
         base::Bind(&AppIndicatorIcon::SetImageFromFile,
@@ -361,8 +365,10 @@ void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
   }
 
   if (temp_dir_ != params.parent_temp_dir) {
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::BindOnce(&DeleteTempDirectory, temp_dir_));
+    base::PostTaskWithTraits(FROM_HERE,
+                             base::TaskTraits().MayBlock().WithPriority(
+                                 base::TaskPriority::BACKGROUND),
+                             base::BindOnce(&DeleteTempDirectory, temp_dir_));
     temp_dir_ = params.parent_temp_dir;
   }
 }
