@@ -82,12 +82,9 @@ class TokenPreloadScanner {
   USING_FAST_MALLOC(TokenPreloadScanner);
 
  public:
-  enum class ScannerType { kMainDocument, kInsertion };
-
   TokenPreloadScanner(const KURL& document_url,
                       std::unique_ptr<CachedDocumentParameters>,
-                      const MediaValuesCached::MediaValuesCachedData&,
-                      const ScannerType);
+                      const MediaValuesCached::MediaValuesCachedData&);
   ~TokenPreloadScanner();
 
   void Scan(const HTMLToken&,
@@ -165,7 +162,6 @@ class TokenPreloadScanner {
   std::unique_ptr<CachedDocumentParameters> document_parameters_;
   Persistent<MediaValuesCached> media_values_;
   ClientHintsPreferences client_hints_preferences_;
-  ScannerType scanner_type_;
 
   bool did_rewind_ = false;
 
@@ -181,11 +177,11 @@ class CORE_EXPORT HTMLPreloadScanner {
       const HTMLParserOptions& options,
       const KURL& document_url,
       std::unique_ptr<CachedDocumentParameters> document_parameters,
-      const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
-      const TokenPreloadScanner::ScannerType scanner_type) {
+      const MediaValuesCached::MediaValuesCachedData&
+          media_values_cached_data) {
     return WTF::WrapUnique(new HTMLPreloadScanner(
         options, document_url, std::move(document_parameters),
-        media_values_cached_data, scanner_type));
+        media_values_cached_data));
   }
 
   ~HTMLPreloadScanner();
@@ -198,8 +194,7 @@ class CORE_EXPORT HTMLPreloadScanner {
   HTMLPreloadScanner(const HTMLParserOptions&,
                      const KURL& document_url,
                      std::unique_ptr<CachedDocumentParameters>,
-                     const MediaValuesCached::MediaValuesCachedData&,
-                     const TokenPreloadScanner::ScannerType);
+                     const MediaValuesCached::MediaValuesCachedData&);
 
   TokenPreloadScanner scanner_;
   SegmentedString source_;

@@ -98,9 +98,6 @@ class CORE_EXPORT PreloadRequest {
   const IntegrityMetadataSet& IntegrityMetadata() const {
     return integrity_metadata_;
   }
-  void SetFromInsertionScanner(const bool from_insertion_scanner) {
-    from_insertion_scanner_ = from_insertion_scanner;
-  }
 
  private:
   PreloadRequest(const String& initiator_name,
@@ -125,8 +122,7 @@ class CORE_EXPORT PreloadRequest {
         client_hints_preferences_(client_hints_preferences),
         request_type_(request_type),
         referrer_policy_(referrer_policy),
-        referrer_source_(referrer_source),
-        from_insertion_scanner_(false) {}
+        referrer_source_(referrer_source) {}
 
   KURL CompleteURL(Document*);
 
@@ -146,7 +142,6 @@ class CORE_EXPORT PreloadRequest {
   ReferrerPolicy referrer_policy_;
   ReferrerSource referrer_source_;
   IntegrityMetadataSet integrity_metadata_;
-  bool from_insertion_scanner_;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;

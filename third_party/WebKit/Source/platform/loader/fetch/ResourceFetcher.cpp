@@ -158,7 +158,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     const ResourceRequest& resource_request,
     ResourcePriority::VisibilityStatus visibility,
     FetchParameters::DeferOption defer_option,
-    FetchParameters::SpeculativePreloadType speculative_preload_type,
+    bool is_speculative_preload,
     bool is_link_preload) {
   ResourceLoadPriority priority = TypeToPriority(type);
 
@@ -189,9 +189,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     // Preload late in document: Medium
     if (FetchParameters::kLazyLoad == defer_option) {
       priority = kResourceLoadPriorityLow;
-    } else if (speculative_preload_type ==
-                   FetchParameters::SpeculativePreloadType::kInDocument &&
-               image_fetched_) {
+    } else if (is_speculative_preload && image_fetched_) {
       // Speculative preload is used as a signal for scripts at the bottom of
       // the document.
       priority = kResourceLoadPriorityMedium;
@@ -517,7 +515,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   resource_request.SetPriority(ComputeLoadPriority(
       factory.GetType(), params.GetResourceRequest(),
       ResourcePriority::kNotVisible, params.Defer(),
-      params.GetSpeculativePreloadType(), params.IsLinkPreload()));
+      params.IsSpeculativePreload(), params.IsLinkPreload()));
   InitializeResourceRequest(resource_request, factory.GetType(),
                             params.Defer());
   network_instrumentation::resourcePrioritySet(identifier,
