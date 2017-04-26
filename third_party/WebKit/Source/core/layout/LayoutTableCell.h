@@ -349,6 +349,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
                             const LayoutRect& container_rect) const override;
 
  private:
+  friend class LayoutTableCellTest;
+
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableCell || LayoutBlockFlow::IsOfType(type);
   }
@@ -381,6 +383,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     SetIntrinsicPaddingAfter(after);
   }
 
+  inline bool IsInStartColumn() const;
+  inline bool IsInEndColumn() const;
   bool HasStartBorderAdjoiningTable() const;
   bool HasEndBorderAdjoiningTable() const;
 
