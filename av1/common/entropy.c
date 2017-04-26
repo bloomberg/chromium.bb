@@ -135,7 +135,7 @@ const aom_prob av1_cat6_prob[] = {
 };
 
 const uint16_t band_count_table[TX_SIZES_ALL][8] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   { 1, 2, 2, 3, 0, 0, 0 },
 #endif
   { 1, 2, 3, 4, 3, 16 - 13, 0 },    { 1, 2, 3, 4, 11, 64 - 21, 0 },
@@ -151,7 +151,7 @@ const uint16_t band_count_table[TX_SIZES_ALL][8] = {
 };
 
 const uint16_t band_cum_count_table[TX_SIZES_ALL][8] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   { 0, 1, 3, 6, 10, 13, 16, 0 },
 #endif
   { 0, 1, 3, 6, 10, 13, 16, 0 },   { 0, 1, 3, 6, 10, 21, 64, 0 },
@@ -896,7 +896,7 @@ const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS][TAIL_NODES] = {
 const av1_coeff_probs_model
 default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
     {  // Q_Index 0
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
         {  // TX_SIZE 0
             {  // Y plane
                 {  // Intra
@@ -1562,7 +1562,7 @@ default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
 #endif  // CONFIG_TX64X64
     },
     {  // Q_Index 1
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
         {  // TX_SIZE 0
             {  // Y plane
                 {  // Intra
@@ -2228,7 +2228,7 @@ default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
 #endif  // CONFIG_TX64X64
     },
     {  // Q_Index 2
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
         {  // TX_SIZE 0
             {  // Y plane
                 {  // Intra
@@ -2894,7 +2894,7 @@ default_qctx_coef_probs[QCTX_BINS][TX_SIZES][PLANE_TYPES] = {
 #endif  // CONFIG_TX64X64
     },
     {  // Q_Index 3
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
         {  // TX_SIZE 0
             {  // Y plane
                 {  // Intra
@@ -4075,7 +4075,7 @@ static const av1_coeff_probs_model default_coef_probs_64x64[PLANE_TYPES] = {
 #endif  // CONFIG_Q_ADAPT_PROBS
 static const aom_prob av1_default_blockzero_probs[TX_SIZES][PLANE_TYPES]
                                            [REF_TYPES][BLOCKZ_CONTEXTS] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   { // TX_2x2
     { // Y plane
       { 195, 84, 8, },  // Intra
@@ -5448,7 +5448,7 @@ static void av1_default_coef_cdfs(FRAME_CONTEXT *fc) {
     for (j = 0; j < REF_TYPES; ++j)
       for (k = 0; k < COEF_BANDS; ++k)
         for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
           av1_copy(fc->coef_head_cdfs[TX_2X2][i][j][k][l],
                    default_coef_head_cdf_4x4[i][j][k][l]);
 #endif
@@ -5500,7 +5500,7 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
       ROUND_POWER_OF_TWO(cm->base_qindex, 8 - QCTX_BIN_BITS), QCTX_BINS - 1);
   av1_copy(cm->fc->coef_probs, default_qctx_coef_probs[index]);
 #else
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   av1_copy(cm->fc->coef_probs[TX_2X2], default_coef_probs_4x4);
 #endif
   av1_copy(cm->fc->coef_probs[TX_4X4], default_coef_probs_4x4);

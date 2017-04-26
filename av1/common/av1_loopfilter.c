@@ -42,7 +42,7 @@
 //
 // A loopfilter should be applied to every other 8x8 horizontally.
 static const uint64_t left_64x64_txform_mask[TX_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   0xffffffffffffffffULL,  // TX_2X2
 #endif
   0xffffffffffffffffULL,  // TX_4X4
@@ -72,7 +72,7 @@ static const uint64_t left_64x64_txform_mask[TX_SIZES] = {
 //
 // A loopfilter should be applied to every other 4 the row vertically.
 static const uint64_t above_64x64_txform_mask[TX_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   0xffffffffffffffffULL,  // TX_4X4
 #endif
   0xffffffffffffffffULL,  // TX_4X4
@@ -171,7 +171,7 @@ static const uint64_t above_border = 0x000000ff000000ffULL;
 
 // 16 bit masks for uv transform sizes.
 static const uint16_t left_64x64_txform_mask_uv[TX_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   0xffff,  // TX_2X2
 #endif
   0xffff,  // TX_4X4
@@ -184,7 +184,7 @@ static const uint16_t left_64x64_txform_mask_uv[TX_SIZES] = {
 };
 
 static const uint16_t above_64x64_txform_mask_uv[TX_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   0xffff,  // TX_2X2
 #endif
   0xffff,  // TX_4X4
@@ -1918,7 +1918,7 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
 
 static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
   {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       2 - 1,  // TX_2X2
 #endif
       4 - 1,   // TX_4X4
@@ -1940,7 +1940,7 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       32 - 1   // TX_32X8
   },
   {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       2 - 1,  // TX_2X2
 #endif
       4 - 1,   // TX_4X4

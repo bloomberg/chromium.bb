@@ -799,7 +799,7 @@ static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
     {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       { 1, 1, 1, 1, 1 },  // unused
       { 0, 1, 1, 0, 0 },
       { 0, 0, 0, 1, 0 },
@@ -807,12 +807,12 @@ static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
       { 1, 1, 1, 1 },  // unused
       { 1, 1, 0, 0 },
       { 0, 0, 1, 0 },
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_2X2
     };
 
 static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
     {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       { 1, 1, 1, 1, 1 },  // unused
       { 0, 1, 1, 0, 0 },
       { 0, 0, 0, 1, 0 },
@@ -822,7 +822,7 @@ static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
       { 1, 1, 0, 0 },
       { 0, 0, 1, 0 },
       { 0, 0, 0, 1 },
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_2X2
     };
 
 // Transform types used in each intra set
@@ -1055,7 +1055,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 
     if (is_inter_block(mbmi)) {
 // UV Inter only
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       if (tx_size < TX_4X4) return DCT_DCT;
 #endif
       return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
@@ -1066,11 +1066,13 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 
 #if CONFIG_CB4X4
   (void)block;
+#if CONFIG_CHROMA_2X2
   if (tx_size < TX_4X4)
     return DCT_DCT;
   else
+#endif
     return intra_mode_to_tx_type_context[mbmi->uv_mode];
-#else
+#else   // CONFIG_CB4X4
 
   // Sub8x8-Inter/Intra OR UV-Intra
   if (is_inter_block(mbmi))  // Sub8x8-Inter
@@ -1114,7 +1116,7 @@ static INLINE TX_SIZE depth_to_tx_size(int depth) {
 static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
                                      const struct macroblockd_plane *pd) {
   TX_SIZE uv_txsize;
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   assert(mbmi->tx_size > TX_2X2);
 #endif
 
@@ -1126,9 +1128,6 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
 
   uv_txsize = uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
                               [pd->subsampling_y];
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
-  uv_txsize = AOMMAX(uv_txsize, TX_4X4);
-#endif
   assert(uv_txsize != TX_INVALID);
   return uv_txsize;
 }

@@ -1295,7 +1295,7 @@ static void idct64x64_add(const tran_low_t *input, uint8_t *dest, int stride,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 static void inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, TX_TYPE tx_type, int lossless) {
   tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
@@ -2465,7 +2465,7 @@ void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_highbd_iwht4x4_1_add(input, dest, stride, bd);
 }
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 static void highbd_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest,
                                     int stride, int eob, int bd,
                                     TX_TYPE tx_type, int lossless) {
@@ -2778,7 +2778,7 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       inv_txfm_add_4x4(input, dest, stride, eob, tx_type, lossless);
       break;
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2:
       inv_txfm_add_2x2(input, dest, stride, eob, tx_type, lossless);
       break;
@@ -2908,7 +2908,7 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       av1_highbd_inv_txfm_add_4x4(input, dest, stride, eob, bd, tx_type,
                                   lossless);
       break;
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2:
       highbd_inv_txfm_add_2x2(input, dest, stride, eob, bd, tx_type, lossless);
       break;

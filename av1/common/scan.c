@@ -14,7 +14,7 @@
 #include "av1/common/common_data.h"
 #include "av1/common/scan.h"
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 DECLARE_ALIGNED(16, static const int16_t, default_scan_2x2[4]) = {
   0, 1, 2, 3,
 };
@@ -1491,7 +1491,7 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_64x64[4096]) = {
 };
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 DECLARE_ALIGNED(16, static const int16_t,
                 default_scan_2x2_neighbors[5 * MAX_NEIGHBORS]) = {
   0, 0, 0, 0, 0, 1, 1, 2, 0, 0,
@@ -4249,7 +4249,7 @@ DECLARE_ALIGNED(16, static const int16_t,
 };
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_2x2[4]) = { 0, 1, 2,
                                                                         3 };
 #endif
@@ -5719,7 +5719,7 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_64x64[4096]) = {
 #endif  // CONFIG_TX64X64
 
 const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
 #endif
   { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -5732,7 +5732,7 @@ const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
 };
 
 const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   {
       // TX_2X2
       { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
@@ -6043,7 +6043,7 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 };
 
 const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   {
       // TX_2X2
       { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
@@ -6493,7 +6493,7 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                    TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2: return fc->non_zero_prob_2x2[tx_type];
 #endif
     case TX_4X4: return fc->non_zero_prob_4X4[tx_type];
@@ -6515,7 +6515,7 @@ static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2: return fc->scan_2x2[tx_type];
 #endif
     case TX_4X4: return fc->scan_4X4[tx_type];
@@ -6537,7 +6537,7 @@ static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                 TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2: return fc->iscan_2x2[tx_type];
 #endif
     case TX_4X4: return fc->iscan_4X4[tx_type];
@@ -6559,7 +6559,7 @@ static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                              TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2: return fc->nb_2x2[tx_type];
 #endif
     case TX_4X4: return fc->nb_4X4[tx_type];
@@ -6581,7 +6581,7 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                                      TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
     case TX_2X2: return counts->non_zero_count_2x2[tx_type];
 #endif
     case TX_4X4: return counts->non_zero_count_4X4[tx_type];

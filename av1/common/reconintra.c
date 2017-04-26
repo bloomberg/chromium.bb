@@ -580,7 +580,7 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_32X32] = aom_##type##_predictor_32x32
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
 #define INIT_ALL_SIZES(p, type)           \
   p[TX_2X2] = aom_##type##_predictor_2x2; \
   p[TX_4X4] = aom_##type##_predictor_4x4; \
@@ -1214,7 +1214,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
 #if CONFIG_FILTER_INTRA
 #if USE_3TAP_INTRA_FILTER
 static int filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   {
       { 697, 836, -509 },
       { 993, 513, -482 },
@@ -1293,7 +1293,7 @@ static int filter_intra_taps_3[TX_SIZES][FILTER_INTRA_MODES][3] = {
 };
 #else
 static int filter_intra_taps_4[TX_SIZES][FILTER_INTRA_MODES][4] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   {
       { 735, 881, -537, -54 },
       { 1005, 519, -488, -11 },

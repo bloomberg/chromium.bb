@@ -2523,9 +2523,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         av1_write_coeffs_mb(cm, x, w, plane);
 #else
         TX_SIZE tx = get_tx_size(plane, xd);
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
-        tx = AOMMAX(TX_4X4, tx);
-#endif
         const int bkw = tx_size_wide_unit[tx];
         const int bkh = tx_size_high_unit[tx];
         for (row = 0; row < num_4x4_h; row += bkh) {

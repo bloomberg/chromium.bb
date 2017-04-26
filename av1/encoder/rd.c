@@ -558,7 +558,7 @@ static void get_entropy_contexts_plane(
 
   int i;
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   switch (tx_size) {
     case TX_2X2:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
@@ -674,7 +674,7 @@ static void get_entropy_contexts_plane(
     default: assert(0 && "Invalid transform size."); break;
   }
   return;
-#endif
+#endif  // CONFIG_CHROMA_2X2
 
   switch (tx_size) {
     case TX_4X4:

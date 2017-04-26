@@ -125,7 +125,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
   // TODO(debargha): Does TX_64X64 require an additional extrabit?
   if (tx_size > TX_32X32) tx_size = TX_32X32;
 #endif
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   int tx_offset = (tx_size < TX_4X4) ? 0 : (int)(tx_size - TX_4X4);
 #else
   int tx_offset = (int)(tx_size - TX_4X4);
@@ -263,7 +263,7 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                                       const ENTROPY_CONTEXT *l) {
   ENTROPY_CONTEXT above_ec = 0, left_ec = 0;
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
   switch (tx_size) {
     case TX_2X2:
       above_ec = a[0] != 0;
@@ -338,7 +338,7 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
     default: assert(0 && "Invalid transform size."); break;
   }
   return combine_entropy_contexts(above_ec, left_ec);
-#endif
+#endif  // CONFIG_CHROMA_2X2
 
   switch (tx_size) {
     case TX_4X4:
