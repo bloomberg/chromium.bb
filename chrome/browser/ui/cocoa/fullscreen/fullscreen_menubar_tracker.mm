@@ -6,9 +6,11 @@
 
 #include <Carbon/Carbon.h>
 
+#include "base/mac/mac_util.h"
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "ui/base/cocoa/appkit_utils.h"
 
 namespace {
@@ -136,8 +138,23 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   else if (progress > menubarFraction_)
     state_ = FullscreenMenubarState::SHOWING;
 
-  menubarFraction_ = progress;
+  // In 10.12. the toolbar to be janky since the UI doesn't update until the
+  // menubar finished revealing itself. To smooth things out, animate the
+  // toolbar in/out by locking/releasing its visibility instead of relying on
+  // the menubar fraction.
+  // TODO(spqchan): Figure out why it's not updating and make the toolbar drop
+  // down in sync with the menubar. See crbug.com/672254.
+  if (base::mac::IsOS10_12()) {
+    if (state_ == FullscreenMenubarState::SHOWING) {
+      [[owner_ visibilityLockController] lockToolbarVisibilityForOwner:self
+                                                         withAnimation:YES];
+    } else if (state_ == FullscreenMenubarState::HIDING) {
+      [[owner_ visibilityLockController] releaseToolbarVisibilityForOwner:self
+                                                            withAnimation:YES];
+    }
+  }
 
+  menubarFraction_ = progress;
   [owner_ updateToolbarLayout];
 }
 
@@ -149,6 +166,8 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (void)activeSpaceDidChange:(NSNotification*)notification {
   menubarFraction_ = 0.0;
   state_ = FullscreenMenubarState::HIDDEN;
+  [[owner_ visibilityLockController] releaseToolbarVisibilityForOwner:self
+                                                        withAnimation:NO];
   [owner_ updateToolbarLayout];
 }
 
