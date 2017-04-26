@@ -401,7 +401,7 @@ LayoutSize LayoutTableCell::OffsetFromContainer(const LayoutObject* o) const {
 
   LayoutSize offset = LayoutBlockFlow::OffsetFromContainer(o);
   if (Parent())
-    offset -= ParentBox()->LocationOffset();
+    offset -= ParentBox()->PhysicalLocationOffset();
 
   return offset;
 }
