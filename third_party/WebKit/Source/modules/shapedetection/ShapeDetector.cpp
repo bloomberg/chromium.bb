@@ -116,19 +116,13 @@ ScriptPromise ShapeDetector::detect(
   uint8_t* pixel_data_ptr = nullptr;
   WTF::CheckedNumeric<int> allocation_size = 0;
 
-  sk_sp<SkImage> sk_image = image->ImageForCurrentFrame();
-  // Use |skImage|'s pixels if it has direct access to them.
-  if (sk_image->peekPixels(&pixmap)) {
+  // makeNonTextureImage() will make a raster copy of ImageForCurrentFrame() if
+  // needed, otherwise returning the original SkImage.
+  const sk_sp<SkImage> sk_image =
+      image->ImageForCurrentFrame()->makeNonTextureImage();
+  if (sk_image && sk_image->peekPixels(&pixmap)) {
     pixel_data_ptr = static_cast<uint8_t*>(pixmap.writable_addr());
     allocation_size = pixmap.getSafeSize();
-  } else if (image_source.isImageBitmap()) {
-    ImageBitmap* image_bitmap = image_source.getAsImageBitmap();
-    pixel_data = image_bitmap->CopyBitmapData(image_bitmap->IsPremultiplied()
-                                                  ? kPremultiplyAlpha
-                                                  : kDontPremultiplyAlpha,
-                                              kN32ColorType);
-    pixel_data_ptr = pixel_data->Data();
-    allocation_size = image_bitmap->Size().Area() * 4 /* bytes per pixel */;
   } else {
     // TODO(mcasas): retrieve the pixels from elsewhere.
     NOTREACHED();
