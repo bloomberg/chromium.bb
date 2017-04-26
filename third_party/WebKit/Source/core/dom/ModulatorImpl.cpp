@@ -138,6 +138,48 @@ inline ExecutionContext* ModulatorImpl::GetExecutionContext() const {
   return ExecutionContext::From(script_state_.Get());
 }
 
+void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
+  // https://html.spec.whatwg.org/#run-a-module-script
+
+  // 1. "Let settings be the settings object of s."
+  // The settings object is |this|.
+
+  // 2. "Check if we can run script with settings.
+  //     If this returns "do not run" then abort these steps."
+  if (!GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript))
+    return;
+
+  // 6. "Prepare to run script given settings."
+  // This is placed here to also cover ScriptModule::ReportException().
+  ScriptState::Scope scope(script_state_.Get());
+
+  // 3. "If s's instantiation state is "errored", then report the exception
+  //     given by s's instantiation error for s and abort these steps."
+  ModuleInstantiationState instantiationState =
+      module_script->InstantiationState();
+  if (instantiationState == ModuleInstantiationState::kErrored) {
+    v8::Isolate* isolate = script_state_->GetIsolate();
+    ScriptModule::ReportException(
+        script_state_.Get(), module_script->CreateInstantiationError(isolate),
+        module_script->BaseURL().GetString());
+    return;
+  }
+
+  // 4. "Assert: s's instantiation state is "instantiated" (and thus its
+  //     module record is not null)."
+  CHECK_EQ(instantiationState, ModuleInstantiationState::kInstantiated);
+
+  // 5. "Let record be s's module record."
+  const ScriptModule& record = module_script->Record();
+  CHECK(!record.IsNull());
+
+  // Steps 7 and 8.
+  record.Evaluate(script_state_.Get());
+
+  // 9. "Clean up after running script with settings."
+  // Implemented as the ScriptState::Scope destructor.
+}
+
 DEFINE_TRACE(ModulatorImpl) {
   Modulator::Trace(visitor);
   visitor->Trace(fetcher_);

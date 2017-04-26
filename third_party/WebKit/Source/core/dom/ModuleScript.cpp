@@ -58,8 +58,7 @@ bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
 }
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
-  // TODO(hiroshige): Implement this once Modulator::ExecuteModule() is landed.
-  NOTREACHED();
+  settings_object_->ExecuteModule(this);
 }
 
 String ModuleScript::InlineSourceTextForCSP() const {

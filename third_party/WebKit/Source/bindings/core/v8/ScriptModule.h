@@ -40,7 +40,11 @@ class CORE_EXPORT ScriptModule final {
 
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
+
   void Evaluate(ScriptState*) const;
+  static void ReportException(ScriptState*,
+                              v8::Local<v8::Value> exception,
+                              const String& file_name);
 
   Vector<String> ModuleRequests(ScriptState*);
 

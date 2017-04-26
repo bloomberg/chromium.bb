@@ -104,6 +104,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual Vector<String> ModuleRequestsFromScriptModule(ScriptModule) = 0;
 
+  virtual void ExecuteModule(const ModuleScript*) = 0;
+
  private:
   friend class ModuleMap;
 

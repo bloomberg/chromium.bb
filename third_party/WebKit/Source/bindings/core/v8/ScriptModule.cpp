@@ -75,6 +75,17 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
   }
 }
 
+void ScriptModule::ReportException(ScriptState* script_state,
+                                   v8::Local<v8::Value> exception,
+                                   const String& file_name) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
+
+  V8ScriptRunner::ReportExceptionForModule(isolate, exception, file_name);
+}
+
 Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {
   if (IsNull())
     return Vector<String>();
