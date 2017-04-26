@@ -55,7 +55,6 @@ class HTMLParserScriptRunner final
       private PendingScriptClient {
   WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
-  USING_PRE_FINALIZER(HTMLParserScriptRunner, Detach);
 
  public:
   static HTMLParserScriptRunner* Create(HTMLParserReentryPermit* reentry_permit,
@@ -65,8 +64,10 @@ class HTMLParserScriptRunner final
   }
   ~HTMLParserScriptRunner();
 
-  // Prepares this object to be destroyed. Invoked when the parser is detached,
-  // or failing that, as a pre-finalizer.
+  // Invoked when the parser is detached.
+  //
+  // We don't need to call Detach() as a prefinalizer, because PendingScripts
+  // are Dispose()d in PendingScripts' prefinalizers.
   void Detach();
 
   // Processes the passed in script and any pending scripts if possible.
