@@ -105,6 +105,35 @@ TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
   ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
 }
 
+TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
+  // The bug reproduces only with RLS off. When RLS ships we can keep the test
+  // but remove this setting.
+  ScopedRootLayerScrollingForTest turn_off_root_layer_scrolling(false);
+
+  // This test is specifically checking the behavior when overlay scrollbars
+  // are enabled.
+  DCHECK(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
+
+  WebView().Resize(WebSize(800, 600));
+  WebView().SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  body{"
+      "    height: 300%;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+
+  ScrollableArea* layout_viewport =
+      GetDocument().View()->LayoutViewportScrollableArea();
+
+  EXPECT_EQ(kScrollbarOverlayColorThemeDark,
+            layout_viewport->GetScrollbarOverlayColorTheme());
+}
+
 typedef bool TestParamOverlayScrollbar;
 class ScrollbarAppearanceTest
     : public SimTest,
