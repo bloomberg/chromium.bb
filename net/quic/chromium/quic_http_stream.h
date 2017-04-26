@@ -159,7 +159,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   QuicVersion quic_version_;
   int session_error_;             // Error code from the connection shutdown.
   bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
-  QuicChromiumClientSession::StreamRequest stream_request_;
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request_;
   QuicChromiumClientStream* stream_;  // Non-owning.
 
   // The following three fields are all owned by the caller and must

@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
   base::WeakPtr<QuicChromiumClientSession> session_;
   bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
-  QuicChromiumClientSession::StreamRequest stream_request_;
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request_;
   QuicChromiumClientStream* stream_;  // Non-owning.
 
   const BidirectionalStreamRequestInfo* request_info_;
