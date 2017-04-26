@@ -653,6 +653,9 @@ void BrowserPluginGuest::DidFinishNavigation(
 }
 
 void BrowserPluginGuest::RenderViewReady() {
+  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
+    return;
+
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://crbug.com/158151).
