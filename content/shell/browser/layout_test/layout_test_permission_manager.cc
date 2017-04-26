@@ -88,7 +88,8 @@ int LayoutTestPermissionManager::RequestPermissions(
         void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<blink::mojom::PermissionStatus> result(permissions.size());
+  std::vector<blink::mojom::PermissionStatus> result;
+  result.reserve(permissions.size());
   const GURL& embedding_origin =
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL().GetOrigin();
