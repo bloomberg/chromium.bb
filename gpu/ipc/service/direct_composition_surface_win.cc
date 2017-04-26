@@ -829,11 +829,19 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
     base::win::ScopedComPtr<IDXGIOutput> output;
     if (FAILED(dxgi_adapter->EnumOutputs(i++, output.Receive())))
       break;
-    base::win::ScopedComPtr<IDXGIOutput2> output2;
-    if (FAILED(output.QueryInterface(output2.Receive())))
-      return false;
+    base::win::ScopedComPtr<IDXGIOutput3> output3;
+    if (FAILED(output.QueryInterface(output3.Receive())))
+      continue;
 
-    if (output2->SupportsOverlays())
+    UINT flags = 0;
+    if (FAILED(output3->CheckOverlaySupport(DXGI_FORMAT_YUY2,
+                                            d3d11_device.Get(), &flags)))
+      continue;
+
+    // Direct-only support might be ok in some circumstances, but since the
+    // overlay processor isn't set up to try to distinguish, only try to use
+    // overlays when scaling's enabled.
+    if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
       return true;
   }
   return false;
