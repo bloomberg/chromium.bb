@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
-  OmniboxView* omnibox_view = NULL;
+  OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   OmniboxViewViews* omnibox_view_views =
       static_cast<OmniboxViewViews*>(omnibox_view);
@@ -311,13 +311,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
       omnibox_view->model()->popup_model()->autocomplete_controller();
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
-  AutocompleteMatch match;
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  match.contents = base::ASCIIToUTF16("http://autocomplete-result/");
+  match.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::URL));
   match.destination_url = GURL("http://autocomplete-result/");
   match.allowed_to_be_default_match = true;
-  match.type = AutocompleteMatchType::HISTORY_TITLE;
-  match.relevance = 500;
-  matches.push_back(match);
-  match.destination_url = GURL("http://autocomplete-result2/");
   matches.push_back(match);
   const AutocompleteInput input(
       base::ASCIIToUTF16("a"), base::string16::npos, std::string(), GURL(),
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Simulate a mouse click before dragging the mouse.
-  gfx::Point point(omnibox_view_views->x(), omnibox_view_views->y());
+  gfx::Point point(omnibox_view_views->origin());
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
@@ -348,6 +348,59 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   omnibox_view_views->OnMouseDragged(dragged);
 
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+
+  // Populate suggestions for the omnibox popup.
+  AutocompleteController* autocomplete_controller =
+      omnibox_view->model()->popup_model()->autocomplete_controller();
+  AutocompleteResult& results = autocomplete_controller->result_;
+  ACMatches matches;
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  match.contents = base::ASCIIToUTF16("http://autocomplete-result/");
+  match.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::URL));
+  match.destination_url = GURL("http://autocomplete-result/");
+  match.allowed_to_be_default_match = true;
+  matches.push_back(match);
+  const AutocompleteInput input(
+      base::ASCIIToUTF16("autocomplete-result"), 19, "autocomplete-result",
+      GURL("http://autocomplete-result/"),
+      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
+      TestSchemeClassifier());
+  results.AppendMatches(input, matches);
+  results.SortAndCull(
+      input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+
+  // The omnibox popup should open with suggestions displayed.
+  omnibox_view->model()->popup_model()->OnResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+
+  // TODO(krb): For some reason, we need to hit End twice to be registered.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_END, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_END, false,
+                                              false, false, false));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+
+  // Save cursor position, before blur.
+  size_t prev_start, end;
+  omnibox_view->GetSelectionBounds(&prev_start, &end);
+
+  chrome::FocusAppMenu(browser());
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+
+  // Re-focus.
+  chrome::FocusLocationBar(browser());
+
+  // Make sure cursor is restored.
+  size_t start;
+  omnibox_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(prev_start, start);
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackgroundIsOpaque) {
