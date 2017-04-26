@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import tempfile
 
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderLinux
 from webkitpy.layout_tests.port import base
@@ -69,6 +70,8 @@ class LinuxPort(base.Port):
         self._original_home = None
         self._original_display = None
         self._xvfb_process = None
+        self._xvfb_stdout = None
+        self._xvfb_stderr = None
 
     def additional_driver_flag(self):
         flags = super(LinuxPort, self).additional_driver_flag()
@@ -155,9 +158,11 @@ class LinuxPort(base.Port):
             return
 
         _log.info('Starting Xvfb with display "%s".', display)
+        self._xvfb_stdout = tempfile.NamedTemporaryFile(delete=False)
+        self._xvfb_stderr = tempfile.NamedTemporaryFile(delete=False)
         self._xvfb_process = self.host.executive.popen(
             ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            stderr=self.host.executive.DEVNULL)
+            stdout=self._xvfb_stdout, stderr=self._xvfb_stderr)
 
         # By setting DISPLAY here, the individual worker processes will
         # get the right DISPLAY. Note, if this environment could be passed
@@ -169,6 +174,7 @@ class LinuxPort(base.Port):
         # https://docs.python.org/2/library/subprocess.html#subprocess.Popen.poll
         if self._xvfb_process.poll() is not None:
             _log.warn('Failed to start Xvfb on display "%s."', display)
+            self._stop_xvfb()
 
         start_time = self.host.time()
         while self.host.time() - start_time < self.XVFB_START_TIMEOUT:
@@ -197,11 +203,23 @@ class LinuxPort(base.Port):
     def _stop_xvfb(self):
         if self._original_display:
             self.host.environ['DISPLAY'] = self._original_display
-        if not self._xvfb_process:
-            return
-        _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
-        self._xvfb_process.kill()
-        self._xvfb_process.wait()
+        if self._xvfb_stdout:
+            self._xvfb_stdout.close()
+        if self._xvfb_stderr:
+            self._xvfb_stderr.close()
+        if self._xvfb_process:
+            _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
+            self._xvfb_process.kill()
+            self._xvfb_process.wait()
+        if self._xvfb_stdout and self.host.filesystem.exists(self._xvfb_stdout.name):
+            for line in self.host.filesystem.read_text_file(self._xvfb_stdout.name).splitlines():
+                _log.warn('Xvfb stdout:  %s', line)
+            self.host.filesystem.remove(self._xvfb_stdout.name)
+        if self._xvfb_stderr and self.host.filesystem.exists(self._xvfb_stderr.name):
+            for line in self.host.filesystem.read_text_file(self._xvfb_stderr.name).splitlines():
+                _log.warn('Xvfb stderr:  %s', line)
+            self.host.filesystem.remove(self._xvfb_stderr.name)
+
 
 
     def _path_to_driver(self, target=None):
