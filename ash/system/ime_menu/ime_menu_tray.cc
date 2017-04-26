@@ -11,7 +11,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"

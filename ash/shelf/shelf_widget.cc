@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"

@@ -11,7 +11,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tool_manager.h"

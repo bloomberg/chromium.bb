@@ -13,7 +13,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -188,10 +187,11 @@ class PanelCalloutWidget : public views::Widget {
     InitWidget(container);
   }
 
-  void SetAlignment(ShelfAlignment alignment) {
+  // Updates the bounds based on the shelf alignment.
+  void UpdateBounds(WmShelf* shelf) {
     WmWindow* window = WmWindow::Get(this->GetNativeWindow());
     gfx::Rect callout_bounds = window->GetBounds();
-    if (IsHorizontalAlignment(alignment)) {
+    if (shelf->IsHorizontalAlignment()) {
       callout_bounds.set_width(kArrowWidth);
       callout_bounds.set_height(kArrowHeight);
     } else {
@@ -204,8 +204,8 @@ class PanelCalloutWidget : public views::Widget {
     window->SetBounds(callout_bounds);
     // Setting the bounds should not trigger changing the parent.
     DCHECK_EQ(parent, window->GetParent());
-    if (background_->alignment() != alignment) {
-      background_->set_alignment(alignment);
+    if (background_->alignment() != shelf->alignment()) {
+      background_->set_alignment(shelf->alignment());
       SchedulePaintInRect(gfx::Rect(callout_bounds.size()));
     }
   }
@@ -623,7 +623,6 @@ void PanelLayoutManager::Relayout() {
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  const ShelfAlignment alignment = shelf_->GetAlignment();
   const bool horizontal = shelf_->IsHorizontalAlignment();
   gfx::Rect shelf_bounds = panel_container_->ConvertRectFromScreen(
       shelf_->GetWindow()->GetBoundsInScreen());
@@ -636,7 +635,7 @@ void PanelLayoutManager::Relayout() {
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     WmWindow* panel = iter->window;
-    iter->callout_widget->SetAlignment(alignment);
+    iter->callout_widget->UpdateBounds(shelf_);
 
     // Consider the dragged panel as part of the layout as long as it is
     // touching the shelf.
@@ -715,9 +714,9 @@ void PanelLayoutManager::Relayout() {
       continue;
     bool slide_in = visible_panels[i].slide_in;
     gfx::Rect bounds = visible_panels[i].window->GetTargetBounds();
-    if (alignment == SHELF_ALIGNMENT_LEFT)
+    if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
       bounds.set_x(shelf_bounds.right());
-    else if (alignment == SHELF_ALIGNMENT_RIGHT)
+    else if (shelf_->alignment() == SHELF_ALIGNMENT_RIGHT)
       bounds.set_x(shelf_bounds.x() - bounds.width());
     else
       bounds.set_y(shelf_bounds.y() - bounds.height());
@@ -736,7 +735,7 @@ void PanelLayoutManager::Relayout() {
       // New windows shift up from the shelf into position and fade in.
       layer->SetOpacity(0);
       gfx::Rect initial_bounds(bounds);
-      initial_bounds.Offset(GetSlideInAnimationOffset(alignment));
+      initial_bounds.Offset(GetSlideInAnimationOffset(shelf_->alignment()));
       visible_panels[i].window->SetBoundsDirect(initial_bounds);
       // Set on shelf so that the panel animates into its target position.
       on_shelf = true;

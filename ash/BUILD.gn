@@ -310,8 +310,6 @@ component("ash") {
     "shelf/wm_shelf.cc",
     "shelf/wm_shelf.h",
     "shelf/wm_shelf_observer.h",
-    "shelf/wm_shelf_util.cc",
-    "shelf/wm_shelf_util.h",
     "shell.cc",
     "shell.h",
     "shell_delegate.h",

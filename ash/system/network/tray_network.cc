@@ -4,7 +4,6 @@
 
 #include "ash/system/network/tray_network.h"
 
-#include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
