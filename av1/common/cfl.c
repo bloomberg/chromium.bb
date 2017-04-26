@@ -14,8 +14,7 @@
 
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
-void cfl_dc_pred(MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize,
-                 TX_SIZE tx_size) {
+void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
   const struct macroblockd_plane *const pd_cb = &xd->plane[AOM_PLANE_U];
   const struct macroblockd_plane *const pd_cr = &xd->plane[AOM_PLANE_V];
 
@@ -73,16 +72,15 @@ void cfl_dc_pred(MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize,
 
 // Predict the current transform block using CfL.
 // it is assumed that dst points at the start of the transform block
-void cfl_predict_block(uint8_t *const dst, int dst_stride, TX_SIZE tx_size,
+void cfl_predict_block(uint8_t *dst, int dst_stride, TX_SIZE tx_size,
                        int dc_pred) {
   const int tx_block_width = tx_size_wide[tx_size];
   const int tx_block_height = tx_size_high[tx_size];
 
-  int dst_row = 0;
   for (int j = 0; j < tx_block_height; j++) {
     for (int i = 0; i < tx_block_width; i++) {
-      dst[dst_row + i] = dc_pred;
+      dst[i] = dc_pred;
     }
-    dst_row += dst_stride;
+    dst += dst_stride;
   }
 }
