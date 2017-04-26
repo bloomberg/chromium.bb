@@ -114,10 +114,10 @@ std::string TextIteratorTest::IterateWithIterator(
     typename Tree::TextIteratorType& iterator) {
   String text_chunks;
   for (; !iterator.AtEnd(); iterator.Advance()) {
-    text_chunks.Append('[');
-    text_chunks.Append(
+    text_chunks.append('[');
+    text_chunks.append(
         iterator.GetText().Substring(0, iterator.GetText().length()));
-    text_chunks.Append(']');
+    text_chunks.append(']');
   }
   return std::string(text_chunks.Utf8().data());
 }

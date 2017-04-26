@@ -121,7 +121,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
 TEST(SerializedScriptValueTest, UserSelectedFile) {
   V8TestingScope scope;
   String file_path = testing::BlinkRootDir();
-  file_path.Append("/Source/bindings/core/v8/SerializedScriptValueTest.cpp");
+  file_path.append("/Source/bindings/core/v8/SerializedScriptValueTest.cpp");
   File* original_file = File::Create(file_path);
   ASSERT_TRUE(original_file->HasBackingFile());
   ASSERT_EQ(File::kIsUserVisible, original_file->GetUserVisibility());

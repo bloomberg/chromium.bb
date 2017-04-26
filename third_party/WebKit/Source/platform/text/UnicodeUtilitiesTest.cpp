@@ -112,20 +112,20 @@ TEST(UnicodeUtilitiesTest, ContainsKanaLetters) {
   // Non Kana symbols
   String non_kana_string;
   for (UChar character = 0; character < 0x3041; ++character)
-    non_kana_string.Append(character);
+    non_kana_string.append(character);
   EXPECT_FALSE(ContainsKanaLetters(non_kana_string));
 
   // Hiragana letters.
   for (UChar character = 0x3041; character <= 0x3096; ++character) {
     String str(non_kana_string);
-    str.Append(character);
+    str.append(character);
     EXPECT_TRUE(ContainsKanaLetters(str));
   }
 
   // Katakana letters.
   for (UChar character = 0x30A1; character <= 0x30FA; ++character) {
     String str(non_kana_string);
-    str.Append(character);
+    str.append(character);
     EXPECT_TRUE(ContainsKanaLetters(str));
   }
 }

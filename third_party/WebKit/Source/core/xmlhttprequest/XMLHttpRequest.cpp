@@ -916,10 +916,10 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
 
   String message = "Failed to load '" + url_.ElidedString() + "'";
   if (reason.IsNull()) {
-    message.Append('.');
+    message.append('.');
   } else {
-    message.Append(": ");
-    message.Append(reason);
+    message.append(": ");
+    message.append(reason);
   }
 
   exception_state.ThrowDOMException(exception_code_, message);

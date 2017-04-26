@@ -80,8 +80,8 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   EXPECT_TRUE(result);
 
   String expected_text("Hello ");
-  expected_text.Append(kObjectReplacementCharacter);
-  expected_text.Append(".");
+  expected_text.append(kObjectReplacementCharacter);
+  expected_text.append(".");
   EXPECT_EQ(expected_text, ToNGInlineNode(node->FirstChild())->Text(0, 8));
 
   // Delete the line box tree to avoid leaks in the test.

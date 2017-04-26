@@ -2222,7 +2222,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
                                (force_important ? " !important" : "") + ";";
     if (!style_text.IsEmpty() && !style_text.StripWhiteSpace().EndsWith(';'))
       new_property_text = ";" + new_property_text;
-    style_text.Append(new_property_text);
+    style_text.append(new_property_text);
     change_range.start = body_range.end;
     change_range.end = body_range.end + new_property_text.length();
   } else {

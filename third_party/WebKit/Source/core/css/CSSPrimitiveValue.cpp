@@ -525,7 +525,7 @@ static String FormatNumber(double number, const StringView& suffix) {
 #if OS(WIN) && _MSC_VER < 1900
   _set_output_format(oldFormat);
 #endif
-  result.Append(suffix);
+  result.append(suffix);
   return result;
 }
 

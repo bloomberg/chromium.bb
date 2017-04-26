@@ -136,7 +136,7 @@ static std::unique_ptr<protocol::Animation::KeyframeStyle>
 BuildObjectForStringKeyframe(const StringKeyframe* keyframe) {
   Decimal decimal = Decimal::FromDouble(keyframe->Offset() * 100);
   String offset = decimal.ToString();
-  offset.Append('%');
+  offset.append('%');
 
   std::unique_ptr<protocol::Animation::KeyframeStyle> keyframe_object =
       protocol::Animation::KeyframeStyle::create()
