@@ -41,6 +41,14 @@ class HEADLESS_EXPORT HeadlessWebContents {
     // TODO(altimin): Support this event for pages that aren't created by us.
     virtual void DevToolsTargetReady() {}
 
+    // Indicates that a DevTools client attached to this HeadlessWebContents
+    // instance.
+    virtual void DevToolsClientAttached() {}
+
+    // Indicates that a DevTools client detached from this HeadlessWebContents
+    // instance.
+    virtual void DevToolsClientDetached() {}
+
     // This method is invoked when the process of the observed RenderProcessHost
     // exits (either normally or with a crash). To determine if the process
     // closed normally or crashed, examine the |status| parameter.
