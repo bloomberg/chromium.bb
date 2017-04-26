@@ -571,8 +571,9 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   autorelease_pool_->Recycle();
 #endif
 
-  // TODO(jam): remove this.
+#if defined(OS_CHROMEOS)  // http://crbug.com/715735
   disable_io_checks();
+#endif
 }
 
 void InProcessBrowserTest::PostRunTestOnMainThread() {
