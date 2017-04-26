@@ -284,6 +284,26 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
+     * Tests that Daydream controller clicks are registered as screen taps when
+     * the viewer is a Daydream View.
+     */
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testControllerClicksRegisteredAsTapsOnDaydream() throws InterruptedException {
+        EmulatedVrController controller = new EmulatedVrController(getActivity());
+        String testName = "test_screen_taps_registered";
+        loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
+        assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
+        executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
+        // Tap and wait to enter VR
+        enterVrTapAndWait(mWebContents);
+        // Send a controller click and wait for JavaScript to receive it
+        controller.pressReleaseTouchpadButton();
+        waitOnJavaScriptStep(mWebContents);
+        endTest(mWebContents);
+    }
+
+    /**
      * Tests that screen touches are still registered when the viewer is
      * Cardboard.
      */
@@ -293,7 +313,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     */
     @DisabledTest(message = "crbug.com/713781")
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
-        String testName = "test_screen_taps_registered_on_cardboard";
+        String testName = "test_screen_taps_registered";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);

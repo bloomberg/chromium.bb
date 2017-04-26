@@ -33,3 +33,9 @@ In order to run automated end-to-end tests on VR features, VR Services
 are downloaded into test-apks/vr_services and test-apks/daydream_home,
 respectively. The downloaded APKs are the release APKs that are or were
 publicly available via the Play Store.
+In order to run automated end-to-end tests that involve a Daydream controller,
+controller_test_api.aar needs to be present. This allows us to send controller
+events using broadcasts like a real controller sends them over Bluetooth. The
+library is open-sourced similar to the other .aars, but since it's only useful
+for Chromium at the moment, it is uploaded to storage instead of to GitHub like
+the GVR SDK.

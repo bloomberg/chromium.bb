@@ -512,6 +512,7 @@ if (enable_vr) {
 
     java_files = [
       "javatests/src/org/chromium/chrome/browser/media/RouterTestUtils.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/EmulatedVrController.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrCoreVersionCheckerImpl.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/MockVrDaydreamApi.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java",
@@ -531,6 +532,7 @@ if (enable_vr) {
       "//third_party/android_protobuf:protobuf_nano_javalib",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
+      "//third_party/gvr-android-sdk:controller_test_api_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
       "//ui/android:ui_java",
     ]

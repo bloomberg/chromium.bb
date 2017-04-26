@@ -957,6 +957,17 @@ hooks = [
                 '-s', 'src/third_party/gvr-android-sdk/common_library.aar.sha1',
     ],
   },
+  {
+    'name': 'vr_controller_test_api',
+    'pattern': '\\.sha1',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=linux*',
+                '--no_auth',
+                '--bucket', 'chromium-gvr-static-shim/controller_test_api',
+                '-s', 'src/third_party/gvr-android-sdk/test-libraries/controller_test_api.aar.sha1',
+    ],
+  },
   # Pull luci-go binaries (isolate, swarming) using checked-in hashes.
   {
     'name': 'luci-go_win',

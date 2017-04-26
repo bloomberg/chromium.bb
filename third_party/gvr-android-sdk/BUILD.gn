@@ -4,6 +4,11 @@
 
 import("//build/config/android/rules.gni")
 
+android_aar_prebuilt("controller_test_api_java") {
+  aar_path = "test-libraries/controller_test_api.aar"
+  proguard_configs = [ "test-libraries/proguard.txt" ]
+}
+
 android_aar_prebuilt("gvr_common_java") {
   aar_path = "common_library.aar"
   proguard_configs = [ "src/proguard-gvr.txt" ]
