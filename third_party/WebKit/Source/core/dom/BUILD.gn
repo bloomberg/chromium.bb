@@ -130,6 +130,8 @@ blink_core_sources("dom") {
     "DocumentType.cpp",
     "DocumentType.h",
     "DocumentUserGestureToken.h",
+    "DocumentWriteIntervention.cpp",
+    "DocumentWriteIntervention.h",
     "Element.cpp",
     "Element.h",
     "ElementData.cpp",

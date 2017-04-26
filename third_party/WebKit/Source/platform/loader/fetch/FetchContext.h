@@ -85,7 +85,7 @@ class PLATFORM_EXPORT FetchContext
   // a const reference as a header needs to be added for doc.write blocking
   // intervention.
   virtual WebCachePolicy ResourceRequestCachePolicy(
-      ResourceRequest&,
+      const ResourceRequest&,
       Resource::Type,
       FetchParameters::DeferOption) const;
 

@@ -32,6 +32,7 @@
 #include "core/dom/ClassicScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserTiming.h"
+#include "core/dom/DocumentWriteIntervention.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/Script.h"
 #include "core/dom/ScriptElementBase.h"
@@ -613,12 +614,28 @@ bool ScriptLoader::FetchClassicScript(
   // "Fetch a classic script given url, settings, ..."
   ResourceRequest resource_request(url);
 
+  FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
+  if (!parser_inserted_ || element_->AsyncAttributeValue() ||
+      element_->DeferAttributeValue())
+    defer = FetchParameters::kLazyLoad;
+
   // [Intervention]
   if (document_write_intervention_ ==
       DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
     resource_request.SetHTTPHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/feature/5718547946799104>");
+    defer = FetchParameters::kIdleLoad;
+  }
+
+  // [Intervention]
+  // For users on slow connections, we want to avoid blocking the parser in
+  // the main frame on script loads inserted via document.write, since it can
+  // add significant delays before page content is displayed on the screen.
+  if (MaybeDisallowFetchForDocWrittenScript(resource_request, defer,
+                                            element_->GetDocument())) {
+    document_write_intervention_ =
+        DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
   }
 
   FetchParameters params(resource_request, element_->InitiatorName());
@@ -642,27 +659,12 @@ bool ScriptLoader::FetchClassicScript(
 
   // This DeferOption logic is only for classic scripts, as we always set
   // |kLazyLoad| for module scripts in ModuleScriptLoader.
-  FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
-  if (!parser_inserted_ || element_->AsyncAttributeValue() ||
-      element_->DeferAttributeValue())
-    defer = FetchParameters::kLazyLoad;
-  if (document_write_intervention_ ==
-      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle)
-    defer = FetchParameters::kIdleLoad;
   params.SetDefer(defer);
 
   resource_ = ScriptResource::Fetch(params, fetcher);
 
   if (!resource_)
     return false;
-
-  // [Intervention]
-  if (created_during_document_write_ &&
-      resource_->GetResourceRequest().GetCachePolicy() ==
-          WebCachePolicy::kReturnCacheDataDontLoad) {
-    document_write_intervention_ =
-        DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
-  }
 
   return true;
 }

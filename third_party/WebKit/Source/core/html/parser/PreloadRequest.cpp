@@ -5,6 +5,7 @@
 #include "core/html/parser/PreloadRequest.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentWriteIntervention.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
@@ -46,6 +47,9 @@ Resource* PreloadRequest::Start(Document* document) {
           : document->OutgoingReferrer()));
   resource_request.SetRequestContext(
       ResourceFetcher::DetermineRequestContext(resource_type_, false));
+
+  if (resource_type_ == Resource::kScript)
+    MaybeDisallowFetchForDocWrittenScript(resource_request, defer_, *document);
 
   FetchParameters params(resource_request, initiator_info);
 
