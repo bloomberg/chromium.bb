@@ -256,7 +256,6 @@ class HTMLConstructionSite final {
   void FindFosterSite(HTMLConstructionSiteTask&);
 
   CreateElementFlags GetCreateElementFlags() const;
-  HTMLElement* CreateHTMLElement(AtomicHTMLToken*);
   Element* CreateElement(AtomicHTMLToken*, const AtomicString& namespace_uri);
 
   void MergeAttributesFromTokenIntoElement(AtomicHTMLToken*, Element*);
