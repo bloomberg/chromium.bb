@@ -31,10 +31,6 @@ source_set("lib") {
     "device_factory_media_to_mojo_adapter.h",
     "device_media_to_mojo_adapter.cc",
     "device_media_to_mojo_adapter.h",
-    "public/cpp/device_to_feedback_observer_adapter.cc",
-    "public/cpp/device_to_feedback_observer_adapter.h",
-    "public/cpp/receiver_media_to_mojo_adapter.cc",
-    "public/cpp/receiver_media_to_mojo_adapter.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
   ]

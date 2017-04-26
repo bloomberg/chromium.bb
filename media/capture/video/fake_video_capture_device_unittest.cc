@@ -40,8 +40,8 @@ class StubBufferHandle : public VideoCaptureBufferHandle {
       : mapped_size_(mapped_size), data_(data) {}
 
   size_t mapped_size() const override { return mapped_size_; }
-  uint8_t* data() const override { return data_; }
-  const uint8_t* const_data() const override { return data_; }
+  uint8_t* data() override { return data_; }
+  const uint8_t* data() const override { return data_; }
 
  private:
   const size_t mapped_size_;

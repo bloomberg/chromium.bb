@@ -19,24 +19,17 @@ class MessageLoop;
 
 namespace video_capture {
 
-// To ensure correct operation, this mock device holds on to the |client|
-// that is passed to it in AllocateAndStart() and releases it on
-// StopAndDeAllocate().
 class MockDevice : public media::VideoCaptureDevice {
  public:
   MockDevice();
   ~MockDevice() override;
-
-  void SendStubFrame(const media::VideoCaptureFormat& format,
-                     int rotation,
-                     int frame_id);
 
   // media::VideoCaptureDevice:
   MOCK_METHOD2(DoAllocateAndStart,
                void(const media::VideoCaptureParams& params,
                     std::unique_ptr<Client>* client));
   MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD0(DoStopAndDeAllocate, void());
+  MOCK_METHOD0(StopAndDeAllocate, void());
   MOCK_METHOD1(DoGetPhotoCapabilities,
                void(GetPhotoCapabilitiesCallback* callback));
   MOCK_METHOD2(DoSetPhotoOptions,
@@ -48,14 +41,10 @@ class MockDevice : public media::VideoCaptureDevice {
 
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
-  void StopAndDeAllocate() override;
   void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
-
- private:
-  std::unique_ptr<Client> client_;
 };
 
 // Reusable test setup for testing with a single mock device.
