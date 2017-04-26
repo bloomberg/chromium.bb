@@ -23,6 +23,8 @@ public class EventForwarder {
     private float mCurrentTouchOffsetX;
     private float mCurrentTouchOffsetY;
 
+    private int mLastMouseButtonState;
+
     @CalledByNative
     private static EventForwarder create(long nativeEventForwarder) {
         return new EventForwarder(nativeEventForwarder);
@@ -146,13 +148,43 @@ public class EventForwarder {
                 || eventAction == MotionEvent.ACTION_POINTER_UP;
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     public boolean onMouseEvent(MotionEvent event) {
         TraceEvent.begin("sendMouseEvent");
+
+        assert mNativeEventForwarder != 0;
 
         MotionEvent offsetEvent = createOffsetMotionEvent(event);
         try {
             int eventAction = event.getActionMasked();
+
+            if (eventAction == MotionEvent.ACTION_BUTTON_PRESS
+                    || eventAction == MotionEvent.ACTION_BUTTON_RELEASE) {
+                mLastMouseButtonState = event.getButtonState();
+            }
+            // Work around Samsung Galaxy Tab 2 not sending ACTION_BUTTON_RELEASE on left-click:
+            // http://crbug.com/714230.  On ACTION_HOVER, no button can be pressed, so send a
+            // synthetic ACTION_BUTTON_RELEASE if it was missing.  Note that all
+            // ACTION_BUTTON_RELEASE are always fired before any hover events on a correctly
+            // behaving device, so mLastMouseButtonState is only nonzero on a buggy one.
+            if (eventAction == MotionEvent.ACTION_HOVER_ENTER) {
+                if (mLastMouseButtonState == MotionEvent.BUTTON_PRIMARY) {
+                    nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(),
+                            MotionEvent.ACTION_BUTTON_RELEASE, offsetEvent.getX(),
+                            offsetEvent.getY(), event.getPointerId(0), event.getPressure(0),
+                            event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
+                            MotionEvent.BUTTON_PRIMARY, event.getButtonState(),
+                            event.getMetaState(), event.getToolType(0));
+                }
+                mLastMouseButtonState = 0;
+            }
+
+            // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT because every mouse-down on Android
+            // follows a hover-exit and is followed by a hover-enter.  crbug.com/715114 filed on
+            // distinguishing actual hover enter/exit from these bogus ones.
+            if (eventAction == MotionEvent.ACTION_HOVER_ENTER
+                    || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
+                return false;
+            }
 
             // For mousedown and mouseup events, we use ACTION_BUTTON_PRESS
             // and ACTION_BUTTON_RELEASE respectively because they provide
@@ -160,11 +192,12 @@ public class EventForwarder {
             if (eventAction == MotionEvent.ACTION_DOWN || eventAction == MotionEvent.ACTION_UP) {
                 return false;
             }
-            sendMouseEvent(event.getEventTime(), eventAction, offsetEvent.getX(),
-                    offsetEvent.getY(), event.getPointerId(0), event.getPressure(0),
-                    event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
-                    event.getActionButton(), event.getButtonState(), event.getMetaState(),
-                    event.getToolType(0));
+
+            nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(), eventAction,
+                    offsetEvent.getX(), offsetEvent.getY(), event.getPointerId(0),
+                    event.getPressure(0), event.getOrientation(0),
+                    event.getAxisValue(MotionEvent.AXIS_TILT, 0), getMouseEventActionButton(event),
+                    event.getButtonState(), event.getMetaState(), event.getToolType(0));
             return true;
         } finally {
             offsetEvent.recycle();
@@ -173,12 +206,11 @@ public class EventForwarder {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    public void sendMouseEvent(long timeMs, int action, float x, float y, int pointerId,
-            float pressure, float orientation, float tilt, int actionButton, int buttonState,
-            int metaState, int toolType) {
-        assert mNativeEventForwarder != 0;
-        nativeOnMouseEvent(mNativeEventForwarder, timeMs, action, x, y, pointerId, pressure,
-                orientation, tilt, actionButton, buttonState, metaState, toolType);
+    private int getMouseEventActionButton(MotionEvent event) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return event.getActionButton();
+
+        // On <M, the only mice events sent are hover events, which cannot have a button.
+        return 0;
     }
 
     public boolean onMouseWheelEvent(
