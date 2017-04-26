@@ -32,7 +32,7 @@ class SVGTransformNonInterpolableValue : public NonInterpolableValue {
 
  private:
   SVGTransformNonInterpolableValue(Vector<SVGTransformType>& transform_types) {
-    transform_types_.Swap(transform_types);
+    transform_types_.swap(transform_types);
   }
 
   Vector<SVGTransformType> transform_types_;

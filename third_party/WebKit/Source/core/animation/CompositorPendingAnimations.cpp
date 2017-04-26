@@ -62,7 +62,7 @@ bool CompositorPendingAnimations::Update(
 
   HeapVector<Member<Animation>> animations;
   HeapVector<Member<Animation>> deferred;
-  animations.Swap(pending_);
+  animations.swap(pending_);
   int compositor_group = ++compositor_group_;
   while (compositor_group == 0 || compositor_group == 1) {
     // Wrap around, skipping 0, 1.
@@ -145,7 +145,7 @@ void CompositorPendingAnimations::NotifyCompositorAnimationStarted(
   TRACE_EVENT0("blink",
                "CompositorPendingAnimations::notifyCompositorAnimationStarted");
   HeapVector<Member<Animation>> animations;
-  animations.Swap(waiting_for_compositor_animation_start_);
+  animations.swap(waiting_for_compositor_animation_start_);
 
   for (auto animation : animations) {
     if (animation->HasStartTime() ||

@@ -276,7 +276,7 @@ void V8PerIsolateData::AddEndOfScopeTask(std::unique_ptr<EndOfScopeTask> task) {
 
 void V8PerIsolateData::RunEndOfScopeTasks() {
   Vector<std::unique_ptr<EndOfScopeTask>> tasks;
-  tasks.Swap(end_of_scope_tasks_);
+  tasks.swap(end_of_scope_tasks_);
   for (const auto& task : tasks)
     task->Run();
   DCHECK(end_of_scope_tasks_.IsEmpty());

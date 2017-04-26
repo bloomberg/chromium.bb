@@ -71,7 +71,7 @@ bool MediaQuerySet::Set(const String& media_string) {
   for (const auto& query : result->queries_) {
     CHECK(query);
   }
-  queries_.Swap(result->queries_);
+  queries_.swap(result->queries_);
   return true;
 }
 

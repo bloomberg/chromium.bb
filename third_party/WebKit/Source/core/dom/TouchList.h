@@ -63,7 +63,7 @@ class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>,
  private:
   TouchList() {}
 
-  TouchList(HeapVector<Member<Touch>>& touches) { values_.Swap(touches); }
+  TouchList(HeapVector<Member<Touch>>& touches) { values_.swap(touches); }
 
   HeapVector<Member<Touch>> values_;
 };

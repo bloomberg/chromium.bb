@@ -10,7 +10,7 @@ namespace blink {
 void ResourcePreloader::TakeAndPreload(PreloadRequestStream& r) {
   PreloadRequestStream requests;
   NetworkHintsInterfaceImpl network_hints_interface;
-  requests.Swap(r);
+  requests.swap(r);
 
   for (PreloadRequestStream::iterator it = requests.begin();
        it != requests.end(); ++it)

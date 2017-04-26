@@ -555,7 +555,7 @@ void TextFinder::UpdateFindMatchRects() {
         filtered_matches.push_back(match);
     }
 
-    find_matches_cache_.Swap(filtered_matches);
+    find_matches_cache_.swap(filtered_matches);
   }
 
   // Invalidate the rects in child frames. Will be updated later during

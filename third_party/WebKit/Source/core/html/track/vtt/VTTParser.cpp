@@ -89,7 +89,7 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
 
 void VTTParser::GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues) {
   DCHECK(output_cues.IsEmpty());
-  output_cues.Swap(cue_list_);
+  output_cues.swap(cue_list_);
 }
 
 void VTTParser::ParseBytes(const char* data, size_t length) {

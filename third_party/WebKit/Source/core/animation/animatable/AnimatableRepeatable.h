@@ -54,7 +54,7 @@ class AnimatableRepeatable : public AnimatableValue {
   AnimatableRepeatable() {}
   AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values) {
     DCHECK(!values.IsEmpty());
-    values_.Swap(values);
+    values_.swap(values);
   }
 
   Vector<RefPtr<AnimatableValue>> values_;

@@ -65,7 +65,7 @@ void ScopedEventQueue::EnqueueEventDispatchMediator(
 
 void ScopedEventQueue::DispatchAllEvents() {
   HeapVector<Member<EventDispatchMediator>> queued_event_dispatch_mediators;
-  queued_event_dispatch_mediators.Swap(queued_event_dispatch_mediators_);
+  queued_event_dispatch_mediators.swap(queued_event_dispatch_mediators_);
 
   for (auto& mediator : queued_event_dispatch_mediators)
     DispatchEvent(mediator.Release());

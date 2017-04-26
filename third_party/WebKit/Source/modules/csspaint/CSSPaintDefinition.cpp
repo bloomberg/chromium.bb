@@ -59,9 +59,9 @@ CSSPaintDefinition::CSSPaintDefinition(
       paint_(script_state->GetIsolate(), paint),
       did_call_constructor_(false),
       has_alpha_(has_alpha) {
-  native_invalidation_properties_.Swap(native_invalidation_properties);
-  custom_invalidation_properties_.Swap(custom_invalidation_properties);
-  input_argument_types_.Swap(input_argument_types);
+  native_invalidation_properties_.swap(native_invalidation_properties);
+  custom_invalidation_properties_.swap(custom_invalidation_properties);
+  input_argument_types_.swap(input_argument_types);
 }
 
 CSSPaintDefinition::~CSSPaintDefinition() {}

@@ -391,7 +391,7 @@ void Geolocation::ExtractNotifiersWithCachedPosition(
     } else
       non_cached.push_back(notifier);
   }
-  notifiers.Swap(non_cached);
+  notifiers.swap(non_cached);
 }
 
 void Geolocation::CopyToSet(const GeoNotifierVector& src,

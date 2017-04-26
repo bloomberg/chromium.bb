@@ -146,7 +146,7 @@ void HTMLSlotElement::ClearDistribution() {
 }
 
 void HTMLSlotElement::SaveAndClearDistribution() {
-  old_distributed_nodes_.Swap(distributed_nodes_);
+  old_distributed_nodes_.swap(distributed_nodes_);
   ClearDistribution();
 }
 

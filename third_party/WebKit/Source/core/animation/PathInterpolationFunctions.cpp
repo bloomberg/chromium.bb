@@ -32,7 +32,7 @@ class SVGPathNonInterpolableValue : public NonInterpolableValue {
 
  private:
   SVGPathNonInterpolableValue(Vector<SVGPathSegType>& path_seg_types) {
-    path_seg_types_.Swap(path_seg_types);
+    path_seg_types_.swap(path_seg_types);
   }
 
   Vector<SVGPathSegType> path_seg_types_;

@@ -68,7 +68,7 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
     return descendant_insertion_points_;
   }
   void SetDescendantInsertionPoints(HeapVector<Member<InsertionPoint>>& list) {
-    descendant_insertion_points_.Swap(list);
+    descendant_insertion_points_.swap(list);
   }
   void ClearDescendantInsertionPoints() {
     descendant_insertion_points_.clear();

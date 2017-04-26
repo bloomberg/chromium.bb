@@ -77,7 +77,7 @@ class ShadowList : public RefCounted<ShadowList> {
   ShadowList(ShadowDataVector& shadows) {
     // If we have no shadows, we use a null ShadowList
     DCHECK(!shadows.IsEmpty());
-    shadows_.Swap(shadows);
+    shadows_.swap(shadows);
     shadows_.ShrinkToFit();
   }
   ShadowDataVector shadows_;

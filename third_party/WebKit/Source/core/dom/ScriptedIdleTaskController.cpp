@@ -207,7 +207,7 @@ void ScriptedIdleTaskController::Resume() {
 
   // Run any pending timeouts.
   Vector<CallbackId> pending_timeouts;
-  pending_timeouts_.Swap(pending_timeouts);
+  pending_timeouts_.swap(pending_timeouts);
   for (auto& id : pending_timeouts)
     RunCallback(id, MonotonicallyIncreasingTime(),
                 IdleDeadline::CallbackType::kCalledByTimeout);

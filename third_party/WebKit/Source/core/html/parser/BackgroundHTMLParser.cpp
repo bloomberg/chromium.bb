@@ -342,17 +342,17 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
     preload_tokenize_delay.Count(delay);
   }
 
-  chunk->preloads.Swap(pending_preloads_);
+  chunk->preloads.swap(pending_preloads_);
   if (viewport_description_.set)
     chunk->viewport = viewport_description_;
-  chunk->xss_infos.Swap(pending_xss_infos_);
+  chunk->xss_infos.swap(pending_xss_infos_);
   chunk->tokenizer_state = tokenizer_->GetState();
   chunk->tree_builder_state = tree_builder_simulator_.GetState();
   chunk->input_checkpoint = input_.CreateCheckpoint(pending_tokens_->size());
   chunk->preload_scanner_checkpoint = preload_scanner_->CreateCheckpoint();
   chunk->tokens = std::move(pending_tokens_);
   chunk->starting_script = starting_script_;
-  chunk->likely_document_write_script_indices.Swap(
+  chunk->likely_document_write_script_indices.swap(
       likely_document_write_script_indices_);
   chunk->pending_csp_meta_token_index = pending_csp_meta_token_index_;
   starting_script_ = false;

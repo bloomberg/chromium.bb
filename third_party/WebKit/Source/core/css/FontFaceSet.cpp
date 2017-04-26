@@ -71,7 +71,7 @@ class LoadFontPromiseResolver final
       : num_loading_(faces.size()),
         error_occured_(false),
         resolver_(ScriptPromiseResolver::Create(script_state)) {
-    font_faces_.Swap(faces);
+    font_faces_.swap(faces);
   }
 
   HeapVector<Member<FontFace>> font_faces_;

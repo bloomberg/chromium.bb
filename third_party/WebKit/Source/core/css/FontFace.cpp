@@ -401,7 +401,7 @@ WebTaskRunner* FontFace::GetTaskRunner() {
 
 void FontFace::RunCallbacks() {
   HeapVector<Member<LoadFontCallback>> callbacks;
-  callbacks_.Swap(callbacks);
+  callbacks_.swap(callbacks);
   for (size_t i = 0; i < callbacks.size(); ++i) {
     if (status_ == kLoaded)
       callbacks[i]->NotifyLoaded(this);

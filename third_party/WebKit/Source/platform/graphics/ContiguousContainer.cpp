@@ -152,8 +152,8 @@ void ContiguousContainerBase::Clear() {
 }
 
 void ContiguousContainerBase::Swap(ContiguousContainerBase& other) {
-  elements_.Swap(other.elements_);
-  buffers_.Swap(other.buffers_);
+  elements_.swap(other.elements_);
+  buffers_.swap(other.buffers_);
   std::swap(end_index_, other.end_index_);
   std::swap(max_object_size_, other.max_object_size_);
 }

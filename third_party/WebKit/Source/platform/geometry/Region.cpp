@@ -378,8 +378,8 @@ void Region::Shape::Translate(const IntSize& offset) {
 }
 
 void Region::Shape::Swap(Shape& other) {
-  segments_.Swap(other.segments_);
-  spans_.Swap(other.spans_);
+  segments_.swap(other.segments_);
+  spans_.swap(other.spans_);
 }
 
 enum {

@@ -67,7 +67,7 @@ SharedBuffer::~SharedBuffer() {
 
 PassRefPtr<SharedBuffer> SharedBuffer::AdoptVector(Vector<char>& vector) {
   RefPtr<SharedBuffer> buffer = Create();
-  buffer->buffer_.Swap(vector);
+  buffer->buffer_.swap(vector);
   buffer->size_ = buffer->buffer_.size();
   return buffer.Release();
 }

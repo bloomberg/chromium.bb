@@ -176,7 +176,7 @@ void KeyframeEffectReadOnly::ApplyEffects() {
                    interpolations);
     if (!interpolations.IsEmpty()) {
       SampledEffect* sampled_effect = SampledEffect::Create(this);
-      sampled_effect->MutableInterpolations().Swap(interpolations);
+      sampled_effect->MutableInterpolations().swap(interpolations);
       sampled_effect_ = sampled_effect;
       EnsureEffectStack(target_).Add(sampled_effect);
       changed = true;

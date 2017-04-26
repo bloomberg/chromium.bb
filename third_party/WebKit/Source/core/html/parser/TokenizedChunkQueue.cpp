@@ -36,7 +36,7 @@ void TokenizedChunkQueue::Clear() {
 void TokenizedChunkQueue::TakeAll(
     Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>& vector) {
   DCHECK(vector.IsEmpty());
-  pending_chunks_.Swap(vector);
+  pending_chunks_.swap(vector);
 }
 
 size_t TokenizedChunkQueue::PeakPendingChunkCount() {

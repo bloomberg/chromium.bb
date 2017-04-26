@@ -341,7 +341,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(
     }
   }
 
-  line_item_chunks->Swap(line_item_chunks_in_visual_order);
+  line_item_chunks->swap(line_item_chunks_in_visual_order);
 }
 
 // TODO(glebl): Add the support of clearance for inline floats.

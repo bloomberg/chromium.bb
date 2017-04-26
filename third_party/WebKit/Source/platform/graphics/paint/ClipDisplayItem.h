@@ -29,7 +29,7 @@ class PLATFORM_EXPORT ClipDisplayItem final : public PairedBeginDisplayItem {
                   const IntRect& clip_rect,
                   Vector<FloatRoundedRect>& rounded_rect_clips)
       : ClipDisplayItem(client, type, clip_rect) {
-    rounded_rect_clips_.Swap(rounded_rect_clips);
+    rounded_rect_clips_.swap(rounded_rect_clips);
   }
 
   void Replay(GraphicsContext&) const override;
