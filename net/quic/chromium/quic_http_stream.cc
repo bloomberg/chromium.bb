@@ -629,8 +629,8 @@ int QuicHttpStream::DoLoop(int rv) {
 
 int QuicHttpStream::DoRequestStream() {
   next_state_ = STATE_REQUEST_STREAM_COMPLETE;
-  return stream_request_.StartRequest(
-      session_, &stream_,
+  stream_request_ = session_->CreateStreamRequest();
+  return stream_request_->StartRequest(
       base::Bind(&QuicHttpStream::OnIOComplete, weak_factory_.GetWeakPtr()));
 }
 
@@ -641,6 +641,8 @@ int QuicHttpStream::DoRequestStreamComplete(int rv) {
     return GetResponseStatus();
   }
 
+  stream_ = stream_request_->ReleaseStream();
+  stream_request_.reset();
   stream_->SetDelegate(this);
   if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
     stream_->DisableConnectionMigration();

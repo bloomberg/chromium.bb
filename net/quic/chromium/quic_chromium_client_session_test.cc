@@ -18,6 +18,7 @@
 #include "net/log/test_net_log.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
+#include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/chromium/quic_chromium_alarm_factory.h"
 #include "net/quic/chromium/quic_chromium_client_session_peer.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
@@ -103,7 +104,8 @@ class QuicChromiumClientSessionTest
   }
 
   void Initialize() {
-    socket_factory_.AddSocketDataProvider(socket_data_.get());
+    if (socket_data_)
+      socket_factory_.AddSocketDataProvider(socket_data_.get());
     std::unique_ptr<DatagramClientSocket> socket =
         socket_factory_.CreateDatagramClientSocket(DatagramSocket::DEFAULT_BIND,
                                                    base::Bind(&base::RandInt),
@@ -191,6 +193,129 @@ TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
                                              arraysize(writes)));
   Initialize();
   CompleteCryptoHandshake();
+}
+
+TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Request a stream and verify that a stream was created.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest();
+  TestCompletionCallback callback;
+  ASSERT_EQ(OK, stream_request->StartRequest(callback.callback()));
+  EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_STREAM_CANCELLED));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Request a stream and cancel it without releasing the stream.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest();
+  TestCompletionCallback callback;
+  ASSERT_EQ(OK, stream_request->StartRequest(callback.callback()));
+  stream_request.reset();
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_RST_ACKNOWLEDGEMENT));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Open the maximum number of streams so that a subsequent request
+  // can not proceed immediately.
+  const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
+  for (size_t i = 0; i < kMaxOpenStreams; i++) {
+    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  }
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+
+  // Request a stream and verify that it's pending.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest();
+  TestCompletionCallback callback;
+  ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
+
+  // Close a stream and ensure the stream request completes.
+  QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_STREAM_CANCELLED, 0);
+  session_->OnRstStream(rst);
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddWrite(client_maker_.MakeRstPacket(2, true, kClientDataStreamId1,
+                                                 QUIC_RST_ACKNOWLEDGEMENT));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Open the maximum number of streams so that a subsequent request
+  // can not proceed immediately.
+  const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
+  for (size_t i = 0; i < kMaxOpenStreams; i++) {
+    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  }
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+
+  // Request a stream and verify that it's pending.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest();
+  TestCompletionCallback callback;
+  ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
+
+  // Cancel the pending stream request.
+  stream_request.reset();
+
+  // Close a stream and ensure that no new stream is created.
+  QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_STREAM_CANCELLED, 0);
+  session_->OnRstStream(rst);
+  EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
@@ -544,12 +669,10 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
     streams.push_back(stream);
   }
 
-  QuicChromiumClientStream* stream;
-  QuicChromiumClientSession::StreamRequest stream_request;
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest();
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            stream_request.StartRequest(session_->GetWeakPtr(), &stream,
-                                        callback.callback()));
+  ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
   // Close a stream and ensure I can now open a new one.
   QuicStreamId stream_id = streams[0]->id();
@@ -558,7 +681,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   session_->OnRstStream(rst1);
   ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsOk());
-  EXPECT_TRUE(stream != nullptr);
+  EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
 }
 
 TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
