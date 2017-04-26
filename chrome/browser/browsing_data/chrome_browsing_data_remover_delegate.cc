@@ -334,14 +334,20 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
 #endif
       weak_ptr_factory_(this) {}
 
-ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {
+ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {}
+
+void ChromeBrowsingDataRemoverDelegate::Shutdown() {
   history_task_tracker_.TryCancelAll();
   template_url_sub_.reset();
 }
 
-BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
+content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
 ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() const {
-  return base::Bind(DoesOriginMatchEmbedderMask);
+  return base::Bind(&DoesOriginMatchEmbedderMask);
+}
+
+bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 }
 
 void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
@@ -356,15 +362,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   // Embedder-defined DOM-accessible storage currently contains only
   // one datatype, which is the durable storage permission.
-  if (remove_mask & BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE) {
+  if (remove_mask &
+      content::BrowsingDataRemover::DATA_TYPE_EMBEDDER_DOM_STORAGE) {
     remove_mask |= DATA_TYPE_DURABLE_PERMISSION;
   }
 
-  if (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
+  if (origin_type_mask &
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
     base::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
   }
-  if (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB) {
+  if (origin_type_mask &
+      content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB) {
     base::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsProtectedWeb"));
   }
@@ -377,11 +386,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // If this fires, we added a new BrowsingDataHelper::OriginTypeMask without
   // updating the user metrics above.
   static_assert(
-      ALL_ORIGIN_TYPES == (BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
+      ALL_ORIGIN_TYPES ==
+          (content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                           ORIGIN_TYPE_EXTENSION |
+           ORIGIN_TYPE_EXTENSION |
 #endif
-                           BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB),
+           content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB),
       "OriginTypeMask has been updated without updating user metrics");
 
   //////////////////////////////////////////////////////////////////////////////
@@ -410,9 +420,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // All the UI entry points into the BrowsingDataRemoverImpl should be
   // disabled, but this will fire if something was missed or added.
   DCHECK(may_delete_history ||
-         (remove_mask & BrowsingDataRemover::DATA_TYPE_NO_CHECKS) ||
+         (remove_mask & content::BrowsingDataRemover::DATA_TYPE_NO_CHECKS) ||
          (!(remove_mask & DATA_TYPE_HISTORY) &&
-          !(remove_mask & BrowsingDataRemover::DATA_TYPE_DOWNLOADS)));
+          !(remove_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS)));
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_HISTORY
@@ -643,7 +653,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
-  if ((remove_mask & BrowsingDataRemover::DATA_TYPE_DOWNLOADS) &&
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS) &&
       may_delete_history) {
     DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
         BrowserContext::GetDownloadManager(profile_));
@@ -657,8 +667,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // don't accidentally remove the cookies that are associated with the
   // UNPROTECTED_WEB origin. This is necessary because cookies are not separated
   // between UNPROTECTED_WEB and PROTECTED_WEB.
-  if (remove_mask & BrowsingDataRemover::DATA_TYPE_COOKIES &&
-      origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) &&
+      (origin_type_mask &
+       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
     // Clear the safebrowsing cookies only if time period is for "all time".  It
@@ -753,7 +764,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         clear_http_auth_cache_.GetCompletionCallback());
   }
 
-  if (remove_mask & BrowsingDataRemover::DATA_TYPE_COOKIES) {
+  if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) {
     password_manager::PasswordStore* password_store =
         PasswordStoreFactory::GetForProfile(profile_,
                                             ServiceAccessType::EXPLICIT_ACCESS)
@@ -809,7 +820,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_CACHE
-  if (remove_mask & BrowsingDataRemover::DATA_TYPE_CACHE) {
+  if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE) {
     // Tell the renderers to clear their cache.
     // TODO(crbug.com/668114): Renderer cache is a platform concept, and should
     // live in BrowsingDataRemoverImpl. However, WebCacheManager itself is
@@ -873,7 +884,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if defined(OS_ANDROID)
     // For now we're considering offline pages as cache, so if we're removing
     // cache we should remove offline pages as well.
-    if ((remove_mask & BrowsingDataRemover::DATA_TYPE_CACHE)) {
+    if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)) {
       clear_offline_page_data_.Start();
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
           ->DeleteCachedPagesByURLPredicate(
@@ -897,8 +908,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Plugin is data not separated for protected and unprotected web origins. We
   // check the origin_type_mask_ to prevent unintended deletion.
-  if (remove_mask & DATA_TYPE_PLUGIN_DATA &&
-      origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB) {
+  if ((remove_mask & DATA_TYPE_PLUGIN_DATA) &&
+      (origin_type_mask &
+       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
     clear_plugin_data_count_ = 1;
 
@@ -926,7 +938,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_MEDIA_LICENSES
-  if (remove_mask & BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES) {
+  if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES) {
     // TODO(jrummell): This UMA should be renamed to indicate it is for Media
     // Licenses.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ContentLicenses"));
@@ -967,21 +979,21 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // Remove omnibox zero-suggest cache results. Filtering is not supported.
   // This is not a problem, as deleting more data than necessary will just cause
   // another server round-trip; no data is actually lost.
-  if ((remove_mask & (BrowsingDataRemover::DATA_TYPE_CACHE |
-                      BrowsingDataRemover::DATA_TYPE_COOKIES))) {
+  if ((remove_mask & (content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                      content::BrowsingDataRemover::DATA_TYPE_COOKIES))) {
     prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // Domain reliability service.
   if (remove_mask &
-      (BrowsingDataRemover::DATA_TYPE_COOKIES | DATA_TYPE_HISTORY)) {
+      (content::BrowsingDataRemover::DATA_TYPE_COOKIES | DATA_TYPE_HISTORY)) {
     domain_reliability::DomainReliabilityService* service =
       domain_reliability::DomainReliabilityServiceFactory::
           GetForBrowserContext(profile_);
     if (service) {
       domain_reliability::DomainReliabilityClearMode mode;
-      if (remove_mask & BrowsingDataRemover::DATA_TYPE_COOKIES)
+      if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES)
         mode = domain_reliability::CLEAR_CONTEXTS;
       else
         mode = domain_reliability::CLEAR_BEACONS;

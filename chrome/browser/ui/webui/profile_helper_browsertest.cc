@@ -6,9 +6,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,7 +14,9 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_web_ui.h"
 
@@ -184,8 +183,8 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteInactiveProfile) {
   Profile* additional_profile = CreateProfile();
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
 
-  BrowsingDataRemoverCompletionInhibitor inhibitor(
-      BrowsingDataRemoverFactory::GetForBrowserContext(additional_profile));
+  content::BrowsingDataRemoverCompletionInhibitor inhibitor(
+      content::BrowserContext::GetBrowsingDataRemover(additional_profile));
   webui::DeleteProfileAtPath(additional_profile->GetPath(), &web_ui,
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   inhibitor.BlockUntilNearCompletion();

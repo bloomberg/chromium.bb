@@ -12,9 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,10 +23,12 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -617,16 +617,17 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
  public:
   void RemoveAndWait(Profile* profile) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile);
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(profile);
+    content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
         browsing_data::CalculateBeginDeleteTime(
             browsing_data::TimePeriod::LAST_HOUR),
         browsing_data::CalculateEndDeleteTime(
             browsing_data::TimePeriod::LAST_HOUR),
         ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &completion_observer);
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 };

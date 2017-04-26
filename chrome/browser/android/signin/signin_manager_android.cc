@@ -19,8 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
@@ -43,6 +42,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
@@ -55,12 +55,12 @@ namespace {
 
 // A BrowsingDataRemover::Observer that clears all Profile data and then
 // invokes a callback and deletes itself.
-class ProfileDataRemover : public BrowsingDataRemover::Observer {
+class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
  public:
   ProfileDataRemover(Profile* profile, const base::Closure& callback)
       : callback_(callback),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
-        remover_(BrowsingDataRemoverFactory::GetForBrowserContext(profile)) {
+        remover_(content::BrowserContext::GetBrowsingDataRemover(profile)) {
     remover_->AddObserver(this);
     remover_->RemoveAndReply(
         base::Time(), base::Time::Max(),
@@ -79,7 +79,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
  private:
   base::Closure callback_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
-  BrowsingDataRemover* remover_;
+  content::BrowsingDataRemover* remover_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDataRemover);
 };

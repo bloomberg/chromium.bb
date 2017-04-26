@@ -12,8 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -32,6 +30,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -85,7 +84,7 @@ class MultipleProfileDeletionObserver
                        OnBrowsingDataRemoverWouldComplete,
                    base::Unretained(this));
     for (Profile* profile : profile_manager->GetLoadedProfiles()) {
-      BrowsingDataRemoverFactory::GetForBrowserContext(profile)
+      content::BrowserContext::GetBrowsingDataRemover(profile)
           ->SetWouldCompleteCallbackForTesting(would_complete_callback);
     }
   }

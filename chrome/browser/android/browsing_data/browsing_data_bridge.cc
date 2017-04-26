@@ -19,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -29,7 +28,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "jni/BrowsingDataBridge_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -37,6 +38,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
+using content::BrowsingDataRemover;
 
 namespace {
 
@@ -101,7 +103,7 @@ static void ClearBrowsingData(
     const JavaParamRef<jobjectArray>& jignoring_domains,
     const JavaParamRef<jintArray>& jignoring_domain_reasons) {
   BrowsingDataRemover* browsing_data_remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
+      content::BrowserContext::GetBrowsingDataRemover(GetOriginalProfile());
 
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);

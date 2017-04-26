@@ -23,9 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,8 +34,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
 #include "net/base/sdch_manager.h"
@@ -404,16 +403,16 @@ class SdchBrowserTest : public InProcessBrowserTest,
   }
 
   void BrowsingDataRemoveAndWait(int remove_mask) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(browsing_data::CalculateBeginDeleteTime(
-                                browsing_data::TimePeriod::LAST_HOUR),
-                            browsing_data::CalculateEndDeleteTime(
-                                browsing_data::TimePeriod::LAST_HOUR),
-                            remove_mask,
-                            BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-                            &completion_observer);
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
+    content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveAndReply(
+        browsing_data::CalculateBeginDeleteTime(
+            browsing_data::TimePeriod::LAST_HOUR),
+        browsing_data::CalculateEndDeleteTime(
+            browsing_data::TimePeriod::LAST_HOUR),
+        remove_mask, content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 
@@ -705,13 +704,13 @@ IN_PROC_BROWSER_TEST_F(SdchBrowserTest, BrowsingDataRemover) {
   // Confirm browsing data remover without removing the cache leaves
   // SDCH alone.
   BrowsingDataRemoveAndWait(ChromeBrowsingDataRemoverDelegate::ALL_DATA_TYPES &
-                            ~BrowsingDataRemover::DATA_TYPE_CACHE);
+                            ~content::BrowsingDataRemover::DATA_TYPE_CACHE);
   bool sdch_encoding_used = false;
   ASSERT_TRUE(GetData(&sdch_encoding_used));
   EXPECT_TRUE(sdch_encoding_used);
 
   // Confirm browsing data remover removing the cache clears SDCH state.
-  BrowsingDataRemoveAndWait(BrowsingDataRemover::DATA_TYPE_CACHE);
+  BrowsingDataRemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
   sdch_encoding_used = false;
   ASSERT_TRUE(GetData(&sdch_encoding_used));
   EXPECT_FALSE(sdch_encoding_used);

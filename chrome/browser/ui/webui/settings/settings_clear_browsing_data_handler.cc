@@ -13,7 +13,6 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -46,25 +45,27 @@ namespace settings {
 // TaskObserver ----------------------------------------------------------------
 
 class ClearBrowsingDataHandler::TaskObserver
-    : public BrowsingDataRemover::Observer {
+    : public content::BrowsingDataRemover::Observer {
  public:
-  TaskObserver(BrowsingDataRemover* remover, const base::Closure& callback);
+  TaskObserver(content::BrowsingDataRemover* remover,
+               const base::Closure& callback);
   ~TaskObserver() override;
 
   void OnBrowsingDataRemoverDone() override;
 
  private:
   base::Closure callback_;
-  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer>
+  ScopedObserver<content::BrowsingDataRemover,
+                 content::BrowsingDataRemover::Observer>
       remover_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskObserver);
 };
 
 ClearBrowsingDataHandler::TaskObserver::TaskObserver(
-    BrowsingDataRemover* remover, const base::Closure& callback)
-    : callback_(callback),
-      remover_observer_(this) {
+    content::BrowsingDataRemover* remover,
+    const base::Closure& callback)
+    : callback_(callback), remover_observer_(this) {
   remover_observer_.Add(remover);
 }
 
@@ -133,16 +134,16 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
     if (prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory))
       remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
     if (prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory))
-      remove_mask |= BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
+      remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
   }
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache))
-    remove_mask |= BrowsingDataRemover::DATA_TYPE_CACHE;
+    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
 
   int origin_mask = 0;
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
     remove_mask |= site_data_mask;
-    origin_mask |= BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+    origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
   }
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords))
@@ -152,27 +153,27 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
     remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteMediaLicenses))
-    remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+    remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
 
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData)) {
     remove_mask |= site_data_mask;
-    origin_mask |= BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
+    origin_mask |= content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
   }
 
   // Record the deletion of cookies and cache.
-  BrowsingDataRemover::CookieOrCacheDeletionChoice choice =
-      BrowsingDataRemover::NEITHER_COOKIES_NOR_CACHE;
+  content::BrowsingDataRemover::CookieOrCacheDeletionChoice choice =
+      content::BrowsingDataRemover::NEITHER_COOKIES_NOR_CACHE;
   if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
     choice = prefs->GetBoolean(browsing_data::prefs::kDeleteCache)
-                 ? BrowsingDataRemover::BOTH_COOKIES_AND_CACHE
-                 : BrowsingDataRemover::ONLY_COOKIES;
+                 ? content::BrowsingDataRemover::BOTH_COOKIES_AND_CACHE
+                 : content::BrowsingDataRemover::ONLY_COOKIES;
   } else if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache)) {
-    choice = BrowsingDataRemover::ONLY_CACHE;
+    choice = content::BrowsingDataRemover::ONLY_CACHE;
   }
 
   UMA_HISTOGRAM_ENUMERATION(
       "History.ClearBrowsingData.UserDeletedCookieOrCacheFromDialog", choice,
-      BrowsingDataRemover::MAX_CHOICE_VALUE);
+      content::BrowsingDataRemover::MAX_CHOICE_VALUE);
 
   // Record the circumstances under which passwords are deleted.
   if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords)) {
@@ -201,8 +202,8 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   CHECK_EQ(1U, args->GetSize());
   CHECK(args->GetString(0, &webui_callback_id));
 
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(profile_);
   task_observer_ = base::MakeUnique<TaskObserver>(
       remover,
       base::Bind(&ClearBrowsingDataHandler::OnClearingTaskFinished,

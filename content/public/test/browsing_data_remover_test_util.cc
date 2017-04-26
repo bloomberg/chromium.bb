@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
+
+namespace content {
 
 BrowsingDataRemoverCompletionObserver::BrowsingDataRemoverCompletionObserver(
     BrowsingDataRemover* remover)
-    : message_loop_runner_(new content::MessageLoopRunner), observer_(this) {
+    : message_loop_runner_(new MessageLoopRunner()), observer_(this) {
   observer_.Add(remover);
 }
 
@@ -47,7 +49,7 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
   message_loop_runner_->Run();
-  message_loop_runner_ = new content::MessageLoopRunner;
+  message_loop_runner_ = new MessageLoopRunner();
 }
 
 void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
@@ -62,3 +64,5 @@ void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
   continue_to_completion_callback_ = continue_to_completion;
   message_loop_runner_->Quit();
 }
+
+}  // namespace content

@@ -6,15 +6,14 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 
 namespace options {
 
@@ -59,8 +58,8 @@ class ClearBrowserDataBrowserTest : public OptionsUIBrowserTest {
 IN_PROC_BROWSER_TEST_F(ClearBrowserDataBrowserTest,
                        MAYBE_CommitButtonDisabledWhileDeletionInProgress) {
   const char kCommitButtonId[] = "#clear-browser-data-commit";
-  BrowsingDataRemoverCompletionInhibitor completion_inhibitor(
-      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile()));
+  content::BrowsingDataRemoverCompletionInhibitor completion_inhibitor(
+      content::BrowserContext::GetBrowsingDataRemover(browser()->profile()));
 
   // Navigate to the Clear Browsing Data dialog to ensure that the commit button
   // is initially enabled, usable, and gets disabled after having been pressed.

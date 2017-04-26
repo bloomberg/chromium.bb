@@ -30,9 +30,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -87,6 +85,7 @@
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -102,6 +101,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -237,12 +237,12 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 
 // Clears the specified data using BrowsingDataRemover.
 void ClearBrowsingData(Browser* browser, int remove_mask) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(browser->profile());
-  BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->RemoveAndReply(base::Time(), base::Time::Max(), remove_mask,
-                          BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-                          &observer);
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(browser->profile());
+  content::BrowsingDataRemoverCompletionObserver observer(remover);
+  remover->RemoveAndReply(
+      base::Time(), base::Time::Max(), remove_mask,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
   // BrowsingDataRemover deletes itself.
 }
@@ -2533,7 +2533,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
       PrerenderTestURL("/prerender/prerender_page.html",
                        FINAL_STATUS_CACHE_OR_HISTORY_CLEARED, 1);
 
-  ClearBrowsingData(current_browser(), BrowsingDataRemover::DATA_TYPE_CACHE);
+  ClearBrowsingData(current_browser(),
+                    content::BrowsingDataRemover::DATA_TYPE_CACHE);
   prerender->WaitForStop();
 
   // Make sure prerender history was not cleared.  Not a vital behavior, but

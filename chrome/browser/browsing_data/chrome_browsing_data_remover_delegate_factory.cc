@@ -1,13 +1,12 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -39,18 +38,20 @@
 #endif
 
 // static
-BrowsingDataRemoverFactory* BrowsingDataRemoverFactory::GetInstance() {
-  return base::Singleton<BrowsingDataRemoverFactory>::get();
+ChromeBrowsingDataRemoverDelegateFactory*
+ChromeBrowsingDataRemoverDelegateFactory::GetInstance() {
+  return base::Singleton<ChromeBrowsingDataRemoverDelegateFactory>::get();
 }
 
 // static
-BrowsingDataRemover* BrowsingDataRemoverFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
-  return static_cast<BrowsingDataRemover*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+ChromeBrowsingDataRemoverDelegate*
+ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(Profile* profile) {
+  return static_cast<ChromeBrowsingDataRemoverDelegate*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
+ChromeBrowsingDataRemoverDelegateFactory::
+    ChromeBrowsingDataRemoverDelegateFactory()
     : BrowserContextKeyedServiceFactory(
           "BrowsingDataRemover",
           BrowserContextDependencyManager::GetInstance()) {
@@ -81,9 +82,11 @@ BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
 #endif
 }
 
-BrowsingDataRemoverFactory::~BrowsingDataRemoverFactory() {}
+ChromeBrowsingDataRemoverDelegateFactory::
+    ~ChromeBrowsingDataRemoverDelegateFactory() {}
 
-content::BrowserContext* BrowsingDataRemoverFactory::GetBrowserContextToUse(
+content::BrowserContext*
+ChromeBrowsingDataRemoverDelegateFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // For guest profiles the browsing data is in the OTR profile.
   Profile* profile = static_cast<Profile*>(context);
@@ -92,10 +95,7 @@ content::BrowserContext* BrowsingDataRemoverFactory::GetBrowserContextToUse(
   return profile;
 }
 
-KeyedService* BrowsingDataRemoverFactory::BuildServiceInstanceFor(
+KeyedService* ChromeBrowsingDataRemoverDelegateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  BrowsingDataRemoverImpl* remover = new BrowsingDataRemoverImpl(context);
-  remover->SetEmbedderDelegate(
-      base::MakeUnique<ChromeBrowsingDataRemoverDelegate>(context));
-  return remover;
+  return new ChromeBrowsingDataRemoverDelegate(context);
 }

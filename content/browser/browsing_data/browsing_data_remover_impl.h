@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
+#ifndef CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
+#define CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
 
 #include <stdint.h>
 
@@ -12,25 +12,26 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/common/features.h"
-#include "ppapi/features/features.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
-class BrowsingDataRemoverFactory;
-
 namespace content {
+
 class BrowserContext;
 class BrowsingDataFilterBuilder;
 class StoragePartition;
-}
 
-class BrowsingDataRemoverImpl : public BrowsingDataRemover {
+class CONTENT_EXPORT BrowsingDataRemoverImpl
+    : public BrowsingDataRemover,
+      public base::SupportsUserData::Data {
  public:
   // Used to track the deletion of a single data storage backend.
   class SubTask {
@@ -58,13 +59,15 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
     base::WeakPtrFactory<SubTask> weak_ptr_factory_;
   };
 
+  explicit BrowsingDataRemoverImpl(BrowserContext* browser_context);
+  ~BrowsingDataRemoverImpl() override;
+
   // Is the BrowsingDataRemoverImpl currently in the process of removing data?
   bool is_removing() { return is_removing_; }
 
   // BrowsingDataRemover implementation:
   void SetEmbedderDelegate(
-      std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) override;
-  BrowsingDataRemoverDelegate* GetEmbedderDelegate() const override;
+      BrowsingDataRemoverDelegate* embedder_delegate) override;
   bool DoesOriginMatchMask(
       int origin_type_mask,
       const GURL& origin,
@@ -83,14 +86,13 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder)
-      override;
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) override;
   void RemoveWithFilterAndReply(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
       Observer* observer) override;
 
   void AddObserver(Observer* observer) override;
@@ -106,51 +108,41 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   int GetLastUsedOriginTypeMask() override;
 
   // Used for testing.
-  void OverrideStoragePartitionForTesting(
-      content::StoragePartition* storage_partition);
+  void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);
 
  protected:
-  // Use BrowsingDataRemoverFactory::GetForBrowserContext to get an instance of
-  // this class. The constructor is protected so that the class is mockable.
-  explicit BrowsingDataRemoverImpl(content::BrowserContext* browser_context);
-  ~BrowsingDataRemoverImpl() override;
-
   // A common reduction of all public Remove[WithFilter][AndReply] methods.
   virtual void RemoveInternal(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
       Observer* observer);
 
  private:
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleTasks);
 
-  friend class BrowsingDataRemoverFactory;
-
   // Represents a single removal task. Contains all parameters needed to execute
-  // it and a pointer to the observer that added it.
-  struct RemovalTask {
-    RemovalTask(
-        const base::Time& delete_begin,
-        const base::Time& delete_end,
-        int remove_mask,
-        int origin_type_mask,
-        std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
-        Observer* observer);
+  // it and a pointer to the observer that added it. CONTENT_EXPORTed to be
+  // visible in tests.
+  struct CONTENT_EXPORT RemovalTask {
+    RemovalTask(const base::Time& delete_begin,
+                const base::Time& delete_end,
+                int remove_mask,
+                int origin_type_mask,
+                std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
+                Observer* observer);
     ~RemovalTask();
 
     base::Time delete_begin;
     base::Time delete_end;
     int remove_mask;
     int origin_type_mask;
-    std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder;
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
     Observer* observer;
   };
-
-  void Shutdown() override;
 
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
   // not already removing, and vice-versa.
@@ -171,7 +163,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   void RemoveImpl(const base::Time& delete_begin,
                   const base::Time& delete_end,
                   int remove_mask,
-                  const content::BrowsingDataFilterBuilder& filter_builder,
+                  const BrowsingDataFilterBuilder& filter_builder,
                   int origin_type_mask);
 
   // Notifies observers and transitions to the idle state.
@@ -188,10 +180,10 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();
 
   // The browser context we're to remove from.
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
-  // A delegate to delete the embedder-specific data.
-  std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate_;
+  // A delegate to delete the embedder-specific data. Owned by the embedder.
+  BrowsingDataRemoverDelegate* embedder_delegate_;
 
   // Start time to delete from.
   base::Time delete_begin_;
@@ -233,11 +225,13 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   base::ObserverList<Observer, true> observer_list_;
 
   // We do not own this.
-  content::StoragePartition* storage_partition_for_testing_;
+  StoragePartition* storage_partition_for_testing_;
 
   base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImpl);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_

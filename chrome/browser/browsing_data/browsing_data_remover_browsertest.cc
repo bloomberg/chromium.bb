@@ -11,9 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,10 +27,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
@@ -116,24 +116,25 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void RemoveAndWait(int remove_mask) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(base::Time(), base::Time::Max(), remove_mask,
-                            BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-                            &completion_observer);
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
+    content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveAndReply(
+        base::Time(), base::Time::Max(), remove_mask,
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 
   void RemoveWithFilterAndWait(
       int remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
+    content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveWithFilterAndReply(
         base::Time(), base::Time::Max(), remove_mask,
-        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter_builder), &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
@@ -195,7 +196,7 @@ class BrowsingDataRemoverTransportSecurityStateBrowserTest
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   DownloadAnItem();
-  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
   VerifyDownloadCount(0u);
 }
 
@@ -209,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
   prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
 
   DownloadAnItem();
-  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
   VerifyDownloadCount(1u);
 }
 #endif
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
   filter_builder->AddOrigin(url::Origin(url1));
-  RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_CACHE,
+  RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
 
   // After the partial deletion, the cache should be smaller but still nonempty.
@@ -266,12 +267,12 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   filter_builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
   filter_builder->AddOrigin(url::Origin(url1));
-  RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_CACHE,
+  RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
   EXPECT_EQ(new_size, GetCacheSize());
 
   // Delete the remaining data.
-  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_CACHE);
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
 
   // The cache is empty.
   EXPECT_EQ(0, GetCacheSize());
@@ -294,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 // Verify that TransportSecurityState data is cleared for REMOVE_CACHE.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
                        ClearTransportSecurityState) {
-  RemoveAndWait(BrowsingDataRemover::DATA_TYPE_CACHE);
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
   base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
