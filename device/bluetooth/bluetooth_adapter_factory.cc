@@ -19,6 +19,9 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+#if defined(ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 namespace device {
 
@@ -77,8 +80,9 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
   if (default_adapter.Get())
     return true;
 
-#if defined(OS_ANDROID) && __ANDROID_API__ >= 23
-  return true;
+#if defined(OS_ANDROID)
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_MARSHMALLOW;
 #elif defined(OS_WIN)
   // Windows 8 supports Low Energy GATT operations but it does not support
   // scanning, initiating connections and GATT Server. To keep the API
