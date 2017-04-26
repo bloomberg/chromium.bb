@@ -2273,40 +2273,6 @@ class PaintControllerUnderInvalidationTest
     DisplayItemClient::EndShouldKeepAliveAllClients();
 #endif
   }
-
-  void TestFoldCompositingDrawingInSubsequence() {
-    FakeDisplayItemClient container("container");
-    FakeDisplayItemClient content("content");
-    GraphicsContext context(GetPaintController());
-
-    {
-      SubsequenceRecorder subsequence(context, container);
-      CompositingRecorder compositing(context, content, SkBlendMode::kSrc, 0.5);
-      DrawRect(context, content, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-    }
-    GetPaintController().CommitNewDisplayItems();
-    EXPECT_EQ(
-        1u,
-        GetPaintController().GetPaintArtifact().GetDisplayItemList().size());
-
-    {
-      EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
-          context, container));
-      SubsequenceRecorder subsequence(context, container);
-      CompositingRecorder compositing(context, content, SkBlendMode::kSrc, 0.5);
-      DrawRect(context, content, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-    }
-    GetPaintController().CommitNewDisplayItems();
-    EXPECT_EQ(
-        1u,
-        GetPaintController().GetPaintArtifact().GetDisplayItemList().size());
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::EndShouldKeepAliveAllClients();
-#endif
-  }
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing) {
@@ -2354,11 +2320,6 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
   // same display items. The cases of changed display items are tested by other
   // test cases.
   TestInvalidationInSubsequence();
-}
-
-TEST_F(PaintControllerUnderInvalidationTest,
-       FoldCompositingDrawingInSubsequence) {
-  TestFoldCompositingDrawingInSubsequence();
 }
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
