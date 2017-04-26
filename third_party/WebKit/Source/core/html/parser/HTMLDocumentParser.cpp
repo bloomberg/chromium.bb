@@ -722,8 +722,7 @@ void HTMLDocumentParser::PumpTokenizer() {
     // crbug.com/465478
     if (preloader_) {
       if (!preload_scanner_) {
-        preload_scanner_ = CreatePreloadScanner(
-            TokenPreloadScanner::ScannerType::kMainDocument);
+        preload_scanner_ = CreatePreloadScanner();
         preload_scanner_->AppendToEnd(input_.Current());
       }
       ScanAndPreload(preload_scanner_.get());
@@ -798,10 +797,8 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
   if (IsPaused()) {
     // Check the document.write() output with a separate preload scanner as
     // the main scanner can't deal with insertions.
-    if (!insertion_preload_scanner_) {
-      insertion_preload_scanner_ =
-          CreatePreloadScanner(TokenPreloadScanner::ScannerType::kInsertion);
-    }
+    if (!insertion_preload_scanner_)
+      insertion_preload_scanner_ = CreatePreloadScanner();
     insertion_preload_scanner_->AppendToEnd(source);
     ScanAndPreload(insertion_preload_scanner_.get());
   }
@@ -902,10 +899,8 @@ void HTMLDocumentParser::Append(const String& input_source) {
     if (GetDocument()->Loader()->GetResponse().AppCacheID() != 0)
       return;
 
-    if (!preload_scanner_) {
-      preload_scanner_ =
-          CreatePreloadScanner(TokenPreloadScanner::ScannerType::kMainDocument);
-    }
+    if (!preload_scanner_)
+      preload_scanner_ = CreatePreloadScanner();
 
     preload_scanner_->AppendToEnd(source);
     ScanAndPreload(preload_scanner_.get());
@@ -1261,12 +1256,11 @@ void HTMLDocumentParser::DocumentElementAvailable() {
   FetchQueuedPreloads();
 }
 
-std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
-    TokenPreloadScanner::ScannerType scanner_type) {
+std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner() {
   return HTMLPreloadScanner::Create(
       options_, GetDocument()->Url(),
       CachedDocumentParameters::Create(GetDocument()),
-      MediaValuesCached::MediaValuesCachedData(*GetDocument()), scanner_type);
+      MediaValuesCached::MediaValuesCachedData(*GetDocument()));
 }
 
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
@@ -1312,8 +1306,7 @@ void HTMLDocumentParser::EvaluateAndPreloadScriptForDocumentWrite(
   int current_preload_count =
       GetDocument()->Loader()->Fetcher()->CountPreloads();
 
-  std::unique_ptr<HTMLPreloadScanner> scanner =
-      CreatePreloadScanner(TokenPreloadScanner::ScannerType::kInsertion);
+  std::unique_ptr<HTMLPreloadScanner> scanner = CreatePreloadScanner();
   scanner->AppendToEnd(SegmentedString(written_source));
   ScanAndPreload(scanner.get());
 
