@@ -7,11 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -68,20 +66,14 @@ class FileDownloaderTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_CALL(*this, OnDownloadFinished(expected_result));
     // Wait for the FileExists check to happen if necessary.
-    if (!overwrite)
-      content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    // Wait for the actual download to happen.
-    base::RunLoop().RunUntilIdle();
-    // Wait for the FileMove to happen.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
  private:
   base::ScopedTempDir dir_;
   base::FilePath path_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
 };
