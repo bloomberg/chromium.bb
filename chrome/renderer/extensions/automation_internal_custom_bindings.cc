@@ -24,6 +24,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
+#include "gin/converter.h"
 #include "ipc/message_filter.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
@@ -47,28 +48,43 @@ void ThrowInvalidArgumentsException(
              << automation_bindings->context()->GetStackTraceAsString();
 }
 
-v8::Local<v8::Value> CreateV8String(v8::Isolate* isolate, const char* str) {
-  return v8::String::NewFromUtf8(isolate, str, v8::String::kNormalString,
-                                 strlen(str));
+v8::Local<v8::String> CreateV8String(v8::Isolate* isolate,
+                                     base::StringPiece str) {
+  return gin::StringToSymbol(isolate, str);
 }
 
-v8::Local<v8::Value> CreateV8String(v8::Isolate* isolate,
-                                    const std::string& str) {
-  return v8::String::NewFromUtf8(isolate, str.c_str(),
-                                 v8::String::kNormalString, str.length());
+// Note: when building up an object to return from one of the
+// automation API bindings like a rect ({left: 0, top: 0, ...}) or
+// something like that, we should use this function instead of
+// v8::Object::Set, because a malicious extension author could use
+// Object.defineProperty to override a setter and trigger all sorts of
+// things to happen in the middle of one of our functions below.
+//
+// This is only safe when we're creating the object to return and
+// we're setting properties on it before it's been exposed to
+// untrusted scripts.
+void SafeSetV8Property(v8::Isolate* isolate,
+                       v8::Local<v8::Object> object,
+                       base::StringPiece key,
+                       v8::Local<v8::Value> value) {
+  v8::Maybe<bool> maybe = object->CreateDataProperty(
+      isolate->GetCurrentContext(), CreateV8String(isolate, key), value);
+
+  // There's no legit reason CreateDataProperty should fail.
+  CHECK(maybe.IsJust() && maybe.FromJust());
 }
 
 v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
                                      const gfx::Rect& rect) {
   v8::Local<v8::Object> result(v8::Object::New(isolate));
-  result->Set(CreateV8String(isolate, "left"),
-              v8::Integer::New(isolate, rect.x()));
-  result->Set(CreateV8String(isolate, "top"),
-              v8::Integer::New(isolate, rect.y()));
-  result->Set(CreateV8String(isolate, "width"),
-              v8::Integer::New(isolate, rect.width()));
-  result->Set(CreateV8String(isolate, "height"),
-              v8::Integer::New(isolate, rect.height()));
+  SafeSetV8Property(isolate, result, "left",
+                    v8::Integer::New(isolate, rect.x()));
+  SafeSetV8Property(isolate, result, "top",
+                    v8::Integer::New(isolate, rect.y()));
+  SafeSetV8Property(isolate, result, "width",
+                    v8::Integer::New(isolate, rect.width()));
+  SafeSetV8Property(isolate, result, "height",
+                    v8::Integer::New(isolate, rect.height()));
   return result;
 }
 
@@ -945,10 +961,10 @@ void AutomationInternalCustomBindings::GetFocus(
 
   v8::Isolate* isolate = GetIsolate();
   v8::Local<v8::Object> result(v8::Object::New(isolate));
-  result->Set(CreateV8String(isolate, "treeId"),
-              v8::Integer::New(isolate, focused_tree_cache->tree_id));
-  result->Set(CreateV8String(isolate, "nodeId"),
-              v8::Integer::New(isolate, focused_node->id()));
+  SafeSetV8Property(isolate, result, "treeId",
+                    v8::Integer::New(isolate, focused_tree_cache->tree_id));
+  SafeSetV8Property(isolate, result, "nodeId",
+                    v8::Integer::New(isolate, focused_node->id()));
   args.GetReturnValue().Set(result);
 }
 
@@ -974,7 +990,7 @@ void AutomationInternalCustomBindings::GetHtmlAttributes(
   for (size_t i = 0; i < src.size(); i++) {
     std::string& key = src[i].first;
     std::string& value = src[i].second;
-    dst->Set(CreateV8String(isolate, key), CreateV8String(isolate, value));
+    SafeSetV8Property(isolate, dst, key, CreateV8String(isolate, value));
   }
   args.GetReturnValue().Set(dst);
 }
@@ -1001,7 +1017,7 @@ void AutomationInternalCustomBindings::GetState(
   while (state_shifter) {
     if (state_shifter & 1) {
       std::string key = ToString(static_cast<ui::AXState>(state_pos));
-      state->Set(CreateV8String(isolate, key), v8::Boolean::New(isolate, true));
+      SafeSetV8Property(isolate, state, key, v8::Boolean::New(isolate, true));
     }
     state_shifter = state_shifter >> 1;
     state_pos++;
@@ -1014,13 +1030,13 @@ void AutomationInternalCustomBindings::GetState(
   ui::AXNode* focused_node = nullptr;
   if (GetFocusInternal(top_cache, &focused_cache, &focused_node)) {
     if (focused_cache == cache && focused_node == node) {
-      state->Set(CreateV8String(isolate, "focused"),
-                 v8::Boolean::New(isolate, true));
+      SafeSetV8Property(isolate, state, "focused",
+                        v8::Boolean::New(isolate, true));
     }
   }
   if (cache->tree.data().focus_id == node->id()) {
-    state->Set(CreateV8String(isolate, "focused"),
-               v8::Boolean::New(isolate, true));
+    SafeSetV8Property(isolate, state, "focused",
+                      v8::Boolean::New(isolate, true));
   }
 
   args.GetReturnValue().Set(state);
