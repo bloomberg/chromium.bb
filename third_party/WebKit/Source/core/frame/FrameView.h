@@ -102,7 +102,8 @@ struct CompositedSelection;
 typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final
-    : public FrameViewBase,
+    : public GarbageCollectedFinalized<FrameView>,
+      public FrameViewBase,
       public FrameOrPlugin,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(FrameView);
@@ -120,9 +121,17 @@ class CORE_EXPORT FrameView final
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
   void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
-  const IntRect& FrameRect() const override {
-    return FrameViewBase::FrameRect();
+  const IntRect& FrameRect() const override { return frame_rect_; }
+  int X() const { return frame_rect_.X(); }
+  int Y() const { return frame_rect_.Y(); }
+  int Width() const { return frame_rect_.Width(); }
+  int Height() const { return frame_rect_.Height(); }
+  IntSize Size() const { return frame_rect_.Size(); }
+  IntPoint Location() const override { return frame_rect_.Location(); }
+  void Resize(int width, int height) {
+    SetFrameRect(IntRect(frame_rect_.X(), frame_rect_.Y(), width, height));
   }
+  void Resize(const IntSize& size) { SetFrameRect(IntRect(Location(), size)); }
 
   LocalFrame& GetFrame() const {
     ASSERT(frame_);
@@ -474,7 +483,20 @@ class CORE_EXPORT FrameView final
   typedef HeapHashSet<Member<Scrollbar>> ScrollbarsSet;
 
   // Functions for child manipulation and inspection.
+  bool IsSelfVisible() const {
+    return self_visible_;
+  }  // Whether or not we have been explicitly marked as visible or not.
+  bool IsParentVisible() const {
+    return parent_visible_;
+  }  // Whether or not our parent is visible.
+  bool IsVisible() const {
+    return self_visible_ && parent_visible_;
+  }  // Whether or not we are actually visible.
+  void SetParentVisible(bool);
+  void SetSelfVisible(bool v) { self_visible_ = v; }
   void SetParent(FrameViewBase*) override;
+  FrameViewBase* Parent() const override { return parent_; }
+  FrameView* Root() const;
   void RemoveChild(FrameViewBase*);
   void AddChild(FrameViewBase*);
   const ChildrenSet* Children() const { return &children_; }
@@ -640,11 +662,8 @@ class CORE_EXPORT FrameView final
                      const GlobalPaintFlags,
                      const IntRect& damage_rect) const;
 
-  // FrameViewBase overrides to ensure that our children's visibility status is
-  // kept up to date when we get shown and hidden.
   void Show() override;
   void Hide() override;
-  void SetParentVisible(bool) override;
 
   bool IsPointInScrollbarCorner(const IntPoint&);
   bool ScrollbarCornerPresent() const;
@@ -875,7 +894,7 @@ class CORE_EXPORT FrameView final
   void InvalidateTreeIfNeeded(const PaintInvalidationState&);
 
  private:
-  explicit FrameView(LocalFrame&);
+  explicit FrameView(LocalFrame&, IntRect);
   class ScrollbarManager : public blink::ScrollbarManager {
     DISALLOW_NEW();
 
@@ -1053,6 +1072,11 @@ class CORE_EXPORT FrameView final
   HashSet<RefPtr<LayoutPart>> parts_;
 
   Member<LocalFrame> frame_;
+
+  IntRect frame_rect_;
+  Member<FrameView> parent_;
+  bool self_visible_;
+  bool parent_visible_;
 
   WebDisplayMode display_mode_;
 

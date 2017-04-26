@@ -32,70 +32,73 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
 
 namespace blink {
 
-class Event;
-
-// The FrameViewBase class serves as a base class for FrameView, Scrollbar, and
-// PluginView.
-//
-// FrameViewBases are connected in a hierarchy, with the restriction that
-// plugins and scrollbars are always leaves of the tree. Only FrameView can have
-// children (and therefore the FrameViewBase class has no concept of children).
-class PLATFORM_EXPORT FrameViewBase
-    : public GarbageCollectedFinalized<FrameViewBase> {
+// The FrameViewBase class is the parent of Scrollbar.
+// TODO(joelhockey): Move core/paint/ScrollbarManager to platform/scroll
+// and use it to replace this class.
+class PLATFORM_EXPORT FrameViewBase : public GarbageCollectedMixin {
  public:
-  FrameViewBase();
-  virtual ~FrameViewBase();
+  FrameViewBase(){};
+  virtual ~FrameViewBase(){};
 
-  int X() const { return FrameRect().X(); }
-  int Y() const { return FrameRect().Y(); }
-  int Width() const { return FrameRect().Width(); }
-  int Height() const { return FrameRect().Height(); }
-  IntSize Size() const { return FrameRect().Size(); }
-  IntPoint Location() const { return FrameRect().Location(); }
-
-  virtual void SetFrameRect(const IntRect& frame_rect) {
-    frame_rect_ = frame_rect;
-  }
-  const IntRect& FrameRect() const { return frame_rect_; }
-
-  void Resize(int w, int h) { SetFrameRect(IntRect(X(), Y(), w, h)); }
-  void Resize(const IntSize& s) { SetFrameRect(IntRect(Location(), s)); }
-
-  bool IsSelfVisible() const {
-    return self_visible_;
-  }  // Whether or not we have been explicitly marked as visible or not.
-  bool IsParentVisible() const {
-    return parent_visible_;
-  }  // Whether or not our parent is visible.
-  bool IsVisible() const {
-    return self_visible_ && parent_visible_;
-  }  // Whether or not we are actually visible.
-  virtual void SetParentVisible(bool visible) { parent_visible_ = visible; }
-  void SetSelfVisible(bool v) { self_visible_ = v; }
+  virtual IntPoint Location() const = 0;
 
   virtual bool IsFrameView() const { return false; }
   virtual bool IsRemoteFrameView() const { return false; }
-  virtual bool IsPluginView() const { return false; }
-  virtual bool IsPluginContainer() const { return false; }
-  virtual bool IsScrollbar() const { return false; }
 
-  virtual void SetParent(FrameViewBase*);
-  FrameViewBase* Parent() const { return parent_; }
-  FrameViewBase* Root() const;
+  virtual void SetParent(FrameViewBase*) = 0;
+  virtual FrameViewBase* Parent() const = 0;
 
-  virtual void HandleEvent(Event*) {}
+  // TODO(joelhockey): Remove this from FrameViewBase once FrameView children
+  // use FrameOrPlugin rather than FrameViewBase.  This method does not apply to
+  // scrollbars.
+  virtual void SetParentVisible(bool visible) {}
 
   // ConvertFromRootFrame must be in FrameViewBase rather than FrameView
   // to be visible to Scrollbar::ConvertFromRootFrame and
   // RemoteFrameView::UpdateRemoteViewportIntersection. The related
   // ConvertFromContainingFrameViewBase must be declared locally to be visible.
-  IntRect ConvertFromRootFrame(const IntRect&) const;
-  IntPoint ConvertFromRootFrame(const IntPoint&) const;
-  FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
+  IntRect ConvertFromRootFrame(const IntRect& rect_in_root_frame) const {
+    if (const FrameViewBase* parent_frame_view_base = Parent()) {
+      IntRect parent_rect =
+          parent_frame_view_base->ConvertFromRootFrame(rect_in_root_frame);
+      return ConvertFromContainingFrameViewBase(parent_rect);
+    }
+    return rect_in_root_frame;
+  }
+
+  IntPoint ConvertFromRootFrame(const IntPoint& point_in_root_frame) const {
+    if (const FrameViewBase* parent_frame_view_base = Parent()) {
+      IntPoint parent_point =
+          parent_frame_view_base->ConvertFromRootFrame(point_in_root_frame);
+      return ConvertFromContainingFrameViewBase(parent_point);
+    }
+    return point_in_root_frame;
+  }
+
+  FloatPoint ConvertFromRootFrame(const FloatPoint& point_in_root_frame) const {
+    // FrameViewBase / windows are required to be IntPoint aligned, but we may
+    // need to convert FloatPoint values within them (eg. for event
+    // co-ordinates).
+    IntPoint floored_point = FlooredIntPoint(point_in_root_frame);
+    FloatPoint parent_point = ConvertFromRootFrame(floored_point);
+    FloatSize window_fraction = point_in_root_frame - floored_point;
+    // Use linear interpolation handle any fractional value (eg. for iframes
+    // subject to a transform beyond just a simple translation).
+    // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
+    if (!window_fraction.IsEmpty()) {
+      const int kFactor = 1000;
+      IntPoint parent_line_end = ConvertFromRootFrame(
+          floored_point + RoundedIntSize(window_fraction.ScaledBy(kFactor)));
+      FloatSize parent_fraction =
+          (parent_line_end - parent_point).ScaledBy(1.0f / kFactor);
+      parent_point.Move(parent_fraction);
+    }
+    return parent_point;
+  }
+
   // TODO(joelhockey): Change all these to pure virtual functions
   // Once RemoteFrameView no longer inherits from FrameViewBase.
   virtual IntRect ConvertFromContainingFrameViewBase(
@@ -109,21 +112,9 @@ class PLATFORM_EXPORT FrameViewBase
     return parent_point;
   }
 
-  virtual void FrameRectsChanged() {}
+  virtual void FrameRectsChanged() { NOTREACHED(); }
 
-  virtual void GeometryMayHaveChanged() {}
-
-  // Notifies this frameviewbase that it will no longer be receiving events.
-  virtual void EventListenersRemoved() {}
-
-  DECLARE_VIRTUAL_TRACE();
   virtual void Dispose() {}
-
- private:
-  Member<FrameViewBase> parent_;
-  IntRect frame_rect_;
-  bool self_visible_;
-  bool parent_visible_;
 };
 
 }  // namespace blink

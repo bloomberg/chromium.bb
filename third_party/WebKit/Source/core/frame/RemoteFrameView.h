@@ -6,6 +6,7 @@
 #define RemoteFrameView_h
 
 #include "core/frame/FrameOrPlugin.h"
+#include "core/frame/FrameView.h"
 #include "platform/FrameViewBase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
@@ -16,7 +17,9 @@ class CullRect;
 class GraphicsContext;
 class RemoteFrame;
 
-class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
+class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
+                              public FrameViewBase,
+                              public FrameOrPlugin {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
 
  public:
@@ -26,6 +29,7 @@ class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
 
   bool IsRemoteFrameView() const override { return true; }
   void SetParent(FrameViewBase*) override;
+  FrameViewBase* Parent() const override { return parent_; }
 
   RemoteFrame& GetFrame() const {
     ASSERT(remote_frame_);
@@ -37,9 +41,8 @@ class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
   void FrameRectsChanged() override;
   void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
-  const IntRect& FrameRect() const override {
-    return FrameViewBase::FrameRect();
-  }
+  const IntRect& FrameRect() const override { return frame_rect_; }
+  IntPoint Location() const override { return frame_rect_.Location(); }
   void Paint(GraphicsContext&, const CullRect&) const override {}
   void Hide() override;
   void Show() override;
@@ -59,8 +62,11 @@ class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
   // and FrameView. Please see the FrameView::m_frame comment for
   // details.
   Member<RemoteFrame> remote_frame_;
-
+  Member<FrameView> parent_;
   IntRect last_viewport_intersection_;
+  IntRect frame_rect_;
+  bool self_visible_;
+  bool parent_visible_;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView,
