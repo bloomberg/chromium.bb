@@ -11,14 +11,6 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
-namespace {
-
-// The maximum number of video frame buffers in-flight at any one time.
-// If all buffers are still in use by consumers when new frames are produced
-// those frames get dropped.
-static const int kMaxBufferCount = 3;
-}
-
 namespace video_capture {
 
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
@@ -30,8 +22,7 @@ DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
       device_running_(false) {}
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
-  if (device_running_)
-    device_->StopAndDeAllocate();
+  Stop();
 }
 
 void DeviceMediaToMojoAdapter::Start(
@@ -45,11 +36,12 @@ void DeviceMediaToMojoAdapter::Start(
       base::MakeUnique<ReceiverMojoToMediaAdapter>(std::move(receiver));
 
   // Create a dedicated buffer pool for the device usage session.
+  const int kMaxBufferCount = 2;
   auto buffer_tracker_factory =
       base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>();
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool(
       new media::VideoCaptureBufferPoolImpl(std::move(buffer_tracker_factory),
-                                            max_buffer_pool_buffer_count()));
+                                            kMaxBufferCount));
 
   auto device_client = base::MakeUnique<media::VideoCaptureDeviceClient>(
       std::move(media_receiver), buffer_pool, jpeg_decoder_factory_callback_);
@@ -58,26 +50,15 @@ void DeviceMediaToMojoAdapter::Start(
   device_running_ = true;
 }
 
-void DeviceMediaToMojoAdapter::OnReceiverReportingUtilization(
-    int32_t frame_feedback_id,
-    double utilization) {
-  device_->OnUtilizationReport(frame_feedback_id, utilization);
-}
-
 void DeviceMediaToMojoAdapter::Stop() {
   if (device_running_ == false)
     return;
-  device_running_ = false;
   device_->StopAndDeAllocate();
+  device_running_ = false;
 }
 
 void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
   Stop();
-}
-
-// static
-int DeviceMediaToMojoAdapter::max_buffer_pool_buffer_count() {
-  return kMaxBufferCount;
 }
 
 }  // namespace video_capture
