@@ -22,7 +22,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -34,10 +33,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Instrumentation tests for VR Shell (Chrome VR)
+ * End-to-end tests for VR browsing, aka "VR Shell". This may require
+ * interacting with WebVR in addition to the VR browser, so inherit from
+ * VrTestBase for the WebVR test framework.
  */
 @CommandLineFlags.Add("enable-features=VrShell")
-public class VrShellTest extends ChromeTabbedActivityTestBase {
+public class VrShellTest extends VrTestBase {
     private static final String GOLDEN_DIR =
             "chrome/test/data/android/render_tests";
 
