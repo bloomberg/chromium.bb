@@ -105,9 +105,7 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
 }
 
 TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
-  const char* test_cases[][2] = {{"::shadow", "::shadow"},
-                                 {".a::shadow", ".a::shadow"},
-                                 {"::content", "::content"},
+  const char* test_cases[][2] = {{"::content", "::content"},
                                  {".a::content", ".a::content"},
                                  {"::content.a", "::content.a"},
                                  {"::content.a.b", "::content.a.b"},
@@ -127,16 +125,12 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
 TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
   const char* test_cases[] = {":not(::before)",
                               ":not(::content)",
-                              ":not(::shadow)",
                               ":host(::before)",
                               ":host(::content)",
-                              ":host(::shadow)",
                               ":host-context(::before)",
                               ":host-context(::content)",
-                              ":host-context(::shadow)",
                               ":-webkit-any(::after, ::before)",
-                              ":-webkit-any(::content, span)",
-                              ":-webkit-any(div, ::shadow)"};
+                              ":-webkit-any(::content, span)"};
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
@@ -201,9 +195,7 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
 }
 
 TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
-  const char* test_cases[] = {"::content *", "::shadow *",
-                              "::content div::before",
-                              "::shadow ::first-letter"};
+  const char* test_cases[] = {"::content *", "::content div::before"};
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
@@ -247,18 +239,14 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
   const char* test_cases[][2] = {
       {"*::-webkit-volume-slider", "::-webkit-volume-slider"},
       {"*::cue(i)", "::cue(i)"},
-      {"*::shadow", "::shadow"},
       {"*:host-context(.x)", "*:host-context(.x)"},
       {"*:host", "*:host"},
       {"|*::-webkit-volume-slider", "|*::-webkit-volume-slider"},
       {"|*::cue(i)", "|*::cue(i)"},
-      {"|*::shadow", "|*::shadow"},
       {"*|*::-webkit-volume-slider", "::-webkit-volume-slider"},
       {"*|*::cue(i)", "::cue(i)"},
-      {"*|*::shadow", "::shadow"},
       {"ns|*::-webkit-volume-slider", "ns|*::-webkit-volume-slider"},
-      {"ns|*::cue(i)", "ns|*::cue(i)"},
-      {"ns|*::shadow", "ns|*::shadow"}};
+      {"ns|*::cue(i)", "ns|*::cue(i)"}};
 
   CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
