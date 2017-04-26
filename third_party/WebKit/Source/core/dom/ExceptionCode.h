@@ -64,8 +64,11 @@ enum {
   kInvalidNodeTypeError,
   kDataCloneError,
 
-  // These are IDB-specific.
+  // The operation failed for an unknown transient reason (e.g. out of memory).
+  // Note: Rethrowed V8 exception will also have this code.
   kUnknownError,
+
+  // These are IDB-specific.
   kConstraintError,
   kDataError,
   kTransactionInactiveError,
