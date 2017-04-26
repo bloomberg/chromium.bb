@@ -46,10 +46,13 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
       std::unique_ptr<base::DictionaryValue>* result) override {
     if (method == "DOM.getDocument") {
       base::DictionaryValue result_dict;
-      if (has_empty_base_url_)
-        result_dict.SetString("root.baseURL", std::string());
-      else
+      if (has_empty_base_url_) {
+        result_dict.SetString("root.baseURL", "about:blank");
+        result_dict.SetString("root.documentURL", "http://test");
+      } else {
         result_dict.SetString("root.baseURL", "http://test");
+        result_dict.SetString("root.documentURL", "http://test");
+      }
       result->reset(result_dict.DeepCopy());
       return Status(kOk);
     } else if (method == "Runtime.evaluate") {
