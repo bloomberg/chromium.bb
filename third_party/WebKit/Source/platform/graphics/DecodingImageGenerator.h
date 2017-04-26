@@ -65,7 +65,7 @@ class PLATFORM_EXPORT DecodingImageGenerator final : public SkImageGenerator {
   void SetCanYUVDecode(bool yes) { can_yuv_decode_ = yes; }
 
  protected:
-  SkData* onRefEncodedData(GrContext* ctx) override;
+  SkData* onRefEncodedData() override;
 
   bool onGetPixels(const SkImageInfo&,
                    void* pixels,
