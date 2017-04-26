@@ -16,7 +16,7 @@ SettingsSiteSettingsPageBrowserTest.prototype = {
 };
 
 // Failing on ChromiumOS dbg. https://crbug.com/709442
-GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#if (defined(OS_WIN) || defined(OS_CHROMEOS))  && !defined(NDEBUG)');
 GEN('#define MAYBE_labels DISABLED_labels');
 GEN('#else');
 GEN('#define MAYBE_labels labels');
