@@ -27,8 +27,8 @@ PASS Stringification of new PasswordCredential({ id: "id", password: "pencil", i
 PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "idName" with the proper type (0) 
 PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "passwordName" with the proper type (1) 
 FAIL PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "additionalData" with the proper type (2) Unrecognized type FormData
-PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (0) 
-PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (1) 
+PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (3) 
+PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (4) 
 PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "id" with the proper type (0) 
 PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "type" with the proper type (1) 
 PASS FederatedCredential interface: existence and properties of interface object 
@@ -42,8 +42,8 @@ PASS FederatedCredential must be primary interface of new FederatedCredential({ 
 PASS Stringification of new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) 
 PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "provider" with the proper type (0) 
 PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "protocol" with the proper type (1) 
-PASS SiteBoundCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (0) 
-PASS SiteBoundCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (1) 
+PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (2) 
+PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (3) 
 PASS Credential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "id" with the proper type (0) 
 PASS Credential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "type" with the proper type (1) 
 Harness: the test ran to completion.

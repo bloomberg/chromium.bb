@@ -1884,8 +1884,10 @@ interface FaceDetector
     attribute @@toStringTag
     method constructor
     method detect
-interface FederatedCredential : SiteBoundCredential
+interface FederatedCredential : Credential
     attribute @@toStringTag
+    getter iconURL
+    getter name
     getter protocol
     getter provider
     method constructor
@@ -4675,10 +4677,12 @@ interface PannerNode : AudioNode
     setter panningModel
     setter refDistance
     setter rolloffFactor
-interface PasswordCredential : SiteBoundCredential
+interface PasswordCredential : Credential
     attribute @@toStringTag
     getter additionalData
+    getter iconURL
     getter idName
+    getter name
     getter passwordName
     method constructor
     setter additionalData
@@ -6504,11 +6508,6 @@ interface SharedWorker : EventTarget
     getter workerStart
     method constructor
     setter onerror
-interface SiteBoundCredential : Credential
-    attribute @@toStringTag
-    getter iconURL
-    getter name
-    method constructor
 interface SourceBuffer : EventTarget
     attribute @@toStringTag
     getter appendWindowEnd

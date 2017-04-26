@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "modules/ModulesExport.h"
-#include "modules/credentialmanager/SiteBoundCredential.h"
+#include "modules/credentialmanager/CredentialUserData.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 
@@ -17,7 +17,7 @@ namespace blink {
 class FederatedCredentialData;
 class WebFederatedCredential;
 
-class MODULES_EXPORT FederatedCredential final : public SiteBoundCredential {
+class MODULES_EXPORT FederatedCredential final : public CredentialUserData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

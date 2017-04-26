@@ -119,7 +119,7 @@ PasswordCredential* PasswordCredential::Create(
 
 PasswordCredential::PasswordCredential(
     WebPasswordCredential* web_password_credential)
-    : SiteBoundCredential(web_password_credential->GetPlatformCredential()),
+    : CredentialUserData(web_password_credential->GetPlatformCredential()),
       id_name_("username"),
       password_name_("password") {}
 
@@ -127,7 +127,7 @@ PasswordCredential::PasswordCredential(const String& id,
                                        const String& password,
                                        const String& name,
                                        const KURL& icon)
-    : SiteBoundCredential(
+    : CredentialUserData(
           PlatformPasswordCredential::Create(id, password, name, icon)),
       id_name_("username"),
       password_name_("password") {}
@@ -183,7 +183,7 @@ const String& PasswordCredential::Password() const {
 }
 
 DEFINE_TRACE(PasswordCredential) {
-  SiteBoundCredential::Trace(visitor);
+  CredentialUserData::Trace(visitor);
   visitor->Trace(additional_data_);
 }
 
