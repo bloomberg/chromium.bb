@@ -41,10 +41,6 @@ LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
       selection_start_pos_(-1),
       selection_end_pos_(-1) {}
 
-const VisibleSelection& LayoutSelection::GetVisibleSelection() const {
-  return frame_selection_->ComputeVisibleSelectionInDOMTree();
-}
-
 SelectionInFlatTree LayoutSelection::CalcVisibleSelection(
     const VisibleSelectionInFlatTree& original_selection) const {
   const PositionInFlatTree& start = original_selection.Start();
