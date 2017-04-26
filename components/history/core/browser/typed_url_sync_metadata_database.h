@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/sync_metadata_store.h"
 #include "sql/meta_table.h"
 
 namespace sql {
@@ -20,30 +21,27 @@ namespace history {
 // and datatype state table. Entity metadata table contains metadata(sync
 // states) for each url. Datatype state table contains the state of typed url
 // datatype.
-class TypedURLSyncMetadataDatabase {
+class TypedURLSyncMetadataDatabase : public syncer::SyncMetadataStore {
  public:
   // Must call InitVisitTable() before using to make sure the database is
   // initialized.
   TypedURLSyncMetadataDatabase();
-  virtual ~TypedURLSyncMetadataDatabase();
+  ~TypedURLSyncMetadataDatabase() override;
 
   // Read all the stored metadata for typed URL and fill |metadata_batch|
   // with it.
   bool GetAllSyncMetadata(syncer::MetadataBatch* metadata_batch);
 
-  // Update the metadata row for typed URL, keyed by |storage_key|, to
-  // contain the contents of |metadata|.
-  bool UpdateSyncMetadata(const std::string& storage_key,
-                          const sync_pb::EntityMetadata& metadata);
-
-  // Remove the metadata row of typed URL keyed by |storage_key|.
-  bool ClearSyncMetadata(const std::string& storage_key);
-
-  // Update the stored sync state for the typed URL.
-  bool UpdateModelTypeState(const sync_pb::ModelTypeState& model_type_state);
-
-  // Clear the stored sync state for typed URL.
-  bool ClearModelTypeState();
+  // syncer::SyncMetadataStore implementation.
+  bool UpdateSyncMetadata(syncer::ModelType model_type,
+                          const std::string& storage_key,
+                          const sync_pb::EntityMetadata& metadata) override;
+  bool ClearSyncMetadata(syncer::ModelType model_type,
+                         const std::string& storage_key) override;
+  bool UpdateModelTypeState(
+      syncer::ModelType model_type,
+      const sync_pb::ModelTypeState& model_type_state) override;
+  bool ClearModelTypeState(syncer::ModelType model_type) override;
 
  protected:
   // Returns the database for the functions in this interface.

@@ -48,8 +48,12 @@ bool TypedURLSyncMetadataDatabase::GetAllSyncMetadata(
 }
 
 bool TypedURLSyncMetadataDatabase::UpdateSyncMetadata(
+    syncer::ModelType model_type,
     const std::string& storage_key,
     const sync_pb::EntityMetadata& metadata) {
+  DCHECK_EQ(model_type, syncer::TYPED_URLS)
+      << "Only the TYPED_URLS model type is supported";
+
   int64_t storage_key_int = 0;
   if (!base::StringToInt64(storage_key, &storage_key_int)) {
     return false;
@@ -64,7 +68,11 @@ bool TypedURLSyncMetadataDatabase::UpdateSyncMetadata(
 }
 
 bool TypedURLSyncMetadataDatabase::ClearSyncMetadata(
+    syncer::ModelType model_type,
     const std::string& storage_key) {
+  DCHECK_EQ(model_type, syncer::TYPED_URLS)
+      << "Only the TYPED_URLS model type is supported";
+
   int64_t storage_key_int = 0;
   if (!base::StringToInt64(storage_key, &storage_key_int)) {
     return false;
@@ -77,14 +85,20 @@ bool TypedURLSyncMetadataDatabase::ClearSyncMetadata(
 }
 
 bool TypedURLSyncMetadataDatabase::UpdateModelTypeState(
+    syncer::ModelType model_type,
     const sync_pb::ModelTypeState& model_type_state) {
+  DCHECK_EQ(model_type, syncer::TYPED_URLS)
+      << "Only the TYPED_URLS model type is supported";
   DCHECK_GT(GetMetaTable().GetVersionNumber(), 0);
 
   std::string serialized_state = model_type_state.SerializeAsString();
   return GetMetaTable().SetValue(kTypedURLModelTypeStateKey, serialized_state);
 }
 
-bool TypedURLSyncMetadataDatabase::ClearModelTypeState() {
+bool TypedURLSyncMetadataDatabase::ClearModelTypeState(
+    syncer::ModelType model_type) {
+  DCHECK_EQ(model_type, syncer::TYPED_URLS)
+      << "Only the TYPED_URLS model type is supported";
   DCHECK_GT(GetMetaTable().GetVersionNumber(), 0);
   return GetMetaTable().DeleteKey(kTypedURLModelTypeStateKey);
 }
