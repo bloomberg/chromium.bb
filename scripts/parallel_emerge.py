@@ -276,7 +276,9 @@ class DepGraphGenerator(object):
         self.unpack_only = True
       elif arg.startswith("--eventlogfile="):
         log_file_name = arg.replace("--eventlogfile=", "")
-        cros_event.setEventLogger(cros_event.getEventFileLogger(log_file_name))
+        event_logger = cros_event.getEventFileLogger(log_file_name)
+        event_logger.setKind('ParallelEmerge')
+        cros_event.setEventLogger(event_logger)
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -469,7 +471,7 @@ class DepGraphGenerator(object):
     if "--quiet" not in emerge.opts:
       print("Calculating deps...")
 
-    with cros_event.newEvent(kind="GenerateDepTree"):
+    with cros_event.newEvent(task_name="GenerateDepTree"):
       self.CreateDepgraph(emerge, packages)
       depgraph = emerge.depgraph
 
@@ -927,7 +929,8 @@ def EmergeProcess(output, target, *args, **kwargs):
   Returns:
     The exit code returned by the subprocess.
   """
-  event = cros_event.newEvent(kind="EmergePackage", name=target)
+  event = cros_event.newEvent(task_name="EmergePackage",
+                              name=target)
   pid = os.fork()
   if pid == 0:
     try:
@@ -1005,7 +1008,7 @@ def UnpackPackage(pkg_state):
     cmd.append("--ignore-trailing-garbage=1")
   cmd.append(path)
 
-  with cros_event.newEvent(step="unpack package", **pkg_state) as event:
+  with cros_event.newEvent(task_name="UnpackPackage", **pkg_state) as event:
     result = cros_build_lib.RunCommand(cmd, cwd=root, stdout_to_pipe=True,
                                        print_cmd=False, error_code_ok=True)
 
