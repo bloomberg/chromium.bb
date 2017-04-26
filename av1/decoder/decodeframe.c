@@ -5007,6 +5007,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 
   *cm->fc = cm->frame_contexts[cm->frame_context_idx];
+  cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Uninitialized entropy context.");

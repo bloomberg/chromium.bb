@@ -6606,7 +6606,7 @@ static INLINE int clamp_64(int64_t value, int low, int high) {
 
 static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
                              int rate_16) {
-  FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+  FRAME_CONTEXT *pre_fc = cm->pre_fc;
   uint32_t *prev_non_zero_prob = get_non_zero_prob(pre_fc, tx_size, tx_type);
   uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
   uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);

@@ -341,6 +341,7 @@ static void setup_frame(AV1_COMP *cpi) {
   }
 #endif
 #endif
+  cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
 
   cpi->vaq_refresh = 0;
 

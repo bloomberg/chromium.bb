@@ -235,20 +235,19 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
 #if CONFIG_REF_MV
   int idx;
   for (idx = 0; idx < NMV_CONTEXTS; ++idx) {
-    nmv_context *fc = &cm->fc->nmvc[idx];
-    const nmv_context *pre_fc =
-        &cm->frame_contexts[cm->frame_context_idx].nmvc[idx];
+    nmv_context *nmvc = &cm->fc->nmvc[idx];
+    const nmv_context *pre_nmvc = &cm->pre_fc->nmvc[idx];
     const nmv_context_counts *counts = &cm->counts.mv[idx];
 #else
-  nmv_context *fc = &cm->fc->nmvc;
-  const nmv_context *pre_fc = &cm->frame_contexts[cm->frame_context_idx].nmvc;
+  nmv_context *nmvc = &cm->fc->nmvc;
+  const nmv_context *pre_nmvc = &cm->pre_fc.nmvc;
   const nmv_context_counts *counts = &cm->counts.mv;
 #endif  // CONFIG_REF_MV
-    aom_tree_merge_probs(av1_mv_joint_tree, pre_fc->joints, counts->joints,
-                         fc->joints);
+    aom_tree_merge_probs(av1_mv_joint_tree, pre_nmvc->joints, counts->joints,
+                         nmvc->joints);
     for (i = 0; i < 2; ++i) {
-      nmv_component *comp = &fc->comps[i];
-      const nmv_component *pre_comp = &pre_fc->comps[i];
+      nmv_component *comp = &nmvc->comps[i];
+      const nmv_component *pre_comp = &pre_nmvc->comps[i];
       const nmv_component_counts *c = &counts->comps[i];
 
       comp->sign = av1_mode_mv_merge_probs(pre_comp->sign, c->sign);

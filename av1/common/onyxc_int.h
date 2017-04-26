@@ -331,6 +331,7 @@ typedef struct AV1Common {
 
   FRAME_CONTEXT *fc;              /* this frame entropy */
   FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
+  FRAME_CONTEXT *pre_fc;          // Context referenced in this frame
   unsigned int frame_context_idx; /* Context to use/update */
   FRAME_COUNTS counts;
 
