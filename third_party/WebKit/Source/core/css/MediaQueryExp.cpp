@@ -218,7 +218,7 @@ MediaQueryExp::MediaQueryExp(const String& media_feature,
                              const MediaQueryExpValue& exp_value)
     : media_feature_(media_feature), exp_value_(exp_value) {}
 
-MediaQueryExp* MediaQueryExp::CreateIfValid(
+MediaQueryExp MediaQueryExp::Create(
     const String& media_feature,
     const Vector<CSSParserToken, 4>& token_list) {
   DCHECK(!media_feature.IsNull());
@@ -236,7 +236,7 @@ MediaQueryExp* MediaQueryExp::CreateIfValid(
     if (token.GetType() == kIdentToken) {
       CSSValueID ident = token.Id();
       if (!FeatureWithValidIdent(lower_media_feature, ident))
-        return nullptr;
+        return Invalid();
       exp_value.id = ident;
       exp_value.is_id = true;
     } else if (token.GetType() == kNumberToken ||
@@ -262,10 +262,10 @@ MediaQueryExp* MediaQueryExp::CreateIfValid(
         exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
         exp_value.is_value = true;
       } else {
-        return nullptr;
+        return Invalid();
       }
     } else {
-      return nullptr;
+      return Invalid();
     }
   } else if (token_list.size() == 3 &&
              FeatureWithAspectRatio(lower_media_feature)) {
@@ -275,23 +275,23 @@ MediaQueryExp* MediaQueryExp::CreateIfValid(
     const CSSParserToken& delimiter = token_list[1];
     const CSSParserToken& denominator = token_list[2];
     if (delimiter.GetType() != kDelimiterToken || delimiter.Delimiter() != '/')
-      return nullptr;
+      return Invalid();
     if (numerator.GetType() != kNumberToken || numerator.NumericValue() <= 0 ||
         numerator.GetNumericValueType() != kIntegerValueType)
-      return nullptr;
+      return Invalid();
     if (denominator.GetType() != kNumberToken ||
         denominator.NumericValue() <= 0 ||
         denominator.GetNumericValueType() != kIntegerValueType)
-      return nullptr;
+      return Invalid();
 
     exp_value.numerator = (unsigned)numerator.NumericValue();
     exp_value.denominator = (unsigned)denominator.NumericValue();
     exp_value.is_ratio = true;
   } else {
-    return nullptr;
+    return Invalid();
   }
 
-  return new MediaQueryExp(lower_media_feature, exp_value);
+  return MediaQueryExp(lower_media_feature, exp_value);
 }
 
 MediaQueryExp::~MediaQueryExp() {}

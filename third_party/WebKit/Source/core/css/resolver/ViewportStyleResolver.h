@@ -43,7 +43,7 @@ class MutableStylePropertySet;
 class StyleRuleViewport;
 
 class CORE_EXPORT ViewportStyleResolver
-    : public GarbageCollected<ViewportStyleResolver> {
+    : public GarbageCollectedFinalized<ViewportStyleResolver> {
  public:
   static ViewportStyleResolver* Create(Document& document) {
     return new ViewportStyleResolver(document);

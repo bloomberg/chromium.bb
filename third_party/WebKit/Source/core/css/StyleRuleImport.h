@@ -36,7 +36,7 @@ class StyleRuleImport : public StyleRuleBase {
   USING_PRE_FINALIZER(StyleRuleImport, Dispose);
 
  public:
-  static StyleRuleImport* Create(const String& href, MediaQuerySet*);
+  static StyleRuleImport* Create(const String& href, RefPtr<MediaQuerySet>);
 
   ~StyleRuleImport();
 
@@ -96,7 +96,7 @@ class StyleRuleImport : public StyleRuleBase {
                         const String& charset,
                         const CSSStyleSheetResource*);
 
-  StyleRuleImport(const String& href, MediaQuerySet*);
+  StyleRuleImport(const String& href, RefPtr<MediaQuerySet>);
 
   void Dispose();
 
@@ -104,7 +104,7 @@ class StyleRuleImport : public StyleRuleBase {
 
   Member<ImportedStyleSheetClient> style_sheet_client_;
   String str_href_;
-  Member<MediaQuerySet> media_queries_;
+  RefPtr<MediaQuerySet> media_queries_;
   Member<StyleSheetContents> style_sheet_;
   Member<CSSStyleSheetResource> resource_;
   bool loading_;

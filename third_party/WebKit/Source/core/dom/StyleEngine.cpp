@@ -1136,7 +1136,7 @@ bool StyleEngine::MediaQueryAffectedByViewportChange() {
   const auto& results =
       global_rule_set_.GetRuleFeatureSet().ViewportDependentMediaQueryResults();
   for (unsigned i = 0; i < results.size(); ++i) {
-    if (evaluator.Eval(results[i]->Expression()) != results[i]->Result())
+    if (evaluator.Eval(results[i].Expression()) != results[i].Result())
       return true;
   }
   return false;
@@ -1147,7 +1147,7 @@ bool StyleEngine::MediaQueryAffectedByDeviceChange() {
   const auto& results =
       global_rule_set_.GetRuleFeatureSet().DeviceDependentMediaQueryResults();
   for (unsigned i = 0; i < results.size(); ++i) {
-    if (evaluator.Eval(results[i]->Expression()) != results[i]->Result())
+    if (evaluator.Eval(results[i].Expression()) != results[i].Result())
       return true;
   }
   return false;

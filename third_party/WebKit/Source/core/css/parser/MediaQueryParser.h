@@ -36,7 +36,7 @@ class MediaQueryData {
   bool AddExpression();
   bool TryAddParserToken(CSSParserTokenType, const CSSParserToken&);
   void SetMediaType(const String&);
-  MediaQuery* TakeMediaQuery();
+  std::unique_ptr<MediaQuery> TakeMediaQuery();
 
   inline bool CurrentMediaQueryChanged() const {
     return (restrictor_ != MediaQuery::kNone || media_type_set_ ||
@@ -56,9 +56,9 @@ class CORE_EXPORT MediaQueryParser {
   WTF_MAKE_NONCOPYABLE(MediaQueryParser);
 
  public:
-  static MediaQuerySet* ParseMediaQuerySet(const String&);
-  static MediaQuerySet* ParseMediaQuerySet(CSSParserTokenRange);
-  static MediaQuerySet* ParseMediaCondition(CSSParserTokenRange);
+  static RefPtr<MediaQuerySet> ParseMediaQuerySet(const String&);
+  static RefPtr<MediaQuerySet> ParseMediaQuerySet(CSSParserTokenRange);
+  static RefPtr<MediaQuerySet> ParseMediaCondition(CSSParserTokenRange);
 
  private:
   enum ParserType {
@@ -69,7 +69,7 @@ class CORE_EXPORT MediaQueryParser {
   MediaQueryParser(ParserType);
   virtual ~MediaQueryParser();
 
-  MediaQuerySet* ParseImpl(CSSParserTokenRange);
+  RefPtr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
 
   void ProcessToken(const CSSParserToken&);
 
@@ -95,7 +95,7 @@ class CORE_EXPORT MediaQueryParser {
   State state_;
   ParserType parser_type_;
   MediaQueryData media_query_data_;
-  Member<MediaQuerySet> query_set_;
+  RefPtr<MediaQuerySet> query_set_;
   MediaQueryBlockWatcher block_watcher_;
 
   const static State kReadRestrictor;

@@ -205,8 +205,8 @@ void CSSStyleSheet::setDisabled(bool disabled) {
   DidMutate();
 }
 
-void CSSStyleSheet::SetMediaQueries(MediaQuerySet* media_queries) {
-  media_queries_ = media_queries;
+void CSSStyleSheet::SetMediaQueries(RefPtr<MediaQuerySet> media_queries) {
+  media_queries_ = std::move(media_queries);
   if (media_cssom_wrapper_ && media_queries_)
     media_cssom_wrapper_->Reattach(media_queries_.Get());
 }
@@ -217,7 +217,7 @@ bool CSSStyleSheet::MatchesMediaQueries(const MediaQueryEvaluator& evaluator) {
 
   if (!media_queries_)
     return true;
-  return evaluator.Eval(media_queries_,
+  return evaluator.Eval(*media_queries_,
                         &viewport_dependent_media_query_results_,
                         &device_dependent_media_query_results_);
 }
@@ -442,9 +442,6 @@ void CSSStyleSheet::SetText(const String& text) {
 
 DEFINE_TRACE(CSSStyleSheet) {
   visitor->Trace(contents_);
-  visitor->Trace(media_queries_);
-  visitor->Trace(viewport_dependent_media_query_results_);
-  visitor->Trace(device_dependent_media_query_results_);
   visitor->Trace(owner_node_);
   visitor->Trace(owner_rule_);
   visitor->Trace(media_cssom_wrapper_);

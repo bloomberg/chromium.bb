@@ -305,9 +305,9 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   bool media_query_matches = true;
   LocalFrame* frame = LoadingFrame();
   if (!owner_->Media().IsEmpty() && frame) {
-    MediaQuerySet* media = MediaQuerySet::Create(owner_->Media());
+    RefPtr<MediaQuerySet> media = MediaQuerySet::Create(owner_->Media());
     MediaQueryEvaluator evaluator(frame);
-    media_query_matches = evaluator.Eval(media);
+    media_query_matches = evaluator.Eval(*media);
   }
 
   // Don't hold up layout tree construction and script execution on

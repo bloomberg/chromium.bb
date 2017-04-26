@@ -41,7 +41,7 @@ class MediaQuerySet;
 class MediaValues;
 class MediaValuesInitialViewport;
 
-using MediaQueryResultList = HeapVector<Member<MediaQueryResult>>;
+using MediaQueryResultList = Vector<MediaQueryResult>;
 
 // Class that evaluates css media queries as defined in
 // CSS3 Module "Media Queries" (http://www.w3.org/TR/css3-mediaqueries/)
@@ -83,17 +83,17 @@ class CORE_EXPORT MediaQueryEvaluator final
   bool MediaTypeMatch(const String& media_type_to_match) const;
 
   // Evaluates a list of media queries.
-  bool Eval(const MediaQuerySet*,
+  bool Eval(const MediaQuerySet&,
             MediaQueryResultList* viewport_dependent = nullptr,
             MediaQueryResultList* device_dependent = nullptr) const;
 
   // Evaluates media query.
-  bool Eval(const MediaQuery*,
+  bool Eval(const MediaQuery&,
             MediaQueryResultList* viewport_dependent = nullptr,
             MediaQueryResultList* device_dependent = nullptr) const;
 
   // Evaluates media query subexpression, ie "and (media-feature: value)" part.
-  bool Eval(const MediaQueryExp*) const;
+  bool Eval(const MediaQueryExp&) const;
 
   DECLARE_TRACE();
 

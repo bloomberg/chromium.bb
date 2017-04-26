@@ -106,7 +106,7 @@ void ViewportStyleResolver::CollectViewportChildRules(
       StyleRuleMedia* media_rule = ToStyleRuleMedia(rule);
       if (!media_rule->MediaQueries() ||
           initial_viewport_medium_->Eval(
-              media_rule->MediaQueries(),
+              *media_rule->MediaQueries(),
               &viewport_dependent_media_query_results_,
               &device_dependent_media_query_results_))
         CollectViewportChildRules(media_rule->ChildRules(), origin);
@@ -126,7 +126,7 @@ void ViewportStyleResolver::CollectViewportRulesFromImports(
     if (!import_rule->GetStyleSheet()->HasViewportRule())
       continue;
     if (import_rule->MediaQueries() &&
-        initial_viewport_medium_->Eval(import_rule->MediaQueries(),
+        initial_viewport_medium_->Eval(*import_rule->MediaQueries(),
                                        &viewport_dependent_media_query_results_,
                                        &device_dependent_media_query_results_))
       CollectViewportRulesFromAuthorSheetContents(
@@ -148,7 +148,7 @@ void ViewportStyleResolver::CollectViewportRulesFromAuthorSheet(
   if (!contents.HasViewportRule() && contents.ImportRules().IsEmpty())
     return;
   if (sheet.MediaQueries() &&
-      !initial_viewport_medium_->Eval(sheet.MediaQueries(),
+      !initial_viewport_medium_->Eval(*sheet.MediaQueries(),
                                       &viewport_dependent_media_query_results_,
                                       &device_dependent_media_query_results_))
     return;
@@ -309,8 +309,8 @@ void ViewportStyleResolver::InitialViewportChanged() {
 
   auto& results = viewport_dependent_media_query_results_;
   for (unsigned i = 0; i < results.size(); i++) {
-    if (initial_viewport_medium_->Eval(results[i]->Expression()) !=
-        results[i]->Result()) {
+    if (initial_viewport_medium_->Eval(results[i].Expression()) !=
+        results[i].Result()) {
       needs_update_ = kCollectRules;
       break;
     }
@@ -343,8 +343,6 @@ DEFINE_TRACE(ViewportStyleResolver) {
   visitor->Trace(document_);
   visitor->Trace(property_set_);
   visitor->Trace(initial_viewport_medium_);
-  visitor->Trace(viewport_dependent_media_query_results_);
-  visitor->Trace(device_dependent_media_query_results_);
 }
 
 }  // namespace blink

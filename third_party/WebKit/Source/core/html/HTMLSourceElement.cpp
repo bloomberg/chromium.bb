@@ -75,7 +75,7 @@ void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
     return;
   }
 
-  MediaQuerySet* set = MediaQuerySet::Create(media);
+  RefPtr<MediaQuerySet> set = MediaQuerySet::Create(media);
   media_query_list_ = MediaQueryList::Create(
       &GetDocument(), &GetDocument().GetMediaQueryMatcher(), set);
   AddMediaQueryListListener();

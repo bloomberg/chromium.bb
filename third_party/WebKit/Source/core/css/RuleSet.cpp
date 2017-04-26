@@ -305,7 +305,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (rule->IsMediaRule()) {
       StyleRuleMedia* media_rule = ToStyleRuleMedia(rule);
       if (!media_rule->MediaQueries() ||
-          medium.Eval(media_rule->MediaQueries(),
+          medium.Eval(*media_rule->MediaQueries(),
                       &features_.ViewportDependentMediaQueryResults(),
                       &features_.DeviceDependentMediaQueryResults()))
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
@@ -336,7 +336,7 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
     CHECK_EQ(import_rules.data(), sheet->ImportRules().data());
     if (import_rule->GetStyleSheet() &&
         (!import_rule->MediaQueries() ||
-         medium.Eval(import_rule->MediaQueries(),
+         medium.Eval(*import_rule->MediaQueries(),
                      &features_.ViewportDependentMediaQueryResults(),
                      &features_.DeviceDependentMediaQueryResults())))
       AddRulesFromSheet(import_rule->GetStyleSheet(), medium, add_rule_flags);
