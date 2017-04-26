@@ -58,7 +58,7 @@ a/b/c
 
 class CheckGnHeadersTest(unittest.TestCase):
   def testNinja(self):
-    headers = check_gn_headers.ParseNinjaDepsOutput(ninja_input.split('\n'))
+    headers = check_gn_headers.ParseNinjaDepsOutput(ninja_input)
     expected = set([
         'dir/path/b.h',
         'c.hh',
@@ -71,8 +71,7 @@ class CheckGnHeadersTest(unittest.TestCase):
     old_sep = os.sep
     os.sep = '\\'
 
-    headers = check_gn_headers.ParseNinjaDepsOutput(
-        ninja_input_win.split('\n'))
+    headers = check_gn_headers.ParseNinjaDepsOutput(ninja_input_win)
     expected = set([
         'dir\\path\\b.h',
         'c.hh',
