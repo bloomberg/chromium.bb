@@ -37,13 +37,15 @@ double refine_integerized_param(WarpedMotionParams *wm,
 
 /*
   Computes "num_motions" candidate global motion parameters between two frames.
-  The array "params_by_motion" should be length 8 * "num_motions", where the
-  first 2 slots in each group of 8 parameters are the translation parameters in
-  (row, col) order, and the remaining slots correspond to values in the
-  transformation matrix of the corresponding motion model. They are arranged in
-  "params" such that values on the tx-matrix diagonal have odd numbered indices
-  so the folowing matrix: A | B C | D would produce params = [trans row, trans
-  col, B, A, C, D].
+  The array "params_by_motion" should be length 8 * "num_motions". The ordering
+  of each set of parameters is best described  by the homography:
+
+        [x'     (m2 m3 m0   [x
+    z .  y'  =   m4 m5 m1 *  y
+         1]      m6 m7 1)    1]
+
+  where m{i} represents the ith value in any given set of parameters.
+
   "num_inliers" should be length "num_motions", and will be populated with the
   number of inlier feature points for each motion. Params for which the
   num_inliers entry is 0 should be ignored by the caller.

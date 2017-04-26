@@ -120,13 +120,17 @@ static INLINE void set_default_warp_params(WarpedMotionParams *wm) {
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
 #if CONFIG_GLOBAL_MOTION
-// ALPHA here refers to parameters a and b in rotzoom model:
-// | a   b|
-// |-b   a|
+// The following constants describe the various precisions
+// of different parameters in the global motion experiment.
 //
-// and a, b, c, d in affine model:
-// | a   b|
-// | c   d|
+// Given the general homography:
+//      [x'     (a  b  c   [x
+//  z .  y'  =   d  e  f *  y
+//       1]      g  h  i)    1]
+//
+// Constants using the name ALPHA here are related to parameters
+// a, b, d, e. Constants using the name TRANS are related
+// to parameters c and f.
 //
 // Anything ending in PREC_BITS is the number of bits of precision
 // to maintain when converting from double to integer.
