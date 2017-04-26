@@ -409,8 +409,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SizeF& viewport_size,
     const float top_controls_height,
     const float top_controls_shown_ratio,
-    bool is_mobile_optimized_hint,
-    const gfx::SelectionBound& selection_start) {
+    bool is_mobile_optimized_hint) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null() || !GetWindowAndroid())
@@ -421,26 +420,12 @@ void ContentViewCoreImpl::UpdateFrameInfo(
 
   page_scale_ = page_scale_factor;
 
-  // The CursorAnchorInfo API in Android only supports zero width selection
-  // bounds.
-  const jboolean has_insertion_marker =
-      selection_start.type() == gfx::SelectionBound::CENTER;
-  const jboolean is_insertion_marker_visible = selection_start.visible();
-  const jfloat insertion_marker_horizontal =
-      has_insertion_marker ? selection_start.edge_top().x() : 0.0f;
-  const jfloat insertion_marker_top =
-      has_insertion_marker ? selection_start.edge_top().y() : 0.0f;
-  const jfloat insertion_marker_bottom =
-      has_insertion_marker ? selection_start.edge_bottom().y() : 0.0f;
-
   Java_ContentViewCore_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
       page_scale_factor_limits.x(), page_scale_factor_limits.y(),
       content_size.width(), content_size.height(), viewport_size.width(),
       viewport_size.height(), top_controls_height, top_controls_shown_ratio,
-      is_mobile_optimized_hint, has_insertion_marker,
-      is_insertion_marker_visible, insertion_marker_horizontal,
-      insertion_marker_top, insertion_marker_bottom);
+      is_mobile_optimized_hint);
 }
 
 void ContentViewCoreImpl::ShowSelectPopupMenu(

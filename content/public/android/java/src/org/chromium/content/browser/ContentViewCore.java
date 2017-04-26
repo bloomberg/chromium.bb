@@ -1578,9 +1578,7 @@ public class ContentViewCore
             float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
             float contentHeight, float viewportWidth, float viewportHeight,
             float browserControlsHeightDp, float browserControlsShownRatio,
-            boolean isMobileOptimizedHint, boolean hasInsertionMarker,
-            boolean isInsertionMarkerVisible, float insertionMarkerHorizontal,
-            float insertionMarkerTop, float insertionMarkerBottom) {
+            boolean isMobileOptimizedHint) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
         mIsMobileOptimizedHint = isMobileOptimizedHint;
         // Adjust contentWidth/Height to be always at least as big as
@@ -1644,10 +1642,6 @@ public class ContentViewCore
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
-
-        mImeAdapter.onUpdateFrameInfo(mRenderCoordinates, hasInsertionMarker,
-                isInsertionMarkerVisible, insertionMarkerHorizontal, insertionMarkerTop,
-                insertionMarkerBottom);
 
         TraceEvent.end("ContentViewCore:updateFrameInfo");
     }
