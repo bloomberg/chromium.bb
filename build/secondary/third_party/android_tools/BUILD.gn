@@ -193,6 +193,11 @@ android_aar_prebuilt("android_support_v17_preference_java") {
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
 }
 
+android_library("android_support_chromium_java") {
+  testonly = true
+  java_files = [ "$android_sdk_root/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java" ]
+}
+
 # TODO(dgn): Remove this once no other target has a dependency on it
 java_group("google_play_services_default_resources") {
   deps = []
