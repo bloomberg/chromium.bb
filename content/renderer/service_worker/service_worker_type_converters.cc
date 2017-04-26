@@ -38,10 +38,10 @@ TypeConverter<blink::WebPaymentAppRequest,
   output.origin = blink::WebString::FromUTF8(input->origin.spec());
 
   output.method_data =
-      blink::WebVector<blink::WebPaymentMethodData>(input->methodData.size());
-  for (size_t i = 0; i < input->methodData.size(); i++) {
+      blink::WebVector<blink::WebPaymentMethodData>(input->method_data.size());
+  for (size_t i = 0; i < input->method_data.size(); i++) {
     output.method_data[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
-        std::move(input->methodData[i]));
+        std::move(input->method_data[i]));
   }
 
   output.total = mojo::ConvertTo<blink::WebPaymentItem>(input->total);
@@ -53,7 +53,7 @@ TypeConverter<blink::WebPaymentAppRequest,
         mojo::ConvertTo<blink::WebPaymentDetailsModifier>(input->modifiers[i]);
   }
 
-  output.option_id = blink::WebString::FromUTF8(input->optionId);
+  output.option_id = blink::WebString::FromUTF8(input->option_id);
 
   return output;
 }

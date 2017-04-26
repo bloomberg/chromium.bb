@@ -109,7 +109,7 @@ static void InvokePaymentApp(JNIEnv* env,
 
   PaymentAppRequestPtr app_request = PaymentAppRequest::New();
 
-  app_request->optionId = ConvertJavaStringToUTF8(env, joption_id);
+  app_request->option_id = ConvertJavaStringToUTF8(env, joption_id);
   app_request->origin = GURL(ConvertJavaStringToUTF8(env, jorigin));
 
   for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
@@ -126,7 +126,7 @@ static void InvokePaymentApp(JNIEnv* env,
         env,
         Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
             env, element));
-    app_request->methodData.push_back(std::move(methodData));
+    app_request->method_data.push_back(std::move(methodData));
   }
 
   app_request->total = PaymentItem::New();
