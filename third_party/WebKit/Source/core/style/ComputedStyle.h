@@ -185,10 +185,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
  protected:
   // non-inherited attributes
-  DataRef<StyleBoxData> box_;
-  DataRef<StyleVisualData> visual_;
-  DataRef<StyleBackgroundData> background_;
-  DataRef<StyleSurroundData> surround_;
+  DataRef<StyleBoxData> box_data_;
+  DataRef<StyleVisualData> visual_data_;
+  DataRef<StyleBackgroundData> background_data_;
+  DataRef<StyleSurroundData> surround_data_;
   DataRef<StyleRareNonInheritedData> rare_non_inherited_data_;
 
   // inherited attributes
@@ -419,55 +419,55 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // background-color
   static Color InitialBackgroundColor() { return Color::kTransparent; }
   void SetBackgroundColor(const StyleColor& v) {
-    SET_VAR(background_, color_, v);
+    SET_VAR(background_data_, color_, v);
   }
 
   // background-image
   bool HasBackgroundImage() const {
-    return background_->Background().HasImage();
+    return background_data_->Background().HasImage();
   }
   bool HasFixedBackgroundImage() const {
-    return background_->Background().HasFixedImage();
+    return background_data_->Background().HasFixedImage();
   }
   bool HasEntirelyFixedBackground() const;
 
   // background-clip
   EFillBox BackgroundClip() const {
-    return static_cast<EFillBox>(background_->Background().Clip());
+    return static_cast<EFillBox>(background_data_->Background().Clip());
   }
 
   // Border properties.
   // -webkit-border-image
   static NinePieceImage InitialNinePieceImage() { return NinePieceImage(); }
   const NinePieceImage& BorderImage() const {
-    return surround_->border_.GetImage();
+    return surround_data_->border_.GetImage();
   }
   void SetBorderImage(const NinePieceImage& b) {
-    SET_VAR(surround_, border_.image_, b);
+    SET_VAR(surround_data_, border_.image_, b);
   }
 
   // border-image-slice
   const LengthBox& BorderImageSlices() const {
-    return surround_->border_.GetImage().ImageSlices();
+    return surround_data_->border_.GetImage().ImageSlices();
   }
   void SetBorderImageSlices(const LengthBox&);
 
   // border-image-source
   static StyleImage* InitialBorderImageSource() { return 0; }
   StyleImage* BorderImageSource() const {
-    return surround_->border_.GetImage().GetImage();
+    return surround_data_->border_.GetImage().GetImage();
   }
   void SetBorderImageSource(StyleImage*);
 
   // border-image-width
   const BorderImageLengthBox& BorderImageWidth() const {
-    return surround_->border_.GetImage().BorderSlices();
+    return surround_data_->border_.GetImage().BorderSlices();
   }
   void SetBorderImageWidth(const BorderImageLengthBox&);
 
   // border-image-outset
   const BorderImageLengthBox& BorderImageOutset() const {
-    return surround_->border_.GetImage().Outset();
+    return surround_data_->border_.GetImage().Outset();
   }
   void SetBorderImageOutset(const BorderImageLengthBox&);
 
@@ -475,31 +475,35 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static float InitialBorderWidth() { return 3; }
 
   // border-top-width
-  float BorderTopWidth() const { return surround_->border_.BorderTopWidth(); }
+  float BorderTopWidth() const {
+    return surround_data_->border_.BorderTopWidth();
+  }
   void SetBorderTopWidth(float v) {
-    SET_BORDER_WIDTH(surround_, border_.top_, v);
+    SET_BORDER_WIDTH(surround_data_, border_.top_, v);
   }
 
   // border-bottom-width
   float BorderBottomWidth() const {
-    return surround_->border_.BorderBottomWidth();
+    return surround_data_->border_.BorderBottomWidth();
   }
   void SetBorderBottomWidth(float v) {
-    SET_BORDER_WIDTH(surround_, border_.bottom_, v);
+    SET_BORDER_WIDTH(surround_data_, border_.bottom_, v);
   }
 
   // border-left-width
-  float BorderLeftWidth() const { return surround_->border_.BorderLeftWidth(); }
+  float BorderLeftWidth() const {
+    return surround_data_->border_.BorderLeftWidth();
+  }
   void SetBorderLeftWidth(float v) {
-    SET_BORDER_WIDTH(surround_, border_.left_, v);
+    SET_BORDER_WIDTH(surround_data_, border_.left_, v);
   }
 
   // border-right-width
   float BorderRightWidth() const {
-    return surround_->border_.BorderRightWidth();
+    return surround_data_->border_.BorderRightWidth();
   }
   void SetBorderRightWidth(float v) {
-    SET_BORDER_WIDTH(surround_, border_.right_, v);
+    SET_BORDER_WIDTH(surround_data_, border_.right_, v);
   }
 
   // Border style properties.
@@ -507,55 +511,55 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-top-style
   EBorderStyle BorderTopStyle() const {
-    return surround_->border_.Top().Style();
+    return surround_data_->border_.Top().Style();
   }
   void SetBorderTopStyle(EBorderStyle v) {
-    SET_VAR(surround_, border_.top_.style_, v);
+    SET_VAR(surround_data_, border_.top_.style_, v);
   }
 
   // border-right-style
   EBorderStyle BorderRightStyle() const {
-    return surround_->border_.Right().Style();
+    return surround_data_->border_.Right().Style();
   }
   void SetBorderRightStyle(EBorderStyle v) {
-    SET_VAR(surround_, border_.right_.style_, v);
+    SET_VAR(surround_data_, border_.right_.style_, v);
   }
 
   // border-left-style
   EBorderStyle BorderLeftStyle() const {
-    return surround_->border_.Left().Style();
+    return surround_data_->border_.Left().Style();
   }
   void SetBorderLeftStyle(EBorderStyle v) {
-    SET_VAR(surround_, border_.left_.style_, v);
+    SET_VAR(surround_data_, border_.left_.style_, v);
   }
 
   // border-bottom-style
   EBorderStyle BorderBottomStyle() const {
-    return surround_->border_.Bottom().Style();
+    return surround_data_->border_.Bottom().Style();
   }
   void SetBorderBottomStyle(EBorderStyle v) {
-    SET_VAR(surround_, border_.bottom_.style_, v);
+    SET_VAR(surround_data_, border_.bottom_.style_, v);
   }
 
   // Border color properties.
   // border-left-color
   void SetBorderLeftColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_, border_.left_, v);
+    SET_BORDERVALUE_COLOR(surround_data_, border_.left_, v);
   }
 
   // border-right-color
   void SetBorderRightColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_, border_.right_, v);
+    SET_BORDERVALUE_COLOR(surround_data_, border_.right_, v);
   }
 
   // border-top-color
   void SetBorderTopColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_, border_.top_, v);
+    SET_BORDERVALUE_COLOR(surround_data_, border_.top_, v);
   }
 
   // border-bottom-color
   void SetBorderBottomColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(surround_, border_.bottom_, v);
+    SET_BORDERVALUE_COLOR(surround_data_, border_.bottom_, v);
   }
 
   // Border radius properties.
@@ -565,56 +569,56 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-top-left-radius (aka -webkit-border-top-left-radius)
   const LengthSize& BorderTopLeftRadius() const {
-    return surround_->border_.TopLeft();
+    return surround_data_->border_.TopLeft();
   }
   void SetBorderTopLeftRadius(const LengthSize& s) {
-    SET_VAR(surround_, border_.top_left_, s);
+    SET_VAR(surround_data_, border_.top_left_, s);
   }
 
   // border-top-right-radius (aka -webkit-border-top-right-radius)
   const LengthSize& BorderTopRightRadius() const {
-    return surround_->border_.TopRight();
+    return surround_data_->border_.TopRight();
   }
   void SetBorderTopRightRadius(const LengthSize& s) {
-    SET_VAR(surround_, border_.top_right_, s);
+    SET_VAR(surround_data_, border_.top_right_, s);
   }
 
   // border-bottom-left-radius (aka -webkit-border-bottom-left-radius)
   const LengthSize& BorderBottomLeftRadius() const {
-    return surround_->border_.BottomLeft();
+    return surround_data_->border_.BottomLeft();
   }
   void SetBorderBottomLeftRadius(const LengthSize& s) {
-    SET_VAR(surround_, border_.bottom_left_, s);
+    SET_VAR(surround_data_, border_.bottom_left_, s);
   }
 
   // border-bottom-right-radius (aka -webkit-border-bottom-right-radius)
   const LengthSize& BorderBottomRightRadius() const {
-    return surround_->border_.BottomRight();
+    return surround_data_->border_.BottomRight();
   }
   void SetBorderBottomRightRadius(const LengthSize& s) {
-    SET_VAR(surround_, border_.bottom_right_, s);
+    SET_VAR(surround_data_, border_.bottom_right_, s);
   }
 
   // Offset properties.
   // left
   static Length InitialLeft() { return Length(); }
-  const Length& Left() const { return surround_->left_; }
-  void SetLeft(const Length& v) { SET_VAR(surround_, left_, v); }
+  const Length& Left() const { return surround_data_->left_; }
+  void SetLeft(const Length& v) { SET_VAR(surround_data_, left_, v); }
 
   // right
   static Length InitialRight() { return Length(); }
-  const Length& Right() const { return surround_->right_; }
-  void SetRight(const Length& v) { SET_VAR(surround_, right_, v); }
+  const Length& Right() const { return surround_data_->right_; }
+  void SetRight(const Length& v) { SET_VAR(surround_data_, right_, v); }
 
   // top
   static Length InitialTop() { return Length(); }
-  const Length& Top() const { return surround_->top_; }
-  void SetTop(const Length& v) { SET_VAR(surround_, top_, v); }
+  const Length& Top() const { return surround_data_->top_; }
+  void SetTop(const Length& v) { SET_VAR(surround_data_, top_, v); }
 
   // bottom
   static Length InitialBottom() { return Length(); }
-  const Length& Bottom() const { return surround_->bottom_; }
-  void SetBottom(const Length& v) { SET_VAR(surround_, bottom_, v); }
+  const Length& Bottom() const { return surround_data_->bottom_; }
+  void SetBottom(const Length& v) { SET_VAR(surround_data_, bottom_, v); }
 
   // box-shadow (aka -webkit-box-shadow)
   static ShadowList* InitialBoxShadow() { return 0; }
@@ -625,22 +629,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // box-sizing (aka -webkit-box-sizing)
   static EBoxSizing InitialBoxSizing() { return EBoxSizing::kContentBox; }
-  EBoxSizing BoxSizing() const { return box_->BoxSizing(); }
+  EBoxSizing BoxSizing() const { return box_data_->BoxSizing(); }
   void SetBoxSizing(EBoxSizing s) {
-    SET_VAR(box_, box_sizing_, static_cast<unsigned>(s));
+    SET_VAR(box_data_, box_sizing_, static_cast<unsigned>(s));
   }
 
   // clip
   static LengthBox InitialClip() { return LengthBox(); }
-  const LengthBox& Clip() const { return visual_->clip; }
+  const LengthBox& Clip() const { return visual_data_->clip; }
   void SetClip(const LengthBox& box) {
-    SET_VAR(visual_, has_auto_clip, false);
-    SET_VAR(visual_, clip, box);
+    SET_VAR(visual_data_, has_auto_clip, false);
+    SET_VAR(visual_data_, clip, box);
   }
-  bool HasAutoClip() const { return visual_->has_auto_clip; }
+  bool HasAutoClip() const { return visual_data_->has_auto_clip; }
   void SetHasAutoClip() {
-    SET_VAR(visual_, has_auto_clip, true);
-    SET_VAR(visual_, clip, ComputedStyle::InitialClip());
+    SET_VAR(visual_data_, has_auto_clip, true);
+    SET_VAR(visual_data_, clip, ComputedStyle::InitialClip());
   }
 
   // Column properties.
@@ -837,10 +841,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return kBoxDecorationBreakSlice;
   }
   EBoxDecorationBreak BoxDecorationBreak() const {
-    return box_->BoxDecorationBreak();
+    return box_data_->BoxDecorationBreak();
   }
   void SetBoxDecorationBreak(EBoxDecorationBreak b) {
-    SET_VAR(box_, box_decoration_break_, b);
+    SET_VAR(box_data_, box_decoration_break_, b);
   }
 
   // -webkit-box-lines
@@ -1037,28 +1041,28 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static Length InitialMinSize() { return Length(); }
 
   // width
-  const Length& Width() const { return box_->Width(); }
-  void SetWidth(const Length& v) { SET_VAR(box_, width_, v); }
+  const Length& Width() const { return box_data_->Width(); }
+  void SetWidth(const Length& v) { SET_VAR(box_data_, width_, v); }
 
   // height
-  const Length& Height() const { return box_->Height(); }
-  void SetHeight(const Length& v) { SET_VAR(box_, height_, v); }
+  const Length& Height() const { return box_data_->Height(); }
+  void SetHeight(const Length& v) { SET_VAR(box_data_, height_, v); }
 
   // max-width
-  const Length& MaxWidth() const { return box_->MaxWidth(); }
-  void SetMaxWidth(const Length& v) { SET_VAR(box_, max_width_, v); }
+  const Length& MaxWidth() const { return box_data_->MaxWidth(); }
+  void SetMaxWidth(const Length& v) { SET_VAR(box_data_, max_width_, v); }
 
   // max-height
-  const Length& MaxHeight() const { return box_->MaxHeight(); }
-  void SetMaxHeight(const Length& v) { SET_VAR(box_, max_height_, v); }
+  const Length& MaxHeight() const { return box_data_->MaxHeight(); }
+  void SetMaxHeight(const Length& v) { SET_VAR(box_data_, max_height_, v); }
 
   // min-width
-  const Length& MinWidth() const { return box_->MinWidth(); }
-  void SetMinWidth(const Length& v) { SET_VAR(box_, min_width_, v); }
+  const Length& MinWidth() const { return box_data_->MinWidth(); }
+  void SetMinWidth(const Length& v) { SET_VAR(box_data_, min_width_, v); }
 
   // min-height
-  const Length& MinHeight() const { return box_->MinHeight(); }
-  void SetMinHeight(const Length& v) { SET_VAR(box_, min_height_, v); }
+  const Length& MinHeight() const { return box_data_->MinHeight(); }
+  void SetMinHeight(const Length& v) { SET_VAR(box_data_, min_height_, v); }
 
   // image-orientation
   static RespectImageOrientationEnum InitialRespectImageOrientation() {
@@ -1094,25 +1098,31 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // margin-top
   static Length InitialMarginTop() { return Length(kFixed); }
-  const Length& MarginTop() const { return surround_->margin_top_; }
-  void SetMarginTop(const Length& v) { SET_VAR(surround_, margin_top_, v); }
+  const Length& MarginTop() const { return surround_data_->margin_top_; }
+  void SetMarginTop(const Length& v) {
+    SET_VAR(surround_data_, margin_top_, v);
+  }
 
   // margin-bottom
   static Length InitialMarginBottom() { return Length(kFixed); }
-  const Length& MarginBottom() const { return surround_->margin_bottom_; }
+  const Length& MarginBottom() const { return surround_data_->margin_bottom_; }
   void SetMarginBottom(const Length& v) {
-    SET_VAR(surround_, margin_bottom_, v);
+    SET_VAR(surround_data_, margin_bottom_, v);
   }
 
   // margin-left
   static Length InitialMarginLeft() { return Length(kFixed); }
-  const Length& MarginLeft() const { return surround_->margin_left_; }
-  void SetMarginLeft(const Length& v) { SET_VAR(surround_, margin_left_, v); }
+  const Length& MarginLeft() const { return surround_data_->margin_left_; }
+  void SetMarginLeft(const Length& v) {
+    SET_VAR(surround_data_, margin_left_, v);
+  }
 
   // margin-right
   static Length InitialMarginRight() { return Length(kFixed); }
-  const Length& MarginRight() const { return surround_->margin_right_; }
-  void SetMarginRight(const Length& v) { SET_VAR(surround_, margin_right_, v); }
+  const Length& MarginRight() const { return surround_data_->margin_right_; }
+  void SetMarginRight(const Length& v) {
+    SET_VAR(surround_data_, margin_right_, v);
+  }
 
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
   static EMarginCollapse InitialMarginBeforeCollapse() {
@@ -1296,27 +1306,33 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // padding-bottom
   static Length InitialPaddingBottom() { return Length(kFixed); }
-  const Length& PaddingBottom() const { return surround_->padding_bottom_; }
+  const Length& PaddingBottom() const {
+    return surround_data_->padding_bottom_;
+  }
   void SetPaddingBottom(const Length& v) {
-    SET_VAR(surround_, padding_bottom_, v);
+    SET_VAR(surround_data_, padding_bottom_, v);
   }
 
   // padding-left
   static Length InitialPaddingLeft() { return Length(kFixed); }
-  const Length& PaddingLeft() const { return surround_->padding_left_; }
-  void SetPaddingLeft(const Length& v) { SET_VAR(surround_, padding_left_, v); }
+  const Length& PaddingLeft() const { return surround_data_->padding_left_; }
+  void SetPaddingLeft(const Length& v) {
+    SET_VAR(surround_data_, padding_left_, v);
+  }
 
   // padding-right
   static Length InitialPaddingRight() { return Length(kFixed); }
-  const Length& PaddingRight() const { return surround_->padding_right_; }
+  const Length& PaddingRight() const { return surround_data_->padding_right_; }
   void SetPaddingRight(const Length& v) {
-    SET_VAR(surround_, padding_right_, v);
+    SET_VAR(surround_data_, padding_right_, v);
   }
 
   // padding-top
   static Length InitialPaddingTop() { return Length(kFixed); }
-  const Length& PaddingTop() const { return surround_->padding_top_; }
-  void SetPaddingTop(const Length& v) { SET_VAR(surround_, padding_top_, v); }
+  const Length& PaddingTop() const { return surround_data_->padding_top_; }
+  void SetPaddingTop(const Length& v) {
+    SET_VAR(surround_data_, padding_top_, v);
+  }
 
   // perspective (aka -webkit-perspective)
   static float InitialPerspective() { return 0; }
@@ -1566,10 +1582,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // text-decoration-line
   static TextDecoration InitialTextDecoration() { return kTextDecorationNone; }
   TextDecoration GetTextDecoration() const {
-    return static_cast<TextDecoration>(visual_->text_decoration);
+    return static_cast<TextDecoration>(visual_data_->text_decoration);
   }
   void SetTextDecoration(TextDecoration v) {
-    SET_VAR(visual_, text_decoration, v);
+    SET_VAR(visual_data_, text_decoration, v);
   }
 
   // text-decoration-color
@@ -1636,11 +1652,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return EVerticalAlign::kBaseline;
   }
   EVerticalAlign VerticalAlign() const { return VerticalAlignInternal(); }
-  const Length& GetVerticalAlignLength() const { return box_->VerticalAlign(); }
+  const Length& GetVerticalAlignLength() const {
+    return box_data_->VerticalAlign();
+  }
   void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(v); }
   void SetVerticalAlignLength(const Length& length) {
     SetVerticalAlignInternal(EVerticalAlign::kLength);
-    SET_VAR(box_, vertical_align_, length);
+    SET_VAR(box_data_, vertical_align_, length);
   }
 
   // will-change
@@ -1671,20 +1689,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // z-index
-  int ZIndex() const { return box_->ZIndex(); }
-  bool HasAutoZIndex() const { return box_->HasAutoZIndex(); }
+  int ZIndex() const { return box_data_->ZIndex(); }
+  bool HasAutoZIndex() const { return box_data_->HasAutoZIndex(); }
   void SetZIndex(int v) {
-    SET_VAR(box_, has_auto_z_index_, false);
-    SET_VAR(box_, z_index_, v);
+    SET_VAR(box_data_, has_auto_z_index_, false);
+    SET_VAR(box_data_, z_index_, v);
   }
   void SetHasAutoZIndex() {
-    SET_VAR(box_, has_auto_z_index_, true);
-    SET_VAR(box_, z_index_, 0);
+    SET_VAR(box_data_, has_auto_z_index_, true);
+    SET_VAR(box_data_, z_index_, 0);
   }
 
   // zoom
   static float InitialZoom() { return 1.0f; }
-  float Zoom() const { return visual_->zoom_; }
+  float Zoom() const { return visual_data_->zoom_; }
   float EffectiveZoom() const { return rare_inherited_data_->effective_zoom_; }
   bool SetZoom(float);
   bool SetEffectiveZoom(float);
@@ -2800,17 +2818,17 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetLogicalWidth(const Length& v) {
     if (IsHorizontalWritingMode()) {
-      SET_VAR(box_, width_, v);
+      SET_VAR(box_data_, width_, v);
     } else {
-      SET_VAR(box_, height_, v);
+      SET_VAR(box_data_, height_, v);
     }
   }
 
   void SetLogicalHeight(const Length& v) {
     if (IsHorizontalWritingMode()) {
-      SET_VAR(box_, height_, v);
+      SET_VAR(box_data_, height_, v);
     } else {
-      SET_VAR(box_, width_, v);
+      SET_VAR(box_data_, width_, v);
     }
   }
   const Length& LogicalMaxWidth() const {
@@ -2898,16 +2916,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
-    SET_VAR(surround_, padding_top_, kFixed);
-    SET_VAR(surround_, padding_bottom_, kFixed);
-    SET_VAR(surround_, padding_left_, kFixed);
-    SET_VAR(surround_, padding_right_, kFixed);
+    SET_VAR(surround_data_, padding_top_, kFixed);
+    SET_VAR(surround_data_, padding_bottom_, kFixed);
+    SET_VAR(surround_data_, padding_left_, kFixed);
+    SET_VAR(surround_data_, padding_right_, kFixed);
   }
   void SetPadding(const LengthBox& b) {
-    SET_VAR(surround_, padding_top_, b.top_);
-    SET_VAR(surround_, padding_bottom_, b.bottom_);
-    SET_VAR(surround_, padding_left_, b.left_);
-    SET_VAR(surround_, padding_right_, b.right_);
+    SET_VAR(surround_data_, padding_top_, b.top_);
+    SET_VAR(surround_data_, padding_bottom_, b.bottom_);
+    SET_VAR(surround_data_, padding_left_, b.left_);
+    SET_VAR(surround_data_, padding_right_, b.right_);
   }
   bool PaddingEqual(const ComputedStyle& other) const {
     return PaddingTop() == other.PaddingTop() &&
@@ -2931,12 +2949,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool BorderImageSlicesFill() const { return Border().GetImage().Fill(); }
 
   void SetBorderImageSlicesFill(bool);
-  const BorderData& Border() const { return surround_->border_; }
-  const BorderValue& BorderLeft() const { return surround_->border_.Left(); }
-  const BorderValue& BorderRight() const { return surround_->border_.Right(); }
-  const BorderValue& BorderTop() const { return surround_->border_.Top(); }
+  const BorderData& Border() const { return surround_data_->border_; }
+  const BorderValue& BorderLeft() const {
+    return surround_data_->border_.Left();
+  }
+  const BorderValue& BorderRight() const {
+    return surround_data_->border_.Right();
+  }
+  const BorderValue& BorderTop() const { return surround_data_->border_.Top(); }
   const BorderValue& BorderBottom() const {
-    return surround_->border_.Bottom();
+    return surround_data_->border_.Bottom();
   }
   const BorderValue& BorderBefore() const;
   const BorderValue& BorderAfter() const;
@@ -2968,26 +2990,32 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ResetBorderBottomLeftRadius();
     ResetBorderBottomRightRadius();
   }
-  void ResetBorderTop() { SET_VAR(surround_, border_.top_, BorderValue()); }
-  void ResetBorderRight() { SET_VAR(surround_, border_.right_, BorderValue()); }
-  void ResetBorderBottom() {
-    SET_VAR(surround_, border_.bottom_, BorderValue());
+  void ResetBorderTop() {
+    SET_VAR(surround_data_, border_.top_, BorderValue());
   }
-  void ResetBorderLeft() { SET_VAR(surround_, border_.left_, BorderValue()); }
+  void ResetBorderRight() {
+    SET_VAR(surround_data_, border_.right_, BorderValue());
+  }
+  void ResetBorderBottom() {
+    SET_VAR(surround_data_, border_.bottom_, BorderValue());
+  }
+  void ResetBorderLeft() {
+    SET_VAR(surround_data_, border_.left_, BorderValue());
+  }
   void ResetBorderImage() {
-    SET_VAR(surround_, border_.image_, NinePieceImage());
+    SET_VAR(surround_data_, border_.image_, NinePieceImage());
   }
   void ResetBorderTopLeftRadius() {
-    SET_VAR(surround_, border_.top_left_, InitialBorderRadius());
+    SET_VAR(surround_data_, border_.top_left_, InitialBorderRadius());
   }
   void ResetBorderTopRightRadius() {
-    SET_VAR(surround_, border_.top_right_, InitialBorderRadius());
+    SET_VAR(surround_data_, border_.top_right_, InitialBorderRadius());
   }
   void ResetBorderBottomLeftRadius() {
-    SET_VAR(surround_, border_.bottom_left_, InitialBorderRadius());
+    SET_VAR(surround_data_, border_.bottom_left_, InitialBorderRadius());
   }
   void ResetBorderBottomRightRadius() {
-    SET_VAR(surround_, border_.bottom_right_, InitialBorderRadius());
+    SET_VAR(surround_data_, border_.bottom_right_, InitialBorderRadius());
   }
 
   void SetBorderRadius(const LengthSize& s) {
@@ -3066,10 +3094,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Clip utility functions.
-  const Length& ClipLeft() const { return visual_->clip.Left(); }
-  const Length& ClipRight() const { return visual_->clip.Right(); }
-  const Length& ClipTop() const { return visual_->clip.Top(); }
-  const Length& ClipBottom() const { return visual_->clip.Bottom(); }
+  const Length& ClipLeft() const { return visual_data_->clip.Left(); }
+  const Length& ClipRight() const { return visual_data_->clip.Right(); }
+  const Length& ClipTop() const { return visual_data_->clip.Top(); }
+  const Length& ClipBottom() const { return visual_data_->clip.Bottom(); }
 
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.
@@ -3249,7 +3277,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     kExcludeIndependentTransformProperties
   };
   void ApplyTransform(TransformationMatrix&,
-                      const LayoutSize& border_box_size,
+                      const LayoutSize& border_box_data_size,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
@@ -3419,10 +3447,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Background utility functions.
   FillLayer& AccessBackgroundLayers() {
-    return background_.Access()->background_;
+    return background_data_.Access()->background_;
   }
   const FillLayer& BackgroundLayers() const {
-    return background_->Background();
+    return background_data_->Background();
   }
   void AdjustBackgroundLayers() {
     if (BackgroundLayers().Next()) {
@@ -3546,18 +3574,18 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Color accessors are all private to make sure callers use
   // VisitedDependentColor instead to access them.
   StyleColor BorderLeftColor() const {
-    return surround_->border_.Left().GetColor();
+    return surround_data_->border_.Left().GetColor();
   }
   StyleColor BorderRightColor() const {
-    return surround_->border_.Right().GetColor();
+    return surround_data_->border_.Right().GetColor();
   }
   StyleColor BorderTopColor() const {
-    return surround_->border_.Top().GetColor();
+    return surround_data_->border_.Top().GetColor();
   }
   StyleColor BorderBottomColor() const {
-    return surround_->border_.Bottom().GetColor();
+    return surround_data_->border_.Bottom().GetColor();
   }
-  StyleColor BackgroundColor() const { return background_->GetColor(); }
+  StyleColor BackgroundColor() const { return background_data_->GetColor(); }
   StyleAutoColor CaretColor() const {
     return rare_inherited_data_->CaretColor();
   }
@@ -3694,9 +3722,9 @@ inline float AdjustScrollForAbsoluteZoom(float scroll_offset,
 }
 
 inline bool ComputedStyle::SetZoom(float f) {
-  if (compareEqual(visual_->zoom_, f))
+  if (compareEqual(visual_data_->zoom_, f))
     return false;
-  visual_.Access()->zoom_ = f;
+  visual_data_.Access()->zoom_ = f;
   SetEffectiveZoom(EffectiveZoom() * Zoom());
   return true;
 }
