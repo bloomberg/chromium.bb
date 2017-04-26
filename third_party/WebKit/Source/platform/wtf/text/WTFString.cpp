@@ -88,7 +88,7 @@ String::String(const char* characters, unsigned length)
                                      length)
                 : nullptr) {}
 
-void String::Append(const StringView& string) {
+void String::append(const StringView& string) {
   if (string.IsEmpty())
     return;
   if (!impl_) {
@@ -159,11 +159,11 @@ inline void String::AppendInternal(CharacterType c) {
   impl_ = new_impl.Release();
 }
 
-void String::Append(LChar c) {
+void String::append(LChar c) {
   AppendInternal(c);
 }
 
-void String::Append(UChar c) {
+void String::append(UChar c) {
   AppendInternal(c);
 }
 
@@ -222,9 +222,9 @@ void String::insert(const StringView& string, unsigned position) {
 
   if (position >= length()) {
     if (string.Is8Bit())
-      Append(string);
+      append(string);
     else
-      Append(string);
+      append(string);
     return;
   }
 

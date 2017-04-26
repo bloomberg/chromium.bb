@@ -29,13 +29,13 @@ class NGInlineNodeForTest : public NGInlineNode {
               const ComputedStyle* style = nullptr,
               LayoutObject* layout_object = nullptr) {
     unsigned start = text_content_.length();
-    text_content_.Append(text);
+    text_content_.append(text);
     items_.push_back(NGInlineItem(NGInlineItem::kText, start,
                                   start + text.length(), style, layout_object));
   }
 
   void Append(UChar character) {
-    text_content_.Append(character);
+    text_content_.append(character);
     unsigned end = text_content_.length();
     items_.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));

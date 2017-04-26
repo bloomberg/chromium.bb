@@ -171,7 +171,7 @@ class MockScriptData : public ScriptData {
           case '>':
             DCHECK_NE(seen, 0);
             code |= TableLookup(list);
-            result.Append(static_cast<UChar>(kMockCharMin + code));
+            result.append(static_cast<UChar>(kMockCharMin + code));
             in_set = false;
             break;
           default:
@@ -224,7 +224,7 @@ class MockScriptData : public ScriptData {
           DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
       }
       if (!in_set) {
-        result.Append(static_cast<UChar>(kMockCharMin + code));
+        result.append(static_cast<UChar>(kMockCharMin + code));
       }
     }
     return result;
@@ -292,7 +292,7 @@ class ScriptRunIteratorTest : public testing::Test {
     String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text.c_str()));
+      text.append(String::FromUTF8(run.text.c_str()));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
     ScriptRunIterator script_run_iterator(text.Characters16(), text.length());
@@ -305,7 +305,7 @@ class ScriptRunIteratorTest : public testing::Test {
     String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (const TestRun& run : runs) {
-      text.Append(MockScriptData::ToTestString(run.text));
+      text.append(MockScriptData::ToTestString(run.text));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
 

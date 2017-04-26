@@ -239,10 +239,10 @@ class WTF_EXPORT String {
     return impl_ ? impl_->EndsWith(character) : false;
   }
 
-  void Append(const StringView&);
-  void Append(LChar);
-  void Append(char c) { Append(static_cast<LChar>(c)); }
-  void Append(UChar);
+  void append(const StringView&);
+  void append(LChar);
+  void append(char c) { append(static_cast<LChar>(c)); }
+  void append(UChar);
   void insert(const StringView&, unsigned pos);
 
   // TODO(esprehn): replace strangely both modifies this String *and* return a

@@ -14,8 +14,8 @@ namespace blink {
 
 void PaintPropertyTreeBuilderTest::LoadTestData(const char* file_name) {
   String full_path = testing::BlinkRootDir();
-  full_path.Append("/Source/core/paint/test_data/");
-  full_path.Append(file_name);
+  full_path.append("/Source/core/paint/test_data/");
+  full_path.append(file_name);
   RefPtr<SharedBuffer> input_buffer = testing::ReadFromFile(full_path);
   SetBodyInnerHTML(String(input_buffer->Data(), input_buffer->size()));
 }

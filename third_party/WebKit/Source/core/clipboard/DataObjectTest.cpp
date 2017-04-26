@@ -20,7 +20,7 @@ class DataObjectTest : public ::testing::Test {
 
 TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
   String file_path = testing::BlinkRootDir();
-  file_path.Append("/Source/core/clipboard/DataObjectTest.cpp");
+  file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
 
   data_object_->AddFilename(file_path, String(), String());
   EXPECT_EQ(1U, data_object_->length());
@@ -38,7 +38,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
 
 TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
   String file_path = testing::BlinkRootDir();
-  file_path.Append("/Source/core/clipboard/DataObjectTest.cpp");
+  file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
 
   data_object_->AddFilename(file_path, "name.cpp", String());
   EXPECT_EQ(1U, data_object_->length());
@@ -57,7 +57,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
 
 TEST_F(DataObjectTest, fileSystemId) {
   String file_path = testing::BlinkRootDir();
-  file_path.Append("/Source/core/clipboard/DataObjectTest.cpp");
+  file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
   KURL url;
 
   data_object_->AddFilename(file_path, String(), String());

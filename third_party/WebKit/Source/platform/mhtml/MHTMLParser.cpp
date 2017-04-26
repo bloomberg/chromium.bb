@@ -154,7 +154,7 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
       mime_header->end_of_part_boundary_.insert("--", 0);
       mime_header->end_of_document_boundary_ =
           mime_header->end_of_part_boundary_;
-      mime_header->end_of_document_boundary_.Append("--");
+      mime_header->end_of_document_boundary_.append("--");
     }
   }
 

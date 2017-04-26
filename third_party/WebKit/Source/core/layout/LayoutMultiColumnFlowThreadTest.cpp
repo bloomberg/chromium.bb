@@ -41,11 +41,11 @@ String MultiColumnRenderingTest::ColumnSetSignature(
   for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
        column_box = column_box->NextSiblingMultiColumnBox()) {
     if (column_box->IsLayoutMultiColumnSpannerPlaceholder())
-      signature.Append('s');
+      signature.append('s');
     else if (column_box->IsLayoutMultiColumnSet())
-      signature.Append('c');
+      signature.append('c');
     else
-      signature.Append('?');
+      signature.append('?');
   }
   return signature;
 }

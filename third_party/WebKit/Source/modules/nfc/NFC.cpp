@@ -145,7 +145,7 @@ struct TypeConverter<NFCRecordPtr, WTF::String> {
     NFCRecordPtr record = NFCRecord::New();
     record->record_type = NFCRecordType::TEXT;
     record->media_type = kPlainTextMimeType;
-    record->media_type.Append(kCharSetUTF8);
+    record->media_type.append(kCharSetUTF8);
     record->data = mojo::ConvertTo<WTF::Vector<uint8_t>>(string);
     return record;
   }
@@ -226,7 +226,7 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
       case NFCRecordType::TEXT:
       case NFCRecordType::URL:
         setMediaType(recordPtr, record.mediaType(), kPlainTextMimeType);
-        recordPtr->media_type.Append(kCharSetUTF8);
+        recordPtr->media_type.append(kCharSetUTF8);
         break;
       case NFCRecordType::JSON:
         setMediaType(recordPtr, record.mediaType(), kJsonMimeType);

@@ -333,8 +333,8 @@ void AppendFlagToString(String* flags_string, bool is_set, const String& name) {
   if (!is_set)
     return;
   if (flags_string->length())
-    flags_string->Append("|");
-  flags_string->Append(name);
+    flags_string->append("|");
+  flags_string->append(name);
 }
 
 String StringForSkPaintFlags(const SkPaint& paint) {
@@ -504,9 +504,9 @@ String ClipOpName(SkClipOp op) {
 String SaveLayerFlagsToString(SkCanvas::SaveLayerFlags flags) {
   String flags_string = "";
   if (flags & SkCanvas::kIsOpaque_SaveLayerFlag)
-    flags_string.Append("kIsOpaque_SaveLayerFlag ");
+    flags_string.append("kIsOpaque_SaveLayerFlag ");
   if (flags & SkCanvas::kPreserveLCDText_SaveLayerFlag)
-    flags_string.Append("kPreserveLCDText_SaveLayerFlag ");
+    flags_string.append("kPreserveLCDText_SaveLayerFlag ");
   return flags_string;
 }
 
@@ -514,7 +514,7 @@ String TextEncodingCanonicalName(SkPaint::TextEncoding encoding) {
   String name = TextEncodingName(encoding);
   if (encoding == SkPaint::kUTF16_TextEncoding ||
       encoding == SkPaint::kUTF32_TextEncoding)
-    name.Append("LE");
+    name.append("LE");
   return name;
 }
 

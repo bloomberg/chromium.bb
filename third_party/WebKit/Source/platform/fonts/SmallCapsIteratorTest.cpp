@@ -29,7 +29,7 @@ class SmallCapsIteratorTest : public testing::Test {
     String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text.c_str()));
+      text.append(String::FromUTF8(run.text.c_str()));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
     SmallCapsIterator small_caps_iterator(text.Characters16(), text.length());

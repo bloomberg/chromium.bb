@@ -472,10 +472,10 @@ TEST_F(CopylessPasteExtractorTest, repeatedObject) {
 TEST_F(CopylessPasteExtractorTest, truncateLongString) {
   String maxLengthString;
   for (int i = 0; i < 200; ++i) {
-    maxLengthString.Append("a");
+    maxLengthString.append("a");
   }
   String tooLongString(maxLengthString);
-  tooLongString.Append("a");
+  tooLongString.append("a");
   SetHTMLInnerHTML(
       "<body>"
       "<script type=\"application/ld+json\">"
@@ -547,12 +547,12 @@ TEST_F(CopylessPasteExtractorTest, enforceTypeWhitelist) {
 TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
   String largeRepeatedField = "[";
   for (int i = 0; i < 101; ++i) {
-    largeRepeatedField.Append("\"a\"");
+    largeRepeatedField.append("\"a\"");
     if (i != 100) {
-      largeRepeatedField.Append(", ");
+      largeRepeatedField.append(", ");
     }
   }
-  largeRepeatedField.Append("]");
+  largeRepeatedField.append("]");
   SetHTMLInnerHTML(
       "<body>"
       "<script type=\"application/ld+json\">"
@@ -596,9 +596,9 @@ TEST_F(CopylessPasteExtractorTest, truncateTooManyValuesInField) {
 TEST_F(CopylessPasteExtractorTest, truncateTooManyFields) {
   String tooManyFields;
   for (int i = 0; i < 20; ++i) {
-    tooManyFields.Append(String::Format("\"%d\": \"a\"", i));
+    tooManyFields.append(String::Format("\"%d\": \"a\"", i));
     if (i != 19) {
-      tooManyFields.Append(",\n");
+      tooManyFields.append(",\n");
     }
   }
   SetHTMLInnerHTML(

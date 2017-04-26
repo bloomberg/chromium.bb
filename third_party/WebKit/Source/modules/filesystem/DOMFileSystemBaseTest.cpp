@@ -14,7 +14,7 @@ class DOMFileSystemBaseTest : public ::testing::Test {
  public:
   DOMFileSystemBaseTest() {
     file_path_ = testing::BlinkRootDir();
-    file_path_.Append("/Source/modules/filesystem/DOMFileSystemBaseTest.cpp");
+    file_path_.append("/Source/modules/filesystem/DOMFileSystemBaseTest.cpp");
     GetFileMetadata(file_path_, file_metadata_);
     file_metadata_.platform_path = file_path_;
   }
