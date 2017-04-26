@@ -385,6 +385,7 @@ TEST_F(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
   LayerImpl* root_clip_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
 
+  layer_tree_host_->BuildPropertyTreesForTesting();
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
@@ -744,8 +745,10 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
   layer_tree_root->SetBounds(gfx::Size(2, 2));
   scroll_layer->SetBounds(gfx::Size(10, 10));
   layer_tree_host_->UpdateLayers();
-  layer_tree_host_->CommitAndCreateLayerImplTree();
   LayerTreeHostImpl* host_impl = layer_tree_host_->host_impl();
+  host_impl->CreatePendingTree();
+  layer_tree_host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
   EXPECT_TRUE(host_impl->ScrollbarAnimationControllerForElementId(
       scroll_layer->element_id()));
 

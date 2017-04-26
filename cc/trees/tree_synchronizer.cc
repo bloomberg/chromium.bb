@@ -74,6 +74,25 @@ std::unique_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
   return layer_impl;
 }
 
+#if DCHECK_IS_ON()
+template <typename LayerType>
+static void AssertValidPropertyTreeIndices(LayerType* layer) {
+  DCHECK(layer);
+  DCHECK_NE(layer->transform_tree_index(), TransformTree::kInvalidNodeId);
+  DCHECK_NE(layer->effect_tree_index(), EffectTree::kInvalidNodeId);
+  DCHECK_NE(layer->clip_tree_index(), ClipTree::kInvalidNodeId);
+  DCHECK_NE(layer->scroll_tree_index(), ScrollTree::kInvalidNodeId);
+}
+
+static bool LayerHasValidPropertyTreeIndices(LayerImpl* layer) {
+  DCHECK(layer);
+  return layer->transform_tree_index() != TransformTree::kInvalidNodeId &&
+         layer->effect_tree_index() != EffectTree::kInvalidNodeId &&
+         layer->clip_tree_index() != ClipTree::kInvalidNodeId &&
+         layer->scroll_tree_index() != ScrollTree::kInvalidNodeId;
+}
+#endif
+
 template <typename LayerTreeType>
 void PushLayerList(OwnedLayerImplMap* old_layers,
                    LayerTreeType* host,
@@ -82,6 +101,15 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
   for (auto* layer : *host) {
     std::unique_ptr<LayerImpl> layer_impl(
         ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
+
+#if DCHECK_IS_ON()
+    // Every layer should have valid property tree indices
+    AssertValidPropertyTreeIndices(layer);
+    // Every layer_impl should either have valid property tree indices already
+    // or the corresponding layer should push them onto layer_impl.
+    DCHECK(LayerHasValidPropertyTreeIndices(layer_impl.get()) ||
+           host->LayerNeedsPushPropertiesForTesting(layer));
+#endif
 
     tree_impl->AddToLayerList(layer_impl.get());
     tree_impl->AddLayer(std::move(layer_impl));

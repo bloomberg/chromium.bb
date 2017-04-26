@@ -186,6 +186,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   layer->SavePaintProperties();
   layer->Update();
+  host->BuildPropertyTreesForTesting();
 
   FakeImplTaskRunnerProvider impl_task_runner_provider;
 
@@ -201,7 +202,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   host_impl.CreatePendingTree();
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
-  host_impl.pending_tree()->BuildLayerListForTesting();
+  host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
       host_impl.pending_tree()->root_layer_for_testing());
