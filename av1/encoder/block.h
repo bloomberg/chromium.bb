@@ -228,6 +228,10 @@ struct macroblock {
   // 4x4 blocks are coded.
   int rate_4x4[256];
 #endif
+#if CONFIG_CFL
+  // Whether luma needs to be stored during RDO.
+  int cfl_store_y;
+#endif
 };
 
 #ifdef __cplusplus

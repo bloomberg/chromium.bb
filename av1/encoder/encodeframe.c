@@ -1869,6 +1869,10 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   x->pvq_speed = 1;
   x->pvq_coded = 0;
 #endif
+#if CONFIG_CFL
+  // Don't store luma during RDO (we will store the best mode later).
+  x->cfl_store_y = 0;
+#endif
 
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
   mbmi = &xd->mi[0]->mbmi;
@@ -4574,6 +4578,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   *rate_nocoef = best_rate_nocoef;
 #endif  // CONFIG_SUPERTX
 
+#if CONFIG_CFL
+  // Store the luma for the best mode
+  x->cfl_store_y = 1;
+#endif
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->sb_size) {
@@ -4587,6 +4595,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                 pc_tree, NULL);
     }
   }
+#if CONFIG_CFL
+  x->cfl_store_y = 0;
+#endif
 
   if (bsize == cm->sb_size) {
 #if !CONFIG_PVQ && !CONFIG_LV_MAP
@@ -5036,6 +5047,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
 #if CONFIG_CFL
   td->mb.e_mbd.cfl = &this_tile->cfl;
+  memset(&this_tile->cfl.y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
 #endif
 
 #if CONFIG_PVQ
@@ -5920,6 +5932,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_PVQ
   x->pvq_speed = 0;
   x->pvq_coded = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
+#endif
+#if CONFIG_CFL
+  x->cfl_store_y = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
 #endif
 
   if (!is_inter) {

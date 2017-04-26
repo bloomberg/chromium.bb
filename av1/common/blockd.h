@@ -531,6 +531,12 @@ typedef int16_t EobThresholdMD[TX_SIZES_ALL][TX_TYPES];
 
 #if CONFIG_CFL
 typedef struct {
+  // Pixel buffer containing the luma pixels used as prediction for chroma
+  uint8_t y_pix[MAX_SB_SQUARE];
+
+  // Height and width of the luma prediction block currently in the pixel buffer
+  int y_height, y_width;
+
   // CfL Performs its own block level DC_PRED for each chromatic plane
   int dc_pred[CFL_PRED_PLANES];
 } CFL_CTX;

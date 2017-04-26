@@ -535,6 +535,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 #if CONFIG_CFL
     xd->cfl = cfl;
+    memset(&cfl->y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
 #endif
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {

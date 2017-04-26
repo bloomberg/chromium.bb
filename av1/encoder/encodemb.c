@@ -38,6 +38,10 @@
 #include "av1/encoder/pvq_encoder.h"
 #endif
 
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
+
 // Check if one needs to use c version subtraction.
 static int check_subtract_block_size(int w, int h) { return w < 4 || h < 4; }
 
@@ -1474,6 +1478,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (*eob) *(args->skip) = 0;
 #else
 // Note : *(args->skip) == mbmi->skip
+#endif
+#if CONFIG_CFL
+  if (plane == AOM_PLANE_Y && x->cfl_store_y) {
+    cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size);
+  }
 #endif
 }
 

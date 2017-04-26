@@ -79,6 +79,10 @@
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #endif
 
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
+
 static struct aom_read_bit_buffer *init_read_bit_buffer(
     AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end, uint8_t clear_data[MAX_AV1_HEADER_SIZE]);
@@ -564,6 +568,14 @@ static void predict_and_reconstruct_intra_block(
     av1_pvq_decode_helper2(cm, xd, mbmi, plane, row, col, tx_size, tx_type);
 #endif
   }
+#if CONFIG_CFL
+  if (plane == AOM_PLANE_Y) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    uint8_t *dst =
+        &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
+    cfl_store(xd->cfl, dst, pd->dst.stride, row, col, tx_size);
+  }
+#endif
 }
 
 #if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE

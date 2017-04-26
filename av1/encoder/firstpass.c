@@ -537,6 +537,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   xd->mi = cm->mi_grid_visible;
   xd->mi[0] = cm->mi;
 
+#if CONFIG_CFL
+  // Don't store luma on the fist pass since chroma is not computed
+  x->cfl_store_y = 0;
+#endif
   av1_frame_init_quantizer(cpi);
 
 #if CONFIG_PVQ
