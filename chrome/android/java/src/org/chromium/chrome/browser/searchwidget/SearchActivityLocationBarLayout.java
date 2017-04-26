@@ -43,7 +43,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    protected void backKeyPressed() {
+    public void backKeyPressed() {
         mDelegate.backKeyPressed();
     }
 

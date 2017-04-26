@@ -791,6 +791,7 @@ public class LocationBarLayout extends FrameLayout
         mWindowDelegate = windowDelegate;
         mWindowAndroid = windowAndroid;
 
+        mUrlBar.setWindowDelegate(windowDelegate);
         // If the user focused the omnibox prior to the native libraries being initialized,
         // autocomplete will not always be enabled, so we force it enabled in that case.
         mUrlBar.setIgnoreTextChangesForAutocomplete(false);
@@ -2016,8 +2017,8 @@ public class LocationBarLayout extends FrameLayout
         }
     }
 
-    // TODO(dfalcantara): Make private again after M58.
-    protected void backKeyPressed() {
+    @Override
+    public void backKeyPressed() {
         hideSuggestions();
         UiUtils.hideKeyboard(mUrlBar);
         // Revert the URL to match the current page.
