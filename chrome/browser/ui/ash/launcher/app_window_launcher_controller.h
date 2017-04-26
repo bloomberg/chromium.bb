@@ -20,7 +20,7 @@ class ActivationClient;
 }
 
 class AppWindowLauncherItemController;
-class ChromeLauncherController;
+class ChromeLauncherControllerImpl;
 class Profile;
 
 class AppWindowLauncherController
@@ -28,7 +28,7 @@ class AppWindowLauncherController
  public:
   ~AppWindowLauncherController() override;
 
-  // Called by ChromeLauncherController when the active user changed and the
+  // Called by ChromeLauncherControllerImpl when the active user changed and the
   // items need to be updated.
   virtual void ActiveUserChanged(const std::string& user_email) {}
 
@@ -43,16 +43,16 @@ class AppWindowLauncherController
       aura::Window* lost_active) override;
 
  protected:
-  explicit AppWindowLauncherController(ChromeLauncherController* owner);
+  explicit AppWindowLauncherController(ChromeLauncherControllerImpl* owner);
 
-  ChromeLauncherController* owner() { return owner_; }
+  ChromeLauncherControllerImpl* owner() { return owner_; }
 
   virtual AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) = 0;
 
  private:
   // Unowned pointers.
-  ChromeLauncherController* owner_;
+  ChromeLauncherControllerImpl* owner_;
   aura::client::ActivationClient* activation_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherController);

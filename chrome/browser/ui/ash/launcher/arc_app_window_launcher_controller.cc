@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
@@ -248,7 +248,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 };
 
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
-    ChromeLauncherController* owner)
+    ChromeLauncherControllerImpl* owner)
     : AppWindowLauncherController(owner) {
   if (arc::IsArcAllowedForProfile(owner->profile())) {
     observed_profile_ = owner->profile();
