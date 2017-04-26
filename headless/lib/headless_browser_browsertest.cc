@@ -789,4 +789,44 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, PermissionManagerAlwaysASK) {
                 content::PermissionType::NOTIFICATIONS, url, url));
 }
 
+class HeadlessBrowserTestWithNetLog : public HeadlessBrowserTest {
+ public:
+  HeadlessBrowserTestWithNetLog() {}
+
+  void SetUp() override {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    EXPECT_TRUE(base::CreateTemporaryFile(&net_log_));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII("--log-net-log",
+                                                              net_log_.value());
+    HeadlessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    HeadlessBrowserTest::TearDown();
+    base::DeleteFile(net_log_, false);
+  }
+
+ protected:
+  base::FilePath net_log_;
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithNetLog, WriteNetLog) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+  browser()->Shutdown();
+
+  base::ThreadRestrictions::SetIOAllowed(true);
+  std::string net_log_data;
+  EXPECT_TRUE(base::ReadFileToString(net_log_, &net_log_data));
+  EXPECT_GE(net_log_data.find("hello.html"), 0u);
+}
+
 }  // namespace headless

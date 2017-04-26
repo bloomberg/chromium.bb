@@ -18,6 +18,8 @@
 #include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/lib/browser/headless_browser_main_parts.h"
+#include "headless/lib/browser/headless_net_log.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_url_request_context_getter.h"
 #include "headless/public/util/black_hole_protocol_handler.h"
@@ -223,7 +225,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE),
           protocol_handlers, context_options_->TakeProtocolHandlers(),
-          std::move(request_interceptors), context_options_.get()));
+          std::move(request_interceptors), context_options_.get(),
+          browser_->browser_main_parts()->net_log()));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
