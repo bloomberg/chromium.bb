@@ -619,6 +619,8 @@ if (!is_android) {
         "../browser/chromeos/login/screenshot_testing/SkImageDiffer.h",
         "../browser/chromeos/login/screenshot_testing/SkPMetric.cpp",
         "../browser/chromeos/login/screenshot_testing/SkPMetric.h",
+        "../browser/chromeos/login/screenshot_testing/SkPMetricUtil_gen.h",
+        "../browser/chromeos/login/screenshot_testing/login_screen_areas.h",
         "../browser/chromeos/login/screenshot_testing/screenshot_tester.cc",
         "../browser/chromeos/login/screenshot_testing/screenshot_tester.h",
         "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.cc",

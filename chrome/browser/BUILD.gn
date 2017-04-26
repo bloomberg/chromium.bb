@@ -2984,6 +2984,7 @@ split_static_library("browser") {
       "android/tab_state.h",
       "android/tab_web_contents_delegate_android.cc",
       "android/tab_web_contents_delegate_android.h",
+      "android/thumbnail/scoped_ptr_expiring_cache.h",
       "android/thumbnail/thumbnail.cc",
       "android/thumbnail/thumbnail.h",
       "android/thumbnail/thumbnail_cache.cc",
