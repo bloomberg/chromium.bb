@@ -91,41 +91,33 @@ void InstallAttributeInternal(
     v8::Isolate* isolate,
     v8::Local<v8::Object> instance,
     v8::Local<v8::Object> prototype,
-    const V8DOMConfiguration::AttributeConfiguration& attribute,
+    const V8DOMConfiguration::AttributeConfiguration& config,
     const DOMWrapperWorld& world) {
-  if (!WorldConfigurationApplies(attribute, world))
+  if (!WorldConfigurationApplies(config, world))
     return;
-  v8::Local<v8::Name> name = V8AtomicString(isolate, attribute.name);
 
-  // This method is only being used for installing interfaces which are
-  // enabled through origin trials. Assert here that it is being called with
-  // an attribute configuration for a constructor.
-  // TODO(iclelland): Relax this constraint and allow arbitrary data-type
-  // properties to be added here.
-  DCHECK_EQ(&V8ConstructorAttributeGetter, attribute.getter);
+  v8::Local<v8::Name> name = V8AtomicString(isolate, config.name);
+  v8::AccessorNameGetterCallback getter = config.getter;
+  v8::AccessorNameSetterCallback setter = config.setter;
+  v8::Local<v8::Value> data =
+      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(config.data));
+  v8::PropertyAttribute attribute =
+      static_cast<v8::PropertyAttribute>(config.attribute);
+  unsigned location = config.property_location_configuration;
 
-  V8PerContextData* per_context_data =
-      V8PerContextData::From(isolate->GetCurrentContext());
-  v8::Local<v8::Function> data =
-      per_context_data->ConstructorForType(attribute.data);
-
-  DCHECK(attribute.property_location_configuration);
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInstance)
+  DCHECK(location);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  if (location & V8DOMConfiguration::kOnInstance) {
     instance
-        ->DefineOwnProperty(
-            isolate->GetCurrentContext(), name, data,
-            static_cast<v8::PropertyAttribute>(attribute.attribute))
+        ->SetNativeDataProperty(context, name, getter, setter, data, attribute)
         .ToChecked();
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnPrototype)
+  }
+  if (location & V8DOMConfiguration::kOnPrototype) {
     prototype
-        ->DefineOwnProperty(
-            isolate->GetCurrentContext(), name, data,
-            static_cast<v8::PropertyAttribute>(attribute.attribute))
+        ->SetNativeDataProperty(context, name, getter, setter, data, attribute)
         .ToChecked();
-  if (attribute.property_location_configuration &
-      V8DOMConfiguration::kOnInterface)
+  }
+  if (location & V8DOMConfiguration::kOnInterface)
     NOTREACHED();
 }
 
