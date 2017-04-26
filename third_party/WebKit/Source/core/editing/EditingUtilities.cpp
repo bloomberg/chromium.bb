@@ -1935,8 +1935,10 @@ int IndexForVisiblePosition(const VisiblePosition& visible_position,
 
   EphemeralRange range(Position::FirstPositionInNode(scope),
                        p.ParentAnchoredEquivalent());
-  return TextIterator::RangeLength(range.StartPosition(), range.EndPosition(),
-                                   true);
+
+  return TextIterator::RangeLength(
+      range.StartPosition(), range.EndPosition(),
+      TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior());
 }
 
 EphemeralRange MakeRange(const VisiblePosition& start,

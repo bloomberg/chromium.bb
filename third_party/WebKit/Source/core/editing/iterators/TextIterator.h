@@ -100,14 +100,14 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // TODO(xiaochengh): Avoid default parameters.
   int CopyTextTo(ForwardsTextBuffer* output, int position = 0) const;
 
-  // Computes the length of the given range using a text iterator. The default
-  // iteration behavior is to always emit object replacement characters for
-  // replaced elements. When |forSelectionPreservation| is set to true, it
-  // also emits spaces for other non-text nodes using the
-  // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
-  static int RangeLength(const PositionTemplate<Strategy>& start,
-                         const PositionTemplate<Strategy>& end,
-                         bool for_selection_preservation = false);
+  // Computes the length of the given range using a text iterator according to
+  // the specified iteration behavior. The default iteration behavior is to
+  // always emit object replacement characters for replaced elements.
+  static int RangeLength(
+      const PositionTemplate<Strategy>& start,
+      const PositionTemplate<Strategy>& end,
+      const TextIteratorBehavior& =
+          TextIteratorBehavior::DefaultRangeLengthBehavior());
 
   static bool ShouldEmitTabBeforeNode(Node*);
   static bool ShouldEmitNewlineBeforeNode(Node&);
