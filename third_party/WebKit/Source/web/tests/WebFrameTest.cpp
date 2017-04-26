@@ -4449,30 +4449,69 @@ class ContextLifetimeTestWebFrameClient
     int world_id;
   };
 
+  ContextLifetimeTestWebFrameClient(
+      Vector<std::unique_ptr<Notification>>& create_notifications,
+      Vector<std::unique_ptr<Notification>>& release_notifications)
+      : create_notifications_(create_notifications),
+        release_notifications_(release_notifications) {}
+
   ~ContextLifetimeTestWebFrameClient() override { Reset(); }
 
   void Reset() {
-    create_notifications.clear();
-    release_notifications.clear();
+    create_notifications_.clear();
+    release_notifications_.clear();
   }
 
-  Vector<std::unique_ptr<Notification>> create_notifications;
-  Vector<std::unique_ptr<Notification>> release_notifications;
-
  private:
+  Vector<std::unique_ptr<Notification>>& create_notifications_;
+  Vector<std::unique_ptr<Notification>>& release_notifications_;
+
   void DidCreateScriptContext(WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
                               int world_id) override {
-    create_notifications.push_back(
+    ASSERT_EQ(Frame(), frame);
+    create_notifications_.push_back(
         WTF::MakeUnique<Notification>(frame, context, world_id));
   }
 
   void WillReleaseScriptContext(WebLocalFrame* frame,
                                 v8::Local<v8::Context> context,
                                 int world_id) override {
-    release_notifications.push_back(
+    ASSERT_EQ(Frame(), frame);
+    release_notifications_.push_back(
         WTF::MakeUnique<Notification>(frame, context, world_id));
   }
+};
+
+class ContextLifetimeTestMainFrameClient
+    : public ContextLifetimeTestWebFrameClient {
+ public:
+  ContextLifetimeTestMainFrameClient(
+      Vector<std::unique_ptr<Notification>>& create_notifications,
+      Vector<std::unique_ptr<Notification>>& release_notifications)
+      : ContextLifetimeTestWebFrameClient(create_notifications,
+                                          release_notifications),
+        child_client_(create_notifications, release_notifications) {}
+
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      WebSandboxFlags sandbox_flags,
+      const WebParsedFeaturePolicy& container_policy,
+      const WebFrameOwnerProperties&) override {
+    WebLocalFrame* frame =
+        WebLocalFrame::Create(scope, &child_client_, nullptr, nullptr);
+    child_client_.SetFrame(frame);
+    parent->AppendChild(frame);
+    return frame;
+  }
+
+  ContextLifetimeTestWebFrameClient& ChildClient() { return child_client_; }
+
+ private:
+  ContextLifetimeTestWebFrameClient child_client_;
 };
 
 TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
@@ -4483,7 +4522,12 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
 
   // Load a frame with an iframe, make sure we get the right create
   // notifications.
-  ContextLifetimeTestWebFrameClient web_frame_client;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      create_notifications;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      release_notifications;
+  ContextLifetimeTestMainFrameClient web_frame_client(create_notifications,
+                                                      release_notifications);
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "context_notifications_test.html", true, &web_frame_client);
@@ -4491,11 +4535,11 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
   WebFrame* main_frame = web_view_helper.WebView()->MainFrame();
   WebFrame* child_frame = main_frame->FirstChild();
 
-  ASSERT_EQ(2u, web_frame_client.create_notifications.size());
-  EXPECT_EQ(0u, web_frame_client.release_notifications.size());
+  ASSERT_EQ(2u, create_notifications.size());
+  EXPECT_EQ(0u, release_notifications.size());
 
-  auto& first_create_notification = web_frame_client.create_notifications[0];
-  auto& second_create_notification = web_frame_client.create_notifications[1];
+  auto& first_create_notification = create_notifications[0];
+  auto& second_create_notification = create_notifications[1];
 
   EXPECT_EQ(main_frame, first_create_notification->frame);
   EXPECT_EQ(main_frame->MainWorldScriptContext(),
@@ -4511,9 +4555,9 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload) {
   // the same as the create ones, in reverse order.
   web_view_helper.Reset();
 
-  ASSERT_EQ(2u, web_frame_client.release_notifications.size());
-  auto& first_release_notification = web_frame_client.release_notifications[0];
-  auto& second_release_notification = web_frame_client.release_notifications[1];
+  ASSERT_EQ(2u, release_notifications.size());
+  auto& first_release_notification = release_notifications[0];
+  auto& second_release_notification = release_notifications[1];
 
   ASSERT_TRUE(
       first_create_notification->Equals(second_release_notification.get()));
@@ -4527,7 +4571,12 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload) {
   RegisterMockedHttpURLLoad("context_notifications_test.html");
   RegisterMockedHttpURLLoad("context_notifications_test_frame.html");
 
-  ContextLifetimeTestWebFrameClient web_frame_client;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      create_notifications;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      release_notifications;
+  ContextLifetimeTestMainFrameClient web_frame_client(create_notifications,
+                                                      release_notifications);
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "context_notifications_test.html", true, &web_frame_client);
@@ -4535,25 +4584,22 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload) {
   // Refresh, we should get two release notifications and two more create
   // notifications.
   FrameTestHelpers::ReloadFrame(web_view_helper.WebView()->MainFrame());
-  ASSERT_EQ(4u, web_frame_client.create_notifications.size());
-  ASSERT_EQ(2u, web_frame_client.release_notifications.size());
+  ASSERT_EQ(4u, create_notifications.size());
+  ASSERT_EQ(2u, release_notifications.size());
 
   // The two release notifications we got should be exactly the same as the
   // first two create notifications.
-  for (size_t i = 0; i < web_frame_client.release_notifications.size(); ++i) {
-    EXPECT_TRUE(web_frame_client.release_notifications[i]->Equals(
-        web_frame_client
-            .create_notifications[web_frame_client.create_notifications.size() -
-                                  3 - i]
-            .get()));
+  for (size_t i = 0; i < release_notifications.size(); ++i) {
+    EXPECT_TRUE(release_notifications[i]->Equals(
+        create_notifications[create_notifications.size() - 3 - i].get()));
   }
 
   // The last two create notifications should be for the current frames and
   // context.
   WebFrame* main_frame = web_view_helper.WebView()->MainFrame();
   WebFrame* child_frame = main_frame->FirstChild();
-  auto& first_refresh_notification = web_frame_client.create_notifications[2];
-  auto& second_refresh_notification = web_frame_client.create_notifications[3];
+  auto& first_refresh_notification = create_notifications[2];
+  auto& second_refresh_notification = create_notifications[3];
 
   EXPECT_EQ(main_frame, first_refresh_notification->frame);
   EXPECT_EQ(main_frame->MainWorldScriptContext(),
@@ -4573,7 +4619,12 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
   RegisterMockedHttpURLLoad("context_notifications_test.html");
   RegisterMockedHttpURLLoad("context_notifications_test_frame.html");
 
-  ContextLifetimeTestWebFrameClient web_frame_client;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      create_notifications;
+  Vector<std::unique_ptr<ContextLifetimeTestWebFrameClient::Notification>>
+      release_notifications;
+  ContextLifetimeTestMainFrameClient web_frame_client(create_notifications,
+                                                      release_notifications);
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(
       base_url_ + "context_notifications_test.html", true, &web_frame_client);
@@ -4588,8 +4639,8 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
       isolated_world_id, &script_source, num_sources);
 
   // We should now have a new create notification.
-  ASSERT_EQ(1u, web_frame_client.create_notifications.size());
-  auto& notification = web_frame_client.create_notifications[0];
+  ASSERT_EQ(1u, create_notifications.size());
+  auto& notification = create_notifications[0];
   ASSERT_EQ(isolated_world_id, notification->world_id);
   ASSERT_EQ(web_view_helper.WebView()->MainFrame(), notification->frame);
 
@@ -4602,14 +4653,13 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
 
   // We should have gotten three release notifications (one for each of the
   // frames, plus one for the isolated context).
-  ASSERT_EQ(3u, web_frame_client.release_notifications.size());
+  ASSERT_EQ(3u, release_notifications.size());
 
   // And one of them should be exactly the same as the create notification for
   // the isolated context.
   int match_count = 0;
-  for (size_t i = 0; i < web_frame_client.release_notifications.size(); ++i) {
-    if (web_frame_client.release_notifications[i]->Equals(
-            web_frame_client.create_notifications[0].get()))
+  for (size_t i = 0; i < release_notifications.size(); ++i) {
+    if (release_notifications[i]->Equals(create_notifications[0].get()))
       ++match_count;
   }
   EXPECT_EQ(1, match_count);
