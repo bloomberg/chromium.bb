@@ -523,6 +523,27 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
   return v8::ScriptCompiler::CompileModule(isolate, &script_source);
 }
 
+void V8ScriptRunner::ReportExceptionForModule(v8::Isolate* isolate,
+                                              v8::Local<v8::Value> exception,
+                                              const String& file_name) {
+  // |origin| is for compiling a fragment that throws |exception|.
+  // Therefore |is_module| is false and |access_control_status| is
+  // kSharableCrossOrigin.
+  AccessControlStatus access_control_status = kSharableCrossOrigin;
+  v8::ScriptOrigin origin(
+      V8String(isolate, file_name),
+      v8::Integer::New(isolate, 0),  // line_offset
+      v8::Integer::New(isolate, 0),  // col_offset
+      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
+      v8::Local<v8::Integer>(),    // script id
+      v8::String::Empty(isolate),  // source_map_url
+      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
+      v8::False(isolate),   // is_wasm
+      v8::False(isolate));  // is_module
+
+  ThrowException(isolate, exception, origin);
+}
+
 v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Isolate* isolate,
     v8::Local<v8::Script> script,

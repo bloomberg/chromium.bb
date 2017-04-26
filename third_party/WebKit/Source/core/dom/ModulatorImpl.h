@@ -62,6 +62,7 @@ class ModulatorImpl final : public Modulator {
                              AccessControlStatus) override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
+  void ExecuteModule(const ModuleScript*) override;
 
   ModulatorImpl(RefPtr<ScriptState>, RefPtr<WebTaskRunner>, ResourceFetcher*);
 

@@ -42,7 +42,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   }
   ~ModuleScript() override = default;
 
-  ScriptModule& Record() { return record_; }
+  const ScriptModule& Record() const { return record_; }
   const KURL& BaseURL() const { return base_url_; }
 
   ModuleInstantiationState InstantiationState() const {
