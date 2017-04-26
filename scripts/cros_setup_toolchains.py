@@ -54,6 +54,8 @@ TARGET_VERSION_MAP = {
         'ex_go' : PACKAGE_NONE,
         'ex_compiler-rt': PACKAGE_NONE,
         'ex_llvm-libunwind': PACKAGE_NONE,
+        'ex_libcxxabi': PACKAGE_NONE,
+        'ex_libcxx': PACKAGE_NONE,
     },
 }
 
@@ -79,6 +81,8 @@ TARGET_LLVM_PKGS_ENABLED = (
 
 LLVM_PKGS_TABLE = {
     'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
+    'ex_libcxxabi' : ['--ex-pkg', 'sys-libs/libcxxabi'],
+    'ex_libcxx' : ['--ex-pkg', 'sys-libs/libcxx'],
 }
 
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
@@ -1221,6 +1225,13 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
+  # pylint: disable=global-statement
+  # Disable installing llvm pkgs till binary package is available
+  global LLVM_PKGS_TABLE
+  if options.usepkg:
+    LLVM_PKGS_TABLE = {
+        'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
+    }
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
