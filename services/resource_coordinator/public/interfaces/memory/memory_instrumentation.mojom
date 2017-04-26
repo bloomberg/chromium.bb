@@ -9,7 +9,8 @@ import "mojo/common/process_id.mojom";
 enum DumpType {
   PERIODIC_INTERVAL,
   EXPLICITLY_TRIGGERED,
-  PEAK_MEMORY_USAGE
+  PEAK_MEMORY_USAGE,
+  SUMMARY_ONLY 
 };
 
 enum LevelOfDetail {
