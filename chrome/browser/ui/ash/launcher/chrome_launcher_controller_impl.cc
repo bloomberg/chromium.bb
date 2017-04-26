@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -538,11 +539,14 @@ void ChromeLauncherControllerImpl::ActiveUserChanged(
   // Restore the order of running, but unpinned applications for the activated
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
-  // Inform the system tray of the change.
-  ash::Shell::Get()->system_tray_delegate()->ActiveUserWasChanged();
-  // Force on-screen keyboard to reset.
-  if (keyboard::IsKeyboardEnabled())
-    ash::Shell::Get()->CreateKeyboard();
+  // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
+  if (!ash_util::IsRunningInMash()) {
+    // Inform the system tray of the change.
+    ash::Shell::Get()->system_tray_delegate()->ActiveUserWasChanged();
+    // Force on-screen keyboard to reset.
+    if (keyboard::IsKeyboardEnabled())
+      ash::Shell::Get()->CreateKeyboard();
+  }
 }
 
 void ChromeLauncherControllerImpl::AdditionalUserAddedToSession(
@@ -1058,11 +1062,14 @@ void ChromeLauncherControllerImpl::SetVirtualKeyboardBehaviorFromPrefs() {
         enable ? keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED
                : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
   }
-  const bool is_enabled = keyboard::IsKeyboardEnabled();
-  if (was_enabled && !is_enabled)
-    ash::Shell::Get()->DeactivateKeyboard();
-  else if (is_enabled && !was_enabled)
-    ash::Shell::Get()->CreateKeyboard();
+  // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
+  if (!ash_util::IsRunningInMash()) {
+    const bool is_enabled = keyboard::IsKeyboardEnabled();
+    if (was_enabled && !is_enabled)
+      ash::Shell::Get()->DeactivateKeyboard();
+    else if (is_enabled && !was_enabled)
+      ash::Shell::Get()->CreateKeyboard();
+  }
 }
 
 ash::ShelfItemStatus ChromeLauncherControllerImpl::GetAppState(

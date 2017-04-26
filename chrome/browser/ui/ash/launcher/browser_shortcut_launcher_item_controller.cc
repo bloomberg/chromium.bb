@@ -9,9 +9,7 @@
 
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -23,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -130,23 +129,21 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   ash::ShelfItem browser_item = shelf_model_->items()[browser_index];
   ash::ShelfItemStatus browser_status = ash::STATUS_CLOSED;
 
-  aura::Window* window = ash::wm::GetActiveWindow();
-  if (window) {
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  if (browser && browser->window()->IsActive() &&
+      IsBrowserRepresentedInBrowserList(browser)) {
     // Check if the active browser / tab is a browser which is not an app,
     // a windowed app, a popup or any other item which is not a browser of
     // interest.
-    Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (IsBrowserRepresentedInBrowserList(browser)) {
-      browser_status = ash::STATUS_ACTIVE;
-      // If an app that has item is running in active WebContents, browser item
-      // status cannot be active.
-      content::WebContents* contents =
-          browser->tab_strip_model()->GetActiveWebContents();
-      if (contents &&
-          (ChromeLauncherController::instance()->GetShelfIDForWebContents(
-               contents) != browser_item.id))
-        browser_status = ash::STATUS_RUNNING;
-    }
+    browser_status = ash::STATUS_ACTIVE;
+    // If an app that has item is running in active WebContents, browser item
+    // status cannot be active.
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    if (contents &&
+        (ChromeLauncherController::instance()->GetShelfIDForWebContents(
+             contents) != browser_item.id))
+      browser_status = ash::STATUS_RUNNING;
   }
 
   if (browser_status == ash::STATUS_CLOSED) {
@@ -322,12 +319,12 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     chrome::NewEmptyWindow(ChromeLauncherController::instance()->profile());
     return ash::SHELF_ACTION_NEW_WINDOW_CREATED;
   }
-  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (items.size() == 1) {
     // If there is only one suitable browser, we can either activate it, or
     // bounce it (if it is already active).
-    if (browser == items[0]) {
-      AnimateWindow(browser->window()->GetNativeWindow(),
+    if (items[0]->window()->IsActive()) {
+      AnimateWindow(items[0]->window()->GetNativeWindow(),
                     wm::WINDOW_ANIMATION_TYPE_BOUNCE);
       return ash::SHELF_ACTION_NONE;
     }
@@ -339,7 +336,8 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     std::vector<Browser*>::iterator i =
         std::find(items.begin(), items.end(), browser);
     if (i != items.end()) {
-      browser = (++i == items.end()) ? items[0] : *i;
+      if (browser->window()->IsActive())
+        browser = (++i == items.end()) ? items[0] : *i;
     } else {
       browser = chrome::FindTabbedBrowser(
           ChromeLauncherController::instance()->profile(), true);
@@ -360,10 +358,10 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.
-  ash::ShelfModel* model = ash::Shell::Get()->shelf_model();
   if (browser->is_app() && browser->is_type_popup() &&
-      model->GetShelfIDForAppID(web_app::GetExtensionIdFromApplicationName(
-          browser->app_name())) > 0) {
+      shelf_model_->GetShelfIDForAppID(
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())) !=
+          ash::kInvalidShelfID) {
     return false;
   }
 

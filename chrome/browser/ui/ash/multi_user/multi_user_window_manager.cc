@@ -9,6 +9,7 @@
 #include "ash/shell_delegate.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -37,7 +38,9 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
   ash::MultiProfileUMA::SessionMode mode =
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
-  if (ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled()) {
+  // TODO(crbug.com/557406): Enable this component in Mash.
+  if (!ash_util::IsRunningInMash() &&
+      ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled()) {
     if (!g_instance) {
       MultiUserWindowManagerChromeOS* manager =
           new MultiUserWindowManagerChromeOS(user_manager::UserManager::Get()

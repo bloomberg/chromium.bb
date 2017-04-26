@@ -104,6 +104,8 @@ class ChromeLauncherControllerImpl
   const std::string& GetLaunchIDForShelfID(ash::ShelfID id) override;
   void AttachProfile(Profile* profile_to_attach) override;
 
+  ash::ShelfModel* shelf_model() const { return model_; }
+
   // Access to the BrowserStatusMonitor for tests.
   BrowserStatusMonitor* browser_status_monitor_for_test() {
     return browser_status_monitor_.get();

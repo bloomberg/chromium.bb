@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
 #include "ash/shelf/shelf_model.h"
-#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm_window.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -51,7 +50,7 @@ std::string GetAppShelfId(AppWindow* app_window) {
 }  // namespace
 
 ExtensionAppWindowLauncherController::ExtensionAppWindowLauncherController(
-    ChromeLauncherController* owner)
+    ChromeLauncherControllerImpl* owner)
     : AppWindowLauncherController(owner) {
   AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
   registry_.insert(registry);
@@ -168,8 +167,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     controller->AddAppWindow(app_window);
     // If there is already a shelf id mapped to this AppLaunchId (e.g. pinned),
     // use that shelf item.
-    shelf_id = ash::Shell::Get()->shelf_model()->GetShelfIDForAppIDAndLaunchID(
-        app_id, launch_id);
+    shelf_id = owner()->GetShelfIDForAppIDAndLaunchID(app_id, launch_id);
 
     if (shelf_id == 0) {
       shelf_id = owner()->CreateAppLauncherItem(std::move(controller), status);
@@ -180,8 +178,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
         item_controller->set_image_set_by_controller(true);
       }
     } else {
-      ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-      shelf_model->SetShelfItemDelegate(shelf_id, std::move(controller));
+      owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
+                                                   std::move(controller));
     }
 
     // We need to change the controller associated with app_shelf_id.
