@@ -41,6 +41,7 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
   void ConfigureWidgetInitParamsForContainer(
       views::Widget* widget,
       views::Widget::InitParams* init_params) override;
+  bool IsPrimaryDisplayForNotification() const override;
 
  private:
   friend class test::MessagePopupCollectionTest;

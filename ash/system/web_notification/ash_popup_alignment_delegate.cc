@@ -122,6 +122,11 @@ void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
           widget, kShellWindowId_StatusContainer, init_params);
 }
 
+bool AshPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
+  return screen_ &&
+         GetCurrentDisplay().id() == screen_->GetPrimaryDisplay().id();
+}
+
 ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
   return shelf_->GetAlignment();
 }

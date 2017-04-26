@@ -89,6 +89,10 @@ void DesktopPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
   // Do nothing, which will use the default container.
 }
 
+bool DesktopPopupAlignmentDelegate::IsPrimaryDisplayForNotification() const {
+  return true;
+}
+
 // Anytime the display configuration changes, we need to recompute the alignment
 // on the primary display. But, we get different events on different platforms.
 // On Windows, for example, when switching from a laptop display to an external
