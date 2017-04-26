@@ -66,6 +66,7 @@ class PopularSites {
   // Various internals exposed publicly for diagnostic pages only.
   virtual GURL GetLastURLFetched() const = 0;
   virtual GURL GetURLToFetch() = 0;
+  virtual std::string GetDirectoryToFetch() = 0;
   virtual std::string GetCountryToFetch() = 0;
   virtual std::string GetVersionToFetch() = 0;
   virtual const base::ListValue* GetCachedJson() = 0;

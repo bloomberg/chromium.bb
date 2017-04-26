@@ -11,6 +11,7 @@ namespace prefs {
 extern const char kNumPersonalTiles[];
 
 extern const char kPopularSitesOverrideURL[];
+extern const char kPopularSitesOverrideDirectory[];
 extern const char kPopularSitesOverrideCountry[];
 extern const char kPopularSitesOverrideVersion[];
 

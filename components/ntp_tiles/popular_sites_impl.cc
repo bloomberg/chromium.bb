@@ -52,7 +52,8 @@ namespace ntp_tiles {
 namespace {
 
 const char kPopularSitesURLFormat[] =
-    "https://www.gstatic.com/chrome/ntp/suggested_sites_%s_%s.json";
+    "https://www.gstatic.com/%ssuggested_sites_%s_%s.json";
+const char kPopularSitesDefaultDirectory[] = "chrome/ntp/";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "5";
 const int kPopularSitesRedownloadIntervalHours = 24;
@@ -65,10 +66,11 @@ const char kPopularSitesJsonPref[] = "suggested_sites_json";
 // versions of Chrome, no longer used. Remove after M61.
 const char kPopularSitesLocalFilenameToCleanup[] = "suggested_sites.json";
 
-GURL GetPopularSitesURL(const std::string& country,
+GURL GetPopularSitesURL(const std::string& directory,
+                        const std::string& country,
                         const std::string& version) {
-  return GURL(base::StringPrintf(kPopularSitesURLFormat, country.c_str(),
-                                 version.c_str()));
+  return GURL(base::StringPrintf(kPopularSitesURLFormat, directory.c_str(),
+                                 country.c_str(), version.c_str()));
 }
 
 // Extract the country from the default search engine if the default search
@@ -259,13 +261,25 @@ GURL PopularSitesImpl::GetLastURLFetched() const {
 }
 
 GURL PopularSitesImpl::GetURLToFetch() {
+  const std::string directory = GetDirectoryToFetch();
   const std::string country = GetCountryToFetch();
   const std::string version = GetVersionToFetch();
 
   const GURL override_url =
       GURL(prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
-  return override_url.is_valid() ? override_url
-                                 : GetPopularSitesURL(country, version);
+  return override_url.is_valid()
+             ? override_url
+             : GetPopularSitesURL(directory, country, version);
+}
+
+std::string PopularSitesImpl::GetDirectoryToFetch() {
+  std::string directory =
+      prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideDirectory);
+
+  if (directory.empty())
+    directory = kPopularSitesDefaultDirectory;
+
+  return directory;
 }
 
 // Determine the country code to use. In order of precedence:
@@ -325,6 +339,8 @@ void PopularSitesImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideURL,
                                  std::string());
+  user_prefs->RegisterStringPref(
+      ntp_tiles::prefs::kPopularSitesOverrideDirectory, std::string());
   user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideCountry,
                                  std::string());
   user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideVersion,
@@ -413,7 +429,8 @@ void PopularSitesImpl::OnDownloadFailed() {
   if (!is_fallback_) {
     DLOG(WARNING) << "Download country site list failed";
     is_fallback_ = true;
-    pending_url_ = GetPopularSitesURL(kPopularSitesDefaultCountryCode,
+    pending_url_ = GetPopularSitesURL(kPopularSitesDefaultDirectory,
+                                      kPopularSitesDefaultCountryCode,
                                       kPopularSitesDefaultVersion);
     FetchPopularSites();
   } else {
