@@ -372,7 +372,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   if (GetScrollOffset() == new_offset)
     return;
 
-  ShowOverlayScrollbars();
   scroll_offset_ = new_offset;
 
   LocalFrame* frame = Box().GetFrame();
@@ -472,6 +471,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
 
   if (IsExplicitScrollType(scroll_type)) {
+    if (scroll_type != kCompositorScroll)
+      ShowOverlayScrollbars();
     frame_view->ClearFragmentAnchor();
     if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
       GetScrollAnchor()->Clear();

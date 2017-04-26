@@ -4098,8 +4098,6 @@ void FrameView::UpdateScrollOffset(const ScrollOffset& offset,
   if (scroll_delta.IsZero())
     return;
 
-  ShowOverlayScrollbars();
-
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // Don't scroll the FrameView!
     ASSERT_NOT_REACHED();
@@ -4144,6 +4142,8 @@ void FrameView::UpdateScrollOffset(const ScrollOffset& offset,
   }
 
   if (IsExplicitScrollType(scroll_type)) {
+    if (scroll_type != kCompositorScroll)
+      ShowOverlayScrollbars();
     ClearFragmentAnchor();
     ClearScrollAnchor();
   }
