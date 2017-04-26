@@ -122,14 +122,10 @@ class ChildProcessLauncherHelper :
       const base::LaunchOptions& options);
 
   // Called once the process has been created, successfully or not.
-  // If |post_launch_on_client_thread_called| is false,
-  // this calls PostLaunchOnClientThread on the client thread.
   void PostLaunchOnLauncherThread(ChildProcessLauncherHelper::Process process,
-                                  int launch_result,
-                                  bool post_launch_on_client_thread_called);
+                                  int launch_result);
 
-  // Note that this could be called before PostLaunchOnLauncherThread() is
-  // called.
+  // Posted by PostLaunchOnLauncherThread onto the client thread.
   void PostLaunchOnClientThread(ChildProcessLauncherHelper::Process process,
                                 int error_code);
 
