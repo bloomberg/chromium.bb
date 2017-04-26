@@ -435,7 +435,7 @@ void ScrollableArea::RecalculateScrollbarOverlayColorTheme(
   // heuristic.
   double hue, saturation, lightness;
   background_color.GetHSL(hue, saturation, lightness);
-  if (lightness <= .5)
+  if (lightness <= .5 && background_color.Alpha())
     overlay_theme = kScrollbarOverlayColorThemeLight;
 
   if (old_overlay_theme != overlay_theme)
