@@ -2009,12 +2009,12 @@ bool WebViewTest::TapElementById(WebInputEvent::Type type,
 }
 
 IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
-  // This needs to match printingMinimumShrinkFactor in PrintContext.cpp. The
+  // This needs to match |kPrintingMinimumShrinkFactor| in PrintContext.cpp. The
   // layout is scaled by this factor for printing.
   constexpr float kMinimumShrinkFactor = 1.333f;
 
   // The expected layout size comes from the calculation done in
-  // resizePageRectsKeepingRatio which is used from PrintContext::begin to
+  // ResizePageRectsKeepingRatio() which is used from PrintContext::begin() to
   // scale the page size.
   const float ratio = page_size.Height() / (float)page_size.Width();
   const int icb_width = floor(page_size.Width() * kMinimumShrinkFactor);

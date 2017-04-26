@@ -1907,11 +1907,11 @@ void PrintWebViewHelper::PrintPageInternal(const PrintMsg_Print_Params& params,
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (params.display_header_footer) {
-    // TODO(thestig): Figure out why Linux needs this. It is almost certainly
-    // |printingMinimumShrinkFactor| from Blink.
 #if defined(OS_WIN)
     const float fudge_factor = 1;
 #else
+    // TODO(thestig): Figure out why Linux needs this. It is almost certainly
+    // |kPrintingMinimumShrinkFactor| from Blink.
     const float fudge_factor = kPrintingMinimumShrinkFactor;
 #endif
     // |page_number| is 0-based, so 1 is added.
