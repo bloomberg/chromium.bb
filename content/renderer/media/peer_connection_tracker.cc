@@ -177,30 +177,33 @@ static std::string SerializeConfiguration(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
   std::ostringstream oss;
   // TODO(hbos): Add serialization of certificate.
-  oss << "{ iceServers: " << SerializeServers(config.servers) << ", "
-      << "iceTransportPolicy: " << SerializeIceTransportType(config.type)
-      << ", "
-      << "bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy) << ", "
-      << "rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
-      << "iceCandidatePoolSize: " << config.ice_candidate_pool_size << " }";
+  oss << "{ iceServers: " << SerializeServers(config.servers)
+      << ", iceTransportPolicy: " << SerializeIceTransportType(config.type)
+      << ", bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy)
+      << ", rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
+      << ", iceCandidatePoolSize: " << config.ice_candidate_pool_size << " }";
   return oss.str();
 }
 
-#define GET_STRING_OF_STATE(state)                \
-  case WebRTCPeerConnectionHandlerClient::state:  \
-    result = #state;                              \
+#define GET_STRING_OF_STATE(state)                  \
+  case WebRTCPeerConnectionHandlerClient::k##state: \
+    result = #state;                                \
     break;
+
+// Note: All of these strings need to be kept in sync with
+// peer_connection_update_table.js, in order to be displayed as friendly
+// strings on chrome://webrtc-internals.
 
 static const char* GetSignalingStateString(
     WebRTCPeerConnectionHandlerClient::SignalingState state) {
   const char* result = "";
   switch (state) {
-    GET_STRING_OF_STATE(kSignalingStateStable)
-    GET_STRING_OF_STATE(kSignalingStateHaveLocalOffer)
-    GET_STRING_OF_STATE(kSignalingStateHaveRemoteOffer)
-    GET_STRING_OF_STATE(kSignalingStateHaveLocalPrAnswer)
-    GET_STRING_OF_STATE(kSignalingStateHaveRemotePrAnswer)
-    GET_STRING_OF_STATE(kSignalingStateClosed)
+    GET_STRING_OF_STATE(SignalingStateStable)
+    GET_STRING_OF_STATE(SignalingStateHaveLocalOffer)
+    GET_STRING_OF_STATE(SignalingStateHaveRemoteOffer)
+    GET_STRING_OF_STATE(SignalingStateHaveLocalPrAnswer)
+    GET_STRING_OF_STATE(SignalingStateHaveRemotePrAnswer)
+    GET_STRING_OF_STATE(SignalingStateClosed)
     default:
       NOTREACHED();
       break;
@@ -212,13 +215,13 @@ static const char* GetIceConnectionStateString(
     WebRTCPeerConnectionHandlerClient::ICEConnectionState state) {
   const char* result = "";
   switch (state) {
-    GET_STRING_OF_STATE(kICEConnectionStateStarting)
-    GET_STRING_OF_STATE(kICEConnectionStateChecking)
-    GET_STRING_OF_STATE(kICEConnectionStateConnected)
-    GET_STRING_OF_STATE(kICEConnectionStateCompleted)
-    GET_STRING_OF_STATE(kICEConnectionStateFailed)
-    GET_STRING_OF_STATE(kICEConnectionStateDisconnected)
-    GET_STRING_OF_STATE(kICEConnectionStateClosed)
+    GET_STRING_OF_STATE(ICEConnectionStateStarting)
+    GET_STRING_OF_STATE(ICEConnectionStateChecking)
+    GET_STRING_OF_STATE(ICEConnectionStateConnected)
+    GET_STRING_OF_STATE(ICEConnectionStateCompleted)
+    GET_STRING_OF_STATE(ICEConnectionStateFailed)
+    GET_STRING_OF_STATE(ICEConnectionStateDisconnected)
+    GET_STRING_OF_STATE(ICEConnectionStateClosed)
     default:
       NOTREACHED();
       break;
@@ -230,9 +233,9 @@ static const char* GetIceGatheringStateString(
     WebRTCPeerConnectionHandlerClient::ICEGatheringState state) {
   const char* result = "";
   switch (state) {
-    GET_STRING_OF_STATE(kICEGatheringStateNew)
-    GET_STRING_OF_STATE(kICEGatheringStateGathering)
-    GET_STRING_OF_STATE(kICEGatheringStateComplete)
+    GET_STRING_OF_STATE(ICEGatheringStateNew)
+    GET_STRING_OF_STATE(ICEGatheringStateGathering)
+    GET_STRING_OF_STATE(ICEGatheringStateComplete)
     default:
       NOTREACHED();
       break;
