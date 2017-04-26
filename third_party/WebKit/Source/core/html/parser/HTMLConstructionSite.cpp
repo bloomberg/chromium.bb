@@ -677,14 +677,14 @@ void HTMLConstructionSite::InsertCommentOnHTMLHtmlElement(
 
 void HTMLConstructionSite::InsertHTMLHeadElement(AtomicHTMLToken* token) {
   DCHECK(!ShouldFosterParent());
-  head_ = HTMLStackItem::Create(CreateHTMLElement(token), token);
+  head_ = HTMLStackItem::Create(CreateElement(token, xhtmlNamespaceURI), token);
   AttachLater(CurrentNode(), head_->GetElement());
   open_elements_.PushHTMLHeadElement(head_);
 }
 
 void HTMLConstructionSite::InsertHTMLBodyElement(AtomicHTMLToken* token) {
   DCHECK(!ShouldFosterParent());
-  HTMLElement* body = CreateHTMLElement(token);
+  Element* body = CreateElement(token, xhtmlNamespaceURI);
   AttachLater(CurrentNode(), body);
   open_elements_.PushHTMLBodyElement(HTMLStackItem::Create(body, token));
   if (document_)
@@ -693,7 +693,7 @@ void HTMLConstructionSite::InsertHTMLBodyElement(AtomicHTMLToken* token) {
 
 void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
                                                  bool is_demoted) {
-  HTMLElement* element = CreateHTMLElement(token);
+  Element* element = CreateElement(token, xhtmlNamespaceURI);
   DCHECK(isHTMLFormElement(element));
   HTMLFormElement* form_element = toHTMLFormElement(element);
   if (!OpenElements()->HasTemplateInHTMLScope())
@@ -704,7 +704,7 @@ void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
 }
 
 void HTMLConstructionSite::InsertHTMLElement(AtomicHTMLToken* token) {
-  HTMLElement* element = CreateHTMLElement(token);
+  Element* element = CreateElement(token, xhtmlNamespaceURI);
   AttachLater(CurrentNode(), element);
   open_elements_.Push(HTMLStackItem::Create(element, token));
 }
@@ -715,7 +715,7 @@ void HTMLConstructionSite::InsertSelfClosingHTMLElementDestroyingToken(
   // Normally HTMLElementStack is responsible for calling finishParsingChildren,
   // but self-closing elements are never in the element stack so the stack
   // doesn't get a chance to tell them that we're done parsing their children.
-  AttachLater(CurrentNode(), CreateHTMLElement(token), true);
+  AttachLater(CurrentNode(), CreateElement(token, xhtmlNamespaceURI), true);
   // FIXME: Do we want to acknowledge the token's self-closing flag?
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#acknowledge-self-closing-flag
 }
@@ -842,16 +842,6 @@ CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
   return is_parsing_fragment_ ? kCreatedByFragmentParser : kCreatedByParser;
 }
 
-Element* HTMLConstructionSite::CreateElement(
-    AtomicHTMLToken* token,
-    const AtomicString& namespace_uri) {
-  QualifiedName tag_name(g_null_atom, token->GetName(), namespace_uri);
-  Element* element = OwnerDocumentForCurrentNode().createElement(
-      tag_name, GetCreateElementFlags());
-  SetAttributes(element, token, parser_content_policy_);
-  return element;
-}
-
 inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
   if (isHTMLTemplateElement(*CurrentNode()))
     return toHTMLTemplateElement(CurrentElement())->content()->GetDocument();
@@ -885,22 +875,15 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
 
 // "create an element for a token"
 // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
-// TODO(dominicc): When form association is separate from creation, unify this
-// with foreign element creation. Add a namespace parameter and check for HTML
-// namespace to lookupCustomElementDefinition.
-HTMLElement* HTMLConstructionSite::CreateHTMLElement(AtomicHTMLToken* token) {
+Element* HTMLConstructionSite::CreateElement(
+    AtomicHTMLToken* token,
+    const AtomicString& namespace_uri) {
   // "1. Let document be intended parent's node document."
   Document& document = OwnerDocumentForCurrentNode();
 
-  // Only associate the element with the current form if we're creating the new
-  // element in a document with a browsing context (rather than in <template>
-  // contents).
-  // TODO(dominicc): Change form to happen after element creation when
-  // implementing customized built-in elements.
-  HTMLFormElement* form = document.GetFrame() ? form_.Get() : nullptr;
-
   // "2. Let local name be the tag name of the token."
-  // "3. Let is be the value of the "is" attribute in the giev token ..." etc.
+  QualifiedName tag_name(g_null_atom, token->GetName(), namespace_uri);
+  // "3. Let is be the value of the "is" attribute in the given token ..." etc.
   // "4. Let definition be the result of looking up a custom element ..." etc.
   CustomElementDefinition* definition =
       is_parsing_fragment_ ? nullptr
@@ -910,7 +893,7 @@ HTMLElement* HTMLConstructionSite::CreateHTMLElement(AtomicHTMLToken* token) {
   // be true."
   bool will_execute_script = definition && !is_parsing_fragment_;
 
-  HTMLElement* element;
+  Element* element;
 
   if (will_execute_script) {
     // "6.1 Increment the document's throw-on-dynamic-insertion counter."
@@ -931,9 +914,7 @@ HTMLElement* HTMLConstructionSite::CreateHTMLElement(AtomicHTMLToken* token) {
     CEReactionsScope reactions;
 
     // 7.
-    QualifiedName element_q_name(g_null_atom, token->GetName(),
-                                 HTMLNames::xhtmlNamespaceURI);
-    element = definition->CreateElementSync(document, element_q_name);
+    element = definition->CreateElementSync(document, tag_name);
 
     // "8. Append each attribute in the given token to element." We don't use
     // setAttributes here because the custom element constructor may have
@@ -945,26 +926,65 @@ HTMLElement* HTMLConstructionSite::CreateHTMLElement(AtomicHTMLToken* token) {
     // and ThrowOnDynamicMarkupInsertionCountIncrementer destructors implement
     // steps 9.1-3.
   } else {
-    // FIXME: This can't use HTMLConstructionSite::createElement because we have
-    // to pass the current form element. We should rework form association to
-    // occur after construction to allow better code sharing here.
-    element = HTMLElementFactory::createHTMLElement(token->GetName(), document,
-                                                    GetCreateElementFlags());
-    if (FormAssociated* form_associated_element =
-            element->ToFormAssociatedOrNull()) {
-      form_associated_element->AssociateWith(form);
-    }
+    element = document.createElement(tag_name, GetCreateElementFlags());
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.
     DCHECK_NE(element->GetCustomElementState(), CustomElementState::kCustom);
     DCHECK_NE(element->GetCustomElementState(), CustomElementState::kFailed);
 
+    // TODO(dominicc): Move these steps so they happen for custom
+    // elements as well as built-in elements when customized built in
+    // elements are implemented for resettable, listed elements.
+
+    // 10. If element has an xmlns attribute in the XMLNS namespace
+    // whose value is not exactly the same as the element's namespace,
+    // that is a parse error. Similarly, if element has an xmlns:xlink
+    // attribute in the XMLNS namespace whose value is not the XLink
+    // Namespace, that is a parse error.
+
+    // TODO(dominicc): Implement step 10 when the HTML parser does
+    // something useful with parse errors.
+
+    // 11. If element is a resettable element, invoke its reset
+    // algorithm. (This initializes the element's value and
+    // checkedness based on the element's attributes.)
+    // TODO(dominicc): Implement step 11, resettable elements.
+
+    // 12. If element is a form-associated element, and the form
+    // element pointer is not null, and there is no template element
+    // on the stack of open elements, ...
+    FormAssociated* form_associated_element =
+        element->IsHTMLElement()
+            ? ToHTMLElement(element)->ToFormAssociatedOrNull()
+            : nullptr;
+    if (form_associated_element && document.GetFrame() && form_.Get()) {
+      // ... and element is either not listed or doesn't have a form
+      // attribute, and the intended parent is in the same tree as the
+      // element pointed to by the form element pointer, associate
+      // element with the form element pointed to by the form element
+      // pointer, and suppress the running of the reset the form owner
+      // algorithm when the parser subsequently attempts to insert the
+      // element.
+
+      // TODO(dominicc): There are many differences to the spec here;
+      // some of them are observable:
+      //
+      // - The HTML spec tracks whether there is a template element on
+      //   the stack both for manipulating the form element pointer
+      //   and using it here.
+      // - FormAssociated::AssociateWith implementations don't do the
+      //   "same tree" check; for example
+      //   HTMLImageElement::AssociateWith just checks whether the form
+      //   is in *a* tree. This check should be done here consistently.
+      // - ListedElement is a mixin; add IsListedElement and skip
+      //   setting the form for listed attributes with form=. Instead
+      //   we set attributes (step 8) out of order, after this step,
+      //   to reset the form association.
+      form_associated_element->AssociateWith(form_.Get());
+    }
     // "8. Append each attribute in the given token to element."
     SetAttributes(element, token, parser_content_policy_);
   }
-
-  // TODO(dominicc): Implement steps 10-12 when customized built-in elements are
-  // implemented.
 
   return element;
 }
@@ -975,10 +995,7 @@ HTMLStackItem* HTMLConstructionSite::CreateElementFromSavedToken(
   // NOTE: Moving from item -> token -> item copies the Attribute vector twice!
   AtomicHTMLToken fake_token(HTMLToken::kStartTag, item->LocalName(),
                              item->Attributes());
-  if (item->NamespaceURI() == HTMLNames::xhtmlNamespaceURI)
-    element = CreateHTMLElement(&fake_token);
-  else
-    element = CreateElement(&fake_token, item->NamespaceURI());
+  element = CreateElement(&fake_token, item->NamespaceURI());
   return HTMLStackItem::Create(element, &fake_token, item->NamespaceURI());
 }
 
