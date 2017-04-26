@@ -28,12 +28,9 @@ PaymentRequestSheetController::PaymentRequestSheetController(
 PaymentRequestSheetController::~PaymentRequestSheetController() {}
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
-  // This is owned by its parent.
-  content_view_ = new views::View;
-
-  FillContentView(content_view_);
-
-  return CreatePaymentView();
+  std::unique_ptr<views::View> view = CreatePaymentView();
+  UpdateContentView();
+  return view;
 }
 
 void PaymentRequestSheetController::UpdateContentView() {
@@ -117,6 +114,8 @@ PaymentRequestSheetController::CreatePaymentView() {
       0, views::GridLayout::SizeType::FIXED, kDialogWidth, kDialogWidth);
   pane_->SetLayoutManager(pane_layout);
   pane_layout->StartRow(0, 0);
+  // This is owned by its parent. It's the container passed to FillContentView.
+  content_view_ = new views::View;
   pane_layout->AddView(content_view_);
   pane_->SizeToPreferredSize();
 
