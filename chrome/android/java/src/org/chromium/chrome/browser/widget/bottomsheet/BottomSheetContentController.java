@@ -114,6 +114,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
     private boolean mDefaultContentInitialized;
+    private ChromeActivity mActivity;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -124,12 +125,13 @@ public class BottomSheetContentController extends BottomNavigationView
      * @param bottomSheet The {@link BottomSheet} associated with this bottom nav.
      * @param controlContainerHeight The height of the control container in px.
      * @param tabModelSelector The {@link TabModelSelector} for the application.
-     * @param activity The {@link Activity} that owns the BottomSheet.
+     * @param activity The {@link ChromeActivity} that owns the BottomSheet.
      */
     public void init(BottomSheet bottomSheet, int controlContainerHeight,
-            TabModelSelector tabModelSelector, Activity activity) {
+            TabModelSelector tabModelSelector, ChromeActivity activity) {
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(mBottomSheetObserver);
+        mActivity = activity;
         mTabModelSelector = tabModelSelector;
         mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
             @Override
@@ -154,7 +156,7 @@ public class BottomSheetContentController extends BottomNavigationView
         disableShiftingMode();
 
         mSnackbarManager = new SnackbarManager(
-                activity, (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container));
+                mActivity, (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container));
         mSnackbarManager.onStart();
 
         ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
@@ -163,7 +165,7 @@ public class BottomSheetContentController extends BottomNavigationView
                 if (newState == ActivityState.STARTED) mSnackbarManager.onStart();
                 if (newState == ActivityState.STOPPED) mSnackbarManager.onStop();
             }
-        }, activity);
+        }, mActivity);
     }
 
     /**
@@ -213,20 +215,18 @@ public class BottomSheetContentController extends BottomNavigationView
         BottomSheetContent content = mBottomSheetContents.get(navItemId);
         if (content != null) return content;
 
-        ChromeActivity activity = mTabModelSelector.getCurrentTab().getActivity();
-
         if (navItemId == R.id.action_home) {
             content = new SuggestionsBottomSheetContent(
-                    activity, mBottomSheet, mTabModelSelector, mSnackbarManager);
+                    mActivity, mBottomSheet, mTabModelSelector, mSnackbarManager);
         } else if (navItemId == R.id.action_downloads) {
             content = new DownloadSheetContent(
-                    activity, mTabModelSelector.getCurrentModel().isIncognito(), mSnackbarManager);
+                    mActivity, mTabModelSelector.getCurrentModel().isIncognito(), mSnackbarManager);
         } else if (navItemId == R.id.action_bookmarks) {
-            content = new BookmarkSheetContent(activity, mSnackbarManager);
+            content = new BookmarkSheetContent(mActivity, mSnackbarManager);
         } else if (navItemId == R.id.action_history) {
-            content = new HistorySheetContent(activity, mSnackbarManager);
+            content = new HistorySheetContent(mActivity, mSnackbarManager);
         } else if (navItemId == INCOGNITO_HOME_ID) {
-            content = new IncognitoBottomSheetContent(activity);
+            content = new IncognitoBottomSheetContent(mActivity);
         }
         mBottomSheetContents.put(navItemId, content);
         return content;
