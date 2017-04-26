@@ -112,11 +112,11 @@ void av1_filter_block_plane_ss11_hor(struct AV1Common *const cm,
                                      struct macroblockd_plane *const plane,
                                      int mi_row, LOOP_FILTER_MASK *lfm);
 
-void av1_filter_block_plane_non420_ver(struct AV1Common *cm,
+void av1_filter_block_plane_non420_ver(struct AV1Common *const cm,
                                        struct macroblockd_plane *plane,
                                        MODE_INFO **mi_8x8, int mi_row,
                                        int mi_col);
-void av1_filter_block_plane_non420_hor(struct AV1Common *cm,
+void av1_filter_block_plane_non420_hor(struct AV1Common *const cm,
                                        struct macroblockd_plane *plane,
                                        MODE_INFO **mi_8x8, int mi_row,
                                        int mi_col);
