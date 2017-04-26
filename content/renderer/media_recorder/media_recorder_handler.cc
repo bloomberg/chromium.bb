@@ -292,33 +292,19 @@ void MediaRecorderHandler::EncodingInfo(
 
   // TODO(mcasas): Support the case when both video and audio configurations are
   // specified: https://crbug.com/709181.
-  std::string content_type;
-  if (configuration.video_configuration)
-    content_type = configuration.video_configuration->content_type.Ascii();
-  else
-    content_type = configuration.audio_configuration->content_type.Ascii();
-
-  // |content_type| should be of the form "bla;codecs=foo", where "bla" is the
-  // type and "codecs=foo" is the parameter ("foo" is the parameter value), see
-  // RFC 2231 [1]. CanSupportMimeType() operates on type and parameter value.
-  // [1] https://tools.ietf.org/html/rfc2231
-  base::StringTokenizer mime_tokenizer(content_type, ";");
-  blink::WebString web_type;
-  blink::WebString web_codecs;
-  if (mime_tokenizer.GetNext())
-    web_type = blink::WebString::FromASCII(mime_tokenizer.token());
-  if (mime_tokenizer.GetNext()) {
-    const std::string parameters = mime_tokenizer.token();
-    base::StringTokenizer parameter_tokenizer(parameters, "=");
-    if (parameter_tokenizer.GetNext() &&
-        base::ToLowerASCII(parameter_tokenizer.token()) == "codecs" &&
-        parameter_tokenizer.GetNext()) {
-      web_codecs = blink::WebString::FromASCII(parameter_tokenizer.token());
-    }
+  blink::WebString mime_type;
+  blink::WebString codec;
+  if (configuration.video_configuration) {
+    mime_type = configuration.video_configuration->mime_type;
+    codec = configuration.video_configuration->codec;
+  } else {
+    mime_type = configuration.audio_configuration->mime_type;
+    codec = configuration.audio_configuration->codec;
   }
 
-  info->supported = CanSupportMimeType(web_type, web_codecs);
-  DVLOG(1) << "type: " << web_type.Ascii() << ", params:" << web_codecs.Ascii()
+  // See RFC 2231. https://tools.ietf.org/html/rfc2231
+  info->supported = CanSupportMimeType(mime_type, codec);
+  DVLOG(1) << "type: " << mime_type.Ascii() << ", codec:" << codec.Ascii()
            << " is" << (info->supported ? " supported" : " NOT supported");
 
   scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));

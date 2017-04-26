@@ -13,6 +13,7 @@
 #include "modules/media_capabilities/MediaConfiguration.h"
 #include "modules/media_capabilities/MediaDecodingConfiguration.h"
 #include "modules/media_capabilities/MediaEncodingConfiguration.h"
+#include "platform/network/ParsedContentType.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaRecorderHandler.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
@@ -29,7 +30,15 @@ WebAudioConfiguration ToWebAudioConfiguration(
 
   // |contentType| is mandatory.
   DCHECK(configuration.hasContentType());
-  web_configuration.content_type = configuration.contentType();
+  ParsedContentType parsed_content_type(configuration.contentType(),
+                                        ParsedContentType::Mode::kStrict);
+
+  // TODO(chcunningham): Throw TypeError for invalid input.
+  // DCHECK(parsed_content_type.IsValid());
+
+  DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
+  web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
+  web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
   // |channels| is optional and will be set to a null WebString if not present.
   web_configuration.channels = configuration.hasChannels()
@@ -51,7 +60,15 @@ WebVideoConfiguration ToWebVideoConfiguration(
 
   // All the properties are mandatory.
   DCHECK(configuration.hasContentType());
-  web_configuration.content_type = configuration.contentType();
+  ParsedContentType parsed_content_type(configuration.contentType(),
+                                        ParsedContentType::Mode::kStrict);
+
+  // TODO(chcunningham): Throw TypeError for invalid input.
+  // DCHECK(parsed_content_type.IsValid());
+
+  DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
+  web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
+  web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
   DCHECK(configuration.hasWidth());
   web_configuration.width = configuration.width();

@@ -415,8 +415,10 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
   const std::string mime_type_lower_case = base::ToLowerASCII(mime_type);
   MediaFormatMappings::const_iterator it_media_format_map =
       media_format_map_.find(mime_type_lower_case);
-  if (it_media_format_map == media_format_map_.end())
+  if (it_media_format_map == media_format_map_.end()) {
+    DVLOG(3) << __func__ << " Unrecognized mime type: " << mime_type;
     return IsNotSupported;
+  }
 
   if (it_media_format_map->second.empty()) {
     // We get here if the mimetype does not expect a codecs parameter.
