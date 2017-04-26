@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
+#include "core/exported/WebDataSourceImpl.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -74,7 +75,6 @@
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
-#include "web/WebDataSourceImpl.h"
 #include "web/WebLocalFrameImpl.h"
 
 namespace blink {

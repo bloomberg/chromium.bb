@@ -32,6 +32,7 @@
 #define WebDataSourceImpl_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "core/frame/FrameTypes.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -43,7 +44,8 @@
 
 namespace blink {
 
-class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
+class CORE_EXPORT WebDataSourceImpl final : public DocumentLoader,
+                                            public WebDataSource {
  public:
   static WebDataSourceImpl* Create(LocalFrame*,
                                    const ResourceRequest&,
