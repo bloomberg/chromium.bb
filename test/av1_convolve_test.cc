@@ -85,8 +85,8 @@ struct ConvolveFunctions {
   ConvolveFunc vf_;
 };
 
-typedef tuple<ConvolveFunctions *, InterpFilter /* filter_x */,
-              InterpFilter /* filter_y */>
+typedef tuple<ConvolveFunctions *, InterpFilter /*filter_x*/,
+              InterpFilter /*filter_y*/>
     ConvolveParam;
 
 class Av1ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
@@ -119,7 +119,7 @@ class Av1ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     }
     return buf + offset * (*stride) + offset;
   }
-  virtual uint8_t *add_output(int w, int h, int *stride) {
+  virtual uint8_t *add_output(int w, int /*h*/, int *stride) {
     uint8_t *buf =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, kBufferSize));
     buf_ls_.push_back(buf);

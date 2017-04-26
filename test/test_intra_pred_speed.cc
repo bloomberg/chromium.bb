@@ -47,7 +47,7 @@ const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
 
 void TestIntraPred(const char name[], AvxPredFunc const *pred_funcs,
                    const char *const pred_func_names[], int num_funcs,
-                   const char *const signatures[], int block_size,
+                   const char *const signatures[], int /*block_size*/,
                    int num_pixels_per_test) {
   libaom_test::ACMRandom rnd(libaom_test::ACMRandom::DeterministicSeed());
   const int kBPS = 32;
