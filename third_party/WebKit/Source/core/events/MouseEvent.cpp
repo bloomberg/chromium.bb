@@ -384,6 +384,18 @@ bool MouseEvent::IsMouseEvent() const {
   return true;
 }
 
+short MouseEvent::button() const {
+  const AtomicString& event_name = type();
+  if (button_ == -1 || event_name == EventTypeNames::mousemove ||
+      event_name == EventTypeNames::mouseleave ||
+      event_name == EventTypeNames::mouseenter ||
+      event_name == EventTypeNames::mouseover ||
+      event_name == EventTypeNames::mouseout) {
+    return 0;
+  }
+  return button_;
+}
+
 int MouseEvent::which() const {
   // For the DOM, the return values for left, middle and right mouse buttons are
   // 0, 1, 2, respectively.

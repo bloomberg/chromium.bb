@@ -124,7 +124,7 @@ function runTests() {
   eventSender.mouseMoveTo(rect.left + 5, rect.top + 5);
   testReceivedEvents([
     "pointerdown 1,4", "mousedown 1,4",
-    "pointermove -1,4", "mousemove 1,4",
+    "pointermove -1,4", "mousemove 0,4",
     "pointerup 1,0", "mouseup 1,0",
     "pointermove -1,0", "mousemove 0,0",
   ], "Move with & without button");
