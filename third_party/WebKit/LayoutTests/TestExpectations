@@ -3236,8 +3236,6 @@ crbug.com/669473 external/wpt/css/css-ui-3/outline-013.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui-3/outline-014.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui-3/outline-015.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui-3/outline-016.html [ Failure ]
-crbug.com/669473 external/wpt/css/css-ui-3/text-overflow-002.html [ Failure ]
-crbug.com/669473 external/wpt/css/css-ui-3/text-overflow-004.html [ Failure ]
 
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
@@ -3446,3 +3444,9 @@ crbug.com/715405 [ Win Mac ] virtual/mojo-loading/http/tests/inspector/network/w
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/XMLHttpRequest/FormData-append.html [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/XMLHttpRequest/timeout-multiple-fetches.html [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/align-items-004.htm [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
