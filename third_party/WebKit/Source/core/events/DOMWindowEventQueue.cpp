@@ -99,7 +99,7 @@ bool DOMWindowEventQueue::EnqueueEvent(Event* event) {
 }
 
 bool DOMWindowEventQueue::CancelEvent(Event* event) {
-  HeapListHashSet<Member<Event>, 16>::iterator it = queued_events_.Find(event);
+  HeapListHashSet<Member<Event>, 16>::iterator it = queued_events_.find(event);
   bool found = it != queued_events_.end();
   if (found) {
     probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);

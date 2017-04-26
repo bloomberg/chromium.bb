@@ -183,7 +183,7 @@ void SpellCheckRequester::PrepareForLeakDetection() {
   // Rather than somehow wait for this async queue to drain before running
   // the leak detector, they're all cancelled to prevent flaky leaks being
   // reported.
-  request_queue_.Clear();
+  request_queue_.clear();
   // WebSpellCheckClient stores a set of WebTextCheckingCompletion objects,
   // which may store references to already invoked requests. We should clear
   // these references to prevent them from being a leak source.
@@ -237,7 +237,7 @@ void SpellCheckRequester::DidCheck(int sequence,
   DCHECK(processing_request_);
   DCHECK_EQ(processing_request_->Data().Sequence(), sequence);
   if (processing_request_->Data().Sequence() != sequence) {
-    request_queue_.Clear();
+    request_queue_.clear();
     return;
   }
 

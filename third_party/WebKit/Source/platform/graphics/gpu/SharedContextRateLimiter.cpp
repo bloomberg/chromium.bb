@@ -76,7 +76,7 @@ void SharedContextRateLimiter::Reset() {
       queries_.pop_front();
     }
   } else {
-    queries_.Clear();
+    queries_.clear();
   }
 }
 

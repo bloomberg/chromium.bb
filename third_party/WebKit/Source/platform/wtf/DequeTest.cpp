@@ -233,7 +233,7 @@ void OwnPtrTest() {
   EXPECT_EQ(count, copy_deque.size());
   EXPECT_EQ(0u, deque.size());
 
-  copy_deque.Clear();
+  copy_deque.clear();
   EXPECT_EQ(count, static_cast<size_t>(destruct_number));
 }
 
@@ -402,8 +402,8 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
     for (unsigned j = i; j < 12; j++) {
       if (!InterestingNumber(j))
         continue;
-      deque.Clear();
-      deque2.Clear();
+      deque.clear();
+      deque2.clear();
       EXPECT_EQ(0u, LivenessCounter::live_);
       for (unsigned k = 0; k < j; k++)
         deque.push_back(&counter);
@@ -473,8 +473,8 @@ void TestValuesMovedAndSwappedWithInlineCapacity() {
         for (unsigned size2 = 0; size2 < 12; size2++) {
           if (!InterestingNumber(size2))
             continue;
-          deque.Clear();
-          deque2.Clear();
+          deque.clear();
+          deque2.clear();
           for (unsigned i = 0; i < pad; i++)
             deque.push_back(103);
           for (unsigned i = 0; i < pad2; i++)
@@ -534,7 +534,7 @@ TEST(DequeTest, UniquePtr) {
   ASSERT_EQ(1u, deque.size());
   EXPECT_EQ(24, *deque[0]);
 
-  deque.Clear();
+  deque.clear();
 }
 
 class CountCopy final {

@@ -122,7 +122,7 @@ void DOMWebSocket::EventQueue::ContextDestroyed() {
 
   state_ = kStopped;
   resume_timer_.Stop();
-  events_.Clear();
+  events_.clear();
 }
 
 void DOMWebSocket::EventQueue::DispatchQueuedEvents() {

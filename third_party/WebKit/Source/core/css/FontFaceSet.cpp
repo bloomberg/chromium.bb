@@ -298,7 +298,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
   if (!InActiveDocumentContext())
     return false;
   HeapListHashSet<Member<FontFace>>::iterator it =
-      non_css_connected_faces_.Find(font_face);
+      non_css_connected_faces_.find(font_face);
   if (it != non_css_connected_faces_.end()) {
     non_css_connected_faces_.erase(it);
     CSSFontSelector* font_selector =

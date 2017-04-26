@@ -1060,7 +1060,7 @@ void LayoutBlockFlow::AppendFloatsToLastLine(
   FloatingObjectSetIterator end = floating_object_set.end();
   if (layout_state.LastFloat()) {
     FloatingObjectSetIterator last_float_iterator =
-        floating_object_set.Find(layout_state.LastFloat());
+        floating_object_set.find(layout_state.LastFloat());
     DCHECK(last_float_iterator != end);
     ++last_float_iterator;
     it = last_float_iterator;

@@ -182,7 +182,7 @@ class HashMap {
   template <typename HashTranslator,
             typename IncomingKeyType,
             typename IncomingMappedType>
-  AddResult insert(IncomingKeyType&&, IncomingMappedType&&);
+  AddResult Insert(IncomingKeyType&&, IncomingMappedType&&);
 
   static bool IsValidKey(KeyPeekInType);
 
@@ -561,7 +561,7 @@ template <typename T,
 template <typename HashTranslator,
           typename IncomingKeyType,
           typename IncomingMappedType>
-auto HashMap<T, U, V, W, X, Y>::insert(IncomingKeyType&& key,
+auto HashMap<T, U, V, W, X, Y>::Insert(IncomingKeyType&& key,
                                        IncomingMappedType&& mapped)
     -> AddResult {
   return impl_.template AddPassingHashCode<

@@ -107,7 +107,7 @@ void SpeechSynthesis::cancel() {
   // Remove all the items from the utterance queue. The platform
   // may still have references to some of these utterances and may
   // fire events on them asynchronously.
-  utterance_queue_.Clear();
+  utterance_queue_.clear();
   platform_speech_synthesizer_->Cancel();
 }
 

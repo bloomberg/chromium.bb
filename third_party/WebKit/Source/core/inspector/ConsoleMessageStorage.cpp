@@ -25,7 +25,7 @@ void ConsoleMessageStorage::AddConsoleMessage(ExecutionContext* context,
 }
 
 void ConsoleMessageStorage::Clear() {
-  messages_.Clear();
+  messages_.clear();
   expired_count_ = 0;
 }
 

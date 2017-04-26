@@ -81,7 +81,7 @@ void CSSSegmentedFontFace::AddFontFace(FontFace* font_face,
 }
 
 void CSSSegmentedFontFace::RemoveFontFace(FontFace* font_face) {
-  FontFaceList::iterator it = font_faces_.Find(font_face);
+  FontFaceList::iterator it = font_faces_.find(font_face);
   if (it == font_faces_.end())
     return;
 

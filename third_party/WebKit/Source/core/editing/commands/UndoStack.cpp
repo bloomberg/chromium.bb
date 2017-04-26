@@ -50,7 +50,7 @@ void UndoStack::RegisterUndoStep(UndoStep* step) {
   if (undo_stack_.size() == kMaximumUndoStackDepth)
     undo_stack_.pop_front();  // drop oldest item off the far end
   if (!in_redo_)
-    redo_stack_.Clear();
+    redo_stack_.clear();
   undo_stack_.push_back(step);
 }
 
@@ -90,8 +90,8 @@ void UndoStack::Redo() {
 }
 
 void UndoStack::Clear() {
-  undo_stack_.Clear();
-  redo_stack_.Clear();
+  undo_stack_.clear();
+  redo_stack_.clear();
 }
 
 DEFINE_TRACE(UndoStack) {

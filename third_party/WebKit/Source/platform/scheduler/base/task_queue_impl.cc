@@ -188,7 +188,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   any_thread().observer = nullptr;
   main_thread_only().observer = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
-  immediate_incoming_queue().Clear();
+  immediate_incoming_queue().clear();
   main_thread_only().immediate_work_queue.reset();
   main_thread_only().delayed_work_queue.reset();
 }

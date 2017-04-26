@@ -62,7 +62,7 @@ void CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
       SetLoadStatus(FontFace::kLoaded);
     } else if (source->GetDisplayPeriod() ==
                RemoteFontFaceSource::kFailurePeriod) {
-      sources_.Clear();
+      sources_.clear();
       SetLoadStatus(FontFace::kError);
     } else {
       sources_.pop_front();

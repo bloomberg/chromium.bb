@@ -243,8 +243,8 @@ class LinkedHashSet {
   const Value& back() const;
   void pop_back();
 
-  iterator Find(ValuePeekInType);
-  const_iterator Find(ValuePeekInType) const;
+  iterator find(ValuePeekInType);
+  const_iterator find(ValuePeekInType) const;
   bool Contains(ValuePeekInType) const;
 
   // An alternate version of find() that finds the object by hashing and
@@ -735,7 +735,7 @@ inline void LinkedHashSet<T, U, V, W>::pop_back() {
 
 template <typename T, typename U, typename V, typename W>
 inline typename LinkedHashSet<T, U, V, W>::iterator
-LinkedHashSet<T, U, V, W>::Find(ValuePeekInType value) {
+LinkedHashSet<T, U, V, W>::find(ValuePeekInType value) {
   LinkedHashSet::Node* node =
       impl_.template Lookup<LinkedHashSet::NodeHashFunctions, ValuePeekInType>(
           value);
@@ -746,7 +746,7 @@ LinkedHashSet<T, U, V, W>::Find(ValuePeekInType value) {
 
 template <typename T, typename U, typename V, typename W>
 inline typename LinkedHashSet<T, U, V, W>::const_iterator
-LinkedHashSet<T, U, V, W>::Find(ValuePeekInType value) const {
+LinkedHashSet<T, U, V, W>::find(ValuePeekInType value) const {
   const LinkedHashSet::Node* node =
       impl_.template Lookup<LinkedHashSet::NodeHashFunctions, ValuePeekInType>(
           value);
@@ -861,7 +861,7 @@ template <typename IncomingValueType>
 typename LinkedHashSet<T, U, V, W>::AddResult
 LinkedHashSet<T, U, V, W>::InsertBefore(ValuePeekInType before_value,
                                         IncomingValueType&& new_value) {
-  return InsertBefore(Find(before_value),
+  return InsertBefore(find(before_value),
                       std::forward<IncomingValueType>(new_value));
 }
 
@@ -874,7 +874,7 @@ inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
 
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
-  erase(Find(value));
+  erase(find(value));
 }
 
 inline void SwapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
