@@ -176,14 +176,6 @@ class QuicHttpStreamPeer {
       QuicHttpStream* stream) {
     return stream->stream_;
   }
-
-  static bool WasHandshakeConfirmed(QuicHttpStream* stream) {
-    return stream->was_handshake_confirmed_;
-  }
-
-  static void SetHandshakeConfirmed(QuicHttpStream* stream, bool confirmed) {
-    stream->was_handshake_confirmed_ = confirmed;
-  }
 };
 
 class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
@@ -330,7 +322,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_->Initialize();
     TestCompletionCallback callback;
     session_->CryptoConnect(callback.callback());
-    EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_
                       ? new AutoClosingStream(session_->GetWeakPtr(),
                                               &http_server_properties_)
@@ -1022,8 +1013,6 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
 
-  EXPECT_TRUE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
-
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
@@ -1035,14 +1024,18 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 }
 
 TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
+  // By default the test setup defaults handshake to be confirmed. Manually set
+  // it to be not confirmed.
+  // Granular errors shouldn't be reported if handshake not confirmed.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
-  AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
   AddWrite(InnerConstructRequestHeadersPacket(
-      2, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
+      1, kClientDataStreamId1, kIncludeVersion, kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  AddWrite(ConstructAckAndRstStreamPacket(3));
   use_closing_stream_ = true;
   Initialize();
 
@@ -1060,12 +1053,6 @@ TEST_P(QuicHttpStreamTest, DoNotLogGranularQuicErrorIfHandshakeNotConfirmed) {
   EXPECT_THAT(stream_->ReadResponseHeaders(callback_.callback()),
               IsError(ERR_IO_PENDING));
 
-  // The test setup defaults handshake to be confirmed. Manually set
-  // it to be not confirmed.
-  // Granular errors shouldn't be reported if handshake not confirmed.
-  QuicHttpStreamPeer::SetHandshakeConfirmed(stream_.get(), false);
-
-  EXPECT_FALSE(QuicHttpStreamPeer::WasHandshakeConfirmed(stream_.get()));
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
