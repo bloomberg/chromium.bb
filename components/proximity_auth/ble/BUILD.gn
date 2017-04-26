@@ -8,8 +8,6 @@ static_library("ble") {
   sources = [
     "bluetooth_low_energy_connection.cc",
     "bluetooth_low_energy_connection.h",
-    "bluetooth_low_energy_connection_finder.cc",
-    "bluetooth_low_energy_connection_finder.h",
     "bluetooth_low_energy_device_whitelist.cc",
     "bluetooth_low_energy_device_whitelist.h",
     "pref_names.cc",
@@ -39,7 +37,6 @@ static_library("ble") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "bluetooth_low_energy_connection_finder_unittest.cc",
     "bluetooth_low_energy_connection_unittest.cc",
     "bluetooth_low_energy_device_whitelist_unittest.cc",
   ]

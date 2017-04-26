@@ -37,8 +37,7 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/secure_message_delegate.h"
-#include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
-#include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
+#include "components/proximity_auth/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
@@ -1084,16 +1083,7 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
       easy_unlock_private::FindSetupConnection::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Creates a BLE connection finder to look for any device advertising
-  // |params->setup_service_uuid|.
-  connection_finder_.reset(
-      new proximity_auth::BluetoothLowEnergyConnectionFinder(
-          cryptauth::RemoteDevice(), params->setup_service_uuid,
-          proximity_auth::BluetoothLowEnergyConnectionFinder::FIND_ANY_DEVICE,
-          nullptr, cryptauth::BluetoothThrottlerImpl::GetInstance(), 3));
-
-  connection_finder_->Find(base::Bind(
-      &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));
+  // TODO(tengs): Reimplement scanning for the remote device.
 
   timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(params->time_out),
