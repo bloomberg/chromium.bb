@@ -933,7 +933,7 @@ define('media_router_bindings', [
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_
         .createMediaRouteController(routeId, controllerRequest, observer)
-        .then(() => {success: true}, e => {success: false});
+        .then(() => ({success: true}), e => ({success: false}));
   };
 
   mediaRouter = new MediaRouter(new mediaRouterMojom.MediaRouterPtr(
