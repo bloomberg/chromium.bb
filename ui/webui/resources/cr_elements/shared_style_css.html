@@ -1,11 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="hidden_style_css.html">
 
 <!-- Common styles for Material Design WebUI. Included directly in
   settings_shared_css.html. -->
 <dom-module id="cr-shared-style">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       /* Chrome spinners should be blue. */
       paper-spinner {
         --paper-spinner-layer-1-color: var(--google-blue-500);

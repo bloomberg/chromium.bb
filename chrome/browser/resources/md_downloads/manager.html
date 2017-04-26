@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
@@ -13,17 +14,13 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         display: flex;
         flex: 1 0;
         flex-direction: column;
         height: 100%;
         z-index: 0;
-      }
-
-      [hidden] {
-        display: none !important;
       }
 
       @media screen and (max-width: 1024px) {

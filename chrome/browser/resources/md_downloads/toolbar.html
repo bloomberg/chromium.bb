@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://downloads/action_service.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -12,17 +13,13 @@
 
 <dom-module id="downloads-toolbar">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         align-items: center;
         background: var(--google-blue-700);
         color: white;
         display: flex;
         min-height: 56px;
-      }
-
-      [hidden] {
-        display: none !important;
       }
 
       #toolbar {
