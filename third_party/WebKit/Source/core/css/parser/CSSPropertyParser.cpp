@@ -490,9 +490,8 @@ static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
   }
 }
 
-static bool IsValidAnimationPropertyList(CSSPropertyID property,
-                                         const CSSValueList& value_list) {
-  if (property != CSSPropertyTransitionProperty || value_list.length() < 2)
+static bool IsValidAnimationPropertyList(const CSSValueList& value_list) {
+  if (value_list.length() < 2)
     return true;
   for (auto& value : value_list) {
     if (value->IsIdentifierValue() &&
@@ -515,7 +514,8 @@ static CSSValueList* ConsumeAnimationPropertyList(
       return nullptr;
     list->Append(*value);
   } while (ConsumeCommaIncludingWhitespace(range));
-  if (!IsValidAnimationPropertyList(property, *list))
+  if (property == CSSPropertyTransitionProperty &&
+      !IsValidAnimationPropertyList(*list))
     return nullptr;
   DCHECK(list->length());
   return list;
@@ -561,7 +561,11 @@ bool CSSPropertyParser::ConsumeAnimationShorthand(
   } while (ConsumeCommaIncludingWhitespace(range_));
 
   for (size_t i = 0; i < longhand_count; ++i) {
-    if (!IsValidAnimationPropertyList(shorthand.properties()[i], *longhands[i]))
+    // TODO(bugsnash): Refactor out the need to check for
+    // CSSPropertyTransitionProperty here when this is method implemented in the
+    // property APIs
+    if (shorthand.properties()[i] == CSSPropertyTransitionProperty &&
+        !IsValidAnimationPropertyList(*longhands[i]))
       return false;
   }
 
