@@ -72,6 +72,8 @@ bool MemoryTracingObserver::AddDumpToTraceIfEnabled(
   if (!IsMemoryInfraTracingEnabled())
     return false;
 
+  CHECK_NE(MemoryDumpType::SUMMARY_ONLY, req_args->dump_type);
+
   const uint64_t dump_guid = req_args->dump_guid;
 
   std::unique_ptr<TracedValue> traced_value(new TracedValue);

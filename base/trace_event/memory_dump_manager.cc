@@ -743,10 +743,15 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
     ProcessMemoryDump* process_memory_dump = kv.second.get();
 
-    bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
-        &pmd_async_state->req_args, pid, process_memory_dump);
+    // SUMMARY_ONLY dumps are just return the summarized result in the
+    // ProcessMemoryDumpCallback. These shouldn't be added to the trace to
+    // avoid confusing trace consumers.
+    if (pmd_async_state->req_args.dump_type != MemoryDumpType::SUMMARY_ONLY) {
+      bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
+          &pmd_async_state->req_args, pid, process_memory_dump);
 
-    dump_successful = dump_successful && added_to_trace;
+      dump_successful = dump_successful && added_to_trace;
+    }
 
     // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
     // Don't try to fill the struct in detailed mode since it is hard to avoid

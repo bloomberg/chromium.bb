@@ -221,6 +221,23 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
   unsigned num_of_post_tasks_;
 };
 
+std::unique_ptr<trace_analyzer::TraceAnalyzer> GetDeserializedTrace() {
+  // Flush the trace into JSON.
+  trace_event::TraceResultBuffer buffer;
+  TraceResultBuffer::SimpleOutput trace_output;
+  buffer.SetOutputCallback(trace_output.GetCallback());
+  RunLoop run_loop;
+  buffer.Start();
+  trace_event::TraceLog::GetInstance()->Flush(
+      Bind(&OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
+  run_loop.Run();
+  buffer.Finish();
+
+  // Analyze the JSON.
+  return WrapUnique(
+      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
+}
+
 }  // namespace
 
 class MemoryDumpManagerTest : public testing::Test {
@@ -1080,20 +1097,8 @@ TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
                            MemoryDumpLevelOfDetail::DETAILED);
   DisableTracing();
 
-  // Flush the trace into JSON.
-  trace_event::TraceResultBuffer buffer;
-  TraceResultBuffer::SimpleOutput trace_output;
-  buffer.SetOutputCallback(trace_output.GetCallback());
-  RunLoop run_loop;
-  buffer.Start();
-  trace_event::TraceLog::GetInstance()->Flush(
-      Bind(&OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
-  run_loop.Run();
-  buffer.Finish();
-
-  // Analyze the JSON.
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer = WrapUnique(
-      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      GetDeserializedTrace();
   trace_analyzer::TraceEventVector events;
   analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
                        &events);
@@ -1105,6 +1110,37 @@ TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
                     events, Query::EventPidIs(GetCurrentProcId())));
   ASSERT_EQ(events[0]->id, events[1]->id);
   ASSERT_EQ(events[0]->id, events[2]->id);
+}
+
+TEST_F(MemoryDumpManagerTest, SummaryOnlyDumpsArentAddedToTrace) {
+  using trace_analyzer::Query;
+
+  InitializeMemoryDumpManager(false /* is_coordinator */);
+  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+
+  // Standard provider with default options (create dump for current process).
+  MockMemoryDumpProvider mdp;
+  RegisterDumpProvider(&mdp, nullptr, kDefaultOptions, kWhitelistedMDPName);
+
+  EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
+  EXPECT_CALL(global_dump_handler_, RequestGlobalMemoryDump(_, _)).Times(2);
+  EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(2).WillRepeatedly(Return(true));
+  RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                           MemoryDumpLevelOfDetail::BACKGROUND);
+  RequestGlobalDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
+                           MemoryDumpLevelOfDetail::BACKGROUND);
+  DisableTracing();
+
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      GetDeserializedTrace();
+  trace_analyzer::TraceEventVector events;
+  analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
+                       &events);
+
+  ASSERT_EQ(1u, events.size());
+  ASSERT_TRUE(trace_analyzer::CountMatches(
+      events, Query::EventNameIs(MemoryDumpTypeToString(
+                  MemoryDumpType::EXPLICITLY_TRIGGERED))));
 }
 
 // Tests the basics of the UnregisterAndDeleteDumpProviderSoon(): the
