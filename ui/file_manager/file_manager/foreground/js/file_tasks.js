@@ -68,6 +68,15 @@ function FileTasks(volumeManager, metadataModel, directoryModel, ui, entries,
   this.defaultTask_ = defaultTask;
 };
 
+FileTasks.prototype = {
+  /**
+   * @return {!Array<!Entry>}
+   */
+  get entries() {
+    return this.entries_;
+  }
+};
+
 /**
  * The app ID of the video player app.
  * @const

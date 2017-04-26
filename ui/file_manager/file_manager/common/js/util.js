@@ -683,6 +683,28 @@ util.isSameEntry = function(entry1, entry2) {
 };
 
 /**
+ * Compares two entry arrays.
+ * @param {Array<!Entry>} entries1 The entry array to be compared.
+ * @param {Array<!Entry>} entries2 The entry array to be compared.
+ * @return {boolean} True if the both arrays contain same files or directories
+ *     in the same order. Returns true if both arrays are null.
+ */
+util.isSameEntries = function(entries1, entries2) {
+  if (!entries1 && !entries2)
+    return true;
+  if (!entries1 || !entries2)
+    return false;
+  if (entries1.length !== entries2.length)
+    return false;
+  for (var i = 0; i < entries1.length; i++) {
+    if (!util.isSameEntry(entries1[i], entries2[i])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
  * Compares two file systems.
  * @param {FileSystem} fileSystem1 The file system to be compared.
  * @param {FileSystem} fileSystem2 The file system to be compared.
