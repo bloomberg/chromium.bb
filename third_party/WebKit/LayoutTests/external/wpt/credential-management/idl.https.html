@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
-<script src=/w3c/resources/WebIDLParser.js></script>
-<script src=/w3c/resources/idlharness.js></script>
+<script src=/resources/WebIDLParser.js></script>
+<script src=/resources/idlharness.js></script>
 <script type="text/plain" id="untested">
     dictionary CredentialData {
       USVString id;
@@ -18,7 +18,10 @@
       USVString iconURL;
     };
 
-    interface SiteBoundCredential : Credential {
+    [
+        NoInterfaceObject,
+        SecureContext
+    ] interface CredentialUserData {
       readonly attribute USVString name;
       readonly attribute USVString iconURL;
     };
@@ -58,18 +61,20 @@
     [Constructor(PasswordCredentialData data),
      Constructor(HTMLFormElement form),
      Exposed=Window]
-    interface PasswordCredential : SiteBoundCredential {
+    interface PasswordCredential : Credential {
       attribute USVString idName;
       attribute USVString passwordName;
 
       attribute CredentialBodyType? additionalData;
     };
+    PasswordCredential implements CredentialUserData;
 
     [Constructor(FederatedCredentialData data), Exposed=Window]
-    interface FederatedCredential : SiteBoundCredential {
+    interface FederatedCredential : Credential {
       readonly attribute USVString provider;
       readonly attribute DOMString? protocol;
     };
+    FederatedCredential implements CredentialUserData;
 </script>
 <script>
     "use strict";

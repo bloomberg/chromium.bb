@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/credentialmanager/SiteBoundCredential.h"
+#include "modules/credentialmanager/CredentialUserData.h"
 
 namespace blink {
 
-SiteBoundCredential::SiteBoundCredential(
-    PlatformCredential* platform_credential)
+CredentialUserData::CredentialUserData(PlatformCredential* platform_credential)
     : Credential(platform_credential) {}
 
 }  // namespace blink

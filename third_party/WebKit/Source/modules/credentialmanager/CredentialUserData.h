@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SiteBoundCredential_h
-#define SiteBoundCredential_h
+#ifndef CredentialUserData_h
+#define CredentialUserData_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
@@ -12,18 +12,18 @@
 
 namespace blink {
 
-class MODULES_EXPORT SiteBoundCredential : public Credential {
+class MODULES_EXPORT CredentialUserData : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // SiteBoundCredential.idl
+  // CredentialUserData.idl
   const String& name() const { return platform_credential_->GetName(); }
   const KURL& iconURL() const { return platform_credential_->GetIconURL(); }
 
  protected:
-  SiteBoundCredential(PlatformCredential*);
+  CredentialUserData(PlatformCredential*);
 };
 
 }  // namespace blink
 
-#endif  // SiteBoundCredential_h
+#endif  // CredentialUserData_h
