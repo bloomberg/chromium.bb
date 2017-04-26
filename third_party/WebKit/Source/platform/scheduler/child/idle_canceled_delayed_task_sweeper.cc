@@ -14,11 +14,9 @@ const int kDelayedTaskSweepIntervalSeconds = 30;
 }
 
 IdleCanceledDelayedTaskSweeper::IdleCanceledDelayedTaskSweeper(
-    const char* tracing_category,
     SchedulerHelper* scheduler_helper,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner)
-    : tracing_category_(tracing_category),
-      scheduler_helper_(scheduler_helper),
+    : scheduler_helper_(scheduler_helper),
       idle_task_runner_(idle_task_runner),
       weak_factory_(this) {
   PostIdleTask();
@@ -32,7 +30,7 @@ void IdleCanceledDelayedTaskSweeper::PostIdleTask() {
 }
 
 void IdleCanceledDelayedTaskSweeper::SweepIdleTask(base::TimeTicks deadline) {
-  TRACE_EVENT0(tracing_category_,
+  TRACE_EVENT0("renderer.scheduler",
                "IdleCanceledDelayedTaskSweeper::SweepIdleTask");
   scheduler_helper_->SweepCanceledDelayedTasks();
   PostIdleTask();

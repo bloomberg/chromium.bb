@@ -64,8 +64,7 @@ class SingleThreadIdleTaskRunner
   // literals). They may not include " chars.
   SingleThreadIdleTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
-      Delegate* delegate,
-      const char* tracing_category);
+      Delegate* delegate);
 
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
                             const IdleTask& idle_task);
@@ -102,7 +101,6 @@ class SingleThreadIdleTaskRunner
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
   std::multimap<base::TimeTicks, DelayedIdleTask> delayed_idle_tasks_;
   Delegate* delegate_;  // NOT OWNED
-  const char* tracing_category_;
   base::trace_event::BlameContext* blame_context_;  // Not owned.
   base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
   base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;

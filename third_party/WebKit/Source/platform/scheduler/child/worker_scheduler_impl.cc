@@ -38,19 +38,12 @@ void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(
-          main_task_runner,
-          "worker.scheduler",
-          TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
-          TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"))),
+    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(main_task_runner)),
       idle_helper_(helper_.get(),
                    this,
-                   "worker.scheduler",
-                   TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
                    "WorkerSchedulerIdlePeriod",
                    base::TimeDelta::FromMilliseconds(300)),
-      idle_canceled_delayed_task_sweeper_("worker.scheduler",
-                                          helper_.get(),
+      idle_canceled_delayed_task_sweeper_(helper_.get(),
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->scheduler_tqm_delegate()->NowTicks(),
                     base::Bind(&ReportWorkerTaskLoad),

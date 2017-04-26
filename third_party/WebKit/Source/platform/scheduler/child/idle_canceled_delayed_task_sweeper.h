@@ -17,7 +17,6 @@ namespace scheduler {
 class BLINK_PLATFORM_EXPORT IdleCanceledDelayedTaskSweeper {
  public:
   IdleCanceledDelayedTaskSweeper(
-      const char* tracing_category,
       SchedulerHelper* scheduler_helper,
       scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner);
 
@@ -25,7 +24,6 @@ class BLINK_PLATFORM_EXPORT IdleCanceledDelayedTaskSweeper {
   void PostIdleTask();
   void SweepIdleTask(base::TimeTicks deadline);
 
-  const char* tracing_category_;       // NOT OWNED
   SchedulerHelper* scheduler_helper_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   base::WeakPtrFactory<IdleCanceledDelayedTaskSweeper> weak_factory_;

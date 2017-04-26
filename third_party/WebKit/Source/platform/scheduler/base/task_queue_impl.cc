@@ -71,20 +71,13 @@ const char* TaskQueue::PriorityToString(QueuePriority priority) {
 
 namespace internal {
 
-TaskQueueImpl::TaskQueueImpl(
-    TaskQueueManager* task_queue_manager,
-    TimeDomain* time_domain,
-    const Spec& spec,
-    const char* disabled_by_default_tracing_category,
-    const char* disabled_by_default_verbose_tracing_category)
+TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
+                             TimeDomain* time_domain,
+                             const Spec& spec)
     : thread_id_(base::PlatformThread::CurrentId()),
       any_thread_(task_queue_manager, time_domain),
       type_(spec.type),
       name_(NameForQueueType(spec.type)),
-      disabled_by_default_tracing_category_(
-          disabled_by_default_tracing_category),
-      disabled_by_default_verbose_tracing_category_(
-          disabled_by_default_verbose_tracing_category),
       main_thread_only_(task_queue_manager, this, time_domain),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
@@ -466,8 +459,8 @@ TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
 
 void TaskQueueImpl::TraceQueueSize() const {
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(disabled_by_default_tracing_category_,
-                                     &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), &is_tracing);
   if (!is_tracing)
     return;
 
@@ -477,7 +470,7 @@ void TaskQueueImpl::TraceQueueSize() const {
     return;
 
   base::AutoLock lock(immediate_incoming_queue_lock_);
-  TRACE_COUNTER1(disabled_by_default_tracing_category_, GetName(),
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), GetName(),
                  immediate_incoming_queue().size() +
                      main_thread_only().immediate_work_queue->Size() +
                      main_thread_only().delayed_work_queue->Size() +
@@ -519,7 +512,8 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
                    main_thread_only().time_domain->GetName());
   bool verbose_tracing_enabled = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      disabled_by_default_verbose_tracing_category_, &verbose_tracing_enabled);
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
+      &verbose_tracing_enabled);
   state->SetInteger("immediate_incoming_queue_size",
                     immediate_incoming_queue().size());
   state->SetInteger("delayed_incoming_queue_size",

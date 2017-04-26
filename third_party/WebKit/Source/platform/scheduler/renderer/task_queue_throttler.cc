@@ -73,13 +73,11 @@ std::string PointerToId(void* pointer) {
 }  // namespace
 
 TaskQueueThrottler::TaskQueueThrottler(
-    RendererSchedulerImpl* renderer_scheduler,
-    const char* tracing_category)
+    RendererSchedulerImpl* renderer_scheduler)
     : control_task_queue_(renderer_scheduler->ControlTaskQueue()),
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
-      tracing_category_(tracing_category),
-      time_domain_(new ThrottledTimeDomain(tracing_category)),
+      time_domain_(new ThrottledTimeDomain()),
       allow_throttling_(true),
       weak_factory_(this) {
   pump_throttled_tasks_closure_.Reset(base::Bind(
@@ -118,7 +116,7 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   if (insert_result.first->second.throttling_ref_count != 1)
     return;
 
-  TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueThrottled",
+  TRACE_EVENT1("renderer.scheduler", "TaskQueueThrottler_TaskQueueThrottled",
                "task_queue", task_queue);
 
   task_queue->SetObserver(this);
@@ -149,7 +147,7 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
     return;
   }
 
-  TRACE_EVENT1(tracing_category_, "TaskQueueThrottler_TaskQueueUnthrottled",
+  TRACE_EVENT1("renderer.scheduler", "TaskQueueThrottler_TaskQueueUnthrottled",
                "task_queue", task_queue);
 
   task_queue->SetObserver(nullptr);
@@ -201,7 +199,7 @@ void TaskQueueThrottler::OnQueueNextWakeUpChanged(
     return;
   }
 
-  TRACE_EVENT0(tracing_category_,
+  TRACE_EVENT0("renderer.scheduler",
                "TaskQueueThrottler::OnQueueNextWakeUpChanged");
 
   // We don't expect this to get called for disabled queues, but we can't DCHECK
@@ -216,7 +214,7 @@ void TaskQueueThrottler::OnQueueNextWakeUpChanged(
 }
 
 void TaskQueueThrottler::PumpThrottledTasks() {
-  TRACE_EVENT0(tracing_category_, "TaskQueueThrottler::PumpThrottledTasks");
+  TRACE_EVENT0("renderer.scheduler", "TaskQueueThrottler::PumpThrottledTasks");
   pending_pump_throttled_tasks_runtime_.reset();
 
   LazyNow lazy_now(tick_clock_);
@@ -236,7 +234,7 @@ void TaskQueueThrottler::PumpThrottledTasks() {
     if (next_desired_run_time &&
         next_allowed_run_time > next_desired_run_time.value()) {
       TRACE_EVENT1(
-          tracing_category_,
+          "renderer.scheduler",
           "TaskQueueThrottler::PumpThrottledTasks_ExpensiveTaskThrottled",
           "throttle_time_in_seconds",
           (next_allowed_run_time - next_desired_run_time.value()).InSecondsF());
@@ -300,7 +298,7 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
   pump_throttled_tasks_closure_.Cancel();
 
   base::TimeDelta delay = pending_pump_throttled_tasks_runtime_.value() - now;
-  TRACE_EVENT1(tracing_category_,
+  TRACE_EVENT1("renderer.scheduler",
                "TaskQueueThrottler::MaybeSchedulePumpThrottledTasks",
                "delay_till_next_pump_ms", delay.InMilliseconds());
   control_task_queue_->PostDelayedTask(
@@ -462,7 +460,7 @@ void TaskQueueThrottler::DisableThrottling() {
   pump_throttled_tasks_closure_.Cancel();
   pending_pump_throttled_tasks_runtime_ = base::nullopt;
 
-  TRACE_EVENT0(tracing_category_, "TaskQueueThrottler_DisableThrottling");
+  TRACE_EVENT0("renderer.scheduler", "TaskQueueThrottler_DisableThrottling");
 }
 
 void TaskQueueThrottler::EnableThrottling() {
@@ -486,7 +484,7 @@ void TaskQueueThrottler::EnableThrottling() {
     SchedulePumpQueue(FROM_HERE, lazy_now.Now(), queue);
   }
 
-  TRACE_EVENT0(tracing_category_, "TaskQueueThrottler_EnableThrottling");
+  TRACE_EVENT0("renderer.scheduler", "TaskQueueThrottler_EnableThrottling");
 }
 
 }  // namespace scheduler

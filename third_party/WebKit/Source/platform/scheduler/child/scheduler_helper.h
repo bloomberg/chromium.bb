@@ -21,18 +21,10 @@ class SchedulerTqmDelegate;
 class BLINK_PLATFORM_EXPORT SchedulerHelper
     : public TaskQueueManager::Observer {
  public:
-  // Category strings must have application lifetime (statics or
-  // literals). They may not include " chars.
-  SchedulerHelper(
+  explicit SchedulerHelper(
+      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate);
+  explicit SchedulerHelper(
       scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category);
-  SchedulerHelper(
-      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category,
       TaskQueue::Spec default_task_queue_spec);
   ~SchedulerHelper() override;
 
@@ -123,8 +115,6 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   scoped_refptr<TaskQueue> default_task_queue_;
 
   Observer* observer_;  // NOT OWNED
-  const char* tracing_category_;
-  const char* disabled_by_default_tracing_category_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

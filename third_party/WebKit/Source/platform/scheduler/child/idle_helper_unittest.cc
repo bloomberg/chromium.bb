@@ -159,8 +159,6 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
       base::TimeDelta required_quiescence_duration_before_long_idle_period)
       : IdleHelper(scheduler_helper,
                    this,
-                   "test.idle",
-                   TRACE_DISABLED_BY_DEFAULT("test.idle"),
                    "TestSchedulerIdlePeriod",
                    required_quiescence_duration_before_long_idle_period) {}
 
@@ -191,11 +189,7 @@ class BaseIdleHelperTest : public testing::Test {
             message_loop,
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(
-            new SchedulerHelper(main_task_runner_,
-                                "test.idle",
-                                TRACE_DISABLED_BY_DEFAULT("test.idle"),
-                                TRACE_DISABLED_BY_DEFAULT("test.idle.debug"))),
+        scheduler_helper_(new SchedulerHelper(main_task_runner_)),
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),
             required_quiescence_duration_before_long_idle_period)),

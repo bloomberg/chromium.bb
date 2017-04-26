@@ -83,10 +83,7 @@ class BLINK_PLATFORM_EXPORT BudgetPoolController {
 class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
                                                  public BudgetPoolController {
  public:
-  // TODO(altimin): Do not pass tracing category as const char*,
-  // hard-code string instead.
-  TaskQueueThrottler(RendererSchedulerImpl* renderer_scheduler,
-                     const char* tracing_category);
+  explicit TaskQueueThrottler(RendererSchedulerImpl* renderer_scheduler);
 
   ~TaskQueueThrottler() override;
 
@@ -179,7 +176,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   scoped_refptr<TaskQueue> control_task_queue_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED
-  const char* tracing_category_;               // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
 
   CancelableClosureHolder pump_throttled_tasks_closure_;

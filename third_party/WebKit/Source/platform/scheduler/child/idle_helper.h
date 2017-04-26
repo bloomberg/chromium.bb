@@ -88,8 +88,6 @@ class BLINK_PLATFORM_EXPORT IdleHelper
   IdleHelper(
       SchedulerHelper* helper,
       Delegate* delegate,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
       const char* idle_period_tracing_name,
       base::TimeDelta required_quiescence_duration_before_long_idle_period);
   ~IdleHelper() override;
@@ -157,8 +155,6 @@ class BLINK_PLATFORM_EXPORT IdleHelper
    public:
     State(SchedulerHelper* helper,
           Delegate* delegate,
-          const char* tracing_category,
-          const char* disabled_by_default_tracing_category,
           const char* idle_period_tracing_name);
     virtual ~State();
 
@@ -188,8 +184,6 @@ class BLINK_PLATFORM_EXPORT IdleHelper
     base::TimeTicks last_idle_task_trace_time_;
     bool idle_period_trace_event_started_;
     bool running_idle_task_for_tracing_;
-    const char* tracing_category_;
-    const char* disabled_by_default_tracing_category_;
     const char* idle_period_tracing_name_;
 
     DISALLOW_COPY_AND_ASSIGN(State);
@@ -232,8 +226,6 @@ class BLINK_PLATFORM_EXPORT IdleHelper
   State state_;
 
   base::TimeDelta required_quiescence_duration_before_long_idle_period_;
-
-  const char* disabled_by_default_tracing_category_;
 
   bool is_shutdown_;
 
