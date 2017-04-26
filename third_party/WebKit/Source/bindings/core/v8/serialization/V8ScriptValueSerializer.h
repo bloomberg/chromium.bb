@@ -99,7 +99,6 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   WebBlobInfoArray* blob_info_array_ = nullptr;
   ArrayBufferArray shared_array_buffers_;
   bool inline_wasm_ = false;
-  bool for_storage_ = false;
 #if DCHECK_IS_ON()
   bool serialize_invoked_ = false;
 #endif

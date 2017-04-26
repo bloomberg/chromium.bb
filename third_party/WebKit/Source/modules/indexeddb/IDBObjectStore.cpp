@@ -381,7 +381,6 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   options.blob_info = &blob_info;
   options.write_wasm_to_stream =
       ExecutionContext::From(script_state)->IsSecureContext();
-  options.for_storage = true;
   RefPtr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Serialize(isolate, value.V8Value(), options,
                                        exception_state);

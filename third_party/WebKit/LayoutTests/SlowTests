@@ -9,9 +9,7 @@
 # than 2 seconds in Release mode or 6 seconds in Debug mode should be listed here.
 
 crbug.com/24182 storage/indexeddb/objectstore-cursor.html [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
-crbug.com/24182 virtual/sharedarraybuffer/storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-mac.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-multi-line.html [ Slow ]
 crbug.com/24182 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
@@ -268,9 +266,7 @@ crbug.com/357427 virtual/mojo-loading/http/tests/workers/terminate-during-sync-o
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
-crbug.com/402379 [ Win7 Debug ] virtual/sharedarraybuffer/storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
-crbug.com/402379 [ Win7 Debug ] virtual/sharedarraybuffer/storage/indexeddb/mozilla/indexes.html [ Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Slow ]
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Slow ]
@@ -389,12 +385,9 @@ crbug.com/646528 virtual/disable-spinvalidation/compositing/lots-of-img-layers-w
 # IDB Observer tests require multiple browsing contexts/workers interacting with
 # IndexedDB, which can be slow.
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-frame.html [ Slow ]
-crbug.com/660468 [ Linux ] virtual/sharedarraybuffer/storage/indexeddb/observer-frame.html [ Slow ]
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
-crbug.com/660468 [ Linux ] virtual/sharedarraybuffer/storage/indexeddb/observer-workers.html [ Slow ]
 
 crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
-crbug.com/660492 [ Linux ] virtual/sharedarraybuffer/storage/indexeddb/structured-clone.html [ Slow ]
 
 # Foreign fetch tests make many requests, and create multiple browsing contexts,
 # which can be very slow.
