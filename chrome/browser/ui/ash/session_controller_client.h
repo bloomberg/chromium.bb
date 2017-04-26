@@ -95,6 +95,7 @@ class SessionControllerClient
   static void FlushForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SendUserSession);
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SupervisedUser);
 
   // Called when the login profile is ready.
@@ -130,7 +131,9 @@ class SessionControllerClient
 
   content::NotificationRegistrar registrar_;
 
+  // Used to suppress duplicate IPCs to ash.
   ash::mojom::SessionInfoPtr last_sent_session_info_;
+  ash::mojom::UserSessionPtr last_sent_user_session_;
 
   base::WeakPtrFactory<SessionControllerClient> weak_ptr_factory_;
 

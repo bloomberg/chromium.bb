@@ -31,8 +31,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/equals_traits.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 using session_manager::Session;
 using session_manager::SessionManager;
@@ -100,6 +102,20 @@ void DoSwitchUser(const AccountId& account_id) {
 }
 
 }  // namespace
+
+namespace mojo {
+
+// When comparing two mojom::UserSession objects we need to decide if the avatar
+// images are changed. Consider them equal if they have the same storage rather
+// than comparing the backing pixels.
+template <>
+struct EqualsTraits<gfx::ImageSkia> {
+  static bool Equals(const gfx::ImageSkia& a, const gfx::ImageSkia& b) {
+    return a.BackedBySameObjectAs(b);
+  }
+};
+
+}  // namespace mojo
 
 SessionControllerClient::SessionControllerClient()
     : binding_(this), weak_ptr_factory_(this) {
@@ -392,10 +408,10 @@ void SessionControllerClient::SendUserSession(const User& user) {
   if (!user_session)
     return;
 
-  // TODO(jamescook): Only send if it changed. This will require an Equals()
-  // method for gfx::ImageSkia to allow mojom::UserSession comparison.
-  // http://crbug.com/714689
-  session_controller_->UpdateUserSession(std::move(user_session));
+  if (user_session != last_sent_user_session_) {
+    last_sent_user_session_ = user_session->Clone();
+    session_controller_->UpdateUserSession(std::move(user_session));
+  }
 }
 
 void SessionControllerClient::SendUserSessionOrder() {

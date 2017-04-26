@@ -87,6 +87,8 @@ class TestSessionController : public ash::mojom::SessionController {
     return last_user_session_.get();
   }
 
+  int update_user_session_count() { return update_user_session_count_; }
+
   // ash::mojom::SessionController:
   void SetClient(ash::mojom::SessionControllerClientPtr client) override {}
   void SetSessionInfo(ash::mojom::SessionInfoPtr info) override {
@@ -94,6 +96,7 @@ class TestSessionController : public ash::mojom::SessionController {
   }
   void UpdateUserSession(ash::mojom::UserSessionPtr user_session) override {
     last_user_session_ = user_session->Clone();
+    update_user_session_count_++;
   }
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override {}
@@ -108,6 +111,7 @@ class TestSessionController : public ash::mojom::SessionController {
 
   ash::mojom::SessionInfoPtr last_session_info_;
   ash::mojom::UserSessionPtr last_user_session_;
+  int update_user_session_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionController);
 };
@@ -359,6 +363,36 @@ TEST_F(SessionControllerClientTest,
   user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
             SessionControllerClient::GetAddUserSessionPolicy());
+}
+
+TEST_F(SessionControllerClientTest, SendUserSession) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+  SessionControllerClient::FlushForTesting();
+
+  // No user session sent yet.
+  EXPECT_EQ(0, session_controller.update_user_session_count());
+
+  // Simulate login.
+  const AccountId account_id(AccountId::FromUserEmail("user@test.com"));
+  user_manager()->AddUser(account_id);
+  session_manager_.CreateSession(
+      account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                      "user@test.com"));
+  SessionControllerClient::FlushForTesting();
+
+  // User session was sent.
+  EXPECT_EQ(1, session_controller.update_user_session_count());
+
+  // Simulate a request for an update where nothing changed.
+  client.SendUserSession(*user_manager()->GetLoggedInUsers()[0]);
+  SessionControllerClient::FlushForTesting();
+
+  // Session was not updated because nothing changed.
+  EXPECT_EQ(1, session_controller.update_user_session_count());
 }
 
 TEST_F(SessionControllerClientTest, SupervisedUser) {
