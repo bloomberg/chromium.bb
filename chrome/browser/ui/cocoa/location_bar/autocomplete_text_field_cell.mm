@@ -736,6 +736,13 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   }
 }
 
+- (int)leadingDecorationIndex:(LocationBarDecoration*)decoration {
+  for (size_t i = 0; i < leadingDecorations_.size(); ++i)
+    if (leadingDecorations_[i] == decoration)
+      return leadingDecorations_.size() - (i + 1);
+  return -1;
+}
+
 @end
 
 @implementation AutocompleteTextFieldCell (TestingAPI)
