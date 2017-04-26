@@ -35,7 +35,7 @@
     readonly attribute unsigned long long version;
     readonly attribute DOMStringList objectStoreNames;
 
-    [NewObject, CallWith=ScriptState, RaisesException] IDBTransaction transaction((DOMString or sequence<DOMString> or DOMStringList) storeNames,
+    [NewObject, CallWith=ScriptState, RaisesException] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames,
                                                                                   optional IDBTransactionMode mode = "readonly");
     void close();
 

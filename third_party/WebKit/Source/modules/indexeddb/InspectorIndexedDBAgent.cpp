@@ -319,7 +319,7 @@ static IDBTransaction* TransactionForDatabase(
     const String& object_store_name,
     const String& mode = IndexedDBNames::readonly) {
   DummyExceptionStateForTesting exception_state;
-  StringOrStringSequenceOrDOMStringList scope;
+  StringOrStringSequence scope;
   scope.setString(object_store_name);
   IDBTransaction* idb_transaction =
       idb_database->transaction(script_state, scope, mode, exception_state);

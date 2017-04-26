@@ -350,7 +350,7 @@ void IDBDatabase::deleteObjectStore(const String& name,
 
 IDBTransaction* IDBDatabase::transaction(
     ScriptState* script_state,
-    const StringOrStringSequenceOrDOMStringList& store_names,
+    const StringOrStringSequence& store_names,
     const String& mode_string,
     ExceptionState& exception_state) {
   IDB_TRACE("IDBDatabase::transaction");
@@ -361,10 +361,6 @@ IDBTransaction* IDBDatabase::transaction(
     scope.insert(store_names.getAsString());
   } else if (store_names.isStringSequence()) {
     for (const String& name : store_names.getAsStringSequence())
-      scope.insert(name);
-  } else if (store_names.isDOMStringList()) {
-    const Vector<String>& list = *store_names.getAsDOMStringList();
-    for (const String& name : list)
       scope.insert(name);
   } else {
     NOTREACHED();

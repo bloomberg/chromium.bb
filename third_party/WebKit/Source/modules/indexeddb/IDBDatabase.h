@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/modules/v8/StringOrStringSequenceOrDOMStringList.h"
+#include "bindings/modules/v8/StringOrStringSequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"
@@ -101,11 +101,10 @@ class MODULES_EXPORT IDBDatabase final
     return createObjectStore(name, IDBKeyPath(options.keyPath()),
                              options.autoIncrement(), exception_state);
   }
-  IDBTransaction* transaction(
-      ScriptState*,
-      const StringOrStringSequenceOrDOMStringList& store_names,
-      const String& mode,
-      ExceptionState&);
+  IDBTransaction* transaction(ScriptState*,
+                              const StringOrStringSequence& store_names,
+                              const String& mode,
+                              ExceptionState&);
   void deleteObjectStore(const String& name, ExceptionState&);
   void close();
 

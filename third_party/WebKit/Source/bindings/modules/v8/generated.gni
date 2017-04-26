@@ -68,8 +68,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/StringOrStringSequence.h",
   "$bindings_modules_v8_output_dir/StringOrStringSequenceOrConstrainDOMStringParameters.cpp",
   "$bindings_modules_v8_output_dir/StringOrStringSequenceOrConstrainDOMStringParameters.h",
-  "$bindings_modules_v8_output_dir/StringOrStringSequenceOrDOMStringList.cpp",
-  "$bindings_modules_v8_output_dir/StringOrStringSequenceOrDOMStringList.h",
   "$bindings_modules_v8_output_dir/StringOrUnsignedLong.cpp",
   "$bindings_modules_v8_output_dir/StringOrUnsignedLong.h",
   "$bindings_modules_v8_output_dir/UnsignedLongOrUnsignedLongSequence.cpp",
