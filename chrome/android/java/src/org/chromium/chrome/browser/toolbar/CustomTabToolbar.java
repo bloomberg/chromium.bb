@@ -682,6 +682,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void onTextChangedForAutocomplete(boolean canInlineAutocomplete) {}
 
     @Override
+    public void backKeyPressed() {
+        assert false : "The URL bar should never take focus in CCTs.";
+    }
+
+    @Override
     public void setUrlFocusChangeListener(UrlFocusChangeListener listener) {}
 
     @Override
