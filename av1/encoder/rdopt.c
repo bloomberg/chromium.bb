@@ -414,7 +414,8 @@ static const REF_DEFINITION av1_ref_order[MAX_REFS] = {
 
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE int write_uniform_cost(int n, int v) {
-  int l = get_unsigned_bits(n), m = (1 << l) - n;
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
   if (l == 0) return 0;
   if (v < m)
     return (l - 1) * av1_cost_bit(128, 0);

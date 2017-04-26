@@ -98,8 +98,8 @@ static const struct av1_token tx_size_encodings[MAX_TX_DEPTH][TX_SIZES] = {
 
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
-  int l = get_unsigned_bits(n);
-  int m = (1 << l) - n;
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
   if (l == 0) return;
   if (v < m) {
     aom_write_literal(w, v, l - 1);

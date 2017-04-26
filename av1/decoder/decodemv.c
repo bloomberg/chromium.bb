@@ -34,12 +34,10 @@
 #define ACCT_STR __func__
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE int read_uniform(aom_reader *r, int n) {
-  int l = get_unsigned_bits(n);
-  int m = (1 << l) - n;
-  int v = aom_read_literal(r, l - 1, ACCT_STR);
-
+  const int l = get_unsigned_bits(n);
+  const int m = (1 << l) - n;
+  const int v = aom_read_literal(r, l - 1, ACCT_STR);
   assert(l != 0);
-
   if (v < m)
     return v;
   else
