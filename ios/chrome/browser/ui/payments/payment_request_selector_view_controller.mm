@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_has_accessory_type.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller_actions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller_data_source.h"
@@ -97,17 +98,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model addItem:headerItem toSectionWithIdentifier:SectionIdentifierItems];
   }
 
-  [self.dataSource.selectableItems
-      enumerateObjectsUsingBlock:^(
-          CollectionViewItem<PaymentsHasAccessoryType>* item, NSUInteger index,
-          BOOL* stop) {
-        item.type = ItemTypeSelectableItem;
-        item.accessibilityTraits |= UIAccessibilityTraitButton;
-        item.accessoryType = (index == self.dataSource.selectedItemIndex)
-                                 ? MDCCollectionViewCellAccessoryCheckmark
-                                 : MDCCollectionViewCellAccessoryNone;
-        [model addItem:item toSectionWithIdentifier:SectionIdentifierItems];
-      }];
+  [self.dataSource.selectableItems enumerateObjectsUsingBlock:^(
+                                       CollectionViewItem* item,
+                                       NSUInteger index, BOOL* stop) {
+    DCHECK([item conformsToProtocol:@protocol(PaymentsHasAccessoryType)]);
+    CollectionViewItem<PaymentsHasAccessoryType>* selectableItem =
+        reinterpret_cast<CollectionViewItem<PaymentsHasAccessoryType>*>(item);
+    selectableItem.type = ItemTypeSelectableItem;
+    selectableItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    selectableItem.accessoryType = (index == self.dataSource.selectedItemIndex)
+                                       ? MDCCollectionViewCellAccessoryCheckmark
+                                       : MDCCollectionViewCellAccessoryNone;
+    [model addItem:selectableItem
+        toSectionWithIdentifier:SectionIdentifierItems];
+  }];
 
   CollectionViewItem* addButtonItem = [self.dataSource addButtonItem];
   if (addButtonItem) {
@@ -174,23 +178,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewModel* model = self.collectionViewModel;
 
-  CollectionViewItem<PaymentsHasAccessoryType>* item =
-      [model itemAtIndexPath:indexPath];
+  CollectionViewItem* item = [model itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypeSelectableItem: {
       // Update the currently selected cell, if any.
       if (self.dataSource.selectedItemIndex != NSUIntegerMax) {
-        CollectionViewItem<PaymentsHasAccessoryType>* selectedItem =
-            [self.dataSource
-                selectableItemAtIndex:self.dataSource.selectedItemIndex];
-        selectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
-        [self reconfigureCellsForItems:@[ selectedItem ]
+        CollectionViewItem<PaymentsHasAccessoryType>* oldSelectedItem =
+            reinterpret_cast<CollectionViewItem<PaymentsHasAccessoryType>*>(
+                [self.dataSource
+                    selectableItemAtIndex:self.dataSource.selectedItemIndex]);
+        oldSelectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
+        [self reconfigureCellsForItems:@[ oldSelectedItem ]
                inSectionWithIdentifier:SectionIdentifierItems];
       }
 
       // Update the newly selected cell.
-      item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-      [self reconfigureCellsForItems:@[ item ]
+      CollectionViewItem<PaymentsHasAccessoryType>* newSelectedItem =
+          reinterpret_cast<CollectionViewItem<PaymentsHasAccessoryType>*>(item);
+      newSelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+      [self reconfigureCellsForItems:@[ newSelectedItem ]
              inSectionWithIdentifier:SectionIdentifierItems];
 
       // Notify the delegate of the selection.
