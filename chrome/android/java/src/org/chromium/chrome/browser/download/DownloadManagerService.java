@@ -1123,9 +1123,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
             @Override
             protected void onPostExecute(Intent intent) {
-                if (intent == null
-                        || !ExternalNavigationDelegateImpl.resolveIntent(intent, true)
-                        || !DownloadUtils.fireOpenIntentForDownload(context, intent)) {
+                if (intent == null || !ExternalNavigationDelegateImpl.resolveIntent(intent, true)
+                        || !DownloadUtils.fireOpenIntentForDownload(context, intent)
+                        || !hasDownloadManagerService()) {
                     openDownloadsPage(context);
                 } else {
                     DownloadManagerService service =
