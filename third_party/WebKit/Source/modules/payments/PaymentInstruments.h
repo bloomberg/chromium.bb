@@ -29,7 +29,7 @@ class MODULES_EXPORT PaymentInstruments final
  public:
   explicit PaymentInstruments(const payments::mojom::blink::PaymentManagerPtr&);
 
-  ScriptPromise deleteInstrument(const String& instrument_key);
+  ScriptPromise deleteInstrument(ScriptState*, const String& instrument_key);
   ScriptPromise get(ScriptState*, const String& instrument_key);
   ScriptPromise keys();
   ScriptPromise has(const String& instrument_key);
@@ -41,10 +41,12 @@ class MODULES_EXPORT PaymentInstruments final
   DECLARE_TRACE();
 
  private:
-  void onSetPaymentInstrument(ScriptPromiseResolver*,
-                              payments::mojom::blink::PaymentHandlerStatus);
+  void onDeletePaymentInstrument(ScriptPromiseResolver*,
+                                 payments::mojom::blink::PaymentHandlerStatus);
   void onGetPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentInstrumentPtr,
+                              payments::mojom::blink::PaymentHandlerStatus);
+  void onSetPaymentInstrument(ScriptPromiseResolver*,
                               payments::mojom::blink::PaymentHandlerStatus);
 
   const payments::mojom::blink::PaymentManagerPtr& manager_;

@@ -40,6 +40,11 @@ void GetManifestCallback(bool* called,
   *out_error = error;
 }
 
+void DeletePaymentInstrumentCallback(PaymentHandlerStatus* out_status,
+                                     PaymentHandlerStatus status) {
+  *out_status = status;
+}
+
 void SetPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
                                   PaymentHandlerStatus status) {
   *out_status = status;
@@ -65,20 +70,28 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
 
   PaymentManager* payment_manager() const { return manager_; }
 
-  void SetPaymentInstrument(const std::string& instrumentKey,
+  void DeletePaymentInstrument(const std::string& instrument_key,
+                               PaymentHandlerStatus* out_status) {
+    manager_->DeletePaymentInstrument(
+        instrument_key,
+        base::Bind(&DeletePaymentInstrumentCallback, out_status));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetPaymentInstrument(const std::string& instrument_key,
                             PaymentInstrumentPtr instrument,
                             PaymentHandlerStatus* out_status) {
     manager_->SetPaymentInstrument(
-        instrumentKey, std::move(instrument),
+        instrument_key, std::move(instrument),
         base::Bind(&SetPaymentInstrumentCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetPaymentInstrument(const std::string& instrumentKey,
+  void GetPaymentInstrument(const std::string& instrument_key,
                             PaymentInstrumentPtr* out_instrument,
                             PaymentHandlerStatus* out_status) {
     manager_->GetPaymentInstrument(
-        instrumentKey,
+        instrument_key,
         base::Bind(&GetPaymentInstrumentCallback, out_instrument, out_status));
     base::RunLoop().RunUntilIdle();
   }
@@ -181,6 +194,31 @@ TEST_F(PaymentManagerTest, GetUnstoredPaymentInstrument) {
   PaymentHandlerStatus read_status = PaymentHandlerStatus::SUCCESS;
   PaymentInstrumentPtr read_details;
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
+  GetPaymentInstrument("test_key", &read_details, &read_status);
+  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
+}
+
+TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
+  PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
+  PaymentInstrumentPtr write_details = PaymentInstrument::New();
+  write_details->name = "Visa ending ****4756",
+  write_details->enabled_methods.push_back("visa");
+  write_details->stringified_capabilities = "{}";
+  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, write_status);
+  SetPaymentInstrument("test_key", std::move(write_details), &write_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+
+  PaymentHandlerStatus read_status = PaymentHandlerStatus::NOT_FOUND;
+  PaymentInstrumentPtr read_details;
+  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
+  GetPaymentInstrument("test_key", &read_details, &read_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
+
+  PaymentHandlerStatus delete_status = PaymentHandlerStatus::NOT_FOUND;
+  DeletePaymentInstrument("test_key", &delete_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, delete_status);
+
+  read_status = PaymentHandlerStatus::NOT_FOUND;
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
 }
