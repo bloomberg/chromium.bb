@@ -972,7 +972,9 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
 #elif CONFIG_EXT_TX
+#if !CONFIG_CB4X4
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+#endif  // !CONFIG_CB4X4
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
       (txsize_sqr_map[tx_size] >= TX_32X32 && !is_inter_block(mbmi)))
     return DCT_DCT;
@@ -996,11 +998,12 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   }
 
 #if CONFIG_CB4X4
+  (void)block;
   if (tx_size < TX_4X4)
     return DCT_DCT;
   else
     return intra_mode_to_tx_type_context[mbmi->uv_mode];
-#endif
+#else
 
   // Sub8x8-Inter/Intra OR UV-Intra
   if (is_inter_block(mbmi))  // Sub8x8-Inter
@@ -1009,6 +1012,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
     return intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
                                              ? get_y_mode(mi, block_raster_idx)
                                              : mbmi->uv_mode];
+#endif  // CONFIG_CB4X4
 #else   // CONFIG_EXT_TX
   (void)block;
   if (plane_type != PLANE_TYPE_Y || xd->lossless[mbmi->segment_id] ||
