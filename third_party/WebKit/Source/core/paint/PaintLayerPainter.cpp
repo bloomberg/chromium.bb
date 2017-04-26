@@ -764,7 +764,17 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
 
   ClipRect ancestor_background_clip_rect;
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    if (parent_layer) {
+    if (painting_info.root_layer == &paint_layer_) {
+      // This works around a bug in squashed-layer painting.
+      // Squashed layers paint into a backing in its compositing container's
+      // space, but painting_info.root_layer points to the squashed layer
+      // itself, thus PaintLayerClipper would return a clip rect in the
+      // squashed layer's local space, instead of the backing's space.
+      // Fortunately, CompositedLayerMapping::DoPaintTask already applied
+      // appropriate ancestor clip for us, we can simply skip it.
+      DCHECK_EQ(paint_layer_.GetCompositingState(), kPaintsIntoGroupedBacking);
+      ancestor_background_clip_rect.SetRect(FloatClipRect());
+    } else if (parent_layer) {
       // Calculate the clip rectangle that the ancestors establish.
       ClipRectsContext clip_rects_context(
           painting_info.root_layer,
