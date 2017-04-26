@@ -32,6 +32,8 @@ class CONTENT_EXPORT PaymentAppDatabase {
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
   using ReadAllManifestsCallback = base::Callback<void(Manifests)>;
+  using DeletePaymentInstrumentCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using ReadPaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentInstrumentPtr,
                               payments::mojom::PaymentHandlerStatus)>;
@@ -47,11 +49,14 @@ class CONTENT_EXPORT PaymentAppDatabase {
                      const WriteManifestCallback& callback);
   void ReadManifest(const GURL& scope, const ReadManifestCallback& callback);
   void ReadAllManifests(const ReadAllManifestsCallback& callback);
+  void DeletePaymentInstrument(const GURL& scope,
+                               const std::string& instrument_key,
+                               DeletePaymentInstrumentCallback callback);
   void ReadPaymentInstrument(const GURL& scope,
-                             const std::string& instrumentKey,
+                             const std::string& instrument_key,
                              ReadPaymentInstrumentCallback callback);
   void WritePaymentInstrument(const GURL& scope,
-                              const std::string& instrumentKey,
+                              const std::string& instrument_key,
                               payments::mojom::PaymentInstrumentPtr instrument,
                               WritePaymentInstrumentCallback callback);
 
@@ -80,9 +85,23 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const std::vector<std::pair<int64_t, std::string>>& raw_data,
       ServiceWorkerStatusCode status);
 
+  // DeletePaymentInstrument callbacks
+  void DidFindRegistrationToDeletePaymentInstrument(
+      const std::string& instrument_key,
+      DeletePaymentInstrumentCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidFindPaymentInstrument(int64_t registration_id,
+                                const std::string& instrument_key,
+                                DeletePaymentInstrumentCallback callback,
+                                const std::vector<std::string>& data,
+                                ServiceWorkerStatusCode status);
+  void DidDeletePaymentInstrument(DeletePaymentInstrumentCallback callback,
+                                  ServiceWorkerStatusCode status);
+
   // ReadPaymentInstrument callbacks
   void DidFindRegistrationToReadPaymentInstrument(
-      const std::string& instrumentKey,
+      const std::string& instrument_key,
       ReadPaymentInstrumentCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
@@ -92,7 +111,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
 
   // WritePaymentInstrument callbacks
   void DidFindRegistrationToWritePaymentInstrument(
-      const std::string& instrumentKey,
+      const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr instrument,
       WritePaymentInstrumentCallback callback,
       ServiceWorkerStatusCode status,

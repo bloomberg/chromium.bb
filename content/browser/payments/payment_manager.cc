@@ -57,23 +57,32 @@ void PaymentManager::GetManifest(const GetManifestCallback& callback) {
   payment_app_context_->payment_app_database()->ReadManifest(scope_, callback);
 }
 
+void PaymentManager::DeletePaymentInstrument(
+    const std::string& instrument_key,
+    const PaymentManager::DeletePaymentInstrumentCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->DeletePaymentInstrument(
+      scope_, instrument_key, callback);
+}
+
 void PaymentManager::SetPaymentInstrument(
-    const std::string& instrumentKey,
+    const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr details,
     const PaymentManager::SetPaymentInstrumentCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->WritePaymentInstrument(
-      scope_, instrumentKey, std::move(details), callback);
+      scope_, instrument_key, std::move(details), callback);
 }
 
 void PaymentManager::GetPaymentInstrument(
-    const std::string& instrumentKey,
+    const std::string& instrument_key,
     const PaymentManager::GetPaymentInstrumentCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ReadPaymentInstrument(
-      scope_, instrumentKey, callback);
+      scope_, instrument_key, callback);
 }
 
 void PaymentManager::OnConnectionError() {
