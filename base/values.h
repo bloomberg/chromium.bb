@@ -383,6 +383,8 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
+  explicit ListValue(const ListStorage& in_list);
+  explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Clears the contents of this ListValue
   void Clear();
@@ -428,6 +430,8 @@ class BASE_EXPORT ListValue : public Value {
   bool GetBinary(size_t index, Value** out_value);
   bool GetDictionary(size_t index, const DictionaryValue** out_value) const;
   bool GetDictionary(size_t index, DictionaryValue** out_value);
+
+  using Value::GetList;
   bool GetList(size_t index, const ListValue** out_value) const;
   bool GetList(size_t index, ListValue** out_value);
 
