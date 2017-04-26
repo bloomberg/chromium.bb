@@ -31,7 +31,7 @@ DOMException* BluetoothError::CreateNotConnectedException(
     case BluetoothOperation::kDescriptorsRetrieval:
       operation_string = "retrieve descriptors";
       break;
-    case BluetoothOperation::GATT:
+    case BluetoothOperation::kGATT:
       operation_string = "perform GATT operations";
       break;
   }
