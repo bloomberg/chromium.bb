@@ -71,6 +71,10 @@ WebMainLoop* g_current_web_main_loop = nullptr;
 WebMainLoop::WebMainLoop() : result_code_(0), created_threads_(false) {
   DCHECK(!g_current_web_main_loop);
   g_current_web_main_loop = this;
+
+  // Use an empty string as TaskScheduler name to match the suffix of browser
+  // process TaskScheduler histograms.
+  base::TaskScheduler::Create("");
 }
 
 WebMainLoop::~WebMainLoop() {
@@ -145,14 +149,15 @@ int WebMainLoop::PreCreateThreads() {
 }
 
 int WebMainLoop::CreateThreads() {
-  auto task_scheduler_init_params =
-      GetWebClient()->GetTaskSchedulerInitParams();
-  if (!task_scheduler_init_params)
-    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
-  DCHECK(task_scheduler_init_params);
-
-  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-      "", *task_scheduler_init_params.get());
+  {
+    auto task_scheduler_init_params =
+        GetWebClient()->GetTaskSchedulerInitParams();
+    if (!task_scheduler_init_params)
+      task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
+    DCHECK(task_scheduler_init_params);
+    base::TaskScheduler::GetInstance()->Start(
+        *task_scheduler_init_params.get());
+  }
 
   GetWebClient()->PerformExperimentalTaskSchedulerRedirections();
 
