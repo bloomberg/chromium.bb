@@ -1,13 +1,9 @@
 CONSOLE WARNING: line 87: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
-CONSOLE WARNING: line 311: ::shadow pseudo-element is deprecated and will be removed in M60, around August 2017. See https://www.chromestatus.com/features/6750456638341120 for more details.
-CONSOLE WARNING: line 311: /deep/ combinator is deprecated and will be a no-op in M60, around August 2017. See https://www.chromestatus.com/features/4964279606312960 for more details.
 Test for http://crbug.com/35340: Style should not be conditioned by the presence of the shadow element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS backgroundColorOf('host//target') is "rgb(0, 128, 0)"
-PASS backgroundColorOf('host//target') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host//target') is not "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS successfullyParsed is true

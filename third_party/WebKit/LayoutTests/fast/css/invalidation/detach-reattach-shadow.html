@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../../resources/js-test.js"></script>
-<style>
-  body /deep/ .a { width: 100px; height: 100px; background-color: green; }
+<style id="shadow-style">
+  .a { width: 100px; height: 100px; background-color: green; }
 </style>
 <script>
     var inner;
@@ -11,6 +11,7 @@
         root.appendChild(shadowContainer);
 
         var shadowRoot = shadowContainer.createShadowRoot();
+        shadowRoot.appendChild(document.querySelector('#shadow-style'));
         var mid = document.createElement('div');
         shadowRoot.appendChild(mid);
 

@@ -475,42 +475,6 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
   EXPECT_EQ(kSubtreeStyleChange, host->GetStyleChangeType());
 }
 
-TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToDocument) {
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  CSSStyleSheet* sheet = CreateSheet(".a /deep/ .b { color:red }");
-
-  ActiveStyleSheetVector new_style_sheets;
-  new_style_sheets.push_back(
-      std::make_pair(sheet, &sheet->Contents()->GetRuleSet()));
-
-  GetStyleEngine().ApplyRuleSetChanges(GetDocument(), ActiveStyleSheetVector(),
-                                       new_style_sheets);
-
-  EXPECT_EQ(kSubtreeStyleChange, GetDocument().GetStyleChangeType());
-}
-
-TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToShadowTree) {
-  GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
-  ASSERT_TRUE(host);
-
-  ShadowRoot& shadow_root = AttachShadow(*host);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  CSSStyleSheet* sheet = CreateSheet(".a /deep/ .b { color:red }");
-
-  ActiveStyleSheetVector new_style_sheets;
-  new_style_sheets.push_back(
-      std::make_pair(sheet, &sheet->Contents()->GetRuleSet()));
-
-  GetStyleEngine().ApplyRuleSetChanges(shadow_root, ActiveStyleSheetVector(),
-                                       new_style_sheets);
-
-  EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
-  EXPECT_EQ(kSubtreeStyleChange, host->GetStyleChangeType());
-}
-
 TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 

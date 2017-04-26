@@ -17,7 +17,7 @@ document.registerElement("x-green", { extends: "g", prototype: {
     createdCallback: function() {
       var shadow = this.createShadowRoot();
       var style = document.createElement('style');
-      style.appendChild(document.createTextNode(':host::shadow * { fill: green; }'));
+      style.appendChild(document.createTextNode('* { fill: green; }'));
       shadow.appendChild(style);
       var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       rect.setAttribute('width', '20');

@@ -12,24 +12,28 @@
    width: 50px;
 }
 
-* /deep/ #div1 {
-   position: fixed;
-   overflow: scroll;
-   width: 80px;
-   height: 80px;
-   background-color: red;
+</style>
+<style id="shadow-style">
+#div1 {
+  position: fixed;
+  overflow: scroll;
+  width: 80px;
+  height: 80px;
+  background-color: red;
 }
 
-* /deep/ #div1::-webkit-scrollbar {
-   width: 20px;
+#div1::-webkit-scrollbar {
+  width: 20px;
 }
 </style>
 
 <div id="host"></div>
 
+
 <script>
 var shadowRoot = host.createShadowRoot();
 shadowRoot.innerHTML = '<div id="div1">some long text showing scrollbar</div>';
+shadowRoot.appendChild(document.querySelector('#shadow-style'));
 </script>
 
 </body></html>
