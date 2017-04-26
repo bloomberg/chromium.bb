@@ -310,7 +310,7 @@ function GuestView(viewType, guestInstanceId) {
 GuestView.prototype.attach = function(
     internalInstanceId, viewInstanceId, attachParams, callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push($Function.bind(internal.attachImpl$,
+  $Array.push(internal.actionQueue, $Function.bind(internal.attachImpl$,
       internal, internalInstanceId, viewInstanceId, attachParams, callback));
   internal.performNextAction();
 };
@@ -318,7 +318,7 @@ GuestView.prototype.attach = function(
 // Creates the guestview.
 GuestView.prototype.create = function(createParams, callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push($Function.bind(internal.createImpl$,
+  $Array.push(internal.actionQueue, $Function.bind(internal.createImpl$,
       internal, createParams, callback));
   internal.performNextAction();
 };
@@ -327,7 +327,7 @@ GuestView.prototype.create = function(createParams, callback) {
 // been destroyed.
 GuestView.prototype.destroy = function(callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push(
+  $Array.push(internal.actionQueue,
       $Function.bind(internal.destroyImpl, internal, callback));
   internal.performNextAction();
 };
@@ -336,7 +336,7 @@ GuestView.prototype.destroy = function(callback) {
 // Note: This is not currently used.
 GuestView.prototype.detach = function(callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push(
+  $Array.push(internal.actionQueue,
       $Function.bind(internal.detachImpl, internal, callback));
   internal.performNextAction();
 };
@@ -344,7 +344,7 @@ GuestView.prototype.detach = function(callback) {
 // Adjusts the guestview's sizing parameters.
 GuestView.prototype.setSize = function(sizeParams, callback) {
   var internal = privates(this).internal;
-  internal.actionQueue.push(
+  $Array.push(internal.actionQueue,
       $Function.bind(internal.setSizeImpl, internal, sizeParams, callback));
   internal.performNextAction();
 };

@@ -69,7 +69,7 @@ GuestViewEvents.EVENTS = {};
 // to be removed once this GuestViewEvents object is garbage collected.
 GuestViewEvents.prototype.addScopedListener = function(
     evt, listener, listenerOpts) {
-  this.listenersToBeRemoved.push({ 'evt': evt, 'listener': listener });
+  $Array.push(this.listenersToBeRemoved, { 'evt': evt, 'listener': listener });
   evt.addListener(listener, listenerOpts);
 };
 

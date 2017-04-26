@@ -25,7 +25,7 @@ var EXTENSION_VIEW_API_METHODS = [
 
 ExtensionViewImpl.prototype.load = function(src) {
   return new Promise($Function.bind(function(resolve, reject) {
-    this.loadQueue.push({src: src, resolve: resolve, reject: reject});
+    $Array.push(this.loadQueue, {src: src, resolve: resolve, reject: reject});
     this.loadNextSrc();
   }, this))
   .then($Function.bind(function onLoadResolved() {
