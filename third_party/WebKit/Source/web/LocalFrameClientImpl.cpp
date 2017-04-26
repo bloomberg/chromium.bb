@@ -223,7 +223,7 @@ bool LocalFrameClientImpl::AllowScriptExtensions() {
 
 void LocalFrameClientImpl::DidChangeScrollOffset() {
   if (web_frame_->Client())
-    web_frame_->Client()->DidChangeScrollOffset(web_frame_);
+    web_frame_->Client()->DidChangeScrollOffset();
 }
 
 void LocalFrameClientImpl::DidUpdateCurrentHistoryItem() {
