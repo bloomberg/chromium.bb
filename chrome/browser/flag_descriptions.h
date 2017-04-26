@@ -134,12 +134,6 @@ extern const char kPrintPdfAsImageName[];
 // preview.
 extern const char kPrintPdfAsImageDescription[];
 
-// Name for the flag to add the print scaling feature to print preview.
-extern const char kPrintScalingName[];
-
-// Description for the flag to add the print scaling feature to print preview.
-extern const char kPrintScalingDescription[];
-
 // Name of the 'Native Client' lab.
 extern const char kNaclName[];
 

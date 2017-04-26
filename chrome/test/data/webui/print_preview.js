@@ -61,19 +61,15 @@ PrintPreviewWebUITest.prototype = {
    * @override
    */
   testGenPreamble: function() {
-    // Enable print scaling and print as image for tests.
+    // Enable print as image for tests on non Windows/Mac.
+    GEN('#if !defined(OS_WINDOWS) && !defined(OS_MACOSX)');
     GEN('  base::FeatureList::ClearInstanceForTesting();');
     GEN('  std::unique_ptr<base::FeatureList>');
     GEN('      feature_list(new base::FeatureList);');
-    GEN('  char enabled_features[128] = {0};');
-    GEN('  strcpy(enabled_features, features::kPrintScaling.name);');
-    GEN('#if !defined(OS_WINDOWS) && !defined(OS_MACOSX)');
-    GEN('  strcat(strcat(enabled_features, ","), ');
-    GEN('      features::kPrintPdfAsImage.name);');
-    GEN('#endif');
     GEN('  feature_list->InitializeFromCommandLine(');
-    GEN('      enabled_features, std::string());');
+    GEN('      features::kPrintPdfAsImage.name, std::string());');
     GEN('  base::FeatureList::SetInstance(std::move(feature_list));');
+    GEN('#endif');
   },
 
   /**

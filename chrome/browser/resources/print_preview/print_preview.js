@@ -19,13 +19,6 @@ cr.define('print_preview', function() {
     print_preview.Component.call(this);
 
     /**
-     * Whether the print scaling feature is enabled.
-     * @type {boolean}
-     * @private
-     */
-    this.scalingEnabled_ = loadTimeData.getBoolean('scalingEnabled');
-
-    /**
      * Used to communicate with Chromium's print system.
      * @type {!print_preview.NativeLayer}
      * @private
@@ -166,17 +159,15 @@ cr.define('print_preview', function() {
         new print_preview.DpiSettings(this.printTicketStore_.dpi);
     this.addChild(this.dpiSettings_);
 
-    if (this.scalingEnabled_) {
-      /**
-       * Component that renders the scaling settings.
-       * @type {!print_preview.ScalingSettings}
-       * @private
-       */
-      this.scalingSettings_ =
-          new print_preview.ScalingSettings(this.printTicketStore_.scaling,
-                                            this.printTicketStore_.fitToPage);
-      this.addChild(this.scalingSettings_);
-    }
+    /**
+     * Component that renders the scaling settings.
+     * @type {!print_preview.ScalingSettings}
+     * @private
+     */
+    this.scalingSettings_ =
+        new print_preview.ScalingSettings(this.printTicketStore_.scaling,
+                                          this.printTicketStore_.fitToPage);
+    this.addChild(this.scalingSettings_);
 
     /**
      * Component that renders miscellaneous print options.
@@ -219,11 +210,9 @@ cr.define('print_preview', function() {
         this.marginSettings_,
         this.colorSettings_,
         this.dpiSettings_,
+        this.scalingSettings_,
         this.otherOptionsSettings_,
         this.advancedOptionsSettings_];
-    if (this.scalingEnabled_) {
-      settingsSections.splice(8, 0, this.scalingSettings_);
-    }
 
     /**
      * Component representing more/less settings button.
@@ -373,12 +362,10 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS,
           this.onPrintPresetOptionsFromDocument_.bind(this));
-      if (this.scalingEnabled_) {
-        this.tracker.add(
-            this.nativeLayer_,
-            print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
-            this.onPageCountReady_.bind(this));
-      }
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
+          this.onPageCountReady_.bind(this));
       this.tracker.add(
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_PRINT_FAILED,
@@ -503,8 +490,7 @@ cr.define('print_preview', function() {
       this.mediaSizeSettings_.decorate($('media-size-settings'));
       this.marginSettings_.decorate($('margin-settings'));
       this.dpiSettings_.decorate($('dpi-settings'));
-      if (this.scalingEnabled_)
-        this.scalingSettings_.decorate($('scaling-settings'));
+      this.scalingSettings_.decorate($('scaling-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.advancedOptionsSettings_.decorate($('advanced-options-settings'));
       this.advancedSettings_.decorate($('advanced-settings'));
@@ -532,8 +518,7 @@ cr.define('print_preview', function() {
       this.mediaSizeSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
       this.dpiSettings_.isEnabled = isEnabled;
-      if (this.scalingEnabled_)
-         this.scalingSettings_.isEnabled = isEnabled;
+      this.scalingSettings_.isEnabled = isEnabled;
       this.otherOptionsSettings_.isEnabled = isEnabled;
       this.advancedOptionsSettings_.isEnabled = isEnabled;
     },

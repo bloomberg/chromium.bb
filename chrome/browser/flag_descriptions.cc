@@ -125,12 +125,6 @@ const char kPrintPdfAsImageDescription[] =
     "If enabled, an option to print PDF files as images will be available "
     "in print preview.";
 
-const char kPrintScalingName[] = "Print Scaling.";
-
-const char kPrintScalingDescription[] =
-    "If enabled, an option to scale documents will be available in print "
-    "preview.";
-
 const char kNaclName[] = "Native Client";
 
 #if defined(OS_ANDROID)

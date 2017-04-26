@@ -2477,16 +2477,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kDisplayPersistenceToggleInPermissionPrompts)},
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
     {"print-pdf-as-image", flag_descriptions::kPrintPdfAsImageName,
      flag_descriptions::kPrintPdfAsImageDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
-#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
-    {"print-scaling", flag_descriptions::kPrintScalingName,
-     flag_descriptions::kPrintScalingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPrintScaling)},
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif
 #if defined(OS_ANDROID)
     {"enable-consistent-omnibox-geolocation",
      flag_descriptions::kEnableConsistentOmniboxGeolocationName,
