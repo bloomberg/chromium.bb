@@ -262,8 +262,7 @@ void SpellCheckRequester::DidCheckSucceed(
 
   TextCheckingRequestData request_data = processing_request_->Data();
   if (request_data.Sequence() == sequence) {
-    DocumentMarker::MarkerTypes markers =
-        DocumentMarker::SpellCheckClientMarkers();
+    DocumentMarker::MarkerTypes markers = DocumentMarker::MisspellingMarkers();
     if (processing_request_->IsValid()) {
       Range* checking_range = processing_request_->CheckingRange();
       GetFrame().GetDocument()->Markers().RemoveMarkersInRange(
