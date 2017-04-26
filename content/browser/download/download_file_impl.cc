@@ -476,7 +476,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     source_stream->stream_reader()->RegisterCallback(base::Closure());
     source_stream->set_finished(true);
     if (should_terminate)
-      CancelRequestOnUIThread(source_stream->offset());
+      CancelRequest(source_stream->offset());
     if (source_stream->length() == DownloadSaveInfo::kLengthFullContent) {
       SetPotentialFileLength(source_stream->offset() +
                              source_stream->bytes_written());
@@ -650,7 +650,7 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
           DCHECK_EQ(stream.second->bytes_written(), 0);
           stream.second->stream_reader()->RegisterCallback(base::Closure());
           stream.second->set_finished(true);
-          CancelRequestOnUIThread(stream.second->offset());
+          CancelRequest(stream.second->offset());
           num_active_streams_--;
         }
       }
@@ -690,7 +690,7 @@ DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
   return ret;
 }
 
-void DownloadFileImpl::CancelRequestOnUIThread(int64_t offset) {
+void DownloadFileImpl::CancelRequest(int64_t offset) {
   if (!cancel_request_callback_.is_null()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(cancel_request_callback_, offset));

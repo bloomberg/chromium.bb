@@ -100,8 +100,8 @@ void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {
   }
 
   auto it = workers_.find(offset);
-  if (it != workers_.end())
-    it->second->Cancel();
+  DCHECK(it != workers_.end());
+  it->second->Cancel();
 }
 
 void ParallelDownloadJob::BuildParallelRequestAfterDelay() {

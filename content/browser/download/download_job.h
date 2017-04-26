@@ -46,6 +46,7 @@ class CONTENT_EXPORT DownloadJob {
 
   // Cancel a particular request starts from |offset|, while the download is not
   // canceled. Used in parallel download.
+  // TODO(xingliu): Remove this function if download job owns download file.
   virtual void CancelRequestWithOffset(int64_t offset);
 
  protected:
