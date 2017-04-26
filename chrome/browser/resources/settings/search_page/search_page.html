@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -42,11 +43,17 @@
             <p id="searchExplanation" class="start">
               $i18nRaw{searchExplanation}
             </p>
+            <template is="dom-if" if="[[isDefaultSearchControlledByPolicy_(
+                prefs.default_search_provider_data.template_url_data)]]">
+              <cr-policy-pref-indicator pref="[[
+                  prefs.default_search_provider_data.template_url_data]]">
+              </cr-policy-pref-indicator>
+            </template>
             <div>
               <select class="md-select" on-change="onChange_"
                   aria-labelledby="searchExplanation"
-                  disabled$="[[
-                      prefs.default_search_provider.enabled.extensionId]]">
+                  disabled$="[[isDefaultSearchEngineEnforced_(
+                      prefs.default_search_provider_data.template_url_data)]]">
                 <template is="dom-repeat" items="[[searchEngines_]]">
                   <option selected="[[item.default]]">[[item.name]]</option>
                 </template>
@@ -55,14 +62,14 @@
             </div>
           </div>
           <template is="dom-if"
-              if="[[prefs.default_search_provider.enabled.extensionId]]">
+              if="[[prefs.default_search_provider_data.template_url_data.extensionId]]">
             <extension-controlled-indicator
                 extension-id="[[
-                    prefs.default_search_provider.enabled.extensionId]]"
+                    prefs.default_search_provider_data.template_url_data.extensionId]]"
                 extension-name="[[
-                    prefs.default_search_provider.enabled.controlledByName]]"
+                    prefs.default_search_provider_data.template_url_data.controlledByName]]"
                 extension-can-be-disabled="[[
-                    prefs.default_search_provider.enabled.extensionCanBeDisabled]]"
+                    prefs.default_search_provider_data.template_url_data.extensionCanBeDisabled]]"
                 on-disable-extension="onDisableExtension_">
             </extension-controlled-indicator>
           </template>

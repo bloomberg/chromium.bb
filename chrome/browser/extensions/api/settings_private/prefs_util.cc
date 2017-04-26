@@ -20,7 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
-#include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/default_search_manager.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -172,8 +172,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 #endif
 
   // Search page.
-  (*s_whitelist)[::prefs::kDefaultSearchProviderEnabled] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =
+      settings_private::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[::prefs::kGoogleNowLauncherEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
@@ -758,8 +758,10 @@ const Extension* PrefsUtil::GetExtensionControllingPref(
   if (pref_object.key == ::prefs::kURLsToRestoreOnStartup)
     return GetExtensionOverridingStartupPages(profile_);
 
-  if (pref_object.key == ::prefs::kDefaultSearchProviderEnabled)
+  if (pref_object.key ==
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName) {
     return GetExtensionOverridingSearchEngine(profile_);
+  }
 
   if (pref_object.key == proxy_config::prefs::kProxy)
     return GetExtensionOverridingProxy(profile_);
