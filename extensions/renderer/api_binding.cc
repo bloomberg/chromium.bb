@@ -257,24 +257,32 @@ APIBinding::APIBinding(const std::string& api_name,
       std::vector<std::string> rule_conditions;
       const base::DictionaryValue* options = nullptr;
       bool supports_rules = false;
-      if (event_dict->GetDictionary("options", &options) &&
-          options->GetBoolean("supportsRules", &supports_rules) &&
-          supports_rules) {
-        bool supports_listeners = false;
-        DCHECK(options->GetBoolean("supportsListeners", &supports_listeners));
-        DCHECK(!supports_listeners)
-            << "Events cannot support rules and listeners.";
-        auto get_values = [options](base::StringPiece name,
-                                    std::vector<std::string>* out_value) {
-          const base::ListValue* list = nullptr;
-          CHECK(options->GetList(name, &list));
-          for (const auto& entry : *list) {
-            DCHECK(entry.is_string());
-            out_value->push_back(entry.GetString());
-          }
-        };
-        get_values("actions", &rule_actions);
-        get_values("conditions", &rule_conditions);
+      if (event_dict->GetDictionary("options", &options)) {
+        bool temp_supports_filters = false;
+        // TODO(devlin): For some reason, schemas indicate supporting filters
+        // either through having a 'filters' property *or* through having
+        // a 'supportsFilters' property. We should clean that up.
+        supports_filters |=
+            (options->GetBoolean("supportsFilters", &temp_supports_filters) &&
+             temp_supports_filters);
+        if (options->GetBoolean("supportsRules", &supports_rules) &&
+            supports_rules) {
+          bool supports_listeners = false;
+          DCHECK(options->GetBoolean("supportsListeners", &supports_listeners));
+          DCHECK(!supports_listeners)
+              << "Events cannot support rules and listeners.";
+          auto get_values = [options](base::StringPiece name,
+                                      std::vector<std::string>* out_value) {
+            const base::ListValue* list = nullptr;
+            CHECK(options->GetList(name, &list));
+            for (const auto& entry : *list) {
+              DCHECK(entry.is_string());
+              out_value->push_back(entry.GetString());
+            }
+          };
+          get_values("actions", &rule_actions);
+          get_values("conditions", &rule_conditions);
+        }
       }
 
       events_.push_back(base::MakeUnique<EventData>(

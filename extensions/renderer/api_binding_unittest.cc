@@ -1188,4 +1188,69 @@ TEST_F(APIBindingUnittest, TestUserGestures) {
   reset_last_request();
 }
 
+TEST_F(APIBindingUnittest, FilteredEvents) {
+  const char kEvents[] =
+      "[{"
+      "  'name': 'unfilteredOne',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'unfilteredTwo',"
+      "  'filters': [],"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'unfilteredThree',"
+      "  'options': {'supportsFilters': false},"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'filteredOne',"
+      "  'options': {'supportsFilters': true},"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'filteredTwo',"
+      "  'filters': ["
+      "    {'name': 'url', 'type': 'array', 'items': {'type': 'any'}}"
+      "  ],"
+      "  'parameters': []"
+      "}]";
+  SetEvents(kEvents);
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object =
+      binding()->CreateInstance(context, base::Bind(&AllowAllAPIs));
+
+  const char kAddFilteredListener[] =
+      "(function(evt) {\n"
+      "  evt.addListener(function() {},\n"
+      "                  {url: [{pathContains: 'simple2.html'}]});\n"
+      "})";
+  v8::Local<v8::Function> function =
+      FunctionFromString(context, kAddFilteredListener);
+  ASSERT_FALSE(function.IsEmpty());
+
+  auto check_supports_filters = [context, binding_object, function](
+                                    base::StringPiece name,
+                                    bool expect_supports) {
+    SCOPED_TRACE(name);
+    v8::Local<v8::Value> event =
+        GetPropertyFromObject(binding_object, context, name);
+    v8::Local<v8::Value> args[] = {event};
+    if (expect_supports) {
+      RunFunction(function, context, context->Global(), arraysize(args), args);
+    } else {
+      RunFunctionAndExpectError(
+          function, context, context->Global(), arraysize(args), args,
+          "Uncaught TypeError: This event does not support filters");
+    }
+  };
+
+  check_supports_filters("unfilteredOne", false);
+  check_supports_filters("unfilteredTwo", false);
+  check_supports_filters("unfilteredThree", false);
+  check_supports_filters("filteredOne", true);
+  check_supports_filters("filteredTwo", true);
+}
+
 }  // namespace extensions
