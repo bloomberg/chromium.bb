@@ -233,6 +233,12 @@ skia::NativeDrawingContext PdfMetafileSkia::context() const {
 
 
 #if defined(OS_WIN)
+bool PdfMetafileSkia::Playback(skia::NativeDrawingContext hdc,
+                               const RECT* rect) const {
+  NOTREACHED();
+  return false;
+}
+
 bool PdfMetafileSkia::SafePlayback(skia::NativeDrawingContext hdc) const {
   NOTREACHED();
   return false;
