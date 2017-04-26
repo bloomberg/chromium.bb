@@ -281,6 +281,19 @@ TEST_F(P2PSocketHostUdpTest, SendDataNoAuth) {
   ASSERT_EQ(sent_packets_.size(), 0U);
 }
 
+// Verify that SetOption() doesn't crash after an error.
+TEST_F(P2PSocketHostUdpTest, SetOptionAfterError) {
+  // Get the sender into the error state.
+  EXPECT_CALL(sender_,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  socket_host_->Send(dest1_, {1, 2, 3, 4}, rtc::PacketOptions(), 0);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Verify that SetOptions() fails, but doesn't crash.
+  EXPECT_FALSE(socket_host_->SetOption(P2P_SOCKET_OPT_RCVBUF, 2048));
+}
+
 // Verify that we can send data after we've received STUN request
 // from the other side.
 TEST_F(P2PSocketHostUdpTest, SendAfterStunRequest) {
