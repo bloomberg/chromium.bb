@@ -531,6 +531,10 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
            tracing::TraceConfigFile::GetInstance()->GetStartupDuration() > 0)) {
   DCHECK(!g_current_browser_main_loop);
   g_current_browser_main_loop = this;
+
+  // Use an empty string as TaskScheduler name to match the suffix of browser
+  // process TaskScheduler histograms.
+  base::TaskScheduler::Create("");
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
@@ -951,14 +955,15 @@ void BrowserMainLoop::CreateStartupTasks() {
 int BrowserMainLoop::CreateThreads() {
   TRACE_EVENT0("startup,rail", "BrowserMainLoop::CreateThreads");
 
-  auto task_scheduler_init_params =
-      GetContentClient()->browser()->GetTaskSchedulerInitParams();
-  if (!task_scheduler_init_params)
-    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
-  DCHECK(task_scheduler_init_params);
-
-  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-      "", *task_scheduler_init_params.get());
+  {
+    auto task_scheduler_init_params =
+        GetContentClient()->browser()->GetTaskSchedulerInitParams();
+    if (!task_scheduler_init_params)
+      task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
+    DCHECK(task_scheduler_init_params);
+    base::TaskScheduler::GetInstance()->Start(
+        *task_scheduler_init_params.get());
+  }
 
   GetContentClient()->browser()->PerformExperimentalTaskSchedulerRedirections();
 
