@@ -595,13 +595,6 @@ def run(port, options, args, logging_stream, stdout):
 
         _log.debug('')
         _log.debug('Testing completed, Exit status: %d', run_details.exit_code)
-
-        # Temporary process dump for debugging windows timeout issues, see crbug.com/522396.
-        _log.debug('')
-        _log.debug('Process dump:')
-        for process in port.host.executive.process_dump():
-            _log.debug('\t%s', process)
-
         return run_details
 
     finally:
