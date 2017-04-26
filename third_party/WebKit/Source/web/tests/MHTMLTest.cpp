@@ -289,8 +289,11 @@ TEST_F(MHTMLTest, EnforceSandboxFlags) {
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
-  // Full sandboxing should be turned on.
-  EXPECT_TRUE(document->IsSandboxed(kSandboxAll));
+  // Full sandboxing with the exception to new top-level windows should be
+  // turned on.
+  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
+                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
+            document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
   EXPECT_TRUE(document->GetSecurityOrigin()->IsUnique());
