@@ -186,7 +186,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   virtual void CheckNumberOfChannelsForInput(AudioNodeInput*);
 
 #if DEBUG_AUDIONODE_REFERENCES
-  static void printNodeCounts();
+  static void PrintNodeCounts();
 #endif
 
   // tailTime() is the length of time (not counting latency time) where
@@ -281,8 +281,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   bool is_disabled_;
 
 #if DEBUG_AUDIONODE_REFERENCES
-  static bool s_isNodeCountInitialized;
-  static int s_nodeCount[NodeTypeEnd];
+  static bool is_node_count_initialized_;
+  static int node_count_[kNodeTypeEnd];
 #endif
 
   ChannelCountMode channel_count_mode_;

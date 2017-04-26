@@ -58,9 +58,9 @@ AudioHandler::AudioHandler(NodeType node_type,
   SetInternalChannelInterpretation(AudioBus::kSpeakers);
 
 #if DEBUG_AUDIONODE_REFERENCES
-  if (!s_isNodeCountInitialized) {
-    s_isNodeCountInitialized = true;
-    atexit(AudioHandler::printNodeCounts);
+  if (!is_node_count_initialized_) {
+    is_node_count_initialized_ = true;
+    atexit(AudioHandler::PrintNodeCounts);
   }
 #endif
   InstanceCounters::IncrementCounter(InstanceCounters::kAudioHandlerCounter);
@@ -72,10 +72,10 @@ AudioHandler::~AudioHandler() {
   DCHECK(!GetNode());
   InstanceCounters::DecrementCounter(InstanceCounters::kAudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
-  --s_nodeCount[getNodeType()];
+  --node_count_[GetNodeType()];
   fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::~AudioHandler() %d [%d]\n",
-          context(), this, getNodeType(), m_connectionRefCount,
-          s_nodeCount[getNodeType()]);
+          Context(), this, GetNodeType(), connection_ref_count_,
+          node_count_[GetNodeType()]);
 #endif
 }
 
@@ -169,9 +169,9 @@ void AudioHandler::SetNodeType(NodeType type) {
   node_type_ = type;
 
 #if DEBUG_AUDIONODE_REFERENCES
-  ++s_nodeCount[type];
+  ++node_count_[type];
   fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::AudioHandler [%3d]\n",
-          context(), this, getNodeType(), s_nodeCount[getNodeType()]);
+          Context(), this, GetNodeType(), node_count_[GetNodeType()]);
 #endif
 }
 
@@ -454,8 +454,8 @@ void AudioHandler::MakeConnection() {
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::ref   %3d [%3d]\n",
-          context(), this, getNodeType(), m_connectionRefCount,
-          s_nodeCount[getNodeType()]);
+          Context(), this, GetNodeType(), connection_ref_count_,
+          node_count_[GetNodeType()]);
 #endif
   // See the disabling code in disableOutputsIfNecessary(). This handles
   // the case where a node is being re-connected after being used at least
@@ -492,8 +492,8 @@ void AudioHandler::BreakConnectionWithLock() {
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::deref %3d [%3d]\n",
-          context(), this, getNodeType(), m_connectionRefCount,
-          s_nodeCount[getNodeType()]);
+          Context(), this, GetNodeType(), connection_ref_count_,
+          node_count_[GetNodeType()]);
 #endif
 
   if (!connection_ref_count_)
@@ -502,17 +502,17 @@ void AudioHandler::BreakConnectionWithLock() {
 
 #if DEBUG_AUDIONODE_REFERENCES
 
-bool AudioHandler::s_isNodeCountInitialized = false;
-int AudioHandler::s_nodeCount[NodeTypeEnd];
+bool AudioHandler::is_node_count_initialized_ = false;
+int AudioHandler::node_count_[kNodeTypeEnd];
 
-void AudioHandler::printNodeCounts() {
+void AudioHandler::PrintNodeCounts() {
   fprintf(stderr, "\n\n");
   fprintf(stderr, "===========================\n");
   fprintf(stderr, "AudioNode: reference counts\n");
   fprintf(stderr, "===========================\n");
 
-  for (unsigned i = 0; i < NodeTypeEnd; ++i)
-    fprintf(stderr, "%2d: %d\n", i, s_nodeCount[i]);
+  for (unsigned i = 0; i < kNodeTypeEnd; ++i)
+    fprintf(stderr, "%2d: %d\n", i, node_count_[i]);
 
   fprintf(stderr, "===========================\n\n\n");
 }
@@ -546,7 +546,7 @@ void AudioNode::Dispose() {
   DCHECK(IsMainThread());
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::dispose %16p\n", context(),
-          this, handler().getNodeType(), m_handler.get());
+          this, Handler().GetNodeType(), handler_.Get());
 #endif
   BaseAudioContext::AutoLocker locker(context());
   Handler().Dispose();
@@ -561,7 +561,7 @@ void AudioNode::SetHandler(PassRefPtr<AudioHandler> handler) {
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::AudioNode %16p\n", context(),
-          this, m_handler->getNodeType(), m_handler.get());
+          this, handler_->GetNodeType(), handler_.Get());
 #endif
 }
 
