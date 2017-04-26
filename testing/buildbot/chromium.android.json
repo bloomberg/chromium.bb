@@ -7,6 +7,15 @@
   "Android N5X Swarm Builder": {
     "gtest_tests": [
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_webview_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "android_webview_test_apk"
         ],
@@ -233,6 +242,15 @@
           "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_vr_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_vr_apk"
         ],
@@ -267,6 +285,15 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_sync_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_sync_shell_test_apk"
         ],
@@ -364,6 +391,15 @@
         "test": "components_unittests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "content_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "content_shell_test_apk"
         ],
@@ -2327,6 +2363,15 @@
         "test": "vr_shell_unittests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_webview_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "android_webview_test_apk"
         ],
@@ -2363,6 +2408,15 @@
         "test": "android_webview_test_apk"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_apk"
         ],
@@ -2403,6 +2457,15 @@
           "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_vr_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_vr_apk"
         ],
@@ -2439,6 +2502,15 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_sync_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_sync_shell_test_apk"
         ],
@@ -2475,6 +2547,15 @@
         "test": "chrome_sync_shell_test_apk"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "content_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "content_shell_test_apk"
         ],
@@ -2651,6 +2732,15 @@
         "test": "android_webview_unittests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_webview_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "android_webview_test_apk"
         ],
@@ -2688,6 +2778,15 @@
         "args": [
           "--enable-browser-side-navigation"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "browser_side_navigation_android_webview_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "name": "browser_side_navigation_android_webview_test_apk",
         "override_compile_targets": [
           "android_webview_test_apk"
@@ -2878,6 +2977,15 @@
         "test": "cc_unittests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_apk"
         ],
@@ -2917,6 +3025,15 @@
           "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
           "--additional-apk=../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_public_test_vr_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_public_test_vr_apk"
         ],
@@ -2955,6 +3072,15 @@
         "args": [
           "--enable-browser-side-navigation"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "browser_side_navigation_chrome_public_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "name": "browser_side_navigation_chrome_public_test_apk",
         "override_compile_targets": [
           "chrome_public_test_apk"
@@ -2991,6 +3117,15 @@
         "test": "chrome_public_test_apk"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "chrome_sync_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "chrome_sync_shell_test_apk"
         ],
@@ -3028,6 +3163,15 @@
         "args": [
           "--enable-browser-side-navigation"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "browser_side_navigation_chrome_sync_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "name": "browser_side_navigation_chrome_sync_shell_test_apk",
         "override_compile_targets": [
           "chrome_sync_shell_test_apk"
@@ -3261,6 +3405,15 @@
         "test": "content_browsertests"
       },
       {
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "content_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "override_compile_targets": [
           "content_shell_test_apk"
         ],
@@ -3298,6 +3451,15 @@
         "args": [
           "--enable-browser-side-navigation"
         ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "browser_side_navigation_content_shell_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
         "name": "browser_side_navigation_content_shell_test_apk",
         "override_compile_targets": [
           "content_shell_test_apk"
