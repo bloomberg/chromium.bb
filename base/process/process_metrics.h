@@ -167,10 +167,20 @@ class BASE_EXPORT ProcessMetrics {
   bool GetCommittedAndWorkingSetKBytes(CommittedKBytes* usage,
                                        WorkingSetKBytes* ws_usage) const;
 
-  // Returns the physical footprint, only available on macOS 10.11+. This
-  // measures anonymous, non-discardable memory. Returns 0 on error, or if the
-  // measurement was unavailable.
-  size_t GetPhysicalFootprint() const;
+  struct TaskVMInfo {
+    // Only available on macOS 10.12+.
+    // Anonymous, non-discardable memory, including non-volatile IOKit.
+    // Measured in bytes.
+    uint64_t phys_footprint = 0;
+
+    // Anonymous, non-discardable, non-compressed memory, excluding IOKit.
+    // Measured in bytes.
+    uint64_t internal = 0;
+
+    // Compressed memory measured in bytes.
+    uint64_t compressed = 0;
+  };
+  TaskVMInfo GetTaskVMInfo() const;
 
   // Returns private, shared, and total resident bytes. |locked_bytes| refers to
   // bytes that must stay resident. |locked_bytes| only counts bytes locked by

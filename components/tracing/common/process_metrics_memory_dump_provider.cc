@@ -614,6 +614,13 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
   pmd->process_totals()->SetExtraFieldInBytes("shared_bytes", shared_bytes);
   pmd->process_totals()->SetExtraFieldInBytes("locked_bytes", locked_bytes);
+
+  base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint& footprint =
+      pmd->process_totals()->GetPlatformPrivateFootprint();
+  base::ProcessMetrics::TaskVMInfo info = process_metrics_->GetTaskVMInfo();
+  footprint.phys_footprint_bytes = info.phys_footprint;
+  footprint.internal_bytes = info.internal;
+  footprint.compressed_bytes = info.compressed;
 #else
   uint64_t rss_bytes = process_metrics_->GetWorkingSetSize();
 #endif  // defined(OS_MACOSX)
