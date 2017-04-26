@@ -156,7 +156,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView
   // ignored.
   bool is_closing_;
 
-  bool is_clearing_ = false;
+  bool is_clearing_all_notifications_ = false;
   bool is_locked_ = false;
 
   // Current view mode. During animation, it is the target mode.

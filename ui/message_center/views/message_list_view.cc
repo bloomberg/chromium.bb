@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -100,6 +102,20 @@ void MessageListView::AddNotificationAt(MessageView* view, int index) {
 void MessageListView::RemoveNotification(MessageView* view) {
   DCHECK_EQ(view->parent(), this);
 
+  // TODO(yhananda): We should consider consolidating clearing_all_views_,
+  // deleting_views_ and deleted_when_done_.
+  if (std::find(clearing_all_views_.begin(), clearing_all_views_.end(), view) !=
+          clearing_all_views_.end() ||
+      deleting_views_.find(view) != deleting_views_.end() ||
+      deleted_when_done_.find(view) != deleted_when_done_.end()) {
+    // Let's skip deleting the view if it's already scheduled for deleting.
+    // Even if we check clearing_all_views_ here, we actualy have no idea
+    // whether the view is due to be removed or not because it could be in its
+    // animation before removal.
+    // In short, we could delete the view twice even if we check these three
+    // lists.
+    return;
+  }
 
   if (GetContentsBounds().IsEmpty()) {
     delete view;
@@ -120,6 +136,11 @@ void MessageListView::RemoveNotification(MessageView* view) {
 
 void MessageListView::UpdateNotification(MessageView* view,
                                          const Notification& notification) {
+  // Skip updating the notification being cleared
+  if (std::find(clearing_all_views_.begin(), clearing_all_views_.end(), view) !=
+      clearing_all_views_.end())
+    return;
+
   int index = GetIndexOf(view);
   DCHECK_LE(0, index);  // GetIndexOf is negative if not a child.
 
@@ -242,6 +263,15 @@ void MessageListView::ClearAllClosableNotifications(
       continue;
     if (child->IsPinned())
       continue;
+    if (deleting_views_.find(child) != deleting_views_.end() ||
+        deleted_when_done_.find(child) != deleted_when_done_.end()) {
+      // We don't check clearing_all_views_ here, so this can lead to a
+      // notification being deleted twice. Even if we do check it, there is a
+      // problem similar to the problem in RemoveNotification(), it could be
+      // currently in its animation before removal, and we could similarly
+      // delete it twice. This is a bug.
+      continue;
+    }
     clearing_all_views_.push_back(child);
   }
   if (clearing_all_views_.empty()) {
@@ -298,7 +328,9 @@ bool MessageListView::IsValidChild(const views::View* child) const {
          deleting_views_.find(const_cast<views::View*>(child)) ==
              deleting_views_.end() &&
          deleted_when_done_.find(const_cast<views::View*>(child)) ==
-             deleted_when_done_.end();
+             deleted_when_done_.end() &&
+         std::find(clearing_all_views_.begin(), clearing_all_views_.end(),
+                   child) == clearing_all_views_.end();
 }
 
 void MessageListView::DoUpdateIfPossible() {
