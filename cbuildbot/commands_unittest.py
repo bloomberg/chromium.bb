@@ -526,6 +526,29 @@ The suite job has another 2:39:39.789250 till timeout.
       cmd_result = self.RunHWTestSuite()
       self.assertIsInstance(cmd_result.to_raise, failures_lib.TestLabFailure)
 
+  def testRunHWTestSuiteCommandErrorJSONDumpMissing(self):
+    """Test RunHWTestSuite when the JSON output is missing on error."""
+    self.SetCmdResults()
+    self.PatchJson(
+        [(self.JOB_ID_OUTPUT, False, None),
+         ('', False, None),
+         ('', False, None),
+        ])
+    def fail_swarming_cmd(cmd, *args, **kwargs):
+      result = swarming_lib.SwarmingCommandResult(None, cmd=cmd,
+                                                  error='injected error',
+                                                  output='', returncode=3)
+      raise cros_build_lib.RunCommandError('injected swarming failure',
+                                           result, None)
+    self.rc.AddCmdResult(self.wait_cmd, side_effect=fail_swarming_cmd)
+    self.rc.AddCmdResult(self.json_dump_cmd, side_effect=fail_swarming_cmd)
+
+    with self.OutputCapturer():
+      cmd_result = self.RunHWTestSuite(wait_for_results=True)
+      self.assertIsInstance(cmd_result.to_raise, failures_lib.TestLabFailure)
+      self.assertCommandCalled(self.json_dump_cmd, capture_output=True,
+                               combine_stdout_stderr=True)
+
   def testRunHWTestBoardNotAvailable(self):
     """Test RunHWTestSuite when BOARD_NOT_AVAILABLE is returned."""
     self.PatchJson([(self.JOB_ID_OUTPUT, False, None)])

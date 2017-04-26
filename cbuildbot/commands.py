@@ -1078,9 +1078,23 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
         s = ''.join(outputs)
         sys.stdout.write(s)
         sys.stdout.write('\n')
-        i = s.find(JSON_DICT_START) + len(JSON_DICT_START)
-        j = s.find(JSON_DICT_END)
-        json_dump_result = json.loads(s[i:j])
+        try:
+          # If we can't parse the JSON dump, subsystem based partial submission
+          # will be skipped due to missing information about which individual
+          # tests passed. This can happen for example when the JSON dump step
+          # fails due to connectivity issues in which case we'll have no output
+          # to parse. It's OK to just assume complete test failure in this case
+          # though: since we don't know better anyways, we need to err on the
+          # safe side and not submit any change. So we just log an error below
+          # instead of raising an exception and allow the subsequent logic to
+          # decide which failure condition to report. This is in the hope that
+          # providing more information from the RunCommandError we encountered
+          # will be useful in diagnosing the root cause of the failure.
+          json_dump_result = _HWTestParseJSONDump(s)
+        except ValueError as e:
+          logging.error(
+              'Failed to parse HWTest JSON dump string, ' +
+              'subsystem based partial submission will be skipped:  %s', e)
       else:
         for output in outputs:
           sys.stdout.write(output)
@@ -1109,6 +1123,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
       elif result.returncode != 0:
         to_raise = failures_lib.TestFailure(
             '** HWTest failed (code %d) **' % result.returncode)
+      elif json_dump_result is None:
+        to_raise = failures_lib.TestFailure(
+            '** Failed to decode JSON dump **')
     return HWTestSuiteResult(to_raise, json_dump_result)
 
 
@@ -1307,6 +1324,24 @@ def _HWTestWait(cmd, job_id, **kwargs):
 
   return pass_hwtest
 
+def _HWTestParseJSONDump(dump_output):
+  """Parses JSON dump output and returns the parsed JSON dict.
+
+  Args:
+    output: The string containing the HWTest result JSON dictionary to parse,
+            marked up with #JSON_START# and #JSON_END# start/end delimiters.
+
+  Returns:
+    Decoded JSON dict. May raise ValueError upon failure to pass the embedded
+    JSON object.
+  """
+  i = dump_output.find(JSON_DICT_START) + len(JSON_DICT_START)
+  j = dump_output.find(JSON_DICT_END)
+  if i == -1 or j == -1 or i > j:
+    raise ValueError('Invalid swarming output: %s' % dump_output)
+  return json.loads(dump_output[i:j])
+
+
 def _HWTestDumpJson(cmd, job_id, **kwargs):
   """Consume HWTest suite json output and return passed/failed subsystems dict.
 
@@ -1328,12 +1363,7 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
     sys.stdout.write(output)
   sys.stdout.write('\n')
   sys.stdout.flush()
-  dump_output = ''.join(result.GetValue('outputs', ''))
-  i = dump_output.find(JSON_DICT_START) + len(JSON_DICT_START)
-  j = dump_output.find(JSON_DICT_END)
-  if i == -1 or j == -1 or i > j:
-    raise ValueError('Invalid swarming output: %s' % dump_output)
-  return json.loads(dump_output[i:j])
+  return _HWTestParseJSONDump(''.join(result.GetValue('outputs', '')))
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):
