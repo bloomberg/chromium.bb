@@ -595,6 +595,8 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
           .release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::POLICY);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES);
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;
   fetcher->Start();
