@@ -153,13 +153,16 @@ public class VisualStateCallbackTest extends AwTestBase {
     @SmallTest
     @CommandLineFlags
             .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
-            public void testAddVisualStateCallbackAfterRendererGone() throws Throwable {
+    @ParameterizedTest.Set
+    public void testAddVisualStateCallbackAfterRendererGone() throws Throwable {
+        final VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
+        mHelper.setOnRenderProcessGoneTask(new Runnable() {
+            @Override
+            public void run() {
+                mAwContents.insertVisualStateCallback(vsImpl.requestId(), vsImpl);
+            }
+        });
         loadUrlAsync(mAwContents, "chrome://kill");
-        mHelper.waitForRenderProcessGone();
-
-        VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
-        insertVisualStateCallbackOnUIThread(mAwContents, vsImpl.requestId(), vsImpl);
 
         mHelper.waitForRenderProcessGoneNotifiedToAwContentsClient();
 
@@ -174,8 +177,8 @@ public class VisualStateCallbackTest extends AwTestBase {
     @SmallTest
     @CommandLineFlags
             .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-            @ParameterizedTest.Set
-            public void testVisualStateCallbackNotCalledAfterRendererGone() throws Throwable {
+    @ParameterizedTest.Set
+    public void testVisualStateCallbackNotCalledAfterRendererGone() throws Throwable {
 
         VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
         insertVisualStateCallbackOnUIThread(mAwContents, vsImpl.requestId(), vsImpl);

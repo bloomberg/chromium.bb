@@ -19,6 +19,7 @@ public class RenderProcessGoneHelper implements RenderProcessGoneObserver {
 
     private int mState;
     private CallbackHelper mCallbackHelper;
+    private Runnable mOnRenderProcessGoneTask;
 
     public RenderProcessGoneHelper() {
         mCallbackHelper = new CallbackHelper();
@@ -48,6 +49,8 @@ public class RenderProcessGoneHelper implements RenderProcessGoneObserver {
 
     @Override
     public void onRenderProcessGone() {
+        if (mOnRenderProcessGoneTask != null) mOnRenderProcessGoneTask.run();
+
         mState = RENDER_PROCESS_GONE_NOTIFIED_TO_AW_CONTENTS;
         mCallbackHelper.notifyCalled();
     }
@@ -62,5 +65,9 @@ public class RenderProcessGoneHelper implements RenderProcessGoneObserver {
     public void onAwContentsDestroyed() {
         mState = AW_CONTENTS_DESTROYED;
         mCallbackHelper.notifyCalled();
+    }
+
+    public void setOnRenderProcessGoneTask(Runnable task) {
+        mOnRenderProcessGoneTask = task;
     }
 }
