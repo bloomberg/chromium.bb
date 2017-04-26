@@ -515,7 +515,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
 
   // Add clip to scroller.
-  scroller->setAttribute("class", "clip", ASSERT_NO_EXCEPTION);
+  scroller->setAttribute(HTMLNames::classAttr, "clip");
   GetDocument().View()->UpdateAllLifecyclePhases();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);

@@ -343,7 +343,7 @@ static void ConstructCustomElement(
                                  "CustomElement");
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   Element* element = document->createElementNS(
-      namespace_uri, tag_name,
+      nullptr, namespace_uri, tag_name,
       StringOrDictionary::fromString(maybe_type->IsNull() ? g_null_atom : type),
       exception_state);
   if (element) {
