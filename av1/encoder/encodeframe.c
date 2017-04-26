@@ -1061,6 +1061,57 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   }
 }
 
+#if CONFIG_REF_MV
+static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
+                                 int8_t rf_type) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+
+  const int bw = xd->n8_w << MI_SIZE_LOG2;
+  const int bh = xd->n8_h << MI_SIZE_LOG2;
+  int ref_mv_idx = mbmi->ref_mv_idx;
+  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  CANDIDATE_MV *const curr_ref_mv_stack = mbmi_ext->ref_mv_stack[rf_type];
+
+#if CONFIG_EXT_INTER
+  if (has_second_ref(mbmi)) {
+    // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
+    // (like NEARMV) instead
+    if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV) ref_mv_idx += 1;
+
+    if (compound_ref0_mode(mbmi->mode) == NEWMV) {
+      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
+      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
+      mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
+      mbmi->pred_mv[0] = this_mv;
+      mi_pred_mv[0] = this_mv;
+    }
+    if (compound_ref1_mode(mbmi->mode) == NEWMV) {
+      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].comp_mv;
+      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
+      mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
+      mbmi->pred_mv[1] = this_mv;
+      mi_pred_mv[1] = this_mv;
+    }
+  } else {
+#endif  // CONFIG_EXT_INTER
+    if (mbmi->mode == NEWMV) {
+      int i;
+      for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
+        int_mv this_mv = (i == 0) ? curr_ref_mv_stack[ref_mv_idx].this_mv
+                                  : curr_ref_mv_stack[ref_mv_idx].comp_mv;
+        clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
+        mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
+        mbmi->pred_mv[i] = this_mv;
+        mi_pred_mv[i] = this_mv;
+      }
+    }
+#if CONFIG_EXT_INTER
+  }
+#endif  // CONFIG_EXT_INTER
+}
+#endif  // CONFIG_REF_MV
+
 static void update_state(const AV1_COMP *const cpi, ThreadData *td,
                          PICK_MODE_CONTEXT *ctx, int mi_row, int mi_col,
                          BLOCK_SIZE bsize, RUN_TYPE dry_run) {
@@ -1106,49 +1157,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
       (mbmi->sb_type >= BLOCK_8X8 || unify_bsize)) {
-#if CONFIG_EXT_INTER
-    if (has_second_ref(mbmi)) {
-      int ref_mv_idx = mbmi->ref_mv_idx;
-      // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
-      // (like NEARMV) instead
-      if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
-        ref_mv_idx = 1 + mbmi->ref_mv_idx;
-
-      if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].this_mv;
-        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                     xd->n8_h << MI_SIZE_LOG2, xd);
-        x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-        mbmi->pred_mv[0] = this_mv;
-        mi->mbmi.pred_mv[0] = this_mv;
-      }
-      if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].comp_mv;
-        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                     xd->n8_h << MI_SIZE_LOG2, xd);
-        x->mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-        mbmi->pred_mv[1] = this_mv;
-        mi->mbmi.pred_mv[1] = this_mv;
-      }
-    } else {
-#endif  // CONFIG_EXT_INTER
-      if (mbmi->mode == NEWMV) {
-        for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-          int_mv this_mv =
-              (i == 0)
-                  ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
-                  : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx]
-                        .comp_mv;
-          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                       xd->n8_h << MI_SIZE_LOG2, xd);
-          x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-          mbmi->pred_mv[i] = this_mv;
-          mi->mbmi.pred_mv[i] = this_mv;
-        }
-      }
-#if CONFIG_EXT_INTER
-    }
-#endif
+    set_ref_and_pred_mvs(x, mi->mbmi.pred_mv, rf_type);
   }
 #endif  // CONFIG_REF_MV
 
@@ -1305,7 +1314,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
                                  PICK_MODE_CONTEXT *ctx, int mi_row, int mi_col,
                                  BLOCK_SIZE bsize, RUN_TYPE dry_run) {
   int y, x_idx;
-#if CONFIG_VAR_TX || CONFIG_REF_MV
+#if CONFIG_VAR_TX
   int i;
 #endif
   const AV1_COMMON *const cm = &cpi->common;
@@ -1342,49 +1351,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
       (mbmi->sb_type >= BLOCK_8X8 || unify_bsize)) {
-#if CONFIG_EXT_INTER
-    if (has_second_ref(mbmi)) {
-      int ref_mv_idx = mbmi->ref_mv_idx;
-      // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
-      // (like NEARMV) instead
-      if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
-        ref_mv_idx = 1 + mbmi->ref_mv_idx;
-
-      if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].this_mv;
-        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                     xd->n8_h << MI_SIZE_LOG2, xd);
-        x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-        mbmi->pred_mv[0] = this_mv;
-        mi->mbmi.pred_mv[0] = this_mv;
-      }
-      if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].comp_mv;
-        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                     xd->n8_h << MI_SIZE_LOG2, xd);
-        x->mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-        mbmi->pred_mv[1] = this_mv;
-        mi->mbmi.pred_mv[1] = this_mv;
-      }
-    } else {
-#endif  // CONFIG_EXT_INTER
-      if (mbmi->mode == NEWMV) {
-        for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-          int_mv this_mv =
-              (i == 0)
-                  ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
-                  : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx]
-                        .comp_mv;
-          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                       xd->n8_h << MI_SIZE_LOG2, xd);
-          x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-          mbmi->pred_mv[i] = this_mv;
-          mi->mbmi.pred_mv[i] = this_mv;
-        }
-      }
-#if CONFIG_EXT_INTER
-    }
-#endif
+    set_ref_and_pred_mvs(x, mi->mbmi.pred_mv, rf_type);
   }
 #endif  // CONFIG_REF_MV
 
