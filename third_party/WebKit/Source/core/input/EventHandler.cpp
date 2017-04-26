@@ -1548,7 +1548,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
 
   // Insert the ancestors of the frame having the new target node to the entered
   // frame chain.
-  HeapVector<Member<LocalFrame>> entered_frame_chain;
+  HeapVector<Member<LocalFrame>, 2> entered_frame_chain;
   LocalFrame* entered_frame_in_document =
       targeted_event.GetHitTestResult().InnerNodeFrame();
   while (entered_frame_in_document) {
@@ -1561,7 +1561,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
 
   size_t index_entered_frame_chain = entered_frame_chain.size();
   LocalFrame* exited_frame_in_document = frame_;
-  HeapVector<Member<LocalFrame>> exited_frame_chain;
+  HeapVector<Member<LocalFrame>, 2> exited_frame_chain;
   // Insert the frame from the disagreement between last frames and entered
   // frames.
   while (exited_frame_in_document) {
