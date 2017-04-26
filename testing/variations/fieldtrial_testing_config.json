@@ -953,21 +953,6 @@
             ]
         }
     ],
-    "EnableWelcomeWin10": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Inline",
-                    "enable_features": [
-                        "EnableWelcomeWin10"
-                    ]
-                }
-            ]
-        }
-    ],
     "ExpectCTReporting": [
         {
             "platforms": [
