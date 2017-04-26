@@ -568,8 +568,10 @@ void ClipboardWin::ReadHTML(ClipboardType type,
   offsets.push_back(end_index - html_start);
   markup->assign(base::UTF8ToUTF16AndAdjustOffsets(cf_html.data() + html_start,
                                                    &offsets));
-  *fragment_start = base::checked_cast<uint32_t>(offsets[0]);
-  *fragment_end = base::checked_cast<uint32_t>(offsets[1]);
+  // Ensure the Fragment points within the string; see https://crbug.com/607181.
+  size_t end = std::min(offsets[1], markup->length());
+  *fragment_start = base::checked_cast<uint32_t>(std::min(offsets[0], end));
+  *fragment_end = base::checked_cast<uint32_t>(end);
 }
 
 void ClipboardWin::ReadRTF(ClipboardType type, std::string* result) const {
