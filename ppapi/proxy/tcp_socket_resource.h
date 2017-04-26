@@ -14,8 +14,6 @@
 
 namespace ppapi {
 
-enum TCPSocketVersion;
-
 namespace proxy {
 
 class PPAPI_PROXY_EXPORT TCPSocketResource : public thunk::PPB_TCPSocket_API,
