@@ -747,6 +747,14 @@ const char kProcessPerTab[]                 = "process-per-tab";
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
 
+// Uses a specified proxy server, overrides system settings. This switch only
+// affects HTTP and HTTPS requests. ARC-apps use only HTTP proxy server with the
+// highest priority.
+// TODO(yzshen): Move this switch back to chrome/common/chrome_switches.{h,cc},
+// once the network service is able to access the corresponding setting via the
+// pref service.
+const char kProxyServer[] = "proxy-server";
+
 // Enables more web features over insecure connections. Designed to be used
 // for testing purposes only.
 const char kReduceSecurityForTesting[]      = "reduce-security-for-testing";

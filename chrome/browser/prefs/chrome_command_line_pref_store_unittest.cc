@@ -16,6 +16,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
