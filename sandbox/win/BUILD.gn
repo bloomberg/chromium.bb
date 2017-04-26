@@ -314,6 +314,7 @@ shared_library("pocdll") {
     "sandbox_poc/pocdll/handles.cc",
     "sandbox_poc/pocdll/invasive.cc",
     "sandbox_poc/pocdll/network.cc",
+    "sandbox_poc/pocdll/ntundoc.h",
     "sandbox_poc/pocdll/pocdll.cc",
     "sandbox_poc/pocdll/processes_and_threads.cc",
     "sandbox_poc/pocdll/registry.cc",

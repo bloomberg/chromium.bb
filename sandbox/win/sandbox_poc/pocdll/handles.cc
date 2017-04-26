@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "sandbox/win/sandbox_poc/pocdll/exports.h"
+#include "sandbox/win/sandbox_poc/pocdll/ntundoc.h"
 #include "sandbox/win/sandbox_poc/pocdll/utils.h"
-#include "sandbox/win/tools/finder/ntundoc.h"
 
 // This file contains the tests used to verify the security of handles in
 // the process
