@@ -117,15 +117,26 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
   if (loading_state_ == kUnknown) {
     // In the case that a http request is sent to server to fetch the page
     // content and the server hasn't responded at all, a dummy page is created
-    // for the new window. In such case, the baseURL will be empty.
+    // for the new window. In such case, the baseURL will be empty for <=M59 ;
+    // whereas the baseURL will be 'about:blank' for >=M60. See crbug/711562.
+    // TODO(gmanikpure):Remove condition for <3076 when we stop supporting M59.
     base::DictionaryValue empty_params;
     std::unique_ptr<base::DictionaryValue> result;
     Status status = client_->SendCommandAndGetResultWithTimeout(
         "DOM.getDocument", empty_params, timeout, &result);
     std::string base_url;
-    if (status.IsError() || !result->GetString("root.baseURL", &base_url))
+    std::string doc_url;
+    if (status.IsError() || !result->GetString("root.baseURL", &base_url) ||
+        !result->GetString("root.documentURL", &doc_url))
       return MakeNavigationCheckFailedStatus(status);
-    if (base_url.empty()) {
+
+    bool condition;
+    if (browser_info_->build_no >= 3076)
+      condition = doc_url != "about:blank" && base_url == "about:blank";
+    else
+      condition = base_url.empty();
+
+    if (condition) {
       *is_pending = true;
       loading_state_ = kLoading;
       return Status(kOk);
