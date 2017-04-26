@@ -30,9 +30,6 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
  public:
   virtual ~Worklet() = default;
 
-  virtual void Initialize() {}
-  virtual bool IsInitialized() const { return true; }
-
   // Worklet.idl
   // addModule() imports ES6 module scripts.
   virtual ScriptPromise addModule(ScriptState*, const String& url) = 0;
