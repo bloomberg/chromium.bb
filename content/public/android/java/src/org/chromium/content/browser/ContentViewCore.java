@@ -1307,19 +1307,35 @@ public class ContentViewCore
 
     /**
      * @see View#onHoverEvent(MotionEvent)
-     * Mouse move events are sent on hover move.
+     * Mouse move events are sent on hover enter, hover move and hover exit.
+     * They are sent on hover exit because sometimes it acts as both a hover
+     * move and hover exit.
      */
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
 
+        int eventAction = event.getActionMasked();
+
+        // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT: every mouse-down on
+        // Android follows a hover-exit and is followed by a hover-enter. The
+        // MotionEvent spec seems to support this behavior indirectly.
+        if (eventAction == MotionEvent.ACTION_HOVER_ENTER
+                || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
+            return false;
+        }
+
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
-            if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView
-                    && mBrowserAccessibilityManager.onHoverEvent(offset)) {
-                return true;
+            if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView) {
+                return mBrowserAccessibilityManager.onHoverEvent(offset);
             }
 
-            return getEventForwarder().onMouseEvent(event);
+            getEventForwarder().sendMouseEvent(event.getEventTime(), eventAction, offset.getX(),
+                    offset.getY(), event.getPointerId(0), event.getPressure(0),
+                    event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
+                    0 /* changedButton */, event.getButtonState(), event.getMetaState(),
+                    event.getToolType(0));
+            return true;
         } finally {
             offset.recycle();
             TraceEvent.end("onHoverEvent");
