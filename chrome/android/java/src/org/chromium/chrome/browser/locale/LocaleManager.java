@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -176,16 +177,26 @@ public class LocaleManager {
      * Shows a promotion dialog about search engines depending on Locale and other conditions.
      * See {@link LocaleManager#getSearchEnginePromoShowType()} for possible types and logic.
      *
+     * @param context     Context showing the dialog.
+     * @param onDismissed Run when the dialog has been dismissed.
      * @return Whether such dialog is needed.
      */
-    public boolean showSearchEnginePromoIfNeeded(Context context) {
+    public boolean showSearchEnginePromoIfNeeded(Context context, @Nullable Runnable onDismissed) {
         int shouldShow = getSearchEnginePromoShowType();
-
-        if (shouldShow == SEARCH_ENGINE_PROMO_SHOW_SOGOU) {
-            new SogouPromoDialog(context, this).show();
-            return true;
+        switch (shouldShow) {
+            case SEARCH_ENGINE_PROMO_DONT_SHOW:
+                return false;
+            case SEARCH_ENGINE_PROMO_SHOW_SOGOU:
+                new SogouPromoDialog(context, this, onDismissed).show();
+                return true;
+            case SEARCH_ENGINE_PROMO_SHOW_EXISTING:
+            case SEARCH_ENGINE_PROMO_SHOW_NEW:
+                // TODO(dfalcantara): Show the search engine dialog.
+                return false;
+            default:
+                assert false;
+                return false;
         }
-        return false;
     }
 
     /**

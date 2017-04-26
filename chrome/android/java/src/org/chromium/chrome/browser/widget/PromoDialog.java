@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 
 /**
  * Generic builder for promo dialogs.
@@ -31,6 +32,9 @@ public abstract class PromoDialog
 
         /** Optional: Resource ID of the String to show as descriptive text. */
         public int subheaderStringResource;
+
+        /** Optional: Resource ID of the String to show as footer text. */
+        public int footerStringResource;
 
         /** Optional: Resource ID of the String to show on the primary/ok button. */
         public int primaryButtonStringResource;
@@ -54,6 +58,11 @@ public abstract class PromoDialog
 
         mDialogLayout = (PromoDialogLayout) mScrimView.findViewById(R.id.promo_dialog_layout);
         mDialogLayout.initialize(getDialogParams());
+    }
+
+    /** Add a standardized set of dialog controls. */
+    protected InfoBarControlLayout addControlLayout() {
+        return mDialogLayout.addControlLayout();
     }
 
     @Override
