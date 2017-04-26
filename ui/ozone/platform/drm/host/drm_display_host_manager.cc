@@ -155,6 +155,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
 DrmDisplayHostManager::~DrmDisplayHostManager() {
   device_manager_->RemoveObserver(this);
   proxy_->UnRegisterHandlerForDrmDisplayHostManager();
+  proxy_->RemoveGpuThreadObserver(this);
 }
 
 DrmDisplayHost* DrmDisplayHostManager::GetDisplay(int64_t display_id) {

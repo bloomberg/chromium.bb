@@ -239,6 +239,9 @@ class OzonePlatformGbm
   bool using_mojo_;
   bool single_process_;
 
+  // Bridges the DRM, GPU and main threads in mus. This must be destroyed last.
+  std::unique_ptr<MusThreadProxy> mus_thread_proxy_;
+
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
   std::unique_ptr<GlApiLoader> gl_api_loader_;
@@ -256,9 +259,6 @@ class OzonePlatformGbm
   std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
-
-  // Bridges the DRM, GPU and main threads in mus.
-  std::unique_ptr<MusThreadProxy> mus_thread_proxy_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
