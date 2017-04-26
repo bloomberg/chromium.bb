@@ -54,12 +54,16 @@ class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
         switches::kEnableExperimentalWebPlatformFeatures);
     ContentBrowserTest::SetUp();
   }
+
+  void SetUpOnMainThread() override {
+    // Support multiple sites on the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 // Exercises basic cookie operations via javascript, including an http page
 // interacting with secure cookies.
 IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -122,7 +126,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
 // SameSite cookies (that aren't marked as http-only) should be available to
 // JavaScript.
 IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -173,7 +176,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
     return;
   }
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),

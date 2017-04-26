@@ -147,9 +147,12 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
         original_file_path, replacement_text, replacement_path);
   }
 
-  void StartServer() {
+  void SetUpOnMainThread() override {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  void StartServer() {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     foo_host_port_ = embedded_test_server()->host_port_pair();
@@ -157,7 +160,6 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
   }
 
   void StartEmbeddedServer() {
-    // Support multiple sites on the embedded test server.
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());

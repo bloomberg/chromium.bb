@@ -146,6 +146,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     expired_cert_ = net::ImportCertFromFile(net::GetTestCertsDirectory(),
                                             "expired_cert.pem");
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
@@ -943,7 +944,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -976,7 +976,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -998,7 +997,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1271,7 +1269,6 @@ class IsolatedDevToolsProtocolTest : public DevToolsProtocolTest {
 
 IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
                        ControlNavigationsChildFrames) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1675,7 +1672,6 @@ class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
 
   void SetUpOnMainThread() override {
     DevToolsProtocolTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }

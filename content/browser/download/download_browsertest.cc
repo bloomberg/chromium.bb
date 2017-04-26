@@ -90,6 +90,9 @@ namespace {
 // Default request count for parallel download tests.
 constexpr int kTestRequestCount = 3;
 
+const std::string kOriginOne = "one.example";
+const std::string kOriginTwo = "two.example";
+
 class MockDownloadItemObserver : public DownloadItem::Observer {
  public:
   MockDownloadItemObserver() {}
@@ -595,6 +598,11 @@ class DownloadContentTest : public ContentBrowserTest {
         base::Bind(
             &net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base,
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    const std::string real_host =
+        embedded_test_server()->host_port_pair().host();
+    host_resolver()->AddRule(kOriginOne, real_host);
+    host_resolver()->AddRule(kOriginTwo, real_host);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2302,7 +2310,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
       TestDownloadRequestHandler::Parameters::WithSingleInterruption();
   request_handler.StartServing(parameters);
 
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL document_url = embedded_test_server()->GetURL(
       std::string("/download/download-link.html?dl=")
           .append(request_handler.url().spec()));
@@ -2472,8 +2479,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 // A request for a non-existent resource should still result in a DownloadItem
 // that's created in an interrupted state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL download_url =
       embedded_test_server()->GetURL("/download/does-not-exist");
   GURL document_url = embedded_test_server()->GetURL(
@@ -2500,7 +2505,6 @@ void ErrorReturningRequestHandler(
 // A request that fails before it gets a response from the server should also
 // result in a DownloadItem that's created in an interrupted state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
   TestDownloadRequestHandler request_handler;
   TestDownloadRequestHandler::Parameters parameters;
 
@@ -2520,8 +2524,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
 // A request that fails due to it being rejected by policy should result in a
 // DownloadItem that's marked as interrupted.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL document_url = embedded_test_server()->GetURL(
       "/download/download-attribute.html?target=about:version");
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
@@ -2533,8 +2535,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL document_url =
       embedded_test_server()->GetURL("/download/download-attribute-blob.html");
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
@@ -2546,15 +2546,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
   base::ThreadRestrictions::ScopedAllowIO allow_io_during_test;
-
-  const std::string kOriginOne = "one.example";
-  const std::string kOriginTwo = "two.example";
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  const std::string real_host = embedded_test_server()->host_port_pair().host();
-  host_resolver()->AddRule(kOriginOne, real_host);
-  host_resolver()->AddRule(kOriginTwo, real_host);
 
   GURL echo_cookie_url =
       embedded_test_server()->GetURL(kOriginOne, "/echoheader?cookie");
@@ -2644,8 +2635,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeType) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   // double-content-disposition.txt is served with two Content-Disposition
   // headers, both of which are identical.
   NavigateToURLAndWaitForDownload(
@@ -2663,8 +2652,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameOriginIFrame) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL frame_url = embedded_test_server()->GetURL(
       "/download/download-attribute.html?target=/download/download-test.lib");
   GURL document_url = embedded_test_server()->GetURL(
