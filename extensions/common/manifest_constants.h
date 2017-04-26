@@ -478,7 +478,6 @@ extern const char kManifestParseError[];
 extern const char kManifestUnreadable[];
 extern const char kMissingFile[];
 extern const char kMultipleOverrides[];
-extern const char kNoPermissionForMIMETypes[];
 extern const char kNoWildCardsInPaths[];
 extern const char kOneUISurfaceOnly[];
 extern const char kPermissionMustBeOptional[];
