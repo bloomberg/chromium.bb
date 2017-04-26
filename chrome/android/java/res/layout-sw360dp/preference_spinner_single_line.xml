@@ -21,7 +21,9 @@
         android:textAlignment="viewStart"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"/>
 
     <Spinner
         android:id="@+id/spinner"
