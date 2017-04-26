@@ -340,7 +340,7 @@ void WizardController::Init(OobeScreen first_screen) {
     SetShowMdOobe(true);
 
   // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
-  if (IsRemoraPairingOobe() || IsSharkRequisition() || IsRemoraRequisition()) {
+  if (IsRemoraPairingOobe() || IsSharkRequisition()) {
     SetShowMdOobe(false);
   }
 
