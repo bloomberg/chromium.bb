@@ -136,7 +136,8 @@ class MediaPipelineBackend {
 
     // Returns the pipeline latency: i.e. the amount of data
     // in the pipeline that have not been rendered yet, in microseconds.
-    // Returns delay = INT64_MIN if the latency is not available.
+    // Returns a RenderingDelay.timestamp = INT64_MIN if the latency is not
+    // available.
     // Only called when the backend is playing.
     virtual RenderingDelay GetRenderingDelay() = 0;
 
