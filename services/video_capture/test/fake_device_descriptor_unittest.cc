@@ -23,8 +23,7 @@ using FakeVideoCaptureDeviceDescriptorTest = FakeDeviceDescriptorTest;
 // Tests that when requesting a second proxy for a device without closing the
 // first one, the service revokes access to the first one by closing the
 // connection.
-TEST_F(FakeVideoCaptureDeviceDescriptorTest,
-       DISABLED_AccessIsRevokedOnSecondAccess) {
+TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   mojom::DevicePtr device_proxy_1;
   bool device_access_1_revoked = false;
   MockCreateDeviceProxyCallback create_device_proxy_callback_1;
@@ -62,8 +61,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest,
 }
 
 // Tests that a second proxy requested for a device can be used successfully.
-TEST_F(FakeVideoCaptureDeviceDescriptorTest,
-       DISABLED_CanUseSecondRequestedProxy) {
+TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   mojom::DevicePtr device_proxy_1;
   factory_->CreateDevice(
       fake_device_info_.descriptor.device_id,
@@ -92,7 +90,8 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest,
   base::RunLoop wait_loop_2;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
+  EXPECT_CALL(receiver, DoOnNewBufferHandle(_, _));
+  EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 
