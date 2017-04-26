@@ -552,15 +552,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state,
     if (identifier_value.GetValueID() == CSSValueNormal) {
       ResetEffectiveZoom(state);
       state.SetZoom(ComputedStyle::InitialZoom());
-    } else if (identifier_value.GetValueID() == CSSValueReset) {
-      state.SetEffectiveZoom(ComputedStyle::InitialZoom());
-      state.SetZoom(ComputedStyle::InitialZoom());
-    } else if (identifier_value.GetValueID() == CSSValueDocument) {
-      float doc_zoom = state.RootElementStyle()
-                           ? state.RootElementStyle()->Zoom()
-                           : ComputedStyle::InitialZoom();
-      state.SetEffectiveZoom(doc_zoom);
-      state.SetZoom(doc_zoom);
     }
   } else if (value.IsPrimitiveValue()) {
     const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);

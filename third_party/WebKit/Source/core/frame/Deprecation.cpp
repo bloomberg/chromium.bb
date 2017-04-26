@@ -383,12 +383,6 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "-internal-media-controls-overlay-cast-button selector", M61,
           "5714245488476160");
 
-    case UseCounter::kCSSZoomReset:
-      return willBeRemoved("\"zoom: reset\"", M59, "4997605029314560");
-
-    case UseCounter::kCSSZoomDocument:
-      return willBeRemoved("\"zoom: document\"", M59, "4997605029314560");
-
     case UseCounter::kSelectionAddRangeIntersect:
       return "The behavior that Selection.addRange() merges existing Range and "
              "the specified Range was removed. See "

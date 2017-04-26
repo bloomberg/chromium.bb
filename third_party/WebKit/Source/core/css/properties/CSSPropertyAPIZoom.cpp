@@ -17,8 +17,7 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {
-    zoom = CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal, CSSValueReset,
-                                                  CSSValueDocument>(range);
+    zoom = CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal>(range);
   } else {
     zoom =
         CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
@@ -34,10 +33,6 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
           (token.GetType() == kPercentageToken &&
            ToCSSPrimitiveValue(zoom)->GetDoubleValue() == 100)))
       context.Count(UseCounter::kCSSZoomNotEqualToOne);
-    if (token.Id() == CSSValueReset)
-      context.CountDeprecation(UseCounter::kCSSZoomReset);
-    if (token.Id() == CSSValueDocument)
-      context.CountDeprecation(UseCounter::kCSSZoomDocument);
   }
   return zoom;
 }
