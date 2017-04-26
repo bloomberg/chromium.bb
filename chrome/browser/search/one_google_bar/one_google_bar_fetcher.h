@@ -16,6 +16,8 @@ class OneGoogleBarFetcher {
   using OneGoogleCallback =
       base::OnceCallback<void(const base::Optional<OneGoogleBarData>&)>;
 
+  virtual ~OneGoogleBarFetcher() = default;
+
   // Initiates a fetch from the network. On completion (successful or not), the
   // callback will be called with the result, which will be nullopt on failure.
   virtual void Fetch(OneGoogleCallback callback) = 0;

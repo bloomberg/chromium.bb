@@ -29,4 +29,7 @@ struct OneGoogleBarData {
   std::string end_of_body_script;
 };
 
+bool operator==(const OneGoogleBarData& lhs, const OneGoogleBarData& rhs);
+bool operator!=(const OneGoogleBarData& lhs, const OneGoogleBarData& rhs);
+
 #endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_DATA_H_
