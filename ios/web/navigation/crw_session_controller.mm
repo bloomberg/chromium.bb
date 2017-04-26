@@ -202,9 +202,22 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
 - (web::NavigationItemList)backwardItems {
   web::NavigationItemList items;
-  for (size_t index = _lastCommittedItemIndex; index > 0; --index) {
-    if (![self isRedirectTransitionForItemAtIndex:index])
-      items.push_back(self.items[index - 1].get());
+
+  // This explicit check is necessary to protect the loop below which uses an
+  // unsafe signed (NSInteger) to unsigned (size_t) conversion.
+  if (_lastCommittedItemIndex > -1) {
+    // If the current navigation item is a transient item (e.g. SSL
+    // interstitial), the last committed item should also be considered part of
+    // the backward history.
+    DCHECK(self.lastCommittedItem);
+    if (self.transientItem) {
+      items.push_back(self.lastCommittedItem);
+    }
+
+    for (size_t index = _lastCommittedItemIndex; index > 0; --index) {
+      if (![self isRedirectTransitionForItemAtIndex:index])
+        items.push_back(self.items[index - 1].get());
+    }
   }
   return items;
 }

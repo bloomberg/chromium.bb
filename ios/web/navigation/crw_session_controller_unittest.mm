@@ -994,10 +994,10 @@ TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   [session_controller_ commitPendingItem];
 
   EXPECT_EQ(3, session_controller_.get().lastCommittedItemIndex);
-  web::NavigationItemList backItems = [session_controller_ backwardItems];
-  EXPECT_EQ(2U, backItems.size());
+  web::NavigationItemList back_items = [session_controller_ backwardItems];
+  EXPECT_EQ(2U, back_items.size());
   EXPECT_TRUE([session_controller_ forwardItems].empty());
-  EXPECT_EQ("http://www.example.com/redirect", backItems[0]->GetURL().spec());
+  EXPECT_EQ("http://www.example.com/redirect", back_items[0]->GetURL().spec());
 
   [session_controller_ goToItemAtIndex:1 discardNonCommittedItems:NO];
   EXPECT_EQ(1U, [session_controller_ backwardItems].size());
@@ -1234,6 +1234,79 @@ TEST_F(CRWSessionControllerTest, BackwardItemsForAllRedirects) {
       userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
   [session_controller_ commitPendingItem];
   EXPECT_EQ(0U, [session_controller_ backwardItems].size());
+}
+
+// Tests that |-pendingItem| is not considered part of session history so that
+// |-backwardItems| returns the second last committed item even if there is a
+// pendign item.
+TEST_F(CRWSessionControllerTest, NewPendingItemIsHiddenFromHistory) {
+  [session_controller_
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
+  [session_controller_ commitPendingItem];
+  [session_controller_
+               addPendingItem:GURL("http://www.example.com/1")
+                     referrer:MakeReferrer("http://www.example.com/b")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
+  [session_controller_ commitPendingItem];
+  [session_controller_
+               addPendingItem:GURL("http://www.example.com/2")
+                     referrer:MakeReferrer("http://www.example.com/c")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
+
+  EXPECT_EQ(1, session_controller_.get().lastCommittedItemIndex);
+  EXPECT_TRUE([session_controller_ pendingItem]);
+  EXPECT_EQ(-1, [session_controller_ pendingItemIndex]);
+  EXPECT_EQ(GURL("http://www.example.com/2"), [session_controller_ currentURL]);
+
+  web::NavigationItemList back_items = [session_controller_ backwardItems];
+  ASSERT_EQ(1U, back_items.size());
+  EXPECT_EQ("http://www.example.com/0", back_items[0]->GetURL().spec());
+}
+
+// Tests that |-backwardItems| returns all committed items if there is a
+// transient item. This can happen if an intersitial was loaded for SSL error.
+// See crbug.com/691311.
+TEST_F(CRWSessionControllerTest,
+       BackwardItemsShouldContainAllCommittedIfCurrentIsTransient) {
+  [session_controller_
+               addPendingItem:GURL("http://www.example.com/0")
+                     referrer:MakeReferrer("http://www.example.com/a")
+                   transition:ui::PAGE_TRANSITION_LINK
+               initiationType:web::NavigationInitiationType::USER_INITIATED
+      userAgentOverrideOption:UserAgentOverrideOption::INHERIT];
+  [session_controller_ commitPendingItem];
+  [session_controller_
+      addTransientItemWithURL:GURL("http://www.example.com/1")];
+
+  EXPECT_EQ(0, session_controller_.get().lastCommittedItemIndex);
+  EXPECT_TRUE([session_controller_ transientItem]);
+  EXPECT_EQ(GURL("http://www.example.com/1"), [session_controller_ currentURL]);
+
+  web::NavigationItemList back_items = [session_controller_ backwardItems];
+  ASSERT_EQ(1U, back_items.size());
+  EXPECT_EQ("http://www.example.com/0", back_items[0]->GetURL().spec());
+}
+
+// Tests that |-backwardItems| works as expected when the transient item is the
+// only item in history.
+TEST_F(CRWSessionControllerTest, BackwardItemsShouldBeEmptyIfFirstIsTransient) {
+  [session_controller_
+      addTransientItemWithURL:GURL("http://www.example.com/1")];
+
+  EXPECT_EQ(-1, session_controller_.get().lastCommittedItemIndex);
+  EXPECT_TRUE([session_controller_ transientItem]);
+  EXPECT_EQ(GURL("http://www.example.com/1"), [session_controller_ currentURL]);
+
+  web::NavigationItemList back_items = [session_controller_ backwardItems];
+  EXPECT_TRUE(back_items.empty());
 }
 
 }  // anonymous namespace
