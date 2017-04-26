@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
-#define COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
+#define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
 
 #include <memory>
 #include <set>
@@ -13,12 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/cryptauth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -27,24 +25,41 @@
 
 namespace proximity_auth {
 
+class BluetoothLowEnergyDeviceWhitelist;
+
 // This cryptauth::ConnectionFinder implementation is specialized in finding a
-// Bluetooth Low Energy remote device. We look for remote devices advertising
-// the expected EID for the current or nearby time intervals.
+// Bluetooth
+// Low Energy remote device.
 class BluetoothLowEnergyConnectionFinder
     : public cryptauth::ConnectionFinder,
       public cryptauth::ConnectionObserver,
       public device::BluetoothAdapter::Observer {
  public:
-  // Finds (and connects) to a Bluetooth low energy device, based on the EID
-  // advertised by the remote device.
+  enum FinderStrategy { FIND_PAIRED_DEVICE, FIND_ANY_DEVICE };
+
+  // Finds (and connects) to a Bluetooth low energy device. There are two
+  // possible search strategies depending on |finder_strategy|:
+  // (i) |FIND_PAIRED_DEVICE| searches for the unique paired bluetooth
+  // |remote_device|;
+  // (ii) |FIND_ANY_DEVICE| searches for any device advertising
+  // |remote_service_uuid|.
   //
-  // |remote_device|: The BLE remote device.
-  // |beacon_seeds|: The BeaconSeeds for the |remote_device.
+  // |remote_device|: The BLE remote device. |remote_device.bluetooth_adress|
+  // should be empty when |has_public_bluetooth_address| is false.
+  // |remote_service_uuid|: The UUID of the service used to send/receive data in
+  // remote device.
   // |bluetooth_throttler|: The reconnection throttler.
+  // |max_number_of_tries|: Maximum number attempts to send a message before
+  // disconnecting.
+  // TODO(sacomoto): Remove |device_whitelist| when ProximityAuthBleSystem is
+  // not needed anymore.
   BluetoothLowEnergyConnectionFinder(
       const cryptauth::RemoteDevice remote_device,
-      const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      const std::string& remote_service_uuid,
+      const FinderStrategy finder_strategy,
+      const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
+      cryptauth::BluetoothThrottler* bluetooth_throttler,
+      int max_number_of_tries);
 
   ~BluetoothLowEnergyConnectionFinder() override;
 
@@ -67,12 +82,6 @@ class BluetoothLowEnergyConnectionFinder
                      device::BluetoothDevice* device) override;
 
  protected:
-  BluetoothLowEnergyConnectionFinder(
-      const cryptauth::RemoteDevice remote_device,
-      const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
-      std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
-
   // Creates a proximity_auth::Connection with the device given by
   // |device_address|. Exposed for testing.
   virtual std::unique_ptr<cryptauth::Connection> CreateConnection(
@@ -103,6 +112,9 @@ class BluetoothLowEnergyConnectionFinder
   // (ii) is paired and is the same as |remote_device|.
   bool IsRightDevice(device::BluetoothDevice* device);
 
+  // Checks if |remote_device| is advertising |remote_service_uuid_|.
+  bool HasService(device::BluetoothDevice* device);
+
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionAsync();
 
@@ -110,17 +122,25 @@ class BluetoothLowEnergyConnectionFinder
   // callback invocation from the ConnectionObserver callstack.
   void InvokeCallbackAsync();
 
+  // Returns the device with |device_address|.
+  device::BluetoothDevice* GetDevice(const std::string& device_address);
+
   // The remote BLE device being searched. It maybe empty, in this case the
   // remote device should advertise |remote_service_uuid_| and
   // |advertised_name_|.
   cryptauth::RemoteDevice remote_device_;
 
-  // The BeaconSeeds of the |remote_device|.
-  std::vector<cryptauth::BeaconSeed> beacon_seeds_;
+  // The uuid of the service it looks for to establish a GattConnection.
+  device::BluetoothUUID remote_service_uuid_;
 
-  // Generates the expected EIDs that may be advertised by |remote_device_|. If
-  // an EID matches, we know its a device we should connect to.
-  std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator_;
+  // The finder strategy being used. See |IsRightDevice()|.
+  const FinderStrategy finder_strategy_;
+
+  // Devices in |device_whitelist_| don't need to have |remote_service_uuid_|
+  // cached or advertised. Not owned, must outlive this instance.
+  // TODO(sacomoto): Remove |device_whitelist_| when ProximityAuthBleSystem is
+  // not needed anymore.
+  const BluetoothLowEnergyDeviceWhitelist* device_whitelist_;
 
   // Throttles repeated connection attempts to the same device. This is a
   // workaround for crbug.com/508919. Not owned, must outlive this instance.
@@ -138,6 +158,9 @@ class BluetoothLowEnergyConnectionFinder
   // Callback called when the connection is established.
   cryptauth::ConnectionFinder::ConnectionCallback connection_callback_;
 
+  // BluetoothLowEnergyConnection parameter.
+  int max_number_of_tries_;
+
   base::WeakPtrFactory<BluetoothLowEnergyConnectionFinder> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyConnectionFinder);
@@ -145,4 +168,4 @@ class BluetoothLowEnergyConnectionFinder
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_CONNECTION_FINDER_H

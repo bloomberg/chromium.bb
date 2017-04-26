@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/bluetooth_low_energy_connection_finder.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 
 #include <memory>
 #include <string>
@@ -15,9 +15,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -32,31 +33,26 @@ using device::BluetoothDiscoveryFilter;
 
 namespace proximity_auth {
 namespace {
-const char kAdvertisementUUID[] = "0000fe50-0000-1000-8000-00805f9b34fb";
-const char kBLEGattServiceUUID[] = "b3b7e28e-a000-3e17-bd86-6e97b9e28c11";
-const int kRestartDiscoveryOnErrorDelaySeconds = 2;
+const int kMinDiscoveryRSSI = -90;
 }  // namespace
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const cryptauth::RemoteDevice remote_device,
-    const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
-    : BluetoothLowEnergyConnectionFinder(
-          remote_device,
-          beacon_seeds,
-          base::MakeUnique<cryptauth::BackgroundEidGenerator>(),
-          bluetooth_throttler) {}
-
-BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
-    const cryptauth::RemoteDevice remote_device,
-    const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
-    std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
+    const std::string& remote_service_uuid,
+    FinderStrategy finder_strategy,
+    const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
+    cryptauth::BluetoothThrottler* bluetooth_throttler,
+    int max_number_of_tries)
     : remote_device_(remote_device),
-      beacon_seeds_(beacon_seeds),
-      eid_generator_(std::move(eid_generator)),
+      remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)),
+      finder_strategy_(finder_strategy),
+      device_whitelist_(device_whitelist),
       bluetooth_throttler_(bluetooth_throttler),
-      weak_ptr_factory_(this) {}
+      max_number_of_tries_(max_number_of_tries),
+      weak_ptr_factory_(this) {
+  DCHECK(finder_strategy_ == FIND_ANY_DEVICE ||
+         !remote_device.bluetooth_address.empty());
+}
 
 BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
   if (discovery_session_) {
@@ -143,7 +139,10 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     return;
 
   if (IsRightDevice(device)) {
-    PA_LOG(INFO) << "Connecting to device " << device->GetAddress();
+    PA_LOG(INFO) << "Connecting to device " << device->GetAddress()
+                 << " with service (" << HasService(device)
+                 << ") and is paired (" << device->IsPaired();
+
     connection_ = CreateConnection(device->GetAddress());
     connection_->AddObserver(this);
     connection_->Connect();
@@ -157,29 +156,56 @@ bool BluetoothLowEnergyConnectionFinder::IsRightDevice(
   if (!device)
     return false;
 
-  device::BluetoothUUID advertisement_uuid(kAdvertisementUUID);
-  const std::vector<uint8_t>* service_data =
-      device->GetServiceDataForUUID(advertisement_uuid);
-  if (!service_data)
-    return false;
+  // TODO(sacomoto): Remove it when ProximityAuthBleSystem is not needed
+  // anymore.
+  if (device_whitelist_)
+    return device->IsPaired() &&
+           (HasService(device) ||
+            device_whitelist_->HasDeviceWithAddress(device->GetAddress()));
 
-  std::string service_data_string(service_data->begin(), service_data->end());
-  std::vector<std::string> nearest_eids =
-      eid_generator_->GenerateNearestEids(beacon_seeds_);
-  for (const std::string& eid : nearest_eids) {
-    if (eid == service_data_string) {
-      PA_LOG(INFO) << "Found a matching EID: " << eid;
-      return true;
-    }
+  // The device should be paired when looking for BLE devices by bluetooth
+  // address.
+  if (finder_strategy_ == FIND_PAIRED_DEVICE)
+    return device->IsPaired() &&
+           device->GetAddress() == remote_device_.bluetooth_address;
+  return HasService(device);
+}
+
+bool BluetoothLowEnergyConnectionFinder::HasService(
+    BluetoothDevice* remote_device) {
+  if (!remote_device) {
+    return false;
   }
-  return false;
+
+  BluetoothDevice::UUIDSet uuids = remote_device->GetUUIDs();
+
+  PA_LOG(INFO) << "Device " << remote_device->GetAddress() << " has "
+               << uuids.size() << " services.";
+  return base::ContainsKey(uuids, remote_service_uuid_);
 }
 
 void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
     scoped_refptr<BluetoothAdapter> adapter) {
   PA_LOG(INFO) << "Adapter ready";
+
   adapter_ = adapter;
   adapter_->AddObserver(this);
+
+  // This is important for debugging. To eliminate the case where the device was
+  // removed (forgotten) by the user, or BlueZ didn't load the device correctly.
+  if (finder_strategy_ == FIND_PAIRED_DEVICE) {
+    PA_LOG(INFO) << "Looking for paired device: "
+                 << remote_device_.bluetooth_address;
+    for (const auto* device : adapter_->GetDevices()) {
+      if (device->IsPaired())
+        PA_LOG(INFO) << device->GetAddress() << " is paired";
+    }
+  }
+
+  // Note: It's possible to connect to the paired directly, so when using
+  // FIND_PAIRED_DEVICE strategy this is not necessary. However, the discovery
+  // doesn't add a lot of latency, and the makes the code path for both
+  // strategies more similar.
   StartDiscoverySession();
 }
 
@@ -190,14 +216,7 @@ void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted(
 }
 
 void BluetoothLowEnergyConnectionFinder::OnStartDiscoverySessionError() {
-  PA_LOG(WARNING) << "Error starting discovery session, restarting in "
-                  << kRestartDiscoveryOnErrorDelaySeconds << " seconds.";
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(
-          &BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync,
-          weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kRestartDiscoveryOnErrorDelaySeconds));
+  PA_LOG(WARNING) << "Error starting discovery session";
 }
 
 void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
@@ -207,9 +226,10 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
     return;
   }
 
-  // Discover only low energy (LE) devices.
+  // Discover only low energy (LE) devices with strong enough signal.
   std::unique_ptr<BluetoothDiscoveryFilter> filter(
       new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE));
+  filter->SetRSSI(kMinDiscoveryRSSI);
 
   adapter_->StartDiscoverySessionWithFilter(
       std::move(filter),
@@ -229,10 +249,12 @@ void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
 std::unique_ptr<cryptauth::Connection>
 BluetoothLowEnergyConnectionFinder::CreateConnection(
     const std::string& device_address) {
-  return cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-      NewInstance(remote_device_, device_address, adapter_,
-                  device::BluetoothUUID(kBLEGattServiceUUID),
-                  bluetooth_throttler_);
+  DCHECK(remote_device_.bluetooth_address.empty() ||
+         remote_device_.bluetooth_address == device_address);
+  remote_device_.bluetooth_address = device_address;
+  return base::MakeUnique<BluetoothLowEnergyConnection>(
+      remote_device_, adapter_, remote_service_uuid_, bluetooth_throttler_,
+      max_number_of_tries_);
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
@@ -271,6 +293,23 @@ void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync() {
   connection_.reset();
   if (!discovery_session_ || !discovery_session_->IsActive())
     StartDiscoverySession();
+}
+
+BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
+    const std::string& device_address) {
+  // It's not possible to simply use
+  // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
+  // address |GetRemoteDeviceAddress()|. For paired devices,
+  // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
+  // XXX, whereas |remote_device_.bluetooth_address| is the real MAC address.
+  // This is a bug in the way device::BluetoothAdapter is storing the devices
+  // (see crbug.com/497841).
+  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
+  for (auto* device : devices) {
+    if (device->GetAddress() == device_address)
+      return device;
+  }
+  return nullptr;
 }
 
 void BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync() {
