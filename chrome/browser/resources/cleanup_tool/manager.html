@@ -117,15 +117,19 @@
               [[detectionTimeText]]
             </div>
           </div>
-          <div id="spinner-container" hidden="[[!isRunningScanner]]">
+          <div id="spinner-container" hidden="[[!isRunning]]">
             <paper-spinner active></paper-spinner>
           </div>
           <div id="tool-action-container">
             <div class="scan-or-cleanup-action"
-                hidden="[[!shouldShowScan_(hasScanResults, isRunningScanner)]]"
+                hidden="[[!shouldShowScan_(hasScanResults, isRunning)]]"
                 on-tap="onScanTap_">$i18n{scanAction}</div>
-            <div hidden="[[!isRunningScanner]]">$i18n{scanning}</div>
-            <div class="scan-or-cleanup-action" hidden="[[!hasScanResults]]"
+            <div hidden="[[!shouldShowScanning_(hasScanResults, isRunning)]]">
+                $i18n{scanning}</div>
+            <div hidden="[[!shouldShowCleaning_(hasScanResults, isRunning)]]">
+                $i18n{cleaning}</div>
+            <div class="scan-or-cleanup-action"
+                hidden="[[!shouldShowClean_(hasScanResults, isRunning)]]"
                 on-tap="onCleanupTap_">$i18n{cleanAction}</div>
           </div>
         </div>

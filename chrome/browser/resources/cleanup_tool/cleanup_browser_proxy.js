@@ -17,6 +17,15 @@
  */
 var LastScanResult;
 
+/**
+ * @typedef {{
+ *   wasCancelled: boolean,
+ *   uwsRemoved: Array<string>,
+ *   requiresReboot: boolean,
+ * }}
+ */
+var CleanupResult;
+
 cr.define('cleanup', function() {
   /** @interface */
   function CleanupBrowserProxy() {}
@@ -32,6 +41,12 @@ cr.define('cleanup', function() {
      * @return {!Promise<LastScanResult>}
      */
     startScan: function() {},
+
+    /**
+     * Opens the prompt to run the Chrome Cleanup Tool.
+     * @return {!Promise<CleanupResult>}
+     */
+    startCleanup: function() {},
   };
 
   /**
@@ -49,6 +64,10 @@ cr.define('cleanup', function() {
     /** @override */
     startScan: function() {
       return cr.sendWithPromise('startScan');
+    },
+    /** @override */
+    startCleanup: function() {
+      return cr.sendWithPromise('startCleanup');
     },
   };
 

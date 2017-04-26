@@ -93,10 +93,6 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry);
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry);
 
-// Called by chrome://cleanup/ to manually trigger a reporter run.
-// TODO(proberge): Replace the Closure with a typed callback.
-void RegisterUserInitiatedSwReporterScan(base::Closure callback);
-
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_SW_REPORTER_INSTALLER_WIN_H_

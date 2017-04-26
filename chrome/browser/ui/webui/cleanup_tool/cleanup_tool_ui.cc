@@ -20,6 +20,7 @@ CleanupToolUI::CleanupToolUI(content::WebUI* web_ui)
   html_source->AddString("sectionHeader",
                          "Remove suspicious or unwanted programs");
   html_source->AddString("scanAction", "Scan Now");
+  html_source->AddString("cleaning", "Cleaning");
   html_source->AddString("scanning", "Scanning");
   html_source->AddString("cleanAction", "Run Chrome Cleanup");
   html_source->AddString("about", "About Chrome Cleanup");
