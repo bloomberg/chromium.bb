@@ -1282,6 +1282,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/relayout-nested-float-after-
 crbug.com/635619 virtual/layout_ng/fast/block/float/selection-gap-clip-out-tiger-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/margin-top-changes.html [ Skip ]
 
 #### external/wpt/css/CSS2/linebox
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/border-padding-bleed-001.xht [ Skip ]
