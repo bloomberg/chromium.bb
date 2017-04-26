@@ -119,8 +119,8 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   base::ThreadChecker thread_checker_;
   scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate_;
   std::unique_ptr<TaskQueueManager> task_queue_manager_;
-  scoped_refptr<TaskQueue> control_task_runner_;
-  scoped_refptr<TaskQueue> default_task_runner_;
+  scoped_refptr<TaskQueue> control_task_queue_;
+  scoped_refptr<TaskQueue> default_task_queue_;
 
   Observer* observer_;  // NOT OWNED
   const char* tracing_category_;

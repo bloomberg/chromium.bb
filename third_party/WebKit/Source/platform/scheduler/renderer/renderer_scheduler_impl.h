@@ -400,10 +400,10 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
-  const scoped_refptr<TaskQueue> control_task_runner_;
-  const scoped_refptr<TaskQueue> compositor_task_runner_;
+  const scoped_refptr<TaskQueue> control_task_queue_;
+  const scoped_refptr<TaskQueue> compositor_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
-      compositor_task_runner_enabled_voter_;
+      compositor_task_queue_enabled_voter_;
 
   using TaskQueueVoterMap =
       std::map<scoped_refptr<TaskQueue>,
@@ -412,8 +412,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   TaskQueueVoterMap loading_task_runners_;
   TaskQueueVoterMap timer_task_runners_;
   std::set<scoped_refptr<TaskQueue>> unthrottled_task_runners_;
-  scoped_refptr<TaskQueue> default_loading_task_runner_;
-  scoped_refptr<TaskQueue> default_timer_task_runner_;
+  scoped_refptr<TaskQueue> default_loading_task_queue_;
+  scoped_refptr<TaskQueue> default_timer_task_queue_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;

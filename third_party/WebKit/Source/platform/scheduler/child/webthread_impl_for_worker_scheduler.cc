@@ -66,14 +66,14 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       thread_->message_loop(), base::MakeUnique<base::DefaultTickClock>());
   worker_scheduler_ = CreateWorkerScheduler();
   worker_scheduler_->Init();
-  task_runner_ = worker_scheduler_->DefaultTaskQueue();
+  task_queue_ = worker_scheduler_->DefaultTaskQueue();
   idle_task_runner_ = worker_scheduler_->IdleTaskRunner();
   web_scheduler_.reset(new WebSchedulerImpl(
       worker_scheduler_.get(), worker_scheduler_->IdleTaskRunner(),
       worker_scheduler_->DefaultTaskQueue(),
       worker_scheduler_->DefaultTaskQueue()));
   base::MessageLoop::current()->AddDestructionObserver(this);
-  web_task_runner_ = WebTaskRunnerImpl::Create(task_runner_);
+  web_task_runner_ = WebTaskRunnerImpl::Create(task_queue_);
   completion->Signal();
 }
 
@@ -84,7 +84,7 @@ void WebThreadImplForWorkerScheduler::RestoreTaskRunnerOnThread(
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
-  task_runner_ = nullptr;
+  task_queue_ = nullptr;
   idle_task_runner_ = nullptr;
   web_scheduler_.reset();
   worker_scheduler_.reset();
@@ -106,7 +106,7 @@ blink::WebScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
 
 base::SingleThreadTaskRunner* WebThreadImplForWorkerScheduler::GetTaskRunner()
     const {
-  return task_runner_.get();
+  return task_queue_.get();
 }
 
 SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()

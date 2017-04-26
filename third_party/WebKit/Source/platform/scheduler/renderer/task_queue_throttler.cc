@@ -75,7 +75,7 @@ std::string PointerToId(void* pointer) {
 TaskQueueThrottler::TaskQueueThrottler(
     RendererSchedulerImpl* renderer_scheduler,
     const char* tracing_category)
-    : task_runner_(renderer_scheduler->ControlTaskQueue()),
+    : control_task_queue_(renderer_scheduler->ControlTaskQueue()),
       renderer_scheduler_(renderer_scheduler),
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
@@ -108,7 +108,7 @@ TaskQueueThrottler::~TaskQueueThrottler() {
 }
 
 void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
-  DCHECK_NE(task_queue, task_runner_.get());
+  DCHECK_NE(task_queue, control_task_queue_.get());
 
   std::pair<TaskQueueMap::iterator, bool> insert_result =
       queue_details_.insert(std::make_pair(task_queue, Metadata()));
@@ -194,8 +194,8 @@ void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
 void TaskQueueThrottler::OnQueueNextWakeUpChanged(
     TaskQueue* queue,
     base::TimeTicks next_wake_up) {
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
-    task_runner_->PostTask(
+  if (!control_task_queue_->RunsTasksOnCurrentThread()) {
+    control_task_queue_->PostTask(
         FROM_HERE,
         base::Bind(forward_immediate_work_callback_, queue, next_wake_up));
     return;
@@ -303,7 +303,7 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
   TRACE_EVENT1(tracing_category_,
                "TaskQueueThrottler::MaybeSchedulePumpThrottledTasks",
                "delay_till_next_pump_ms", delay.InMilliseconds());
-  task_runner_->PostDelayedTask(
+  control_task_queue_->PostDelayedTask(
       from_here, pump_throttled_tasks_closure_.GetCallback(), delay);
 }
 

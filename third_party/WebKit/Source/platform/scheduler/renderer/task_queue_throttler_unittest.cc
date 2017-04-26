@@ -271,14 +271,14 @@ TEST_F(TaskQueueThrottlerTest,
        ThrotlingAnEmptyQueueDoesNotPostPumpThrottledTasksLocked) {
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
 
-  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
 }
 
 TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_EnabledQueue) {
   task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
                                                   base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was called.
-  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
 }
 
 TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_DisabledQueue) {
@@ -289,7 +289,7 @@ TEST_F(TaskQueueThrottlerTest, OnTimeDomainHasImmediateWork_DisabledQueue) {
   task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
                                                   base::TimeTicks());
   // Check PostPumpThrottledTasksLocked was not called.
-  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
 }
 
 TEST_F(TaskQueueThrottlerTest,
@@ -301,11 +301,11 @@ TEST_F(TaskQueueThrottlerTest,
   voter->SetQueueEnabled(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
-  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
   voter->SetQueueEnabled(true);
-  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
 }
 
 TEST_F(TaskQueueThrottlerTest,
@@ -318,11 +318,11 @@ TEST_F(TaskQueueThrottlerTest,
   voter->SetQueueEnabled(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
-  EXPECT_TRUE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_TRUE(task_queue_throttler_->task_queue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
   voter->SetQueueEnabled(true);
-  EXPECT_FALSE(task_queue_throttler_->task_runner()->IsEmpty());
+  EXPECT_FALSE(task_queue_throttler_->task_queue()->IsEmpty());
 }
 
 TEST_F(TaskQueueThrottlerTest, WakeUpForNonDelayedTask) {

@@ -40,7 +40,7 @@ class BLINK_PLATFORM_EXPORT IdleTimeEstimator
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
  private:
-  scoped_refptr<TaskQueue> compositor_task_runner_;
+  scoped_refptr<TaskQueue> compositor_task_queue_;
   cc::RollingTimeDeltaHistory per_frame_compositor_task_runtime_;
   base::TickClock* time_source_;  // NOT OWNED
   double estimation_percentile_;

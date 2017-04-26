@@ -56,7 +56,6 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
 
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<TaskQueue> timer_task_runner_;
   RefPtr<WebTaskRunnerImpl> loading_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> timer_web_task_runner_;
 
