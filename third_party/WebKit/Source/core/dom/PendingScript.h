@@ -58,7 +58,6 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // https://html.spec.whatwg.org/#the-script-is-ready via PendingScriptClient.
 class CORE_EXPORT PendingScript
     : public GarbageCollectedFinalized<PendingScript> {
-  USING_PRE_FINALIZER(PendingScript, Dispose);
   WTF_MAKE_NONCOPYABLE(PendingScript);
 
  public:
