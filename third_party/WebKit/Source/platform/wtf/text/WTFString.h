@@ -262,7 +262,7 @@ class WTF_EXPORT String {
       impl_ = impl_->Replace(pattern, replacement);
     return *this;
   }
-  String& Replace(unsigned index,
+  String& replace(unsigned index,
                   unsigned length_to_replace,
                   const StringView& replacement) {
     if (impl_)

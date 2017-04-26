@@ -270,7 +270,7 @@ void TextControlElement::setRangeText(const String& replacement,
   end = std::min(end, text_length);
 
   if (start < end)
-    text.Replace(start, end - start, replacement);
+    text.replace(start, end - start, replacement);
   else
     text.insert(replacement, start);
 

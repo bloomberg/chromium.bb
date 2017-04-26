@@ -2237,7 +2237,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     String new_property_text =
         declaration.name + ": " + new_value_text +
         (declaration.important || force_important ? " !important" : "") + ";";
-    style_text.Replace(declaration.range.start - body_range.start,
+    style_text.replace(declaration.range.start - body_range.start,
                        declaration.range.length(), new_property_text);
     change_range.start = declaration.range.start;
     change_range.end = change_range.start + new_property_text.length();
