@@ -131,11 +131,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
     MisspellingMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
-  class SpellCheckClientMarkers : public MarkerTypes {
-   public:
-    SpellCheckClientMarkers() : MarkerTypes(kSpelling | kGrammar) {}
-  };
-
   enum class MatchStatus { kInactive, kActive };
 
   DocumentMarker(MarkerType,
