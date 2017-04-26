@@ -34,6 +34,10 @@ class ConnectorImpl : public Connector {
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   std::unique_ptr<Connector> Clone() override;
+  void FilterInterfaces(const std::string& spec,
+                        const Identity& source_identity,
+                        mojom::InterfaceProviderRequest request,
+                        mojom::InterfaceProviderPtr target) override;
   void BindConnectorRequest(mojom::ConnectorRequest request) override;
   base::WeakPtr<Connector> GetWeakPtr() override;
   void OverrideBinderForTesting(const std::string& service_name,

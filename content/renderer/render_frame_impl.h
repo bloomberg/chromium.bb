@@ -52,6 +52,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/service_info.h"
@@ -187,7 +188,8 @@ class CONTENT_EXPORT RenderFrameImpl
       NON_EXPORTED_BASE(mojom::HostZoom),
       NON_EXPORTED_BASE(mojom::FrameBindingsControl),
       NON_EXPORTED_BASE(public blink::WebFrameClient),
-      NON_EXPORTED_BASE(public blink::WebFrameSerializerClient) {
+      NON_EXPORTED_BASE(public blink::WebFrameSerializerClient),
+      NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider) {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
   static RenderFrameImpl* CreateMainFrame(
@@ -1123,6 +1125,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
+  // service_manager::mojom::InterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override;
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1426,6 +1432,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // the browser. This state is allocated in decidePolicyForNavigation() and
   // is used and released in didStartProvisionalLoad().
   std::unique_ptr<PendingNavigationInfo> pending_navigation_info_;
+
+  mojo::BindingSet<service_manager::mojom::InterfaceProvider>
+      interface_provider_bindings_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

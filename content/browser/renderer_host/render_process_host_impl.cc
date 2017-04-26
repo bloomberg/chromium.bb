@@ -1455,6 +1455,11 @@ void RenderProcessHostImpl::BindInterface(
   child_connection_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity()
+    const {
+  return child_connection_->child_identity();
+}
+
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
 RenderProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);

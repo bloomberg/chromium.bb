@@ -19,6 +19,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "media/media_features.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 class StoragePartition;
@@ -104,6 +105,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  const service_manager::Identity& GetChildIdentity() const override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
@@ -171,6 +173,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
       renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
+  service_manager::Identity child_identity_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

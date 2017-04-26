@@ -270,6 +270,11 @@ void MockRenderProcessHost::BindInterface(
     binder_overrides_[interface_name].Run(std::move(interface_pipe));
 }
 
+const service_manager::Identity& MockRenderProcessHost::GetChildIdentity()
+    const {
+  return child_identity_;
+}
+
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
 MockRenderProcessHost::TakeMetricsAllocator() {
   return nullptr;

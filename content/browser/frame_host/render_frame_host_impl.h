@@ -43,6 +43,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -117,6 +118,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public NON_EXPORTED_BASE(
           service_manager::InterfaceFactory<media::mojom::InterfaceFactory>),
+      public NON_EXPORTED_BASE(service_manager::mojom::InterfaceProvider),
       public CSPContext {
  public:
   using AXTreeSnapshotCallback =
@@ -894,6 +896,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
 
+  // service_manager::mojom::InterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override;
+
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
@@ -1183,6 +1189,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to Java code in the browser process.
   std::unique_ptr<service_manager::InterfaceRegistry> java_interface_registry_;
 #endif
+
+  mojo::BindingSet<service_manager::mojom::InterfaceProvider>
+      interface_provider_bindings_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
