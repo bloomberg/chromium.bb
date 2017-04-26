@@ -158,6 +158,23 @@ void RecordSavePageLaterNetworkQuality(
   histogram->Add(effective_connection);
 }
 
+// Record the network quality at request creation time per namespace.
+void RecordNetworkQualityAtRequestStartForFailedRequest(
+    const ClientId& client_id,
+    const net::EffectiveConnectionType effective_connection) {
+  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      AddHistogramSuffix(
+          client_id,
+          "OfflinePages.Background.EffectiveConnectionType.OffliningStartType"),
+      1, net::EFFECTIVE_CONNECTION_TYPE_LAST - 1,
+      net::EFFECTIVE_CONNECTION_TYPE_LAST,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(effective_connection);
+}
+
 // This should use the same algorithm as we use for OfflinePageItem, so the IDs
 // are similar.
 int64_t GenerateOfflineId() {
@@ -207,6 +224,7 @@ RequestCoordinator::RequestCoordinator(
       scheduler_(std::move(scheduler)),
       policy_controller_(new ClientPolicyController()),
       network_quality_estimator_(network_quality_estimator),
+      network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       active_request_id_(0),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       scheduler_callback_(base::Bind(&EmptySchedulerCallback)),
@@ -398,7 +416,7 @@ void RequestCoordinator::RemoveRequests(
                  weak_ptr_factory_.GetWeakPtr(), callback,
                  RequestNotifier::BackgroundSavePageResult::REMOVED));
 
-  // Record the network quality when this request is made.
+  // Record the network quality when this request is removed.
   if (network_quality_estimator_) {
     UMA_HISTOGRAM_ENUMERATION(
         "OfflinePages.Background.EffectiveConnectionType.RemoveRequests",
@@ -427,7 +445,7 @@ void RequestCoordinator::PauseRequests(
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  // Record the network quality when this request is made.
+  // Record the network quality when this request is paused.
   if (network_quality_estimator_) {
     UMA_HISTOGRAM_ENUMERATION(
         "OfflinePages.Background.EffectiveConnectionType.PauseRequests",
@@ -448,7 +466,7 @@ void RequestCoordinator::ResumeRequests(
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  // Record the network quality when this request is made.
+  // Record the network quality when this request is resumed.
   if (network_quality_estimator_) {
     UMA_HISTOGRAM_ENUMERATION(
         "OfflinePages.Background.EffectiveConnectionType.ResumeRequests",
@@ -876,6 +894,8 @@ void RequestCoordinator::StartOffliner(
   }
 
   active_request_id_ = request_id;
+  network_quality_at_request_start_ =
+      network_quality_estimator_->GetEffectiveConnectionType();
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
@@ -942,6 +962,14 @@ void RequestCoordinator::OfflinerProgressCallback(
 void RequestCoordinator::UpdateRequestForCompletedAttempt(
     const SavePageRequest& request,
     Offliner::RequestStatus status) {
+  // If the request failed, report the connection type as of the start of the
+  // request.
+  if (status != Offliner::RequestStatus::SAVED &&
+      status != Offliner::RequestStatus::SAVED_ON_LAST_RETRY) {
+    RecordNetworkQualityAtRequestStartForFailedRequest(
+        request.client_id(), network_quality_at_request_start_);
+  }
+
   if (status == Offliner::RequestStatus::FOREGROUND_CANCELED ||
       status == Offliner::RequestStatus::LOADING_CANCELED) {
     // Update the request for the canceled attempt.

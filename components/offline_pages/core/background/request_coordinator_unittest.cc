@@ -784,6 +784,12 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::LOADING_FAILURE,
             observer().last_status());
+  // We should have a histogram entry for the effective network conditions
+  // when this failed request began.
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.EffectiveConnectionType.OffliningStartType."
+      "bookmark",
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, 1);
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
