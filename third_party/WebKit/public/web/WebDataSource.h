@@ -48,7 +48,7 @@ class WebURLResponse;
 template <typename T>
 class WebVector;
 
-class WebDataSource {
+class BLINK_EXPORT WebDataSource {
  public:
   class ExtraData {
    public:

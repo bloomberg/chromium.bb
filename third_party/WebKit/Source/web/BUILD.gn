@@ -140,8 +140,6 @@ component("web") {
     "WebDOMFileSystem.cpp",
     "WebDOMMediaStreamTrack.cpp",
     "WebDOMMessageEvent.cpp",
-    "WebDataSourceImpl.cpp",
-    "WebDataSourceImpl.h",
     "WebDatabase.cpp",
     "WebDateTimeSuggestion.cpp",
     "WebDevToolsAgentImpl.cpp",

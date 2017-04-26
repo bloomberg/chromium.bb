@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebDataSourceImpl.h"
+#include "core/exported/WebDataSourceImpl.h"
 
 #include <memory>
 #include "core/dom/Document.h"
