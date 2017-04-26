@@ -151,8 +151,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     return;
   }
 
-  // Drop frames if there is no output buffers available.
-  if (output_buffers_.empty()) {
+  // Drop frames if RequireBitstreamBuffers() hasn't been called.
+  if (output_buffers_.empty() || vea_requested_input_coded_size_.IsEmpty()) {
     // TODO(emircan): Investigate if resetting encoder would help.
     DVLOG(3) << "Might drop frame.";
     last_frame_.reset(new std::pair<scoped_refptr<VideoFrame>, base::TimeTicks>(
@@ -199,6 +199,10 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
         reinterpret_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0,
         frame->timestamp());
+    if (!video_frame) {
+      NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+      return;
+    }
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
         base::Bind(&VEAEncoder::FrameFinished, this,
                    base::Passed(std::move(input_buffer)))));
@@ -229,6 +233,7 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   DCHECK_GT(bits_per_second_, 0);
 
   input_visible_size_ = size;
+  vea_requested_input_coded_size_ = gfx::Size();
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
   if (!video_encoder_ ||
       !video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
