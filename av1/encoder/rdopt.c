@@ -3354,7 +3354,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
             rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
           skip_search = 1;
         if (!skip_search) {
-          this_rd = calc_rd_given_intra_angle(
+          calc_rd_given_intra_angle(
               cpi, x, bsize,
 #if CONFIG_INTRA_INTERP
               mode_cost + cpi->intra_filter_cost[intra_filter_ctx][filter],
@@ -3637,9 +3637,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
     if (is_directional_mode) {
       this_rd_stats.rate = INT_MAX;
-      this_rd = rd_pick_intra_angle_sby(cpi, x, &this_rate, &this_rd_stats,
-                                        bsize, bmode_costs[mbmi->mode], best_rd,
-                                        &best_model_rd);
+      rd_pick_intra_angle_sby(cpi, x, &this_rate, &this_rd_stats, bsize,
+                              bmode_costs[mbmi->mode], best_rd, &best_model_rd);
     } else {
       super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
     }
@@ -4746,9 +4745,9 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
         skip_search = 1;
       if (!skip_search) {
         mbmi->angle_delta[1] = (1 - 2 * i) * angle_delta;
-        this_rd = pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead,
-                                                best_rd, rate, rd_stats,
-                                                &best_angle_delta, &best_rd);
+        pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead, best_rd,
+                                      rate, rd_stats, &best_angle_delta,
+                                      &best_rd);
       }
     }
   }
@@ -10122,9 +10121,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         }
         if (directional_mode_skip_mask[mbmi->mode]) continue;
         rd_stats_y.rate = INT_MAX;
-        this_rd = rd_pick_intra_angle_sby(cpi, x, &rate_dummy, &rd_stats_y,
-                                          bsize, intra_mode_cost[mbmi->mode],
-                                          best_rd, &model_rd);
+        rd_pick_intra_angle_sby(cpi, x, &rate_dummy, &rd_stats_y, bsize,
+                                intra_mode_cost[mbmi->mode], best_rd,
+                                &model_rd);
       } else {
         mbmi->angle_delta[0] = 0;
         super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
