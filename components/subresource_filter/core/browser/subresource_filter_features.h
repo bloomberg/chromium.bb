@@ -59,7 +59,7 @@ struct Configuration {
 // handle multiple simultaneous configurations.
 class ConfigurationList : public base::RefCountedThreadSafe<ConfigurationList> {
  public:
-  ConfigurationList(Configuration config);
+  explicit ConfigurationList(Configuration config);
 
   const Configuration& the_one_and_only() const { return config_; }
 

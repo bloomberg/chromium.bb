@@ -112,16 +112,17 @@ std::string SubresourceFilterComponentInstallerTraits::GetName() const {
 
 // static
 std::string SubresourceFilterComponentInstallerTraits::GetInstallerTag() {
-  std::string ruleset_flavor = subresource_filter::GetActiveConfigurations()
-                                   ->the_one_and_only()
-                                   .ruleset_flavor;
+  const auto configurations = subresource_filter::GetActiveConfigurations();
+  const std::string& ruleset_flavor =
+      configurations->the_one_and_only().ruleset_flavor;
   if (ruleset_flavor.empty())
     return ruleset_flavor;
 
   // We allow 4 ruleset flavor identifiers: a, b, c, d
   if (ruleset_flavor.size() == 1 && ruleset_flavor.at(0) >= 'a' &&
-      ruleset_flavor.at(0) <= 'd')
+      ruleset_flavor.at(0) <= 'd') {
     return ruleset_flavor;
+  }
 
   // Return 'invalid' for any cases where we encounter an invalid installer
   // tag. This allows us to verify that no clients are encountering invalid
@@ -145,8 +146,9 @@ SubresourceFilterComponentInstallerTraits::GetMimeTypes() const {
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {
   if (!base::FeatureList::IsEnabled(
-          subresource_filter::kSafeBrowsingSubresourceFilter))
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
     return;
+  }
   std::unique_ptr<ComponentInstallerTraits> traits(
       new SubresourceFilterComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
