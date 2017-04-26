@@ -16,7 +16,7 @@ Polymer({
       value: false,
     },
 
-    isRunningScanner: {
+    isRunning: {
       type: Boolean,
       value: false,
     },
@@ -68,7 +68,21 @@ Polymer({
    * @private
    */
   onCleanupTap_: function() {
-    // TODO implement me.
+    this.isRunning = true;
+    this.browserProxy_.startCleanup().then(this.onCleanupResult_.bind(this));
+  },
+
+  /**
+   * @param {CleanupResult} cleanupResults
+   */
+  onCleanupResult_: function(cleanupResults) {
+    this.isRunning = false;
+
+    if (!cleanupResults.wasCancelled)
+      // Assume cleanup was completed and clear infected status.
+      this.isInfected = false;
+
+    // TODO(proberge): Do something about cleanupResults.uwsRemoved.
   },
 
   /**
@@ -95,13 +109,43 @@ Polymer({
 
   /**
    * @param {boolean} hasScanResults
-   * @param {boolean} isRunningScanner
-   * @return {boolean} True if the "Scan" button should be displayed, false
-   *     otherwise.
+   * @param {boolean} isRunning
+   * @return {boolean} Whether the "Scan" button should be displayed.
    * @private
    */
-  shouldShowScan_: function(hasScanResults, isRunningScanner) {
-    return !hasScanResults && !isRunningScanner;
+  shouldShowScan_: function(hasScanResults, isRunning) {
+    return !hasScanResults && !isRunning;
+  },
+
+  /**
+   * @param {boolean} hasScanResults
+   * @param {boolean} isRunning
+   * @return {boolean} Whether the "Run Chrome Cleanup" button should be
+   *     displayed.
+   * @private
+   */
+  shouldShowClean_: function(hasScanResults, isRunning) {
+    return hasScanResults && !isRunning;
+  },
+
+  /**
+   * @param {boolean} hasScanResults
+   * @param {boolean} isRunning
+   * @return {boolean} True Whether the "Scanning" label should be displayed.
+   * @private
+   */
+  shouldShowScanning_: function(hasScanResults, isRunning) {
+    return !hasScanResults && isRunning;
+  },
+
+  /**
+   * @param {boolean} hasScanResults
+   * @param {boolean} isRunning
+   * @return {boolean} True Whether the "Cleaning" label should be displayed.
+   * @private
+   */
+  shouldShowCleaning_: function(hasScanResults, isRunning) {
+    return hasScanResults && isRunning;
   },
 
   /**
