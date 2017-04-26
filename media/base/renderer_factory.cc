@@ -6,10 +6,12 @@
 
 namespace media {
 
-RendererFactory::RendererFactory() {
-}
+RendererFactory::RendererFactory() {}
 
-RendererFactory::~RendererFactory() {
+RendererFactory::~RendererFactory() {}
+
+MediaResource::Type RendererFactory::GetRequiredMediaResourceType() {
+  return MediaResource::Type::STREAM;
 }
 
 }  // namespace media

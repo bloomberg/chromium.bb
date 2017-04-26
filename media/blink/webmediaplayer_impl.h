@@ -656,8 +656,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Used for HLS playback and in certain fallback paths (e.g. on older devices
   // that can't support the unified media pipeline).
-  GURL fallback_url_;
-  bool use_fallback_path_;
+  GURL loaded_url_;
+
+  // NOTE: |using_media_player_renderer_| is set based on the usage of a
+  // MediaResource::Type::URL in StartPipeline(). This currently works because
+  // the MediaPlayerRendererClient factory is the only factory that returns that
+  // Type, but this may no longer be accurate when we remove |cast_impl_| and
+  // WebMediaPlayerCast. This flag should be renamed/updated accordingly when
+  // removing |cast_impl_|.
+  bool using_media_player_renderer_ = false;
 
   // Called sometime after the media is suspended in a playing state in
   // OnFrameHidden(), causing the state to change to paused.
