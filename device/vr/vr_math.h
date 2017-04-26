@@ -33,6 +33,27 @@ gfx::Vector3dF DEVICE_VR_EXPORT GetTranslation(const Mat4f& matrix);
 
 void DEVICE_VR_EXPORT QuatToMatrix(const Quatf& quat, Mat4f* out);
 
+// Creates a rotation which rotates `from` vector to `to`.
+vr::Quatf DEVICE_VR_EXPORT GetVectorRotation(const gfx::Vector3dF& from,
+                                             const gfx::Vector3dF& to);
+
+vr::Quatf DEVICE_VR_EXPORT QuatSum(const vr::Quatf& a, const vr::Quatf& b);
+vr::Quatf DEVICE_VR_EXPORT QuatProduct(const vr::Quatf& a, const vr::Quatf& b);
+vr::Quatf DEVICE_VR_EXPORT ScaleQuat(const vr::Quatf& q, float s);
+
+vr::Quatf DEVICE_VR_EXPORT InvertQuat(const vr::Quatf& quat);
+
+float DEVICE_VR_EXPORT QuatAngleDegrees(const vr::Quatf& a, const vr::Quatf& b);
+
+vr::Quatf DEVICE_VR_EXPORT QuatLerp(const vr::Quatf& a,
+                                    const vr::Quatf& b,
+                                    float t);
+
+// Spherical linear interpolation.
+gfx::Vector3dF DEVICE_VR_EXPORT QuatSlerp(const gfx::Vector3dF& v_start,
+                                          const gfx::Vector3dF& v_end,
+                                          float percent);
+
 // Normalize a vector, and return its original length.
 float DEVICE_VR_EXPORT NormalizeVector(gfx::Vector3dF* vec);
 
@@ -48,6 +69,20 @@ gfx::Point3F DEVICE_VR_EXPORT GetRayPoint(const gfx::Point3F& rayOrigin,
 bool DEVICE_VR_EXPORT XZAngle(const gfx::Vector3dF& vec1,
                               const gfx::Vector3dF& vec2,
                               float* angle);
+
+gfx::Vector3dF DEVICE_VR_EXPORT ToVector(const gfx::Point3F& p);
+
+gfx::Point3F DEVICE_VR_EXPORT ToPoint(const gfx::Vector3dF& p);
+
+// Scale components of the point by the components of the vector.
+gfx::Point3F DEVICE_VR_EXPORT ScalePoint(const gfx::Point3F& p,
+                                         const gfx::Vector3dF& s);
+
+// Scale components of a vector by the components of another.
+gfx::Vector3dF DEVICE_VR_EXPORT ScaleVector(const gfx::Vector3dF& p,
+                                            const gfx::Vector3dF& s);
+
+float DEVICE_VR_EXPORT Clampf(float value, float min, float max);
 
 }  // namespace vr
 

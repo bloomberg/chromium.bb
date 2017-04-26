@@ -47,14 +47,7 @@ static constexpr float kReticleHeight = 0.025f;
 
 static constexpr float kLaserWidth = 0.01f;
 
-// Angle (radians) the beam down from the controller axis, for wrist comfort.
-static constexpr float kErgoAngleOffset = 0.26f;
-
 static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
-
-// In lieu of an elbow model, we assume a position for the user's hand.
-// TODO(mthiesse): Handedness options.
-static constexpr gfx::Point3F kHandPosition = {0.2f, -0.5f, -0.2f};
 
 // Fraction of the distance to the object the cursor is drawn at to avoid
 // rounding errors drawing the cursor behind the object.
@@ -514,15 +507,16 @@ void VrShellGl::InitializeRenderer() {
       FROM_HERE, base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_));
 }
 
-void VrShellGl::UpdateController() {
-  controller_->UpdateState();
+void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
+  controller_->UpdateState(head_direction);
+  pointer_start_ = controller_->GetPointerStart();
 
   device::GvrGamepadData pad = controller_->GetGamepadData();
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
 }
 
-void VrShellGl::HandleControllerInput(const gfx::Vector3dF& forward_vector) {
+void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   if (ShouldDrawWebVr()) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
@@ -546,7 +540,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& forward_vector) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
     ergo_neutral_pose = {0.0f, 0.0f, -1.0f};
-    controller_quat_ = GetRotationFromZAxis(forward_vector);
+    controller_quat_ = GetRotationFromZAxis(head_direction);
   } else {
     ergo_neutral_pose = {0.0f, -sin(kErgoAngleOffset), -cos(kErgoAngleOffset)};
     controller_quat_ = controller_->Orientation();
@@ -579,7 +573,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& forward_vector) {
   // simplicity.
   float distance = scene_->GetBackgroundDistance();
   target_point_ =
-      vr::GetRayPoint(kHandPosition, controller_direction, distance);
+      vr::GetRayPoint(pointer_start_, controller_direction, distance);
   gfx::Vector3dF eye_to_target = target_point_ - kOrigin;
   vr::NormalizeVector(&eye_to_target);
 
@@ -866,8 +860,9 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     // TODO(crbug.com/704690): Acquire controller state in a way that's timely
     // for both the gamepad API and UI input handling.
     TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-    UpdateController();
-    HandleControllerInput(vr::GetForwardVector(head_pose));
+    auto head_direction = vr::GetForwardVector(head_pose);
+    UpdateController(head_direction);
+    HandleControllerInput(head_direction);
   }
 
   DrawWorldElements(head_pose);
@@ -983,8 +978,8 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
 
     DrawElements(render_matrix, elementsInDrawOrder);
     if (draw_cursor) {
-      DrawCursor(render_matrix);
       DrawController(render_matrix);
+      DrawCursor(render_matrix);
     }
   }
 }
@@ -1100,7 +1095,7 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
 
   // Find the length of the beam (from hand to target).
   const float laser_length =
-      std::sqrt(kHandPosition.SquaredDistanceTo(target_point));
+      std::sqrt(pointer_start_.SquaredDistanceTo(target_point));
 
   // Build a beam, originating from the origin.
   vr::SetIdentityM(&mat);
@@ -1114,11 +1109,12 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
   vr::QuatToMatrix(quat, &rotation_mat);
   vr::MatrixMul(rotation_mat, mat, &mat);
 
-  const gfx::Vector3dF beam_direction = target_point_ - kHandPosition;
+  const gfx::Vector3dF beam_direction = target_point_ - pointer_start_;
 
   vr::Mat4f beam_direction_mat;
   vr::QuatToMatrix(GetRotationFromZAxis(beam_direction), &beam_direction_mat);
 
+  float opacity = controller_->GetOpacity();
   // Render multiple faces to make the laser appear cylindrical.
   const int faces = 4;
   for (int i = 0; i < faces; i++) {
@@ -1132,22 +1128,23 @@ void VrShellGl::DrawCursor(const vr::Mat4f& render_matrix) {
     vr::MatrixMul(beam_direction_mat, face_transform, &face_transform);
 
     // Move the beam origin to the hand.
-    vr::TranslateM(face_transform, kHandPosition - kOrigin, &face_transform);
+    vr::TranslateM(face_transform, pointer_start_ - kOrigin, &face_transform);
 
     vr::MatrixMul(render_matrix, face_transform, &transform);
-    vr_shell_renderer_->GetLaserRenderer()->Draw(transform);
+    vr_shell_renderer_->GetLaserRenderer()->Draw(opacity, transform);
   }
 }
 
 void VrShellGl::DrawController(const vr::Mat4f& view_proj_matrix) {
   if (!vr_shell_renderer_->GetControllerRenderer()->IsSetUp())
     return;
+  auto state = controller_->GetModelState();
+  auto opacity = controller_->GetOpacity();
   vr::Mat4f controller_transform;
   controller_->GetTransform(&controller_transform);
   vr::Mat4f transform;
   vr::MatrixMul(view_proj_matrix, controller_transform, &transform);
-  auto state = controller_->GetModelState();
-  vr_shell_renderer_->GetControllerRenderer()->Draw(state, transform);
+  vr_shell_renderer_->GetControllerRenderer()->Draw(state, opacity, transform);
 }
 
 bool VrShellGl::ShouldDrawWebVr() {

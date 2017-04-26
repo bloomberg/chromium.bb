@@ -178,7 +178,7 @@ class LaserRenderer : public BaseQuadRenderer {
   LaserRenderer();
   ~LaserRenderer() override;
 
-  void Draw(const vr::Mat4f& view_proj_matrix);
+  void Draw(float opacity, const vr::Mat4f& view_proj_matrix);
 
  private:
   GLuint model_view_proj_matrix_handle_;
@@ -187,6 +187,7 @@ class LaserRenderer : public BaseQuadRenderer {
   GLuint color_handle_;
   GLuint fade_point_handle_;
   GLuint fade_end_handle_;
+  GLuint opacity_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserRenderer);
 };
@@ -197,12 +198,15 @@ class ControllerRenderer : public BaseRenderer {
   ~ControllerRenderer() override;
 
   void SetUp(std::unique_ptr<VrControllerModel> model);
-  void Draw(VrControllerModel::State state, const vr::Mat4f& view_proj_matrix);
+  void Draw(VrControllerModel::State state,
+            float opacity,
+            const vr::Mat4f& view_proj_matrix);
   bool IsSetUp() const { return setup_; }
 
  private:
   GLuint model_view_proj_matrix_handle_;
   GLuint tex_uniform_handle_;
+  GLuint opacity_handle_;
   GLuint indices_buffer_ = 0;
   GLuint vertex_buffer_ = 0;
   GLint position_components_ = 0;
