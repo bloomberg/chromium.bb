@@ -8,7 +8,7 @@
 #include <map>
 
 #include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 
@@ -16,15 +16,14 @@ namespace video_capture {
 
 class DeviceMediaToMojoAdapter;
 
-// Wraps a media::VideoCaptureDeviceFactory and exposes its functionality
-// through the mojom::DeviceFactory interface.
-// Keeps track of device instances that have been created to ensure that
-// it does not create more than one instance of the same
-// media::VideoCaptureDevice at the same time.
+// Wraps a media::VideoCaptureSystem and exposes its functionality through the
+// mojom::DeviceFactory interface. Keeps track of device instances that have
+// been created to ensure that it does not create more than one instance of the
+// same media::VideoCaptureDevice at the same time.
 class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
  public:
   DeviceFactoryMediaToMojoAdapter(
-      std::unique_ptr<media::VideoCaptureDeviceFactory> device_factory,
+      std::unique_ptr<media::VideoCaptureSystem> capture_system,
       const media::VideoCaptureJpegDecoderFactoryCB&
           jpeg_decoder_factory_callback);
   ~DeviceFactoryMediaToMojoAdapter() override;
@@ -51,11 +50,7 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
 
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
-  // Returns false if no descriptor found.
-  bool LookupDescriptorFromId(const std::string& device_id,
-                              media::VideoCaptureDeviceDescriptor* descriptor);
-
-  const std::unique_ptr<media::VideoCaptureDeviceFactory> device_factory_;
+  const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
   const media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
   std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
 };

@@ -5,6 +5,7 @@
 #include "media/capture/video/shared_memory_buffer_tracker.h"
 
 #include "base/memory/ptr_util.h"
+#include "media/capture/video/shared_memory_buffer_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
@@ -31,7 +32,8 @@ bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
 
 std::unique_ptr<VideoCaptureBufferHandle>
 SharedMemoryBufferTracker::GetMemoryMappedAccess() {
-  return base::MakeUnique<SharedMemoryBufferHandle>(this);
+  return base::MakeUnique<SharedMemoryBufferHandle>(&shared_memory_,
+                                                    mapped_size_);
 }
 
 mojo::ScopedSharedBufferHandle
@@ -44,24 +46,6 @@ SharedMemoryBufferTracker::GetHandleForTransit() {
 base::SharedMemoryHandle
 SharedMemoryBufferTracker::GetNonOwnedSharedMemoryHandleForLegacyIPC() {
   return shared_memory_.handle();
-}
-
-SharedMemoryBufferHandle::SharedMemoryBufferHandle(
-    SharedMemoryBufferTracker* tracker)
-    : tracker_(tracker) {}
-
-SharedMemoryBufferHandle::~SharedMemoryBufferHandle() = default;
-
-size_t SharedMemoryBufferHandle::mapped_size() const {
-  return tracker_->mapped_size_;
-}
-
-uint8_t* SharedMemoryBufferHandle::data() {
-  return static_cast<uint8_t*>(tracker_->shared_memory_.memory());
-}
-
-const uint8_t* SharedMemoryBufferHandle::data() const {
-  return static_cast<const uint8_t*>(tracker_->shared_memory_.memory());
 }
 
 }  // namespace media

@@ -24,10 +24,16 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   // mojom::Device:
   void Start(const media::VideoCaptureParams& requested_settings,
              mojom::ReceiverPtr receiver) override;
+  void OnReceiverReportingUtilization(int32_t frame_feedback_id,
+                                      double utilization) override;
 
   void Stop();
 
   void OnClientConnectionErrorOrClose();
+
+  // Returns the fixed maximum number of buffers passed to the constructor
+  // of VideoCaptureBufferPoolImpl.
+  static int max_buffer_pool_buffer_count();
 
  private:
   const std::unique_ptr<media::VideoCaptureDevice> device_;

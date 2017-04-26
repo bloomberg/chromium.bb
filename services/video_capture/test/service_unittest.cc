@@ -21,7 +21,7 @@ using VideoCaptureServiceTest = ServiceTest;
 
 // Tests that an answer arrives from the service when calling
 // GetDeviceInfos().
-TEST_F(VideoCaptureServiceTest, DISABLED_GetDeviceInfosCallbackArrives) {
+TEST_F(VideoCaptureServiceTest, GetDeviceInfosCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(device_info_receiver_, Run(_))
       .Times(Exactly(1))
@@ -31,7 +31,7 @@ TEST_F(VideoCaptureServiceTest, DISABLED_GetDeviceInfosCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(VideoCaptureServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
+TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -50,8 +50,7 @@ TEST_F(VideoCaptureServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
 
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(VideoCaptureServiceTest,
-       DISABLED_ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::DevicePtr fake_device_proxy;
@@ -61,6 +60,7 @@ TEST_F(VideoCaptureServiceTest,
               Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND))
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
+  factory_->GetDeviceInfos(device_info_receiver_.Get());
   factory_->CreateDevice(invalid_device_id,
                          mojo::MakeRequest(&fake_device_proxy),
                          create_device_proxy_callback.Get());

@@ -27,7 +27,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
       int frame_feedback_id,
       std::unique_ptr<
           media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-          buffer_usage_reservation,
+          access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
   void OnError() override;

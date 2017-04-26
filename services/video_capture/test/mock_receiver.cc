@@ -11,9 +11,19 @@ MockReceiver::MockReceiver(mojom::ReceiverRequest request)
 
 MockReceiver::~MockReceiver() = default;
 
-void MockReceiver::OnIncomingCapturedVideoFrame(
-    media::mojom::VideoFramePtr frame) {
-  OnIncomingCapturedVideoFramePtr(&frame);
+void MockReceiver::OnNewBufferHandle(
+    int32_t buffer_id,
+    mojo::ScopedSharedBufferHandle buffer_handle) {
+  DoOnNewBufferHandle(buffer_id, &buffer_handle);
+}
+
+void MockReceiver::OnFrameReadyInBuffer(
+    int32_t buffer_id,
+    int32_t frame_feedback_id,
+    mojom::ScopedAccessPermissionPtr access_permission,
+    media::mojom::VideoFrameInfoPtr frame_info) {
+  DoOnFrameReadyInBuffer(buffer_id, frame_feedback_id, &access_permission,
+                         &frame_info);
 }
 
 }  // namespace video_capture

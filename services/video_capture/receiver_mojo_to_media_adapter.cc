@@ -4,6 +4,27 @@
 
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
+#include "mojo/public/cpp/bindings/strong_binding.h"
+
+namespace {
+
+class ScopedAccessPermissionMediaToMojoAdapter
+    : public video_capture::mojom::ScopedAccessPermission {
+ public:
+  ScopedAccessPermissionMediaToMojoAdapter(
+      std::unique_ptr<
+          media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+          access_permission)
+      : access_permission_(std::move(access_permission)) {}
+
+ private:
+  std::unique_ptr<
+      media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+      access_permission_;
+};
+
+}  // anonymous namespace
+
 namespace video_capture {
 
 ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
@@ -16,7 +37,8 @@ void ReceiverMojoToMediaAdapter::OnNewBufferHandle(
     int buffer_id,
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
         handle_provider) {
-  NOTIMPLEMENTED();
+  receiver_->OnNewBufferHandle(
+      buffer_id, handle_provider->GetHandleForInterProcessTransit());
 }
 
 void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
@@ -24,9 +46,20 @@ void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
     int frame_feedback_id,
     std::unique_ptr<
         media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-        buffer_usage_reservation,
+        access_permission,
     media::mojom::VideoFrameInfoPtr frame_info) {
-  NOTIMPLEMENTED();
+  mojom::ScopedAccessPermissionPtr access_permission_proxy;
+  mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
+      base::MakeUnique<ScopedAccessPermissionMediaToMojoAdapter>(
+          std::move(access_permission)),
+      mojo::MakeRequest(&access_permission_proxy));
+  receiver_->OnFrameReadyInBuffer(buffer_id, frame_feedback_id,
+                                  std::move(access_permission_proxy),
+                                  std::move(frame_info));
+}
+
+void ReceiverMojoToMediaAdapter::OnBufferRetired(int buffer_id) {
+  receiver_->OnBufferRetired(buffer_id);
 }
 
 void ReceiverMojoToMediaAdapter::OnError() {
@@ -42,11 +75,7 @@ void ReceiverMojoToMediaAdapter::OnStarted() {
 }
 
 void ReceiverMojoToMediaAdapter::OnStartedUsingGpuDecode() {
-  NOTIMPLEMENTED();
-}
-
-void ReceiverMojoToMediaAdapter::OnBufferRetired(int buffer_id) {
-  NOTIMPLEMENTED();
+  receiver_->OnStartedUsingGpuDecode();
 }
 
 }  // namespace video_capture
