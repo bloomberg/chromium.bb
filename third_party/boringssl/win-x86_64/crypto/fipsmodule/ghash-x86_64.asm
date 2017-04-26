@@ -4,7 +4,7 @@ default	rel
 %define ZMMWORD
 section	.text code align=64
 
-EXTERN	OPENSSL_ia32cap_P
+EXTERN	OPENSSL_ia32cap_addr
 
 global	gcm_gmult_4bit
 
@@ -931,7 +931,8 @@ DB	102,65,15,56,0,194
 	jz	NEAR $L$odd_tail
 
 	movdqu	xmm6,XMMWORD[16+rdx]
-	mov	eax,DWORD[((OPENSSL_ia32cap_P+4))]
+	mov	rax,QWORD[OPENSSL_ia32cap_addr]
+	mov	eax,DWORD[4+rax]
 	cmp	r9,0x30
 	jb	NEAR $L$skip4x
 
