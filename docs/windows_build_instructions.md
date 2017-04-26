@@ -34,12 +34,14 @@ and select:
 - Universal Windows Apps Development Tools > Tools (1.4.1) and Windows 10 SDK
   (10.0.14393)
 
-You must have the 14393 SDK installed or else you will hit compile errors such
-as undefined or redefined macros.
+You must have the 14393 Windows SDK installed - the 15063 SDK has errors and
+cannot be used to compile Chrome. It is okay to have multiple SDK versions
+installed as long as 14393 is one of them. The installer can be found in the
+[Windows SDK archive](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive).
 
-Install the Windows SDK 10, and choose Debugging Tools For Windows when you
-install this in order to get windbg and cdb. The latter is required for the
-build to succeed as some tests use it for symbolizing crash dumps.
+When installing the 14393 Windows SDK choose Debugging Tools For Windows in
+order to get windbg and cdb. The latter is required for the build to succeed as
+some tests use it for symbolizing crash dumps.
 
 ## Install `depot_tools`
 
