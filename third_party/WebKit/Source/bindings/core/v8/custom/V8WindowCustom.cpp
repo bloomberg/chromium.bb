@@ -378,7 +378,7 @@ void V8Window::namedPropertyGetterCustom(
   if (!has_named_item && has_id_item &&
       !doc->ContainsMultipleElementsWithId(name)) {
     UseCounter::Count(doc, UseCounter::kDOMClobberedVariableAccessed);
-    V8SetReturnValueFast(info, doc->GetElementById(name), window);
+    V8SetReturnValueFast(info, doc->getElementById(name), window);
     return;
   }
 

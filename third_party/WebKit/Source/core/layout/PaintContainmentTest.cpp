@@ -34,7 +34,7 @@ static void CheckIsClippingStackingContextAndContainer(
 
 TEST_F(PaintContainmentTest, BlockPaintContainment) {
   SetBodyInnerHTML("<div id='div' style='contain: paint'></div>");
-  Element* div = GetDocument().GetElementById(AtomicString("div"));
+  Element* div = GetDocument().getElementById(AtomicString("div"));
   DCHECK(div);
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
@@ -48,7 +48,7 @@ TEST_F(PaintContainmentTest, BlockPaintContainment) {
 TEST_F(PaintContainmentTest, InlinePaintContainment) {
   SetBodyInnerHTML(
       "<div><span id='test' style='contain: paint'>Foo</span></div>");
-  Element* span = GetDocument().GetElementById(AtomicString("test"));
+  Element* span = GetDocument().getElementById(AtomicString("test"));
   DCHECK(span);
   // The inline should have been coerced into a block in StyleAdjuster.
   LayoutObject* obj = span->GetLayoutObject();

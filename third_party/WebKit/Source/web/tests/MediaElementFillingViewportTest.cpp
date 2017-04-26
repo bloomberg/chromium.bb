@@ -53,7 +53,7 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
   CheckViewportIntersectionChanged(element);
   EXPECT_FALSE(IsMostlyFillingViewport(element));
   EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
@@ -73,7 +73,7 @@ TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
   CheckViewportIntersectionChanged(element);
   EXPECT_FALSE(IsMostlyFillingViewport(element));
   EXPECT_FALSE(ViewportFillDebouncerTimerActive(element));
@@ -92,7 +92,7 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
   CheckViewportIntersectionChanged(element);
   EXPECT_FALSE(IsMostlyFillingViewport(element));
   EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
@@ -120,7 +120,7 @@ TEST_F(MediaElementFillingViewportTest, LargeVideo) {
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
   CheckViewportIntersectionChanged(element);
   EXPECT_FALSE(IsMostlyFillingViewport(element));
   EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
@@ -139,7 +139,7 @@ TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
   Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+      ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
   CheckViewportIntersectionChanged(element);
   EXPECT_FALSE(IsMostlyFillingViewport(element));
   EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));

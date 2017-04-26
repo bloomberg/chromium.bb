@@ -26,7 +26,7 @@ void TransformDocumentToXMLTreeView(Document& document) {
   document.GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
       DOMWrapperWorld::kDocumentXMLTreeViewerWorldId, sources, nullptr);
 
-  Element* element = document.GetElementById("xml-viewer-style");
+  Element* element = document.getElementById("xml-viewer-style");
   if (element) {
     element->setTextContent(css_string);
   }

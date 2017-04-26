@@ -71,7 +71,7 @@ INSTANTIATE_TEST_CASE_P(All, BoxPaintInvalidatorTest, ::testing::Bool());
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto& raster_invalidations =
@@ -86,7 +86,7 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 20px; height: 80px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto& raster_invalidations =
@@ -101,7 +101,7 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 80px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto& raster_invalidations =
@@ -118,7 +118,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
   ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
       true);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100.6px; height: 70.3px");
@@ -149,7 +149,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
   ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
       true);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -186,7 +186,7 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
   ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
       true);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   LayoutObject* target_object = target->GetLayoutObject();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140), target_object->VisualRect());
 
@@ -225,7 +225,7 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
   ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
       true);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "transform: rotate(45deg)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -247,14 +247,14 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
   ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
       true);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");
   target->setInnerHTML(
       "<div id=child style='width: 50px; height: 50px; background: "
       "red'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
 
   // Should do full invalidation a rotated object is resized.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -272,7 +272,7 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
 
 TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   EnableCompositing();
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "");
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -307,7 +307,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
 TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
   EnableCompositing();
   GetDocument().body()->setAttribute(HTMLNames::classAttr, "gradient");
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "");
   target->setAttribute(HTMLNames::styleAttr, "height: 2000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -355,8 +355,8 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
       "</style>"
       "<div id='content' style='width: 200px; height: 200px'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* iframe = GetDocument().GetElementById("iframe");
-  Element* content = ChildDocument().GetElementById("content");
+  Element* iframe = GetDocument().getElementById("iframe");
+  Element* content = ChildDocument().getElementById("content");
   EXPECT_EQ(GetLayoutView(),
             content->GetLayoutObject()->ContainerForPaintInvalidation());
 
@@ -412,8 +412,8 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
       "</style>"
       "<div id='content' style='width: 200px; height: 200px'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* iframe = GetDocument().GetElementById("iframe");
-  Element* content = ChildDocument().GetElementById("content");
+  Element* iframe = GetDocument().getElementById("iframe");
+  Element* content = ChildDocument().getElementById("content");
   LayoutView* frame_layout_view = content->GetLayoutObject()->View();
   EXPECT_EQ(GetLayoutView(),
             content->GetLayoutObject()->ContainerForPaintInvalidation());
@@ -460,13 +460,13 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
 TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
   EnableCompositing();
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border local-background");
   target->setAttribute(HTMLNames::styleAttr, "will-change: transform");
   target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Resize the content.
@@ -516,14 +516,14 @@ TEST_P(BoxPaintInvalidatorTest,
        CompositedBackgroundAttachmentLocalGradientResize) {
   EnableCompositing();
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr,
                        "border local-background gradient");
   target->setAttribute(HTMLNames::styleAttr, "will-change: transform");
   target->setInnerHTML(
       "<div id='child' style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Resize the content.
@@ -570,12 +570,12 @@ TEST_P(BoxPaintInvalidatorTest,
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border local-background");
   target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(&GetLayoutView(),
             &target->GetLayoutObject()->ContainerForPaintInvalidation());

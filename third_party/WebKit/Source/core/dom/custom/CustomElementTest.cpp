@@ -161,7 +161,7 @@ TEST(CustomElementTest, StateByParser) {
       {"v0", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
   };
   for (const auto& data : parser_data) {
-    Element* element = document.GetElementById(data.id);
+    Element* element = document.getElementById(data.id);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.id;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.id;
   }

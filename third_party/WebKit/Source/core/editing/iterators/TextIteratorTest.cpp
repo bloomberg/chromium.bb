@@ -326,7 +326,7 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), "host", shadow_content);
-  Node* outer_div = GetDocument().GetElementById("outer");
+  Node* outer_div = GetDocument().getElementById("outer");
   Node* span_in_shadow = shadow_root->firstChild();
   Position start(span_in_shadow, PositionAnchorType::kBeforeChildren);
   Position end(outer_div, PositionAnchorType::kAfterChildren);
@@ -351,7 +351,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), "host", shadow_content);
-  Node* outer_div = GetDocument().GetElementById("outer");
+  Node* outer_div = GetDocument().getElementById("outer");
   Node* span_in_shadow = shadow_root->firstChild();
   Position start(outer_div, PositionAnchorType::kBeforeChildren);
   Position end(span_in_shadow, PositionAnchorType::kAfterChildren);
@@ -452,7 +452,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements) {
   SetBodyContent(body_content);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Node* div_node = GetDocument().GetElementById("div");
+  Node* div_node = GetDocument().getElementById("div");
   Range* range = Range::Create(GetDocument(), div_node, 0, div_node, 3);
 
   EXPECT_EQ(3, TextIterator::RangeLength(range->StartPosition(),
@@ -479,7 +479,7 @@ TEST_F(TextIteratorTest, copyTextTo) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   const char* message = "|iter%d| should have emitted '%s'.";
 
   EphemeralRangeTemplate<EditingStrategy> range1(
@@ -549,7 +549,7 @@ TEST_F(TextIteratorTest, characterAt) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
 
   EphemeralRangeTemplate<EditingStrategy> range1(
       EphemeralRangeTemplate<EditingStrategy>::RangeOfContents(*host));
@@ -640,8 +640,8 @@ TEST_F(TextIteratorTest, EndingConditionWithDisplayNoneInShadowTree) {
   SetShadowContent(shadow_content, "host");
 
   ShadowRoot* shadow_root =
-      GetDocument().GetElementById("host")->openShadowRoot();
-  Node* b_in_shadow_tree = shadow_root->GetElementById("end");
+      GetDocument().getElementById("host")->openShadowRoot();
+  Node* b_in_shadow_tree = shadow_root->getElementById("end");
 
   Position start(&GetDocument(), 0);
   Position end(b_in_shadow_tree, 0);
@@ -672,7 +672,7 @@ TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
   SetBodyContent(
       "<div style='width: 2em;'><b><i id='foo'>foo </i></b> bar</div>");
   Element* div = GetDocument().QuerySelector("div");
-  Position start(GetDocument().GetElementById("foo")->firstChild(), 0);
+  Position start(GetDocument().getElementById("foo")->firstChild(), 0);
   Position end(div->lastChild(), 4);
   EXPECT_EQ("foo bar",
             PlainText(EphemeralRange(start, end), EmitsImageAltTextBehavior()));

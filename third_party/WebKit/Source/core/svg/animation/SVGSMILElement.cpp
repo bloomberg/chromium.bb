@@ -152,7 +152,7 @@ DEFINE_TRACE(SVGSMILElement::Condition) {
 void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
   DCHECK(!base_id_.IsEmpty());
   DCHECK_EQ(type_, kSyncbase);
-  Element* element = timed_element.GetTreeScope().GetElementById(base_id_);
+  Element* element = timed_element.GetTreeScope().getElementById(base_id_);
   if (!element || !IsSVGSMILElement(*element)) {
     base_element_ = nullptr;
     return;

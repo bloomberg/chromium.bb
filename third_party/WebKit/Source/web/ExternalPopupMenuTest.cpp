@@ -146,7 +146,7 @@ TEST_F(ExternalPopupMenuTest, PopupAccountsForVisualViewportTransform) {
   WebView()->UpdateAllLifecyclePhases();
 
   HTMLSelectElement* select = toHTMLSelectElement(
-      MainFrame()->GetFrame()->GetDocument()->GetElementById("select"));
+      MainFrame()->GetFrame()->GetDocument()->getElementById("select"));
   LayoutMenuList* menu_list = ToLayoutMenuList(select->GetLayoutObject());
   ASSERT_TRUE(menu_list);
 
@@ -175,7 +175,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
   LoadFrame("select.html");
 
   HTMLSelectElement* select = toHTMLSelectElement(
-      MainFrame()->GetFrame()->GetDocument()->GetElementById("select"));
+      MainFrame()->GetFrame()->GetDocument()->getElementById("select"));
   LayoutMenuList* menu_list = ToLayoutMenuList(select->GetLayoutObject());
   ASSERT_TRUE(menu_list);
 
@@ -195,7 +195,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   LoadFrame("select.html");
 
   HTMLSelectElement* select = toHTMLSelectElement(
-      MainFrame()->GetFrame()->GetDocument()->GetElementById("select"));
+      MainFrame()->GetFrame()->GetDocument()->getElementById("select"));
   LayoutMenuList* menu_list = ToLayoutMenuList(select->GetLayoutObject());
   ASSERT_TRUE(menu_list);
 
@@ -217,7 +217,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect) {
   LoadFrame("select.html");
 
   HTMLSelectElement* select = toHTMLSelectElement(
-      MainFrame()->GetFrame()->GetDocument()->GetElementById("select"));
+      MainFrame()->GetFrame()->GetDocument()->getElementById("select"));
   LayoutMenuList* menu_list = ToLayoutMenuList(select->GetLayoutObject());
   ASSERT_TRUE(menu_list);
 

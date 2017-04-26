@@ -202,7 +202,7 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ForceFullCompositingUpdate();
 
   Document* document = GetFrame()->GetDocument();
-  Element* scrollable_element = document->GetElementById("scroller");
+  Element* scrollable_element = document->getElementById("scroller");
   DCHECK(scrollable_element);
 
   scrollable_element->setScrollTop(1.0);
@@ -264,7 +264,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
 
   Document* document = GetFrame()->GetDocument();
   {
-    Element* element = document->GetElementById("div-tl");
+    Element* element = document->getElementById("div-tl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -274,7 +274,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 !constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("div-tr");
+    Element* element = document->getElementById("div-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -284,7 +284,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 !constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("div-bl");
+    Element* element = document->getElementById("div-bl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -294,7 +294,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("div-br");
+    Element* element = document->getElementById("div-br");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -304,7 +304,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("span-tl");
+    Element* element = document->getElementById("span-tl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -314,7 +314,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 !constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("span-tr");
+    Element* element = document->getElementById("span-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -324,7 +324,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 !constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("span-bl");
+    Element* element = document->getElementById("span-bl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -334,7 +334,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
                 constraint.is_fixed_to_bottom_edge);
   }
   {
-    Element* element = document->GetElementById("span-br");
+    Element* element = document->getElementById("span-br");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -357,7 +357,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
 
   Document* document = GetFrame()->GetDocument();
   {
-    Element* element = document->GetElementById("div-tl");
+    Element* element = document->getElementById("div-tl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -378,7 +378,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
               IntPoint(constraint.parent_relative_sticky_box_offset));
   }
   {
-    Element* element = document->GetElementById("div-tr");
+    Element* element = document->getElementById("div-tr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -389,7 +389,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
                 constraint.is_anchored_right && !constraint.is_anchored_bottom);
   }
   {
-    Element* element = document->GetElementById("div-bl");
+    Element* element = document->getElementById("div-bl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -400,7 +400,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
                 !constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
-    Element* element = document->GetElementById("div-br");
+    Element* element = document->getElementById("div-br");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -411,7 +411,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
                 constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
-    Element* element = document->GetElementById("span-tl");
+    Element* element = document->getElementById("span-tl");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -423,7 +423,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
                 !constraint.is_anchored_bottom);
   }
   {
-    Element* element = document->GetElementById("span-tlbr");
+    Element* element = document->getElementById("span-tlbr");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -438,7 +438,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
     EXPECT_EQ(1.f, constraint.bottom_offset);
   }
   {
-    Element* element = document->GetElementById("composited-top");
+    Element* element = document->getElementById("composited-top");
     ASSERT_TRUE(element);
     WebLayer* layer = WebLayerFromElement(element);
     ASSERT_TRUE(layer);
@@ -552,7 +552,7 @@ TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
   // Verify the properties of the accelerated scrolling element starting from
   // the LayoutObject all the way to the WebLayer.
   Element* scrollable_element =
-      GetFrame()->GetDocument()->GetElementById("scrollable");
+      GetFrame()->GetDocument()->getElementById("scrollable");
   DCHECK(scrollable_element);
 
   LayoutObject* layout_object = scrollable_element->GetLayoutObject();
@@ -598,7 +598,7 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   // Verify the properties of the accelerated scrolling element starting from
   // the LayoutObject all the way to the WebLayer.
   Element* overflow_element =
-      GetFrame()->GetDocument()->GetElementById("unscrollable-y");
+      GetFrame()->GetDocument()->getElementById("unscrollable-y");
   DCHECK(overflow_element);
 
   LayoutObject* layout_object = overflow_element->GetLayoutObject();
@@ -626,7 +626,7 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   ASSERT_FALSE(web_scroll_layer->UserScrollableVertical());
 
   overflow_element =
-      GetFrame()->GetDocument()->GetElementById("unscrollable-x");
+      GetFrame()->GetDocument()->getElementById("unscrollable-x");
   DCHECK(overflow_element);
 
   layout_object = overflow_element->GetLayoutObject();
@@ -661,7 +661,7 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   // Verify the properties of the accelerated scrolling element starting from
   // the LayoutObject all the way to the WebLayer.
   Element* scrollable_frame =
-      GetFrame()->GetDocument()->GetElementById("scrollable");
+      GetFrame()->GetDocument()->getElementById("scrollable");
   ASSERT_TRUE(scrollable_frame);
 
   LayoutObject* layout_object = scrollable_frame->GetLayoutObject();
@@ -713,7 +713,7 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
   // Verify the properties of the accelerated scrolling element starting from
   // the LayoutObject all the way to the WebLayer.
   Element* scrollable_frame =
-      GetFrame()->GetDocument()->GetElementById("scrollable");
+      GetFrame()->GetDocument()->getElementById("scrollable");
   ASSERT_TRUE(scrollable_frame);
 
   LayoutObject* layout_object = scrollable_frame->GetLayoutObject();
@@ -765,7 +765,7 @@ TEST_P(ScrollingCoordinatorTest,
   ForceFullCompositingUpdate();
 
   Document* document = GetFrame()->GetDocument();
-  Element* scrollable_element = document->GetElementById("scroller");
+  Element* scrollable_element = document->getElementById("scroller");
   DCHECK(scrollable_element);
 
   LayoutObject* layout_object = scrollable_element->GetLayoutObject();
@@ -825,7 +825,7 @@ TEST_P(ScrollingCoordinatorTest,
   ASSERT_TRUE(scroll_layer);
 
   Document* document = GetFrame()->GetDocument();
-  Element* fixed_pos = document->GetElementById("fixed");
+  Element* fixed_pos = document->getElementById("fixed");
 
   EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixed_pos->GetLayoutObject())
                   ->Layer()
@@ -849,8 +849,8 @@ TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   ForceFullCompositingUpdate();
 
   Document* document = GetFrame()->GetDocument();
-  Element* container = document->GetElementById("container");
-  Element* content = document->GetElementById("content");
+  Element* container = document->getElementById("container");
+  Element* content = document->getElementById("content");
   DCHECK_EQ(container->getAttribute(HTMLNames::classAttr), "custom_scrollbar");
   DCHECK(container);
   DCHECK(content);
@@ -891,7 +891,7 @@ TEST_P(ScrollingCoordinatorTest,
   NavigateTo(base_url_ + "iframe-background-attachment-fixed.html");
   ForceFullCompositingUpdate();
 
-  Element* iframe = GetFrame()->GetDocument()->GetElementById("iframe");
+  Element* iframe = GetFrame()->GetDocument()->getElementById("iframe");
   ASSERT_TRUE(iframe);
 
   LayoutObject* layout_object = iframe->GetLayoutObject();
@@ -924,7 +924,7 @@ TEST_P(ScrollingCoordinatorTest,
   // Remove fixed background-attachment should make the iframe
   // scroll on cc.
   auto* iframe_doc = toHTMLIFrameElement(iframe)->contentDocument();
-  iframe = iframe_doc->GetElementById("scrollable");
+  iframe = iframe_doc->getElementById("scrollable");
   ASSERT_TRUE(iframe);
 
   iframe->removeAttribute("class");
@@ -945,7 +945,7 @@ TEST_P(ScrollingCoordinatorTest,
 
   // Force main frame to scroll on main thread. All its descendants
   // should scroll on main thread as well.
-  Element* element = GetFrame()->GetDocument()->GetElementById("scrollable");
+  Element* element = GetFrame()->GetDocument()->getElementById("scrollable");
   element->setAttribute(
       "style",
       "background-image: url('white-1x1.png'); background-attachment: fixed;",
@@ -977,7 +977,7 @@ TEST_P(ScrollingCoordinatorTest,
   ForceFullCompositingUpdate();
 
   LOG(ERROR) << GetFrame()->View()->GetMainThreadScrollingReasons();
-  Element* element = GetFrame()->GetDocument()->GetElementById("scrollable");
+  Element* element = GetFrame()->GetDocument()->getElementById("scrollable");
   ASSERT_TRUE(element);
 
   LayoutObject* layout_object = element->GetLayoutObject();
@@ -1064,7 +1064,7 @@ class NonCompositedMainThreadScrollingReasonTest
     GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
         false);
     Document* document = GetFrame()->GetDocument();
-    Element* container = document->GetElementById("scroller1");
+    Element* container = document->getElementById("scroller1");
     container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
     ForceFullCompositingUpdate();
 
@@ -1075,7 +1075,7 @@ class NonCompositedMainThreadScrollingReasonTest
     EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
                 reason);
 
-    Element* container2 = document->GetElementById("scroller2");
+    Element* container2 = document->getElementById("scroller2");
     PaintLayerScrollableArea* scrollable_area2 =
         ToLayoutBoxModelObject(container2->GetLayoutObject())
             ->GetScrollableArea();
@@ -1179,7 +1179,7 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
 
   // Test descendant with ClipPath
-  element = document->GetElementById("content1");
+  element = document->getElementById("content1");
   ASSERT_TRUE(element);
   element->setAttribute(HTMLNames::styleAttr,
                         "clip-path:circle(115px at 20px 20px);");

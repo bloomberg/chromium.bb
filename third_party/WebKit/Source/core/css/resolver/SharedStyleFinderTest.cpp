@@ -106,8 +106,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByHover) {
   AddSelector("[attr]:hover");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -125,8 +125,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByHoverNegated) {
   AddSelector("[attr]:not(:hover)");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -144,8 +144,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByFocus) {
   AddSelector("[attr]:focus");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -163,8 +163,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByFocusWithin) {
   AddSelector("[attr]:focus-within");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -182,8 +182,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByActive) {
   AddSelector("[attr]:active");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -201,8 +201,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByDrag) {
   AddSelector("[attr]:-webkit-drag");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
@@ -216,7 +216,7 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByDrag) {
 
 TEST_F(SharedStyleFinderTest, SlottedPseudoWithAttribute) {
   SetBodyContent("<div id=host><div id=a></div><div id=b attr></div></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<slot></slot>");
   GetDocument().UpdateDistribution();
@@ -224,8 +224,8 @@ TEST_F(SharedStyleFinderTest, SlottedPseudoWithAttribute) {
   AddSelector("::slotted([attr])");
   FinishAddingSelectors();
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
 
   EXPECT_TRUE(a->AssignedSlot());
   EXPECT_TRUE(b->AssignedSlot());
@@ -236,7 +236,7 @@ TEST_F(SharedStyleFinderTest, SlottedPseudoWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, HostWithAttribute) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<slot></slot>");
   GetDocument().UpdateDistribution();
@@ -249,7 +249,7 @@ TEST_F(SharedStyleFinderTest, HostWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, HostAncestorWithAttribute) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<div id=inner></div>");
   Element* inner = root.getElementById("inner");
@@ -263,7 +263,7 @@ TEST_F(SharedStyleFinderTest, HostAncestorWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, HostContextAncestorWithAttribute) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<div id=inner></div>");
   Element* inner = root.getElementById("inner");
@@ -277,7 +277,7 @@ TEST_F(SharedStyleFinderTest, HostContextAncestorWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, HostParentWithAttribute) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<div id=inner></div>");
   Element* inner = root.getElementById("inner");
@@ -291,7 +291,7 @@ TEST_F(SharedStyleFinderTest, HostParentWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, HostContextParentWithAttribute) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<div id=inner></div>");
   Element* inner = root.getElementById("inner");
@@ -305,7 +305,7 @@ TEST_F(SharedStyleFinderTest, HostContextParentWithAttribute) {
 
 TEST_F(SharedStyleFinderTest, AncestorWithAttributeInParentScope) {
   SetBodyContent("<div id=host attr></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<div id=inner></div>");
   Element* inner = root.getElementById("inner");

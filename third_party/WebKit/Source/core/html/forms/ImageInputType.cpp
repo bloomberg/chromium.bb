@@ -117,7 +117,7 @@ LayoutObject* ImageInputType::CreateLayoutObject(
 void ImageInputType::AltAttributeChanged() {
   if (GetElement().UserAgentShadowRoot()) {
     Element* text =
-        GetElement().UserAgentShadowRoot()->GetElementById("alttext");
+        GetElement().UserAgentShadowRoot()->getElementById("alttext");
     String value = GetElement().AltText();
     if (text && text->textContent() != value)
       text->setTextContent(GetElement().AltText());

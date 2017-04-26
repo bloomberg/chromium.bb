@@ -737,7 +737,7 @@ void AXObjectCacheImpl::UpdateAriaOwns(
   TreeScope& scope = owner->GetNode()->GetTreeScope();
   Vector<AXID> new_child_axi_ds;
   for (const String& id_name : id_vector) {
-    Element* element = scope.GetElementById(AtomicString(id_name));
+    Element* element = scope.getElementById(AtomicString(id_name));
     if (!element)
       continue;
 

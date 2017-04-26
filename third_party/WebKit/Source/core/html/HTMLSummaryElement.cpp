@@ -72,7 +72,7 @@ HTMLDetailsElement* HTMLSummaryElement::DetailsElement() const {
 }
 
 Element* HTMLSummaryElement::MarkerControl() {
-  return EnsureUserAgentShadowRoot().GetElementById(
+  return EnsureUserAgentShadowRoot().getElementById(
       ShadowElementNames::DetailsMarker());
 }
 

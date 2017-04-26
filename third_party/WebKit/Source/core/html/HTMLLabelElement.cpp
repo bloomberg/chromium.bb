@@ -72,7 +72,7 @@ LabelableElement* HTMLLabelElement::control() const {
   if (!IsInTreeScope())
     return nullptr;
 
-  if (Element* element = GetTreeScope().GetElementById(control_id)) {
+  if (Element* element = GetTreeScope().getElementById(control_id)) {
     if (IsLabelableElement(*element) &&
         ToLabelableElement(*element).SupportLabels()) {
       if (!element->IsFormControlElement())

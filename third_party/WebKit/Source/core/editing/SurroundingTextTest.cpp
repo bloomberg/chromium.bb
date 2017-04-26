@@ -39,7 +39,7 @@ void SurroundingTextTest::SetHTML(const String& content) {
 }
 
 VisibleSelection SurroundingTextTest::Select(int start, int end) {
-  Element* element = GetDocument().GetElementById("selection");
+  Element* element = GetDocument().getElementById("selection");
   return CreateVisibleSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(ToText(element->firstChild()), start))

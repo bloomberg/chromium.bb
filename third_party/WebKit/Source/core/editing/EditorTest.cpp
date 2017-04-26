@@ -68,7 +68,7 @@ TEST_F(EditorTest, copyGeneratedPassword) {
   SetBodyContent(body_content);
 
   HTMLInputElement& element =
-      toHTMLInputElement(*GetDocument().GetElementById("password"));
+      toHTMLInputElement(*GetDocument().getElementById("password"));
 
   const String kPasswordValue = "secret";
   element.focus();

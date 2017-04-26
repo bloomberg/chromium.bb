@@ -175,7 +175,7 @@ WebURL WebDocument::CompleteURL(const WebString& partial_url) const {
 }
 
 WebElement WebDocument::GetElementById(const WebString& id) const {
-  return WebElement(ConstUnwrap<Document>()->GetElementById(id));
+  return WebElement(ConstUnwrap<Document>()->getElementById(id));
 }
 
 WebElement WebDocument::FocusedElement() const {

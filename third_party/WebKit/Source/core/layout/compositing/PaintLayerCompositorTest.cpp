@@ -49,8 +49,8 @@ TEST_F(PaintLayerCompositorTest,
       "<div id='box'></div>"
       "<div id='otherBox'></div>");
 
-  Element* box = GetDocument().GetElementById("box");
-  Element* otherBox = GetDocument().GetElementById("otherBox");
+  Element* box = GetDocument().getElementById("box");
+  Element* otherBox = GetDocument().getElementById("otherBox");
   ASSERT_TRUE(box);
   ASSERT_TRUE(otherBox);
 

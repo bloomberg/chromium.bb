@@ -156,10 +156,10 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
   SetBodyInnerHTML(body_content);
 
   // Create an overflow recalc.
-  Element* cell = GetDocument().GetElementById(AtomicString("cell"));
+  Element* cell = GetDocument().getElementById(AtomicString("cell"));
   cell->setAttribute(HTMLNames::styleAttr, "outline: 1px solid black;");
   // Trigger a layout on the table that doesn't require cell layout.
-  Element* table = GetDocument().GetElementById(AtomicString("table"));
+  Element* table = GetDocument().getElementById(AtomicString("table"));
   table->setAttribute(HTMLNames::styleAttr, "position: absolute; left: 2px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

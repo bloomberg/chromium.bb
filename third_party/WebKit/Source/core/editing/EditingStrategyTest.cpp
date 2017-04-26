@@ -17,9 +17,9 @@ TEST_F(EditingStrategyTest, caretMaxOffset) {
       "<content select=#two></content><content select=#one></content>";
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
-  Node* host = GetDocument().GetElementById("host");
-  Node* one = GetDocument().GetElementById("one");
-  Node* two = GetDocument().GetElementById("two");
+  Node* host = GetDocument().getElementById("host");
+  Node* one = GetDocument().getElementById("one");
+  Node* two = GetDocument().getElementById("two");
 
   EXPECT_EQ(4, EditingStrategy::CaretMaxOffset(*host));
   EXPECT_EQ(1, EditingStrategy::CaretMaxOffset(*one));

@@ -117,7 +117,7 @@ void SVGAElement::DefaultEventHandler(Event* event) {
 
       if (url[0] == '#') {
         Element* target_element =
-            GetTreeScope().GetElementById(AtomicString(url.Substring(1)));
+            GetTreeScope().getElementById(AtomicString(url.Substring(1)));
         if (target_element && IsSVGSMILElement(*target_element)) {
           ToSVGSMILElement(target_element)->BeginByLinkActivation();
           event->SetDefaultHandled();

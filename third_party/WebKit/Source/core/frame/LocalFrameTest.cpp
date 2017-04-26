@@ -51,7 +51,7 @@ TEST_F(LocalFrameTest, nodeImage) {
       "#sample { width: 100px; height: 100px; }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(IntSize(100, 100), image->Size());
 }
@@ -63,7 +63,7 @@ TEST_F(LocalFrameTest, nodeImageWithNestedElement) {
       "span:-webkit-drag { color: #0F0 }"
       "</style>"
       "<div id=sample><span>Green when dragged</span></div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(
       Color(0, 255, 0),
@@ -78,7 +78,7 @@ TEST_F(LocalFrameTest, nodeImageWithPsuedoClassWebKitDrag) {
       "#sample:-webkit-drag { width: 200px; height: 200px; }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(IntSize(200, 200), image->Size())
       << ":-webkit-drag should affect dragged image.";
@@ -91,7 +91,7 @@ TEST_F(LocalFrameTest, nodeImageWithoutDraggedLayoutObject) {
       "#sample:-webkit-drag { display:none }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(nullptr, image.get()) << ":-webkit-drag blows away layout object";
 }
@@ -103,7 +103,7 @@ TEST_F(LocalFrameTest, nodeImageWithChangingLayoutObject) {
       "#sample:-webkit-drag { display: inline-block; color: red; }"
       "</style>"
       "<span id=sample>foo</span>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   UpdateAllLifecyclePhases();
   LayoutObject* before_layout_object = sample->GetLayoutObject();
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);

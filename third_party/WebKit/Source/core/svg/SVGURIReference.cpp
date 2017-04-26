@@ -113,7 +113,7 @@ Element* SVGURIReference::TargetElementFromIRIString(
     return nullptr;
   if (fragment_identifier)
     *fragment_identifier = id;
-  return tree_scope.GetElementById(id);
+  return tree_scope.getElementById(id);
 }
 
 Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
@@ -140,7 +140,7 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
     return nullptr;
   observer =
       new SVGElementReferenceObserver(tree_scope, id, std::move(closure));
-  return tree_scope.GetElementById(id);
+  return tree_scope.getElementById(id);
 }
 
 void SVGURIReference::UnobserveTarget(Member<IdTargetObserver>& observer) {

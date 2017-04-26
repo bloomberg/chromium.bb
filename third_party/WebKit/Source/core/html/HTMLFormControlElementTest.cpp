@@ -44,7 +44,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().GetElementById("input"));
+      toHTMLInputElement(GetDocument().getElementById("input"));
   input->setCustomValidity(
       String::FromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));
   input->setAttribute(

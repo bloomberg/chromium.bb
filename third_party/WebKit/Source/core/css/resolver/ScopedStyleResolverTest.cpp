@@ -56,8 +56,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesEmptyEmpty) {
 TEST_F(ScopedStyleResolverTest, HasSameStylesNonEmpty) {
   GetDocument().body()->setInnerHTML(
       "<div id=host1></div><div id=host2></div>");
-  Element* host1 = GetDocument().GetElementById("host1");
-  Element* host2 = GetDocument().GetElementById("host2");
+  Element* host1 = GetDocument().getElementById("host1");
+  Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
   ShadowRoot& root1 = AttachShadow(*host1);
@@ -72,8 +72,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesNonEmpty) {
 TEST_F(ScopedStyleResolverTest, HasSameStylesDifferentSheetCount) {
   GetDocument().body()->setInnerHTML(
       "<div id=host1></div><div id=host2></div>");
-  Element* host1 = GetDocument().GetElementById("host1");
-  Element* host2 = GetDocument().GetElementById("host2");
+  Element* host1 = GetDocument().getElementById("host1");
+  Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
   ShadowRoot& root1 = AttachShadow(*host1);
@@ -89,8 +89,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesDifferentSheetCount) {
 TEST_F(ScopedStyleResolverTest, HasSameStylesCacheMiss) {
   GetDocument().body()->setInnerHTML(
       "<div id=host1></div><div id=host2></div>");
-  Element* host1 = GetDocument().GetElementById("host1");
-  Element* host2 = GetDocument().GetElementById("host2");
+  Element* host1 = GetDocument().getElementById("host1");
+  Element* host2 = GetDocument().getElementById("host2");
   ASSERT_TRUE(host1);
   ASSERT_TRUE(host2);
   ShadowRoot& root1 = AttachShadow(*host1);

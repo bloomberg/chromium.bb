@@ -42,21 +42,21 @@ TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The translucent fixed box should not be promoted.
-  Element* element = GetDocument().GetElementById("translucent");
+  Element* element = GetDocument().getElementById("translucent");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 
   // The opaque fixed box should be promoted and be opaque so that text will be
   // drawn with subpixel anti-aliasing.
-  element = GetDocument().GetElementById("opaque");
+  element = GetDocument().getElementById("opaque");
   paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // The opaque fixed box with shadow should not be promoted because the layer
   // will include the shadow which is not opaque.
-  element = GetDocument().GetElementById("opaque-with-shadow");
+  element = GetDocument().getElementById("opaque-with-shadow");
   paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
@@ -130,8 +130,8 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = GetDocument().GetElementById("parent");
-  Element* fixed = GetDocument().GetElementById("fixed");
+  Element* parent = GetDocument().getElementById("parent");
+  Element* fixed = GetDocument().getElementById("fixed");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -179,8 +179,8 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = GetDocument().GetElementById("parent");
-  Element* fixed = GetDocument().GetElementById("fixed");
+  Element* parent = GetDocument().getElementById("parent");
+  Element* fixed = GetDocument().getElementById("fixed");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(fixed->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -339,12 +339,12 @@ TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* outer_sticky = GetDocument().GetElementById("outerSticky");
+  Element* outer_sticky = GetDocument().getElementById("outerSticky");
   PaintLayer* outer_sticky_layer =
       ToLayoutBoxModelObject(outer_sticky->GetLayoutObject())->Layer();
   ASSERT_TRUE(outer_sticky_layer);
 
-  Element* inner_sticky = GetDocument().GetElementById("innerSticky");
+  Element* inner_sticky = GetDocument().getElementById("innerSticky");
   PaintLayer* inner_sticky_layer =
       ToLayoutBoxModelObject(inner_sticky->GetLayoutObject())->Layer();
   ASSERT_TRUE(inner_sticky_layer);

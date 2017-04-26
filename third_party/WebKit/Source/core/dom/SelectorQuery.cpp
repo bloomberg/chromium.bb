@@ -411,7 +411,7 @@ void SelectorQuery::ExecuteWithId(
     return;
   }
 
-  Element* element = scope.GetElementById(selector_id_);
+  Element* element = scope.getElementById(selector_id_);
   if (!element)
     return;
   if (selector_id_is_rightmost_) {

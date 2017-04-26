@@ -83,7 +83,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
       "<div id='transform' style='transform: translate3d(10px, 10px, "
       "0px);'></div>");
   LayoutObject* transformed_object =
-      GetDocument().GetElementById("transform")->GetLayoutObject();
+      GetDocument().getElementById("transform")->GetLayoutObject();
   const auto* transformed_object_properties =
       transformed_object->PaintProperties();
   String transform_path_as_string =
@@ -100,7 +100,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
       "<div id='clip' style='position: absolute; clip: rect(10px, 80px, 70px, "
       "40px);'></div>");
   LayoutObject* clipped_object =
-      GetDocument().GetElementById("clip")->GetLayoutObject();
+      GetDocument().getElementById("clip")->GetLayoutObject();
   const auto* clipped_object_properties = clipped_object->PaintProperties();
   String clip_path_as_string =
       clipped_object_properties->CssClip()->ToTreeString();
@@ -113,7 +113,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   SetBodyInnerHTML("<div id='effect' style='opacity: 0.9;'></div>");
   LayoutObject* effect_object =
-      GetDocument().GetElementById("effect")->GetLayoutObject();
+      GetDocument().getElementById("effect")->GetLayoutObject();
   const auto* effect_object_properties = effect_object->PaintProperties();
   String effect_path_as_string =
       effect_object_properties->Effect()->ToTreeString();
@@ -128,7 +128,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
       "  <div id='forceScroll' style='height: 4000px;'></div>"
       "</div>");
   LayoutObject* scroll_object =
-      GetDocument().GetElementById("scroll")->GetLayoutObject();
+      GetDocument().getElementById("scroll")->GetLayoutObject();
   const auto* scroll_object_properties = scroll_object->PaintProperties();
   String scroll_path_as_string = scroll_object_properties->ScrollTranslation()
                                      ->ScrollNode()

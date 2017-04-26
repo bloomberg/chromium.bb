@@ -23,9 +23,9 @@ TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
   UpdateAllLifecyclePhases();
 
   EditingStyle* editing_style =
-      EditingStyle::Create(ToHTMLElement(GetDocument().GetElementById("s2")));
+      EditingStyle::Create(ToHTMLElement(GetDocument().getElementById("s2")));
   editing_style->MergeInlineStyleOfElement(
-      ToHTMLElement(GetDocument().GetElementById("s1")),
+      ToHTMLElement(GetDocument().getElementById("s1")),
       EditingStyle::kOverrideValues);
 
   EXPECT_FALSE(editing_style->Style()->HasProperty(CSSPropertyFloat))

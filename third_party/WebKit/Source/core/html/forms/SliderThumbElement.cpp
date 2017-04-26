@@ -102,7 +102,7 @@ void SliderThumbElement::DragFrom(const LayoutPoint& point) {
 
 void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   HTMLInputElement* input(HostInput());
-  Element* track_element = input->UserAgentShadowRoot()->GetElementById(
+  Element* track_element = input->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SliderTrack());
 
   if (!input->GetLayoutObject() || !GetLayoutBox() ||
@@ -364,7 +364,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
 
   TouchList* touches = event->targetTouches();
   SliderThumbElement* thumb = ToSliderThumbElement(
-      GetTreeScope().GetElementById(ShadowElementNames::SliderThumb()));
+      GetTreeScope().getElementById(ShadowElementNames::SliderThumb()));
   if (touches->length() == 1) {
     if (event->type() == EventTypeNames::touchstart) {
       start_point_ = touches->item(0)->AbsoluteLocation();

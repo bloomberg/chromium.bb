@@ -38,7 +38,7 @@ class PasswordCredentialTest : public ::testing::Test {
     GetDocument().documentElement()->setInnerHTML(b.ToString());
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLFormElement* form =
-        toHTMLFormElement(GetDocument().GetElementById("theForm"));
+        toHTMLFormElement(GetDocument().getElementById("theForm"));
     EXPECT_NE(nullptr, form);
     return form;
   }

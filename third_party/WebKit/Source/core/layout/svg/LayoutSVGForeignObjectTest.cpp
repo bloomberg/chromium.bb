@@ -32,7 +32,7 @@ TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
       "  </foreignObject>"
       "</svg>");
 
-  const auto& svg = *GetDocument().GetElementById("svg");
+  const auto& svg = *GetDocument().getElementById("svg");
   const auto& foreign_object = *GetLayoutObjectByElementId("foreign");
   const auto& div = *GetLayoutObjectByElementId("div");
 
@@ -91,9 +91,9 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
       "<div id='div' style='margin: 70px; width: 100px; height: 50px'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  const auto& svg = *GetDocument().GetElementById("svg");
+  const auto& svg = *GetDocument().getElementById("svg");
   const auto& foreign_object = *GetLayoutObjectByElementId("foreign");
-  const auto& div = *ChildDocument().GetElementById("div")->GetLayoutObject();
+  const auto& div = *ChildDocument().getElementById("div")->GetLayoutObject();
 
   EXPECT_EQ(FloatRect(100, 100, 300, 250), foreign_object.ObjectBoundingBox());
   EXPECT_EQ(AffineTransform(), foreign_object.LocalSVGTransform());

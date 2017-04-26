@@ -358,7 +358,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
   EXPECT_THAT(float_nonempties_fragment->LeftOffset(), LayoutUnit(0));
 
   // ** Verify layout tree **
-  Element* first_child = GetDocument().GetElementById("first-child");
+  Element* first_child = GetDocument().getElementById("first-child");
   // -7 = body_top_offset
   EXPECT_EQ(body_top_offset, first_child->OffsetTop());
 }
@@ -387,7 +387,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   const NGPhysicalBoxFragment* child_fragment;
   RefPtr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_height) {
-    Element* container = GetDocument().GetElementById("container");
+    Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetHeight(container_height);
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -441,7 +441,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   const NGPhysicalBoxFragment* child_fragment;
   RefPtr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_padding_top) {
-    Element* container = GetDocument().GetElementById("container");
+    Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetPaddingTop(container_padding_top);
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -891,7 +891,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
       NGPhysicalOffset(LayoutUnit(25) + right_float_offset, LayoutUnit(15)));
 
   // ** Verify layout tree **
-  Element* left_float = GetDocument().GetElementById("left-float");
+  Element* left_float = GetDocument().getElementById("left-float");
   // 88 = body's margin(8) +
   // empty1's padding and margin + empty2's padding and margins + float's
   // padding
@@ -901,7 +901,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
 
   // ** Legacy Floating objects **
   // #container is the 1st non-empty block so floats are attached to it.
-  Element* container = GetDocument().GetElementById("container");
+  Element* container = GetDocument().getElementById("container");
   auto& floating_objects =
       const_cast<FloatingObjects*>(
           ToLayoutBlockFlow(container->GetLayoutObject())->GetFloatingObjects())
@@ -989,7 +989,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   ASSERT_EQ(4UL, container_fragment->PositionedFloats().size());
 
   // ** Verify layout tree **
-  Element* left_float = GetDocument().GetElementById("left-float");
+  Element* left_float = GetDocument().getElementById("left-float");
   // 8 = body's margin-top
   int left_float_block_offset = 8;
   EXPECT_EQ(left_float_block_offset, left_float->OffsetTop());
@@ -997,7 +997,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
       container_fragment->PositionedFloats().at(0)->fragment;
   EXPECT_THAT(LayoutUnit(), left_float_fragment->TopOffset());
 
-  Element* left_wide_float = GetDocument().GetElementById("left-wide-float");
+  Element* left_wide_float = GetDocument().getElementById("left-wide-float");
   // left-wide-float is positioned right below left-float as it's too wide.
   // 38 = left_float_block_offset +
   //      left-float's height 30
@@ -1008,7 +1008,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   // 30 = left-float's height.
   EXPECT_THAT(LayoutUnit(30), left_wide_float_fragment->TopOffset());
 
-  Element* regular = GetDocument().GetElementById("regular");
+  Element* regular = GetDocument().getElementById("regular");
   // regular_block_offset = body's margin-top 8
   int regular_block_offset = 8;
   EXPECT_EQ(regular_block_offset, regular->OffsetTop());
@@ -1016,7 +1016,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
       ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
   EXPECT_THAT(LayoutUnit(), regular_block_fragment->TopOffset());
 
-  Element* right_float = GetDocument().GetElementById("right-float");
+  Element* right_float = GetDocument().getElementById("right-float");
   // 158 = body's margin-left 8 + container's width 200 - right_float's width 50
   int right_float_inline_offset = 158;
   // it's positioned right after our left_wide_float
@@ -1034,7 +1034,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
               right_float_fragment->LeftOffset());
 
   Element* left_float_with_margin =
-      GetDocument().GetElementById("left-float-with-margin");
+      GetDocument().getElementById("left-float-with-margin");
   // 18 = body's margin(8) + left-float-with-margin's margin(10)
   int left_float_with_margin_inline_offset = 18;
   EXPECT_EQ(left_float_with_margin_inline_offset,
@@ -1110,7 +1110,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   const NGPhysicalBoxFragment* adjoining_clearance_fragment;
   RefPtr<const NGPhysicalBoxFragment> fragment;
   auto run_with_clearance = [&](EClear clear_value) {
-    Element* el_with_clear = GetDocument().GetElementById("clearance");
+    Element* el_with_clear = GetDocument().getElementById("clearance");
     el_with_clear->MutableComputedStyle()->SetClear(clear_value);
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -1898,7 +1898,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
     </div>
   )HTML");
   // #container is the new parent for our float because it's height != 0.
-  Element* container = GetDocument().GetElementById("container");
+  Element* container = GetDocument().getElementById("container");
   auto& floating_objects =
       const_cast<FloatingObjects*>(
           ToLayoutBlockFlow(container->GetLayoutObject())->GetFloatingObjects())
@@ -1992,7 +1992,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   // 60 = block1's height 30 + std::max(block1's margin 20, zero's margin 30)
   EXPECT_THAT(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(60)),
               container_clear_fragment->Offset());
-  Element* container_clear = GetDocument().GetElementById("container-clear");
+  Element* container_clear = GetDocument().getElementById("container-clear");
   // 190 = block1's margin 130 + block1's height 30 +
   //       std::max(block1's margin 20, zero's margin 30)
   EXPECT_THAT(container_clear->OffsetTop(), 190);
@@ -2299,7 +2299,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   const NGPhysicalBoxFragment* new_fc_fragment;
   RefPtr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& block_width) {
-    Element* new_fc_block = GetDocument().GetElementById("new-fc");
+    Element* new_fc_block = GetDocument().getElementById("new-fc");
     new_fc_block->MutableComputedStyle()->SetWidth(block_width);
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));

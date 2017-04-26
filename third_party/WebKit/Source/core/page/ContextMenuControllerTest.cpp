@@ -95,8 +95,8 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu) {
   // Create right button click event and pass it to context menu controller.
   Event* event =
       MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
-  GetDocument().GetElementById("button_id")->focus();
-  event->SetTarget(GetDocument().GetElementById("button_id"));
+  GetDocument().getElementById("button_id")->focus();
+  event->SetTarget(GetDocument().getElementById("button_id"));
   GetDocument().GetPage()->GetContextMenuController().HandleContextMenuEvent(
       event);
 

@@ -55,7 +55,7 @@ void CanvasFontCacheTest::SetUp() {
   document_->documentElement()->setInnerHTML(
       "<body><canvas id='c'></canvas></body>");
   document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = toHTMLCanvasElement(document_->GetElementById("c"));
+  canvas_element_ = toHTMLCanvasElement(document_->getElementById("c"));
   String canvas_type("2d");
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(true);

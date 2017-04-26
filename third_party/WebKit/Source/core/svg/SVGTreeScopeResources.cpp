@@ -20,7 +20,7 @@ SVGTreeScopeResources::~SVGTreeScopeResources() = default;
 
 static LayoutSVGResourceContainer* LookupResource(TreeScope& tree_scope,
                                                   const AtomicString& id) {
-  Element* element = tree_scope.GetElementById(id);
+  Element* element = tree_scope.getElementById(id);
   if (!element)
     return nullptr;
   LayoutObject* layout_object = element->GetLayoutObject();

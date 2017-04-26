@@ -19,7 +19,7 @@ TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {
       "<style>pre::first-letter {color:red;}</style><pre "
       "id=sample>a<span>b</span></pre>");
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Text* text = ToText(sample->firstChild());
   text->setData(" ");
   UpdateAllLifecyclePhases();

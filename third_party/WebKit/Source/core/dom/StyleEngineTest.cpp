@@ -81,7 +81,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "<style>div { color: red }</style><div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* t1 = GetDocument().GetElementById("t1");
+  Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0),
@@ -205,7 +205,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   GetDocument().body()->setInnerHTML(
       "<div id=nohost></div><div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRootInit init;
@@ -251,7 +251,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
       "  <span></span>"
       "</div>");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRootInit init;
@@ -283,7 +283,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRootInit init;
@@ -315,7 +315,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
 
 TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRootInit init;
@@ -346,7 +346,7 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
       "  div {}"
       "</style>");
 
-  Element* style_element = GetDocument().GetElementById("sheet");
+  Element* style_element = GetDocument().getElementById("sheet");
 
   for (unsigned i = 0; i < 10; i++) {
     GetDocument().body()->RemoveChild(style_element);
@@ -371,7 +371,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
       "<div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* t1 = GetDocument().GetElementById("t1");
+  Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 0, 0),
@@ -379,7 +379,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
-  Element* s1 = GetDocument().GetElementById("s1");
+  Element* s1 = GetDocument().getElementById("s1");
   s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -397,7 +397,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
       "<div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* t1 = GetDocument().GetElementById("t1");
+  Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 128, 0),
@@ -405,7 +405,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
-  Element* s1 = GetDocument().GetElementById("s1");
+  Element* s1 = GetDocument().getElementById("s1");
   s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -428,7 +428,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
       "<div id='t1'>Green</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* t1 = GetDocument().GetElementById("t1");
+  Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 0, 255),
@@ -470,8 +470,8 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
       "<div id='t2'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* t1 = GetDocument().GetElementById("t1");
-  Element* t2 = GetDocument().GetElementById("t2");
+  Element* t1 = GetDocument().getElementById("t1");
+  Element* t2 = GetDocument().getElementById("t2");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t2);
 
@@ -497,7 +497,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  HTMLStyleElement* s2 = toHTMLStyleElement(GetDocument().GetElementById("s2"));
+  HTMLStyleElement* s2 = toHTMLStyleElement(GetDocument().getElementById("s2"));
   ASSERT_TRUE(s2);
   s2->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
@@ -512,7 +512,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  HTMLStyleElement* s1 = toHTMLStyleElement(GetDocument().GetElementById("s1"));
+  HTMLStyleElement* s1 = toHTMLStyleElement(GetDocument().getElementById("s1"));
   ASSERT_TRUE(s1);
   s1->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
@@ -533,7 +533,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
 
 TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   GetDocument().body()->setInnerHTML("<div id='host'></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   GetDocument().View()->UpdateAllLifecyclePhases();

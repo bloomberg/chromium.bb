@@ -93,13 +93,13 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutObject& container1 =
-      *GetDocument().GetElementById("container1")->GetLayoutObject();
+      *GetDocument().getElementById("container1")->GetLayoutObject();
   LayoutObject& content1 =
-      *GetDocument().GetElementById("content1")->GetLayoutObject();
+      *GetDocument().getElementById("content1")->GetLayoutObject();
   LayoutObject& container2 =
-      *GetDocument().GetElementById("container2")->GetLayoutObject();
+      *GetDocument().getElementById("container2")->GetLayoutObject();
   LayoutObject& content2 =
-      *GetDocument().GetElementById("content2")->GetLayoutObject();
+      *GetDocument().getElementById("content2")->GetLayoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
@@ -159,9 +159,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
       "50px'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutObject& svg = *GetDocument().GetElementById("svg")->GetLayoutObject();
-  LayoutObject& rect = *GetDocument().GetElementById("rect")->GetLayoutObject();
-  LayoutObject& div = *GetDocument().GetElementById("div")->GetLayoutObject();
+  LayoutObject& svg = *GetDocument().getElementById("svg")->GetLayoutObject();
+  LayoutObject& rect = *GetDocument().getElementById("rect")->GetLayoutObject();
+  LayoutObject& div = *GetDocument().getElementById("div")->GetLayoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // SPv2 slips the clip box (see BoxClipper).
@@ -249,19 +249,19 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   RootPaintController().InvalidateAll();
 
   LayoutObject& container1 =
-      *GetDocument().GetElementById("container1")->GetLayoutObject();
+      *GetDocument().getElementById("container1")->GetLayoutObject();
   LayoutObject& content1 =
-      *GetDocument().GetElementById("content1")->GetLayoutObject();
+      *GetDocument().getElementById("content1")->GetLayoutObject();
   LayoutObject& container2 =
-      *GetDocument().GetElementById("container2")->GetLayoutObject();
+      *GetDocument().getElementById("container2")->GetLayoutObject();
   LayoutObject& content2a =
-      *GetDocument().GetElementById("content2a")->GetLayoutObject();
+      *GetDocument().getElementById("content2a")->GetLayoutObject();
   LayoutObject& content2b =
-      *GetDocument().GetElementById("content2b")->GetLayoutObject();
+      *GetDocument().getElementById("content2b")->GetLayoutObject();
   LayoutObject& container3 =
-      *GetDocument().GetElementById("container3")->GetLayoutObject();
+      *GetDocument().getElementById("container3")->GetLayoutObject();
   LayoutObject& content3 =
-      *GetDocument().GetElementById("content3")->GetLayoutObject();
+      *GetDocument().getElementById("content3")->GetLayoutObject();
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect interest_rect(0, 0, 400, 300);
@@ -322,13 +322,13 @@ TEST_P(PaintLayerPainterTest,
   Paint(&interest_rect);
 
   LayoutObject& container1 =
-      *GetDocument().GetElementById("container1")->GetLayoutObject();
+      *GetDocument().getElementById("container1")->GetLayoutObject();
   LayoutObject& content1 =
-      *GetDocument().GetElementById("content1")->GetLayoutObject();
+      *GetDocument().getElementById("content1")->GetLayoutObject();
   LayoutObject& container2 =
-      *GetDocument().GetElementById("container2")->GetLayoutObject();
+      *GetDocument().getElementById("container2")->GetLayoutObject();
   LayoutObject& content2 =
-      *GetDocument().GetElementById("content2")->GetLayoutObject();
+      *GetDocument().getElementById("content2")->GetLayoutObject();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
@@ -392,18 +392,18 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
       "  </div>"
       "</div>");
   LayoutObject& outline_div =
-      *GetDocument().GetElementById("outline")->GetLayoutObject();
+      *GetDocument().getElementById("outline")->GetLayoutObject();
   ToHTMLElement(outline_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_outline);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("self-painting-layer")->GetLayoutObject());
+      GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
   ASSERT_TRUE(self_painting_layer.IsSelfPaintingLayer());
   PaintLayer& non_self_painting_layer =
       *ToLayoutBoxModelObject(GetDocument()
-                                  .GetElementById("non-self-painting-layer")
+                                  .getElementById("non-self-painting-layer")
                                   ->GetLayoutObject())
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
@@ -458,18 +458,18 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
       "  </div>"
       "</div>");
   LayoutObject& float_div =
-      *GetDocument().GetElementById("float")->GetLayoutObject();
+      *GetDocument().getElementById("float")->GetLayoutObject();
   ToHTMLElement(float_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_float);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("self-painting-layer")->GetLayoutObject());
+      GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
   ASSERT_TRUE(self_painting_layer.IsSelfPaintingLayer());
   PaintLayer& non_self_painting_layer =
       *ToLayoutBoxModelObject(GetDocument()
-                                  .GetElementById("non-self-painting-layer")
+                                  .getElementById("non-self-painting-layer")
                                   ->GetLayoutObject())
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
@@ -511,19 +511,19 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutObject& float_div =
-      *GetDocument().GetElementById("float")->GetLayoutObject();
+      *GetDocument().getElementById("float")->GetLayoutObject();
   LayoutBoxModelObject& span = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("span")->GetLayoutObject());
+      GetDocument().getElementById("span")->GetLayoutObject());
   PaintLayer& span_layer = *span.Layer();
   ASSERT_TRUE(&span_layer == float_div.EnclosingLayer());
   ASSERT_FALSE(span_layer.NeedsPaintPhaseFloat());
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("self-painting-layer")->GetLayoutObject());
+      GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
   ASSERT_TRUE(self_painting_layer.IsSelfPaintingLayer());
   PaintLayer& non_self_painting_layer =
       *ToLayoutBoxModelObject(GetDocument()
-                                  .GetElementById("non-self-painting-layer")
+                                  .getElementById("non-self-painting-layer")
                                   ->GetLayoutObject())
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
@@ -549,18 +549,18 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
       "  </div>"
       "</div>");
   LayoutObject& background_div =
-      *GetDocument().GetElementById("background")->GetLayoutObject();
+      *GetDocument().getElementById("background")->GetLayoutObject();
   ToHTMLElement(background_div.GetNode())
       ->setAttribute(HTMLNames::styleAttr, style_without_background);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("self-painting-layer")->GetLayoutObject());
+      GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
   ASSERT_TRUE(self_painting_layer.IsSelfPaintingLayer());
   PaintLayer& non_self_painting_layer =
       *ToLayoutBoxModelObject(GetDocument()
-                                  .GetElementById("non-self-painting-layer")
+                                  .getElementById("non-self-painting-layer")
                                   ->GetLayoutObject())
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
@@ -615,7 +615,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval) {
       "</div>");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("layer")->GetLayoutObject());
+      GetDocument().getElementById("layer")->GetLayoutObject());
   PaintLayer& layer = *layer_div.Layer();
   ASSERT_TRUE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
@@ -650,7 +650,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
       "</div>");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("will-be-layer")->GetLayoutObject());
+      GetDocument().getElementById("will-be-layer")->GetLayoutObject());
   EXPECT_FALSE(layer_div.HasLayer());
 
   PaintLayer& html_layer =
@@ -683,7 +683,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
       "</div>");
 
   LayoutBoxModelObject& layer_div = *ToLayoutBoxModelObject(
-      GetDocument().GetElementById("will-be-self-painting")->GetLayoutObject());
+      GetDocument().getElementById("will-be-self-painting")->GetLayoutObject());
   ASSERT_TRUE(layer_div.HasLayer());
   EXPECT_FALSE(layer_div.Layer()->IsSelfPaintingLayer());
 
@@ -717,7 +717,7 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
 
   LayoutBoxModelObject& layer_div =
       *ToLayoutBoxModelObject(GetDocument()
-                                  .GetElementById("will-be-non-self-painting")
+                                  .getElementById("will-be-non-self-painting")
                                   ->GetLayoutObject());
   ASSERT_TRUE(layer_div.HasLayer());
   PaintLayer& layer = *layer_div.Layer();

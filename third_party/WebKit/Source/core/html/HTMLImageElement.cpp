@@ -253,7 +253,7 @@ void HTMLImageElement::ParseAttribute(
   const QualifiedName& name = params.name;
   if (name == altAttr || name == titleAttr) {
     if (UserAgentShadowRoot()) {
-      Element* text = UserAgentShadowRoot()->GetElementById("alttext");
+      Element* text = UserAgentShadowRoot()->getElementById("alttext");
       String value = AltText();
       if (text && text->textContent() != params.new_value)
         text->setTextContent(AltText());

@@ -273,7 +273,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntSize thumb_size;
   LayoutObject* thumb_layout_object =
       input->UserAgentShadowRoot()
-          ->GetElementById(ShadowElementNames::SliderThumb())
+          ->getElementById(ShadowElementNames::SliderThumb())
           ->GetLayoutObject();
   if (thumb_layout_object) {
     const ComputedStyle& thumb_style = thumb_layout_object->StyleRef();
@@ -291,7 +291,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntRect track_bounds;
   LayoutObject* track_layout_object =
       input->UserAgentShadowRoot()
-          ->GetElementById(ShadowElementNames::SliderTrack())
+          ->getElementById(ShadowElementNames::SliderTrack())
           ->GetLayoutObject();
   // We can ignoring transforms because transform is handled by the graphics
   // context.

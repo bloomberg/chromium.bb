@@ -56,9 +56,9 @@ TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* top = GetDocument().GetElementById("top")->firstChild();
-  Node* bottom = shadow_root->GetElementById("bottom")->firstChild();
-  Node* host = GetDocument().GetElementById("host");
+  Node* top = GetDocument().getElementById("top")->firstChild();
+  Node* bottom = shadow_root->getElementById("bottom")->firstChild();
+  Node* host = GetDocument().getElementById("host");
 
   // top to bottom
   SetNonDirectionalSelectionIfNeeded(SelectionInFlatTree::Builder()

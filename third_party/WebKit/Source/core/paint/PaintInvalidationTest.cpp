@@ -50,7 +50,7 @@ TEST_P(PaintInvalidationTest, RecalcOverflowInvalidatesBackground) {
   ASSERT_EQ(scrollable_area->MaximumScrollOffset().Height(), 0);
   EXPECT_FALSE(GetDocument().GetLayoutView()->MayNeedPaintInvalidation());
 
-  Element* container = GetDocument().GetElementById("container");
+  Element* container = GetDocument().getElementById("container");
   container->setAttribute(HTMLNames::styleAttr,
                           "transform: translateY(1000px);");
   GetDocument().UpdateStyleAndLayoutTree();
@@ -71,7 +71,7 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
       "</style>"
       "<iframe id='iframe'></iframe>");
 
-  Element* iframe = GetDocument().GetElementById("iframe");
+  Element* iframe = GetDocument().getElementById("iframe");
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
@@ -111,10 +111,10 @@ TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
       "  <div id='transform'></div>"
       "</div>");
 
-  auto& fixed = *GetDocument().GetElementById("fixed");
+  auto& fixed = *GetDocument().getElementById("fixed");
   const auto& fixed_object = ToLayoutBox(*fixed.GetLayoutObject());
   const auto& fixed_layer = *fixed_object.Layer();
-  auto& transform = *GetDocument().GetElementById("transform");
+  auto& transform = *GetDocument().getElementById("transform");
   EXPECT_TRUE(fixed_layer.SubtreeIsInvisible());
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), fixed_object.LayoutOverflowRect());
 

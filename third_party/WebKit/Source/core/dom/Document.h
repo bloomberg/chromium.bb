@@ -269,7 +269,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
-  using TreeScope::GetElementById;
+  using TreeScope::getElementById;
 
   bool CanContainRangeEndPoint() const override { return true; }
 

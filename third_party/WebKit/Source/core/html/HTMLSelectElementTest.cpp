@@ -43,12 +43,12 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
              "<option value='111' selected id='2'>!666</option>"
              "<option value='999'>999</option></select>"));
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("sel");
+  Element* element = GetDocument().getElementById("sel");
   HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
   HTMLOptionElement* opt0 =
-      toHTMLOptionElement(GetDocument().GetElementById("0"));
+      toHTMLOptionElement(GetDocument().getElementById("0"));
   HTMLOptionElement* opt2 =
-      toHTMLOptionElement(GetDocument().GetElementById("2"));
+      toHTMLOptionElement(GetDocument().getElementById("2"));
 
   // Save the select element state, and then restore again.
   // Test passes if the restored state is not changed.
@@ -78,14 +78,14 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState) {
              "<option value='999' selected id='3'>999</option></select>"));
   GetDocument().View()->UpdateAllLifecyclePhases();
   HTMLFormControlElementWithState* select =
-      toHTMLSelectElement(GetDocument().GetElementById("sel"));
+      toHTMLSelectElement(GetDocument().getElementById("sel"));
 
   HTMLOptionElement* opt0 =
-      toHTMLOptionElement(GetDocument().GetElementById("0"));
+      toHTMLOptionElement(GetDocument().getElementById("0"));
   HTMLOptionElement* opt2 =
-      toHTMLOptionElement(GetDocument().GetElementById("2"));
+      toHTMLOptionElement(GetDocument().getElementById("2"));
   HTMLOptionElement* opt3 =
-      toHTMLOptionElement(GetDocument().GetElementById("3"));
+      toHTMLOptionElement(GetDocument().getElementById("3"));
 
   // Save the select element state, and then restore again.
   // Test passes if the selected options are not changed.
@@ -120,10 +120,10 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
       "<option id='2'>222</option>"
       "</select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("sel");
+  Element* element = GetDocument().getElementById("sel");
   HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
   HTMLOptionElement* opt2 =
-      toHTMLOptionElement(GetDocument().GetElementById("2"));
+      toHTMLOptionElement(GetDocument().getElementById("2"));
 
   toHTMLSelectElement(element)->setSelectedIndex(1);
   // Save the current state.
@@ -319,12 +319,12 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option =
-        toHTMLOptionElement(GetDocument().GetElementById("o1"));
+        toHTMLOptionElement(GetDocument().getElementById("o1"));
     EXPECT_EQ("o2", select->NextSelectableOption(option)->FastGetAttribute(
                         HTMLNames::idAttr));
 
     EXPECT_EQ(nullptr, select->NextSelectableOption(toHTMLOptionElement(
-                           GetDocument().GetElementById("o2"))));
+                           GetDocument().getElementById("o2"))));
   }
   {
     GetDocument().documentElement()->setInnerHTML(
@@ -334,7 +334,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option =
-        toHTMLOptionElement(GetDocument().GetElementById("o1"));
+        toHTMLOptionElement(GetDocument().getElementById("o1"));
     EXPECT_EQ("o2", select->NextSelectableOption(option)->FastGetAttribute(
                         HTMLNames::idAttr));
   }
@@ -394,12 +394,12 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option =
-        toHTMLOptionElement(GetDocument().GetElementById("o2"));
+        toHTMLOptionElement(GetDocument().getElementById("o2"));
     EXPECT_EQ("o1", select->PreviousSelectableOption(option)->FastGetAttribute(
                         HTMLNames::idAttr));
 
     EXPECT_EQ(nullptr, select->PreviousSelectableOption(toHTMLOptionElement(
-                           GetDocument().GetElementById("o1"))));
+                           GetDocument().getElementById("o1"))));
   }
   {
     GetDocument().documentElement()->setInnerHTML(
@@ -409,7 +409,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     HTMLOptionElement* option =
-        toHTMLOptionElement(GetDocument().GetElementById("o2"));
+        toHTMLOptionElement(GetDocument().getElementById("o2"));
     EXPECT_EQ("o1", select->PreviousSelectableOption(option)->FastGetAttribute(
                         HTMLNames::idAttr));
   }

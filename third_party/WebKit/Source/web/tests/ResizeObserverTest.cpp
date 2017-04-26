@@ -70,8 +70,8 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   ResizeObserverCallback* callback =
       new TestResizeObserverCallback(GetDocument());
   ResizeObserver* observer = ResizeObserver::Create(GetDocument(), callback);
-  Element* dom_target = GetDocument().GetElementById("domTarget");
-  Element* svg_target = GetDocument().GetElementById("svgTarget");
+  Element* dom_target = GetDocument().getElementById("domTarget");
+  Element* svg_target = GetDocument().getElementById("svgTarget");
   ResizeObservation* dom_observation =
       new ResizeObservation(dom_target, observer);
   ResizeObservation* svg_observation =

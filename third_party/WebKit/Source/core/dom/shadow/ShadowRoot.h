@@ -64,7 +64,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   // Disambiguate between Node and TreeScope hierarchies; TreeScope's
   // implementation is simpler.
   using TreeScope::GetDocument;
-  using TreeScope::GetElementById;
+  using TreeScope::getElementById;
 
   // Make protected methods from base class public here.
   using TreeScope::SetDocument;

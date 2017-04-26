@@ -309,7 +309,7 @@ TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
   EXPECT_FALSE(grandchild1->SupportsSubsequenceCaching());
 
   GetDocument()
-      .GetElementById("grandchild1")
+      .getElementById("grandchild1")
       ->setAttribute(HTMLNames::styleAttr, "isolation: isolate");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -389,7 +389,7 @@ TEST_P(PaintLayerTest, Has3DTransformedDescendantChangeStyle) {
   EXPECT_FALSE(parent->Has3DTransformedDescendant());
   EXPECT_FALSE(child->Has3DTransformedDescendant());
 
-  GetDocument().GetElementById("child")->setAttribute(
+  GetDocument().getElementById("child")->setAttribute(
       HTMLNames::styleAttr, "transform: translateZ(1px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -444,7 +444,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
       "  style='transform: translate3d(4px, 5px, 6px);'/>");
 
   // Move the child frame offscreen so it becomes available for throttling.
-  auto* iframe = toHTMLIFrameElement(GetDocument().GetElementById("iframe"));
+  auto* iframe = toHTMLIFrameElement(GetDocument().getElementById("iframe"));
   iframe->setAttribute(HTMLNames::styleAttr, "transform: translateY(5555px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Ensure intersection observer notifications get delivered.
@@ -1010,7 +1010,7 @@ TEST_P(PaintLayerTest, PaintLayerTransformUpdatedOnStyleTransformAnimation) {
   SetBodyInnerHTML("<div id='target' style='will-change: transform'></div>");
 
   LayoutObject* target_object =
-      GetDocument().GetElementById("target")->GetLayoutObject();
+      GetDocument().getElementById("target")->GetLayoutObject();
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target_object)->Layer();
   EXPECT_EQ(nullptr, target_paint_layer->Transform());

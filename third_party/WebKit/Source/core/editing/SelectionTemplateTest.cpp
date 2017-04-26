@@ -27,7 +27,7 @@ TEST_F(SelectionTest, defaultConstructor) {
 TEST_F(SelectionTest, caret) {
   SetBodyContent("<div id='sample'>abcdef</div>");
 
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   Position position(Position(sample->firstChild(), 2));
   SelectionInDOMTree::Builder builder;
   builder.Collapse(position);
@@ -46,7 +46,7 @@ TEST_F(SelectionTest, caret) {
 TEST_F(SelectionTest, range) {
   SetBodyContent("<div id='sample'>abcdef</div>");
 
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   Position base(Position(sample->firstChild(), 2));
   Position extent(Position(sample->firstChild(), 4));
   SelectionInDOMTree::Builder builder;
