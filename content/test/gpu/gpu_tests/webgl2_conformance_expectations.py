@@ -1047,6 +1047,25 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=658844)
 
     # Linux AMD R7 240
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+    self.Fail('conformance2/textures/canvas/' +
+        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=710392)
+
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-float.html',
         ['linux', ('amd', 0x6613)], bug=701138)
