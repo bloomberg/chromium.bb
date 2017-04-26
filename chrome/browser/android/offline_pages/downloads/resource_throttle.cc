@@ -13,11 +13,13 @@
 #include "net/base/mime_util.h"
 
 namespace {
-// Mime type of download resource that should trigger handoff to OfflinePages
-// backend for full page load and snapshot.
-bool CanDownloadAsOfflinePage(const std::string& contents_mime_type) {
-  return net::MatchesMimeType(contents_mime_type, "text/html") ||
-         net::MatchesMimeType(contents_mime_type, "application/xhtml+xml");
+// Check if the url and mime type of a download resource should trigger handoff
+// to OfflinePages backend for full page load and snapshot.
+bool CanDownloadAsOfflinePage(
+    const GURL& url, const std::string& contents_mime_type) {
+  return url.SchemeIsHTTPOrHTTPS() &&
+      (net::MatchesMimeType(contents_mime_type, "text/html") ||
+          net::MatchesMimeType(contents_mime_type, "application/xhtml+xml"));
 }
 
 void WillStartOfflineRequestOnUIThread(
@@ -49,7 +51,8 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::string mime_type;
   request_->GetMimeType(&mime_type);
-  if (CanDownloadAsOfflinePage(mime_type)) {
+
+  if (CanDownloadAsOfflinePage(request_->url(), mime_type)) {
     const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request_);
     if (!info)
