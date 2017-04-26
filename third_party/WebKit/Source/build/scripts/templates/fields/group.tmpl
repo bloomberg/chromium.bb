@@ -1,7 +1,7 @@
 {% from 'fields/field.tmpl' import encode, declare_storage %}
 {% from 'macros.tmpl' import print_if %}
 {% macro define_field_group_class(group): -%}
-class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
+class {{group.type_name}} : public RefCountedCopyable<{{group.type_name}}> {
  public:
   static PassRefPtr<{{group.type_name}}> Create() {
     return AdoptRef(new {{group.type_name}});
@@ -30,11 +30,6 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
   {% endfor %}
   {}
 
-  ALWAYS_INLINE {{group.type_name}}(const {{group.type_name}}& other) :
-      RefCounted<{{group.type_name}}>(),
-  {% for field in group.fields %}
-      {{field.name}}(other.{{field.name}}){{print_if(not loop.last, ',')}}
-  {% endfor %}
-  {}
+  {{group.type_name}}(const {{group.type_name}}&) = default;
 };
 {%- endmacro %}
