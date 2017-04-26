@@ -9,8 +9,8 @@
 #include <string>
 
 #include "ash/login_status.h"
-#include "ash/system/network/network_detailed_view.h"
 #include "ash/system/network/network_list_delegate.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/image/image.h"
@@ -35,7 +35,7 @@ class SystemTrayItem;
 namespace tray {
 
 class NetworkStateListDetailedView
-    : public NetworkDetailedView,
+    : public TrayDetailsView,
       public NetworkListDelegate,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
@@ -46,10 +46,11 @@ class NetworkStateListDetailedView
                                LoginStatus login);
   ~NetworkStateListDetailedView() override;
 
-  // Overridden from NetworkDetailedView:
-  void Init() override;
-  DetailedViewType GetViewType() const override;
-  void Update() override;
+  void Init();
+
+  // Called when the contents of the network list have changed or when any
+  // Manager properties (e.g. technology state) have changed.
+  void Update();
 
  private:
   class InfoBubble;
