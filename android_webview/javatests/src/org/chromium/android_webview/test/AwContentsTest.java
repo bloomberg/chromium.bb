@@ -598,7 +598,7 @@ public class AwContentsTest extends AwTestBase {
         }
 
         @Override
-        public void determinedVisibility(int pid) {}
+        public void onDeterminedVisibility(int pid) {}
 
         @Override
         public void onSentToBackground() {}

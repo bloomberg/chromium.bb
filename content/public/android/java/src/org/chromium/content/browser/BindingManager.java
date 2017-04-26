@@ -48,7 +48,7 @@ public interface BindingManager {
      * binding. It's safe to call it multiple times, only the first call matters.
      * @param pid handle of the service process
      */
-    void determinedVisibility(int pid);
+    void onDeterminedVisibility(int pid);
 
     /**
      * Called when the embedding application is sent to background. We want to maintain a strong

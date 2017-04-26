@@ -9,7 +9,6 @@ import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
-import android.os.Handler;
 import android.util.LruCache;
 import android.util.SparseArray;
 
@@ -20,12 +19,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Manages oom bindings used to bound child services.
+ * This object must only be accessed from the launcher thread.
  */
 class BindingManagerImpl implements BindingManager {
     private static final String TAG = "cr.BindingManager";
@@ -48,38 +45,46 @@ class BindingManagerImpl implements BindingManager {
 
     private static class ModerateBindingPool
             extends LruCache<Integer, ManagedConnection> implements ComponentCallbacks2 {
-        private final Object mDelayedClearerLock = new Object();
-
-        @GuardedBy("mDelayedClearerLock")
         private Runnable mDelayedClearer;
-
-        private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
 
         public ModerateBindingPool(int maxSize) {
             super(maxSize);
         }
 
         @Override
-        public void onTrimMemory(int level) {
-            Log.i(TAG, "onTrimMemory: level=%d, size=%d", level, size());
-            if (size() > 0) {
-                if (level <= TRIM_MEMORY_RUNNING_MODERATE) {
-                    reduce(MODERATE_BINDING_LOW_REDUCE_RATIO);
-                } else if (level <= TRIM_MEMORY_RUNNING_LOW) {
-                    reduce(MODERATE_BINDING_HIGH_REDUCE_RATIO);
-                } else if (level == TRIM_MEMORY_UI_HIDDEN) {
-                    // This will be handled by |mDelayedClearer|.
-                    return;
-                } else {
-                    evictAll();
+        public void onTrimMemory(final int level) {
+            ThreadUtils.assertOnUiThread();
+            LauncherThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "onTrimMemory: level=%d, size=%d", level, size());
+                    if (size() <= 0) {
+                        return;
+                    }
+                    if (level <= TRIM_MEMORY_RUNNING_MODERATE) {
+                        reduce(MODERATE_BINDING_LOW_REDUCE_RATIO);
+                    } else if (level <= TRIM_MEMORY_RUNNING_LOW) {
+                        reduce(MODERATE_BINDING_HIGH_REDUCE_RATIO);
+                    } else if (level == TRIM_MEMORY_UI_HIDDEN) {
+                        // This will be handled by |mDelayedClearer|.
+                        return;
+                    } else {
+                        evictAll();
+                    }
                 }
-            }
+            });
         }
 
         @Override
         public void onLowMemory() {
-            Log.i(TAG, "onLowMemory: evict %d bindings", size());
-            evictAll();
+            ThreadUtils.assertOnUiThread();
+            LauncherThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "onLowMemory: evict %d bindings", size());
+                    evictAll();
+                }
+            });
         }
 
         @Override
@@ -135,37 +140,31 @@ class BindingManagerImpl implements BindingManager {
 
         void onSentToBackground(final boolean onTesting) {
             if (size() == 0) return;
-            synchronized (mDelayedClearerLock) {
-                mDelayedClearer = new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (mDelayedClearerLock) {
-                            if (mDelayedClearer == null) return;
-                            mDelayedClearer = null;
-                        }
-                        Log.i(TAG, "Release moderate connections: %d", size());
-                        if (!onTesting) {
-                            RecordHistogram.recordCountHistogram(
-                                    "Android.ModerateBindingCount", size());
-                        }
-                        evictAll();
+            mDelayedClearer = new Runnable() {
+                @Override
+                public void run() {
+                    if (mDelayedClearer == null) return;
+                    mDelayedClearer = null;
+                    Log.i(TAG, "Release moderate connections: %d", size());
+                    if (!onTesting) {
+                        RecordHistogram.recordCountHistogram(
+                                "Android.ModerateBindingCount", size());
                     }
-                };
-                mHandler.postDelayed(mDelayedClearer, MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
-            }
+                    evictAll();
+                }
+            };
+            LauncherThread.postDelayed(mDelayedClearer, MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
         }
 
         void onBroughtToForeground() {
-            synchronized (mDelayedClearerLock) {
-                if (mDelayedClearer == null) return;
-                mHandler.removeCallbacks(mDelayedClearer);
+            if (mDelayedClearer != null) {
+                LauncherThread.removeCallbacks(mDelayedClearer);
                 mDelayedClearer = null;
             }
         }
     }
 
-    private final AtomicReference<ModerateBindingPool> mModerateBindingPool =
-            new AtomicReference<>();
+    private ModerateBindingPool mModerateBindingPool;
 
     /**
      * Wraps ManagedChildProcessConnection keeping track of additional information needed to manage
@@ -204,8 +203,7 @@ class BindingManagerImpl implements BindingManager {
             if (connection == null) return;
 
             connection.addStrongBinding();
-            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-            if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
+            if (mModerateBindingPool != null) mModerateBindingPool.removeConnection(this);
         }
 
         /** Removes a strong service binding. */
@@ -232,7 +230,7 @@ class BindingManagerImpl implements BindingManager {
             if (mIsLowMemoryDevice) {
                 doUnbind.run();
             } else {
-                ThreadUtils.postOnUiThreadDelayed(doUnbind, DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
+                LauncherThread.postDelayed(doUnbind, DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
             }
         }
 
@@ -242,9 +240,8 @@ class BindingManagerImpl implements BindingManager {
          * @param connection The ChildProcessConnection to add to the moderate binding pool.
          */
         private void addConnectionToModerateBindingPool(ManagedChildProcessConnection connection) {
-            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-            if (moderateBindingPool != null && !connection.isStrongBindingBound()) {
-                moderateBindingPool.addConnection(ManagedConnection.this);
+            if (mModerateBindingPool != null && !connection.isStrongBindingBound()) {
+                mModerateBindingPool.addConnection(ManagedConnection.this);
             }
         }
 
@@ -295,7 +292,7 @@ class BindingManagerImpl implements BindingManager {
         /**
          * Called when it is safe to rely on setInForeground() for binding management.
          */
-        void determinedVisibility() {
+        void onDeterminedVisibility() {
             if (!removeInitialBinding()) return;
             // Decrease the likelihood of a recently created background tab getting evicted by
             // immediately adding moderate binding.
@@ -317,25 +314,19 @@ class BindingManagerImpl implements BindingManager {
         }
 
         void clearConnection() {
-            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-            if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
+            if (mModerateBindingPool != null) mModerateBindingPool.removeConnection(this);
             mConnection = null;
         }
     }
 
-    // This can be manipulated on different threads, synchronize access on mManagedConnections.
     private final SparseArray<ManagedConnection> mManagedConnections =
             new SparseArray<ManagedConnection>();
 
     // The connection that was most recently set as foreground (using setInForeground()). This is
     // used to add additional binding on it when the embedder goes to background. On low-end, this
-    // is also used to drop process bidnings when a new one is created, making sure that only one
+    // is also used to drop process bindings when a new one is created, making sure that only one
     // renderer process at a time is protected from oom killing.
     private ManagedConnection mLastInForeground;
-
-    // Synchronizes operations that access mLastInForeground: setInForeground() and
-    // addNewConnection().
-    private final Object mLastInForegroundLock = new Object();
 
     // The connection bound with additional binding in onSentToBackground().
     private ManagedConnection mBoundForBackgroundPeriod;
@@ -348,11 +339,13 @@ class BindingManagerImpl implements BindingManager {
      * Use factory methods to create an instance.
      */
     private BindingManagerImpl(boolean isLowMemoryDevice, boolean onTesting) {
+        assert LauncherThread.runningOnLauncherThread();
         mIsLowMemoryDevice = isLowMemoryDevice;
         mOnTesting = onTesting;
     }
 
     public static BindingManagerImpl createBindingManager() {
+        assert LauncherThread.runningOnLauncherThread();
         return new BindingManagerImpl(SysUtils.isLowEndDevice(), false);
     }
 
@@ -362,92 +355,78 @@ class BindingManagerImpl implements BindingManager {
      * @param isLowEndDevice true iff the created instance should apply low-end binding policies
      */
     public static BindingManagerImpl createBindingManagerForTesting(boolean isLowEndDevice) {
+        assert LauncherThread.runningOnLauncherThread();
         return new BindingManagerImpl(isLowEndDevice, true);
     }
 
     @Override
     public void addNewConnection(int pid, ManagedChildProcessConnection connection) {
+        assert LauncherThread.runningOnLauncherThread();
         // This will reset the previous entry for the pid in the unlikely event of the OS
         // reusing renderer pids.
-        synchronized (mManagedConnections) {
-            mManagedConnections.put(pid, new ManagedConnection(connection));
-        }
+        mManagedConnections.put(pid, new ManagedConnection(connection));
     }
 
     @Override
     public void setInForeground(int pid, boolean inForeground) {
-        ManagedConnection managedConnection;
-        synchronized (mManagedConnections) {
-            managedConnection = mManagedConnections.get(pid);
-        }
-
+        assert LauncherThread.runningOnLauncherThread();
+        ManagedConnection managedConnection = mManagedConnections.get(pid);
         if (managedConnection == null) {
             Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: %d", pid);
             return;
         }
 
-        synchronized (mLastInForegroundLock) {
-            if (inForeground && mIsLowMemoryDevice && mLastInForeground != null
-                    && mLastInForeground != managedConnection) {
-                mLastInForeground.dropBindings();
-            }
-
-            managedConnection.setInForeground(inForeground);
-            if (inForeground) mLastInForeground = managedConnection;
+        if (inForeground && mIsLowMemoryDevice && mLastInForeground != null
+                && mLastInForeground != managedConnection) {
+            mLastInForeground.dropBindings();
         }
+
+        managedConnection.setInForeground(inForeground);
+        if (inForeground) mLastInForeground = managedConnection;
     }
 
     @Override
-    public void determinedVisibility(int pid) {
-        ManagedConnection managedConnection;
-        synchronized (mManagedConnections) {
-            managedConnection = mManagedConnections.get(pid);
-        }
-
+    public void onDeterminedVisibility(int pid) {
+        assert LauncherThread.runningOnLauncherThread();
+        ManagedConnection managedConnection = mManagedConnections.get(pid);
         if (managedConnection == null) {
             Log.w(TAG, "Cannot call determinedVisibility() - never saw a connection for the pid: "
                     + "%d", pid);
             return;
         }
 
-        managedConnection.determinedVisibility();
+        managedConnection.onDeterminedVisibility();
     }
 
     @Override
     public void onSentToBackground() {
+        assert LauncherThread.runningOnLauncherThread();
         assert mBoundForBackgroundPeriod == null;
-        synchronized (mLastInForegroundLock) {
-            // mLastInForeground can be null at this point as the embedding application could be
-            // used in foreground without spawning any renderers.
-            if (mLastInForeground != null) {
-                mLastInForeground.setBoundForBackgroundPeriod(true);
-                mBoundForBackgroundPeriod = mLastInForeground;
-            }
+        // mLastInForeground can be null at this point as the embedding application could be
+        // used in foreground without spawning any renderers.
+        if (mLastInForeground != null) {
+            mLastInForeground.setBoundForBackgroundPeriod(true);
+            mBoundForBackgroundPeriod = mLastInForeground;
         }
-        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-        if (moderateBindingPool != null) moderateBindingPool.onSentToBackground(mOnTesting);
+        if (mModerateBindingPool != null) mModerateBindingPool.onSentToBackground(mOnTesting);
     }
 
     @Override
     public void onBroughtToForeground() {
+        assert LauncherThread.runningOnLauncherThread();
         if (mBoundForBackgroundPeriod != null) {
             mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
             mBoundForBackgroundPeriod = null;
         }
-        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-        if (moderateBindingPool != null) moderateBindingPool.onBroughtToForeground();
+        if (mModerateBindingPool != null) mModerateBindingPool.onBroughtToForeground();
     }
 
     @Override
     public void removeConnection(int pid) {
-        ManagedConnection managedConnection;
-        synchronized (mManagedConnections) {
-            managedConnection = mManagedConnections.get(pid);
-            if (managedConnection != null) {
-                mManagedConnections.remove(pid);
-            }
-        }
+        assert LauncherThread.runningOnLauncherThread();
+        ManagedConnection managedConnection = mManagedConnections.get(pid);
         if (managedConnection != null) {
+            mManagedConnections.remove(pid);
             managedConnection.clearConnection();
         }
     }
@@ -455,27 +434,32 @@ class BindingManagerImpl implements BindingManager {
     /** @return true iff the connection reference is no longer held */
     @VisibleForTesting
     public boolean isConnectionCleared(int pid) {
-        synchronized (mManagedConnections) {
-            return mManagedConnections.get(pid) == null;
-        }
+        assert LauncherThread.runningOnLauncherThread();
+        return mManagedConnections.get(pid) == null;
     }
 
     @Override
     public void startModerateBindingManagement(Context context, int maxSize) {
+        assert LauncherThread.runningOnLauncherThread();
         if (mIsLowMemoryDevice) return;
-        ModerateBindingPool pool = new ModerateBindingPool(maxSize);
-        if (mModerateBindingPool.compareAndSet(null, pool)) {
+
+        if (mModerateBindingPool == null) {
             Log.i(TAG, "Moderate binding enabled: maxSize=%d", maxSize);
-            if (context != null) context.registerComponentCallbacks(pool);
+            mModerateBindingPool = new ModerateBindingPool(maxSize);
+            if (context != null) {
+                // Note that it is safe to call Context.registerComponentCallbacks from a background
+                // thread.
+                context.registerComponentCallbacks(mModerateBindingPool);
+            }
         }
     }
 
     @Override
     public void releaseAllModerateBindings() {
-        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
-        if (moderateBindingPool != null) {
-            Log.i(TAG, "Release all moderate bindings: %d", moderateBindingPool.size());
-            moderateBindingPool.evictAll();
+        assert LauncherThread.runningOnLauncherThread();
+        if (mModerateBindingPool != null) {
+            Log.i(TAG, "Release all moderate bindings: %d", mModerateBindingPool.size());
+            mModerateBindingPool.evictAll();
         }
     }
 }

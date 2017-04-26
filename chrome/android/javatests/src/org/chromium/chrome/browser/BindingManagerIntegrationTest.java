@@ -119,7 +119,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         }
 
         @Override
-        public void determinedVisibility(int pid) {
+        public void onDeterminedVisibility(int pid) {
             synchronized (mVisibilityCallsMap) {
                 mVisibilityCallsMap.put(pid, mVisibilityCallsMap.get(pid) + "DETERMINED;");
             }
