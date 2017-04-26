@@ -544,8 +544,11 @@ void Scrollbar::SetEnabled(bool e) {
   enabled_ = e;
   GetTheme().UpdateEnabledState(*this);
 
-  ScrollbarPart invalid_parts = GetTheme().InvalidateOnEnabledChange();
-  SetNeedsPaintInvalidation(invalid_parts);
+  // We can skip thumb/track repaint when hiding an overlay scrollbar, but not
+  // when showing (since the proportions may have changed while hidden).
+  bool skipPartsRepaint = IsOverlayScrollbar() && scrollable_area_ &&
+                          scrollable_area_->ScrollbarsHidden();
+  SetNeedsPaintInvalidation(skipPartsRepaint ? kNoPart : kAllParts);
 }
 
 int Scrollbar::ScrollbarThickness() const {

@@ -53,8 +53,6 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
       float old_position,
       float new_position) const override;
 
-  ScrollbarPart InvalidateOnEnabledChange() const override;
-
   int ScrollbarThickness(ScrollbarControlSize) override;
   int ScrollbarMargin() const override;
   bool UsesOverlayScrollbars() const override;

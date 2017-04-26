@@ -11629,9 +11629,6 @@ TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
   frame->ExecuteScript(WebScriptSource(
       "document.getElementById('space').style.height = '500px';"));
   frame->View()->UpdateAllLifecyclePhases();
-
-  EXPECT_FALSE(scrollable_area->ScrollbarsHidden());
-  testing::RunDelayedTasks(kMockOverlayFadeOutDelayMs);
   EXPECT_TRUE(scrollable_area->ScrollbarsHidden());
 
   frame->ExecuteScript(WebScriptSource(
