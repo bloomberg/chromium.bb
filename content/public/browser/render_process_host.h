@@ -29,6 +29,10 @@ class SharedPersistentMemoryAllocator;
 class TimeDelta;
 }
 
+namespace service_manager {
+class Identity;
+}
+
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
@@ -278,6 +282,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Binds interfaces exposed to the browser process from the renderer.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
+  virtual const service_manager::Identity& GetChildIdentity() const = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data

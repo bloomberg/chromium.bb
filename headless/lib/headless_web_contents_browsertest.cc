@@ -190,6 +190,11 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsSecurityTest);
 class HeadlessTabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
                               public HeadlessTabSocket::Listener {
  public:
+  void SetUp() override {
+    options()->mojo_service_names.insert("headless::TabSocket");
+    HeadlessAsyncDevTooledBrowserTest::SetUp();
+  }
+
   void RunDevTooledTest() override {
     devtools_client_->GetRuntime()->Evaluate(
         R"(window.TabSocket.onmessage =

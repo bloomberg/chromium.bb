@@ -31,13 +31,14 @@ class HeadlessTabSocketImpl : public HeadlessTabSocket, public TabSocket {
   void CreateMojoService(mojo::InterfaceRequest<TabSocket> request);
 
  private:
-  mojo::BindingSet<TabSocket> mojo_bindings_;
-
   base::Lock lock_;  // Protects everything below.
   AwaitNextMessageFromEmbedderCallback waiting_for_message_cb_;
   std::list<std::string> outgoing_message_queue_;
   std::list<std::string> incoming_message_queue_;
   Listener* listener_;  // NOT OWNED
+
+  // Must be listed last so it gets destructed before |waiting_for_message_cb_|.
+  mojo::BindingSet<TabSocket> mojo_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessTabSocketImpl);
 };

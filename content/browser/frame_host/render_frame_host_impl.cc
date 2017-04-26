@@ -3331,17 +3331,14 @@ bool RenderFrameHostImpl::HasSelection() {
 
 void RenderFrameHostImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest interfaces) {
-  service_manager::InterfaceProviderSpec browser_spec, renderer_spec;
-  // TODO(beng): CHECK these return true.
-  service_manager::GetInterfaceProviderSpec(
-      mojom::kNavigation_FrameSpec, browser_info_.interface_provider_specs,
-      &browser_spec);
-  service_manager::GetInterfaceProviderSpec(
-      mojom::kNavigation_FrameSpec, renderer_info_.interface_provider_specs,
-      &renderer_spec);
-  interface_registry_->Bind(std::move(interfaces),
-                            browser_info_.identity, browser_spec,
-                            renderer_info_.identity, renderer_spec);
+  service_manager::Identity child_identity = GetProcess()->GetChildIdentity();
+  child_identity.set_user_id(
+      BrowserContext::GetServiceUserIdFor(GetProcess()->GetBrowserContext()));
+  service_manager::Connector* connector =
+      BrowserContext::GetConnectorFor(GetProcess()->GetBrowserContext());
+  connector->FilterInterfaces(
+      mojom::kNavigation_FrameSpec, child_identity, std::move(interfaces),
+      interface_provider_bindings_.CreateInterfacePtrAndBind(this));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -3639,6 +3636,15 @@ void RenderFrameHostImpl::Create(
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
   DCHECK(media_interface_proxy_);
   media_interface_proxy_.reset();
+}
+
+void RenderFrameHostImpl::GetInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (interface_registry_.get()) {
+    interface_registry_->BindInterface(interface_name,
+                                       std::move(interface_pipe));
+  }
 }
 
 std::unique_ptr<NavigationHandleImpl>

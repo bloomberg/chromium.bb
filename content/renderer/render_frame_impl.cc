@@ -177,6 +177,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -1317,6 +1318,12 @@ void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
   DCHECK(!blame_context_);
   blame_context_ = base::MakeUnique<FrameBlameContext>(this, parent_frame);
   blame_context_->Initialize();
+}
+
+void RenderFrameImpl::GetInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  interface_registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -2734,21 +2741,12 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
-  service_manager::ServiceInfo child_info =
-      ChildThreadImpl::current()->GetChildServiceInfo();
   service_manager::ServiceInfo browser_info =
       ChildThreadImpl::current()->GetBrowserServiceInfo();
-
-  service_manager::InterfaceProviderSpec child_spec, browser_spec;
-  // TODO(beng): CHECK these return true.
-  service_manager::GetInterfaceProviderSpec(
-      mojom::kNavigation_FrameSpec, child_info.interface_provider_specs,
-      &child_spec);
-  service_manager::GetInterfaceProviderSpec(
-      mojom::kNavigation_FrameSpec, browser_info.interface_provider_specs,
-      &browser_spec);
-  interface_registry_->Bind(std::move(request), child_info.identity, child_spec,
-                            browser_info.identity, browser_spec);
+  service_manager::Connector* connector = ChildThread::Get()->GetConnector();
+  connector->FilterInterfaces(
+      mojom::kNavigation_FrameSpec, browser_info.identity, std::move(request),
+      interface_provider_bindings_.CreateInterfacePtrAndBind(this));
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {

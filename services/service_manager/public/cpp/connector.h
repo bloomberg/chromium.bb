@@ -113,6 +113,11 @@ class Connector {
   // to pass again.
   virtual std::unique_ptr<Connector> Clone() = 0;
 
+  virtual void FilterInterfaces(const std::string& spec,
+                                const Identity& source_identity,
+                                mojom::InterfaceProviderRequest request,
+                                mojom::InterfaceProviderPtr target) = 0;
+
   // Binds a Connector request to the other end of this Connector.
   virtual void BindConnectorRequest(mojom::ConnectorRequest request) = 0;
 

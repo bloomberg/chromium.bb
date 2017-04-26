@@ -164,4 +164,20 @@ interface Connector {
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);
+
+  // Filter interface requests received from |source| according to the policy
+  // specified in this service's manifest in an InterfaceProviderSpec named
+  // |spec|.
+  //
+  // The flow is basically - remote service wishes to (generically) request
+  // interfaces from this service, and so sends us an InterfaceProvider request
+  // (|source_request|) which it would like us to bind. We forward this request
+  // to the Service Manager, passing our actual InterfaceProvider implementation
+  // in |target|. The Service Manager will only forward interface requests that
+  // were permitted by intersecting |source|'s manifest requirements with the
+  // contents of |spec|.
+  FilterInterfaces(string spec,
+                   Identity source,
+                   InterfaceProvider& source_request,
+                   InterfaceProvider target);
 };
