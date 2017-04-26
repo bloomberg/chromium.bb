@@ -35,7 +35,8 @@ LayoutTestDownloadManagerDelegate::~LayoutTestDownloadManagerDelegate(){
 bool LayoutTestDownloadManagerDelegate::ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) {
-  if (BlinkTestController::Get()->IsMainWindow(item->GetWebContents()) &&
+  if (BlinkTestController::Get() &&
+      BlinkTestController::Get()->IsMainWindow(item->GetWebContents()) &&
       item->GetMimeType() == "text/html") {
     BlinkTestController::Get()->OpenURL(
         net::FilePathToFileURL(item->GetFullPath()));
