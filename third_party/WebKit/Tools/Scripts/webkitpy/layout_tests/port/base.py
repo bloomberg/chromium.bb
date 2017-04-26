@@ -357,6 +357,7 @@ class Port(object):
         def error_handler(script_error):
             local_error.exit_code = script_error.exit_code
 
+        _log.warn('DISPLAY = %s', self.host.environ.get('DISPLAY', ''))
         output = self._executive.run_command(cmd, error_handler=error_handler)
         if local_error.exit_code:
             _log.error('System dependencies check failed.')
