@@ -36,7 +36,13 @@ void GvrDevice::CreateVRDisplayInfo(
 
 void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                                const base::Callback<void(bool)>& callback) {
-  gvr_provider_->RequestPresent(std::move(submit_client), callback);
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (!delegate_provider)
+    return callback.Run(false);
+
+  // RequestWebVRPresent is async as we may trigger a DON flow that pauses
+  // Chrome.
+  delegate_provider->RequestWebVRPresent(std::move(submit_client), callback);
 }
 
 void GvrDevice::SetSecureOrigin(bool secure_origin) {
@@ -47,7 +53,9 @@ void GvrDevice::SetSecureOrigin(bool secure_origin) {
 }
 
 void GvrDevice::ExitPresent() {
-  gvr_provider_->ExitPresent();
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (delegate_provider)
+    delegate_provider->ExitWebVRPresent();
   OnExitPresent();
 }
 

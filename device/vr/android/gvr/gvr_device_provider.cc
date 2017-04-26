@@ -4,17 +4,9 @@
 
 #include "device/vr/android/gvr/gvr_device_provider.h"
 
-#include <jni.h>
-
-#include "base/android/context_utils.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_utils.h"
-#include "base/android/scoped_java_ref.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_device_manager.h"
-#include "device/vr/vr_service.mojom.h"
 
 namespace device {
 
@@ -47,25 +39,6 @@ void GvrDeviceProvider::Initialize(GvrDelegateProvider* provider) {
   if (!provider)
     return;
   provider->SetDeviceProvider(this);
-}
-
-void GvrDeviceProvider::RequestPresent(
-    mojom::VRSubmitFrameClientPtr submit_client,
-    const base::Callback<void(bool)>& callback) {
-  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
-  if (!delegate_provider)
-    return callback.Run(false);
-
-  // RequestWebVRPresent is async as we may trigger a DON flow that pauses
-  // Chrome.
-  delegate_provider->RequestWebVRPresent(std::move(submit_client), callback);
-}
-
-// VR presentation exit requested by the API.
-void GvrDeviceProvider::ExitPresent() {
-  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
-  if (delegate_provider)
-    delegate_provider->ExitWebVRPresent();
 }
 
 void GvrDeviceProvider::SetListeningForActivate(bool listening) {
