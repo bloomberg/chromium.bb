@@ -167,6 +167,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeCopy];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
+  item.textColor = [[MDCPalette cr_bluePalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -175,6 +176,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
+  item.textColor = [[MDCPalette cr_bluePalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -207,6 +209,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
       base::mac::ObjCCastStrict<CollectionViewTextItem>(
           [model itemAtIndexPath:path]);
   item.text = [self showHideButtonText];
+  item.textColor = [[MDCPalette cr_bluePalette] tint500];
   [self reconfigureCellsForItems:@[ item ]
          inSectionWithIdentifier:SectionIdentifierPassword];
   [self.collectionView.collectionViewLayout invalidateLayout];
