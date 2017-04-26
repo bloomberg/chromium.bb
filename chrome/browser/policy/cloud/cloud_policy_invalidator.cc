@@ -266,10 +266,9 @@ void CloudPolicyInvalidator::HandleInvalidation(
   // Schedule the policy to be refreshed.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(
-          &CloudPolicyInvalidator::RefreshPolicy,
-          weak_factory_.GetWeakPtr(),
-          payload.empty() /* is_missing_payload */),
+      base::BindOnce(&CloudPolicyInvalidator::RefreshPolicy,
+                     weak_factory_.GetWeakPtr(),
+                     payload.empty() /* is_missing_payload */),
       delay);
 }
 
