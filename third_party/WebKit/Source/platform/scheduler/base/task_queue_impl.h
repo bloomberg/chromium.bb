@@ -61,9 +61,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
  public:
   TaskQueueImpl(TaskQueueManager* task_queue_manager,
                 TimeDomain* time_domain,
-                const Spec& spec,
-                const char* disabled_by_default_tracing_category,
-                const char* disabled_by_default_verbose_tracing_category);
+                const Spec& spec);
 
   // Represents a time at which a task wants to run. Tasks scheduled for the
   // same point in time will be ordered by their sequence numbers.
@@ -357,8 +355,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   const QueueType type_;
   const char* const name_;
-  const char* const disabled_by_default_tracing_category_;
-  const char* const disabled_by_default_verbose_tracing_category_;
 
   base::ThreadChecker main_thread_checker_;
   MainThreadOnly main_thread_only_;

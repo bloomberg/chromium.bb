@@ -13,11 +13,9 @@ namespace scheduler {
 
 SingleThreadIdleTaskRunner::SingleThreadIdleTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
-    Delegate* delegate,
-    const char* tracing_category)
+    Delegate* delegate)
     : idle_priority_task_runner_(idle_priority_task_runner),
       delegate_(delegate),
-      tracing_category_(tracing_category),
       blame_context_(nullptr),
       weak_factory_(this) {
   DCHECK(!idle_priority_task_runner_ ||
@@ -80,7 +78,7 @@ void SingleThreadIdleTaskRunner::EnqueueReadyDelayedIdleTasks() {
 
 void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {
   base::TimeTicks deadline = delegate_->WillProcessIdleTask();
-  TRACE_EVENT1(tracing_category_, "SingleThreadIdleTaskRunner::RunTask",
+  TRACE_EVENT1("renderer.scheduler", "SingleThreadIdleTaskRunner::RunTask",
                "allotted_time_ms",
                (deadline - base::TimeTicks::Now()).InMillisecondsF());
   if (blame_context_)

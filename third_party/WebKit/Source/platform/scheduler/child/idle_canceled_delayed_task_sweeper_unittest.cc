@@ -36,21 +36,13 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
         delegate_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new SchedulerHelper(
-            delegate_,
-            "test.scheduler",
-            TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
-            TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"))),
-        idle_helper_(
-            new IdleHelper(scheduler_helper_.get(),
-                           this,
-                           "test.scheduler",
-                           TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
-                           TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"),
-                           base::TimeDelta::FromSeconds(30))),
+        scheduler_helper_(new SchedulerHelper(delegate_)),
+        idle_helper_(new IdleHelper(scheduler_helper_.get(),
+                                    this,
+                                    "test",
+                                    base::TimeDelta::FromSeconds(30))),
         idle_canceled_delayed_taks_sweeper_(
-            new IdleCanceledDelayedTaskSweeper("test",
-                                               scheduler_helper_.get(),
+            new IdleCanceledDelayedTaskSweeper(scheduler_helper_.get(),
                                                idle_helper_->IdleTaskRunner())),
         default_task_queue_(scheduler_helper_->DefaultTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));

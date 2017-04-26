@@ -45,9 +45,7 @@ class IdleTimeEstimatorTest : public testing::Test {
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
-    manager_ = base::MakeUnique<TaskQueueManager>(
-        main_task_runner_, "test.scheduler", "test.scheduler",
-        "test.scheduler.debug");
+    manager_ = base::MakeUnique<TaskQueueManager>(main_task_runner_);
     compositor_task_queue_ = manager_->NewTaskQueue(
         TaskQueue::Spec(TaskQueue::QueueType::COMPOSITOR));
     estimator_.reset(new IdleTimeEstimatorForTest(

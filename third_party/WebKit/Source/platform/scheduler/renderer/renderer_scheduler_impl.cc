@@ -87,18 +87,12 @@ std::string PointerToId(void* pointer) {
 
 RendererSchedulerImpl::RendererSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : helper_(main_task_runner,
-              "renderer.scheduler",
-              TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-              TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug")),
+    : helper_(main_task_runner),
       idle_helper_(&helper_,
                    this,
-                   "renderer.scheduler",
-                   TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
-      idle_canceled_delayed_task_sweeper_("renderer.scheduler",
-                                          &helper_,
+      idle_canceled_delayed_task_sweeper_(&helper_,
                                           idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
       control_task_queue_(helper_.ControlTaskQueue()),
@@ -119,8 +113,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                         helper_.scheduler_tqm_delegate()->NowTicks()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
-  task_queue_throttler_.reset(
-      new TaskQueueThrottler(this, "renderer.scheduler"));
+  task_queue_throttler_.reset(new TaskQueueThrottler(this));
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_factory_.GetWeakPtr());
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(

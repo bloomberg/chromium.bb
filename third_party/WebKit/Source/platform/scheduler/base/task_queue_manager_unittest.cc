@@ -46,15 +46,9 @@ namespace scheduler {
 
 class TaskQueueManagerForTest : public TaskQueueManager {
  public:
-  TaskQueueManagerForTest(
-      scoped_refptr<TaskQueueManagerDelegate> delegate,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category)
-      : TaskQueueManager(delegate,
-                         tracing_category,
-                         disabled_by_default_tracing_category,
-                         disabled_by_default_verbose_tracing_category) {}
+  explicit TaskQueueManagerForTest(
+      scoped_refptr<TaskQueueManagerDelegate> delegate)
+      : TaskQueueManager(delegate) {}
 
   using TaskQueueManager::NextTaskDelay;
 };
@@ -102,9 +96,7 @@ class TaskQueueManagerTest : public testing::Test {
         test_task_runner_.get(),
         base::MakeUnique<TestTimeSource>(now_src_.get()));
 
-    manager_ = base::MakeUnique<TaskQueueManagerForTest>(
-        main_task_runner_, "test.scheduler", "test.scheduler",
-        "test.scheduler.debug");
+    manager_ = base::MakeUnique<TaskQueueManagerForTest>(main_task_runner_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(
@@ -123,10 +115,9 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     // A null clock triggers some assertions.
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
-    manager_ = base::MakeUnique<TaskQueueManagerForTest>(
-        MessageLoopTaskRunner::Create(
-            base::WrapUnique(new TestTimeSource(now_src_.get()))),
-        "test.scheduler", "test.scheduler", "test.scheduler.debug");
+    manager_ =
+        base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+            base::WrapUnique(new TestTimeSource(now_src_.get()))));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(
@@ -223,10 +214,9 @@ TEST_F(TaskQueueManagerTest,
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ = base::MakeUnique<TaskQueueManagerForTest>(
-      MessageLoopTaskRunner::Create(
-          base::WrapUnique(test_count_uses_time_source)),
-      "test.scheduler", "test.scheduler", "test.scheduler.debug");
+  manager_ =
+      base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+          base::WrapUnique(test_count_uses_time_source)));
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -256,10 +246,9 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ = base::MakeUnique<TaskQueueManagerForTest>(
-      MessageLoopTaskRunner::Create(
-          base::WrapUnique(test_count_uses_time_source)),
-      "test.scheduler", "test.scheduler", "test.scheduler.debug");
+  manager_ =
+      base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+          base::WrapUnique(test_count_uses_time_source)));
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   runners_.push_back(
@@ -1659,8 +1648,8 @@ TEST_F(TaskQueueManagerTest,
 
   std::vector<EnqueueOrder> run_order;
 
-  std::unique_ptr<RealTimeDomain> domain_a(new RealTimeDomain("test"));
-  std::unique_ptr<RealTimeDomain> domain_b(new RealTimeDomain("test"));
+  std::unique_ptr<RealTimeDomain> domain_a(new RealTimeDomain());
+  std::unique_ptr<RealTimeDomain> domain_b(new RealTimeDomain());
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
 

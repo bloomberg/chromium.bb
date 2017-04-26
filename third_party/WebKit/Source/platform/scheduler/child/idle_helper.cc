@@ -19,8 +19,6 @@ namespace scheduler {
 IdleHelper::IdleHelper(
     SchedulerHelper* helper,
     Delegate* delegate,
-    const char* tracing_category,
-    const char* disabled_by_default_tracing_category,
     const char* idle_period_tracing_name,
     base::TimeDelta required_quiescence_duration_before_long_idle_period)
     : helper_(helper),
@@ -29,13 +27,9 @@ IdleHelper::IdleHelper(
           helper_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::IDLE))),
       state_(helper,
              delegate,
-             tracing_category,
-             disabled_by_default_tracing_category,
              idle_period_tracing_name),
       required_quiescence_duration_before_long_idle_period_(
           required_quiescence_duration_before_long_idle_period),
-      disabled_by_default_tracing_category_(
-          disabled_by_default_tracing_category),
       is_shutdown_(false),
       weak_factory_(this) {
   weak_idle_helper_ptr_ = weak_factory_.GetWeakPtr();
@@ -44,8 +38,8 @@ IdleHelper::IdleHelper(
   on_idle_task_posted_closure_.Reset(base::Bind(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
-  idle_task_runner_ = make_scoped_refptr(
-      new SingleThreadIdleTaskRunner(idle_queue_, this, tracing_category));
+  idle_task_runner_ =
+      make_scoped_refptr(new SingleThreadIdleTaskRunner(idle_queue_, this));
 
   // This fence will block any idle tasks from running.
   idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
@@ -126,13 +120,15 @@ bool IdleHelper::ShouldWaitForQuiescence() {
   }
 
   bool system_is_quiescent = helper_->GetAndClearSystemIsQuiescentBit();
-  TRACE_EVENT1(disabled_by_default_tracing_category_, "ShouldWaitForQuiescence",
-               "system_is_quiescent", system_is_quiescent);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "ShouldWaitForQuiescence", "system_is_quiescent",
+               system_is_quiescent);
   return !system_is_quiescent;
 }
 
 void IdleHelper::EnableLongIdlePeriod() {
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "EnableLongIdlePeriod");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "EnableLongIdlePeriod");
   helper_->CheckOnValidThread();
   if (is_shutdown_)
     return;
@@ -177,14 +173,15 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   base::TimeDelta idle_period_duration(idle_period_deadline - now);
   if (idle_period_duration <
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
-    TRACE_EVENT1(disabled_by_default_tracing_category_,
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "NotStartingIdlePeriodBecauseDeadlineIsTooClose",
                  "idle_period_duration_ms",
                  idle_period_duration.InMillisecondsF());
     return;
   }
 
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "StartIdlePeriod");
   if (!IsInIdlePeriod(state_.idle_period_state()))
     helper_->AddTaskObserver(this);
 
@@ -200,7 +197,8 @@ void IdleHelper::EndIdlePeriod() {
     return;
 
   helper_->CheckOnValidThread();
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "EndIdlePeriod");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "EndIdlePeriod");
 
   enable_next_long_idle_period_closure_.Cancel();
   on_idle_task_posted_closure_.Cancel();
@@ -225,7 +223,8 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
   helper_->CheckOnValidThread();
   DCHECK(!is_shutdown_);
   DCHECK(IsInIdlePeriod(state_.idle_period_state()));
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "DidProcessTask");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "DidProcessTask");
   if (state_.idle_period_state() !=
           IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED &&
       helper_->scheduler_tqm_delegate()->NowTicks() >=
@@ -246,7 +245,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
   helper_->CheckOnValidThread();
   DCHECK(!is_shutdown_);
   DCHECK(IsInLongIdlePeriod(state_.idle_period_state()));
-  TRACE_EVENT0(disabled_by_default_tracing_category_,
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "UpdateLongIdlePeriodStateAfterIdleTask");
 
   if (!idle_queue_->HasPendingImmediateWork()) {
@@ -285,7 +284,8 @@ base::TimeTicks IdleHelper::CurrentIdleTaskDeadline() const {
 }
 
 void IdleHelper::OnIdleTaskPosted() {
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "OnIdleTaskPosted");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "OnIdleTaskPosted");
   if (is_shutdown_)
     return;
   if (idle_task_runner_->RunsTasksOnCurrentThread()) {
@@ -297,7 +297,7 @@ void IdleHelper::OnIdleTaskPosted() {
 }
 
 void IdleHelper::OnIdleTaskPostedOnMainThread() {
-  TRACE_EVENT0(disabled_by_default_tracing_category_,
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "OnIdleTaskPostedOnMainThread");
   if (is_shutdown_)
     return;
@@ -343,7 +343,7 @@ bool IdleHelper::IsInLongIdlePeriod(IdlePeriodState state) {
 }
 
 bool IdleHelper::CanExceedIdleDeadlineIfRequired() const {
-  TRACE_EVENT0(disabled_by_default_tracing_category_,
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "CanExceedIdleDeadlineIfRequired");
   helper_->CheckOnValidThread();
   return state_.idle_period_state() ==
@@ -356,17 +356,12 @@ IdleHelper::IdlePeriodState IdleHelper::SchedulerIdlePeriodState() const {
 
 IdleHelper::State::State(SchedulerHelper* helper,
                          Delegate* delegate,
-                         const char* tracing_category,
-                         const char* disabled_by_default_tracing_category,
                          const char* idle_period_tracing_name)
     : helper_(helper),
       delegate_(delegate),
       idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
       idle_period_trace_event_started_(false),
       running_idle_task_for_tracing_(false),
-      tracing_category_(tracing_category),
-      disabled_by_default_tracing_category_(
-          disabled_by_default_tracing_category),
       idle_period_tracing_name_(idle_period_tracing_name) {}
 
 IdleHelper::State::~State() {}
@@ -393,7 +388,7 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
   }
 
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
   if (is_tracing) {
     base::TimeTicks now(optional_now.is_null()
                             ? helper_->scheduler_tqm_delegate()->NowTicks()
@@ -418,7 +413,7 @@ void IdleHelper::State::TraceIdleIdleTaskStart() {
   helper_->CheckOnValidThread();
 
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
   if (is_tracing) {
     TraceEventIdlePeriodStateChange(idle_period_state_, true,
                                     idle_period_deadline_,
@@ -430,7 +425,7 @@ void IdleHelper::State::TraceIdleIdleTaskEnd() {
   helper_->CheckOnValidThread();
 
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
   if (is_tracing) {
     TraceEventIdlePeriodStateChange(idle_period_state_, false,
                                     idle_period_deadline_,
@@ -443,8 +438,8 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
     bool new_running_idle_task,
     base::TimeTicks new_deadline,
     base::TimeTicks now) {
-  TRACE_EVENT2(disabled_by_default_tracing_category_, "SetIdlePeriodState",
-               "old_state",
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "SetIdlePeriodState", "old_state",
                IdleHelper::IdlePeriodStateToString(idle_period_state_),
                "new_state", IdleHelper::IdlePeriodStateToString(new_state));
 
@@ -453,7 +448,8 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
     running_idle_task_for_tracing_ = false;
     if (!idle_period_deadline_.is_null() && now > idle_period_deadline_) {
       TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-          tracing_category_, idle_period_tracing_name_, this, "DeadlineOverrun",
+          "renderer.scheduler", idle_period_tracing_name_, this,
+          "DeadlineOverrun",
           std::max(idle_period_deadline_, last_idle_task_trace_time_));
     }
   }
@@ -461,7 +457,7 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
   if (IsInIdlePeriod(new_state)) {
     if (!idle_period_trace_event_started_) {
       idle_period_trace_event_started_ = true;
-      TRACE_EVENT_ASYNC_BEGIN1(tracing_category_, idle_period_tracing_name_,
+      TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", idle_period_tracing_name_,
                                this, "idle_period_length_ms",
                                (new_deadline - now).ToInternalValue());
     }
@@ -469,22 +465,27 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
     if (new_running_idle_task) {
       last_idle_task_trace_time_ = now;
       running_idle_task_for_tracing_ = true;
-      TRACE_EVENT_ASYNC_STEP_INTO0(tracing_category_, idle_period_tracing_name_,
-                                   this, "RunningIdleTask");
+      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
+                                   idle_period_tracing_name_, this,
+                                   "RunningIdleTask");
     } else if (new_state == IdlePeriodState::IN_SHORT_IDLE_PERIOD) {
-      TRACE_EVENT_ASYNC_STEP_INTO0(tracing_category_, idle_period_tracing_name_,
-                                   this, "ShortIdlePeriod");
+      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
+                                   idle_period_tracing_name_, this,
+                                   "ShortIdlePeriod");
     } else if (IsInLongIdlePeriod(new_state) &&
                new_state != IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
-      TRACE_EVENT_ASYNC_STEP_INTO0(tracing_category_, idle_period_tracing_name_,
-                                   this, "LongIdlePeriod");
+      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
+                                   idle_period_tracing_name_, this,
+                                   "LongIdlePeriod");
     } else if (new_state == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
-      TRACE_EVENT_ASYNC_STEP_INTO0(tracing_category_, idle_period_tracing_name_,
-                                   this, "LongIdlePeriodPaused");
+      TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
+                                   idle_period_tracing_name_, this,
+                                   "LongIdlePeriodPaused");
     }
   } else if (idle_period_trace_event_started_) {
     idle_period_trace_event_started_ = false;
-    TRACE_EVENT_ASYNC_END0(tracing_category_, idle_period_tracing_name_, this);
+    TRACE_EVENT_ASYNC_END0("renderer.scheduler", idle_period_tracing_name_,
+                           this);
   }
 }
 

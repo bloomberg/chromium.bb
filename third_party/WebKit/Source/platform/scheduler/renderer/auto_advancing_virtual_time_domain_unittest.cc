@@ -32,9 +32,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
 
-    manager_ = base::MakeUnique<TaskQueueManager>(
-        main_task_runner_, "test.scheduler", "test.scheduler",
-        "test.scheduler.debug");
+    manager_ = base::MakeUnique<TaskQueueManager>(main_task_runner_);
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ =
         manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));

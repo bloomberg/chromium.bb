@@ -58,10 +58,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Create a task queue manager where |delegate| identifies the thread
   // on which where the tasks are  eventually run. Category strings must have
   // application lifetime (statics or literals). They may not include " chars.
-  TaskQueueManager(scoped_refptr<TaskQueueManagerDelegate> delegate,
-                   const char* tracing_category,
-                   const char* disabled_by_default_tracing_category,
-                   const char* disabled_by_default_verbose_tracing_category);
+  explicit TaskQueueManager(scoped_refptr<TaskQueueManagerDelegate> delegate);
   ~TaskQueueManager() override;
 
   // Requests that a task to process work is posted on the main task runner.
@@ -371,10 +368,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
   base::ObserverList<TaskTimeObserver> task_time_observers_;
-
-  const char* tracing_category_;
-  const char* disabled_by_default_tracing_category_;
-  const char* disabled_by_default_verbose_tracing_category_;
 
   internal::TaskQueueImpl* currently_executing_task_queue_;  // NOT OWNED
 

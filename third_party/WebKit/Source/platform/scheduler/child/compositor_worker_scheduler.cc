@@ -20,11 +20,7 @@ namespace scheduler {
 CompositorWorkerScheduler::CompositorWorkerScheduler(
     base::Thread* thread,
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(
-          main_task_runner,
-          "compositor.scheduler",
-          TRACE_DISABLED_BY_DEFAULT("compositor.scheduler"),
-          TRACE_DISABLED_BY_DEFAULT("compositor.scheduler.debug"))),
+    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(main_task_runner)),
       thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
@@ -46,8 +42,8 @@ CompositorWorkerScheduler::IdleTaskRunner() {
   // an idle task runner with the semantics we want for the compositor thread
   // which runs them after the current frame has been drawn before the next
   // vsync. https://crbug.com/609532
-  return make_scoped_refptr(new SingleThreadIdleTaskRunner(
-      thread_->task_runner(), this, "compositor.scheduler"));
+  return make_scoped_refptr(
+      new SingleThreadIdleTaskRunner(thread_->task_runner(), this));
 }
 
 bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {

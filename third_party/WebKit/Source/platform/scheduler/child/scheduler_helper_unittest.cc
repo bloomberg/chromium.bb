@@ -53,11 +53,7 @@ class SchedulerHelperTest : public testing::Test {
         main_task_runner_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new SchedulerHelper(
-            main_task_runner_,
-            "test.scheduler",
-            TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
-            TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"))),
+        scheduler_helper_(new SchedulerHelper(main_task_runner_)),
         default_task_runner_(scheduler_helper_->DefaultTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
