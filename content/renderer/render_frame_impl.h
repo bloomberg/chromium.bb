@@ -627,8 +627,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
                               int world_id) override;
-  void WillReleaseScriptContext(blink::WebLocalFrame* frame,
-                                v8::Local<v8::Context> context,
+  void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
   void WillInsertBody(blink::WebLocalFrame* frame) override;

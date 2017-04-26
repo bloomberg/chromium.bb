@@ -4616,11 +4616,8 @@ void RenderFrameImpl::DidCreateScriptContext(blink::WebLocalFrame* frame,
     observer.DidCreateScriptContext(context, world_id);
 }
 
-void RenderFrameImpl::WillReleaseScriptContext(blink::WebLocalFrame* frame,
-                                               v8::Local<v8::Context> context,
+void RenderFrameImpl::WillReleaseScriptContext(v8::Local<v8::Context> context,
                                                int world_id) {
-  DCHECK_EQ(frame_, frame);
-
   for (auto& observer : observers_)
     observer.WillReleaseScriptContext(context, world_id);
 }

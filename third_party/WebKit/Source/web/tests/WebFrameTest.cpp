@@ -4474,12 +4474,10 @@ class ContextLifetimeTestWebFrameClient
         WTF::MakeUnique<Notification>(frame, context, world_id));
   }
 
-  void WillReleaseScriptContext(WebLocalFrame* frame,
-                                v8::Local<v8::Context> context,
+  void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override {
-    ASSERT_EQ(Frame(), frame);
     release_notifications_.push_back(
-        WTF::MakeUnique<Notification>(frame, context, world_id));
+        WTF::MakeUnique<Notification>(Frame(), context, world_id));
   }
 };
 
