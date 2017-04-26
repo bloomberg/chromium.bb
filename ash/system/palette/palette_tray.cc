@@ -178,10 +178,6 @@ bool PaletteTray::ShowPalette() {
 
   DCHECK(tray_container());
 
-  // The views::TrayBubbleView ctor will cause a shelf auto hide update check.
-  // Make sure to block auto hiding before that check happens.
-  should_block_shelf_auto_hide_ = true;
-
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
   // rows.
@@ -314,7 +310,6 @@ void PaletteTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 }
 
 void PaletteTray::HidePalette() {
-  should_block_shelf_auto_hide_ = false;
   is_bubble_auto_opened_ = false;
   num_actions_in_bubble_ = 0;
   bubble_.reset();
@@ -347,10 +342,6 @@ void PaletteTray::RecordPaletteModeCancellation(PaletteModeCancelType type) {
   UMA_HISTOGRAM_ENUMERATION(
       "Ash.Shelf.Palette.ModeCancellation", type,
       PaletteModeCancelType::PALETTE_MODE_CANCEL_TYPE_COUNT);
-}
-
-bool PaletteTray::ShouldBlockShelfAutoHide() const {
-  return should_block_shelf_auto_hide_;
 }
 
 void PaletteTray::OnActiveToolChanged() {

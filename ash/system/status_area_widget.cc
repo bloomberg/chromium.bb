@@ -136,18 +136,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
-  if ((system_tray_ && system_tray_->ShouldShowShelf()) ||
-      (web_notification_tray_ &&
-       web_notification_tray_->ShouldBlockShelfAutoHide()))
-    return true;
-
-  if (palette_tray_ && palette_tray_->ShouldBlockShelfAutoHide())
-    return true;
-
-  if (ime_menu_tray_ && ime_menu_tray_->ShouldBlockShelfAutoHide())
-    return true;
-
-  return false;
+  return (system_tray_ && system_tray_->ShouldShowShelf()) ||
+         views::TrayBubbleView::IsATrayBubbleOpen();
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
