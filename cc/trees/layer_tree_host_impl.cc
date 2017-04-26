@@ -324,15 +324,6 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
 void LayerTreeHostImpl::BeginCommit() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
 
-  // Ensure all textures are returned so partial texture updates can happen
-  // during the commit.
-  // TODO(ericrk): We should not need to ForceReclaimResources when using
-  // Impl-side-painting as it doesn't upload during commits. However,
-  // Display::Draw currently relies on resource being reclaimed to block drawing
-  // between BeginCommit / Swap. See crbug.com/489515.
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->ForceReclaimResources();
-
   if (!CommitToActiveTree())
     CreatePendingTree();
 }
@@ -800,8 +791,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       !root_surface->layer_list().empty();
   bool hud_wants_to_draw_ = active_tree_->hud_layer() &&
                             active_tree_->hud_layer()->IsAnimatingHUDContents();
-  bool resources_must_be_resent =
-      compositor_frame_sink_->capabilities().can_force_reclaim_resources;
+  bool must_always_swap =
+      compositor_frame_sink_->capabilities().must_always_swap;
   // When touch handle visibility changes there is no visible damage
   // because touch handles are composited in the browser. However we
   // still want the browser to be notified that the handles changed
@@ -812,8 +803,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   if (root_surface_has_contributing_layers &&
       root_surface_has_no_visible_damage &&
       !active_tree_->property_trees()->effect_tree.HasCopyRequests() &&
-      !resources_must_be_resent && !hud_wants_to_draw_ &&
-      !handle_visibility_changed) {
+      !must_always_swap && !hud_wants_to_draw_ && !handle_visibility_changed) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;

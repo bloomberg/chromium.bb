@@ -87,13 +87,6 @@ void SurfaceFactory::RequestCopyOfSurface(
   manager_->SurfaceModified(current_surface_->surface_id());
 }
 
-void SurfaceFactory::ClearSurface() {
-  if (!current_surface_)
-    return;
-  current_surface_->EvictFrame();
-  manager_->SurfaceModified(current_surface_->surface_id());
-}
-
 void SurfaceFactory::ReceiveFromChild(
     const TransferableResourceArray& resources) {
   holder_.ReceiveFromChild(resources);

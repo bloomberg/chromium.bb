@@ -51,7 +51,6 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
-  void ForceReclaimResources() override;
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;

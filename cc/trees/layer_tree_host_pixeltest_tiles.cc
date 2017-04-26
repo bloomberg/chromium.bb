@@ -157,11 +157,17 @@ class LayerTreeHostTilesTestPartialInvalidation
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        // We have done one frame, so the layer's content has been rastered.
-        // Now we change the picture behind it to record something completely
-        // different, but we give a smaller invalidation rect. The layer should
-        // only re-raster the stuff in the rect. If it doesn't do partial raster
-        // it would re-raster the whole thing instead.
+        // We have done one frame, but the resource may not be available for
+        // partial raster yet. Force a second frame.
+        picture_layer_->SetNeedsDisplayRect(gfx::Rect(50, 50, 100, 100));
+        break;
+      case 2:
+        // We have done two frames, so the layer's content has been rastered
+        // twice and the first frame's resource is available for partial
+        // raster. Now we change the picture behind it to record something
+        // completely different, but we give a smaller invalidation rect. The
+        // layer should only re-raster the stuff in the rect. If it doesn't do
+        // partial raster it would re-raster the whole thing instead.
         client_.set_blue_top(false);
         Finish();
         picture_layer_->SetNeedsDisplayRect(gfx::Rect(50, 50, 100, 100));

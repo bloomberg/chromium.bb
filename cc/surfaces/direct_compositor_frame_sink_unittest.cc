@@ -171,19 +171,6 @@ TEST_F(DirectCompositorFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(DirectCompositorFrameSinkTest,
-       LockingResourcesDoesNotIndirectlyCauseDamage) {
-  compositor_frame_sink_->ForceReclaimResources();
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-  task_runner_->RunPendingTasks();
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-
-  SwapBuffersWithDamage(gfx::Rect());
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-  task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-}
-
 class TestBeginFrameObserver : public BeginFrameObserverBase {
  public:
   const BeginFrameAck& ack() const { return ack_; }

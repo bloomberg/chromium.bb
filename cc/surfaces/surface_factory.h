@@ -65,10 +65,6 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
                              const WillDrawCallback& will_draw_callback);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> copy_request);
 
-  // Evicts the current frame on the surface. All the resources
-  // will be released and Surface::HasFrame will return false.
-  void ClearSurface();
-
   SurfaceFactoryClient* client() { return client_; }
 
   void ReceiveFromChild(const TransferableResourceArray& resources);

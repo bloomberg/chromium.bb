@@ -206,11 +206,6 @@ void CompositorFrameSinkSupport::WillDrawSurface(
     client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
-void CompositorFrameSinkSupport::ForceReclaimResources() {
-  DCHECK(surface_factory_);
-  surface_factory_->ClearSurface();
-}
-
 void CompositorFrameSinkSupport::ClaimTemporaryReference(
     const SurfaceId& surface_id) {
   surface_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);

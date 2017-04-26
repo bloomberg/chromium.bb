@@ -31,7 +31,7 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
       surface_manager_(surface_manager),
       display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  capabilities_.can_force_reclaim_resources = true;
+  capabilities_.must_always_swap = true;
   // Display and DirectCompositorFrameSink share a GL context, so sync
   // points aren't needed when passing resources between them.
   capabilities_.delegated_sync_points_required = false;
@@ -47,7 +47,7 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
       surface_manager_(surface_manager),
       display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  capabilities_.can_force_reclaim_resources = true;
+  capabilities_.must_always_swap = true;
 }
 
 DirectCompositorFrameSink::~DirectCompositorFrameSink() {
@@ -108,10 +108,6 @@ void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 
   support_->SubmitCompositorFrame(delegated_local_surface_id_,
                                   std::move(frame));
-}
-
-void DirectCompositorFrameSink::ForceReclaimResources() {
-  support_->ForceReclaimResources();
 }
 
 void DirectCompositorFrameSink::DisplayOutputSurfaceLost() {

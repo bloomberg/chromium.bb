@@ -57,8 +57,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool synchronous_composite,
-      bool force_disable_reclaim_resources);
+      bool synchronous_composite);
   ~TestCompositorFrameSink() override;
 
   // This client must be set before BindToClient() happens.
@@ -79,7 +78,6 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void DetachFromClient() override;
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
-  void ForceReclaimResources() override;
 
   // CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(

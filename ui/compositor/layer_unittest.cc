@@ -1116,16 +1116,18 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
   WaitForDraw();
 }
 
-static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
-                                 bool is_lost) {}
-
 // Checks that the damage rect for a TextureLayer is empty after a commit.
 TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
+  base::RunLoop run_loop;
+  cc::ReleaseCallback callback =
+      base::Bind([](base::RunLoop* run_loop, const gpu::SyncToken& sync_token,
+                    bool is_lost) { run_loop->Quit(); },
+                 base::Unretained(&run_loop));
+
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
                              GL_TEXTURE_2D);
-  root->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
-                                       base::Bind(EmptyReleaseCallback)),
+  root->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(callback),
                           gfx::Size(10, 10));
   compositor()->SetRootLayer(root.get());
 
@@ -1139,9 +1141,14 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   WaitForCommit();
   EXPECT_TRUE(root->damaged_region_for_testing().IsEmpty());
 
-  compositor()->SetRootLayer(nullptr);
-  root.reset();
-  WaitForCommit();
+  // The texture mailbox has a reference from an in-flight texture layer.
+  // We clear the texture mailbox from the root layer and draw a new frame
+  // to ensure that the texture mailbox is released.
+  root->SetShowSolidColorContent();
+  Draw();
+
+  // Wait for texture mailbox release to avoid DCHECKs.
+  run_loop.Run();
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
