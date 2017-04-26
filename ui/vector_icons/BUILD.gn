@@ -8,31 +8,33 @@ import("//ui/vector_icons/vector_icons.gni")
 aggregate_vector_icons("ui_vector_icons") {
   icon_directory = "."
 
-  icons = [
-    "back_arrow.1x.icon",
-    "back_arrow.icon",
-    "business.icon",
-    "check_circle.icon",
-    "close.1x.icon",
-    "close.icon",
-    "error_circle.icon",
-    "forward_arrow.1x.icon",
-    "forward_arrow.icon",
-    "info_outline.icon",
-    "location_on.icon",
-    "media_router_active.icon",
-    "media_router_error.icon",
-    "media_router_idle.icon",
-    "media_router_warning.icon",
-    "microphone.icon",
-    "midi.icon",
-    "notifications.icon",
-    "notifications_off.icon",
-    "protocol_handler.icon",
-    "search.icon",
-    "videocam.icon",
-    "warning.icon",
-  ]
+  icons = [ "info_outline.icon" ]
+  if (!is_android) {
+    icons += [
+      "back_arrow.1x.icon",
+      "back_arrow.icon",
+      "business.icon",
+      "check_circle.icon",
+      "close.1x.icon",
+      "close.icon",
+      "error_circle.icon",
+      "forward_arrow.1x.icon",
+      "forward_arrow.icon",
+      "location_on.icon",
+      "media_router_active.icon",
+      "media_router_error.icon",
+      "media_router_idle.icon",
+      "media_router_warning.icon",
+      "microphone.icon",
+      "midi.icon",
+      "notifications.icon",
+      "notifications_off.icon",
+      "protocol_handler.icon",
+      "search.icon",
+      "videocam.icon",
+      "warning.icon",
+    ]
+  }
 }
 
 static_library("vector_icons") {
