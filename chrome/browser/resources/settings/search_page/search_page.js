@@ -172,5 +172,23 @@ Polymer({
    */
   doNothing_: function(event) {
     event.stopPropagation();
-  }
+  },
+
+  /**
+   * @param {!chrome.settingsPrivate.PrefObject} pref
+   * @return {boolean}
+   * @private
+   */
+  isDefaultSearchControlledByPolicy_: function(pref) {
+    return pref.controlledBy == chrome.settingsPrivate.ControlledBy.USER_POLICY;
+  },
+
+  /**
+   * @param {!chrome.settingsPrivate.PrefObject} pref
+   * @return {boolean}
+   * @private
+   */
+  isDefaultSearchEngineEnforced_: function(pref) {
+    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+  },
 });

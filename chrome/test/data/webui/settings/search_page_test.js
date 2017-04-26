@@ -34,6 +34,11 @@ cr.define('settings_search_page', function() {
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         page = document.createElement('settings-search-page');
+        page.prefs = {
+          default_search_provider_data: {
+            template_url_data: {},
+          },
+        };
         document.body.appendChild(page);
       });
 
@@ -80,22 +85,38 @@ cr.define('settings_search_page', function() {
           assertFalse(selectElement.disabled);
           assertFalse(!!page.$$('extension-controlled-indicator'));
 
-          page.prefs = {
-            default_search_provider: {
-              enabled: {
-                controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
-                controlledByName: 'fake extension name',
-                enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-                extensionId: 'fake extension id',
-                extensionCanBeDisabled: true,
-                value: true,
-              },
-            },
-          };
+          page.set('prefs.default_search_provider_data.template_url_data', {
+            controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
+            controlledByName: 'fake extension name',
+            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+            extensionId: 'fake extension id',
+            extensionCanBeDisabled: true,
+            value: {},
+          });
           Polymer.dom.flush();
 
           assertTrue(selectElement.disabled);
           assertTrue(!!page.$$('extension-controlled-indicator'));
+          assertFalse(!!page.$$('cr-policy-pref-indicator'));
+        });
+      });
+
+      test('ControlledByPolicy', function() {
+        return browserProxy.whenCalled('getSearchEnginesList').then(function() {
+          var selectElement = page.$$('select');
+          assertFalse(selectElement.disabled);
+          assertFalse(!!page.$$('extension-controlled-indicator'));
+
+          page.set('prefs.default_search_provider_data.template_url_data', {
+            controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
+            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+            value: {},
+          });
+          Polymer.dom.flush();
+
+          assertTrue(selectElement.disabled);
+          assertFalse(!!page.$$('extension-controlled-indicator'));
+          assertTrue(!!page.$$('cr-policy-pref-indicator'));
         });
       });
 
@@ -164,14 +185,12 @@ cr.define('settings_search_page', function() {
           assertFalse(control.disabled);
           assertFalse(control.checked);
 
-          page.prefs = {
-            google_now_launcher: {
-              enabled: {
-                type: chrome.settingsPrivate.PrefType.BOOLEAN,
-                value: true,
-              }
-            }
-          };
+          page.set('prefs.google_now_launcher', {
+            enabled: {
+              type: chrome.settingsPrivate.PrefType.BOOLEAN,
+              value: true,
+            },
+          });
           Polymer.dom.flush();
           assertFalse(control.disabled);
           assertTrue(control.checked);
