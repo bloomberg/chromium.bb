@@ -208,7 +208,7 @@ deps = {
     Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '28a5cdde5c32bcf66715343c10f74e85713f7aaf',
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '8679f2b0bf063ac894dc473debefd61dbbebf622',
+    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '2f6478eb8d40f1766a96b5b033ed26c0c2244589',
 
   'src/third_party/libsrtp':
     Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + 'ccf84786f8ef803cb9c75e919e5a3976b9f5a672',
