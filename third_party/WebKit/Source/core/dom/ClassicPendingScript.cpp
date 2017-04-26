@@ -41,6 +41,7 @@ ClassicPendingScript::~ClassicPendingScript() {}
 
 NOINLINE void ClassicPendingScript::CheckState() const {
   // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
+  CHECK(!prefinalizer_called_);
   CHECK(GetElement());
   CHECK(GetResource() || !streamer_);
   CHECK(!streamer_ || streamer_->GetResource() == GetResource());
@@ -48,6 +49,7 @@ NOINLINE void ClassicPendingScript::CheckState() const {
 
 NOINLINE void ClassicPendingScript::Dispose() {
   PendingScript::Dispose();
+  prefinalizer_called_ = true;
 }
 
 void ClassicPendingScript::DisposeInternal() {

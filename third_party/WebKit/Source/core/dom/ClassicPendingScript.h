@@ -86,6 +86,12 @@ class CORE_EXPORT ClassicPendingScript final
   bool integrity_failure_;
 
   Member<ScriptStreamer> streamer_;
+
+  // This is a temporary flag to confirm that ClassicPendingScript is not
+  // touched after its refinalizer call and thus https://crbug.com/715309
+  // doesn't break assumptions.
+  // TODO(hiroshige): Check the state in more general way.
+  bool prefinalizer_called_ = false;
 };
 
 }  // namespace blink
