@@ -47,8 +47,11 @@ NOINLINE void ClassicPendingScript::CheckState() const {
   CHECK(!streamer_ || streamer_->GetResource() == GetResource());
 }
 
-NOINLINE void ClassicPendingScript::Dispose() {
-  PendingScript::Dispose();
+void ClassicPendingScript::Prefinalize() {
+  // TODO(hiroshige): Consider moving this to ScriptStreamer's prefinalizer.
+  // https://crbug.com/715309
+  if (streamer_)
+    streamer_->Cancel();
   prefinalizer_called_ = true;
 }
 
