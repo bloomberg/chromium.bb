@@ -50,5 +50,5 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    # TODO(jbauman): Re-enable when references images created.
-    self.Fail('Pixel_DirectComposition_Video_*', ['win'], bug=704389)
+    # TODO(jbauman): Fix this.
+    self.Fail('Pixel_DirectComposition_Video_MP4', ['win', 'intel'], bug=704389)
