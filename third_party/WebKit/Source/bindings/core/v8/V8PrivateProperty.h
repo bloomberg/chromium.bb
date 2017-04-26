@@ -136,7 +136,7 @@ class CORE_EXPORT V8PrivateProperty {
     // The following classes are exceptionally allowed to call to
     // getFromMainWorld.
     friend class V8CustomEvent;
-    friend class V8ServiceWorkerMessageEventInternal;
+    friend class V8ExtendableMessageEvent;
 
     Symbol(v8::Isolate* isolate, v8::Local<v8::Private> private_symbol)
         : private_symbol_(private_symbol), isolate_(isolate) {}
