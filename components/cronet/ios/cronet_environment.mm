@@ -266,12 +266,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   static bool ssl_key_log_file_set = false;
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
     ssl_key_log_file_set = true;
-    base::FilePath ssl_key_log_file;
-    if (!PathService::Get(base::DIR_HOME, &ssl_key_log_file))
-      return;
-    net::SSLClientSocket::SetSSLKeyLogFile(
-        ssl_key_log_file.Append(ssl_key_log_file_name_),
-        file_thread_->task_runner());
+    base::FilePath ssl_key_log_file(ssl_key_log_file_name_);
+    net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file,
+                                           file_thread_->task_runner());
   }
 
   if (user_agent_partial_)
@@ -291,6 +288,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       cache_path.value();  // Storage path for http cache and cookie storage.
   context_config_builder.user_agent =
       user_agent_;  // User-Agent request header field.
+  context_config_builder.experimental_options =
+      experimental_options_;  // Set experimental Cronet options.
   context_config_builder.mock_cert_verifier = std::move(
       mock_cert_verifier_);  // MockCertVerifier to use for testing purposes.
   std::unique_ptr<URLRequestContextConfig> config =
