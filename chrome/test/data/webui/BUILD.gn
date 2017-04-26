@@ -1,0 +1,196 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/common/features.gni")
+import("//chrome/test/base/js2gtest.gni")
+
+js2gtest("interactive_ui_tests_js_webui") {
+  test_type = "webui"
+
+  sources = [
+    "cr_elements/cr_elements_focus_test.js",
+    "md_history/md_history_focus_test.js",
+    "settings/cr_settings_interactive_ui_tests.js",
+  ]
+
+  gen_include_files = [
+    "polymer_browser_test_base.js",
+    "polymer_interactive_ui_test.js",
+  ]
+
+  deps = [
+    "//chrome/browser/ui",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+js2gtest("browser_tests_js_webui") {
+  test_type = "webui"
+
+  # Javascript sources. These are combined with the .cc files in the GYP build
+  # and are handled by a rule, but in the GN build they're in a separate
+  # action so need to be separated out.
+  sources = [
+    "../../../browser/ui/webui/app_list/start_page_browsertest.js",
+    "../../../browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js",
+    "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
+    "../../../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
+    "../../../browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js",
+    "../../../browser/ui/webui/extensions/extension_settings_browsertest.js",
+    "../../../browser/ui/webui/help/help_browsertest.js",
+    "../../../browser/ui/webui/identity_internals_ui_browsertest.js",
+    "../../../browser/ui/webui/options/autofill_options_browsertest.js",
+    "../../../browser/ui/webui/options/browser_options_browsertest.js",
+    "../../../browser/ui/webui/options/certificate_manager_browsertest.js",
+    "../../../browser/ui/webui/options/chromeos/accounts_options_browsertest.js",
+    "../../../browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js",
+    "../../../browser/ui/webui/options/chromeos/date_time_options_browsertest.js",
+    "../../../browser/ui/webui/options/chromeos/guest_mode_options_browsertest.js",
+    "../../../browser/ui/webui/options/chromeos/power_overlay_browsertest.js",
+    "../../../browser/ui/webui/options/content_options_browsertest.js",
+    "../../../browser/ui/webui/options/content_settings_exception_area_browsertest.js",
+    "../../../browser/ui/webui/options/cookies_view_browsertest.js",
+    "../../../browser/ui/webui/options/edit_dictionary_browsertest.js",
+    "../../../browser/ui/webui/options/font_settings_browsertest.js",
+    "../../../browser/ui/webui/options/language_options_browsertest.js",
+    "../../../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+    "../../../browser/ui/webui/options/manage_profile_browsertest.js",
+    "../../../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
+    "../../../browser/ui/webui/options/options_browsertest.js",
+    "../../../browser/ui/webui/options/options_browsertest_base.js",
+    "../../../browser/ui/webui/options/password_manager_browsertest.js",
+    "../../../browser/ui/webui/options/profile_settings_reset_browsertest.js",
+    "../../../browser/ui/webui/options/search_engine_manager_browsertest.js",
+    "../../../browser/ui/webui/options/settings_format_browsertest.js",
+    "../../../browser/ui/webui/options/startup_page_list_browsertest.js",
+    "../../../browser/ui/webui/sync_internals_browsertest.js",
+    "../../../browser/ui/webui/sync_setup_browsertest.js",
+    "../chromeos/oobe_webui_browsertest.js",
+    "about_invalidations_browsertest.js",
+    "accessibility_audit_browsertest.js",
+    "assertions.js",
+    "async_gen.js",
+    "bluetooth_internals_browsertest.js",
+    "certificate_viewer_dialog_test.js",
+    "chrome_send_browsertest.js",
+    "cr_elements/cr_elements_browsertest.js",
+    "extensions/cr_extensions_browsertest.js",
+    "history_browsertest.js",
+    "md_bookmarks/md_bookmarks_browsertest.js",
+    "md_downloads/downloads_browsertest.js",
+    "md_history/md_history_browsertest.js",
+    "md_user_manager/user_manager_browsertest.js",
+    "media_router/media_router_elements_browsertest.js",
+    "mock4js_browsertest.js",
+    "net_internals/bandwidth_view.js",
+    "net_internals/chromeos_view.js",
+    "net_internals/dns_view.js",
+    "net_internals/events_view.js",
+    "net_internals/hsts_view.js",
+    "net_internals/log_util.js",
+    "net_internals/log_view_painter.js",
+    "net_internals/main.js",
+    "net_internals/net_internals_test.js",
+    "net_internals/prerender_view.js",
+    "net_internals/sdch_view.js",
+    "net_internals/timeline_view.js",
+    "ntp4.js",
+    "polymer_browser_test_base.js",
+    "print_preview.js",
+    "print_preview_destination_search_test.js",
+    "sandboxstatus_browsertest.js",
+    "text_defaults_browsertest.js",
+    "webui_resource_async_browsertest.js",
+  ]
+
+  if (!is_asan) {
+    sources += [
+      "settings/advanced_page_browsertest.js",
+      "settings/animation_browsertest.js",
+      "settings/basic_page_browsertest.js",
+      "settings/cr_settings_browsertest.js",
+      "settings/help_page_browsertest.js",
+      "settings/languages_page_browsertest.js",
+      "settings/on_startup_browsertest.js",
+      "settings/passwords_and_autofill_fake_data.js",
+      "settings/passwords_and_forms_browsertest.js",
+      "settings/settings_autofill_section_browsertest.js",
+      "settings/settings_idle_load_browsertest.js",
+      "settings/settings_page_browsertest.js",
+      "settings/settings_passwords_section_browsertest.js",
+      "settings/settings_subpage_browsertest.js",
+      "settings/settings_ui_browsertest.js",
+      "settings/site_settings_page_browsertest.js",
+    ]
+
+    if (is_chromeos) {
+      sources += [ "settings/easy_unlock_browsertest_chromeos.js" ]
+    }
+  }
+
+  if (is_chrome_branded) {
+    # crbug.com/230471
+    sources -= [ "accessibility_audit_browsertest.js" ]
+  }
+  if (!is_chromeos) {
+    sources -= [ "certificate_viewer_dialog_test.js" ]
+  } else {
+    sources -= [ "md_user_manager/user_manager_browsertest.js" ]
+  }
+  if (is_mac) {
+    sources -= [
+      # TODO(rouslan): This test depends on the custom dictionary UI,
+      # which is disabled on Mac.
+      "../../../browser/ui/webui/options/edit_dictionary_browsertest.js",
+
+      # TODO(rouslan): This test depends on hunspell and we cannot run it
+      # on Mac, which does not use hunspell by default.
+      "../../../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+      "../../../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
+    ]
+  }
+  if (!enable_app_list) {
+    sources -=
+        [ "../../../browser/ui/webui/app_list/start_page_browsertest.js" ]
+  }
+  if (!enable_print_preview) {
+    sources -= [ "print_preview.js" ]
+  }
+  deps = [
+    "//chrome/browser/ui",
+    "//skia",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+js2gtest("unit_tests_js") {
+  test_type = "unit"
+  sources = [
+    "../../../browser/resources/md_downloads/action_service_unittest.gtestjs",
+    "../../../browser/resources/print_preview/data/measurement_system_unittest.gtestjs",
+    "../../../browser/resources/print_preview/print_preview_utils_unittest.gtestjs",
+    "../../../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
+    "../unit/framework_unittest.gtestjs",
+  ]
+  extra_js_files = [
+    "../../../browser/resources/md_downloads/action_service.js",
+    "../../../browser/resources/print_preview/data/measurement_system.js",
+    "../../../browser/resources/print_preview/print_preview_utils.js",
+    "../../../renderer/resources/extensions/notifications_custom_bindings.js",
+    "../../../renderer/resources/extensions/notifications_test_util.js",
+    "//ui/webui/resources/js/cr.js",
+  ]
+  if (is_chromeos) {
+    sources += [
+      "../../../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+      "../../../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
+    ]
+    extra_js_files += [
+      "../../../browser/resources/chromeos/braille_ime/braille_ime.js",
+      "../../../browser/resources/chromeos/select_to_speak/select_to_speak.js",
+      "../../../browser/resources/chromeos/select_to_speak/test_support.js",
+    ]
+  }
+}
