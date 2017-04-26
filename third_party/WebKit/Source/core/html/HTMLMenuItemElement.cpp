@@ -8,6 +8,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 namespace blink {
 
@@ -55,6 +56,26 @@ void HTMLMenuItemElement::DefaultEventHandler(Event* event) {
     }
     event->SetDefaultHandled();
   }
+}
+
+String HTMLMenuItemElement::label() const {
+  const AtomicString label = FastGetAttribute(labelAttr);
+  if (!label.IsNull())
+    return label;
+  return conceptualLabel();
+}
+
+void HTMLMenuItemElement::setLabel(const AtomicString& label) {
+  setAttribute(labelAttr, label);
+}
+
+String HTMLMenuItemElement::conceptualLabel() const {
+  const AtomicString label = FastGetAttribute(labelAttr);
+  if (!label.IsEmpty())
+    return label;
+  return this->textContent(false)
+      .StripWhiteSpace(IsHTMLSpace<UChar>)
+      .SimplifyWhiteSpace(IsHTMLSpace<UChar>);
 }
 
 DEFINE_NODE_FACTORY(HTMLMenuItemElement)
