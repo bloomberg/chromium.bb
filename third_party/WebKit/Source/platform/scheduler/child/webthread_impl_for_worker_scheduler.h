@@ -73,7 +73,7 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   std::unique_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
-  scoped_refptr<TaskQueue> task_runner_;
+  scoped_refptr<TaskQueue> task_queue_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> task_runner_delegate_;
   WebPrivatePtr<WebTaskRunnerImpl> web_task_runner_;

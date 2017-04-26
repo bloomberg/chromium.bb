@@ -48,10 +48,10 @@ class IdleTimeEstimatorTest : public testing::Test {
     manager_ = base::MakeUnique<TaskQueueManager>(
         main_task_runner_, "test.scheduler", "test.scheduler",
         "test.scheduler.debug");
-    compositor_task_runner_ = manager_->NewTaskQueue(
+    compositor_task_queue_ = manager_->NewTaskQueue(
         TaskQueue::Spec(TaskQueue::QueueType::COMPOSITOR));
     estimator_.reset(new IdleTimeEstimatorForTest(
-        compositor_task_runner_, test_time_source_.get(), 10, 50));
+        compositor_task_queue_, test_time_source_.get(), 10, 50));
   }
 
   void SimulateFrameWithOneCompositorTask(int compositor_time) {
@@ -91,7 +91,7 @@ class IdleTimeEstimatorTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
   std::unique_ptr<TaskQueueManager> manager_;
-  scoped_refptr<TaskQueue> compositor_task_runner_;
+  scoped_refptr<TaskQueue> compositor_task_queue_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
   const base::TimeDelta frame_length_;
   TestTaskTimeObserver test_task_time_observer_;

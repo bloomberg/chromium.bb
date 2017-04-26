@@ -37,21 +37,20 @@ SchedulerHelper::SchedulerHelper(
                                tracing_category,
                                disabled_by_default_tracing_category,
                                disabled_by_default_verbose_tracing_category)),
-      control_task_runner_(
+      control_task_queue_(
           NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL)
                            .SetShouldNotifyObservers(false))),
-      default_task_runner_(NewTaskQueue(default_task_queue_spec)),
+      default_task_queue_(NewTaskQueue(default_task_queue_spec)),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category) {
-  control_task_runner_->SetQueuePriority(TaskQueue::CONTROL_PRIORITY);
+  control_task_queue_->SetQueuePriority(TaskQueue::CONTROL_PRIORITY);
 
   task_queue_manager_->SetWorkBatchSize(4);
 
   DCHECK(task_queue_manager_delegate_);
-  task_queue_manager_delegate_->SetDefaultTaskRunner(
-      default_task_runner_.get());
+  task_queue_manager_delegate_->SetDefaultTaskRunner(default_task_queue_.get());
 }
 
 SchedulerHelper::~SchedulerHelper() {
@@ -83,11 +82,11 @@ scoped_refptr<TaskQueue> SchedulerHelper::NewTaskQueue(
 
 scoped_refptr<TaskQueue> SchedulerHelper::DefaultTaskQueue() {
   CheckOnValidThread();
-  return default_task_runner_;
+  return default_task_queue_;
 }
 
 scoped_refptr<TaskQueue> SchedulerHelper::ControlTaskQueue() {
-  return control_task_runner_;
+  return control_task_queue_;
 }
 
 size_t SchedulerHelper::GetNumberOfPendingTasks() const {

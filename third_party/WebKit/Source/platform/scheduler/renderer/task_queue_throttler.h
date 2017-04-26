@@ -128,7 +128,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   static base::TimeTicks AlignedThrottledRunTime(
       base::TimeTicks unthrottled_runtime);
 
-  const scoped_refptr<TaskQueue>& task_runner() const { return task_runner_; }
+  const scoped_refptr<TaskQueue>& task_queue() const {
+    return control_task_queue_;
+  }
 
   // Returned object is owned by |TaskQueueThrottler|.
   CPUTimeBudgetPool* CreateCPUTimeBudgetPool(const char* name);
@@ -174,7 +176,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   TaskQueueMap queue_details_;
   base::Callback<void(TaskQueue*, base::TimeTicks)>
       forward_immediate_work_callback_;
-  scoped_refptr<TaskQueue> task_runner_;
+  scoped_refptr<TaskQueue> control_task_queue_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED
