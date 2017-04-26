@@ -17,10 +17,10 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
-import org.chromium.chrome.browser.profiles.ProfileDownloader.Observer;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -29,8 +29,7 @@ import java.util.HashMap;
 /**
  * Fetches and caches Google Account profile images and full names for the accounts on the device.
  */
-public class ProfileDataCache implements Observer {
-
+public class ProfileDataCache implements ProfileDownloader.Observer {
     private static final int PROFILE_IMAGE_SIZE_DP = 136;  // Max size of the user picture.
     private static final int PROFILE_IMAGE_STROKE_DP = 3;
 
@@ -52,7 +51,7 @@ public class ProfileDataCache implements Observer {
     private final int mImageSizePx;
     private final int mImageStrokePx;
     private final int mImageStrokeColor;
-    private Observer mObserver;
+    private final ObserverList<ProfileDownloader.Observer> mObservers = new ObserverList<>();
 
     private final Context mContext;
     private Profile mProfile;
@@ -129,7 +128,21 @@ public class ProfileDataCache implements Observer {
 
     public void destroy() {
         ProfileDownloader.removeObserver(this);
-        mObserver = null;
+        mObservers.clear();
+    }
+
+    /**
+     * @param observer Observer that should be notified when new profile images are available.
+     */
+    public void addObserver(ProfileDownloader.Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * @param observer Observer that was added by {@link #addObserver} and should be removed.
+     */
+    public void removeObserver(ProfileDownloader.Observer observer) {
+        mObservers.removeObserver(observer);
     }
 
     @Override
@@ -137,8 +150,8 @@ public class ProfileDataCache implements Observer {
             Bitmap bitmap) {
         bitmap = getCroppedBitmap(bitmap);
         mCacheEntries.put(accountId, new CacheEntry(bitmap, fullName, givenName));
-        if (mObserver != null) {
-            mObserver.onProfileDownloaded(accountId, fullName, givenName, bitmap);
+        for (ProfileDownloader.Observer observer : mObservers) {
+            observer.onProfileDownloaded(accountId, fullName, givenName, bitmap);
         }
     }
 
@@ -166,12 +179,5 @@ public class ProfileDataCache implements Observer {
         canvas.drawCircle(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f, radius, paint);
 
         return output;
-    }
-
-    /**
-     * @param observer Observer that should be notified when new profile images are available.
-     */
-    public void setObserver(Observer observer) {
-        mObserver = observer;
     }
 }
