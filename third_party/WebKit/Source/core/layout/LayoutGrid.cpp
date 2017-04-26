@@ -439,7 +439,7 @@ LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,
     size_t non_empty_tracks_after_end_line =
         grid.NumTracks(direction) - end_line;
     auto current_empty_track =
-        grid.AutoRepeatEmptyTracks(direction)->Find(end_line - 1);
+        grid.AutoRepeatEmptyTracks(direction)->find(end_line - 1);
     auto end_empty_track = grid.AutoRepeatEmptyTracks(direction)->end();
     // HashSet iterators do not implement operator- so we have to manually
     // iterate to know the number of remaining empty tracks.

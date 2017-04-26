@@ -228,7 +228,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
     bool IsEmpty() const { return chunks_.IsEmpty(); }
 
     void ClearChunks() {
-      chunks_.Clear();
+      chunks_.clear();
       offset_ = 0;
     }
 

@@ -137,14 +137,14 @@ void BytesConsumerTestUtil::ReplayingBytesConsumer::NotifyAsReadable(
 }
 
 void BytesConsumerTestUtil::ReplayingBytesConsumer::Close() {
-  commands_.Clear();
+  commands_.clear();
   offset_ = 0;
   state_ = InternalState::kClosed;
   ++notification_token_;
 }
 
 void BytesConsumerTestUtil::ReplayingBytesConsumer::GetError(const Error& e) {
-  commands_.Clear();
+  commands_.clear();
   offset_ = 0;
   error_ = e;
   state_ = InternalState::kErrored;

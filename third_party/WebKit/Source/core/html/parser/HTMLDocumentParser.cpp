@@ -466,7 +466,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
                       ("Parser.DiscardedTokenCount", 1, 100000, 50));
   discarded_token_count_histogram.Count(discarded_token_count);
 
-  speculations_.Clear();
+  speculations_.clear();
   pending_csp_meta_token_ = nullptr;
   queued_preloads_.clear();
 

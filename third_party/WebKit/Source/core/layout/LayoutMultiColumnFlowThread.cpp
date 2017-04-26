@@ -892,7 +892,7 @@ void LayoutMultiColumnFlowThread::AddColumnSetToThread(
   if (LayoutMultiColumnSet* next_set =
           column_set->NextSiblingMultiColumnSet()) {
     LayoutMultiColumnSetList::iterator it =
-        multi_column_set_list_.Find(next_set);
+        multi_column_set_list_.find(next_set);
     DCHECK(it != multi_column_set_list_.end());
     multi_column_set_list_.InsertBefore(it, column_set);
   } else {

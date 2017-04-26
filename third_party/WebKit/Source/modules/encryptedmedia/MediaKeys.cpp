@@ -302,7 +302,7 @@ DEFINE_TRACE(MediaKeys) {
 
 void MediaKeys::ContextDestroyed(ExecutionContext*) {
   timer_.Stop();
-  pending_actions_.Clear();
+  pending_actions_.clear();
 
   // We don't need the CDM anymore. Only destroyed after all related
   // ContextLifecycleObservers have been stopped.

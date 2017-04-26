@@ -48,7 +48,7 @@ void SegmentedString::Clear() {
   number_of_characters_consumed_prior_to_current_string_ = 0;
   number_of_characters_consumed_prior_to_current_line_ = 0;
   current_line_ = 0;
-  substrings_.Clear();
+  substrings_.clear();
   closed_ = false;
   empty_ = true;
   fast_path_flags_ = kNoFastPath;

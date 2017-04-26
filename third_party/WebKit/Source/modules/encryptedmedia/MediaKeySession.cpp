@@ -1034,7 +1034,7 @@ void MediaKeySession::ContextDestroyed(ExecutionContext*) {
   session_.reset();
   is_closed_ = true;
   action_timer_.Stop();
-  pending_actions_.Clear();
+  pending_actions_.clear();
   async_event_queue_->Close();
 }
 

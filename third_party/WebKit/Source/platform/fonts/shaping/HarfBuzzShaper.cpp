@@ -595,7 +595,7 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
                                     fallback_chars_hint)) {
         // Give up shaping since we cannot retrieve a font fallback
         // font without a hintlist.
-        range_data->holes_queue.Clear();
+        range_data->holes_queue.clear();
         break;
       }
 

@@ -66,7 +66,7 @@ void PointerEventManager::Clear() {
   touch_event_manager_->Clear();
   in_canceled_state_for_pointer_type_touch_ = false;
   pointer_event_factory_.Clear();
-  touch_ids_for_canceled_pointerdowns_.Clear();
+  touch_ids_for_canceled_pointerdowns_.clear();
   node_under_pointer_.clear();
   pointer_capture_target_.clear();
   pending_pointer_capture_target_.clear();

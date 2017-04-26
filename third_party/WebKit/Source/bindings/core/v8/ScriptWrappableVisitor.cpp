@@ -91,8 +91,8 @@ void ScriptWrappableVisitor::PerformCleanup() {
   }
 
   headers_to_unmark_.clear();
-  marking_deque_.Clear();
-  verifier_deque_.Clear();
+  marking_deque_.clear();
+  verifier_deque_.clear();
   should_cleanup_ = false;
 }
 
@@ -146,8 +146,8 @@ void ScriptWrappableVisitor::PerformLazyCleanup(double deadline_seconds) {
 
   // Unmarked all headers.
   CHECK(headers_to_unmark_.IsEmpty());
-  marking_deque_.Clear();
-  verifier_deque_.Clear();
+  marking_deque_.clear();
+  verifier_deque_.clear();
   should_cleanup_ = false;
 }
 

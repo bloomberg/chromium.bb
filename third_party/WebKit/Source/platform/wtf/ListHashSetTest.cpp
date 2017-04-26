@@ -206,7 +206,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 
   {
     const Set& ref = set;
-    typename Set::const_iterator it = ref.Find(2);
+    typename Set::const_iterator it = ref.find(2);
     EXPECT_EQ(2, *it);
     ++it;
     EXPECT_EQ(3, *it);
@@ -216,7 +216,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
   }
   {
     Set& ref = set;
-    typename Set::iterator it = ref.Find(2);
+    typename Set::iterator it = ref.find(2);
     EXPECT_EQ(2, *it);
     ++it;
     EXPECT_EQ(3, *it);
@@ -236,11 +236,11 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   set.insert(2);
   set.insert(3);
 
-  typename Set::iterator it = set.Find(2);
+  typename Set::iterator it = set.find(2);
   EXPECT_EQ(2, *it);
   set.InsertBefore(it, 1);
   if (!can_modify_while_iterating)
-    it = set.Find(2);
+    it = set.find(2);
   ++it;
   EXPECT_EQ(3, *it);
   EXPECT_EQ(5u, set.size());
@@ -267,7 +267,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   set.InsertBefore(-1, 103);
   EXPECT_EQ(103, set.front());
   if (!can_modify_while_iterating)
-    it = set.Find(1);
+    it = set.find(1);
   ++it;
   EXPECT_EQ(42, *it);
   EXPECT_EQ(7u, set.size());
@@ -440,9 +440,9 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
 
   typename Set::AddResult add_result = set.insert(ptr);
   EXPECT_TRUE(add_result.is_new_entry);
-  set.Find(ptr);
+  set.find(ptr);
   const Set& const_set(set);
-  const_set.Find(ptr);
+  const_set.find(ptr);
   EXPECT_TRUE(set.Contains(ptr));
   typename Set::iterator it = set.AddReturnIterator(ptr);
   set.AppendOrMoveToLast(ptr);
@@ -559,7 +559,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
 
   EXPECT_FALSE(deleted1);
   EXPECT_EQ(1UL, set.size());
-  OwnPtrSet::iterator it1 = set.Find(ptr1);
+  OwnPtrSet::iterator it1 = set.find(ptr1);
   EXPECT_NE(set.end(), it1);
   EXPECT_EQ(ptr1, (*it1).get());
 
@@ -571,7 +571,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
 
   EXPECT_FALSE(deleted2);
   EXPECT_EQ(2UL, set.size());
-  OwnPtrSet::iterator it2 = set.Find(ptr2);
+  OwnPtrSet::iterator it2 = set.find(ptr2);
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
@@ -768,12 +768,12 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
     EXPECT_EQ(1, add_result.stored_value->Value());
     EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.Find(MoveOnly(1));
+  auto iter = set.find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
   EXPECT_EQ(1, iter->Id());
 
-  iter = set.Find(MoveOnly(2));
+  iter = set.find(MoveOnly(2));
   EXPECT_TRUE(iter == set.end());
 
   // ListHashSet and LinkedHashSet have several flavors of add().
@@ -804,7 +804,7 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
     EXPECT_EQ(5, add_result.stored_value->Id());
   }
   {
-    iter = set.Find(MoveOnly(5));
+    iter = set.find(MoveOnly(5));
     ASSERT_TRUE(iter != set.end());
     AddResult add_result = set.InsertBefore(iter, MoveOnly(6, 6));
     EXPECT_TRUE(add_result.is_new_entry);

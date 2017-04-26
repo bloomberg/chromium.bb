@@ -117,7 +117,7 @@ void PlatformSpeechSynthesizerMock::Cancel() {
     return;
 
   // Per spec, removes all queued utterances.
-  queued_utterances_.Clear();
+  queued_utterances_.clear();
 
   speaking_finished_timer_.Stop();
   speaking_error_occurred_timer_.StartOneShot(.1, BLINK_FROM_HERE);
