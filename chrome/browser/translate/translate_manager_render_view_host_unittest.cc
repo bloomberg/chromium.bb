@@ -60,6 +60,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "url/gurl.h"
@@ -454,17 +455,22 @@ class TranslateManagerRenderViewHostTest
 
  protected:
   virtual void SetUp() {
-    TranslateService::InitializeForTesting();
+    // Setup the test environment, including the threads and message loops. This
+    // must be done before base::ThreadTaskRunnerHandle::Get() is called when
+    // setting up the net::TestURLRequestContextGetter below.
+    ChromeRenderViewHostTestHarness::SetUp();
 
-    // Clears the translate script so it is fetched everytime and sets the
+    // Clears the translate script so it is fetched every time and sets the
     // expiration delay to a large value by default (in case it was zeroed in a
     // previous test).
+    TranslateService::InitializeForTesting();
     translate::TranslateDownloadManager* download_manager =
         translate::TranslateDownloadManager::GetInstance();
     download_manager->ClearTranslateScriptForTesting();
     download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
+    download_manager->set_request_context(new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get()));
 
-    ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     ChromeTranslateClient::CreateForWebContents(web_contents());
     ChromeTranslateClient::FromWebContents(web_contents())

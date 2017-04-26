@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_url_fetcher.h"
 
+#include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "net/base/load_flags.h"
@@ -46,13 +47,22 @@ bool TranslateURLFetcher::Request(
   url_ = url;
   callback_ = callback;
 
+  // If the TranslateDownloadManager's request context getter is nullptr then
+  // shutdown is in progress. Abort the request, which can't proceed with a
+  // null request_context_getter.
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      TranslateDownloadManager::GetInstance()->request_context();
+  if (request_context_getter == nullptr)
+    return false;
+
+  // Create and initialize the URL fetcher.
   fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::TRANSLATE);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(
-      TranslateDownloadManager::GetInstance()->request_context());
+  fetcher_->SetRequestContext(request_context_getter.get());
+
   // Set retry parameter for HTTP status code 5xx. This doesn't work against
   // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
   // TranslateLanguageList handles network status, and implements retry.

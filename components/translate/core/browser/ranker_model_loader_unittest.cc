@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -199,8 +200,7 @@ bool RankerModelLoaderTest::DoLoaderTest(const base::FilePath& model_path,
       base::Bind(&RankerModelLoaderTest::OnModelAvailable,
                  base::Unretained(this)),
       model_path, model_url, "RankerModelLoaderTest");
-
-  loader->Start();
+  loader->NotifyOfRankerActivity();
   base::RunLoop().RunUntilIdle();
 
   return true;

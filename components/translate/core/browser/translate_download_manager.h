@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_script.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -31,24 +32,36 @@ class TranslateDownloadManager {
   // The request context used to download the resources.
   // Should be set before this class can be used.
   net::URLRequestContextGetter* request_context() {
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     return request_context_.get();
   }
   void set_request_context(net::URLRequestContextGetter* context) {
-      request_context_ = context;
+    DCHECK(sequence_checker_.CalledOnValidSequence());
+    request_context_ = context;
   }
 
   // The application locale.
   // Should be set before this class can be used.
-  const std::string& application_locale() { return application_locale_; }
+  const std::string& application_locale() {
+    DCHECK(sequence_checker_.CalledOnValidSequence());
+    return application_locale_;
+  }
   void set_application_locale(const std::string& locale) {
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     application_locale_ = locale;
   }
 
   // The language list.
-  TranslateLanguageList* language_list() { return language_list_.get(); }
+  TranslateLanguageList* language_list() {
+    DCHECK(sequence_checker_.CalledOnValidSequence());
+    return language_list_.get();
+  }
 
   // The translate script.
-  TranslateScript* script() { return script_.get(); }
+  TranslateScript* script() {
+    DCHECK(sequence_checker_.CalledOnValidSequence());
+    return script_.get();
+  }
 
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if prefs::kEnableTranslate is set to
@@ -89,6 +102,10 @@ class TranslateDownloadManager {
   friend struct base::DefaultSingletonTraits<TranslateDownloadManager>;
   TranslateDownloadManager();
   virtual ~TranslateDownloadManager();
+
+  // Validates that accesses to the download manager are performed on the same
+  // sequence.
+  base::SequenceChecker sequence_checker_;
 
   std::unique_ptr<TranslateLanguageList> language_list_;
 
