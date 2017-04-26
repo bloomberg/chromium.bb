@@ -21,6 +21,9 @@ import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
  */
 class TranslateCompactInfoBar extends InfoBar
         implements TabLayout.OnTabSelectedListener, TranslateMenuHelper.TranslateMenuListener {
+    private static final int SOURCE_TAB_INDEX = 0;
+    private static final int TARGET_TAB_INDEX = 1;
+
     private final TranslateOptions mOptions;
 
     private long mNativeTranslateInfoBarPtr;
@@ -76,6 +79,16 @@ class TranslateCompactInfoBar extends InfoBar
         }
     }
 
+    private void startTranslating(int tabPostion) {
+        if (TARGET_TAB_INDEX == tabPostion) {
+            // Already on the target tab.
+            mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
+            onButtonClicked(ActionType.TRANSLATE);
+        } else {
+            mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
+        }
+    }
+
     @CalledByNative
     private void onPageTranslated(int errorType) {
         if (mTabLayout != null) {
@@ -101,13 +114,23 @@ class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        if (tab.getPosition() == 0) {
-            onButtonClicked(ActionType.TRANSLATE_SHOW_ORIGINAL);
-        } else {
-            mTabLayout.showProgressBarOnTab(tab.getPosition());
-            onButtonClicked(ActionType.TRANSLATE);
+        switch (tab.getPosition()) {
+            case SOURCE_TAB_INDEX:
+                onButtonClicked(ActionType.TRANSLATE_SHOW_ORIGINAL);
+                return;
+            case TARGET_TAB_INDEX:
+                startTranslating(TARGET_TAB_INDEX);
+                return;
+            default:
+                assert false : "Unexpected Tab Index";
         }
     }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {}
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {}
 
     @Override
     public void onOverflowMenuItemClicked(int itemId) {
@@ -116,9 +139,16 @@ class TranslateCompactInfoBar extends InfoBar
                 mMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
-            case TranslateMenu.ID_OVERFLOW_NEVER_SITE:
+                nativeApplyBoolTranslateOption(
+                        mNativeTranslateInfoBarPtr, TranslateOption.ALWAYS_TRANSLATE, true);
+                return;
             case TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE:
-                // TODO(googleo): Add correct behaviors for each code here.
+                nativeApplyBoolTranslateOption(
+                        mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE, true);
+                return;
+            case TranslateMenu.ID_OVERFLOW_NEVER_SITE:
+                nativeApplyBoolTranslateOption(
+                        mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE_SITE, true);
                 return;
             case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
                 mMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
@@ -130,19 +160,27 @@ class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onTargetMenuItemClicked(String code) {
-        // TODO(googleo): Update translate code and translate page.
+        // Reset target code in both UI and native.
+        if (mOptions.setTargetLanguage(code)) {
+            nativeApplyStringTranslateOption(
+                    mNativeTranslateInfoBarPtr, TranslateOption.TARGET_CODE, code);
+            // Adjust UI.
+            mTabLayout.replaceTabTitle(TARGET_TAB_INDEX, mOptions.getRepresentationFromCode(code));
+            startTranslating(mTabLayout.getSelectedTabPosition());
+        }
     }
 
     @Override
     public void onSourceMenuItemClicked(String code) {
-        // TODO(googleo): Update translate code and translate page.
+        // Reset source code in both UI and native.
+        if (mOptions.setSourceLanguage(code)) {
+            nativeApplyStringTranslateOption(
+                    mNativeTranslateInfoBarPtr, TranslateOption.SOURCE_CODE, code);
+            // Adjust UI.
+            mTabLayout.replaceTabTitle(SOURCE_TAB_INDEX, mOptions.getRepresentationFromCode(code));
+            startTranslating(mTabLayout.getSelectedTabPosition());
+        }
     }
-
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) {}
-
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) {}
 
     private native void nativeApplyStringTranslateOption(
             long nativeTranslateCompactInfoBar, int option, String value);
