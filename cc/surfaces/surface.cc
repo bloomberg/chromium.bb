@@ -82,11 +82,6 @@ void Surface::QueueFrame(CompositorFrame frame,
   UnrefFrameResourcesAndRunDrawCallback(std::move(previous_pending_frame_data));
 }
 
-void Surface::EvictFrame() {
-  QueueFrame(CompositorFrame(), DrawCallback(), WillDrawCallback());
-  active_frame_data_.reset();
-}
-
 void Surface::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!active_frame_data_ ||

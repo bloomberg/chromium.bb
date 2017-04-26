@@ -60,7 +60,6 @@ class CC_SURFACES_EXPORT Surface {
   void QueueFrame(CompositorFrame frame,
                   const DrawCallback& draw_callback,
                   const WillDrawCallback& will_draw_callback);
-  void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
   // Notifies the Surface that a blocking SurfaceId now has an active frame.

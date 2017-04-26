@@ -69,7 +69,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
-  void ForceReclaimResources();
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
  protected:

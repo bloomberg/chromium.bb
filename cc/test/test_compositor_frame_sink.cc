@@ -27,8 +27,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool synchronous_composite,
-    bool force_disable_reclaim_resources)
+    bool synchronous_composite)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider),
                           gpu_memory_buffer_manager,
@@ -41,11 +40,6 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       local_surface_id_allocator_(new LocalSurfaceIdAllocator()),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
-  // Since this CompositorFrameSink and the Display are tightly coupled and in
-  // the same process/thread, the LayerTreeHostImpl can reclaim resources from
-  // the Display. But we allow tests to disable this to mimic an out-of-process
-  // Display.
-  capabilities_.can_force_reclaim_resources = !force_disable_reclaim_resources;
   // Always use sync tokens so that code paths in resource provider that deal
   // with sync tokens are tested.
   capabilities_.delegated_sync_points_required = true;
@@ -157,13 +151,6 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
         FROM_HERE,
         base::BindOnce(&TestCompositorFrameSink::SendCompositorFrameAckToClient,
                        weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void TestCompositorFrameSink::ForceReclaimResources() {
-  if (capabilities_.can_force_reclaim_resources &&
-      delegated_local_surface_id_.is_valid()) {
-    support_->ForceReclaimResources();
   }
 }
 
