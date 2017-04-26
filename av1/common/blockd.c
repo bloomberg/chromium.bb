@@ -128,7 +128,7 @@ void av1_foreach_transformed_block_in_plane(
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
   const TX_SIZE tx_size = get_tx_size(plane, xd);
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else
@@ -239,11 +239,11 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
 #endif
   for (i = 0; i < nplanes; i++) {
     struct macroblockd_plane *const pd = &xd->plane[i];
-#if CONFIG_CHROMA_2X2 || !CONFIG_CB4X4
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else
+#if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE plane_bsize =
         AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#else
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #endif
     const int txs_wide = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int txs_high = block_size_high[plane_bsize] >> tx_size_high_log2[0];

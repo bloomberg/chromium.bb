@@ -1006,11 +1006,11 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE bs = AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else
     const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#endif  // CONFIG_CHROMA_SUB8X8
 
     unsigned int sse;
     int rate;
@@ -1272,13 +1272,11 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblockd_plane *pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_CB4X4
-#if CONFIG_CHROMA_2X2
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else
+#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#endif  // CONFIG_CHROMA_2X2
+#elif CONFIG_CB4X4
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else   // CONFIG_CB4X4
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);

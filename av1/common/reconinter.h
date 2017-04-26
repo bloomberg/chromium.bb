@@ -204,11 +204,11 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
                                               BLOCK_SIZE sb_type) {
   (void)sb_type;
   switch (type) {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     case COMPOUND_AVERAGE: return sb_type >= BLOCK_4X4;
-#else   // CONFIG_CB4X4
+#else   // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     case COMPOUND_AVERAGE: return 1;
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
 #if CONFIG_WEDGE
     case COMPOUND_WEDGE: return wedge_params_lookup[sb_type].bits > 0;
 #endif  // CONFIG_WEDGE
@@ -221,9 +221,9 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
 
 static INLINE int is_any_masked_compound_used(BLOCK_SIZE sb_type) {
   COMPOUND_TYPE comp_type;
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   if (sb_type < BLOCK_4X4) return 0;
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   for (comp_type = 0; comp_type < COMPOUND_TYPES; comp_type++) {
     if (is_masked_compound_type(comp_type) &&
         is_interinter_compound_used(comp_type, sb_type))

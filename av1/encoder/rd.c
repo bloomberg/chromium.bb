@@ -51,7 +51,7 @@
 // This table is used to correct for block size.
 // The factors here are << 2 (2 = x0.5, 32 = x8 etc).
 static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   2,  2,  2,
 #endif
   2,  3,  3, 4, 6, 6, 8, 12, 12, 16, 24, 24, 32,
@@ -797,7 +797,7 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize, TX_SIZE tx_size,
                               const struct macroblockd_plane *pd,
                               ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE],
                               ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE]) {
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
 #else

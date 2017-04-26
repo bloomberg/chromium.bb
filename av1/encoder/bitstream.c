@@ -2754,13 +2754,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_VAR_TX
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_CB4X4
-#if CONFIG_CHROMA_2X2
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else
+#if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE plane_bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#endif
+#elif CONFIG_CB4X4
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
       const BLOCK_SIZE plane_bsize =
           get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);

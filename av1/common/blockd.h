@@ -916,7 +916,7 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 #if CONFIG_RECT_TX
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
     0,  // BLOCK_4X2
@@ -953,7 +953,7 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 #if CONFIG_RECT_TX_EXT
 static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT_QTTX[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
     0,  // BLOCK_4X2

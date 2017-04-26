@@ -2695,7 +2695,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
 /* clang-format off */
 static const BLOCK_SIZE min_partition_size[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_2X2,   BLOCK_2X2,   BLOCK_2X2,    //    2x2,    2x4,     4x2
 #endif
                             BLOCK_4X4,    //                     4x4
@@ -2709,7 +2709,7 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES] = {
 };
 
 static const BLOCK_SIZE max_partition_size[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_4X4,     BLOCK_4X4,       BLOCK_4X4,    //    2x2,    2x4,     4x2
 #endif
                                   BLOCK_8X8,    //                     4x4
@@ -2724,7 +2724,7 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES] = {
 
 // Next square block size less or equal than current block size.
 static const BLOCK_SIZE next_square_size[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_2X2,   BLOCK_2X2,     BLOCK_2X2,    //    2x2,    2x4,     4x2
 #endif
                               BLOCK_4X4,    //                     4x4

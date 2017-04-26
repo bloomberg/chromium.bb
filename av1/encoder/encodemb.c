@@ -1606,13 +1606,13 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
 #if CONFIG_DEBUG
 // av1_predict_intra_block_facade does not pass plane_bsize, we need to validate
 // that we will get the same value of plane_bsize on the other side.
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize_val =
       AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[plane]));
 #else
   const BLOCK_SIZE plane_bsize_val =
       get_plane_block_size(mbmi->sb_type, &xd->plane[plane]);
-#endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#endif  // CONFIG_CHROMA_SUB8X8
   assert(plane_bsize == plane_bsize_val);
 #endif  // CONFIG_DEBUG
   av1_predict_intra_block_facade(xd, plane, block_idx, blk_col, blk_row,

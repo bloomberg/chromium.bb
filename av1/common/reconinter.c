@@ -160,11 +160,11 @@ static const wedge_code_type wedge_codebook_16_heqw[16] = {
 };
 
 const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -1829,7 +1829,7 @@ int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
 
   BLOCK_SIZE bsize_plane =
       ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   if (bsize_plane < BLOCK_4X4) return 1;
 #endif
   switch (bsize_plane) {
@@ -2641,7 +2641,7 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
 static int ii_size_scales[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     32, 32, 32,
 #endif
     32, 16, 16, 16, 8, 8, 8, 4,
@@ -2655,7 +2655,7 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
 static int ii_size_scales[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     16, 16, 16,
 #endif
     16, 8, 8, 8, 4, 4, 4,

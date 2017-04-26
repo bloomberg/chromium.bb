@@ -1408,7 +1408,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_8_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits8,
             aom_highbd_sad4x4x8_bits8, aom_highbd_sad4x4x4d_bits8)
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
         HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_8_variance2x2, NULL, NULL,
                    NULL, NULL, NULL)
         HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_8_variance4x2, NULL, NULL,
@@ -1613,7 +1613,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_10_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits10,
             aom_highbd_sad4x4x8_bits10, aom_highbd_sad4x4x4d_bits10)
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
         HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_10_variance2x2, NULL, NULL,
                    NULL, NULL, NULL)
         HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_10_variance4x2, NULL, NULL,
@@ -1820,7 +1820,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_12_sub_pixel_avg_variance4x4, aom_highbd_sad4x4x3_bits12,
             aom_highbd_sad4x4x8_bits12, aom_highbd_sad4x4x4d_bits12)
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
         HIGHBD_BFP(BLOCK_2X2, NULL, NULL, aom_highbd_12_variance2x2, NULL, NULL,
                    NULL, NULL, NULL)
         HIGHBD_BFP(BLOCK_4X2, NULL, NULL, aom_highbd_12_variance4x2, NULL, NULL,
@@ -2402,7 +2402,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
       aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
       aom_sad4x4x8, aom_sad4x4x4d)
 
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL)
   BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL)
   BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL)

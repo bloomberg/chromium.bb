@@ -301,13 +301,15 @@ static const uint16_t orders_4x4[1024] = {
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_4x4,     orders_4x4,     orders_4x4,
+#endif
   //                              4X4
                                   orders_4x4,
   // 4X8,         8X4,            8X8
   orders_4x8,     orders_8x4,     orders_8x8,
-#else
+#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -327,13 +329,15 @@ static const uint16_t *const orders[BLOCK_SIZES] = {
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_8x8,     orders_8x8,     orders_8x8,
+#endif
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
   orders_8x16,    orders_16x8,    orders_16x16,
-#else
+#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   //                              4X4
                                   orders_16x16,
   // 4X8,         8X4,            8X8
@@ -388,7 +392,7 @@ static const uint16_t orders_verta_8x8[256] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   // 2X2,           2X4,              4X2
   orders_4x4,       orders_4x4,       orders_4x4,
 #endif
@@ -410,13 +414,15 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   // 2X2,             2X4,                4X2
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
+#endif
   //                                      4X4
                                           orders_verta_8x8,
   // 4X8,             8X4,                8X8
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_16x16,
-#else
+#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   //                                      4X4
                                           orders_verta_16x16,
   // 4X8,             8X4,                8X8
@@ -2716,7 +2722,7 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
   CFL_CTX *const cfl = xd->cfl;
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE plane_bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
 #else
