@@ -77,7 +77,10 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     }
 
     public OfflinePageDownloadBridge(Profile profile) {
-        mNativeOfflinePageDownloadBridge = sIsTesting ? 0L : nativeInit(profile);
+        // If |profile| is incognito profile, switch to the regular one since
+        // downloads are shared between them.
+        mNativeOfflinePageDownloadBridge =
+                sIsTesting ? 0L : nativeInit(profile.getOriginalProfile());
     }
 
     /** Destroys the native portion of the bridge. */

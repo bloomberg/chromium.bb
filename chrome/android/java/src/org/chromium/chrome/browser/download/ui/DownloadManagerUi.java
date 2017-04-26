@@ -81,8 +81,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             Resources resources = ContextUtils.getApplicationContext().getResources();
             int iconSize = resources.getDimensionPixelSize(R.dimen.downloads_item_icon_size);
 
-            mOfflinePageBridge = new OfflinePageDownloadBridge(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            mOfflinePageBridge = new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
             mSelectionDelegate = new DownloadItemSelectionDelegate();
             mThumbnailProvider = new ThumbnailProviderImpl(iconSize);
         }
