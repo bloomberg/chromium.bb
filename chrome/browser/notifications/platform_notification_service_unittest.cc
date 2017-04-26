@@ -165,11 +165,7 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
   Notification GetDisplayedNotification() {
-#if defined(OS_ANDROID)
-    return static_cast<StubNotificationPlatformBridge*>(
-               g_browser_process->notification_platform_bridge())
-        ->GetNotificationAt(profile_->GetPath().BaseName().value(), 0);
-#elif BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
     if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
       return static_cast<StubNotificationPlatformBridge*>(
                  g_browser_process->notification_platform_bridge())
