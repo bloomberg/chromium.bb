@@ -443,6 +443,7 @@ class RequestCoordinator : public KeyedService,
   // Unowned pointer to the Network Quality Estimator.
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator_;
+  net::EffectiveConnectionType network_quality_at_request_start_;
   // Holds an ID of the currently active request.
   int64_t active_request_id_;
   // Status of the most recent offlining.
