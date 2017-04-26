@@ -45,7 +45,8 @@ class TestResponseCallback {
                              base::Unretained(this))) {}
   ~TestResponseCallback() {}
 
-  void ReceivedCallback(U2fReturnCode status, std::vector<uint8_t> data) {
+  void ReceivedCallback(U2fReturnCode status,
+                        const std::vector<uint8_t>& data) {
     closure_.Run();
   }
 

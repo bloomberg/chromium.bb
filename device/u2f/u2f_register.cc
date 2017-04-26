@@ -38,7 +38,7 @@ void U2fRegister::TryDevice() {
 }
 
 void U2fRegister::OnTryDevice(U2fReturnCode return_code,
-                              std::vector<uint8_t> response_data) {
+                              const std::vector<uint8_t>& response_data) {
   switch (return_code) {
     case U2fReturnCode::SUCCESS:
       state_ = State::COMPLETE;

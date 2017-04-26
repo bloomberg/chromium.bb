@@ -26,7 +26,7 @@ class U2fDevice {
   };
 
   using MessageCallback =
-      base::Callback<void(U2fReturnCode, std::vector<uint8_t>)>;
+      base::Callback<void(U2fReturnCode, const std::vector<uint8_t>&)>;
   using VersionCallback =
       base::Callback<void(bool success, ProtocolVersion version)>;
   using DeviceCallback =

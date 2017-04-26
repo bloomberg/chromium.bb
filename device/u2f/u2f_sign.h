@@ -27,9 +27,9 @@ class U2fSign : public U2fRequest {
 
  private:
   void TryDevice() override;
-  void OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator,
-                   U2fReturnCode,
-                   std::vector<uint8_t>);
+  void OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
+                   U2fReturnCode return_code,
+                   const std::vector<uint8_t>& response_data);
 
   const std::vector<std::vector<uint8_t>> registered_keys_;
   std::vector<uint8_t> challenge_hash_;

@@ -25,7 +25,8 @@ class U2fRegister : public U2fRequest {
 
  private:
   void TryDevice() override;
-  void OnTryDevice(U2fReturnCode, std::vector<uint8_t>);
+  void OnTryDevice(U2fReturnCode return_code,
+                   const std::vector<uint8_t>& response_data);
 
   std::vector<uint8_t> challenge_hash_;
   std::vector<uint8_t> app_param_;

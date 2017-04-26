@@ -14,8 +14,9 @@
 namespace device {
 class U2fRequest : HidService::Observer {
  public:
-  using ResponseCallback = base::Callback<void(U2fReturnCode status_code,
-                                               std::vector<uint8_t> response)>;
+  using ResponseCallback =
+      base::Callback<void(U2fReturnCode status_code,
+                          const std::vector<uint8_t>& response)>;
 
   U2fRequest(const ResponseCallback& callback);
   virtual ~U2fRequest();
