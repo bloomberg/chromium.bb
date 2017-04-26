@@ -286,6 +286,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/canvas/' +
         'framebuffer-bindings-affected-by-to-data-url.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
+    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
+        ['win10', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
 
@@ -472,6 +474,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'nvidia'], bug=672380)
 
     # NVIDIA P400 OpenGL
+    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
