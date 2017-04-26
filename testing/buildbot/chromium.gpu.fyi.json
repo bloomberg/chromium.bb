@@ -2722,13 +2722,29 @@
       }
     ]
   },
-  "GPU Linux Builder": {},
+  "GPU Linux Builder": {
+    "additional_compile_targets": [
+      "browser_tests"
+    ]
+  },
   "GPU Linux Builder (dbg)": {},
-  "GPU Mac Builder": {},
+  "GPU Mac Builder": {
+    "additional_compile_targets": [
+      "browser_tests"
+    ]
+  },
   "GPU Mac Builder (dbg)": {},
-  "GPU Win Builder": {},
+  "GPU Win Builder": {
+    "additional_compile_targets": [
+      "browser_tests"
+    ]
+  },
   "GPU Win Builder (dbg)": {},
-  "GPU Win x64 Builder": {},
+  "GPU Win x64 Builder": {
+    "additional_compile_targets": [
+      "browser_tests"
+    ]
+  },
   "GPU Win x64 Builder (dbg)": {},
   "Linux ChromiumOS Builder": {
     "additional_compile_targets": [
