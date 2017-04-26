@@ -286,7 +286,6 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
       force_show_keyboard_(false),
-      should_block_shelf_auto_hide_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false) {
   SetInkDropMode(InkDropMode::ON);
@@ -324,7 +323,6 @@ void ImeMenuTray::ShowImeMenuBubble() {
 }
 
 void ImeMenuTray::ShowImeMenuBubbleInternal() {
-  should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
       GetAnchorAlignment(), kTrayMenuMinimumWidth, kTrayMenuMinimumWidth);
   init_params.can_activate = true;
@@ -355,7 +353,6 @@ void ImeMenuTray::HideImeMenuBubble() {
   bubble_.reset();
   ime_list_view_ = nullptr;
   SetIsActive(false);
-  should_block_shelf_auto_hide_ = false;
   shelf()->UpdateAutoHideState();
 }
 
@@ -402,10 +399,6 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
     keyboard_controller->AddObserver(this);
     keyboard_controller->ShowKeyboard(false);
   }
-}
-
-bool ImeMenuTray::ShouldBlockShelfAutoHide() const {
-  return should_block_shelf_auto_hide_;
 }
 
 bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {

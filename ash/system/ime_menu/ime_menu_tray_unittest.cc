@@ -137,17 +137,24 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
 
 // Tests that IME menu tray changes background color when tapped/clicked. And
 // tests that the background color becomes 'inactive' when disabling the IME
-// menu feature.
+// menu feature. Also makes sure that the shelf won't autohide as long as the
+// IME menu is open.
 TEST_F(ImeMenuTrayTest, PerformAction) {
   Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
+  StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+  EXPECT_FALSE(status->ShouldShowShelf());
 
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
+
+  // Auto-hidden shelf would be forced to be visible as long as the bubble is
+  // open.
+  EXPECT_TRUE(status->ShouldShowShelf());
 
   GetTray()->PerformAction(tap);
   EXPECT_FALSE(IsTrayBackgroundActive());
@@ -161,6 +168,7 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
   EXPECT_FALSE(IsVisible());
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(IsTrayBackgroundActive());
+  EXPECT_FALSE(status->ShouldShowShelf());
 }
 
 // Tests that IME menu list updates when changing the current IME. This should

@@ -48,9 +48,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // voice.
   void ShowKeyboardWithKeyset(const std::string& keyset);
 
-  // Returns true if it should block the auto hide behavior of the shelf.
-  bool ShouldBlockShelfAutoHide() const;
-
   // Returns true if the menu should show emoji, handwriting and voice buttons
   // on the bottom. Otherwise, the menu will show a 'Customize...' bottom row
   // for non-MD UI, and a Settings button in the title row for MD.
@@ -107,7 +104,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   IMEInfo current_ime_;
   bool show_keyboard_;
   bool force_show_keyboard_;
-  bool should_block_shelf_auto_hide_;
   bool keyboard_suppressed_;
   bool show_bubble_after_keyboard_hidden_;
 
