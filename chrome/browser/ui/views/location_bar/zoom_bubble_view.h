@@ -33,6 +33,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Shows the bubble and automatically closes it after a short time period if
   // |reason| is AUTOMATIC.
   static void ShowBubble(content::WebContents* web_contents,
+                         const gfx::Point& anchor_point,
                          DisplayReason reason);
 
   // Closes the showing bubble (if one exists).
@@ -41,6 +42,10 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Returns the zoom bubble if the zoom bubble is showing. Returns NULL
   // otherwise.
   static ZoomBubbleView* GetZoomBubble();
+
+  // Refreshes the bubble by changing the zoom percentage appropriately and
+  // resetting the timer if necessary.
+  void Refresh();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest, ImmersiveFullscreen);
@@ -64,7 +69,12 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
     std::unique_ptr<const extensions::IconImage> icon_image;
   };
 
+  // Constructs ZoomBubbleView. Anchors the bubble to |anchor_view| when it is
+  // not nullptr or alternatively, to |anchor_point|. The bubble will auto-close
+  // when |reason| is AUTOMATIC. If |immersive_mode_controller_| is present, the
+  // bubble will auto-close when the top-of-window views are revealed.
   ZoomBubbleView(views::View* anchor_view,
+                 const gfx::Point& anchor_point,
                  content::WebContents* web_contents,
                  DisplayReason reason,
                  ImmersiveModeController* immersive_mode_controller);
@@ -87,10 +97,6 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
   // extensions::IconImage::Observer:
   void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
-
-  // Refreshes the bubble by changing the zoom percentage appropriately and
-  // resetting the timer if necessary.
-  void Refresh();
 
   // Sets information about the extension that initiated the zoom change.
   // Calling this method asserts that the extension |extension| did initiate

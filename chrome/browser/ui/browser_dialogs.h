@@ -133,6 +133,23 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     const GURL& url,
                                     bool newly_bookmarked);
 
+// Shows a views zoom bubble at the |anchor_point|. This occurs when the zoom
+// icon is clicked or when a shortcut key is pressed or whenever |web_contents|
+// zoom factor changes. |user_action| is used to determine if the bubble will
+// auto-close.
+void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,
+                                const gfx::Point& anchor_point,
+                                bool user_action);
+
+// Closes a views zoom bubble if currently shown.
+void CloseZoomBubbleViews();
+
+// Refreshes views zoom bubble if currently shown.
+void RefreshZoomBubbleViews();
+
+// Returns true if views zoom bubble is currently shown.
+bool IsZoomBubbleViewsShown();
+
 // Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();

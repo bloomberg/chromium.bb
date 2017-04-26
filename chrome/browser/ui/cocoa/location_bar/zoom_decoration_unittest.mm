@@ -2,14 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
+
+#include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/zoom/zoom_controller.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
 
-class ZoomDecorationTest : public ChromeRenderViewHostTestHarness {};
+class ZoomDecorationTest : public ChromeRenderViewHostTestHarness,
+                           public ::testing::WithParamInterface<bool> {
+ public:
+  ZoomDecorationTest() {}
+  ~ZoomDecorationTest() override {}
+
+ protected:
+  // testing::Test:
+  void SetUp() override {
+    // TODO(crbug.com/630357): Remove parameterized testing for this class when
+    // secondary-ui-md is enabled by default on all platforms.
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kExtendMdToSecondaryUi);
+    }
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
+};
 
 class MockZoomDecoration : public ZoomDecoration {
  public:
@@ -45,7 +67,7 @@ class MockZoomController : public zoom::ZoomController {
 
 // Test that UpdateIfNecessary performs redraws only when the zoom percent
 // changes.
-TEST_F(ZoomDecorationTest, ChangeZoomPercent) {
+TEST_P(ZoomDecorationTest, ChangeZoomPercent) {
   MockZoomDecoration decoration(NULL);
   MockZoomController controller(web_contents());
 
@@ -72,5 +94,9 @@ TEST_F(ZoomDecorationTest, ChangeZoomPercent) {
                                false);
   EXPECT_EQ(3, decoration.update_ui_count_);
 }
+
+// Prefix for test instantiations intentionally left blank since the test
+// fixture class has a single parameterization.
+INSTANTIATE_TEST_CASE_P(, ZoomDecorationTest, testing::Bool());
 
 }  // namespace

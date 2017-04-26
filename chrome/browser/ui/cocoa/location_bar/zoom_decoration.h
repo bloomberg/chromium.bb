@@ -60,6 +60,9 @@ class ZoomDecoration : public ImageDecoration,
 
   bool IsAtDefaultZoom() const;
 
+  // Returns true when |bubble_| or the views zoom bubble exists.
+  bool IsBubbleShown() const;
+
   // Virtual for testing.
   virtual bool ShouldShowDecoration() const;
 

@@ -7,8 +7,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
+#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
@@ -57,6 +59,30 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
   BookmarkBubbleView::ShowBubble(
       nullptr, gfx::Rect(anchor_point, gfx::Size()), parent, observer,
       std::move(delegate), browser->profile(), virtual_url, already_bookmarked);
+}
+
+void ShowZoomBubbleViewsAtPoint(content::WebContents* web_contents,
+                                const gfx::Point& anchor_point,
+                                bool user_action) {
+  ZoomBubbleView::ShowBubble(web_contents, anchor_point,
+                             user_action
+                                 ? LocationBarBubbleDelegateView::USER_GESTURE
+                                 : LocationBarBubbleDelegateView::AUTOMATIC);
+  if (ZoomBubbleView::GetZoomBubble())
+    KeepBubbleAnchored(ZoomBubbleView::GetZoomBubble());
+}
+
+void CloseZoomBubbleViews() {
+  ZoomBubbleView::CloseCurrentBubble();
+}
+
+void RefreshZoomBubbleViews() {
+  if (ZoomBubbleView::GetZoomBubble())
+    ZoomBubbleView::GetZoomBubble()->Refresh();
+}
+
+bool IsZoomBubbleViewsShown() {
+  return ZoomBubbleView::GetZoomBubble() != nullptr;
 }
 
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {
