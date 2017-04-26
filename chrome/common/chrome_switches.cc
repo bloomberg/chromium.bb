@@ -727,11 +727,6 @@ const char kProxyBypassList[]               = "proxy-bypass-list";
 // Uses the pac script at the given URL
 const char kProxyPacUrl[]                   = "proxy-pac-url";
 
-// Uses a specified proxy server, overrides system settings. This switch only
-// affects HTTP and HTTPS requests. ARC-apps use only HTTP proxy server with the
-// highest priority.
-const char kProxyServer[]                   = "proxy-server";
-
 // Specifies a comma separated list of QUIC connection options to send to
 // the server.
 const char kQuicConnectionOptions[] = "quic-connection-options";

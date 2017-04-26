@@ -15,7 +15,8 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/log/net_log_util.h"
 #include "net/log/write_to_file_net_log_observer.h"
-#include "net/proxy/proxy_service.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -58,7 +59,6 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
   }
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(GetContentClient()->GetUserAgent());
-  builder.set_proxy_service(net::ProxyService::CreateDirect());
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
 
   // We store the cache in memory so we can run many shells in parallel when
@@ -71,6 +71,17 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 
   builder.SetProtocolHandler(url::kDataScheme,
                              base::MakeUnique<net::DataProtocolHandler>());
+
+  if (command_line->HasSwitch(switches::kProxyServer)) {
+    net::ProxyConfig config;
+    config.proxy_rules().ParseFromString(
+        command_line->GetSwitchValueASCII(switches::kProxyServer));
+    std::unique_ptr<net::ProxyConfigService> fixed_config_service =
+        base::MakeUnique<net::ProxyConfigServiceFixed>(config);
+    builder.set_proxy_config_service(std::move(fixed_config_service));
+  } else {
+    builder.set_proxy_service(net::ProxyService::CreateDirect());
+  }
 
   return builder.Build();
 }
