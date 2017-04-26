@@ -6,20 +6,27 @@ package org.chromium.chrome.browser.infobar;
 
 import android.support.design.widget.TabLayout;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
+import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 
 /**
  * Java version of the compcat translate infobar
  */
-class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelectedListener {
+class TranslateCompactInfoBar extends InfoBar
+        implements TabLayout.OnTabSelectedListener, TranslateMenuHelper.TranslateMenuListener {
     private final TranslateOptions mOptions;
 
     private long mNativeTranslateInfoBarPtr;
     private TranslateTabLayout mTabLayout;
+
+    private TranslateMenuHelper mMenuHelper;
 
     @CalledByNative
     private static InfoBar create(String sourceLanguageCode, String targetLanguageCode,
@@ -51,7 +58,22 @@ class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelected
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
         mTabLayout.addOnTabSelectedListener(this);
 
+        content.findViewById(R.id.translate_infobar_menu_button)
+                .setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        initMenuHelper(v);
+                        mMenuHelper.show(TranslateMenu.MENU_OVERFLOW);
+                    }
+                });
+
         parent.addContent(content, 1.0f);
+    }
+
+    private void initMenuHelper(View anchorView) {
+        if (mMenuHelper == null) {
+            mMenuHelper = new TranslateMenuHelper(getContext(), anchorView, mOptions, this);
+        }
     }
 
     @CalledByNative
@@ -85,6 +107,35 @@ class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelected
             mTabLayout.showProgressBarOnTab(tab.getPosition());
             onButtonClicked(ActionType.TRANSLATE);
         }
+    }
+
+    @Override
+    public void onOverflowMenuItemClicked(int itemId) {
+        switch (itemId) {
+            case TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE:
+                mMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
+                return;
+            case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
+            case TranslateMenu.ID_OVERFLOW_NEVER_SITE:
+            case TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE:
+                // TODO(googleo): Add correct behaviors for each code here.
+                return;
+            case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
+                mMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
+                return;
+            default:
+                assert false : "Unexpected overflow menu code";
+        }
+    }
+
+    @Override
+    public void onTargetMenuItemClicked(String code) {
+        // TODO(googleo): Update translate code and translate page.
+    }
+
+    @Override
+    public void onSourceMenuItemClicked(String code) {
+        // TODO(googleo): Update translate code and translate page.
     }
 
     @Override
