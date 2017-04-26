@@ -1971,7 +1971,6 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
-crbug.com/712629 [ Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Crash ]
 
 # This is temporary until we revert the speculative change
 crbug.com/704935 fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
