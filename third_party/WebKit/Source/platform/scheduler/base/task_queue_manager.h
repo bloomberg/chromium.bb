@@ -51,7 +51,7 @@ class TaskTimeObserver;
 //    the incoming task queue (if any) are moved here. The work queues are
 //    registered with the selector as input to the scheduling decision.
 //
-class BLINK_PLATFORM_EXPORT TaskQueueManager
+class PLATFORM_EXPORT TaskQueueManager
     : public internal::TaskQueueSelector::Observer,
       public base::MessageLoop::NestingObserver {
  public:
@@ -102,7 +102,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   scoped_refptr<internal::TaskQueueImpl> NewTaskQueue(
       const TaskQueue::Spec& spec);
 
-  class BLINK_PLATFORM_EXPORT Observer {
+  class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 

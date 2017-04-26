@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/intrusive_heap.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/work_queue.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
@@ -28,7 +28,7 @@ namespace internal {
 // TaskQueueSelector chooses to run a task a given priority).  The reason this
 // works is because std::map is a tree based associative container and all the
 // values are kept in sorted order.
-class BLINK_PLATFORM_EXPORT WorkQueueSets {
+class PLATFORM_EXPORT WorkQueueSets {
  public:
   WorkQueueSets(size_t num_sets, const char* name);
   ~WorkQueueSets();

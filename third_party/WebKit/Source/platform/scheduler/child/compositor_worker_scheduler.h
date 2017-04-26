@@ -6,8 +6,8 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/child/worker_scheduler.h"
-#include "public/platform/WebCommon.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace base {
@@ -19,7 +19,7 @@ namespace scheduler {
 
 class SchedulerTqmDelegate;
 
-class BLINK_PLATFORM_EXPORT CompositorWorkerScheduler
+class PLATFORM_EXPORT CompositorWorkerScheduler
     : public WorkerScheduler,
       public SingleThreadIdleTaskRunner::Delegate {
  public:

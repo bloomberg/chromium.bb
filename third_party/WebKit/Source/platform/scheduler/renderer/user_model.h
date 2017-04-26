@@ -8,14 +8,14 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 #include "public/platform/WebInputEvent.h"
+#include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT UserModel {
+class PLATFORM_EXPORT UserModel {
  public:
   UserModel();
   ~UserModel();

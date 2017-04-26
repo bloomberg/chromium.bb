@@ -12,7 +12,7 @@ namespace scheduler {
 
 class RendererSchedulerImpl;
 
-class BLINK_PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
+class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
  public:
   explicit RendererWebSchedulerImpl(RendererSchedulerImpl* renderer_scheduler);
 

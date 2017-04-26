@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TASK_TIME_OBSERVER_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 namespace scheduler {
@@ -14,7 +14,7 @@ namespace scheduler {
 class TaskQueue;
 
 // TaskTimeObserver provides an API for observing completion of renderer tasks.
-class BLINK_PLATFORM_EXPORT TaskTimeObserver {
+class PLATFORM_EXPORT TaskTimeObserver {
  public:
   TaskTimeObserver() {}
   virtual ~TaskTimeObserver() {}

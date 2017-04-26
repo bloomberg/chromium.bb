@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 
+#include "platform/PlatformExport.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/BlameContext.h"
-#include "public/platform/WebCommon.h"
 
 #include <memory>
 
@@ -15,10 +15,10 @@ namespace blink {
 
 class WebFrameScheduler;
 
-class BLINK_PLATFORM_EXPORT WebViewScheduler {
+class PLATFORM_EXPORT WebViewScheduler {
  public:
   // Helper interface to plumb settings from WebSettings to scheduler.
-  class BLINK_PLATFORM_EXPORT WebViewSchedulerSettings {
+  class PLATFORM_EXPORT WebViewSchedulerSettings {
    public:
     virtual ~WebViewSchedulerSettings() {}
 

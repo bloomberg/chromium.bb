@@ -29,7 +29,7 @@ class WorkQueueSets;
 // API subset used by WorkQueueSets pretends the WorkQueue is empty until the
 // fence is removed.  This functionality is a primitive intended for use by
 // throttling mechanisms.
-class BLINK_PLATFORM_EXPORT WorkQueue {
+class PLATFORM_EXPORT WorkQueue {
  public:
   enum class QueueType { DELAYED, IMMEDIATE };
 

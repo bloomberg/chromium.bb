@@ -20,9 +20,9 @@ class WebTaskRunner;
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
 // TODO(skyostil): Replace this class with RendererScheduler.
-class BLINK_PLATFORM_EXPORT WebScheduler {
+class PLATFORM_EXPORT WebScheduler {
  public:
-  class BLINK_PLATFORM_EXPORT InterventionReporter {
+  class PLATFORM_EXPORT InterventionReporter {
    public:
     virtual ~InterventionReporter() {}
 

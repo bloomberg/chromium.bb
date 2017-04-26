@@ -29,7 +29,7 @@ class BudgetPoolController;
 // BudgetPool represents a group of task queues which share a limit
 // on a resource. This limit applies when task queues are already throttled
 // by TaskQueueThrottler.
-class BLINK_PLATFORM_EXPORT BudgetPool {
+class PLATFORM_EXPORT BudgetPool {
  public:
   virtual ~BudgetPool();
 
@@ -90,7 +90,7 @@ class BLINK_PLATFORM_EXPORT BudgetPool {
 
 // CPUTimeBudgetPool represents a collection of task queues which share a limit
 // on total cpu time.
-class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
+class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
  public:
   CPUTimeBudgetPool(const char* name,
                     BudgetPoolController* budget_pool_controller,

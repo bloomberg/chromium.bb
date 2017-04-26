@@ -9,16 +9,16 @@
 
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 namespace scheduler {
 
 class RenderWidgetSchedulingState;
 
-class BLINK_PLATFORM_EXPORT RenderWidgetSignals {
+class PLATFORM_EXPORT RenderWidgetSignals {
  public:
-  class BLINK_PLATFORM_EXPORT Observer {
+  class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 

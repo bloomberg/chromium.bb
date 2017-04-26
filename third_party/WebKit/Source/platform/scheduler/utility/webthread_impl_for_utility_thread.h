@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 #include "public/platform/scheduler/child/webthread_base.h"
 
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT WebThreadImplForUtilityThread
+class PLATFORM_EXPORT WebThreadImplForUtilityThread
     : public scheduler::WebThreadBase {
  public:
   WebThreadImplForUtilityThread();

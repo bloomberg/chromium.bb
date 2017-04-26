@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/WebCommon.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -22,7 +22,7 @@ class ChildScheduler;
 class SingleThreadIdleTaskRunner;
 class WebTaskRunnerImpl;
 
-class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
+class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
  public:
   WebSchedulerImpl(ChildScheduler* child_scheduler,
                    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,

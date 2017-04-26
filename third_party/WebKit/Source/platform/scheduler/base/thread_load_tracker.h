@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 namespace scheduler {
@@ -18,7 +18,7 @@ namespace scheduler {
 // In order to avoid bias it reports load level at regular intervals.
 // Every |reporting_interval_| time units, it reports the average thread load
 // level computed using a sliding window of width |reporting_interval_|.
-class BLINK_PLATFORM_EXPORT ThreadLoadTracker {
+class PLATFORM_EXPORT ThreadLoadTracker {
  public:
   // Callback is called with (current_time, load_level) parameters.
   using Callback = base::Callback<void(base::TimeTicks, double)>;

@@ -34,7 +34,7 @@ class TaskQueueManager;
 // Note the TimeDomain only knows about the first wake-up per queue, it's the
 // responsibility of TaskQueueImpl to keep the time domain up to date if this
 // changes.
-class BLINK_PLATFORM_EXPORT TimeDomain {
+class PLATFORM_EXPORT TimeDomain {
  public:
   TimeDomain();
   virtual ~TimeDomain();

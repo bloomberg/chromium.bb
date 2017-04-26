@@ -39,7 +39,7 @@ class RenderWidgetSchedulingState;
 class WebViewSchedulerImpl;
 class TaskQueueThrottler;
 
-class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
+class PLATFORM_EXPORT RendererSchedulerImpl
     : public RendererScheduler,
       public IdleHelper::Delegate,
       public SchedulerHelper::Observer,

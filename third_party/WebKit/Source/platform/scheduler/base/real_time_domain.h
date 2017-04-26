@@ -8,13 +8,13 @@
 #include <set>
 
 #include "base/macros.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/time_domain.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
+class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
  public:
   RealTimeDomain();
   ~RealTimeDomain() override;

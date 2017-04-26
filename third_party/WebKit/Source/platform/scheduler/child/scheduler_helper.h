@@ -18,8 +18,7 @@ namespace scheduler {
 class SchedulerTqmDelegate;
 
 // Common scheduler functionality for default tasks.
-class BLINK_PLATFORM_EXPORT SchedulerHelper
-    : public TaskQueueManager::Observer {
+class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
  public:
   explicit SchedulerHelper(
       scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate);
@@ -69,7 +68,7 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   // Creates a new TaskQueue with the given |spec|.
   scoped_refptr<TaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);
 
-  class BLINK_PLATFORM_EXPORT Observer {
+  class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 

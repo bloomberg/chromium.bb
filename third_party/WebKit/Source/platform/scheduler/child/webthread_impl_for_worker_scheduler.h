@@ -26,7 +26,7 @@ class WebSchedulerImpl;
 class WebTaskRunnerImpl;
 class WorkerScheduler;
 
-class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
+class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
     : public WebThreadBase,
       public base::MessageLoop::DestructionObserver {
  public:

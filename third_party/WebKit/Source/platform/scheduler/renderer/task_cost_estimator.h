@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/base/rolling_time_delta_history.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace base {
 class TickClock;
@@ -19,7 +19,7 @@ namespace blink {
 namespace scheduler {
 
 // Estimates the cost of running tasks based on historical timing data.
-class BLINK_PLATFORM_EXPORT TaskCostEstimator
+class PLATFORM_EXPORT TaskCostEstimator
     : public base::MessageLoop::TaskObserver {
  public:
   TaskCostEstimator(base::TickClock* time_source,
