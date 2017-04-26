@@ -18,23 +18,27 @@
 
 namespace viz {
 
-MojoFrameSinkManager::MojoFrameSinkManager(
-    bool use_surface_references,
-    DisplayProvider* display_provider,
-    cc::mojom::FrameSinkManagerRequest request,
-    cc::mojom::FrameSinkManagerClientPtr client)
+MojoFrameSinkManager::MojoFrameSinkManager(bool use_surface_references,
+                                           DisplayProvider* display_provider)
     : manager_(use_surface_references
                    ? cc::SurfaceManager::LifetimeType::REFERENCES
                    : cc::SurfaceManager::LifetimeType::SEQUENCES),
       display_provider_(display_provider),
-      client_(std::move(client)),
-      binding_(this, std::move(request)) {
+      binding_(this) {
   manager_.AddObserver(this);
 }
 
 MojoFrameSinkManager::~MojoFrameSinkManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   manager_.RemoveObserver(this);
+}
+
+void MojoFrameSinkManager::Connect(
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtr client) {
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(request));
+  client_ = std::move(client);
 }
 
 void MojoFrameSinkManager::CreateRootCompositorFrameSink(

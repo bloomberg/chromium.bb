@@ -39,12 +39,14 @@ class VIZ_EXPORT MojoFrameSinkManager
       public NON_EXPORTED_BASE(cc::mojom::FrameSinkManager) {
  public:
   MojoFrameSinkManager(bool use_surface_references,
-                       DisplayProvider* display_provider,
-                       cc::mojom::FrameSinkManagerRequest request,
-                       cc::mojom::FrameSinkManagerClientPtr client);
+                       DisplayProvider* display_provider);
   ~MojoFrameSinkManager() override;
 
   cc::SurfaceManager* surface_manager() { return &manager_; }
+
+  // Binds to |request| and store connection back to |client|.
+  void Connect(cc::mojom::FrameSinkManagerRequest request,
+               cc::mojom::FrameSinkManagerClientPtr client);
 
   // cc::mojom::FrameSinkManager implementation:
   void CreateRootCompositorFrameSink(

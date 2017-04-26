@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/compositor/image_transport_factory.h"
 
 namespace cc {
@@ -41,7 +42,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 #endif
 
  private:
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  std::unique_ptr<FrameSinkManagerHost> frame_sink_manager_host_;
   std::unique_ptr<ui::InProcessContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;

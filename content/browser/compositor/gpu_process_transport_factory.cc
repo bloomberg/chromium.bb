@@ -197,6 +197,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
   cc::SetClientNameForMetrics("Browser");
 
   frame_sink_manager_host_ = base::MakeUnique<FrameSinkManagerHost>();
+  frame_sink_manager_host_->ConnectToFrameSinkManager();
 
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());

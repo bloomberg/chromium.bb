@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_MANAGER_HOST_H_
 #define CONTENT_BROWSER_COMPOSITOR_FRAME_SINK_MANAGER_HOST_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace cc {
@@ -19,13 +21,17 @@ class SurfaceManager;
 namespace content {
 
 // Browser side implementation of mojom::FrameSinkManager. Manages frame sinks
-// and is inteded to replace SurfaceManager.
-class FrameSinkManagerHost : cc::mojom::FrameSinkManagerClient {
+// and is intended to replace SurfaceManager.
+class CONTENT_EXPORT FrameSinkManagerHost
+    : NON_EXPORTED_BASE(cc::mojom::FrameSinkManagerClient) {
  public:
   FrameSinkManagerHost();
   ~FrameSinkManagerHost() override;
 
   cc::SurfaceManager* surface_manager();
+
+  // Start Mojo connection to FrameSinkManager. Most tests won't need this.
+  void ConnectToFrameSinkManager();
 
   // See frame_sink_manager.mojom for descriptions.
   void CreateCompositorFrameSink(
