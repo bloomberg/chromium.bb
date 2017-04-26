@@ -87,7 +87,7 @@ class RasterizeAndRecordMicroKeySilkCases(_RasterizeAndRecordMicro):
     return page_sets.KeySilkCasesPageSet(run_no_page_interactions=True)
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('all')  # http://crbug.com/709561
 class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the Polymer cases.
 
