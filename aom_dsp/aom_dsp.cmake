@@ -52,7 +52,8 @@ set(AOM_DSP_COMMON_ASM_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.asm")
 
 set(AOM_DSP_COMMON_INTRIN_SSSE3
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c")
+    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
+    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3.c")
 
 set(AOM_DSP_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
@@ -219,10 +220,6 @@ if (CONFIG_AV1)
       ${AOM_DSP_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/inv_txfm_sse2.c"
       "${AOM_ROOT}/aom_dsp/x86/inv_txfm_sse2.h")
-
-  set(AOM_DSP_COMMON_ASM_SSSE3_X86_64
-      ${AOM_DSP_COMMON_ASM_SSSE3_X86_64}
-      "${AOM_ROOT}/aom_dsp/x86/inv_txfm_ssse3_x86_64.asm")
 endif ()
 
 if (CONFIG_DECODERS)
@@ -438,16 +435,11 @@ function (setup_aom_dsp_targets)
   endif ()
 
   if (HAVE_SSSE3)
-    if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
-      list(APPEND AOM_DSP_COMMON_ASM_SSSE3
-           ${AOM_DSP_COMMON_ASM_SSSE3_X86_64})
-    endif ()
-
     add_asm_library("aom_dsp_common_ssse3" "AOM_DSP_COMMON_ASM_SSSE3" "aom")
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_dsp_common"
                                   "AOM_DSP_COMMON_INTRIN_SSSE3")
 
-     if (CONFIG_ENCODERS)
+    if (CONFIG_ENCODERS)
       if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
         list(APPEND AOM_DSP_ENCODER_ASM_SSSE3
              ${AOM_DSP_ENCODER_ASM_SSSE3_X86_64})
