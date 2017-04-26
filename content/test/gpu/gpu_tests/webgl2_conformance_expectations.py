@@ -707,9 +707,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-r32f-red-float.html',
-        ['linux', 'nvidia'], bug=713127)
     # Explicitly specifying GT 610 to avoid conflict with Quadro P400 rule
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['linux', ('nvidia', 0x104a)], bug=714207)

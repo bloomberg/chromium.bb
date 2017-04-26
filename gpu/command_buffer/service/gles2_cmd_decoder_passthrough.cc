@@ -389,7 +389,7 @@ void GLES2DecoderPassthroughImpl::RestoreState(const ContextState* prev_state) {
 
 void GLES2DecoderPassthroughImpl::RestoreActiveTexture() const {}
 
-void GLES2DecoderPassthroughImpl::RestoreAllTextureUnitBindings(
+void GLES2DecoderPassthroughImpl::RestoreAllTextureUnitAndSamplerBindings(
     const ContextState* prev_state) const {}
 
 void GLES2DecoderPassthroughImpl::RestoreActiveTextureUnitBinding(

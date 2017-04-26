@@ -211,7 +211,8 @@ struct GPU_EXPORT ContextState {
   void InitState(const ContextState* prev_state) const;
 
   void RestoreActiveTexture() const;
-  void RestoreAllTextureUnitBindings(const ContextState* prev_state) const;
+  void RestoreAllTextureUnitAndSamplerBindings(
+      const ContextState* prev_state) const;
   void RestoreActiveTextureUnitBinding(unsigned int target) const;
   void RestoreVertexAttribValues() const;
   void RestoreVertexAttribArrays(
@@ -225,6 +226,7 @@ struct GPU_EXPORT ContextState {
   void RestoreIndexedUniformBufferBindings(const ContextState* prev_state);
   void RestoreTextureUnitBindings(
       GLuint unit, const ContextState* prev_state) const;
+  void RestoreSamplerBinding(GLuint unit, const ContextState* prev_state) const;
 
   void PushTextureDecompressionUnpackState() const;
   void RestoreUnpackState() const;
