@@ -2716,10 +2716,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if defined(USE_ASH)
-    {"ash-enable-smooth-screen-rotation",
-     flag_descriptions::kAshEnableSmoothScreenRotationName,
-     flag_descriptions::kAshEnableSmoothScreenRotationDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableSmoothScreenRotation)},
+    {"ash-disable-smooth-screen-rotation",
+     flag_descriptions::kAshDisableSmoothScreenRotationName,
+     flag_descriptions::kAshDisableSmoothScreenRotationDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableSmoothScreenRotation)},
 #endif  // defined(USE_ASH)
 
 #if defined(OS_CHROMEOS)

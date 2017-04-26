@@ -26,7 +26,6 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm_window.h"
-#include "base/command_line.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -39,7 +38,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/display/display.h"
-#include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
@@ -120,15 +118,6 @@ void AshTestBase::SetUp() {
   // Clears the saved state so that test doesn't use on the wrong
   // default state.
   shell::ToplevelWindow::ClearSavedStateForTest();
-
-  // TODO(jamescook): Can we do this without changing command line?
-  // Use the origin (1,1) so that it doesn't over
-  // lap with the native mouse cursor.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(::switches::kHostWindowBounds)) {
-    command_line->AppendSwitchASCII(::switches::kHostWindowBounds,
-                                    "1+1-800x600");
-  }
 
   ash_test_helper_->SetUp(start_session_);
 

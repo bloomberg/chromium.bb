@@ -737,11 +737,11 @@ const char kAshEnableMirroredScreenDescription[] =
     "Enable the mirrored screen mode. This mode flips the screen image "
     "horizontally.";
 
-const char kAshEnableSmoothScreenRotationName[] =
-    "Enable smooth rotation animations.";
+const char kAshDisableSmoothScreenRotationName[] =
+    "Disable smooth rotation animations.";
 
-const char kAshEnableSmoothScreenRotationDescription[] =
-    "Enable smooth rotation animations.";
+const char kAshDisableSmoothScreenRotationDescription[] =
+    "Disable smooth rotation animations.";
 
 const char kMaterialDesignInkDropAnimationFast[] = "Fast";
 

@@ -176,7 +176,7 @@ class ASH_EXPORT ScreenRotationAnimator {
   std::unique_ptr<ui::LayerTreeOwner> new_layer_tree_owner_;
   std::unique_ptr<ui::LayerOwner> black_mask_layer_owner_;
   std::unique_ptr<ScreenRotationRequest> last_pending_request_;
-  bool has_switch_ash_enable_smooth_screen_rotation_;
+  bool has_switch_ash_disable_smooth_screen_rotation_;
   aura::Window* root_window_;
   ui::Layer* screen_rotation_container_layer_;
   base::WeakPtrFactory<ScreenRotationAnimator> weak_factory_;
