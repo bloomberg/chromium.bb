@@ -27,11 +27,7 @@ class CORE_EXPORT ClassicPendingScript final
       public ResourceOwner<ScriptResource>,
       public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
-
-  // In order to call Dispose() before ResourceOwner's prefinalizer, we
-  // also register ClassicPendingScript::Dispose() as the prefinalizer of
-  // ClassicPendingScript here. https://crbug.com/711703
-  USING_PRE_FINALIZER(ClassicPendingScript, Dispose);
+  USING_PRE_FINALIZER(ClassicPendingScript, Prefinalize);
 
  public:
   // For script from an external file.
@@ -61,11 +57,7 @@ class CORE_EXPORT ClassicPendingScript final
   void RemoveFromMemoryCache() override;
   void DisposeInternal() override;
 
-  // Just used as the prefinalizer, does the same as PendingScript::Dispose().
-  // We define Dispose() with NOINLINE in ClassicPendingScript just to make
-  // the prefinalizers of PendingScript and ClassicPendingScript have
-  // different addresses to avoid assertion failures on Windows test bots.
-  void Dispose();
+  void Prefinalize();
 
  private:
   ClassicPendingScript(ScriptElementBase*,
