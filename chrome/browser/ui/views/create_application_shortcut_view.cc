@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -98,6 +99,8 @@ void CreateChromeApplicationShortcutView::InitControls() {
       profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 #endif
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   // Layout controls
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
 
@@ -108,7 +111,8 @@ void CreateChromeApplicationShortcutView::InitControls() {
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
-  column_set->AddPaddingColumn(0, views::kCheckboxIndent);
+  column_set->AddPaddingColumn(
+      0, provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         100.0f, views::GridLayout::USE_PREF, 0, 0);
 
@@ -119,14 +123,16 @@ void CreateChromeApplicationShortcutView::InitControls() {
   layout->StartRow(0, kTableColumnSetId);
   layout->AddView(desktop_check_box_);
 
+  const int vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   if (menu_check_box_ != nullptr) {
-    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    layout->AddPaddingRow(0, vertical_spacing);
     layout->StartRow(0, kTableColumnSetId);
     layout->AddView(menu_check_box_);
   }
 
   if (quick_launch_check_box_ != nullptr) {
-    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    layout->AddPaddingRow(0, vertical_spacing);
     layout->StartRow(0, kTableColumnSetId);
     layout->AddView(quick_launch_check_box_);
   }

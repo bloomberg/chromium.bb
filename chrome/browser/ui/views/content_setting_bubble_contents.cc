@@ -44,7 +44,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/window/dialog_client_view.h"
 
