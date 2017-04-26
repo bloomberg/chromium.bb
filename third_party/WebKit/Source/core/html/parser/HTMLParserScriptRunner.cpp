@@ -162,10 +162,7 @@ HTMLParserScriptRunner::HTMLParserScriptRunner(
   DCHECK(host_);
 }
 
-HTMLParserScriptRunner::~HTMLParserScriptRunner() {
-  // Verify that detach() has been called.
-  DCHECK(!document_);
-}
+HTMLParserScriptRunner::~HTMLParserScriptRunner() {}
 
 void HTMLParserScriptRunner::Detach() {
   if (!document_)
