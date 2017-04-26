@@ -3465,3 +3465,5 @@ crbug.com/713509 crypto/subtle/worker-subtle-crypto-concurrent.html [ Pass Timeo
 
 crbug.com/713685 [ Linux ] fast/workers/termination-early.html [ Crash Pass ]
 crbug.com/713685 [ Linux ] virtual/sharedarraybuffer/fast/workers/termination-early.html [ Crash Pass ]
+
+crbug.com/715405 [ Win Mac ] virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Failure Pass ]
