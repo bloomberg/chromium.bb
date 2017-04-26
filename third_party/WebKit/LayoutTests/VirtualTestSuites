@@ -300,12 +300,6 @@
   },
   {
     "prefix": "sharedarraybuffer",
-    "base": "storage/indexeddb",
-    "args": ["--js-flags=--harmony-sharedarraybuffer",
-             "--enable-blink-features=SharedArrayBuffer"]
-  },
-  {
-    "prefix": "sharedarraybuffer",
     "base": "webaudio",
     "args": ["--js-flags=--harmony-sharedarraybuffer",
              "--enable-blink-features=SharedArrayBuffer"]

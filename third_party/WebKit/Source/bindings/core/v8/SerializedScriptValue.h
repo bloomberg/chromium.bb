@@ -87,9 +87,6 @@ class CORE_EXPORT SerializedScriptValue
     Transferables* transferables = nullptr;
     WebBlobInfoArray* blob_info = nullptr;
     bool write_wasm_to_stream = false;
-    // Set when serializing a value for storage; e.g. when writing to
-    // IndexedDB.
-    bool for_storage = false;
   };
   static PassRefPtr<SerializedScriptValue> Serialize(v8::Isolate*,
                                                      v8::Local<v8::Value>,
