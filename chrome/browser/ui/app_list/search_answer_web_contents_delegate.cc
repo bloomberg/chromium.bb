@@ -76,9 +76,11 @@ void SearchAnswerWebContentsDelegate::Update() {
   replacements.SetQueryStr(prefixed_query);
   current_request_url_ = answer_server_url_.ReplaceComponents(replacements);
 
-  web_contents_->GetController().LoadURL(
-      current_request_url_, content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  content::NavigationController::LoadURLParams load_params(
+      current_request_url_);
+  load_params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+  load_params.should_clear_history_list = true;
+  web_contents_->GetController().LoadURLWithParams(load_params);
 
   // We are going to call WebContents::GetPreferredSize().
   web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
