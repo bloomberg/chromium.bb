@@ -9,47 +9,36 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_record.h"
-#include "cc/paint/skia_paint_canvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "cc/paint/record_paint_canvas.h"
 
 namespace cc {
+
+class PaintOpBuffer;
 
 class CC_PAINT_EXPORT PaintRecorder {
  public:
   PaintRecorder();
   ~PaintRecorder();
 
-  ALWAYS_INLINE PaintCanvas* beginRecording(const SkRect& bounds) {
-    uint32_t record_flags = 0;
-    canvas_.emplace(recorder_.beginRecording(bounds, nullptr, record_flags));
-    return getRecordingCanvas();
-  }
+  PaintCanvas* beginRecording(const SkRect& bounds);
 
-  ALWAYS_INLINE PaintCanvas* beginRecording(SkScalar width, SkScalar height) {
-    uint32_t record_flags = 0;
-    canvas_.emplace(
-        recorder_.beginRecording(width, height, nullptr, record_flags));
-    return getRecordingCanvas();
+  // TODO(enne): should make everything go through the non-rect version.
+  // See comments in RecordPaintCanvas ctor for why.
+  PaintCanvas* beginRecording(SkScalar width, SkScalar height) {
+    return beginRecording(SkRect::MakeWH(width, height));
   }
 
   // Only valid between between and finish recording.
-  ALWAYS_INLINE PaintCanvas* getRecordingCanvas() {
+  ALWAYS_INLINE RecordPaintCanvas* getRecordingCanvas() {
     return canvas_.has_value() ? &canvas_.value() : nullptr;
   }
 
-  ALWAYS_INLINE sk_sp<PaintRecord> finishRecordingAsPicture() {
-    sk_sp<SkPicture> picture = recorder_.finishRecordingAsPicture();
-    // Some users (e.g. printing) use the existence of the recording canvas
-    // to know if recording is finished, so reset it here.
-    canvas_.reset();
-    return sk_ref_sp(static_cast<PaintRecord*>(picture.get()));
-  }
+  sk_sp<PaintRecord> finishRecordingAsPicture();
 
  private:
-  SkPictureRecorder recorder_;
-  base::Optional<SkiaPaintCanvas> canvas_;
+  sk_sp<PaintOpBuffer> buffer_;
+  base::Optional<RecordPaintCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
 };

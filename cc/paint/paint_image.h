@@ -23,6 +23,7 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage(sk_sp<const SkImage> sk_image,
              AnimationType animation_type,
              CompletionState completion_state);
+  PaintImage(const PaintImage& image);
   ~PaintImage();
 
   const sk_sp<const SkImage>& sk_image() const { return sk_image_; }

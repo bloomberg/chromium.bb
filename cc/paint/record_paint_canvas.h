@@ -2,33 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PAINT_SKIA_PAINT_CANVAS_H_
-#define CC_PAINT_SKIA_PAINT_CANVAS_H_
+#ifndef CC_PAINT_RECORD_PAINT_CANVAS_H_
+#define CC_PAINT_RECORD_PAINT_CANVAS_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 namespace cc {
 
+class PaintOpBuffer;
 class PaintFlags;
 
-// A PaintCanvas derived class that passes PaintCanvas APIs through to
-// an SkCanvas.  This is more efficient than recording to a PaintRecord
-// and then playing back to an SkCanvas.
-class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
+class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
  public:
-  explicit SkiaPaintCanvas(SkCanvas* canvas);
-  explicit SkiaPaintCanvas(const SkBitmap& bitmap);
-  explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
-  ~SkiaPaintCanvas() override;
+  explicit RecordPaintCanvas(PaintOpBuffer* buffer);
+  ~RecordPaintCanvas() override;
 
   SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;
@@ -48,11 +45,9 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void concat(const SkMatrix& matrix) override;
   void setMatrix(const SkMatrix& matrix) override;
 
-  void clipRect(const SkRect& rect, SkClipOp op, bool do_anti_alias) override;
-  void clipRRect(const SkRRect& rrect,
-                 SkClipOp op,
-                 bool do_anti_alias) override;
-  void clipPath(const SkPath& path, SkClipOp op, bool do_anti_alias) override;
+  void clipRect(const SkRect& rect, SkClipOp op, bool antialias) override;
+  void clipRRect(const SkRRect& rrect, SkClipOp op, bool antialias) override;
+  void clipPath(const SkPath& path, SkClipOp op, bool antialias) override;
   bool quickReject(const SkRect& rect) const override;
   bool quickReject(const SkPath& path) const override;
   SkRect getLocalClipBounds() const override;
@@ -141,12 +136,24 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   using PaintCanvas::drawPicture;
 
  private:
-  SkCanvas* canvas_;
-  std::unique_ptr<SkCanvas> owned_;
+  const SkNoDrawCanvas* GetCanvas() const;
+  SkNoDrawCanvas* GetCanvas();
 
-  DISALLOW_COPY_AND_ASSIGN(SkiaPaintCanvas);
+  PaintOpBuffer* buffer_;
+
+  // TODO(enne): Although RecordPaintCanvas is mostly a write-only interface
+  // where paint commands are stored, occasionally users of PaintCanvas want
+  // to ask stateful questions mid-stream of clip and transform state.
+  // To avoid duplicating all this code (for now?), just forward to an SkCanvas
+  // that's not backed by anything but can answer these questions.
+  //
+  // This is mutable so that const functions (e.g. quickReject) that may
+  // lazy initialize the canvas can still be const.
+  mutable base::Optional<SkNoDrawCanvas> canvas_;
+
+  DISALLOW_COPY_AND_ASSIGN(RecordPaintCanvas);
 };
 
 }  // namespace cc
 
-#endif  // CC_PAINT_SKIA_PAINT_CANVAS_H_
+#endif  // CC_PAINT_RECORD_PAINT_CANVAS_H_
