@@ -298,13 +298,6 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
     return possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'
 
 
-# This benchmark is for local testing, doesn't need to run on bots.
-@benchmark.Disabled('all')
-@benchmark.Owner(emails=['tyoshino@chromium.org', 'hiroshige@chromium.org'])
-class BlinkPerfXMLHttpRequest(_BlinkPerfBenchmark):
-  tag = 'xml_http_request'
-  subdir = 'XMLHttpRequest'
-
 
 # Disabled on Windows and ChromeOS due to https://crbug.com/521887
 #@benchmark.Disabled('win', 'chromeos')

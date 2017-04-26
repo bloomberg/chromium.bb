@@ -16,7 +16,6 @@ blink_perf.parser,"yukishiino@chromium.org, bashi@chromium.org, haraken@chromium
 blink_perf.pywebsocket,"tyoshino@chromium.org, yhirano@chromium.org",
 blink_perf.shadow_dom,hayato@chromium.org,
 blink_perf.svg,"kouhei@chromium.org, fs@opera.com",
-blink_perf.xml_http_request,"tyoshino@chromium.org, hiroshige@chromium.org",
 blink_style.key_mobile_sites,,
 blink_style.polymer,,
 blink_style.top_25,,
