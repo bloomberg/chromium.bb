@@ -17,11 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -247,11 +247,14 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     return new net::URLRequestMockHTTPJob(
-        request,
-        network_delegate,
+        request, network_delegate,
         root_http.AppendASCII("mock-link-doctor.json"),
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        base::CreateTaskRunnerWithTraits(
+            base::TaskTraits()
+                .MayBlock()
+                .WithPriority(base::TaskPriority::BACKGROUND)
+                .WithShutdownBehavior(
+                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
   }
 
   void WaitForRequests(int requests_to_wait_for) {
