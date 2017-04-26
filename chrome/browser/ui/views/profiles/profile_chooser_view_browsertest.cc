@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -41,6 +42,7 @@
 namespace {
 
 Profile* CreateTestingProfile(const std::string& profile_name) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   size_t starting_number_of_profiles = profile_manager->GetNumberOfProfiles();
 
@@ -59,6 +61,7 @@ Profile* CreateTestingProfile(const std::string& profile_name) {
 }
 
 Profile* CreateProfileOutsideUserDataDir() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath path;
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &path))
     NOTREACHED() << "Could not create directory at " << path.MaybeAsASCII();
@@ -73,6 +76,7 @@ Profile* CreateProfileOutsideUserDataDir() {
 // Set up the profiles to enable Lock. Takes as parameter a profile that will be
 // signed in, and also creates a supervised user (necessary for lock).
 void SetupProfilesForLock(Profile* signed_in) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const char signed_in_email[] = "me@google.com";
 
   // Set up the |signed_in| profile.

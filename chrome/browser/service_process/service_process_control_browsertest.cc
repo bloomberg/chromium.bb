@@ -14,6 +14,7 @@
 #include "base/process/process_iterator.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -99,6 +100,7 @@ class ServiceProcessControlBrowserTest
   }
 
   void ProcessControlLaunched() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::ProcessId service_pid;
     EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
     EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
@@ -304,6 +306,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   base::ProcessId service_pid;
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
   ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
@@ -317,6 +320,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
 #endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   base::ProcessId service_pid;
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.
   LaunchServiceProcessControl(true);

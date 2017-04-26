@@ -24,6 +24,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -232,6 +233,7 @@ class PolicyTestCases {
   typedef PolicyTestCaseMap::const_iterator iterator;
 
   PolicyTestCases() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath path = ui_test_utils::GetTestFilePath(
         base::FilePath(FILE_PATH_LITERAL("policy")),
         base::FilePath(FILE_PATH_LITERAL("policy_test_cases.json")));

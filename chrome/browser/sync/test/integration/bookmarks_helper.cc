@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -852,6 +853,7 @@ gfx::Image CreateFavicon(SkColor color) {
 }
 
 gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const char* kPNGExtension = ".png";
   if (!base::EndsWith(path, kPNGExtension,
                       base::CompareCase::INSENSITIVE_ASCII))

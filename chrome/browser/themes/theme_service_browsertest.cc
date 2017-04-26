@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,6 +69,7 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, PRE_ThemeDataPackInvalid) {
   // Add a vestigial .pak file that should be removed when the new one is
   // created.
   // TODO(estade): remove when vestigial .pak file deletion is removed.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_EQ(
       1, base::WriteFile(profile->GetPrefs()
                              ->GetFilePath(prefs::kCurrentThemePackFilename)
@@ -99,6 +101,7 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, ThemeDataPackInvalid) {
           ->GetPrefs()
           ->GetFilePath(prefs::kCurrentThemePackFilename)
           .AppendASCII("Cached Theme Material Design.pak");
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_FALSE(base::PathExists(old_path)) << "File not deleted: "
                                            << old_path.value();
 }

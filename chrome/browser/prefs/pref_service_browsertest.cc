@@ -10,6 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -87,7 +88,11 @@ IN_PROC_BROWSER_TEST_F(PreferenceServiceTest, Test) {
   // The window should open with the new reference profile, with window
   // placement values stored in the user data directory.
   JSONFileValueDeserializer deserializer(original_pref_file_);
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    root = deserializer.Deserialize(NULL, NULL);
+  }
 
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));

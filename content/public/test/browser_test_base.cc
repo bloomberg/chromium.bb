@@ -305,7 +305,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     bool old_io_allowed_value = false;
     if (!disable_io_checks_)
-      base::ThreadRestrictions::SetIOAllowed(false);
+      old_io_allowed_value = base::ThreadRestrictions::SetIOAllowed(false);
     RunTestOnMainThread();
     if (!disable_io_checks_)
       base::ThreadRestrictions::SetIOAllowed(old_io_allowed_value);

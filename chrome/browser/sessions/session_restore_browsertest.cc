@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
@@ -1450,6 +1451,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir download_directory;
   ASSERT_TRUE(download_directory.CreateUniqueTempDir());
   ASSERT_TRUE(embedded_test_server()->Start());

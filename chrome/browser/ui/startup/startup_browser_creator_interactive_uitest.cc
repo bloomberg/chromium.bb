@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -28,6 +29,7 @@ typedef InProcessBrowserTest StartupBrowserCreatorTest;
 // And this test is useless without that functionality.
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Create 4 profiles, they will be scheduled for destruction when the last

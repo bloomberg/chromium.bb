@@ -27,6 +27,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
@@ -435,6 +436,7 @@ class IEImporterBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Sets up a favorites folder.
   base::FilePath path = temp_dir_.GetPath().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);

@@ -7,6 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service.h"
@@ -54,6 +55,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
 
   bool CreateApp(const std::string& app_manifest,
                  base::FilePath* app_dir) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (!app_dir_.CreateUniqueTempDir()) {
       LOG(ERROR) << "Unable to create a temporary directory.";
       return false;
@@ -129,6 +131,7 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
  protected:
   void LaunchTestingApp() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath app_dir;
     PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir);
     app_dir = app_dir.AppendASCII(

@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -114,6 +115,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
 
   // Does not work on ChromeOS.
   Profile* CreateSecondaryProfile(int profile_num) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     base::FilePath profile_path = profile_manager->user_data_dir();
     profile_path = profile_path.AppendASCII(

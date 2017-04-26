@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/drive/drive_api_util.h"
@@ -813,6 +814,7 @@ CancelCallback FakeDriveService::DownloadFile(
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!download_action_callback.is_null());
 

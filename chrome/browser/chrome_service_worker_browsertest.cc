@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -47,6 +48,7 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
 
   void WriteFile(const base::FilePath::StringType& filename,
                  base::StringPiece contents) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     EXPECT_EQ(base::checked_cast<int>(contents.size()),
               base::WriteFile(service_worker_dir_.GetPath().Append(filename),
                               contents.data(), contents.size()));

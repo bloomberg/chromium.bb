@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -214,6 +215,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
       bool strict_manifest_checks) {
     std::unique_ptr<WebstoreInstaller::Approval> result;
 
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath ext_path = test_data_dir_.AppendASCII(manifest_dir);
     std::string error;
     std::unique_ptr<base::DictionaryValue> parsed_manifest(
@@ -338,6 +340,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, BlockedFileTypes) {
   const Extension* extension =
       InstallExtension(test_data_dir_.AppendASCII("blocked_file_types.crx"), 1);
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(extension->path().AppendASCII("test.html")));
   EXPECT_TRUE(base::PathExists(extension->path().AppendASCII("test.nexe")));
   EXPECT_FALSE(base::PathExists(extension->path().AppendASCII("test1.EXE")));
@@ -349,6 +352,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowedThemeFileTypes) {
       test_data_dir_.AppendASCII("theme_with_extension.crx"), 1);
   ASSERT_TRUE(extension);
   const base::FilePath& path = extension->path();
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(
       base::PathExists(path.AppendASCII("images/theme_frame_camo.PNG")));
   EXPECT_TRUE(
@@ -599,6 +603,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
       crx_path, 1, extensions::Manifest::EXTERNAL_PREF);
   base::FilePath extension_path = extension->path();
   EXPECT_TRUE(cache_dir.GetPath().IsParent(extension_path));
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   EXPECT_TRUE(base::PathExists(extension_path));
 
   std::string extension_id = extension->id();

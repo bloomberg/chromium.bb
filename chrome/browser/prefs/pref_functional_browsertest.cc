@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/ui/browser.h"
@@ -52,6 +53,7 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   ASSERT_TRUE(embedded_test_server()->Start());
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir new_download_dir;
   ASSERT_TRUE(new_download_dir.CreateUniqueTempDir());
 

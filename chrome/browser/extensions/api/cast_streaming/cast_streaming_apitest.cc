@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
@@ -388,6 +389,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   receiver->Stop();
 
   delete receiver;
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   cast_environment->Shutdown();
 }
 

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,12 +22,14 @@ constexpr int64_t kTestFileSize = 1 << 15;  // 32 kB
 class ImageWriterUtilityClientTest : public InProcessBrowserTest {
  public:
   ImageWriterUtilityClientTest() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     test_device_ = base::FilePath().AppendASCII(
         extensions::mojom::RemovableStorageWriter::kTestDevice);
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void FillImageFileWithPattern(char pattern) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_));
 
     base::RunLoop run_loop;

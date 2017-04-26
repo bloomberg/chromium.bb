@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -112,6 +113,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         test_data_dir_.AppendASCII(kTestDir + extension_name);
     from_dir = from_dir.NormalizePathSeparators();
 
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::ScopedTempDir temp_dir;
     if (!temp_dir.CreateUniqueTempDir())
       return false;
@@ -172,6 +174,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   // with no default media galleries, such as CHROMEOS. This fake gallery is
   // pre-populated with a test.jpg and test.txt.
   void MakeSingleFakeGallery(MediaGalleryPrefId* pref_id) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     ASSERT_FALSE(fake_gallery_temp_dir_.IsValid());
     ASSERT_TRUE(fake_gallery_temp_dir_.CreateUniqueTempDir());
 
@@ -203,6 +206,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 
   void AddFileToSingleFakeGallery(const base::FilePath& source_path) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     ASSERT_TRUE(fake_gallery_temp_dir_.IsValid());
 
     ASSERT_TRUE(base::CopyFile(
@@ -212,6 +216,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void PopulatePicasaTestData(const base::FilePath& picasa_app_data_root) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath picasa_database_path =
         picasa::MakePicasaDatabasePath(picasa_app_data_root);
     base::FilePath picasa_temp_dir_path =
@@ -431,6 +436,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MAYBE_PicasaCustomLocation) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir custom_picasa_app_data_root;
   ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
   ensure_media_directories_exists()->SetCustomPicasaAppDataPath(

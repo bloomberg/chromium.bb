@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
@@ -96,6 +97,8 @@ EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
   iapps::SetMacPreferencesForTesting(NULL);
   picasa::SetMacPreferencesForTesting(NULL);
 #endif  // OS_MACOSX
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ignore_result(fake_dir_.Delete());
 }
 
 void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
@@ -131,6 +134,7 @@ void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
 }
 
 base::FilePath EnsureMediaDirectoriesExists::GetFakeAppDataPath() const {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DCHECK(fake_dir_.IsValid());
   return fake_dir_.GetPath().AppendASCII("appdata");
 }

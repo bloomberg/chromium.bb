@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -21,6 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Create an Extension whose messages.json file will be updated.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
   base::CopyFile(

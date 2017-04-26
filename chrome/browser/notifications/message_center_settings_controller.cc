@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/i18n/string_compare.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -335,6 +336,7 @@ void MessageCenterSettingsController::DispatchNotifierGroupChanged() {
 
 #if defined(OS_CHROMEOS)
 void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // Already created.
   if (!notifier_groups_.empty())
     return;

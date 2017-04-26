@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
 #include "chrome/browser/browsing_data/cache_counter.h"
@@ -77,6 +78,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void DownloadAnItem() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::ScopedTempDir downloads_directory;
     ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
     browser()->profile()->GetPrefs()->SetFilePath(

@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
@@ -99,7 +100,10 @@ class PrinterProviderApiTest : public ShellApiTest {
   };
 
   PrinterProviderApiTest() {}
-  ~PrinterProviderApiTest() override {}
+  ~PrinterProviderApiTest() override {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ignore_result(data_dir_.Delete());
+  }
 
   void StartGetPrintersRequest(
       const PrinterProviderAPI::GetPrintersCallback& callback) {
@@ -238,10 +242,12 @@ class PrinterProviderApiTest : public ShellApiTest {
       case PRINT_REQUEST_DATA_TYPE_FILE:
         ASSERT_TRUE(StartPrintRequestUsingFileInfo(extension_id, callback));
         break;
-      case PRINT_REQUEST_DATA_TYPE_FILE_DELETED:
+      case PRINT_REQUEST_DATA_TYPE_FILE_DELETED: {
         ASSERT_TRUE(StartPrintRequestUsingFileInfo(extension_id, callback));
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
         ASSERT_TRUE(data_dir_.Delete());
         break;
+      }
       case PRINT_REQUEST_DATA_TYPE_BYTES:
         StartPrintRequestUsingDocumentBytes(extension_id, callback);
         break;
@@ -349,6 +355,7 @@ class PrinterProviderApiTest : public ShellApiTest {
                                   int size,
                                   base::FilePath* path,
                                   base::File::Info* file_info) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (!data_dir_.IsValid() && !data_dir_.CreateUniqueTempDir())
       return false;
 

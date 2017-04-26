@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -282,6 +283,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
   }
 
   void SetServerPolicy(const std::string& policy) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     int result = base::WriteFile(policy_file_path(), policy.data(),
                                  policy.size());
     ASSERT_EQ(base::checked_cast<int>(policy.size()), result);

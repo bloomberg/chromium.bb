@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -601,6 +602,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
 // a handler accepts "".
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileEmptyExtension) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath test_file;
@@ -615,6 +617,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
 // a handler accepts *.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileEmptyExtensionAcceptAny) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath test_file;
@@ -723,6 +726,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, GetDisplayPath) {
 // Tests that the file is created if the file does not exist and the app has the
 // fileSystem.write permission.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(RunPlatformAppTestWithFile(

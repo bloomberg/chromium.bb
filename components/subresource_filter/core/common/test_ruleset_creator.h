@@ -98,7 +98,7 @@ class TestRulesetCreator {
   void CreateTestRulesetFromContents(std::vector<uint8_t> ruleset_contents,
                                      TestRuleset* ruleset);
 
-  base::ScopedTempDir scoped_temp_dir_;
+  std::unique_ptr<base::ScopedTempDir> scoped_temp_dir_;
   int next_unique_file_suffix = 1;
 
   DISALLOW_COPY_AND_ASSIGN(TestRulesetCreator);

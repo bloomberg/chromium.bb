@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -33,6 +34,7 @@ std::string EncodePath(const base::FilePath& path) {
 }
 
 void TouchFile(const base::FilePath& file) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   ASSERT_EQ(1, base::WriteFile(file, " ", 1));
 }
 
@@ -57,6 +59,7 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
   const base::FilePath& music_dir() { return music_dir_.GetPath(); }
 
   void WritePrefFile(const std::string& data) {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath pref_dir =
         app_data_dir().AppendASCII("Apple Computer").AppendASCII("iTunes");
     ASSERT_TRUE(base::CreateDirectory(pref_dir));
@@ -66,12 +69,14 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
   }
 
   void TouchDefault() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath default_dir = music_dir().AppendASCII("iTunes");
     ASSERT_TRUE(base::CreateDirectory(default_dir));
     TouchFile(default_dir.AppendASCII("iTunes Music Library.xml"));
   }
 
   void TestFindITunesLibrary() {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     test_finder_callback_called_ = false;
     result_.clear();
     base::RunLoop loop;

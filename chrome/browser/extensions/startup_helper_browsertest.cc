@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -49,6 +50,7 @@ IN_PROC_BROWSER_TEST_F(StartupHelperBrowserTest, ValidateCrx) {
 
     std::string error;
     extensions::StartupHelper helper;
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     bool result = helper.ValidateCrx(command_line, &error);
     if (i->second) {
       EXPECT_TRUE(result) << path.LossyDisplayName()

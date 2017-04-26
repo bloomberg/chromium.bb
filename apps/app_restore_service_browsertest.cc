@@ -5,6 +5,7 @@
 #include "apps/app_restore_service.h"
 #include "apps/app_restore_service_factory.h"
 #include "apps/saved_files_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "content/public/browser/browser_context.h"
@@ -114,6 +115,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
@@ -154,6 +156,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_FileAccessIsRestored) {
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
 
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;

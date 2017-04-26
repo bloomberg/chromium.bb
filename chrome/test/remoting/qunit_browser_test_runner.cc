@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -39,8 +40,11 @@ void QUnitBrowserTestRunner::QUnitStart(content::WebContents* web_contents) {
 }
 
 void QUnitBrowserTestRunner::RunTest(const base::FilePath& file) {
-  ASSERT_TRUE(PathExists(file)) << "Error: The QUnit test suite <"
-                                << file.value() << "> does not exist.";
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ASSERT_TRUE(PathExists(file)) << "Error: The QUnit test suite <"
+                                  << file.value() << "> does not exist.";
+  }
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(file));
 
   content::WebContents* web_contents =

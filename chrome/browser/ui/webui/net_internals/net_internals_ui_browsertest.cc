@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -290,6 +291,7 @@ void NetInternalsTest::MessageHandler::CloseIncognitoBrowser(
 
 void NetInternalsTest::MessageHandler::GetNetLogFileContents(
     const base::ListValue* list_value) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;

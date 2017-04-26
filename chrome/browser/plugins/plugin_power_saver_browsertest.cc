@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -220,6 +221,7 @@ void CompareSnapshotToReference(const base::FilePath& reference,
                                 const base::Closure& done_cb,
                                 const SkBitmap& bitmap,
                                 content::ReadbackResponse response) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DCHECK(snapshot_matches);
   ASSERT_EQ(content::READBACK_SUCCESS, response);
 

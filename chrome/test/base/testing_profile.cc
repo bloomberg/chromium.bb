@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -391,6 +392,7 @@ TestingProfile::TestingProfile(
 }
 
 void TestingProfile::CreateTempProfileDir() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 
@@ -418,6 +420,7 @@ void TestingProfile::CreateTempProfileDir() {
 }
 
 void TestingProfile::Init() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   // If threads have been initialized, we should be on the UI thread.
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
@@ -561,6 +564,9 @@ TestingProfile::~TestingProfile() {
     resource_context_ = NULL;
     content::RunAllPendingInMessageLoop(BrowserThread::IO);
   }
+
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ignore_result(temp_dir_.Delete());
 }
 
 void TestingProfile::CreateFaviconService() {

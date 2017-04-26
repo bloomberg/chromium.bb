@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -95,6 +96,7 @@ class MockLoginModelObserver : public password_manager::LoginModelObserver {
 };
 
 GURL GetFileURL(const char* filename) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("password").AppendASCII(filename);

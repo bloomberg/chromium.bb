@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -153,6 +154,7 @@ void PPAPITestBase::SetUpOnMainThread() {
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
   base::FilePath test_path;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
   test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
