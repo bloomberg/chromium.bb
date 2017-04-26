@@ -35,7 +35,7 @@ class OneGoogleBarFetcherImpl : public OneGoogleBarFetcher {
                           OAuth2TokenService* token_service,
                           net::URLRequestContextGetter* request_context,
                           GoogleURLTracker* google_url_tracker);
-  ~OneGoogleBarFetcherImpl();
+  ~OneGoogleBarFetcherImpl() override;
 
   void Fetch(OneGoogleCallback callback) override;
 
