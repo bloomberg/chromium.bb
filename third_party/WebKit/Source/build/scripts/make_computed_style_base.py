@@ -359,7 +359,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
         }
 
-    @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
+    @template_expander.use_jinja('ComputedStyleBase.h.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_h(self):
         return {
             'properties': self._properties,
@@ -368,7 +368,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'computed_style': self._root_group,
         }
 
-    @template_expander.use_jinja('ComputedStyleBase.cpp.tmpl')
+    @template_expander.use_jinja('ComputedStyleBase.cpp.tmpl', tests={'in': lambda a, b: a in b})
     def generate_base_computed_style_cpp(self):
         return {
             'properties': self._properties,

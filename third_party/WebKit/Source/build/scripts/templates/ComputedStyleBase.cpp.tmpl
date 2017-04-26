@@ -1,5 +1,5 @@
 {% from 'macros.tmpl' import license %}
-{% from 'fields/field.tmpl' import getter_expression, setter_expression %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression, fieldwise_copy %}
 {{license()}}
 
 #include "core/ComputedStyleBase.h"
@@ -22,18 +22,21 @@ struct SameSizeAsComputedStyleBase {
 // ensure that the buckets are placed so that each takes up at most 1 word.
 ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 
-void ComputedStyleBase::InheritFrom(const ComputedStyleBase& inheritParent,
+void ComputedStyleBase::InheritFrom(const ComputedStyleBase& other,
                                     IsAtShadowBoundary isAtShadowBoundary) {
-  {% for field in computed_style.all_fields if field.is_inherited %}
-  {{setter_expression(field)}} = inheritParent.{{getter_expression(field)}};
-  {% endfor %}
+  {{fieldwise_copy(computed_style, computed_style.all_fields
+      |selectattr("is_inherited")
+      |list
+    )|indent(2)}}
 }
 
 void ComputedStyleBase::CopyNonInheritedFromCached(
     const ComputedStyleBase& other) {
-  {% for field in computed_style.all_fields if (field.is_property and not field.is_inherited) or field.is_inherited_flag %}
-  {{setter_expression(field)}} = other.{{getter_expression(field)}};
-  {% endfor %}
+  {{fieldwise_copy(computed_style, computed_style.all_fields
+      |rejectattr("is_nonproperty")
+      |rejectattr("is_inherited")
+      |list
+    )|indent(2)}}
 }
 
 void ComputedStyleBase::PropagateIndependentInheritedProperties(

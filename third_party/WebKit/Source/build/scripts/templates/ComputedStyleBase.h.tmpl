@@ -1,5 +1,5 @@
 {% from 'macros.tmpl' import license, print_if %}
-{% from 'fields/field.tmpl' import encode, getter_expression, declare_storage %}
+{% from 'fields/field.tmpl' import encode, getter_expression, declare_storage, fieldwise_compare %}
 {% from 'fields/group.tmpl' import define_field_group_class %}
 {{license()}}
 
@@ -38,17 +38,23 @@ class CORE_EXPORT ComputedStyleBase {
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in computed_style.all_fields if field.is_inherited and field.is_independent %}
-        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
-    {% endfor %}
+        {{fieldwise_compare(computed_style, computed_style.all_fields
+            |selectattr("is_inherited")
+            |selectattr("is_independent")
+            |list
+          )|indent(8)}}
+        true
     );
   }
 
   inline bool NonIndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in computed_style.all_fields if field.is_inherited and not field.is_independent %}
-        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
-    {% endfor %}
+        {{fieldwise_compare(computed_style, computed_style.all_fields
+            |selectattr("is_inherited")
+            |rejectattr("is_independent")
+            |list
+          )|indent(8)}}
+        true
     );
   }
 
@@ -58,9 +64,12 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool NonInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in computed_style.all_fields if field.is_property and not field.is_inherited %}
-        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
-    {% endfor %}
+        {{fieldwise_compare(computed_style, computed_style.all_fields
+            |selectattr("is_property")
+            |rejectattr("is_inherited")
+            |list
+          )|indent(8)}}
+        true
     );
   }
 
