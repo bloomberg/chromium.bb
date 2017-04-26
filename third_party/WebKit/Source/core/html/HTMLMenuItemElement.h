@@ -15,6 +15,13 @@ class HTMLMenuItemElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLMenuItemElement);
 
+  // https://html.spec.whatwg.org/multipage/forms.html#dom-menuitem-label
+  String label() const;
+  void setLabel(const AtomicString&);
+
+  // https://html.spec.whatwg.org/multipage/forms.html#concept-menuitem-label
+  String conceptualLabel() const;
+
  private:
   explicit HTMLMenuItemElement(Document&);
   bool IsURLAttribute(const Attribute&) const override;

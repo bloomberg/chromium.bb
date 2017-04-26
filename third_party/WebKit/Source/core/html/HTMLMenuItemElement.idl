@@ -8,7 +8,7 @@
     RuntimeEnabled=ContextMenu,
 ] interface HTMLMenuItemElement : HTMLElement {
     [CEReactions, Reflect, ReflectOnly=("checkbox","radio"), ReflectInvalid="command", ReflectMissing="command"] attribute DOMString type;
-    [CEReactions, Reflect] attribute DOMString label;
+    [CEReactions] attribute DOMString label;
     [CEReactions, Reflect, URL] attribute DOMString icon;
     [CEReactions, Reflect] attribute boolean disabled;
     [CEReactions, Reflect] attribute boolean checked;

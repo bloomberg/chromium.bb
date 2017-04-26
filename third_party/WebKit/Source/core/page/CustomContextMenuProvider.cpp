@@ -69,7 +69,7 @@ void CustomContextMenuProvider::AppendSeparator(ContextMenu& context_menu) {
 void CustomContextMenuProvider::AppendMenuItem(HTMLMenuItemElement* menu_item,
                                                ContextMenu& context_menu) {
   // Avoid menuitems with no label.
-  String label_string = menu_item->FastGetAttribute(labelAttr);
+  String label_string = menu_item->label();
   if (label_string.IsEmpty())
     return;
 
