@@ -226,7 +226,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     public void showActionModeOrClearOnFailure() {
         mPendingShowActionMode = false;
 
-        if (!isActionModeSupported()) return;
+        if (!isActionModeSupported() || !mHasSelection) return;
 
         // Just refresh the view if action mode already exists.
         if (isActionModeValid()) {
