@@ -51,7 +51,7 @@ namespace {
 float FrameScale(const FrameView* frame_view) {
   float scale = 1;
   if (frame_view) {
-    FrameView* root_view = ToFrameView(frame_view->Root());
+    FrameView* root_view = frame_view->Root();
     if (root_view)
       scale = root_view->InputEventsScaleFactor();
   }
@@ -64,7 +64,7 @@ FloatPoint FrameTranslation(const FrameView* frame_view) {
   IntPoint visual_viewport;
   FloatSize overscroll_offset;
   if (frame_view) {
-    FrameView* root_view = ToFrameView(frame_view->Root());
+    FrameView* root_view = frame_view->Root();
     if (root_view) {
       scale = root_view->InputEventsScaleFactor();
       offset = FloatSize(root_view->InputEventsOffsetForEmulation());
