@@ -49,6 +49,12 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     codecs |= ::media::EME_CODEC_MP4_HEVC;
 #endif
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+    codecs |= ::media::EME_CODEC_MP4_DV_AVC;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
+#endif
+#endif
     return codecs;
   }
 
@@ -110,6 +116,12 @@ void AddChromecastKeySystems(
       ::media::EME_CODEC_WEBM_VP9;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   codecs |= ::media::EME_CODEC_MP4_HEVC;
+#endif
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_DV_AVC;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
+#endif
 #endif
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,                     // Regular codecs.

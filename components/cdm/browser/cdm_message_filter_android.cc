@@ -41,6 +41,12 @@ const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     {media::EME_CODEC_MP4_HEVC, media::kCodecHEVC, "video/mp4"},
 #endif
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+    {media::EME_CODEC_MP4_DV_AVC, media::kCodecDolbyVision, "video/mp4"},
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    {media::EME_CODEC_MP4_DV_HEVC, media::kCodecDolbyVision, "video/mp4"},
+#endif
+#endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 
