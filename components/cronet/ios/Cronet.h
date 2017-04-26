@@ -52,6 +52,11 @@ GRPC_SUPPORT_EXPORT
 // before |start| is called.
 + (void)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort;
 
+// Set experimental Cronet options.  Argument is a JSON string; see
+// |URLRequestContextConfig| for more details.  This method only has
+// any effect before |start| is called.
++ (void)setExperimentalOptions:(NSString*)experimentalOptions;
+
 // Sets the User-Agent request header string to be sent with all requests.
 // If |partial| is set to YES, then actual user agent value is based on device
 // model, OS version, and |userAgent| argument. For example "Foo/3.0.0.0" is
