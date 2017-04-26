@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -113,8 +114,6 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
     const SkBitmap& badge_icon,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
     bool is_manifest_stale) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
   webapk->set_manifest_url(shortcut_info.manifest_url.spec());
   webapk->set_requester_application_package(
@@ -180,9 +179,11 @@ void OnWebApkProtoBuilt(
 
 // Returns task runner for running background tasks.
 scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
-  return content::BrowserThread::GetBlockingPool()
-      ->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  return base::CreateTaskRunnerWithTraits(
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 }
 
 }  // anonymous namespace
