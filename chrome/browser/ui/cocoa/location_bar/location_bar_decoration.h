@@ -148,8 +148,10 @@ class LocationBarDecoration {
   void OnAccessibilityViewAction();
 
   // Called when the omnibox decoration changes state to update the
-  // accessibility view's attributes to match.
-  void UpdateAccessibilityView();
+  // accessibility view's attributes to match. The |apparent_frame| rectangle is
+  // the frame the accessibility view should appear at visually (which may be
+  // different from its frame in the Cocoa sense).
+  void UpdateAccessibilityView(NSRect apparent_frame);
 
   DecorationMouseState state() const { return state_; }
 

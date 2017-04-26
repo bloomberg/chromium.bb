@@ -742,11 +742,36 @@ void LocationBarViewMac::UpdateAccessibilityView(
     LocationBarDecoration* decoration) {
   if (!decoration->IsVisible())
     return;
-  NSRect r =
+  NSRect apparent_frame =
       [[field_ cell] frameForDecoration:decoration inFrame:[field_ frame]];
-  [decoration->GetAccessibilityView() setFrame:r];
-  [decoration->GetAccessibilityView() setNeedsDisplayInRect:r];
-  decoration->UpdateAccessibilityView();
+
+  // This is a bit subtle:
+  // The decorations' accessibility views can become key to allow keyboard
+  // access to the location bar decorations, but Cocoa's automatic key view loop
+  // sorts by top-left coordinate. Since the omnibox's top-left coordinate is
+  // before its leading decorations, the omnibox would sort before its own
+  // leading decorations, which was logical but visually unintuitive. Therefore,
+  // for leading decorations, this method moves their frame to be "just before"
+  // the omnibox in automatic key view loop order, and gives them an apparent
+  // frame (see DecorationAccessibilityView) so that they still paint their
+  // focus rings at the right place.
+  //
+  // TODO(lgrey): This hack doesn't work in RTL layouts, but the layout of the
+  // omnibox is currently screwed up in RTL layouts anyway. See
+  // https://crbug.com/715627.
+  NSRect real_frame = apparent_frame;
+  int left_index = [[field_ cell] leadingDecorationIndex:decoration];
+
+  // If there are ever too many leading views, the fake x-coords might land
+  // before the button preceding the omnibox in the key view order. This
+  // threshold is just a guess.
+  DCHECK_LT(left_index, 10);
+  if (left_index != -1)
+    real_frame.origin.x = [field_ frame].origin.x - left_index - 1;
+
+  decoration->UpdateAccessibilityView(apparent_frame);
+  [decoration->GetAccessibilityView() setFrame:real_frame];
+  [decoration->GetAccessibilityView() setNeedsDisplayInRect:apparent_frame];
 }
 
 std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {

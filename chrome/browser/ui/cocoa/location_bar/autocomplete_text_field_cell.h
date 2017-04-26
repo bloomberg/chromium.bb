@@ -139,6 +139,13 @@ class LocationBarDecoration;
 // Handles the |event| that caused |controlView| to become firstResponder.
 - (void)handleFocusEvent:(NSEvent*)event
                   ofView:(AutocompleteTextField*)controlView;
+
+// Returns the index of |decoration| as a leading decoration, if it is one. The
+// leading-most decoration is at index zero, and increasing indices are closer
+// to the start of the omnibox text field. Returns -1 if |decoration| is not a
+// leading decoration.
+- (int)leadingDecorationIndex:(LocationBarDecoration*)decoration;
+
 @end
 
 // Methods which are either only for testing, or only public for testing.
