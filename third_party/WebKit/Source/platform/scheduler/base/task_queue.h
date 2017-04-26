@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace base {
 namespace trace_event {
@@ -23,11 +23,11 @@ namespace scheduler {
 
 class TimeDomain;
 
-class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
+class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
   TaskQueue() {}
 
-  class BLINK_PLATFORM_EXPORT Observer {
+  class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 

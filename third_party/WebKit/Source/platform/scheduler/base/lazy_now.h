@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_LAZY_NOW_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace base {
 class TickClock;
@@ -17,7 +17,7 @@ namespace scheduler {
 
 // Now() is somewhat expensive so it makes sense not to call Now() unless we
 // really need to.
-class BLINK_PLATFORM_EXPORT LazyNow {
+class PLATFORM_EXPORT LazyNow {
  public:
   explicit LazyNow(base::TimeTicks now) : tick_clock_(nullptr), now_(now) {
     DCHECK(!now.is_null());

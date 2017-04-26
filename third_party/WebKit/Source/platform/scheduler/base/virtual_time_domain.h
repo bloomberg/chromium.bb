@@ -12,7 +12,7 @@
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
+class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
   VirtualTimeDomain(base::TimeTicks initial_time);
   ~VirtualTimeDomain() override;

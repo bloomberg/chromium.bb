@@ -14,7 +14,7 @@ namespace scheduler {
 
 // This class periodically sweeps away canceled delayed tasks, which helps
 // reduce memory consumption.
-class BLINK_PLATFORM_EXPORT IdleCanceledDelayedTaskSweeper {
+class PLATFORM_EXPORT IdleCanceledDelayedTaskSweeper {
  public:
   IdleCanceledDelayedTaskSweeper(
       SchedulerHelper* scheduler_helper,

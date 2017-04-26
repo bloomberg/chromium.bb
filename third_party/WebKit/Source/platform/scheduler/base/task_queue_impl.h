@@ -57,7 +57,7 @@ class WorkQueueSets;
 // queue is selected, it round-robins between the immediate_work_queue and
 // delayed_work_queue.  The reason for this is we want to make sure delayed
 // tasks (normally the most common type) don't starve out immediate work.
-class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
+class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
  public:
   TaskQueueImpl(TaskQueueManager* task_queue_manager,
                 TimeDomain* time_domain,
@@ -78,7 +78,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     }
   };
 
-  class BLINK_PLATFORM_EXPORT Task : public base::PendingTask {
+  class PLATFORM_EXPORT Task : public base::PendingTask {
    public:
     Task();
     Task(const tracked_objects::Location& posted_from,

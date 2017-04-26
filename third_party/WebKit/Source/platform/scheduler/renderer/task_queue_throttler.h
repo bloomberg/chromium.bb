@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
@@ -32,7 +33,7 @@ class ThrottledTimeDomain;
 class CPUTimeBudgetPool;
 
 // Interface for BudgetPool to interact with TaskQueueThrottler.
-class BLINK_PLATFORM_EXPORT BudgetPoolController {
+class PLATFORM_EXPORT BudgetPoolController {
  public:
   virtual ~BudgetPoolController() {}
 
@@ -80,8 +81,8 @@ class BLINK_PLATFORM_EXPORT BudgetPoolController {
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
-                                                 public BudgetPoolController {
+class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
+                                           public BudgetPoolController {
  public:
   explicit TaskQueueThrottler(RendererSchedulerImpl* renderer_scheduler);
 

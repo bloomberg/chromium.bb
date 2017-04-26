@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
 
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
@@ -18,7 +18,7 @@ class WorkerScheduler;
 // global scope is created and destructed when it's closed.
 //
 // Unless stated otherwise, all methods must be called on the worker thread.
-class BLINK_PLATFORM_EXPORT WorkerGlobalScopeScheduler {
+class PLATFORM_EXPORT WorkerGlobalScopeScheduler {
  public:
   explicit WorkerGlobalScopeScheduler(WorkerScheduler* worker_scheduler);
   ~WorkerGlobalScopeScheduler();

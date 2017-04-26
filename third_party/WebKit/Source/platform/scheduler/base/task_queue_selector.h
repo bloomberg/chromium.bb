@@ -21,7 +21,7 @@ namespace internal {
 
 // TaskQueueSelector is used by the SchedulerHelper to enable prioritization
 // of particular task queues.
-class BLINK_PLATFORM_EXPORT TaskQueueSelector {
+class PLATFORM_EXPORT TaskQueueSelector {
  public:
   TaskQueueSelector();
   ~TaskQueueSelector();
@@ -58,7 +58,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueSelector {
   // Serialize the selector state for tracing.
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  class BLINK_PLATFORM_EXPORT Observer {
+  class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 
@@ -83,7 +83,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueSelector {
   bool EnabledWorkQueuesEmpty() const;
 
  protected:
-  class BLINK_PLATFORM_EXPORT PrioritizingSelector {
+  class PLATFORM_EXPORT PrioritizingSelector {
    public:
     PrioritizingSelector(TaskQueueSelector* task_queue_selector,
                          const char* name);

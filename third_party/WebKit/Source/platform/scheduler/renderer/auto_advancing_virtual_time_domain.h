@@ -20,7 +20,7 @@ namespace scheduler {
 //
 // |ABCDE                       (Execution with AutoAdvancingVirtualTimeDomain)
 // |-----------------------------> time
-class BLINK_PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
+class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
     : public VirtualTimeDomain {
  public:
   explicit AutoAdvancingVirtualTimeDomain(base::TimeTicks initial_time);

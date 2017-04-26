@@ -11,14 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
 class TaskQueue;
 
-class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
+class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
   static RefPtr<WebTaskRunnerImpl> Create(scoped_refptr<TaskQueue> task_queue);
 

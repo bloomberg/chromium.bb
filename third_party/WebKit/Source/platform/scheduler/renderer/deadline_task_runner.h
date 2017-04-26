@@ -10,14 +10,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/cancelable_closure_holder.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
 
 // Runs a posted task at latest by a given deadline, but possibly sooner.
-class BLINK_PLATFORM_EXPORT DeadlineTaskRunner {
+class PLATFORM_EXPORT DeadlineTaskRunner {
  public:
   DeadlineTaskRunner(const base::Closure& callback,
                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);

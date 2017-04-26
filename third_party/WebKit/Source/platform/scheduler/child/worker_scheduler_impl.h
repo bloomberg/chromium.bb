@@ -17,9 +17,9 @@ namespace scheduler {
 
 class SchedulerTqmDelegate;
 
-class BLINK_PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
-                                                  public IdleHelper::Delegate,
-                                                  public TaskTimeObserver {
+class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
+                                            public IdleHelper::Delegate,
+                                            public TaskTimeObserver {
  public:
   explicit WorkerSchedulerImpl(
       scoped_refptr<SchedulerTqmDelegate> main_task_runner);

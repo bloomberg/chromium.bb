@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
-#include "public/platform/WebCommon.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
@@ -19,7 +19,7 @@ namespace blink {
 namespace scheduler {
 class SchedulerTqmDelegate;
 
-class BLINK_PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
+class PLATFORM_EXPORT WorkerScheduler : public ChildScheduler {
  public:
   ~WorkerScheduler() override;
   static std::unique_ptr<WorkerScheduler> Create(

@@ -7,16 +7,16 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 namespace scheduler {
 
 // Records the expected queueing time for a high priority task occurring
 // randomly during each interval of length |window_duration|.
-class BLINK_PLATFORM_EXPORT QueueingTimeEstimator {
+class PLATFORM_EXPORT QueueingTimeEstimator {
  public:
-  class BLINK_PLATFORM_EXPORT Client {
+  class PLATFORM_EXPORT Client {
    public:
     virtual void OnQueueingTimeForWindowEstimated(
         base::TimeDelta queueing_time) = 0;

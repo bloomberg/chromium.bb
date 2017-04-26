@@ -12,8 +12,7 @@
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT SchedulerTqmDelegate
-    : public TaskQueueManagerDelegate {
+class PLATFORM_EXPORT SchedulerTqmDelegate : public TaskQueueManagerDelegate {
  public:
   SchedulerTqmDelegate() {}
 

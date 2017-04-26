@@ -16,8 +16,7 @@
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT SchedulerTqmDelegateImpl
-    : public SchedulerTqmDelegate {
+class PLATFORM_EXPORT SchedulerTqmDelegateImpl : public SchedulerTqmDelegate {
  public:
   // |message_loop| is not owned and must outlive the lifetime of this object.
   static scoped_refptr<SchedulerTqmDelegateImpl> Create(

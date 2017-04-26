@@ -9,14 +9,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "cc/base/rolling_time_delta_history.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {
 
 // Estimates how much idle time there is available.  Ignores nested tasks.
-class BLINK_PLATFORM_EXPORT IdleTimeEstimator
+class PLATFORM_EXPORT IdleTimeEstimator
     : public base::MessageLoop::TaskObserver {
  public:
   IdleTimeEstimator(const scoped_refptr<TaskQueue>& compositor_task_runner,

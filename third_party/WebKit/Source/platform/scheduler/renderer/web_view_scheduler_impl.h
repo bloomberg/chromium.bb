@@ -10,12 +10,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "platform/PlatformExport.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
-#include "public/platform/WebCommon.h"
 
 namespace base {
 namespace trace_event {
@@ -31,7 +31,7 @@ class RendererSchedulerImpl;
 class CPUTimeBudgetPool;
 class WebFrameSchedulerImpl;
 
-class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
+class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  public:
   WebViewSchedulerImpl(
       WebScheduler::InterventionReporter* intervention_reporter,

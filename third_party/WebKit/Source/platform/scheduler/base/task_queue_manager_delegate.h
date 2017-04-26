@@ -9,12 +9,12 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
-#include "public/platform/WebCommon.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 namespace scheduler {
 
-class BLINK_PLATFORM_EXPORT TaskQueueManagerDelegate
+class PLATFORM_EXPORT TaskQueueManagerDelegate
     : public base::SingleThreadTaskRunner,
       public base::TickClock {
  public:
