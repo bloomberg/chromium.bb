@@ -394,35 +394,40 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     const Vector<LineItemChunk, 32>& line_item_chunks) {
   const Vector<NGInlineItem>& items = Node()->Items();
 
-  // Use a "strut" (a zero-width inline box with the element's font and
-  // line height properties) as the initial metrics for the line box.
-  // https://drafts.csswg.org/css2/visudet.html#strut
   const ComputedStyle& line_style = LineStyle();
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
-  NGLineBoxFragmentBuilder line_box(Node(), line_metrics_with_leading);
+  NGLineBoxFragmentBuilder line_box(Node());
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
   NGTextFragmentBuilder text_builder(Node());
-  NGInlineBoxState* box = box_states_.OnBeginPlaceItems(&LineStyle());
+  NGInlineBoxState* box =
+      box_states_.OnBeginPlaceItems(&LineStyle(), baseline_type_);
   LayoutUnit inline_size;
   for (const auto& line_item_chunk : line_item_chunks) {
     const NGInlineItem& item = items[line_item_chunk.index];
     LayoutUnit line_top;
     if (item.Type() == NGInlineItem::kText) {
       DCHECK(item.GetLayoutObject()->IsText());
-      if (box->text_metrics.IsEmpty())
-        box->ComputeTextMetrics(item, baseline_type_);
+      DCHECK(!box->text_metrics.IsEmpty());
       line_top = box->text_top;
       text_builder.SetSize(
           {line_item_chunk.inline_size, box->text_metrics.LineHeight()});
       // Take all used fonts into account if 'line-height: normal'.
-      if (box->include_used_fonts)
-        AccumulateUsedFonts(item, line_item_chunk, &line_box);
+      if (box->include_used_fonts) {
+        box->AccumulateUsedFonts(item, line_item_chunk.start_offset,
+                                 line_item_chunk.end_offset, baseline_type_);
+      }
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = box_states_.OnOpenTag(item, &line_box, &text_builder);
+      // Compute text metrics for all inline boxes since even empty inlines
+      // influence the line height.
+      // https://drafts.csswg.org/css2/visudet.html#line-height
+      // TODO(kojii): Review if atomic inline level should have open/close.
+      if (!item.GetLayoutObject()->IsAtomicInlineLevel())
+        box->ComputeTextMetrics(*item.Style(), baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kCloseTag) {
       box = box_states_.OnCloseTag(item, &line_box, box);
@@ -491,27 +496,13 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
   line_box.SetInlineSize(inline_size);
-  container_builder_.AddChild(line_box.ToLineBoxFragment(),
-                              {LayoutUnit(), baseline - line_metrics.ascent});
+  container_builder_.AddChild(
+      line_box.ToLineBoxFragment(),
+      {LayoutUnit(), baseline + box_states_.LineBoxState().text_top});
 
   max_inline_size_ = std::max(max_inline_size_, inline_size);
   content_size_ = line_bottom;
   return true;
-}
-
-void NGInlineLayoutAlgorithm::AccumulateUsedFonts(
-    const NGInlineItem& item,
-    const LineItemChunk& line_item_chunk,
-    NGLineBoxFragmentBuilder* line_box) {
-  HashSet<const SimpleFontData*> fallback_fonts;
-  item.GetFallbackFonts(&fallback_fonts, line_item_chunk.start_offset,
-                        line_item_chunk.end_offset);
-  for (const auto& fallback_font : fallback_fonts) {
-    NGLineHeightMetrics metrics(fallback_font->GetFontMetrics(),
-                                baseline_type_);
-    metrics.AddLeading(fallback_font->GetFontMetrics().FixedLineSpacing());
-    line_box->UniteMetrics(metrics);
-  }
 }
 
 LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
