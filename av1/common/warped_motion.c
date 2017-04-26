@@ -498,7 +498,7 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
 // [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
 // We need an extra 2 taps to fit this in, for a total of 8 taps.
 /* clang-format off */
-const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8] = {
+const int16_t warped_filter_taps[WARPEDPIXEL_PREC_SHIFTS * 3][8] = {
 #if WARPEDPIXEL_PREC_BITS == 6
   // [-1, 0)
   { 0,   0, 127,   1,   0, 0, 0, 0 }, { 0, - 1, 127,   2,   0, 0, 0, 0 },
@@ -656,10 +656,11 @@ const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8] = {
   {0, 0, 1,  -3,   8, 126,  -5, 1}, {0, 0, 0,  -1,   4, 127,  -3, 1},
 
 #endif  // WARPEDPIXEL_PREC_BITS == 6
-
-  // dummy
-  { 0, 0, 0, 0,   1, 127, 0, 0 },
 };
+
+const int16_t *av1_get_warped_filter(int offs) {
+  return warped_filter_taps[(offs >= 192) ? 191 : offs];
+}
 
 /* clang-format on */
 
@@ -1023,7 +1024,7 @@ void av1_highbd_warp_affine_c(int32_t *mat, uint16_t *ref, int width,
             int ix = ix4 + l - 3;
             const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
                              WARPEDPIXEL_PREC_SHIFTS;
-            const int16_t *coeffs = warped_filter[offs];
+            const int16_t *coeffs = av1_get_warped_filter(offs);
             int32_t sum = 0;
             // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
             for (m = 0; m < 8; ++m) {
@@ -1048,7 +1049,7 @@ void av1_highbd_warp_affine_c(int32_t *mat, uint16_t *ref, int width,
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_get_warped_filter(offs);
           int32_t sum = 0;
           // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           for (m = 0; m < 8; ++m) {
@@ -1284,7 +1285,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
             // At this point, sx = sx4 + alpha * l + beta * k
             const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
                              WARPEDPIXEL_PREC_SHIFTS;
-            const int16_t *coeffs = warped_filter[offs];
+            const int16_t *coeffs = av1_get_warped_filter(offs);
             int32_t sum = 0;
             // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
             for (m = 0; m < 8; ++m) {
@@ -1306,7 +1307,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           // At this point, sy = sy4 + gamma * l + delta * k
           const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
                            WARPEDPIXEL_PREC_SHIFTS;
-          const int16_t *coeffs = warped_filter[offs];
+          const int16_t *coeffs = av1_get_warped_filter(offs);
           int32_t sum = 0;
           // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           for (m = 0; m < 8; ++m) {
