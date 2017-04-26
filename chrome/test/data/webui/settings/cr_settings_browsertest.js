@@ -1138,7 +1138,7 @@ CrSettingsNonExistentRouteTest.prototype = {
 };
 
 // Failing on ChromiumOS dbg. https://crbug.com/709442
-GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
+GEN('#if (defined(OS_WIN) || defined(OS_CHROMEOS)) && !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
