@@ -135,7 +135,7 @@ void CheckKeyPathNumberValue(v8::Isolate* isolate,
 constexpr static size_t kSSVHeaderBlinkVersionTagOffset = 0;
 constexpr static size_t kSSVHeaderBlinkVersionOffset = 1;
 constexpr static size_t kSSVHeaderV8VersionTagOffset = 2;
-constexpr static size_t kSSVHeaderV8VersionOffset = 3;
+// constexpr static size_t kSSVHeaderV8VersionOffset = 3;
 
 // Follows the same steps as the IndexedDB value serialization code.
 void SerializeV8Value(v8::Local<v8::Value> value,
@@ -165,8 +165,9 @@ void SerializeV8Value(v8::Local<v8::Value> value,
 
   ASSERT_EQ(static_cast<unsigned char>(kVersionTag),
             wire_data[kSSVHeaderV8VersionTagOffset]);
-  ASSERT_EQ(v8::ValueSerializer::GetCurrentDataFormatVersion(),
-            wire_data[kSSVHeaderV8VersionOffset]);
+  // TODO(jbroman): Use the compile-time constant for V8 data format version.
+  // ASSERT_EQ(v8::ValueSerializer::GetCurrentDataFormatVersion(),
+  //           wire_data[kSSVHeaderV8VersionOffset]);
 }
 
 PassRefPtr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
