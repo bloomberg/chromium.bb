@@ -48,6 +48,8 @@ class LinuxPort(base.Port):
 
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md'
 
+    XVFB_START_TIMEOUT = 5.0  # Wait up to 5 seconds for Xvfb to start.
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('linux'):
@@ -167,6 +169,19 @@ class LinuxPort(base.Port):
         # https://docs.python.org/2/library/subprocess.html#subprocess.Popen.poll
         if self._xvfb_process.poll() is not None:
             _log.warn('Failed to start Xvfb on display "%s."', display)
+
+        start_time = self.host.time()
+        while self.host.time() - start_time < self.XVFB_START_TIMEOUT:
+            # We don't explicitly set the display, as we want to check the
+            # environment value.
+            exit_code = self.host.executive.run_command(
+                ['xdpyinfo'], return_exit_code=True)
+            if exit_code == 0:
+                _log.info('Successfully started Xvfb with display "%s".', display)
+                return
+            _log.warn('xdpyinfo check failed with exit code %s while starting Xvfb on "%s".', exit_code, display)
+            self.host.sleep(0.1)
+        _log.fatal('Failed to start Xvfb on display "%s" (xdpyinfo check failed).', display)
 
     def _find_display(self):
         """Tries to find a free X display, looping if necessary."""
