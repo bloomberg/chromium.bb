@@ -63,8 +63,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  private:
   LayoutSelection(FrameSelection&);
 
-  const VisibleSelection& GetVisibleSelection() const;
-
   SelectionInFlatTree CalcVisibleSelection(
       const VisibleSelectionInFlatTree&) const;
 
