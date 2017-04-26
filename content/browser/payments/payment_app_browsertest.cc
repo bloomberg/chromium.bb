@@ -95,7 +95,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
       int64_t registration_id) {
     payments::mojom::PaymentAppRequestPtr app_request =
         payments::mojom::PaymentAppRequest::New();
-    app_request->methodData.push_back(
+    app_request->method_data.push_back(
         payments::mojom::PaymentMethodData::New());
     app_request->total = payments::mojom::PaymentItem::New();
     app_request->total->amount = payments::mojom::PaymentCurrencyAmount::New();

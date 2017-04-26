@@ -58,10 +58,10 @@ interface PaymentManager {
 
 struct PaymentAppRequest {
   url.mojom.Url origin;
-  array<PaymentMethodData> methodData;
+  array<PaymentMethodData> method_data;
   PaymentItem total;
   array<PaymentDetailsModifier> modifiers;
-  string optionId;
+  string option_id;
 };
 
 struct PaymentAppResponse {
