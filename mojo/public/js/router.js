@@ -72,6 +72,9 @@ define("mojo/public/js/router", [
     });
 
     this.setInterfaceIdNamespaceBit_ = setInterfaceIdNamespaceBit;
+    // |cachedMessageData| caches infomation about a message, so it can be
+    // processed later if a client is not yet attached to the target endpoint.
+    this.cachedMessageData = null;
     this.controlMessageHandler_ = new PipeControlMessageHandler(this);
     this.controlMessageProxy_ = new PipeControlMessageProxy(this.connector_);
     this.nextInterfaceIdValue_ = 1;
@@ -130,6 +133,31 @@ define("mojo/public/js/router", [
     if (endpoint.peerClosed) {
       timer.createOneShot(0,
           endpoint.client.notifyError.bind(endpoint.client));
+    }
+
+    if (this.cachedMessageData && interfaceEndpointHandle.id() ===
+        this.cachedMessageData.message.getInterfaceId()) {
+      timer.createOneShot(0, (function() {
+        if (!this.cachedMessageData) {
+          return;
+        }
+
+        var targetEndpoint = this.endpoints_.get(
+            this.cachedMessageData.message.getInterfaceId());
+        // Check that the target endpoint's client still exists.
+        if (targetEndpoint && targetEndpoint.client) {
+          var message = this.cachedMessageData.message;
+          var messageValidator = this.cachedMessageData.messageValidator;
+          this.cachedMessageData = null;
+          this.connector_.resumeIncomingMethodCallProcessing();
+          var ok = endpoint.client.handleIncomingMessage(message,
+              messageValidator);
+
+          if (!ok) {
+            this.handleInvalidIncomingMessage_();
+          }
+        }
+      }).bind(this));
     }
 
     return endpoint;
@@ -199,9 +227,10 @@ define("mojo/public/js/router", [
         if (!endpoint.client) {
           // We need to wait until a client is attached in order to dispatch
           // further messages.
-          // TODO(wangjimmy): Cache the message and send when the appropriate
-          // endpoint client is attached.
-          return false;
+          this.cachedMessageData = {message: message,
+              messageValidator: messageValidator};
+          this.connector_.pauseIncomingMethodCallProcessing();
+          return true;
         }
         ok = endpoint.client.handleIncomingMessage(message, messageValidator);
       }
@@ -289,6 +318,12 @@ define("mojo/public/js/router", [
 
     if (!types.isMasterInterfaceId(interfaceId) || reason) {
       this.controlMessageProxy_.notifyPeerEndpointClosed(interfaceId, reason);
+    }
+
+    if (this.cachedMessageData && interfaceId ===
+        this.cachedMessageData.message.getInterfaceId()) {
+      this.cachedMessageData = null;
+      this.connector_.resumeIncomingMethodCallProcessing();
     }
   };
 

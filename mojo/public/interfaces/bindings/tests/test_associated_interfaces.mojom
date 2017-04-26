@@ -40,6 +40,11 @@ interface IntegerSender {
   Send(int32 value);
 };
 
+interface StringSender {
+  Echo(string value) => (string value);
+  Send(string value);
+};
+
 interface IntegerSenderConnection {
   GetSender(associated IntegerSender& sender);
   AsyncGetSender() => (associated IntegerSender sender);
@@ -48,6 +53,11 @@ interface IntegerSenderConnection {
 interface IntegerSenderConnectionAtBothEnds {
   GetSender(associated IntegerSender& sender);
   SetSender(associated IntegerSender sender) => (int32 value);
+};
+
+interface SenderConnection {
+  GetIntegerSender(associated IntegerSender& sender);
+  GetStringSender(associated StringSender& sender);
 };
 
 interface AssociatedPingProvider {

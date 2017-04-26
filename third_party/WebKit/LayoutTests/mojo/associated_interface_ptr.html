@@ -13,19 +13,22 @@ define([
     "mojo/public/js/bindings",
 ], function(testAssociatedInterfaces, associatedBindings, bindings) {
 
-  function IntegerSenderImpl(callback) {
+  function SenderImpl(callback) {
     this.callback = callback;
   }
 
-  IntegerSenderImpl.prototype.echo = function(value) {
+  SenderImpl.prototype.echo = function(value) {
     return Promise.resolve({value: value});
   };
 
-  IntegerSenderImpl.prototype.send = function(value) {
+  SenderImpl.prototype.send = function(value) {
     if (this.callback) {
       this.callback(value);
     }
   };
+
+  var IntegerSenderImpl = SenderImpl;
+  var StringSenderImpl = SenderImpl;
 
   function IntegerSenderConnectionImpl() {
     this.integerSenderBinding_ = null;
@@ -58,8 +61,8 @@ define([
   IntegerSenderConnectionAtBothEndsImpl.prototype.setSender = function(
       integerSenderPtrInfo) {
     this.integerSender_ = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    this.integerSender_.ptr.bind(integerSenderPtrInfo);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo);
     return this.integerSender_.echo(456);
   };
 
@@ -77,6 +80,56 @@ define([
         {custom_reason: 42, description: 'hey'});
   };
 
+  function SenderConnectionBindLaterImpl({getIntegerSenderCallback,
+      getStringSenderCallback} = {}) {
+    this.getIntegerSenderCallback = getIntegerSenderCallback;
+    this.getStringSenderCallback = getStringSenderCallback;
+    this.integerSenderBinding_ = null;
+    this.stringSenderBinding_ = null;
+  }
+
+  SenderConnectionBindLaterImpl.prototype.getIntegerSender =
+      function(integerSenderRequest) {
+    setTimeout(() => {
+      this.integerSenderBinding_ = new associatedBindings.AssociatedBinding(
+          testAssociatedInterfaces.IntegerSender,
+          new IntegerSenderImpl(this.getIntegerSenderCallback),
+          integerSenderRequest);
+    }, 0);
+  };
+
+  SenderConnectionBindLaterImpl.prototype.getStringSender =
+      function(stringSenderRequest) {
+    this.stringSenderBinding_ = new associatedBindings.AssociatedBinding(
+        testAssociatedInterfaces.StringSender,
+        new StringSenderImpl(this.getStringSenderCallback),
+        stringSenderRequest);
+  };
+
+  function SenderConnectionImpl({getIntegerSenderCallback,
+      getStringSenderCallback} = {}) {
+    this.getIntegerSenderCallback = getIntegerSenderCallback;
+    this.getStringSenderCallback = getStringSenderCallback;
+    this.integerSenderBinding_ = null;
+    this.stringSenderBinding_ = null;
+  }
+
+  SenderConnectionImpl.prototype.getIntegerSender =
+      function(integerSenderRequest) {
+    this.integerSenderBinding_ = new associatedBindings.AssociatedBinding(
+        testAssociatedInterfaces.IntegerSender,
+        new IntegerSenderImpl(this.getIntegerSenderCallback),
+        integerSenderRequest);
+  };
+
+  SenderConnectionImpl.prototype.getStringSender =
+      function(stringSenderRequest) {
+    this.stringSenderBinding_ = new associatedBindings.AssociatedBinding(
+        testAssociatedInterfaces.StringSender,
+        new StringSenderImpl(this.getStringSenderCallback),
+        stringSenderRequest);
+  };
+
   promise_test(async () => {
     var integerSenderConnection = new
         testAssociatedInterfaces.IntegerSenderConnectionPtr();
@@ -92,8 +145,8 @@ define([
         integerSenderPtrInfo0);
 
     var integerSender0 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender0.ptr.bind(integerSenderPtrInfo0);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo0);
 
     integerSenderConnection.getSender(integerSenderRequest0);
     assert_equals((await integerSender0.echo(123)).value, 123);
@@ -102,8 +155,8 @@ define([
     var integerSenderPtrInfo1 =
         (await integerSenderConnection.asyncGetSender()).sender;
     var integerSender1 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender1.ptr.bind(integerSenderPtrInfo1);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo1);
     assert_equals((await integerSender1.echo(456)).value, 456);
   }, 'pass associated interfaces');
 
@@ -125,8 +178,8 @@ define([
         integerSenderPtrInfo0);
 
     var integerSender0 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender0.ptr.bind(integerSenderPtrInfo0);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo0);
 
     integerSenderConnectionAtBothEnds.getSender(integerSenderRequest0);
     assert_equals((await integerSender0.echo(123)).value, 123);
@@ -162,8 +215,8 @@ define([
         integerSenderPtrInfo0);
 
     var integerSender0 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender0.ptr.bind(integerSenderPtrInfo0);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo0);
 
     integerSenderConnection.getSender(integerSenderRequest0);
     await new Promise((resolve, reject) => {
@@ -190,16 +243,16 @@ define([
     var integerSenderRequest0 = associatedBindings.makeRequest(
         integerSenderPtrInfo0);
     var integerSender0 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender0.ptr.bind(integerSenderPtrInfo0);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo0);
     integerSenderConnection.getSender(integerSenderRequest0);
 
     // Recieving AssociatedInterfacePtrInfo.
     var integerSenderPtrInfo1 =
         (await integerSenderConnection.asyncGetSender()).sender;
     var integerSender1 = new
-        testAssociatedInterfaces.AssociatedIntegerSenderPtr();
-    integerSender1.ptr.bind(integerSenderPtrInfo1);
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo1);
 
     // Master InterfacePtrController reset triggers connection error handler on
     // interface endpoint clients for all associated endpoints.
@@ -219,6 +272,103 @@ define([
         integerSenderConnection.ptr), 0);
     await Promise.all([connectionErrorHandler0, connectionErrorHandler1]);
   }, 'all endpoints connectionErrorHandler called on master interface reset');
+
+  // Cache the current message and pause processing incoming messages if
+  // endpoint does not have client attached yet to ensure fifo message arrival.
+  promise_test(async () => {
+    var senderConnection = new
+        testAssociatedInterfaces.SenderConnectionPtr();
+    var senderConnectionBindLaterImpl = new SenderConnectionBindLaterImpl();
+    var senderConnectionBinding = new bindings.Binding(
+        testAssociatedInterfaces.SenderConnection,
+        senderConnectionBindLaterImpl,
+        bindings.makeRequest(senderConnection));
+
+    // AssociatedInterfaceRequest for stringSender.
+    var stringSenderPtrInfo = new
+        associatedBindings.AssociatedInterfacePtrInfo();
+    var stringSenderRequest = associatedBindings.makeRequest(
+        stringSenderPtrInfo);
+    var stringSender =
+        new testAssociatedInterfaces.AssociatedStringSenderPtr(
+            stringSenderPtrInfo);
+
+    // AssociatedInterfaceRequest for integerSender.
+    var integerSenderPtrInfo = new
+        associatedBindings.AssociatedInterfacePtrInfo();
+    var integerSenderRequest = associatedBindings.makeRequest(
+        integerSenderPtrInfo);
+    var integerSender = new
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo);
+
+    var value = await new Promise(function(resolve, reject) {
+      senderConnectionBindLaterImpl.getIntegerSenderCallback = resolve;
+      senderConnectionBindLaterImpl.getStringSenderCallback= reject;
+      senderConnection.getStringSender(stringSenderRequest);
+      senderConnection.getIntegerSender(integerSenderRequest);
+      // Test FIFO arrival order of message.
+      integerSender.send(456); // This message should arrive first.
+      stringSender.send('goodbye');
+    });
+
+    assert_equals(value, 456);
+  }, 'fifo order should be preserved for messages');
+
+  promise_test(async () => {
+    var senderConnection = new
+        testAssociatedInterfaces.SenderConnectionPtr();
+    var senderConnectionImpl = new SenderConnectionImpl();
+    var senderConnectionBinding = new bindings.Binding(
+        testAssociatedInterfaces.SenderConnection,
+        senderConnectionImpl,
+        bindings.makeRequest(senderConnection));
+
+    // AssociatedInterfaceRequest for stringSender.
+    var stringSenderPtrInfo = new
+        associatedBindings.AssociatedInterfacePtrInfo();
+    var stringSenderRequest = associatedBindings.makeRequest(
+        stringSenderPtrInfo);
+    var stringSender =
+        new testAssociatedInterfaces.AssociatedStringSenderPtr(
+            stringSenderPtrInfo);
+
+    // AssociatedInterfaceRequest for integerSender.
+    var integerSenderPtrInfo = new
+        associatedBindings.AssociatedInterfacePtrInfo();
+    var integerSenderRequest = associatedBindings.makeRequest(
+        integerSenderPtrInfo);
+    var integerSender = new
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo);
+
+    var value = await new Promise(function(resolve, reject) {
+      senderConnectionImpl.getIntegerSenderCallback = reject;
+      senderConnectionImpl.getStringSenderCallback= resolve;
+      senderConnection.getStringSender(stringSenderRequest);
+      senderConnection.getIntegerSender(integerSenderRequest);
+
+      // Wait for integerSenderBinding to be created.
+      integerSender.echo(100).then(function(result) {
+        assert_equals(result.value, 100);
+
+        // This causes this endpoint handle's endpoint client to be detached.
+        var handle = senderConnectionImpl.integerSenderBinding_.
+            interfaceEndpointClient_.passHandle();
+
+        // Cache message. Connector will pause processing incoming messages.
+        integerSender.send(456);
+        stringSender.send('goodbye');
+
+        // Closing the target endpoint handle of the cached message will cause
+        // the cached message to be discarded and the connector to resume
+        // processing incoming messages.
+        setTimeout(handle.reset.bind(handle), 0);
+      });
+    });
+
+    assert_equals(value, 'goodbye');
+  }, 'discard cached message if target endpoint closed');
 
   done();
 });
