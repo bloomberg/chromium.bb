@@ -25,7 +25,9 @@ namespace blink {
 
 namespace {
 
-const double kThreshold = 0.000001;
+// The resolution of performance.now is 5us, so the threshold for time
+// comparison is 6us to account for rounding errors.
+const double kThreshold = 0.006;
 
 class DOMTimerTest : public RenderingTest {
  public:
@@ -33,7 +35,7 @@ class DOMTimerTest : public RenderingTest {
       platform_;
 
   // Expected time between each iterator for setInterval(..., 1) or nested
-  // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minumum clamp of 4m
+  // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minimum clamp of 4ms
   // is applied from the 5th iteration onwards.
   const std::vector<Matcher<double>> kExpectedTimings = {
       DoubleNear(1., kThreshold), DoubleNear(1., kThreshold),
@@ -46,9 +48,6 @@ class DOMTimerTest : public RenderingTest {
     // Advance timer manually as RenderingTest expects the time to be non-zero.
     platform_->AdvanceClockSeconds(1.);
     RenderingTest::SetUp();
-    // Advance timer again as otherwise the time between the first call to
-    // setInterval and it running will be off by 5us.
-    platform_->AdvanceClockSeconds(1);
     GetDocument().GetSettings()->SetScriptEnabled(true);
   }
 
@@ -85,7 +84,6 @@ const char* const kSetTimeout0ScriptText =
     "function setTimeoutCallback() {"
     "  var current = performance.now();"
     "  elapsed = current - last;"
-    "  times.push(elapsed);"
     "}"
     "setTimeout(setTimeoutCallback, 0);";
 
