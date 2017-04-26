@@ -157,6 +157,33 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
                               state.composition_end, state.reply_to_request);
 }
 
+void ImeAdapterAndroid::UpdateFrameInfo(
+    const gfx::SelectionBound& selection_start,
+    float dip_scale,
+    float content_offset_ypix) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (obj.is_null())
+    return;
+
+  // The CursorAnchorInfo API in Android only supports zero width selection
+  // bounds.
+  const jboolean has_insertion_marker =
+      selection_start.type() == gfx::SelectionBound::CENTER;
+  const jboolean is_insertion_marker_visible = selection_start.visible();
+  const jfloat insertion_marker_horizontal =
+      has_insertion_marker ? selection_start.edge_top().x() : 0.0f;
+  const jfloat insertion_marker_top =
+      has_insertion_marker ? selection_start.edge_top().y() : 0.0f;
+  const jfloat insertion_marker_bottom =
+      has_insertion_marker ? selection_start.edge_bottom().y() : 0.0f;
+
+  Java_ImeAdapter_updateFrameInfo(
+      env, obj, dip_scale, content_offset_ypix, has_insertion_marker,
+      is_insertion_marker_visible, insertion_marker_horizontal,
+      insertion_marker_top, insertion_marker_bottom);
+}
+
 bool ImeAdapterAndroid::SendKeyEvent(
     JNIEnv* env,
     const JavaParamRef<jobject>&,

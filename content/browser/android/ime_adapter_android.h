@@ -90,6 +90,10 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
       RenderWidgetHostViewAndroid* old_rwhva,
       RenderWidgetHostViewAndroid* new_rhwva) override;
 
+  void UpdateFrameInfo(const gfx::SelectionBound& selection_start,
+                       float dip_scale,
+                       float content_offset_ypix);
+
   // Called from native -> java
   void CancelComposition();
   void FocusedNodeChanged(bool is_editable_node);

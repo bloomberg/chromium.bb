@@ -1370,6 +1370,15 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
   gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
+  float dip_scale = view_.GetDipScale();
+  float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
+  float top_shown_pix =
+      top_controls_pix * frame_metadata.top_controls_shown_ratio;
+
+  if (ime_adapter_android_)
+    ime_adapter_android_->UpdateFrameInfo(frame_metadata.selection.start,
+                                          dip_scale, top_shown_pix);
+
   if (!content_view_core_)
     return;
 
@@ -1396,22 +1405,17 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.top_controls_height *
           frame_metadata.top_controls_shown_ratio));
 
-  float dip_scale = view_.GetDipScale();
-  float top_controls_pix = frame_metadata.top_controls_height * dip_scale;
-  float top_shown_pix =
-      top_controls_pix * frame_metadata.top_controls_shown_ratio;
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
-
-  float bottom_controls_pix = frame_metadata.bottom_controls_height * dip_scale;
-  float bottom_shown_pix =
-      bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
-  bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
-
   if (top_changed) {
     float translate = top_shown_pix - top_controls_pix;
     view_.OnTopControlsChanged(translate, top_shown_pix);
     prev_top_shown_pix_ = top_shown_pix;
   }
+
+  float bottom_controls_pix = frame_metadata.bottom_controls_height * dip_scale;
+  float bottom_shown_pix =
+      bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
+  bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
   if (bottom_changed) {
     float translate = bottom_controls_pix - bottom_shown_pix;
     view_.OnBottomControlsChanged(translate, bottom_shown_pix);
@@ -1420,16 +1424,12 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
-      frame_metadata.root_scroll_offset,
-      frame_metadata.page_scale_factor,
+      frame_metadata.root_scroll_offset, frame_metadata.page_scale_factor,
       gfx::Vector2dF(frame_metadata.min_page_scale_factor,
                      frame_metadata.max_page_scale_factor),
-      frame_metadata.root_layer_size,
-      frame_metadata.scrollable_viewport_size,
+      frame_metadata.root_layer_size, frame_metadata.scrollable_viewport_size,
       frame_metadata.top_controls_height,
-      frame_metadata.top_controls_shown_ratio,
-      is_mobile_optimized,
-      frame_metadata.selection.start);
+      frame_metadata.top_controls_shown_ratio, is_mobile_optimized);
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
