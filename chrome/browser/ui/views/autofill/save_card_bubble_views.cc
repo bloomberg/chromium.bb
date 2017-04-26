@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
@@ -57,6 +58,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
       learn_more_link_(nullptr) {
   DCHECK(controller);
   views::BubbleDialogDelegateView::CreateBubble(this);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
 
 SaveCardBubbleViews::~SaveCardBubbleViews() {}

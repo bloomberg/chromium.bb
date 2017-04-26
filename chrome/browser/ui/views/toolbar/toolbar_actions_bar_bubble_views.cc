@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -34,6 +35,7 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
   if (!anchor_view)
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::TOOLBAR_ACTIONS_BAR);
 }
 
 ToolbarActionsBarBubbleViews::~ToolbarActionsBarBubbleViews() {}

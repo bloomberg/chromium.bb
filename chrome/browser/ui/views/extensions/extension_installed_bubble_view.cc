@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -111,7 +112,9 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
       controller_(controller),
-      manage_shortcut_(nullptr) {}
+      manage_shortcut_(nullptr) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
+}
 
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -69,6 +70,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
       error_(error) {
   if (!anchor_view)
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::GLOBAL_ERROR);
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {}

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/payments/contact_info_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
@@ -75,6 +76,8 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   SetupSpinnerOverlay();
 
   ShowInitialPaymentSheet();
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
 }
 
 PaymentRequestDialogView::~PaymentRequestDialogView() {}

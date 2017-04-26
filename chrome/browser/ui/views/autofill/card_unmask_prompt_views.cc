@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -79,6 +80,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
       progress_label_(nullptr),
       overlay_animation_(this),
       weak_ptr_factory_(this) {
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
