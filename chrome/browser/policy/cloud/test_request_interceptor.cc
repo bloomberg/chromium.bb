@@ -232,8 +232,8 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
         new std::vector<base::Closure>);
     callbacks->swap(request_serviced_callbacks_);
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Delegate::InvokeRequestServicedCallbacks,
-                              base::Passed(&callbacks)));
+        FROM_HERE, base::BindOnce(&Delegate::InvokeRequestServicedCallbacks,
+                                  base::Passed(&callbacks)));
   }
 
   JobCallback callback = pending_job_callbacks_.front();
@@ -344,12 +344,9 @@ void TestRequestInterceptor::PostToIOAndWait(const base::Closure& task) {
   io_task_runner_->PostTask(FROM_HERE, task);
   base::RunLoop run_loop;
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&base::TaskRunner::PostTask),
-          base::ThreadTaskRunnerHandle::Get(),
-          FROM_HERE,
-          run_loop.QuitClosure()));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                                base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                                run_loop.QuitClosure()));
   run_loop.Run();
 }
 

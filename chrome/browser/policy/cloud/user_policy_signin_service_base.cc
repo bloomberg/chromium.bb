@@ -120,7 +120,7 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
       // the CloudPolicyClient, so queue up a task to do the shutdown.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager,
               weak_factory_.GetWeakPtr()));
     } else {

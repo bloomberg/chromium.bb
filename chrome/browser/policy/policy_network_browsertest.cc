@@ -57,8 +57,8 @@ bool IsQuicEnabled(
   bool is_quic_enabled = false;
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(IsQuicEnabledOnIOThread, request_context_getter,
-                 &is_quic_enabled),
+      base::BindOnce(IsQuicEnabledOnIOThread, request_context_getter,
+                     &is_quic_enabled),
       run_loop.QuitClosure());
   run_loop.Run();
   return is_quic_enabled;
