@@ -873,6 +873,7 @@ class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&RequestDataResourceDispatcherHostDelegate::SetDelegate,
                    base::Unretained(delegate_.get())));
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
@@ -912,7 +913,6 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        BasicCrossSite) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL top_url(embedded_test_server()->GetURL(
       "a.com", "/nested_page_with_subresources.html"));
   GURL nested_url(embedded_test_server()->GetURL(
@@ -1099,7 +1099,6 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        CrossOriginNested) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL top_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL top_js_url(

@@ -105,7 +105,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        HitTestingInIframes) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
@@ -166,7 +165,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTestingInIframes) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));

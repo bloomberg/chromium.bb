@@ -19,10 +19,13 @@
 
 namespace content {
 
-class SitePerProcessDevToolsBrowserTest
-    : public SitePerProcessBrowserTest {
+class SitePerProcessDevToolsBrowserTest : public SitePerProcessBrowserTest {
  public:
   SitePerProcessDevToolsBrowserTest() {}
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SitePerProcessBrowserTest::SetUpOnMainThread();
+  }
 };
 
 class TestClient: public DevToolsAgentHostClient {
@@ -66,7 +69,6 @@ class TestClient: public DevToolsAgentHostClient {
 IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
                        MAYBE_CrossSiteIframeAgentHost) {
   DevToolsAgentHost::List list;
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -138,7 +140,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -179,7 +180,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
     AgentHostForPageEqualsOneForMainFrame) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 

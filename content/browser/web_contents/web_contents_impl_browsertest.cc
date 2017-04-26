@@ -68,6 +68,12 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    // Setup the server to allow serving separate sites, so we can perform
+    // cross-process navigation.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsImplBrowserTest);
 };
@@ -436,9 +442,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   net::HostPortPair foo_host_port;
   GURL cross_site_url;
 
-  // Setup the server to allow serving separate sites, so we can perform
-  // cross-process navigation.
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   foo_host_port = embedded_test_server()->host_port_pair();
@@ -594,7 +597,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgressWithFrames) {
 // a DidStopLoading.  See http://crbug.com/429399.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        LoadProgressAfterInterruptedNav) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Start at a real page.
@@ -1002,7 +1004,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   TestJavaScriptDialogManager dialog_manager;
   wc->SetDelegate(&dialog_manager);
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   NavigateToURL(shell(),
@@ -1281,7 +1282,6 @@ class MouseLockDelegate : public WebContentsDelegate {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        RenderWidgetDeletedWhileMouseLockPending) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<MouseLockDelegate> delegate(new MouseLockDelegate());

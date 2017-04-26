@@ -232,11 +232,18 @@ class CommitBeforeSwapAckSentHelper : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(CommitBeforeSwapAckSentHelper);
 };
 
-using RenderWidgetHostViewBrowserTestBase = ContentBrowserTest;
+class RenderWidgetHostViewBrowserTestBase : public ContentBrowserTest {
+ public:
+  ~RenderWidgetHostViewBrowserTestBase() override {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
                        CompositorWorksWhenReusingRenderer) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
   auto* web_contents = shell()->web_contents();
   // Load a page that draws new frames infinitely.
