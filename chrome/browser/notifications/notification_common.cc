@@ -14,6 +14,7 @@
 void NotificationCommon::OpenNotificationSettings(
     content::BrowserContext* browser_context) {
 #if defined(OS_ANDROID)
+  // Android settings are opened directly from Java
   NOTIMPLEMENTED();
 #else
   Profile* profile = Profile::FromBrowserContext(browser_context);
