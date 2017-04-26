@@ -6,11 +6,9 @@
 
 These values are copied from:
 
-https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
+https://www.bluetooth.com/specifications/gatt/services
 
-https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx
-
-https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
+https://www.bluetooth.com/specifications/gatt/characteristics
 """
 
 
@@ -27,6 +25,7 @@ SERVICES = [
     'cycling_speed_and_cadence',
     'device_information',
     'environmental_sensing',
+    'fitness_machine',
     'generic_access',
     'generic_attribute',
     'glucose',
@@ -91,6 +90,7 @@ CHARACTERISTICS = [
     'cgm_session_start_time',
     'cgm_specific_ops_control_point',
     'cgm_status',
+    'cross_trainer_data',
     'csc_feature',
     'csc_measurement',
     'current_time',
@@ -116,6 +116,9 @@ CHARACTERISTICS = [
     'fat_burn_heart_rate_upper_limit',
     'firmware_revision_string',
     'first_name',
+    'fitness_machine_control_point',
+    'fitness_machine_feature',
+    'fitness_machine_status',
     'five_zone_heart_rate_limits',
     'floor_number',
     'gender',
@@ -139,6 +142,7 @@ CHARACTERISTICS = [
     'https_security',
     'humidity',
     'ieee_11073-20601_regulatory_certification_data_list',
+    'indoor_bike_data',
     'indoor_positioning_configuration',
     'intermediate_cuff_pressure',
     'intermediate_temperature',
@@ -191,9 +195,11 @@ CHARACTERISTICS = [
     'reference_time_information',
     'report',
     'report_map',
+    'resolvable_private_address_only',
     'resting_heart_rate',
     'ringer_control_point',
     'ringer_setting',
+    'rower_data',
     'rsc_feature',
     'rsc_measurement',
     'sc_control_point',
@@ -203,7 +209,14 @@ CHARACTERISTICS = [
     'gatt.service_changed',
     'software_revision_string',
     'sport_type_for_aerobic_and_anaerobic_thresholds',
+    'stair_climber_data',
+    'step_climber_data',
+    'supported_heart_rate_range',
+    'supported_inclination_range',
     'supported_new_alert_category',
+    'supported_power_range',
+    'supported_resistance_level_range',
+    'supported_speed_range',
     'supported_unread_alert_category',
     'system_id',
     'tds_control_point',
@@ -217,6 +230,8 @@ CHARACTERISTICS = [
     'time_update_state',
     'time_with_dst',
     'time_zone',
+    'training_status',
+    'treadmill_data',
     'true_wind_direction',
     'true_wind_speed',
     'two_zone_heart_rate_limit',
