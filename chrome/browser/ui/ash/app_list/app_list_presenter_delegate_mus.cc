@@ -64,8 +64,9 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
   // the only thing this is used for is choosing the right scale factor in
   // AppListMainView::PreloadIcons(), so we take care of that - perhaps by
   // passing the display_id or the scale factor directly
-  view->InitAsBubble(nullptr /* parent */, current_apps_page);
-  view->SetAnchorPoint(
+  view->Initialize(nullptr /* parent */, current_apps_page);
+
+  view->MaybeSetAnchorPoint(
       GetCenterOfDisplay(display_id, GetMinimumBoundsHeightForAppList(view)));
 
   // TODO(mfomitchev): Setup updating bounds on keyboard bounds change.
