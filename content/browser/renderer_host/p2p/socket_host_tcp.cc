@@ -49,6 +49,15 @@ bool IsPseudoTlsClientSocket(content::P2PSocketType type) {
 
 namespace content {
 
+P2PSocketHostTcp::SendBuffer::SendBuffer() : rtc_packet_id(-1) {}
+P2PSocketHostTcp::SendBuffer::SendBuffer(
+    int32_t rtc_packet_id,
+    scoped_refptr<net::DrainableIOBuffer> buffer)
+    : rtc_packet_id(rtc_packet_id), buffer(buffer) {}
+P2PSocketHostTcp::SendBuffer::SendBuffer(const SendBuffer& rhs)
+    : rtc_packet_id(rhs.rtc_packet_id), buffer(rhs.buffer) {}
+P2PSocketHostTcp::SendBuffer::~SendBuffer() {}
+
 P2PSocketHostTcpBase::P2PSocketHostTcpBase(
     IPC::Sender* message_sender,
     int socket_id,
@@ -383,25 +392,24 @@ void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
   DoSend(to, data, options);
 }
 
-void P2PSocketHostTcpBase::WriteOrQueue(
-    scoped_refptr<net::DrainableIOBuffer>& buffer) {
+void P2PSocketHostTcpBase::WriteOrQueue(SendBuffer& send_buffer) {
   IncrementTotalSentPackets();
-  if (write_buffer_.get()) {
-    write_queue_.push(buffer);
+  if (write_buffer_.buffer.get()) {
+    write_queue_.push(send_buffer);
     IncrementDelayedPackets();
-    IncrementDelayedBytes(buffer->size());
+    IncrementDelayedBytes(send_buffer.buffer->size());
     return;
   }
 
-  write_buffer_ = buffer;
+  write_buffer_ = send_buffer;
   DoWrite();
 }
 
 void P2PSocketHostTcpBase::DoWrite() {
-  while (write_buffer_.get() && state_ == STATE_OPEN && !write_pending_) {
+  while (write_buffer_.buffer.get() && state_ == STATE_OPEN &&
+         !write_pending_) {
     int result = socket_->Write(
-        write_buffer_.get(),
-        write_buffer_->BytesRemaining(),
+        write_buffer_.buffer.get(), write_buffer_.buffer->BytesRemaining(),
         base::Bind(&P2PSocketHostTcp::OnWritten, base::Unretained(this)));
     HandleWriteResult(result);
   }
@@ -417,19 +425,22 @@ void P2PSocketHostTcpBase::OnWritten(int result) {
 }
 
 void P2PSocketHostTcpBase::HandleWriteResult(int result) {
-  DCHECK(write_buffer_.get());
+  DCHECK(write_buffer_.buffer.get());
   if (result >= 0) {
-    write_buffer_->DidConsume(result);
-    if (write_buffer_->BytesRemaining() == 0) {
-      message_sender_->Send(
-          new P2PMsg_OnSendComplete(id_, P2PSendPacketMetrics()));
+    write_buffer_.buffer->DidConsume(result);
+    if (write_buffer_.buffer->BytesRemaining() == 0) {
+      base::TimeTicks send_time = base::TimeTicks::Now();
+      message_sender_->Send(new P2PMsg_OnSendComplete(
+          id_,
+          P2PSendPacketMetrics(0, write_buffer_.rtc_packet_id, send_time)));
       if (write_queue_.empty()) {
-        write_buffer_ = nullptr;
+        write_buffer_.buffer = nullptr;
+        write_buffer_.rtc_packet_id = -1;
       } else {
         write_buffer_ = write_queue_.front();
         write_queue_.pop();
         // Update how many bytes are still waiting to be sent.
-        DecrementDelayedBytes(write_buffer_->size());
+        DecrementDelayedBytes(write_buffer_.buffer->size());
       }
     }
   } else if (result == net::ERR_IO_PENDING) {
@@ -530,17 +541,20 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
                               const std::vector<char>& data,
                               const rtc::PacketOptions& options) {
   int size = kPacketHeaderSize + data.size();
-  scoped_refptr<net::DrainableIOBuffer> buffer =
-      new net::DrainableIOBuffer(new net::IOBuffer(size), size);
-  *reinterpret_cast<uint16_t*>(buffer->data()) = base::HostToNet16(data.size());
-  memcpy(buffer->data() + kPacketHeaderSize, &data[0], data.size());
+  SendBuffer send_buffer(options.packet_id, new net::DrainableIOBuffer(
+                                                new net::IOBuffer(size), size));
+  *reinterpret_cast<uint16_t*>(send_buffer.buffer->data()) =
+      base::HostToNet16(data.size());
+  memcpy(send_buffer.buffer->data() + kPacketHeaderSize, &data[0], data.size());
 
   cricket::ApplyPacketOptions(
-      reinterpret_cast<uint8_t*>(buffer->data()) + kPacketHeaderSize,
-      buffer->BytesRemaining() - kPacketHeaderSize, options.packet_time_params,
+      reinterpret_cast<uint8_t*>(send_buffer.buffer->data()) +
+          kPacketHeaderSize,
+      send_buffer.buffer->BytesRemaining() - kPacketHeaderSize,
+      options.packet_time_params,
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
 
-  WriteOrQueue(buffer);
+  WriteOrQueue(send_buffer);
 }
 
 // P2PSocketHostStunTcp
@@ -604,24 +618,24 @@ void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
   // Add any pad bytes to the total size.
   int size = data.size() + pad_bytes;
 
-  scoped_refptr<net::DrainableIOBuffer> buffer =
-      new net::DrainableIOBuffer(new net::IOBuffer(size), size);
-  memcpy(buffer->data(), &data[0], data.size());
+  SendBuffer send_buffer(options.packet_id, new net::DrainableIOBuffer(
+                                                new net::IOBuffer(size), size));
+  memcpy(send_buffer.buffer->data(), &data[0], data.size());
 
   cricket::ApplyPacketOptions(
-      reinterpret_cast<uint8_t*>(buffer->data()), data.size(),
+      reinterpret_cast<uint8_t*>(send_buffer.buffer->data()), data.size(),
       options.packet_time_params,
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
 
   if (pad_bytes) {
     char padding[4] = {0};
     DCHECK_LE(pad_bytes, 4);
-    memcpy(buffer->data() + data.size(), padding, pad_bytes);
+    memcpy(send_buffer.buffer->data() + data.size(), padding, pad_bytes);
   }
-  WriteOrQueue(buffer);
+  WriteOrQueue(send_buffer);
 
   if (dump_outgoing_rtp_packet_)
-    DumpRtpPacket(buffer->data(), data.size(), false);
+    DumpRtpPacket(send_buffer.buffer->data(), data.size(), false);
 }
 
 int P2PSocketHostStunTcp::GetExpectedPacketSize(

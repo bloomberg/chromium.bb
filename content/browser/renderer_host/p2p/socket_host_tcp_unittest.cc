@@ -249,6 +249,35 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
   EXPECT_EQ(expected_data, sent_data_);
 }
 
+TEST_F(P2PSocketHostTcpTest, PacketIdIsPropagated) {
+  base::MessageLoop message_loop;
+
+  socket_->set_async_write(true);
+
+  const int32_t kRtcPacketId = 1234;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  EXPECT_CALL(sender_, Send(MatchSendPacketMetrics(kRtcPacketId, now)))
+      .Times(1)
+      .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
+
+  rtc::PacketOptions options;
+  options.packet_id = kRtcPacketId;
+  std::vector<char> packet1;
+  CreateStunRequest(&packet1);
+
+  socket_host_->Send(dest_.ip_address, packet1, options, 0);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::string expected_data;
+  expected_data.append(IntToSize(packet1.size()));
+  expected_data.append(packet1.begin(), packet1.end());
+
+  EXPECT_EQ(expected_data, sent_data_);
+}
+
 TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   std::vector<char> request_packet;
   CreateStunRequest(&request_packet);
