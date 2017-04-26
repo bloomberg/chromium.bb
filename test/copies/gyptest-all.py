@@ -12,11 +12,6 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-# The test seems to fail on msvs on the waterfall but not the try servers.
-# Need to investigate further.
-if test.format == 'msvs':
-  test.skip_test()  # bug=536
-
 test.run_gyp('copies.gyp',
              '-G', 'xcode_ninja_target_pattern=^(?!copies_null)',
              chdir='src')
