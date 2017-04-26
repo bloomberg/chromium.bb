@@ -572,32 +572,28 @@ static CollapsedBorderValue ChooseBorder(const CollapsedBorderValue& border1,
   return CompareBorders(border1, border2) ? border2 : border1;
 }
 
-bool LayoutTableCell::HasStartBorderAdjoiningTable() const {
-  bool is_start_column = !AbsoluteColumnIndex();
-  bool is_end_column = Table()->AbsoluteColumnToEffectiveColumn(
-                           AbsoluteColumnIndex() + ColSpan() - 1) ==
-                       Table()->NumEffectiveColumns() - 1;
-  bool has_same_direction_as_table = HasSameDirectionAs(Table());
+bool LayoutTableCell::IsInStartColumn() const {
+  return !AbsoluteColumnIndex();
+}
 
+bool LayoutTableCell::IsInEndColumn() const {
+  return Table()->AbsoluteColumnToEffectiveColumn(AbsoluteColumnIndex() +
+                                                  ColSpan() - 1) ==
+         Table()->NumEffectiveColumns() - 1;
+}
+
+bool LayoutTableCell::HasStartBorderAdjoiningTable() const {
   // The table direction determines the row direction. In mixed directionality,
   // we cannot guarantee that we have a common border with the table (think a
   // ltr table with rtl start cell).
-  return (is_start_column && has_same_direction_as_table) ||
-         (is_end_column && !has_same_direction_as_table);
+  return HasSameDirectionAs(Table()) ? IsInStartColumn() : IsInEndColumn();
 }
 
 bool LayoutTableCell::HasEndBorderAdjoiningTable() const {
-  bool is_start_column = !AbsoluteColumnIndex();
-  bool is_end_column = Table()->AbsoluteColumnToEffectiveColumn(
-                           AbsoluteColumnIndex() + ColSpan() - 1) ==
-                       Table()->NumEffectiveColumns() - 1;
-  bool has_same_direction_as_table = HasSameDirectionAs(Table());
-
   // The table direction determines the row direction. In mixed directionality,
   // we cannot guarantee that we have a common border with the table (think a
   // ltr table with ltr end cell).
-  return (is_start_column && !has_same_direction_as_table) ||
-         (is_end_column && has_same_direction_as_table);
+  return HasSameDirectionAs(Table()) ? IsInEndColumn() : IsInStartColumn();
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder(

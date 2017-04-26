@@ -29,8 +29,6 @@
 
 namespace blink {
 
-namespace {
-
 class LayoutTableCellDeathTest : public RenderingTest {
  protected:
   virtual void SetUp() {
@@ -73,101 +71,175 @@ TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex) {
 
 #endif
 
-using LayoutTableCellTest = RenderingTest;
+class LayoutTableCellTest : public RenderingTest {
+ protected:
+  bool HasStartBorderAdjoiningTable(const LayoutTableCell* cell) {
+    return cell->HasStartBorderAdjoiningTable();
+  }
+  bool HasEndBorderAdjoiningTable(const LayoutTableCell* cell) {
+    return cell->HasEndBorderAdjoiningTable();
+  }
+
+  LayoutTableCell* GetCellByElementId(const char* id) {
+    return ToLayoutTableCell(GetLayoutObjectByElementId(id));
+  }
+};
 
 TEST_F(LayoutTableCellTest, ResetColspanIfTooBig) {
-  SetBodyInnerHTML("<table><td colspan='14000'></td></table>");
-
-  LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
-                                                .body()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->GetLayoutObject());
-  ASSERT_EQ(cell->ColSpan(), 8190U);
+  SetBodyInnerHTML("<table><td id='cell' colspan='14000'></td></table>");
+  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 8190U);
 }
 
 TEST_F(LayoutTableCellTest, DoNotResetColspanJustBelowBoundary) {
-  SetBodyInnerHTML("<table><td colspan='8190'></td></table>");
-
-  LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
-                                                .body()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->GetLayoutObject());
-  ASSERT_EQ(cell->ColSpan(), 8190U);
+  SetBodyInnerHTML("<table><td id='cell' colspan='8190'></td></table>");
+  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 8190U);
 }
 
 TEST_F(LayoutTableCellTest, ResetRowspanIfTooBig) {
-  SetBodyInnerHTML("<table><td rowspan='70000'></td></table>");
-
-  LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
-                                                .body()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->GetLayoutObject());
-  ASSERT_EQ(cell->RowSpan(), 65534U);
+  SetBodyInnerHTML("<table><td id='cell' rowspan='70000'></td></table>");
+  ASSERT_EQ(GetCellByElementId("cell")->RowSpan(), 65534U);
 }
 
 TEST_F(LayoutTableCellTest, DoNotResetRowspanJustBelowBoundary) {
-  SetBodyInnerHTML("<table><td rowspan='65534'></td></table>");
-
-  LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
-                                                .body()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->GetLayoutObject());
-  ASSERT_EQ(cell->RowSpan(), 65534U);
+  SetBodyInnerHTML("<table><td id='cell' rowspan='65534'></td></table>");
+  ASSERT_EQ(GetCellByElementId("cell")->RowSpan(), 65534U);
 }
 
 TEST_F(LayoutTableCellTest,
        BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorder) {
   SetBodyInnerHTML(
       "<table style='border-collapse: collapse'>"
-      "<td style='will-change: transform; background-color: blue'>Cell></td>"
+      "  <td id='cell' style='will-change: transform; background-color: blue'>"
+      "    Cell"
+      "  </td>"
       "</table>");
-
-  LayoutTableCell* cell = ToLayoutTableCell(GetDocument()
-                                                .body()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->firstChild()
-                                                ->GetLayoutObject());
-  EXPECT_FALSE(cell->BackgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+  EXPECT_FALSE(GetCellByElementId("cell")->BackgroundIsKnownToBeOpaqueInRect(
+      LayoutRect(0, 0, 1, 1)));
 }
 
 TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
   const char* body_content =
       "<table id='table' style='position: absolute; left: 1px;'>"
-      "<tr>"
-      "<td id='cell'>"
-      "<div style='display: inline-block; height: 20px; width: 20px'>"
-      "</td>"
-      "</tr>"
+      "  <tr>"
+      "    <td id='cell'>"
+      "      <div style='display: inline-block; height: 20px; width: 20px'>"
+      "    </td>"
+      "  </tr>"
       "</table>";
   SetBodyInnerHTML(body_content);
 
   // Create an overflow recalc.
-  Element* cell = GetDocument().getElementById(AtomicString("cell"));
+  Element* cell = GetDocument().getElementById("cell");
   cell->setAttribute(HTMLNames::styleAttr, "outline: 1px solid black;");
   // Trigger a layout on the table that doesn't require cell layout.
-  Element* table = GetDocument().getElementById(AtomicString("table"));
+  Element* table = GetDocument().getElementById("table");
   table->setAttribute(HTMLNames::styleAttr, "position: absolute; left: 2px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that overflow was calculated on the cell.
-  LayoutBlock* input_block = ToLayoutBlock(GetLayoutObjectByElementId("cell"));
+  auto* input_block = ToLayoutBlock(cell->GetLayoutObject());
   LayoutRect rect = input_block->LocalVisualRect();
   EXPECT_EQ(LayoutRect(-1, -1, 24, 24), rect);
 }
-}  // namespace
+
+TEST_F(LayoutTableCellTest, HasBorderAdjoiningTable) {
+  SetBodyInnerHTML(
+      "<table id='table'>"
+      "  <tr>"
+      "    <td id='cell11' colspan='2000'></td>"
+      "    <td id='cell12'></td>"
+      "    <td id='cell13'></td>"
+      "  </tr>"
+      "  <tr>"
+      "    <td id='cell21' rowspan='2'></td>"
+      "    <td id='cell22'></td>"
+      "    <td id='cell23' colspan='2000'></td>"
+      "  </tr>"
+      "  <tr>"
+      "    <td id='cell31'></td>"
+      "    <td id='cell32'></td>"
+      "  </tr>"
+      "</table>");
+
+  const auto* cell11 = GetCellByElementId("cell11");
+  const auto* cell12 = GetCellByElementId("cell12");
+  const auto* cell13 = GetCellByElementId("cell13");
+  const auto* cell21 = GetCellByElementId("cell21");
+  const auto* cell22 = GetCellByElementId("cell22");
+  const auto* cell23 = GetCellByElementId("cell23");
+  const auto* cell31 = GetCellByElementId("cell31");
+  const auto* cell32 = GetCellByElementId("cell32");
+
+  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell11));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell11));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell12));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell12));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell13));
+  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell13));
+
+  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell21));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell21));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell22));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell22));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell23));
+  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell23));
+
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell31));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell31));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell32));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
+}
+
+TEST_F(LayoutTableCellTest, HasBorderAdjoiningTableRTL) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  table { direction: rtl }"
+      "  td { direction: ltr }"
+      "</style>"
+      "<table id='table'>"
+      "  <tr>"
+      "    <td id='cell11' colspan='2000'></td>"
+      "    <td id='cell12'></td>"
+      "    <td id='cell13'></td>"
+      "  </tr>"
+      "  <tr>"
+      "    <td id='cell21' rowspan='2'></td>"
+      "    <td id='cell22'></td>"
+      "    <td id='cell23' colspan='2000'></td>"
+      "  </tr>"
+      "  <tr>"
+      "    <td id='cell31'></td>"
+      "    <td id='cell32'></td>"
+      "  </tr>"
+      "</table>");
+
+  const auto* cell11 = GetCellByElementId("cell11");
+  const auto* cell12 = GetCellByElementId("cell12");
+  const auto* cell13 = GetCellByElementId("cell13");
+  const auto* cell21 = GetCellByElementId("cell21");
+  const auto* cell22 = GetCellByElementId("cell22");
+  const auto* cell23 = GetCellByElementId("cell23");
+  const auto* cell31 = GetCellByElementId("cell31");
+  const auto* cell32 = GetCellByElementId("cell32");
+
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell11));
+  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell11));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell12));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell12));
+  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell13));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell13));
+
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell21));
+  EXPECT_TRUE(HasEndBorderAdjoiningTable(cell21));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell22));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell22));
+  EXPECT_TRUE(HasStartBorderAdjoiningTable(cell23));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell23));
+
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell31));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell31));
+  EXPECT_FALSE(HasStartBorderAdjoiningTable(cell32));
+  EXPECT_FALSE(HasEndBorderAdjoiningTable(cell32));
+}
 
 }  // namespace blink
