@@ -422,7 +422,11 @@ std::unique_ptr<P2PSocketHost> P2PSocketHostUdp::AcceptIncomingTcpConnection(
 }
 
 bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
-  DCHECK_EQ(STATE_OPEN, state_);
+  if (state_ != STATE_OPEN) {
+    DCHECK_EQ(state_, STATE_ERROR);
+    return false;
+  }
+
   switch (option) {
     case P2P_SOCKET_OPT_RCVBUF:
       return socket_->SetReceiveBufferSize(value) == net::OK;
