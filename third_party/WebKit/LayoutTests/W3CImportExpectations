@@ -50,6 +50,8 @@ external/wpt/conformance-checkers [ Skip ]
 # external/wpt/content-security-policy [ Pass ]
 external/wpt/cookies [ Skip ]
 external/wpt/cors [ Skip ]
+## Owners: kojii@chromium.org,ksakamoto@chromium.org
+# external/wpt/css-font-loading [ Pass ]
 external/wpt/css/CSS1 [ Skip ]
 ## Owners: kojii@chromium.org
 # external/wpt/css/CSS2 [ Pass ]
