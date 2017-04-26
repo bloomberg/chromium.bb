@@ -1,11 +1,12 @@
 {% import 'fields/base.tmpl' as base %}
+{% from 'fields/field.tmpl' import setter_expression %}
 
 {% macro decl_public_methods(field) %}
 {{base.decl_initial_method(field)}}
 {{base.decl_getter_method(field)}}
 {{base.decl_setter_method(field)}}
 void {{field.setter_method_name}}({{field.type_name}}&& v) {
-  {{field.name}} = std::move(v);
+  {{setter_expression(field)}} = std::move(v);
 }
 {{base.decl_resetter_method(field)}}
 {% endmacro %}

@@ -152,6 +152,10 @@ def enum_value_name(name):
     return 'k' + upper_camel_case(name)
 
 
+def class_name(name):
+    return upper_camel_case(name)
+
+
 def class_member_name(name):
     return snake_case(name) + "_"
 

@@ -61,6 +61,14 @@
       valid_values: ["parseSingleValue", "parseShorthand"],
     },
 
+    // - field_group
+    // Name of the group that this field belongs to. Fields in the same group are stored
+    // together as a nested class inside ComputedStyle and dynamically allocated on use.
+    // Leave this out if the field is stored directly on ComputedStyle.
+    field_group: {
+      value_type: "str"
+    },
+
     // - field_template
     // Affects how the interface to this field is generated.
     // TODO(sashab, meade): Remove this once TypedOM types are specified for
@@ -796,6 +804,10 @@
       keywords: ["auto"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length()",
     },
     {
       name: "box-shadow",
@@ -1198,6 +1210,10 @@
       keywords: ["auto"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length()",
     },
     {
       name: "letter-spacing",
@@ -1265,6 +1281,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "margin-left",
@@ -1272,6 +1292,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "margin-right",
@@ -1279,6 +1303,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "margin-top",
@@ -1286,6 +1314,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "marker-end",
@@ -1508,6 +1540,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "padding-left",
@@ -1515,6 +1551,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "padding-right",
@@ -1522,6 +1562,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "padding-top",
@@ -1529,6 +1573,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length(kFixed)",
     },
     {
       name: "paint-order",
@@ -1589,6 +1637,10 @@
       keywords: ["auto"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length()",
     },
     {
       name: "r",
@@ -1907,6 +1959,10 @@
       keywords: ["auto"],
       supports_percentage: true,
       typedom_types: ["Length"],
+      field_template: "external",
+      field_type_path: "platform/Length",
+      field_group: "surround",
+      default_value: "Length()",
     },
     {
       name: "touch-action",

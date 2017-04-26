@@ -1,10 +1,10 @@
 {% import 'fields/base.tmpl' as base %}
-{% from 'fields/field.tmpl' import encode %}
+{% from 'fields/field.tmpl' import encode, setter_expression %}
 
 {% macro decl_public_methods(field) %}
 {{base.decl_getter_method(field)}}
 void {{field.setter_method_name}}() {
-  {{field.name}} = {{encode(field, "true")}};
+  {{setter_expression(field)}} = {{encode(field, "true")}};
 }
 {% endmacro %}
 

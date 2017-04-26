@@ -1,4 +1,5 @@
 {% from 'macros.tmpl' import license %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression %}
 {{license()}}
 
 #include "core/ComputedStyleBase.h"
@@ -7,11 +8,15 @@
 namespace blink {
 
 struct SameSizeAsComputedStyleBase {
-  {% for field in fields|rejectattr("is_bit_field") %}
+  {% if computed_style.subgroups is defined %}
+  void* dataRefs[{{computed_style.subgroups|length}}];
+  {% endif %}
+  {% for field in computed_style.fields|rejectattr("is_bit_field") %}
   {{field.type_name}} {{field.name}}};
   {% endfor %}
-  unsigned m_bit_fields[{{expected_bit_field_bytes}}];
+  unsigned m_bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
 };
+
 // If this fails, the packing algorithm in make_computed_style_base.py has
 // failed to produce the optimal packed size. To fix, update the algorithm to
 // ensure that the buckets are placed so that each takes up at most 1 word.
@@ -19,23 +24,23 @@ ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 
 void ComputedStyleBase::InheritFrom(const ComputedStyleBase& inheritParent,
                                     IsAtShadowBoundary isAtShadowBoundary) {
-  {% for field in fields if field.is_inherited %}
-  {{field.name}} = inheritParent.{{field.name}};
+  {% for field in computed_style.all_fields if field.is_inherited %}
+  {{setter_expression(field)}} = inheritParent.{{getter_expression(field)}};
   {% endfor %}
 }
 
 void ComputedStyleBase::CopyNonInheritedFromCached(
     const ComputedStyleBase& other) {
-  {% for field in fields if (field.is_property and not field.is_inherited) or field.is_inherited_flag %}
-  {{field.name}} = other.{{field.name}};
+  {% for field in computed_style.all_fields if (field.is_property and not field.is_inherited) or field.is_inherited_flag %}
+  {{setter_expression(field)}} = other.{{getter_expression(field)}};
   {% endfor %}
 }
 
 void ComputedStyleBase::PropagateIndependentInheritedProperties(
     const ComputedStyleBase& parentStyle) {
-  {% for field in fields if field.is_property and field.is_independent %}
+  {% for field in computed_style.all_fields if field.is_property and field.is_independent %}
   if ({{field.is_inherited_method_name}}())
-    {{field.setter_method_name}}(parentStyle.{{field.getter_method_name}}());
+    {{setter_expression(field)}} = parentStyle.{{getter_expression(field)}};
   {% endfor %}
 }
 

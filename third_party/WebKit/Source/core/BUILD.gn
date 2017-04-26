@@ -413,6 +413,7 @@ css_properties("make_core_generated_computed_style_base") {
   in_files = [ "css/ComputedStyleExtraFields.json5" ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
+    "../build/scripts/templates/fields/group.tmpl",
     "../build/scripts/templates/fields/base.tmpl",
     "../build/scripts/templates/fields/keyword.tmpl",
     "../build/scripts/templates/fields/primitive.tmpl",
