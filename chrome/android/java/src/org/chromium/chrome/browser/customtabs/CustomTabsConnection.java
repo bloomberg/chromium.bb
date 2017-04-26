@@ -987,6 +987,10 @@ public class CustomTabsConnection {
         WarmupManager warmupManager = WarmupManager.getInstance();
         Profile profile = Profile.getLastUsedProfile();
         boolean preconnect = true, createSpareWebContents = true;
+        if (speculationMode == SpeculationParams.HIDDEN_TAB
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_BACKGROUND_TAB)) {
+            speculationMode = SpeculationParams.PRERENDER;
+        }
         switch (speculationMode) {
             case SpeculationParams.PREFETCH:
                 boolean didPrefetch = new ResourcePrefetchPredictor(profile).startPrefetching(url);

@@ -57,6 +57,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -1810,14 +1811,33 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
 
+    /**
+     * Test that a hidden tab speculation is executed as a prerender if the |CCT_BACKGROUND_TAB|
+     * feature is disabled.
+     **/
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+            "disable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
+    public void testHiddenTabDisabled() throws Exception {
+        testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB,
+                CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
     private void testSpeculateCorrectUrl(int speculationMode) throws Exception {
+        testSpeculateCorrectUrl(speculationMode, speculationMode);
+    }
+
+    private void testSpeculateCorrectUrl(int requestedSpeculationMode, int usedSpeculationMode)
+            throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         final CustomTabsConnection connection = warmUpAndWait();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
-        connection.setSpeculationModeForSession(token, speculationMode);
+        connection.setSpeculationModeForSession(token, requestedSpeculationMode);
         assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
-        ensureCompletedSpeculationForUrl(connection, mTestPage, speculationMode);
+        ensureCompletedSpeculationForUrl(connection, mTestPage, usedSpeculationMode);
 
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
