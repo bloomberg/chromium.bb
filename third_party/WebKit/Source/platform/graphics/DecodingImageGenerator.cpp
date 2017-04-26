@@ -52,21 +52,13 @@ DecodingImageGenerator::DecodingImageGenerator(
 
 DecodingImageGenerator::~DecodingImageGenerator() {}
 
-SkData* DecodingImageGenerator::onRefEncodedData(GrContext* ctx) {
+SkData* DecodingImageGenerator::onRefEncodedData() {
   TRACE_EVENT0("blink", "DecodingImageGenerator::refEncodedData");
 
-  // The GPU only wants the data if it has all been received, since the GPU
-  // only wants a complete texture. getAsSkData() may require copying, so
-  // skip it and just return nullptr to avoid a slowdown. (See
-  // crbug.com/568016 for details about such a slowdown.)
-  // TODO (scroggo): Stop relying on the internal knowledge of how Skia uses
-  // this. skbug.com/5485
-  if (ctx && !all_data_received_)
-    return nullptr;
-
-  // Other clients are serializers, which want the data even if it requires
-  // copying, and even if the data is incomplete. (Otherwise they would
-  // potentially need to decode the partial image in order to re-encode it.)
+  // getAsSkData() may require copying, but the clients of this function are
+  // serializers, which want the data even if it requires copying, and even
+  // if the data is incomplete. (Otherwise they would potentially need to
+  // decode the partial image in order to re-encode it.)
   return data_->GetAsSkData().release();
 }
 
