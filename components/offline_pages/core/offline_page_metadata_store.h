@@ -44,7 +44,7 @@ class OfflinePageMetadataStore {
   typedef base::Callback<void(std::unique_ptr<OfflinePagesUpdateResult>)>
       UpdateCallback;
 
-  virtual ~OfflinePageMetadataStore();
+  virtual ~OfflinePageMetadataStore(){};
 
   // Initializes the store. Should be called before any other methods.
   virtual void Initialize(const InitializeCallback& callback) = 0;
