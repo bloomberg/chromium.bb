@@ -134,16 +134,6 @@ bool IgnoreCopyResult(int64_t request_id, int64_t current_request_id) {
   return request_id < current_request_id;
 }
 
-// In the following cases, abort rotation:
-// 1) if the display was removed,
-// 2) the copy request has been canceled or failed. It would fail if,
-// for examples: a) The layer is removed from the compositor and destroye
-// before committing the request to the compositor. b) The compositor is
-// shutdown.
-bool AbortRotation(int64_t display_id, cc::CopyOutputResult* result) {
-  return !IsDisplayIdValid(display_id) || result->IsEmpty();
-}
-
 // Creates a black mask layer and returns the |layer_owner|.
 std::unique_ptr<ui::LayerOwner> CreateBlackMaskLayerOwner(
     const gfx::Rect& rect) {
@@ -180,9 +170,9 @@ ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
       metrics_reporter_(
           base::MakeUnique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
-      has_switch_ash_enable_smooth_screen_rotation_(
+      has_switch_ash_disable_smooth_screen_rotation_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshEnableSmoothScreenRotation)),
+              switches::kAshDisableSmoothScreenRotation)),
       root_window_(GetRootWindow(display_id_)),
       screen_rotation_container_layer_(
           GetScreenRotationContainer(root_window_)->layer()),
@@ -212,14 +202,14 @@ void ScreenRotationAnimator::StartRotationAnimation(
   }
 
   rotation_request->old_rotation = current_rotation;
-  if (has_switch_ash_enable_smooth_screen_rotation_) {
+  if (has_switch_ash_disable_smooth_screen_rotation_) {
+    StartSlowAnimation(std::move(rotation_request));
+  } else {
     std::unique_ptr<cc::CopyOutputRequest> copy_output_request =
         cc::CopyOutputRequest::CreateRequest(
             CreateAfterCopyCallbackBeforeRotation(std::move(rotation_request)));
     RequestCopyScreenRotationContainerLayer(std::move(copy_output_request));
     screen_rotation_state_ = COPY_REQUESTED;
-  } else {
-    StartSlowAnimation(std::move(rotation_request));
   }
 }
 
@@ -275,7 +265,18 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
     std::unique_ptr<cc::CopyOutputResult> result) {
   if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
-  if (AbortRotation(display_id_, result.get())) {
+  // Abort rotation and animation if the display was removed.
+  if (!IsDisplayIdValid(display_id_)) {
+    ProcessAnimationQueue();
+    return;
+  }
+  // Abort animation and set the rotation to target rotation when the copy
+  // request has been canceled or failed. It would fail if, for examples: a) The
+  // layer is removed from the compositor and destroye before committing the
+  // request to the compositor. b) The compositor is shutdown.
+  if (result->IsEmpty()) {
+    Shell::Get()->display_manager()->SetDisplayRotation(
+        display_id_, rotation_request->new_rotation, rotation_request->source);
     ProcessAnimationQueue();
     return;
   }
@@ -295,7 +296,13 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedAfterRotation(
     std::unique_ptr<cc::CopyOutputResult> result) {
   if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
-  if (AbortRotation(display_id_, result.get())) {
+  // In the following cases, abort animation:
+  // 1) if the display was removed,
+  // 2) the copy request has been canceled or failed. It would fail if,
+  // for examples: a) The layer is removed from the compositor and destroye
+  // before committing the request to the compositor. b) The compositor is
+  // shutdown.
+  if (!IsDisplayIdValid(display_id_) || result->IsEmpty()) {
     ProcessAnimationQueue();
     return;
   }
@@ -344,15 +351,16 @@ void ScreenRotationAnimator::AnimateRotation(
                                       rotated_screen_bounds.height() / 2);
 
   ui::Layer* new_root_layer;
-  if (new_layer_tree_owner_ && has_switch_ash_enable_smooth_screen_rotation_) {
+  if (!new_layer_tree_owner_ ||
+      has_switch_ash_disable_smooth_screen_rotation_) {
+    new_root_layer = screen_rotation_container_layer_;
+  } else {
     new_root_layer = new_layer_tree_owner_->root();
     // Add a black mask layer on top of |screen_rotation_container_layer_|.
     black_mask_layer_owner_ = CreateBlackMaskLayerOwner(
         gfx::Rect(screen_rotation_container_layer_->size()));
     AddLayerBelowWindowLayer(root_window_, new_root_layer,
                              black_mask_layer_owner_->layer());
-  } else {
-    new_root_layer = screen_rotation_container_layer_;
   }
 
   std::unique_ptr<ScreenRotationAnimation> new_layer_screen_rotation =
