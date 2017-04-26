@@ -17,17 +17,17 @@
 extern const unsigned char OD_ZIGZAG4_DCT_DCT[15][2];
 extern const unsigned char OD_ZIGZAG4_ADST_DCT[15][2];
 extern const unsigned char OD_ZIGZAG4_DCT_ADST[15][2];
-extern const unsigned char OD_ZIGZAG4_ADST_ADST[15][2];
+#define OD_ZIGZAG4_ADST_ADST OD_ZIGZAG4_DCT_DCT
 
 extern const unsigned char OD_ZIGZAG8_DCT_DCT[48][2];
 extern const unsigned char OD_ZIGZAG8_ADST_DCT[48][2];
 extern const unsigned char OD_ZIGZAG8_DCT_ADST[48][2];
-extern const unsigned char OD_ZIGZAG8_ADST_ADST[48][2];
+#define OD_ZIGZAG8_ADST_ADST OD_ZIGZAG8_DCT_DCT
 
 extern const unsigned char OD_ZIGZAG16_DCT_DCT[192][2];
 extern const unsigned char OD_ZIGZAG16_ADST_DCT[192][2];
 extern const unsigned char OD_ZIGZAG16_DCT_ADST[192][2];
-extern const unsigned char OD_ZIGZAG16_ADST_ADST[192][2];
+#define OD_ZIGZAG16_ADST_ADST OD_ZIGZAG16_DCT_DCT
 
 extern const unsigned char OD_ZIGZAG32_DCT_DCT[768][2];
 #endif
