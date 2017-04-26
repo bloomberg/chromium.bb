@@ -30,8 +30,4 @@ source_set("standalone") {
     "//services/tracing/public/interfaces",
     "//url",
   ]
-
-  data_deps = [
-    "//services/tracing",
-  ]
 }
