@@ -192,9 +192,11 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 #endif
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);
+  agent_host_->AddObserver(this);
 }
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
+  agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
 }
@@ -275,6 +277,20 @@ void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {
   ObserverMap::iterator it = observer_map_.find(observer);
   DCHECK(it != observer_map_.end());
   observer_map_.erase(it);
+}
+
+void HeadlessWebContentsImpl::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
+  for (const auto& pair : observer_map_) {
+    pair.second->observer()->DevToolsClientAttached();
+  }
+}
+
+void HeadlessWebContentsImpl::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  for (const auto& pair : observer_map_) {
+    pair.second->observer()->DevToolsClientDetached();
+  }
 }
 
 void HeadlessWebContentsImpl::RenderProcessExited(
