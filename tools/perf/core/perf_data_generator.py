@@ -488,7 +488,8 @@ def get_waterfall_config():
        'perf_tests': [
          # crbug.com/698831
          # ('cc_perftests', 2),
-         ('load_library_perf_tests', 2),
+         # crbug.com/709274
+         # ('load_library_perf_tests', 2),
          ('tracing_perftests', 2),
          ('media_perftests', 3)]
       }
