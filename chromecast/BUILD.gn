@@ -322,6 +322,9 @@ if (is_android) {
     run_list_path = "$root_out_dir/junit/run_junit_test_list.txt"
     build_tests = true
     test_groups = [ ":cast_junit_tests" ]
+    if (chromecast_branding != "public") {
+      test_groups += [ "//chromecast/internal:internal_cast_junit_tests" ]
+    }
   }
 }
 
