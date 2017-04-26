@@ -203,8 +203,8 @@ void project_points_hortrapezoid(int32_t *mat, int *points, int *proj,
 
     if (subsampling_x) xp = (xp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
     if (subsampling_y) yp = (yp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
-    *(proj++) = xp;
-    *(proj++) = yp;
+    *(proj++) = (int)xp;
+    *(proj++) = (int)yp;
 
     points += stride_points - 2;
     proj += stride_proj - 2;
@@ -236,8 +236,8 @@ void project_points_vertrapezoid(int32_t *mat, int *points, int *proj,
 
     if (subsampling_x) xp = (xp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
     if (subsampling_y) yp = (yp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
-    *(proj++) = xp;
-    *(proj++) = yp;
+    *(proj++) = (int)xp;
+    *(proj++) = (int)yp;
 
     points += stride_points - 2;
     proj += stride_proj - 2;
@@ -269,8 +269,8 @@ void project_points_homography(int32_t *mat, int *points, int *proj,
 
     if (subsampling_x) xp = (xp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
     if (subsampling_y) yp = (yp - (1 << (WARPEDPIXEL_PREC_BITS - 1))) / 2;
-    *(proj++) = xp;
-    *(proj++) = yp;
+    *(proj++) = (int)xp;
+    *(proj++) = (int)yp;
 
     points += stride_points - 2;
     proj += stride_proj - 2;
@@ -764,9 +764,9 @@ int get_shear_params(WarpedMotionParams *wm) {
   int64_t v;
   v = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) * y;
   wm->gamma =
-      clamp(ROUND_POWER_OF_TWO_SIGNED_64(v, shift), INT16_MIN, INT16_MAX);
+      clamp((int)ROUND_POWER_OF_TWO_SIGNED_64(v, shift), INT16_MIN, INT16_MAX);
   v = ((int64_t)mat[3] * mat[4]) * y;
-  wm->delta = clamp(mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
+  wm->delta = clamp(mat[5] - (int)ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
                         (1 << WARPEDMODEL_PREC_BITS),
                     INT16_MIN, INT16_MAX);
   if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
