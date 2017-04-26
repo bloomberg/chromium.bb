@@ -143,12 +143,13 @@ destroy_linux_dmabuf_wl_buffer(struct wl_resource *resource)
 }
 
 static void
-params_create(struct wl_client *client,
-	      struct wl_resource *params_resource,
-	      int32_t width,
-	      int32_t height,
-	      uint32_t format,
-	      uint32_t flags)
+params_create_common(struct wl_client *client,
+		     struct wl_resource *params_resource,
+		     uint32_t buffer_id,
+		     int32_t width,
+		     int32_t height,
+		     uint32_t format,
+		     uint32_t flags)
 {
 	struct linux_dmabuf_buffer *buffer;
 	int i;
@@ -263,7 +264,7 @@ params_create(struct wl_client *client,
 
 	buffer->buffer_resource = wl_resource_create(client,
 						     &wl_buffer_interface,
-						     1, 0);
+						     1, buffer_id);
 	if (!buffer->buffer_resource) {
 		wl_resource_post_no_memory(params_resource);
 		goto err_buffer;
@@ -273,7 +274,10 @@ params_create(struct wl_client *client,
 				       &linux_dmabuf_buffer_implementation,
 				       buffer, destroy_linux_dmabuf_wl_buffer);
 
-	zwp_linux_buffer_params_v1_send_created(params_resource,
+	/* send 'created' event when the request is not for an immediate
+	 * import, ie buffer_id is zero */
+	if (buffer_id == 0)
+		zwp_linux_buffer_params_v1_send_created(params_resource,
 						buffer->buffer_resource);
 
 	return;
@@ -283,17 +287,54 @@ err_buffer:
 		buffer->user_data_destroy_func(buffer);
 
 err_failed:
-	zwp_linux_buffer_params_v1_send_failed(params_resource);
+	if (buffer_id == 0)
+		zwp_linux_buffer_params_v1_send_failed(params_resource);
+	else
+		/* since the behavior is left implementation defined by the
+		 * protocol in case of create_immed failure due to an unknown cause,
+		 * we choose to treat it as a fatal error and immediately kill the
+		 * client instead of creating an invalid handle and waiting for it
+		 * to be used.
+		 */
+		wl_resource_post_error(params_resource,
+			ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_WL_BUFFER,
+			"importing the supplied dmabufs failed");
 
 err_out:
 	linux_dmabuf_buffer_destroy(buffer);
+}
+
+static void
+params_create(struct wl_client *client,
+	      struct wl_resource *params_resource,
+	      int32_t width,
+	      int32_t height,
+	      uint32_t format,
+	      uint32_t flags)
+{
+	params_create_common(client, params_resource, 0, width, height, format,
+			     flags);
+}
+
+static void
+params_create_immed(struct wl_client *client,
+		    struct wl_resource *params_resource,
+		    uint32_t buffer_id,
+		    int32_t width,
+		    int32_t height,
+		    uint32_t format,
+		    uint32_t flags)
+{
+	params_create_common(client, params_resource, buffer_id, width, height,
+			     format, flags);
 }
 
 static const struct zwp_linux_buffer_params_v1_interface
 zwp_linux_buffer_params_implementation = {
 	params_destroy,
 	params_add,
-	params_create
+	params_create,
+	params_create_immed
 };
 
 static void
@@ -457,7 +498,7 @@ WL_EXPORT int
 linux_dmabuf_setup(struct weston_compositor *compositor)
 {
 	if (!wl_global_create(compositor->wl_display,
-			      &zwp_linux_dmabuf_v1_interface, 1,
+			      &zwp_linux_dmabuf_v1_interface, 2,
 			      compositor, bind_linux_dmabuf))
 		return -1;
 
