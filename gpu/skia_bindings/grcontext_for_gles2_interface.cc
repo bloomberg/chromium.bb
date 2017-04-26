@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
@@ -32,10 +33,22 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
     static const int kMaxGaneshResourceCacheCount = 16384;
     // The limit of the bytes allocated toward GPU resources in the GrContext's
     // GPU cache.
+    static const size_t kMaxLowEndGaneshResourceCacheBytes = 48 * 1024 * 1024;
     static const size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
+    static const size_t kMaxHighEndGaneshResourceCacheBytes = 256 * 1024 * 1024;
+    static const int64_t kHighEndMemoryThreshold = (int64_t)4096 * 1024 * 1024;
+    static const int64_t kLowEndMemoryThreshold = (int64_t)512 * 1024 * 1024;
+
+    size_t max_ganesh_resource_cache_bytes = kMaxGaneshResourceCacheBytes;
+    if (base::SysInfo::AmountOfPhysicalMemory() <= kLowEndMemoryThreshold) {
+      max_ganesh_resource_cache_bytes = kMaxLowEndGaneshResourceCacheBytes;
+    } else if (base::SysInfo::AmountOfPhysicalMemory() >=
+               kHighEndMemoryThreshold) {
+      max_ganesh_resource_cache_bytes = kMaxHighEndGaneshResourceCacheBytes;
+    }
 
     gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                        kMaxGaneshResourceCacheBytes);
+                                        max_ganesh_resource_cache_bytes);
   }
 }
 
