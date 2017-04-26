@@ -39,6 +39,7 @@
 #include "net/log/net_log_entry.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 #endif
 
@@ -111,7 +112,15 @@ base::FilePath GetAppLogDirectory() {
 // will be stored - /home/chronos/<user_profile_dir>/Downloads/log_dumps
 base::FilePath GetLogDumpDirectory(content::BrowserContext* context) {
   const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(context);
-  return prefs->DownloadPath().Append(kLogDumpsSubdir);
+  base::FilePath path = prefs->DownloadPath();
+
+#if defined(OS_CHROMEOS)
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
+    path = prefs->GetDefaultDownloadDirectoryForProfile();
+#endif
+
+  return path.Append(kLogDumpsSubdir);
 }
 
 // Removes direcotry content of |logs_dumps| and |app_logs_dir| (only for the
