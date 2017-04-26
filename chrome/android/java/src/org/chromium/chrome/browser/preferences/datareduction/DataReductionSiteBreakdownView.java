@@ -29,7 +29,8 @@ import java.util.List;
  * with the most data use or data savings.
  */
 public class DataReductionSiteBreakdownView extends LinearLayout {
-    private static final int NUM_DATA_USE_ITEMS_TO_DISPLAY = 10;
+    private static final int NUM_DATA_USE_ITEMS_TO_ADD = 10;
+    private int mNumDataUseItemsToDisplay = 10;
 
     private TableLayout mTableLayout;
     private TextView mDataUsedTitle;
@@ -166,7 +167,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         int everythingElseDataSavings = 0;
 
         for (int i = 0; i < mDataUseItems.size(); i++) {
-            if (i < NUM_DATA_USE_ITEMS_TO_DISPLAY) {
+            if (i < mNumDataUseItemsToDisplay) {
                 TableRow row = (TableRow) LayoutInflater.from(getContext())
                                        .inflate(R.layout.data_usage_breakdown_row, null);
 
@@ -207,7 +208,15 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             dataUsedView.setTextColor(lightActiveColor);
             dataSavedView.setTextColor(lightActiveColor);
 
-            mTableLayout.addView(row, NUM_DATA_USE_ITEMS_TO_DISPLAY + 1);
+            row.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mNumDataUseItemsToDisplay += NUM_DATA_USE_ITEMS_TO_ADD;
+                    updateSiteBreakdown();
+                }
+            });
+
+            mTableLayout.addView(row, mNumDataUseItemsToDisplay + 1);
         }
 
         mTableLayout.requestLayout();
