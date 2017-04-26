@@ -79,7 +79,9 @@ enum ScrollType {
   kAnchoringScroll
 };
 
-inline bool ScrollTypeClearsFragmentAnchor(ScrollType scroll_type) {
+// An explicit scroll is one that was requested by the user or the webpage.
+// An implicit scroll is a side effect of a layout change.
+inline bool IsExplicitScrollType(ScrollType scroll_type) {
   return scroll_type == kUserScroll || scroll_type == kProgrammaticScroll ||
          scroll_type == kCompositorScroll;
 }

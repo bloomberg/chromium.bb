@@ -4110,8 +4110,6 @@ void FrameView::UpdateScrollOffset(const ScrollOffset& offset,
   if (!ScrollbarsSuppressed())
     pending_scroll_delta_ += scroll_delta;
 
-  if (ScrollTypeClearsFragmentAnchor(scroll_type))
-    ClearFragmentAnchor();
   UpdateLayersAndCompositingAfterScrollIfNeeded();
 
   Document* document = frame_->GetDocument();
@@ -4145,8 +4143,10 @@ void FrameView::UpdateScrollOffset(const ScrollOffset& offset,
       document_loader->GetInitialScrollState().was_scrolled_by_user = true;
   }
 
-  if (scroll_type != kAnchoringScroll && scroll_type != kClampingScroll)
+  if (IsExplicitScrollType(scroll_type)) {
+    ClearFragmentAnchor();
     ClearScrollAnchor();
+  }
 }
 
 void FrameView::DidChangeScrollOffset() {

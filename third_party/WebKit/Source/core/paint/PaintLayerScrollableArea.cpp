@@ -471,13 +471,11 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     frame_view->DidChangeScrollOffset();
   }
 
-  if (ScrollTypeClearsFragmentAnchor(scroll_type))
+  if (IsExplicitScrollType(scroll_type)) {
     frame_view->ClearFragmentAnchor();
-
-  // Clear the scroll anchor, unless it is the reason for this scroll.
-  if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
-      scroll_type != kAnchoringScroll && scroll_type != kClampingScroll)
-    GetScrollAnchor()->Clear();
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+      GetScrollAnchor()->Clear();
+  }
 }
 
 IntSize PaintLayerScrollableArea::ScrollOffsetInt() const {
