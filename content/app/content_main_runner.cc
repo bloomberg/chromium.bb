@@ -603,7 +603,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     crypto::EarlySetupForNSSInit();
 #endif
 
-    ui::RegisterPathProvider();
     RegisterPathProvider();
     RegisterContentSchemes(true);
 

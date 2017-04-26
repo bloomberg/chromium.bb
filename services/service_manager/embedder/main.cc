@@ -266,7 +266,6 @@ int RunServiceManager(MainDelegate* delegate) {
 }
 
 void InitializeResources() {
-  ui::RegisterPathProvider();
   const std::string locale =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           ::switches::kLang);
@@ -391,6 +390,8 @@ int Main(const MainParams& params) {
 
   mojo::edk::SetMaxMessageSize(kMaximumMojoMessageSize);
   mojo::edk::Init();
+
+  ui::RegisterPathProvider();
 
   base::debug::GlobalActivityTracker* tracker =
       base::debug::GlobalActivityTracker::Get();
