@@ -16,8 +16,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
@@ -106,6 +109,15 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
   if (UpgradeDetector::GetInstance()->notify_upgrade())
     HandleUpdateAvailable();
 
+  // If the device is enterprise managed then send ash the enterprise domain.
+  policy::BrowserPolicyConnectorChromeOS* policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      policy_connector->GetDeviceCloudPolicyManager();
+  if (policy_manager)
+    policy_manager->core()->store()->AddObserver(this);
+  UpdateEnterpriseDomain();
+
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -113,6 +125,13 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
 SystemTrayClient::~SystemTrayClient() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      connector->GetDeviceCloudPolicyManager();
+  if (policy_manager)
+    policy_manager->core()->store()->RemoveObserver(this);
 
   g_browser_process->platform_part()->GetSystemClock()->RemoveObserver(this);
 }
@@ -305,6 +324,22 @@ void SystemTrayClient::ShowPublicAccountInfo() {
   chrome::ShowPolicy(displayer.browser());
 }
 
+void SystemTrayClient::ShowEnterpriseInfo() {
+  // At the login screen, lock screen, etc. show enterprise help in a window.
+  if (session_manager::SessionManager::Get()->IsUserSessionBlocked()) {
+    scoped_refptr<chromeos::HelpAppLauncher> help_app(
+        new chromeos::HelpAppLauncher(nullptr /* parent_window */));
+    help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
+    return;
+  }
+
+  // Otherwise show enterprise help in a browser tab.
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile());
+  chrome::ShowSingletonTab(displayer.browser(),
+                           GURL(chrome::kLearnMoreEnterpriseURL));
+}
+
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   // UI is not available at the lock screen.
   if (session_manager::SessionManager::Get()->IsScreenLocked())
@@ -416,4 +451,30 @@ void SystemTrayClient::Observe(int type,
                                const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
   HandleUpdateAvailable();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// policy::CloudPolicyStore::Observer
+void SystemTrayClient::OnStoreLoaded(policy::CloudPolicyStore* store) {
+  UpdateEnterpriseDomain();
+}
+
+void SystemTrayClient::OnStoreError(policy::CloudPolicyStore* store) {
+  UpdateEnterpriseDomain();
+}
+
+void SystemTrayClient::UpdateEnterpriseDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const std::string enterprise_domain = connector->GetEnterpriseDomain();
+  const bool active_directory_managed = connector->IsActiveDirectoryManaged();
+  if (enterprise_domain == last_enterprise_domain_ &&
+      active_directory_managed == last_active_directory_managed_) {
+    return;
+  }
+  // Send to ash, which will add an item to the system tray.
+  system_tray_->SetEnterpriseDomain(enterprise_domain,
+                                    active_directory_managed);
+  last_enterprise_domain_ = enterprise_domain;
+  last_active_directory_managed_ = active_directory_managed;
 }

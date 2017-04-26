@@ -246,14 +246,13 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   // Otherwise it could be a main axis margin on the tray's box layout.
   AddTrayItem(base::MakeUnique<PaddingTrayItem>());
 
-  tray_accessibility_ = new TrayAccessibility(this);
-  tray_update_ = new TrayUpdate(this);
-
   AddTrayItem(base::MakeUnique<TraySessionLengthLimit>(this));
-  AddTrayItem(base::MakeUnique<TrayEnterprise>(this));
+  tray_enterprise_ = new TrayEnterprise(this);
+  AddTrayItem(base::WrapUnique(tray_enterprise_));
   tray_supervised_user_ = new TraySupervisedUser(this);
   AddTrayItem(base::WrapUnique(tray_supervised_user_));
   AddTrayItem(base::MakeUnique<TrayIME>(this));
+  tray_accessibility_ = new TrayAccessibility(this);
   AddTrayItem(base::WrapUnique(tray_accessibility_));
   AddTrayItem(base::MakeUnique<TrayTracing>(this));
   AddTrayItem(
@@ -279,6 +278,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
       delegate->CreateRotationLockTrayItem(this);
   if (tray_rotation_lock)
     AddTrayItem(std::move(tray_rotation_lock));
+  tray_update_ = new TrayUpdate(this);
   AddTrayItem(base::WrapUnique(tray_update_));
   tray_tiles_ = new TrayTiles(this);
   AddTrayItem(base::WrapUnique(tray_tiles_));
@@ -609,6 +609,10 @@ void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
 
 TrayCast* SystemTray::GetTrayCastForTesting() const {
   return tray_cast_;
+}
+
+TrayEnterprise* SystemTray::GetTrayEnterpriseForTesting() const {
+  return tray_enterprise_;
 }
 
 TrayNetwork* SystemTray::GetTrayNetworkForTesting() const {

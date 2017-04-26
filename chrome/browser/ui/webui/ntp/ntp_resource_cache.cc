@@ -63,6 +63,7 @@
 #include "ui/gfx/color_utils.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -344,12 +345,13 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   std::string enterprise_domain = connector->GetEnterpriseDomain();
 
+  // TODO(jamescook): What about Active Directory managed devices?
   if (!enterprise_domain.empty()) {
     // Device is enterprise enrolled.
     localized_strings.SetString("enterpriseInfoVisible", "true");
-    base::string16 enterprise_info = l10n_util::GetStringFUTF16(
-        IDS_DEVICE_OWNED_BY_NOTICE,
-        base::UTF8ToUTF16(enterprise_domain));
+    base::string16 enterprise_info =
+        l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                   base::UTF8ToUTF16(enterprise_domain));
     localized_strings.SetString("enterpriseInfoMessage", enterprise_info);
     localized_strings.SetString("enterpriseLearnMore",
         l10n_util::GetStringUTF16(IDS_LEARN_MORE));

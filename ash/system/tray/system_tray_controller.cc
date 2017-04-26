@@ -100,6 +100,11 @@ void SystemTrayController::ShowPublicAccountInfo() {
     system_tray_client_->ShowPublicAccountInfo();
 }
 
+void SystemTrayController::ShowEnterpriseInfo() {
+  if (system_tray_client_)
+    system_tray_client_->ShowEnterpriseInfo();
+}
+
 void SystemTrayController::ShowNetworkConfigure(const std::string& network_id) {
   if (system_tray_client_)
     system_tray_client_->ShowNetworkConfigure(network_id);
@@ -181,6 +186,14 @@ void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
 void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
   hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;
   Shell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
+}
+
+void SystemTrayController::SetEnterpriseDomain(
+    const std::string& enterprise_domain,
+    bool active_directory_managed) {
+  enterprise_domain_ = enterprise_domain;
+  active_directory_managed_ = active_directory_managed;
+  Shell::Get()->system_tray_notifier()->NotifyEnterpriseDomainChanged();
 }
 
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
