@@ -169,11 +169,11 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   // that marks non-key video frames as sync samples (http://crbug.com/507916
   // and http://crbug.com/310712). Hence, for video we additionally check that
   // the sample does not depend on others (FFmpeg does too, see mov_read_trun).
-  // Sample dependency is not ignored for audio because encoded audio samples
-  // can depend on other samples and still be used for random access. Generally
-  // all audio samples are expected to be sync samples, but we  prefer to check
-  // the flags to catch badly muxed audio (for now anyway ;P). History of
-  // attempts to get this right discussed in http://crrev.com/1319813002
+  // Sample dependency is ignored for audio because encoded audio samples can
+  // depend on other samples and still be used for random access. Generally all
+  // audio samples are expected to be sync samples, but we  prefer to check the
+  // flags to catch badly muxed audio (for now anyway ;P). History of attempts
+  // to get this right discussed in http://crrev.com/1319813002
   bool sample_is_sync_sample = !(flags & kSampleIsNonSyncSample);
   bool sample_depends_on_others = sample_depends_on == kSampleDependsOnOthers;
   sample_info->is_keyframe = sample_is_sync_sample &&
