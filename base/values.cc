@@ -1059,6 +1059,11 @@ std::unique_ptr<ListValue> ListValue::From(std::unique_ptr<Value> value) {
 
 ListValue::ListValue() : Value(Type::LIST) {}
 
+ListValue::ListValue(const ListStorage& in_list) : Value(in_list) {}
+
+ListValue::ListValue(ListStorage&& in_list) noexcept
+    : Value(std::move(in_list)) {}
+
 void ListValue::Clear() {
   list_->clear();
 }

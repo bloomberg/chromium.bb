@@ -35,6 +35,9 @@ TEST(ValuesTest, TestNothrow) {
       "IsNothrowMoveConstructibleFromList");
   static_assert(std::is_nothrow_move_assignable<Value>::value,
                 "IsNothrowMoveAssignable");
+  static_assert(
+      std::is_nothrow_constructible<ListValue, Value::ListStorage&&>::value,
+      "ListIsNothrowMoveConstructibleFromList");
 }
 
 // Group of tests for the value constructors.
@@ -117,6 +120,28 @@ TEST(ValuesTest, ConstructDict) {
 TEST(ValuesTest, ConstructList) {
   ListValue value;
   EXPECT_EQ(Value::Type::LIST, value.type());
+}
+
+TEST(ValuesTest, ConstructListFromStorage) {
+  Value::ListStorage storage;
+  storage.emplace_back("foo");
+
+  {
+    ListValue value(storage);
+    EXPECT_EQ(Value::Type::LIST, value.type());
+    EXPECT_EQ(1u, value.GetList().size());
+    EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
+    EXPECT_EQ("foo", value.GetList()[0].GetString());
+  }
+
+  storage.back() = base::Value("bar");
+  {
+    ListValue value(std::move(storage));
+    EXPECT_EQ(Value::Type::LIST, value.type());
+    EXPECT_EQ(1u, value.GetList().size());
+    EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
+    EXPECT_EQ("bar", value.GetList()[0].GetString());
+  }
 }
 
 // Group of tests for the copy constructors and copy-assigmnent. For equality
