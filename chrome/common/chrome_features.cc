@@ -267,13 +267,10 @@ const base::Feature kPreloadLockScreen{"PreloadLockScreen",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables the Print Scaling feature in print preview.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// Enables the Print as Image feature in print preview.
 const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPrintScaling{"PrintScaling",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the

@@ -413,13 +413,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
   source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
 
-  bool scaling_enabled = base::FeatureList::IsEnabled(features::kPrintScaling);
-  source->AddBoolean("scalingEnabled", scaling_enabled);
-
   bool print_pdf_as_image_enabled = base::FeatureList::IsEnabled(
       features::kPrintPdfAsImage);
   source->AddBoolean("printPdfAsImageEnabled", print_pdf_as_image_enabled);
-
 #if defined(OS_CHROMEOS)
   bool cups_and_md_settings_enabled =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
