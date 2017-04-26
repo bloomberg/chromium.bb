@@ -458,5 +458,18 @@ TEST_F(PopularSitesTest, RefetchesAfterFallback) {
   EXPECT_THAT(sites[0].url, URLEq("https://www.chromium.org/"));
 }
 
+TEST_F(PopularSitesTest, ShouldOverrideDirectory) {
+  SetCountryAndVersion("ZZ", "9");
+  prefs_->SetString(prefs::kPopularSitesOverrideDirectory, "foo/bar/");
+  RespondWithJSON("https://www.gstatic.com/foo/bar/suggested_sites_ZZ_9.json",
+                  {kWikipedia});
+
+  PopularSites::SitesVector sites;
+  EXPECT_THAT(FetchPopularSites(/*force_download=*/false, &sites),
+              Eq(base::Optional<bool>(true)));
+
+  EXPECT_THAT(sites.size(), Eq(1u));
+}
+
 }  // namespace
 }  // namespace ntp_tiles

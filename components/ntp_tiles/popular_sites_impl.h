@@ -67,6 +67,7 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
   const SitesVector& sites() const override;
   GURL GetLastURLFetched() const override;
   GURL GetURLToFetch() override;
+  std::string GetDirectoryToFetch() override;
   std::string GetCountryToFetch() override;
   std::string GetVersionToFetch() override;
   const base::ListValue* GetCachedJson() override;

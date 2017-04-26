@@ -11,6 +11,7 @@ cr.define('chrome.ntp_tiles_internals', function() {
       chrome.send('update', [{
         "popular": {
           "overrideURL": $('override-url').value,
+          "overrideDirectory": $('override-directory').value,
           "overrideCountry": $('override-country').value,
           "overrideVersion": $('override-version').value,
         },
@@ -52,4 +53,3 @@ cr.define('chrome.ntp_tiles_internals', function() {
 
 document.addEventListener('DOMContentLoaded',
                           chrome.ntp_tiles_internals.initialize);
-

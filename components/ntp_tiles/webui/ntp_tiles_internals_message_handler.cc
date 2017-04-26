@@ -110,6 +110,15 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
                        url_formatter::FixupURL(url, std::string()).spec());
     }
 
+    std::string directory;
+    dict->GetString("popular.overrideDirectory", &directory);
+    if (directory.empty()) {
+      prefs->ClearPref(ntp_tiles::prefs::kPopularSitesOverrideDirectory);
+    } else {
+      prefs->SetString(ntp_tiles::prefs::kPopularSitesOverrideDirectory,
+                       directory);
+    }
+
     std::string country;
     dict->GetString("popular.overrideCountry", &country);
     if (country.empty()) {
@@ -181,12 +190,16 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
   if (most_visited_sites_->DoesSourceExist(TileSource::POPULAR)) {
     auto* popular_sites = most_visited_sites_->popular_sites();
     value.SetString("popular.url", popular_sites->GetURLToFetch().spec());
+    value.SetString("popular.directory", popular_sites->GetDirectoryToFetch());
     value.SetString("popular.country", popular_sites->GetCountryToFetch());
     value.SetString("popular.version", popular_sites->GetVersionToFetch());
 
     value.SetString(
         "popular.overrideURL",
         prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
+    value.SetString(
+        "popular.overrideDirectory",
+        prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideDirectory));
     value.SetString(
         "popular.overrideCountry",
         prefs->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry));

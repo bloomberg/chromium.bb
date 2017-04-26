@@ -15,6 +15,10 @@ const char kNumPersonalTiles[] = "ntp.num_personal_suggestions";
 // overrides for country and version below.
 const char kPopularSitesOverrideURL[] = "popular_sites.override_url";
 
+// If set, this will override the URL path directory for popular sites.
+const char kPopularSitesOverrideDirectory[] =
+    "popular_sites.override_directory";
+
 // If set, this will override the country detection for popular sites.
 const char kPopularSitesOverrideCountry[] = "popular_sites.override_country";
 
