@@ -53,9 +53,12 @@ mojom::blink::PermissionStatus NotificationManager::GetPermissionStatus(
   }
 
   mojom::blink::PermissionStatus permission_status;
-  const bool result = notification_service_->GetPermissionStatus(
-      execution_context->GetSecurityOrigin()->ToString(), &permission_status);
-  DCHECK(result);
+  if (!notification_service_->GetPermissionStatus(
+          execution_context->GetSecurityOrigin()->ToString(),
+          &permission_status)) {
+    NOTREACHED();
+    return mojom::blink::PermissionStatus::DENIED;
+  }
 
   return permission_status;
 }
