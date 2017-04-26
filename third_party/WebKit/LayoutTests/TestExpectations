@@ -3443,3 +3443,6 @@ crbug.com/713685 [ Linux ] fast/workers/termination-early.html [ Crash Pass ]
 crbug.com/713685 [ Linux ] virtual/sharedarraybuffer/fast/workers/termination-early.html [ Crash Pass ]
 
 crbug.com/715405 [ Win Mac ] virtual/mojo-loading/http/tests/inspector/network/waterfall-images.html [ Failure Pass ]
+
+crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
+crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
