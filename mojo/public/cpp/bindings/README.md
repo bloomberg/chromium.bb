@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojo C++ Bindings API
+# Mojo C++ Bindings API
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
@@ -457,13 +457,222 @@ pipe, but the impl-side won't notice this until it receives the sent `Log`
 message. Thus the `impl` above will first log our message and *then* see a
 connection error and break out of the run loop.
 
+### Enums
+
+[Mojom enums](/mojo/public/tools/bindings#Enumeration-Types) translate directly
+to equivalent strongly-typed C++11 enum classes with `int32_t` as the underlying
+type. The typename and value names are identical between Mojom and C++.
+
+For example, consider the following Mojom definition:
+
+```cpp
+module business.mojom;
+
+enum Department {
+  kEngineering,
+  kMarketng,
+  kSales,
+};
+```
+
+This translates to the following C++ definition:
+
+```cpp
+namespace business {
+namespace mojom {
+
+enum class Department : int32_t {
+  kEngineering,
+  kMarketing,
+  kSales,
+};
+
+}  // namespace mojom
+}  // namespace business
+```
+
+### Structs
+
+[Mojom structs](mojo/public/tools/bindings#Structs) can be used to define
+logical groupings of fields into a new composite type. Every Mojom struct
+elicits the generation of an identically named, representative C++ class, with
+identically named public fields of corresponding C++ types, and several helpful
+public methods.
+
+For example, consider the following Mojom struct:
+
+```cpp
+module business.mojom;
+
+struct Employee {
+  int64 id;
+  string username;
+  Department department;
+};
+```
+
+This would generate a C++ class like so:
+
+```cpp
+namespace business {
+namespace mojom {
+
+class Employee;
+
+using EmployeePtr = mojo::StructPtr<Employee>;
+
+class Employee {
+ public:
+  // Default constructor - applies default values, potentially ones specified
+  // explicitly within the Mojom.
+  Employee();
+
+  // Value constructor - an explicit argument for every field in the struct, in
+  // lexical Mojom definition order.
+  Employee(int64_t id, const std::string& username, Department department);
+
+  // Creates a new copy of this struct value
+  EmployeePtr Clone();
+
+  // Tests for equality with another struct value of the same type.
+  bool Equals(const Employee& other);
+
+  // Equivalent public fields with names identical to the Mojom.
+  int64_t id;
+  std::string username;
+  Department department;
+};
+
+}  // namespace mojom
+}  // namespace business
+```
+
+Note when used as a message parameter or as a field within another Mojom struct,
+a `struct` type is wrapped by the move-only `mojo::StructPtr` helper, which is
+roughly equivalent to a `std::unique_ptr` with some additional utility methods.
+This allows struct values to be nullable and struct types to be potentially
+self-referential.
+
+Every genereated struct class has a static `New()` method which returns a new
+`mojo::StructPtr<T>` wrapping a new instance of the class constructed by
+forwarding the arguments from `New`. For example:
+
+```cpp
+mojom::EmployeePtr e1 = mojom::Employee::New();
+e1->id = 42;
+e1->username = "mojo";
+e1->department = mojom::Department::kEngineering;
+```
+
+is equivalent to
+
+```cpp
+auto e1 = mojom::Employee::New(42, "mojo", mojom::Department::kEngineering);
+```
+
+Now if we define an interface like:
+
+```cpp
+interface EmployeeManager {
+  AddEmployee(Employee e);
+};
+```
+
+We'll get this C++ interface to implement:
+
+```cpp
+class EmployeeManager {
+ public:
+  virtual ~EmployeManager() {}
+
+  virtual void AddEmployee(EmployeePtr e) = 0;
+};
+```
+
+And we can send this message from C++ code as follows:
+
+```cpp
+mojom::EmployeManagerPtr manager = ...;
+manager->AddEmployee(
+    Employee::New(42, "mojo", mojom::Department::kEngineering));
+
+// or
+auto e = Employee::New(42, "mojo", mojom::Department::kEngineering);
+manager->AddEmployee(std::move(e));
+```
+
+### Unions
+
+Similarly to [structs](#Structs), tagged unions generate an identically named,
+representative C++ class which is typically wrapped in a `mojo::StructPtr<T>`.
+
+Unlike structs, all generated union fields are private and must be retrieved and
+manipulated using accessors. A field `foo` is accessible by `foo()` and
+settable by `set_foo()`. There is also a boolean `is_foo()` for each field which
+indicates whether the union is currently taking on the value of field `foo` in
+exclusion to all other union fields.
+
+Finally, every generated union class also has a nested `Tag` enum class which
+enumerates all of the named union fields. A Mojom union value's current type can
+be determined by calling the `which()` method which returns a `Tag`.
+
+For example, consider the following Mojom definitions:
+
+```cpp
+union Value {
+  int64 int_value;
+  float32 float_vlaue;
+  string string_value;
+};
+
+interface Dictionary {
+  AddValue(string key, Value value);
+};
+```
+
+This generates a the following C++ interface:
+
+```cpp
+class Value {
+ public:
+  virtual ~Value() {}
+
+  virtual void AddValue(const std::string& key, ValuePtr value) = 0;
+};
+```
+
+And we can use it like so:
+
+```cpp
+ValuePtr value = Value::New();
+value->set_int_value(42);
+CHECK(value->is_int_value());
+CHECK_EQ(value->which(), Value::Tag::INT_VALUE);
+
+value->set_float_value(42);
+CHECK(value->is_float_value());
+CHECK_EQ(value->which(), Value::Tag::FLOAT_VALUE);
+
+value->set_string_value("bananas");
+CHECK(value->is_string_value());
+CHECK_EQ(value->which(), Value::Tag::STRING_VALUE);
+```
+
+Finally, note that if a union value is not currently occupied by a given field,
+attempts to access that field will DCHECK:
+
+```cpp
+ValuePtr value = Value::New();
+value->set_int_value(42);
+LOG(INFO) << "Value is " << value->string_value();  // DCHECK!
+```
+
 ### Sending Interfaces Over Interfaces
 
-Now we know how to create interface pipes and use their Ptr and Request
-endpoints in some interesting ways. This still doesn't add up to interesting
-IPC! The bread and butter of Mojo IPC is the ability to transfer interface
-endpoints across other interfaces, so let's take a look at how to accomplish
-that.
+We know how to create interface pipes and use their Ptr and Request endpoints
+in some interesting ways. This still doesn't add up to interesting IPC! The
+bread and butter of Mojo IPC is the ability to transfer interface endpoints
+across other interfaces, so let's take a look at how to accomplish that.
 
 #### Sending Interface Requests
 

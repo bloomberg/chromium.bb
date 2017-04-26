@@ -1,4 +1,4 @@
-# ![Mojo Graphic](https://goo.gl/e0Hpks) Mojom IDL and Bindings Generator
+# Mojom IDL and Bindings Generator
 This document is a subset of the [Mojo documentation](/mojo).
 
 [TOC]
@@ -254,6 +254,29 @@ struct AllTheThings {
 
 For details on how all of these different types translate to usable generated
 code, see
+[documentation for individual target languages](#Generated-Code-For-Target-Languages).
+
+### Unions
+
+Mojom supports tagged unions using the **union** keyword. A union is a
+collection of fields which may taken the value of any single one of those fields
+at a time. Thus they provide a way to represent a variant value type while
+minimizing storage requirements.
+
+Union fields may be of any type supported by [struct](#Structs) fields. For
+example:
+
+```cpp
+enum ExampleUnion {
+  string str;
+  StringPair pair;
+  int64 id;
+  array<uint64, 2> guid;
+  SampleInterface iface;
+};
+```
+
+For details on how unions like this translate to generated bindings code, see
 [documentation for individual target languages](#Generated-Code-For-Target-Languages).
 
 ### Enumeration Types
