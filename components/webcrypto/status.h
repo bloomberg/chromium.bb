@@ -258,6 +258,9 @@ class Status {
   // The requested length for HKDF was too large.
   static Status ErrorHkdfLengthTooLong();
 
+  // The length to HKDF's deriveBits() was not a multiple of 8.
+  static Status ErrorHkdfLengthNotWholeByte();
+
   // No length parameter was provided for HKDF's Derive Bits operation.
   static Status ErrorHkdfDeriveBitsLengthNotSpecified();
 

@@ -36,15 +36,13 @@ Promise.resolve(null).then(function(result) {
 
     shouldBe("derivedBits.byteLength", "0");
 
-    debug("Derive 4 bits from the HKDF key");
-    return crypto.subtle.deriveBits(kHkdfAlgorithm, baseKey, 4);
+    debug("Derive 8 bits from the HKDF key");
+    return crypto.subtle.deriveBits(kHkdfAlgorithm, baseKey, 8);
 }).then(function(result) {
     derivedBits = new DataView(result);
 
     shouldBe("derivedBits.byteLength", "1");
-    // The last 4 bits should be zeroes.
-    shouldBe("derivedBits.getUint8(0)", "0x80");
-
+    shouldBe("derivedBits.getUint8(0)", "141");
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

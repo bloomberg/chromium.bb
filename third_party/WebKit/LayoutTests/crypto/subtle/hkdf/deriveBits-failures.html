@@ -47,9 +47,15 @@ Promise.resolve(null).then(function(result) {
     // The maximum length (in bytes) of output material for HKDF is 255 times
     // the digest length. In this case, the digest length (in bytes) of
     // SHA-256 is 32; 32*255 = 8160. deriveBits expects the length to be in
-    // bits, so 8160*8=65280 and add 1 to exceed the maximum length.
+    // bits, so 8160*8=65280 and add 8 to exceed the maximum length.
     debug("\nderiveBits() with length of 65281...");
-    return crypto.subtle.deriveBits({name: "HKDF", hash: "SHA-256", salt: new Uint8Array(), info: new Uint8Array()}, hkdfKey, 65281);
+    return crypto.subtle.deriveBits({name: "HKDF", hash: "SHA-256", salt: new Uint8Array(), info: new Uint8Array()}, hkdfKey, 65288);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    // Use a bit length that is not a multiple of 8.
+    debug("\nderiveBits() with length of 15...");
+    return crypto.subtle.deriveBits({name: "HKDF", hash: "SHA-256", salt: new Uint8Array(), info: new Uint8Array()}, hkdfKey, 15);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 }).then(finishJSTest, failAndFinishJSTest);

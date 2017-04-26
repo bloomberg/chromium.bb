@@ -71,6 +71,9 @@ class HkdfImplementation : public AlgorithmImplementation {
     if (!has_optional_length_bits)
       return Status::ErrorHkdfDeriveBitsLengthNotSpecified();
 
+    if (optional_length_bits % 8)
+      return Status::ErrorHkdfLengthNotWholeByte();
+
     const blink::WebCryptoHkdfParams* params = algorithm.HkdfParams();
 
     const EVP_MD* digest_algorithm = GetDigest(params->GetHash());
@@ -78,7 +81,7 @@ class HkdfImplementation : public AlgorithmImplementation {
       return Status::ErrorUnsupported();
 
     // Size output to fit length
-    unsigned int derived_bytes_len = NumBitsToBytes(optional_length_bits);
+    unsigned int derived_bytes_len = optional_length_bits / 8;
     derived_bytes->resize(derived_bytes_len);
 
     // Algorithm dispatch checks that the algorithm in |base_key| matches
@@ -96,7 +99,6 @@ class HkdfImplementation : public AlgorithmImplementation {
       return Status::OperationError();
     }
 
-    TruncateToBitLength(optional_length_bits, derived_bytes);
     return Status::Success();
   }
 
