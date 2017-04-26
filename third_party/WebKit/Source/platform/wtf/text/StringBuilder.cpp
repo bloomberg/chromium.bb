@@ -144,7 +144,7 @@ void StringBuilder::CreateBuffer16(unsigned added_size) {
   Buffer8 buffer8;
   unsigned length = length_;
   if (buffer8_) {
-    buffer8_->Swap(buffer8);
+    buffer8_->swap(buffer8);
     delete buffer8_;
   }
   buffer16_ = new Buffer16;

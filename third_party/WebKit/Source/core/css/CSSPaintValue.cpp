@@ -21,7 +21,7 @@ CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name,
                              Vector<RefPtr<CSSVariableData>>& variable_data)
     : CSSPaintValue(name) {
-  argument_variable_data_.Swap(variable_data);
+  argument_variable_data_.swap(variable_data);
 }
 
 CSSPaintValue::~CSSPaintValue() {}

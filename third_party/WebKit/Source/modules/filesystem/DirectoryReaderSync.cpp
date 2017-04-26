@@ -105,7 +105,7 @@ EntrySyncHeapVector DirectoryReaderSync::readEntries(
   }
 
   EntrySyncHeapVector result;
-  result.Swap(entries_);
+  result.swap(entries_);
   return result;
 }
 

@@ -287,7 +287,7 @@ void IntersectionObserver::disconnect(ExceptionState& exception_state) {
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exception_state) {
   HeapVector<Member<IntersectionObserverEntry>> entries;
-  entries.Swap(entries_);
+  entries.swap(entries_);
   return entries;
 }
 
@@ -331,7 +331,7 @@ void IntersectionObserver::Deliver() {
     return;
 
   HeapVector<Member<IntersectionObserverEntry>> entries;
-  entries.Swap(entries_);
+  entries.swap(entries_);
   callback_->HandleEvent(entries, *this);
 }
 

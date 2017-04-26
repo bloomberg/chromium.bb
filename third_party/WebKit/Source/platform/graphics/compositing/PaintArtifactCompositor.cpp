@@ -645,7 +645,7 @@ void PaintArtifactCompositor::Update(
       extra_data_for_testing_->content_layers.push_back(layer);
   }
   content_layer_clients_.clear();
-  content_layer_clients_.Swap(new_content_layer_clients);
+  content_layer_clients_.swap(new_content_layer_clients);
 
   // Mark the property trees as having been rebuilt.
   layer_tree_host->property_trees()->sequence_number =

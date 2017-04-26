@@ -118,7 +118,7 @@ void MediaMetadata::SetArtworkInternal(ScriptState* script_state,
   }
 
   DCHECK(!exception_state.HadException());
-  artwork_.Swap(processed_artwork);
+  artwork_.swap(processed_artwork);
 }
 
 DEFINE_TRACE(MediaMetadata) {

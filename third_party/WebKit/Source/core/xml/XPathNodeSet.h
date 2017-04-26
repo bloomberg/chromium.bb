@@ -56,7 +56,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   void Swap(NodeSet& other) {
     std::swap(is_sorted_, other.is_sorted_);
     std::swap(subtrees_are_disjoint_, other.subtrees_are_disjoint_);
-    nodes_.Swap(other.nodes_);
+    nodes_.swap(other.nodes_);
   }
 
   // NodeSet itself does not verify that nodes in it are unique.

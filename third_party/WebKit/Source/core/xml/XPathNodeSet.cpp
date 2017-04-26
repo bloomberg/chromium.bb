@@ -95,7 +95,7 @@ static void SortBlock(unsigned from,
     // document order. Find it and move it to the beginning.
     for (unsigned i = from; i < to; ++i) {
       if (common_ancestor == parent_matrix[i][0]) {
-        parent_matrix[i].Swap(parent_matrix[from]);
+        parent_matrix[i].swap(parent_matrix[from]);
         if (from + 2 < to)
           SortBlock(from + 1, to, parent_matrix, may_contain_attribute_nodes);
         return;
@@ -114,7 +114,7 @@ static void SortBlock(unsigned from,
     for (unsigned i = sorted_end; i < to; ++i) {
       Node* n = parent_matrix[i][0];
       if (n->IsAttributeNode() && ToAttr(n)->ownerElement() == common_ancestor)
-        parent_matrix[i].Swap(parent_matrix[sorted_end++]);
+        parent_matrix[i].swap(parent_matrix[sorted_end++]);
     }
     if (sorted_end != from) {
       if (to - sorted_end > 1)
@@ -139,7 +139,7 @@ static void SortBlock(unsigned from,
     if (parent_nodes.Contains(n)) {
       for (unsigned i = group_end; i < to; ++i) {
         if (ParentWithDepth(common_ancestor_depth + 1, parent_matrix[i]) == n)
-          parent_matrix[i].Swap(parent_matrix[group_end++]);
+          parent_matrix[i].swap(parent_matrix[group_end++]);
       }
 
       if (group_end - previous_group_end > 1)
@@ -196,7 +196,7 @@ void NodeSet::Sort() const {
   for (unsigned i = 0; i < node_count; ++i)
     sorted_nodes.push_back(parent_matrix[i][0]);
 
-  const_cast<HeapVector<Member<Node>>&>(nodes_).Swap(sorted_nodes);
+  const_cast<HeapVector<Member<Node>>&>(nodes_).swap(sorted_nodes);
 }
 
 static Node* FindRootNode(Node* node) {
@@ -244,7 +244,7 @@ void NodeSet::TraversalSort() const {
   }
 
   DCHECK_EQ(sorted_nodes.size(), node_count);
-  const_cast<HeapVector<Member<Node>>&>(nodes_).Swap(sorted_nodes);
+  const_cast<HeapVector<Member<Node>>&>(nodes_).swap(sorted_nodes);
 }
 
 void NodeSet::Reverse() {

@@ -1512,7 +1512,7 @@ void RTCPeerConnection::DispatchScheduledEvent() {
     return;
 
   HeapVector<Member<EventWrapper>> events;
-  events.Swap(scheduled_events_);
+  events.swap(scheduled_events_);
 
   HeapVector<Member<EventWrapper>>::iterator it = events.begin();
   for (; it != events.end(); ++it) {

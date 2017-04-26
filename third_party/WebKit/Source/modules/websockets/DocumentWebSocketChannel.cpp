@@ -615,7 +615,7 @@ void DocumentWebSocketChannel::DidReceiveData(WebSocketHandle* handle,
   } else {
     std::unique_ptr<Vector<char>> binary_data =
         WTF::WrapUnique(new Vector<char>);
-    binary_data->Swap(receiving_message_data_);
+    binary_data->swap(receiving_message_data_);
     client_->DidReceiveBinaryMessage(std::move(binary_data));
   }
 }

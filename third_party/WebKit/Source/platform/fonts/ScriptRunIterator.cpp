@@ -326,7 +326,7 @@ bool ScriptRunIterator::Fetch(size_t* pos, UChar32* ch) {
   *pos = ahead_pos_ - (ahead_character_ >= 0x10000 ? 2 : 1);
   *ch = ahead_character_;
 
-  next_set_.Swap(ahead_set_);
+  next_set_.swap(ahead_set_);
   if (ahead_pos_ == length_) {
     // No more data to fetch, but last character still needs to be
     // processed. Advance m_aheadPos so that next time we will know

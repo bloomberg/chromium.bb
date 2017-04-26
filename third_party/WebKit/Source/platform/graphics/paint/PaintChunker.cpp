@@ -103,7 +103,7 @@ void PaintChunker::Clear() {
 
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
   Vector<PaintChunk> chunks;
-  chunks.Swap(chunks_);
+  chunks.swap(chunks_);
   chunk_behavior_.clear();
   current_chunk_id_ = WTF::kNullopt;
   current_properties_ = PaintChunkProperties();

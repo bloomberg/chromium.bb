@@ -87,7 +87,7 @@ void PerformanceObserver::Deliver() {
     return;
 
   PerformanceEntryVector performance_entries;
-  performance_entries.Swap(performance_entries_);
+  performance_entries.swap(performance_entries_);
   PerformanceObserverEntryList* entry_list =
       new PerformanceObserverEntryList(performance_entries);
   callback_->call(this, entry_list, this);

@@ -316,7 +316,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace) {
 StyleRuleGroup::StyleRuleGroup(RuleType type,
                                HeapVector<Member<StyleRuleBase>>& adopt_rule)
     : StyleRuleBase(type) {
-  child_rules_.Swap(adopt_rule);
+  child_rules_.swap(adopt_rule);
 }
 
 StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& group_rule)

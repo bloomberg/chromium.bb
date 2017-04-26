@@ -83,7 +83,7 @@ void ScriptedAnimationController::CancelCallback(CallbackId id) {
 
 void ScriptedAnimationController::RunTasks() {
   Vector<std::unique_ptr<WTF::Closure>> tasks;
-  tasks.Swap(task_queue_);
+  tasks.swap(task_queue_);
   for (auto& task : tasks)
     (*task)();
 }
@@ -92,7 +92,7 @@ void ScriptedAnimationController::DispatchEvents(
     const AtomicString& event_interface_filter) {
   HeapVector<Member<Event>> events;
   if (event_interface_filter.IsEmpty()) {
-    events.Swap(event_queue_);
+    events.swap(event_queue_);
     per_frame_events_.clear();
   } else {
     HeapVector<Member<Event>> remaining;
@@ -104,7 +104,7 @@ void ScriptedAnimationController::DispatchEvents(
         remaining.push_back(event.Release());
       }
     }
-    remaining.Swap(event_queue_);
+    remaining.swap(event_queue_);
   }
 
   for (const auto& event : events) {

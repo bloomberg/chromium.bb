@@ -25,7 +25,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       positioned_floats_(positioned_floats),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut) {
-  children_.Swap(children);
+  children_.swap(children);
 }
 
 }  // namespace blink

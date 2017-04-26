@@ -76,7 +76,7 @@ void TimeRanges::Invert() {
       inverted->Add(end, pos_inf);
   }
 
-  ranges_.Swap(inverted->ranges_);
+  ranges_.swap(inverted->ranges_);
 }
 
 void TimeRanges::IntersectWith(const TimeRanges* other) {
@@ -101,7 +101,7 @@ void TimeRanges::UnionWith(const TimeRanges* other) {
     unioned->Add(range.start_, range.end_);
   }
 
-  ranges_.Swap(unioned->ranges_);
+  ranges_.swap(unioned->ranges_);
 }
 
 double TimeRanges::start(unsigned index,

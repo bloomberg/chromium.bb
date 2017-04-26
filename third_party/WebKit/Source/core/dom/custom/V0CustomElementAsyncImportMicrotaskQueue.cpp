@@ -47,7 +47,7 @@ void V0CustomElementAsyncImportMicrotaskQueue::DoDispatch() {
       remaining.push_back(step.Release());
   }
 
-  queue_.Swap(remaining);
+  queue_.swap(remaining);
 }
 
 }  // namespace blink

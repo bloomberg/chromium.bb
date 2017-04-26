@@ -105,7 +105,7 @@ void EventSender<T>::DispatchPendingEvents() {
 
   timer_.Stop();
 
-  dispatching_list_.Swap(dispatch_soon_list_);
+  dispatching_list_.swap(dispatch_soon_list_);
   for (auto& sender_in_list : dispatching_list_) {
     if (T* sender = sender_in_list) {
       sender_in_list = nullptr;

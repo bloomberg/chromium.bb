@@ -380,7 +380,7 @@ void MediaRecorder::ScheduleDispatchEvent(Event* event) {
 
 void MediaRecorder::DispatchScheduledEvent() {
   HeapVector<Member<Event>> events;
-  events.Swap(scheduled_events_);
+  events.swap(scheduled_events_);
 
   for (const auto& event : events)
     DispatchEvent(event);

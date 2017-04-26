@@ -213,7 +213,7 @@ TEST(VectorTest, OwnPtr) {
   EXPECT_EQ(count, vector.size());
 
   OwnPtrVector copy_vector;
-  vector.Swap(copy_vector);
+  vector.swap(copy_vector);
   EXPECT_EQ(0, destruct_number);
   EXPECT_EQ(count, copy_vector.size());
   EXPECT_EQ(0u, vector.size());
@@ -272,7 +272,7 @@ TEST(VectorTest, MoveOnlyType) {
     EXPECT_EQ(static_cast<int>(i + 1), vector[i].Value());
 
   WTF::Vector<MoveOnly> other_vector;
-  vector.Swap(other_vector);
+  vector.swap(other_vector);
   EXPECT_EQ(count, other_vector.size());
   EXPECT_EQ(0u, vector.size());
 
@@ -318,7 +318,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   vector_b.push_back(WrappedInt(2));
 
   EXPECT_EQ(vector_a.size(), vector_b.size());
-  vector_a.Swap(vector_b);
+  vector_a.swap(vector_b);
 
   EXPECT_EQ(1u, vector_a.size());
   EXPECT_EQ(2, vector_a.at(0).Get());
@@ -328,7 +328,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   vector_a.push_back(WrappedInt(3));
 
   EXPECT_GT(vector_a.size(), vector_b.size());
-  vector_a.Swap(vector_b);
+  vector_a.swap(vector_b);
 
   EXPECT_EQ(1u, vector_a.size());
   EXPECT_EQ(1, vector_a.at(0).Get());
@@ -337,7 +337,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   EXPECT_EQ(3, vector_b.at(1).Get());
 
   EXPECT_LT(vector_a.size(), vector_b.size());
-  vector_a.Swap(vector_b);
+  vector_a.swap(vector_b);
 
   EXPECT_EQ(2u, vector_a.size());
   EXPECT_EQ(2, vector_a.at(0).Get());
@@ -347,7 +347,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
 
   vector_a.push_back(WrappedInt(4));
   EXPECT_GT(vector_a.size(), kInlineCapacity);
-  vector_a.Swap(vector_b);
+  vector_a.swap(vector_b);
 
   EXPECT_EQ(1u, vector_a.size());
   EXPECT_EQ(1, vector_a.at(0).Get());
@@ -356,7 +356,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   EXPECT_EQ(3, vector_b.at(1).Get());
   EXPECT_EQ(4, vector_b.at(2).Get());
 
-  vector_b.Swap(vector_a);
+  vector_b.swap(vector_a);
 }
 
 #if defined(ANNOTATE_CONTIGUOUS_CONTAINER)
@@ -385,7 +385,7 @@ TEST(VectorTest, ContainerAnnotations) {
   volatile int* int_pointer_c = vector_c.data();
   EXPECT_DEATH((void)int_pointer_c[2], "container-overflow");
   vector_c.push_back(13);
-  vector_c.Swap(vector_b);
+  vector_c.swap(vector_b);
 
   volatile int* int_pointer_b2 = vector_b.data();
   volatile int* int_pointer_c2 = vector_c.data();
@@ -506,7 +506,7 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       EXPECT_EQ(i + j, LivenessCounter::live_);
       EXPECT_EQ(i, vector2.size());
 
-      vector.Swap(vector2);
+      vector.swap(vector2);
       EXPECT_EQ(i + j, LivenessCounter::live_);
       EXPECT_EQ(i, vector.size());
       EXPECT_EQ(j, vector2.size());
@@ -515,7 +515,7 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       unsigned size2 = vector2.size();
 
       for (unsigned k = 0; k < 5; k++) {
-        vector.Swap(vector2);
+        vector.swap(vector2);
         std::swap(size, size2);
         EXPECT_EQ(i + j, LivenessCounter::live_);
         EXPECT_EQ(size, vector.size());
@@ -549,7 +549,7 @@ void TestValuesMovedAndSwappedWithInlineCapacity() {
         vector2.push_back(i + 42);
       EXPECT_EQ(size, vector.size());
       EXPECT_EQ(size2, vector2.size());
-      vector.Swap(vector2);
+      vector.swap(vector2);
       for (unsigned i = 0; i < size; i++)
         EXPECT_EQ(i, vector2[i]);
       for (unsigned i = 0; i < size2; i++)

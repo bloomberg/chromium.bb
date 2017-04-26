@@ -323,7 +323,7 @@ void HTMLConstructionSite::ExecuteQueuedTasks() {
   // Copy the task queue into a local variable in case executeTask re-enters the
   // parser.
   TaskQueue queue;
-  queue.Swap(task_queue_);
+  queue.swap(task_queue_);
 
   for (auto& task : queue)
     ExecuteTask(task);

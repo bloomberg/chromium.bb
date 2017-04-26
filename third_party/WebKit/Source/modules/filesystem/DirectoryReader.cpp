@@ -123,7 +123,7 @@ void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
   if (entries_callback_) {
     EntriesCallback* entries_callback = entries_callback_.Release();
     EntryHeapVector entries;
-    entries.Swap(entries_);
+    entries.swap(entries_);
     entries_callback->handleEvent(entries);
   }
 }

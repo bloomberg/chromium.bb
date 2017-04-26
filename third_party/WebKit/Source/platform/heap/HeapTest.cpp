@@ -2430,7 +2430,7 @@ TEST(HeapTest, HeapVectorWithInlineCapacity) {
 
     vector1.push_back(one);
     vector2.push_back(two);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(two));
     EXPECT_TRUE(vector2.Contains(one));
@@ -2445,7 +2445,7 @@ TEST(HeapTest, HeapVectorWithInlineCapacity) {
     vector2.push_back(four);
     vector2.push_back(five);
     vector2.push_back(six);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(three));
     EXPECT_TRUE(vector1.Contains(four));
@@ -2660,19 +2660,19 @@ TEST(HeapTest, HeapCollectionTypes) {
       EXPECT_EQ(3u, deque_uw2->size());
 
       MemberVector& cvec = container->vector;
-      cvec.Swap(*vector.Get());
-      vector2->Swap(cvec);
-      vector->Swap(cvec);
+      cvec.swap(*vector.Get());
+      vector2->swap(cvec);
+      vector->swap(cvec);
 
       VectorWU& cvec_wu = container->vector_wu;
-      cvec_wu.Swap(*vector_wu.Get());
-      vector_wu2->Swap(cvec_wu);
-      vector_wu->Swap(cvec_wu);
+      cvec_wu.swap(*vector_wu.Get());
+      vector_wu2->swap(cvec_wu);
+      vector_wu->swap(cvec_wu);
 
       VectorUW& cvec_uw = container->vector_uw;
-      cvec_uw.Swap(*vector_uw.Get());
-      vector_uw2->Swap(cvec_uw);
-      vector_uw->Swap(cvec_uw);
+      cvec_uw.swap(*vector_uw.Get());
+      vector_uw2->swap(cvec_uw);
+      vector_uw->swap(cvec_uw);
 
       MemberDeque& c_deque = container->deque;
       c_deque.Swap(*deque.Get());
@@ -2859,7 +2859,7 @@ TEST(HeapTest, PersistentVector) {
 
     vector1.push_back(one);
     vector2.push_back(two);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(two));
     EXPECT_TRUE(vector2.Contains(one));
@@ -2874,7 +2874,7 @@ TEST(HeapTest, PersistentVector) {
     vector2.push_back(four);
     vector2.push_back(five);
     vector2.push_back(six);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(three));
     EXPECT_TRUE(vector1.Contains(four));
@@ -2925,7 +2925,7 @@ TEST(HeapTest, CrossThreadPersistentVector) {
 
     vector1.push_back(one);
     vector2.push_back(two);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(two));
     EXPECT_TRUE(vector2.Contains(one));
@@ -2940,7 +2940,7 @@ TEST(HeapTest, CrossThreadPersistentVector) {
     vector2.push_back(four);
     vector2.push_back(five);
     vector2.push_back(six);
-    vector1.Swap(vector2);
+    vector1.swap(vector2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(vector1.Contains(three));
     EXPECT_TRUE(vector1.Contains(four));
@@ -4049,7 +4049,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     p_deque.push_back(two);
 
     Vec* vec = new Vec();
-    vec->Swap(p_vec);
+    vec->swap(p_vec);
 
     p_vec.push_back(two);
     p_vec.push_back(three);

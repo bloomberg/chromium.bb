@@ -184,7 +184,7 @@ void HTMLFormattingElementList::EnsureNoahsArkCondition(
     if (remaining_candidates.size() < kNoahsArkCapacity)
       return;
 
-    candidates.Swap(remaining_candidates);
+    candidates.swap(remaining_candidates);
     remaining_candidates.Shrink(0);
   }
 
