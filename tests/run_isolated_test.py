@@ -220,14 +220,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
       self.mock(file_path, i, functools.partial(add, i))
 
     ret = run_isolated.run_tha_test(
-        command,
+        command or [],
         isolated_hash,
         StorageFake(files),
         isolateserver.MemoryCache(),
         None,
         init_named_caches_stub,
         False,
-        None,
         None,
         None,
         None,
@@ -592,14 +591,13 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
 
       self.mock(sys, 'stdout', StringIO.StringIO())
       ret = run_isolated.run_tha_test(
-          None,
+          [],
           isolated_hash,
           store,
           isolateserver.MemoryCache(),
           None,
           init_named_caches_stub,
           False,
-          None,
           None,
           None,
           None,
@@ -646,7 +644,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
 # Like RunIsolatedTestRun, but ensures that specific output files
 # (as opposed to anything in $(ISOLATED_OUTDIR)) are returned.
 class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
-  def test_output(self):
+  def _run_test(self, isolated, command):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
     server = isolateserver_mock.MockIsolateServer()
@@ -656,17 +654,10 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
         'open(sys.argv[1], "w").write("bar")\n'
         'open(sys.argv[2], "w").write("baz")\n')
       script_hash = isolateserver_mock.hash_content(script)
-      isolated = {
-        'algo': 'sha-1',
-        'command': ['cmd.py', 'foo', 'foodir/foo2'],
-        'files': {
-          'cmd.py': {
-            'h': script_hash,
-            'm': 0700,
-            's': len(script),
-          },
-        },
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+      isolated['files']['cmd.py'] = {
+        'h': script_hash,
+        'm': 0700,
+        's': len(script),
       }
       if sys.platform == 'win32':
         isolated['files']['cmd.py'].pop('m')
@@ -678,14 +669,13 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
 
       self.mock(sys, 'stdout', StringIO.StringIO())
       ret = run_isolated.run_tha_test(
-          None,
+          command,
           isolated_hash,
           store,
           isolateserver.MemoryCache(),
           ['foo', 'foodir/foo2'],
           init_named_caches_stub,
           False,
-          None,
           None,
           None,
           None,
@@ -736,6 +726,35 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       self.assertEqual(expected, sys.stdout.getvalue())
     finally:
       server.close()
+
+  def test_output_cmd_isolated(self):
+    isolated = {
+      'algo': 'sha-1',
+      'command': ['cmd.py', 'foo', 'foodir/foo2'],
+      'files': {
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    self._run_test(isolated, [])
+
+  def test_output_cmd(self):
+    isolated = {
+      'algo': 'sha-1',
+      'files': {
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    self._run_test(isolated, ['cmd.py', 'foo', 'foodir/foo2'])
+
+  def test_output_cmd_isolated_extra_args(self):
+    isolated = {
+      'algo': 'sha-1',
+      'command': ['cmd.py'],
+      'files': {
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    self._run_test(isolated, ['foo', 'foodir/foo2'])
 
 
 class RunIsolatedJsonTest(RunIsolatedTestBase):

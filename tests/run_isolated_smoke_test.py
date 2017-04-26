@@ -370,8 +370,8 @@ class RunIsolatedTest(unittest.TestCase):
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', out)
     self.assertIn(
-        '<The .isolated doesn\'t declare any command to run!>\n'
-        '<Check your .isolate for missing \'command\' variable>\n',
+        '<No command was specified!>\n'
+				'<Please secify a command when triggering your Swarming task>\n',
         err)
     self.assertEqual(1, returncode)
     actual = list_files_tree(self.cache)

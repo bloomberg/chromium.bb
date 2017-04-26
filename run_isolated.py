@@ -402,7 +402,7 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
 
 def map_and_run(
     command, isolated_hash, storage, isolate_cache, outputs, init_named_caches,
-    leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file, extra_args,
+    leak_temp_dir, root_dir, hard_timeout, grace_period, bot_file,
     install_packages_fn, use_symlinks, constant_run_path):
   """Runs a command with optional isolated input/output.
 
@@ -410,8 +410,8 @@ def map_and_run(
 
   Returns metadata about the result.
   """
+  assert isinstance(command, list), command
   assert root_dir or root_dir is None
-  assert bool(command) ^ bool(isolated_hash)
   result = {
     'duration': None,
     'exit_code': None,
@@ -481,20 +481,19 @@ def map_and_run(
             cache=isolate_cache,
             outdir=run_dir,
             use_symlinks=use_symlinks)
-        if not bundle.command:
-          # Handle this as a task failure, not an internal failure.
-          sys.stderr.write(
-              '<The .isolated doesn\'t declare any command to run!>\n'
-              '<Check your .isolate for missing \'command\' variable>\n')
-          if os.environ.get('SWARMING_TASK_ID'):
-            # Give an additional hint when running as a swarming task.
-            sys.stderr.write('<This occurs at the \'isolate\' step>\n')
-          result['exit_code'] = 1
-          return result
-
         change_tree_read_only(run_dir, bundle.read_only)
         cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
-        command = bundle.command + extra_args
+        # Inject the command
+        if bundle.command:
+          command = bundle.command + command
+
+      if not command:
+        # Handle this as a task failure, not an internal failure.
+        sys.stderr.write(
+            '<No command was specified!>\n'
+            '<Please secify a command when triggering your Swarming task>\n')
+        result['exit_code'] = 1
+        return result
 
       # If we have an explicit list of files to return, make sure their
       # directories exist now.
@@ -586,7 +585,7 @@ def map_and_run(
 def run_tha_test(
     command, isolated_hash, storage, isolate_cache, outputs, init_named_caches,
     leak_temp_dir, result_json, root_dir, hard_timeout, grace_period, bot_file,
-    extra_args, install_packages_fn, use_symlinks):
+    install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -600,8 +599,9 @@ def run_tha_test(
   file.
 
   Arguments:
-    command: the command to run, a list of strings. Mutually exclusive with
-             isolated_hash.
+    command: a list of string; the command to run OR optional arguments to add
+             to the command stated in the .isolated file if a command was
+             specified.
     isolated_hash: the SHA-1 of the .isolated file that must be retrieved to
                    recreate the tree of files to run the target executable.
                    The command specified in the .isolated is executed.
@@ -623,8 +623,6 @@ def run_tha_test(
     hard_timeout: kills the process if it lasts more than this amount of
                   seconds.
     grace_period: number of seconds to wait between SIGTERM and SIGKILL.
-    extra_args: optional arguments to add to the command stated in the .isolate
-                file. Ignored if isolate_hash is empty.
     install_packages_fn: context manager dir => CipdInfo, see
       install_client_and_packages.
     use_symlinks: create tree with symlinks instead of hardlinks.
@@ -632,12 +630,6 @@ def run_tha_test(
   Returns:
     Process exit code that should be used.
   """
-  assert bool(command) ^ bool(isolated_hash)
-  extra_args = extra_args or []
-
-  if any(ISOLATED_OUTDIR_PARAMETER in a for a in (command or extra_args)):
-    assert storage is not None, 'storage is None although outdir is specified'
-
   if result_json:
     # Write a json output file right away in case we get killed.
     result = {
@@ -653,7 +645,7 @@ def run_tha_test(
   result = map_and_run(
       command, isolated_hash, storage, isolate_cache, outputs,
       init_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
-      bot_file, extra_args, install_packages_fn, use_symlinks, True)
+      bot_file, install_packages_fn, use_symlinks, True)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -1019,7 +1011,6 @@ def main(args):
         named_cache_manager.delete_symlinks(run_dir, options.named_caches)
 
   try:
-    command = [] if options.isolated else args
     if options.isolate_server:
       storage = isolateserver.get_storage(
           options.isolate_server, options.namespace)
@@ -1027,7 +1018,7 @@ def main(args):
         # Hashing schemes used by |storage| and |isolate_cache| MUST match.
         assert storage.hash_algo == isolate_cache.hash_algo
         return run_tha_test(
-            command,
+            args,
             options.isolated,
             storage,
             isolate_cache,
@@ -1037,11 +1028,11 @@ def main(args):
             options.json, options.root_dir,
             options.hard_timeout,
             options.grace_period,
-            options.bot_file, args,
+            options.bot_file,
             install_packages_fn,
             options.use_symlinks)
     return run_tha_test(
-        command,
+        args,
         options.isolated,
         None,
         isolate_cache,
@@ -1052,7 +1043,7 @@ def main(args):
         options.root_dir,
         options.hard_timeout,
         options.grace_period,
-        options.bot_file, args,
+        options.bot_file,
         install_packages_fn,
         options.use_symlinks)
   except (cipd.Error, named_cache.Error) as ex:
