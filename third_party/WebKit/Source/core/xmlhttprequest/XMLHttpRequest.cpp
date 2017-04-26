@@ -117,7 +117,7 @@ void ReplaceCharsetInMediaType(String& media_type,
   // Found at least one existing charset, replace all occurrences with new
   // charset.
   while (len) {
-    media_type.Replace(pos, len, charset_value);
+    media_type.replace(pos, len, charset_value);
     unsigned start = pos + charset_value.length();
     FindCharsetInMediaType(media_type, pos, len, start);
   }

@@ -92,7 +92,7 @@ Vector<String> Navigator::languages() {
     String& token = languages[i];
     token = token.StripWhiteSpace();
     if (token.length() >= 3 && token[2] == '_')
-      token.Replace(2, 1, "-");
+      token.replace(2, 1, "-");
   }
 
   return languages;
