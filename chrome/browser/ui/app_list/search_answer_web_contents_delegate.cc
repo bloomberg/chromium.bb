@@ -34,9 +34,11 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
               profile,
               content::SiteInstance::Create(profile)))),
       answer_server_url_(switches::AnswerServerUrl()) {
+  content::RendererPreferences* renderer_prefs =
+      web_contents_->GetMutableRendererPrefs();
+  renderer_prefs->can_accept_load_drops = false;
   // We need the OpenURLFromTab() to get called.
-  web_contents_->GetMutableRendererPrefs()
-      ->browser_handles_all_top_level_requests = true;
+  renderer_prefs->browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   Observe(web_contents_.get());
