@@ -302,9 +302,14 @@ typedef struct {
 typedef struct RD_STATS {
   int rate;
   int64_t dist;
+  // Please be careful of using rdcost, it's not guaranteed to be set all the
+  // time.
+  // TODO(angiebird): Create a set of functions to manipulate the RD_STATS. In
+  // these functions, make sure rdcost is always up-to-date according to
+  // rate/dist.
   int64_t rdcost;
   int64_t sse;
-  int skip;
+  int skip;  // sse should equal to dist when skip == 1
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
 #if CONFIG_VAR_TX
