@@ -24,6 +24,8 @@
 
 namespace payments {
 
+namespace {
+
 class FakeAddressNormalizer : public AddressNormalizer {
  public:
   FakeAddressNormalizer() {}
@@ -53,6 +55,7 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
       : personal_data_manager_(personal_data_manager),
         locale_("en-US"),
         last_committed_url_("https://shop.com") {}
+
   void ShowDialog(PaymentRequest* request) override {}
 
   void CloseDialog() override {}
@@ -94,6 +97,8 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
   FakeAddressNormalizer address_normalizer_;
   DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
 };
+
+}  // namespace
 
 class PaymentResponseHelperTest : public testing::Test,
                                   public PaymentResponseHelper::Delegate {

@@ -57,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(
   ExpectBodyContains({"\"billingAddress\": {", "\"666 Erebus St.\"",
                       "\"Apt 8\"", "\"city\": \"Elysium\"",
                       "\"country\": \"US\"", "\"organization\": \"Underworld\"",
-                      "\"phone\": \"16502111111\"", "\"postalCode\": \"91111\"",
+                      "\"phone\": \"+16502111111\"",
+                      "\"postalCode\": \"91111\"",
                       "\"recipient\": \"John H. Doe\"", "\"region\": \"CA\""});
 }
 

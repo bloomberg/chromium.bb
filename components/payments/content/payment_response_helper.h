@@ -20,7 +20,7 @@ class PaymentRequestSpec;
 // before adding them to the PaymentResponse.
 // A helper class to facilitate the creation of the PaymentResponse.
 class PaymentResponseHelper : public PaymentInstrument::Delegate,
-                              AddressNormalizer::Delegate {
+                              public AddressNormalizer::Delegate {
  public:
   class Delegate {
    public:

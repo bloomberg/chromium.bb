@@ -220,8 +220,23 @@ class FullCardRequester
           ? base::ASCIIToUTF16("basic-card")
           : base::ASCIIToUTF16(basic_card_type);
 
+  // Get the billing address
+  autofill::AutofillProfile billingAddress;
+
+  // TODO(crbug.com/714768): Make sure the billing address is set and valid
+  // before getting here. Once the bug is addressed, there will be no need to
+  // copy the address, *billing_address_ptr can be used to get the basic card
+  // response.
+  if (!card.billing_address_id().empty()) {
+    autofill::AutofillProfile* billingAddressPtr =
+        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+            card.billing_address_id(), _paymentRequest->billing_profiles());
+    if (billingAddressPtr)
+      billingAddress = *billingAddressPtr;
+  }
+
   paymentResponse.details = GetBasicCardResponseFromAutofillCreditCard(
-      card, cvc, _paymentRequest->billing_profiles(),
+      card, cvc, billingAddress,
       GetApplicationContext()->GetApplicationLocale());
 
   if (_paymentRequest->request_shipping()) {
