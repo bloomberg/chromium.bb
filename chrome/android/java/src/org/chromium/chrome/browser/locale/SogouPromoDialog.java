@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -45,6 +46,9 @@ public class SogouPromoDialog extends PromoDialog {
 
     private static final int CHOICE_ENUM_COUNT = 4;
 
+    /** Run when the dialog is dismissed. */
+    private final Runnable mOnDismissedRunnable;
+
     private final LocaleManager mLocaleManager;
     private final ClickableSpan mSpan = new NoUnderlineClickableSpan() {
         @Override
@@ -63,11 +67,13 @@ public class SogouPromoDialog extends PromoDialog {
     /**
      * Creates an instance of the dialog.
      */
-    public SogouPromoDialog(Context context, LocaleManager localeManager) {
+    public SogouPromoDialog(
+            Context context, LocaleManager localeManager, @Nullable Runnable onDismissed) {
         super(context);
         mLocaleManager = localeManager;
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
+        mOnDismissedRunnable = onDismissed;
     }
 
     @Override
@@ -143,5 +149,7 @@ public class SogouPromoDialog extends PromoDialog {
                 .apply();
         RecordHistogram.recordEnumeratedHistogram(
                 "SpecialLocale.PromotionDialog", mChoice, CHOICE_ENUM_COUNT);
+
+        if (mOnDismissedRunnable != null) mOnDismissedRunnable.run();
     }
 }
