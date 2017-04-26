@@ -48,7 +48,7 @@ bool NullExecutionContext::IsSecureContext(
 
 void NullExecutionContext::SetUpSecurityContext() {
   ContentSecurityPolicy* policy = ContentSecurityPolicy::Create();
-  SecurityContext::SetSecurityOrigin(SecurityOrigin::Create(dummy_url_));
+  SecurityContext::SetSecurityOrigin(SecurityOrigin::Create(url_));
   policy->BindToExecutionContext(this);
   SecurityContext::SetContentSecurityPolicy(policy);
 }

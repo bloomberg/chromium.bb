@@ -25,6 +25,8 @@ class NullExecutionContext final
  public:
   NullExecutionContext();
 
+  void SetURL(const KURL& url) { url_ = url; }
+
   void DisableEval(const String&) override {}
   String UserAgent() const override { return String(); }
 
@@ -54,6 +56,9 @@ class NullExecutionContext final
 
   void SetUpSecurityContext();
 
+  using SecurityContext::GetSecurityOrigin;
+  using SecurityContext::GetContentSecurityPolicy;
+
   DEFINE_INLINE_TRACE() {
     visitor->Trace(queue_);
     SecurityContext::Trace(visitor);
@@ -61,15 +66,15 @@ class NullExecutionContext final
   }
 
  protected:
-  const KURL& VirtualURL() const override { return dummy_url_; }
-  KURL VirtualCompleteURL(const String&) const override { return dummy_url_; }
+  const KURL& VirtualURL() const override { return url_; }
+  KURL VirtualCompleteURL(const String&) const override { return url_; }
 
  private:
   bool tasks_need_suspension_;
   bool is_secure_context_;
   Member<EventQueue> queue_;
 
-  KURL dummy_url_;
+  KURL url_;
 };
 
 }  // namespace blink

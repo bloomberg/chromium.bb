@@ -98,13 +98,13 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
                                const WebFeaturePolicy* parent_feature_policy);
   void UpdateFeaturePolicyOrigin();
 
+  void ApplySandboxFlags(SandboxFlags mask);
+
  protected:
   SecurityContext();
   virtual ~SecurityContext();
 
   void SetContentSecurityPolicy(ContentSecurityPolicy*);
-
-  void ApplySandboxFlags(SandboxFlags mask);
 
  private:
   RefPtr<SecurityOrigin> security_origin_;

@@ -178,33 +178,46 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
 
   SetupSelf(*execution_context_->GetSecurityContext().GetSecurityOrigin());
 
-  // If we're in a Document, set mixed content checking and sandbox
-  // flags, then dump all the parsing error messages, then poke at histograms.
-  if (Document* document = this->GetDocument()) {
-    if (sandbox_mask_ != kSandboxNone) {
-      UseCounter::Count(document, UseCounter::kSandboxViaCSP);
+  // Set mixed content checking and sandbox flags, then dump all the parsing
+  // error messages, then poke at histograms.
+  Document* document = this->GetDocument();
+  if (sandbox_mask_ != kSandboxNone) {
+    UseCounter::Count(execution_context_, UseCounter::kSandboxViaCSP);
+    if (document)
       document->EnforceSandboxFlags(sandbox_mask_);
-    }
-    if (treat_as_public_address_)
-      document->SetAddressSpace(kWebAddressSpacePublic);
+    else
+      execution_context_->GetSecurityContext().ApplySandboxFlags(sandbox_mask_);
+  }
+  if (treat_as_public_address_) {
+    execution_context_->GetSecurityContext().SetAddressSpace(
+        kWebAddressSpacePublic);
+  }
 
+  if (document) {
     document->EnforceInsecureRequestPolicy(insecure_request_policy_);
-    if (insecure_request_policy_ & kUpgradeInsecureRequests) {
-      UseCounter::Count(document, UseCounter::kUpgradeInsecureRequestsEnabled);
-      if (!document->Url().Host().IsEmpty())
-        document->AddInsecureNavigationUpgrade(
-            document->Url().Host().Impl()->GetHash());
-    }
+  } else {
+    execution_context_->GetSecurityContext().SetInsecureRequestPolicy(
+        insecure_request_policy_);
+  }
 
-    for (const auto& console_message : console_messages_)
-      execution_context_->AddConsoleMessage(console_message);
-    console_messages_.clear();
-
-    for (const auto& policy : policies_) {
-      UseCounter::Count(*document, GetUseCounterType(policy->HeaderType()));
-      if (policy->AllowDynamic())
-        UseCounter::Count(*document, UseCounter::kCSPWithStrictDynamic);
+  if (insecure_request_policy_ & kUpgradeInsecureRequests) {
+    UseCounter::Count(execution_context_,
+                      UseCounter::kUpgradeInsecureRequestsEnabled);
+    if (!execution_context_->Url().Host().IsEmpty()) {
+      execution_context_->GetSecurityContext().AddInsecureNavigationUpgrade(
+          execution_context_->Url().Host().Impl()->GetHash());
     }
+  }
+
+  for (const auto& console_message : console_messages_)
+    execution_context_->AddConsoleMessage(console_message);
+  console_messages_.clear();
+
+  for (const auto& policy : policies_) {
+    UseCounter::Count(execution_context_,
+                      GetUseCounterType(policy->HeaderType()));
+    if (policy->AllowDynamic())
+      UseCounter::Count(execution_context_, UseCounter::kCSPWithStrictDynamic);
   }
 
   // We disable 'eval()' even in the case of report-only policies, and rely on
