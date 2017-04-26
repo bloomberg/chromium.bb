@@ -32,11 +32,12 @@
 namespace blink {
 
 StyleRuleImport* StyleRuleImport::Create(const String& href,
-                                         MediaQuerySet* media) {
+                                         RefPtr<MediaQuerySet> media) {
   return new StyleRuleImport(href, media);
 }
 
-StyleRuleImport::StyleRuleImport(const String& href, MediaQuerySet* media)
+StyleRuleImport::StyleRuleImport(const String& href,
+                                 RefPtr<MediaQuerySet> media)
     : StyleRuleBase(kImport),
       parent_style_sheet_(nullptr),
       style_sheet_client_(new ImportedStyleSheetClient(this)),
@@ -58,7 +59,6 @@ void StyleRuleImport::Dispose() {
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport) {
   visitor->Trace(style_sheet_client_);
   visitor->Trace(parent_style_sheet_);
-  visitor->Trace(media_queries_);
   visitor->Trace(style_sheet_);
   visitor->Trace(resource_);
   StyleRuleBase::TraceAfterDispatch(visitor);

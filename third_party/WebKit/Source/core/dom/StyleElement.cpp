@@ -152,11 +152,11 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   // If type is empty or CSS, this is a CSS style sheet.
   const AtomicString& type = this->type();
   if (IsCSS(element, type) && passes_content_security_policy_checks) {
-    MediaQuerySet* media_queries = MediaQuerySet::Create(media());
+    RefPtr<MediaQuerySet> media_queries = MediaQuerySet::Create(media());
 
     MediaQueryEvaluator screen_eval("screen");
     MediaQueryEvaluator print_eval("print");
-    if (screen_eval.Eval(media_queries) || print_eval.Eval(media_queries)) {
+    if (screen_eval.Eval(*media_queries) || print_eval.Eval(*media_queries)) {
       loading_ = true;
       TextPosition start_position =
           start_position_ == TextPosition::BelowRangePosition()

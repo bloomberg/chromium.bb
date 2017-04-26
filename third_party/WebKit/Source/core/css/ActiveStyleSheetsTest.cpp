@@ -421,7 +421,7 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddRemoveNonMatchingMQ) {
   EXPECT_EQ(0u, changed_rule_sets.size());
 
   CSSStyleSheet* sheet1 = CreateSheet();
-  MediaQuerySet* mq =
+  RefPtr<MediaQuerySet> mq =
       MediaQueryParser::ParseMediaQuerySet("(min-width: 9000px)");
   sheet1->SetMediaQueries(mq);
   sheet1->MatchesMediaQueries(MediaQueryEvaluator());

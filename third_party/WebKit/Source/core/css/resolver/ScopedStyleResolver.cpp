@@ -257,8 +257,6 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
 DEFINE_TRACE(ScopedStyleResolver) {
   visitor->Trace(scope_);
   visitor->Trace(author_style_sheets_);
-  visitor->Trace(viewport_dependent_media_query_results_);
-  visitor->Trace(device_dependent_media_query_results_);
   visitor->Trace(keyframes_rule_map_);
   visitor->Trace(tree_boundary_crossing_rule_set_);
 }

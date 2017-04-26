@@ -29,21 +29,19 @@
 
 namespace blink {
 
-class MediaQueryResult : public GarbageCollected<MediaQueryResult> {
-  WTF_MAKE_NONCOPYABLE(MediaQueryResult);
+class MediaQueryResult {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
   MediaQueryResult(const MediaQueryExp& expr, bool result)
-      : expression_(&expr), result_(result) {}
+      : expression_(expr), result_(result) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(expression_); }
-
-  const MediaQueryExp* Expression() const { return expression_; }
+  const MediaQueryExp& Expression() const { return expression_; }
 
   bool Result() const { return result_; }
 
  private:
-  Member<const MediaQueryExp> expression_;
+  const MediaQueryExp expression_;
   bool result_;
 };
 

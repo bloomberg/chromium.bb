@@ -112,42 +112,41 @@ static bool ApplyRestrictor(MediaQuery::RestrictorType r, bool value) {
 }
 
 bool MediaQueryEvaluator::Eval(
-    const MediaQuery* query,
+    const MediaQuery& query,
     MediaQueryResultList* viewport_dependent_media_query_results,
     MediaQueryResultList* device_dependent_media_query_results) const {
-  if (!MediaTypeMatch(query->MediaType()))
-    return ApplyRestrictor(query->Restrictor(), false);
+  if (!MediaTypeMatch(query.MediaType()))
+    return ApplyRestrictor(query.Restrictor(), false);
 
-  const ExpressionHeapVector& expressions = query->Expressions();
+  const ExpressionHeapVector& expressions = query.Expressions();
   // Iterate through expressions, stop if any of them eval to false (AND
   // semantics).
   size_t i = 0;
   for (; i < expressions.size(); ++i) {
-    bool expr_result = Eval(expressions.at(i).Get());
+    bool expr_result = Eval(expressions.at(i));
     if (viewport_dependent_media_query_results &&
-        expressions.at(i)->IsViewportDependent())
+        expressions.at(i).IsViewportDependent()) {
       viewport_dependent_media_query_results->push_back(
-          new MediaQueryResult(*expressions.at(i), expr_result));
+          MediaQueryResult(expressions.at(i), expr_result));
+    }
     if (device_dependent_media_query_results &&
-        expressions.at(i)->IsDeviceDependent())
+        expressions.at(i).IsDeviceDependent()) {
       device_dependent_media_query_results->push_back(
-          new MediaQueryResult(*expressions.at(i), expr_result));
+          MediaQueryResult(expressions.at(i), expr_result));
+    }
     if (!expr_result)
       break;
   }
 
   // Assume true if we are at the end of the list, otherwise assume false.
-  return ApplyRestrictor(query->Restrictor(), expressions.size() == i);
+  return ApplyRestrictor(query.Restrictor(), expressions.size() == i);
 }
 
 bool MediaQueryEvaluator::Eval(
-    const MediaQuerySet* query_set,
+    const MediaQuerySet& query_set,
     MediaQueryResultList* viewport_dependent_media_query_results,
     MediaQueryResultList* device_dependent_media_query_results) const {
-  if (!query_set)
-    return true;
-
-  const HeapVector<Member<MediaQuery>>& queries = query_set->QueryVector();
+  const Vector<std::unique_ptr<MediaQuery>>& queries = query_set.QueryVector();
   if (!queries.size())
     return true;  // Empty query list evaluates to true.
 
@@ -155,8 +154,8 @@ bool MediaQueryEvaluator::Eval(
   bool result = false;
   for (size_t i = 0; i < queries.size() && !result; ++i) {
     // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
-    CHECK_EQ(queries.data(), query_set->QueryVector().data());
-    result = Eval(queries[i].Get(), viewport_dependent_media_query_results,
+    CHECK_EQ(queries.data(), query_set.QueryVector().data());
+    result = Eval(*queries[i], viewport_dependent_media_query_results,
                   device_dependent_media_query_results);
   }
 
@@ -809,7 +808,7 @@ void MediaQueryEvaluator::Init() {
 #undef ADD_TO_FUNCTIONMAP
 }
 
-bool MediaQueryEvaluator::Eval(const MediaQueryExp* expr) const {
+bool MediaQueryEvaluator::Eval(const MediaQueryExp& expr) const {
   if (!media_values_ || !media_values_->HasValues())
     return true;
 
@@ -817,9 +816,9 @@ bool MediaQueryEvaluator::Eval(const MediaQueryExp* expr) const {
 
   // Call the media feature evaluation function. Assume no prefix and let
   // trampoline functions override the prefix if prefix is used.
-  EvalFunc func = g_function_map->at(expr->MediaFeature().Impl());
+  EvalFunc func = g_function_map->at(expr.MediaFeature().Impl());
   if (func)
-    return func(expr->ExpValue(), kNoPrefix, *media_values_);
+    return func(expr.ExpValue(), kNoPrefix, *media_values_);
 
   return false;
 }

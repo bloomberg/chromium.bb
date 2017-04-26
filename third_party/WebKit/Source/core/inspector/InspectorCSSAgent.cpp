@@ -1612,7 +1612,8 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
   }
 
   const MediaQuerySet* queries = media->Queries();
-  const HeapVector<Member<MediaQuery>>& query_vector = queries->QueryVector();
+  const Vector<std::unique_ptr<MediaQuery>>& query_vector =
+      queries->QueryVector();
   LocalFrame* frame = nullptr;
   if (parent_style_sheet) {
     if (Document* document = parent_style_sheet->OwnerDocument())
@@ -1629,15 +1630,15 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
   MediaValues* media_values = MediaValues::CreateDynamicIfFrameExists(frame);
   bool has_media_query_items = false;
   for (size_t i = 0; i < query_vector.size(); ++i) {
-    MediaQuery* query = query_vector.at(i).Get();
-    const ExpressionHeapVector& expressions = query->Expressions();
+    MediaQuery& query = *query_vector.at(i);
+    const ExpressionHeapVector& expressions = query.Expressions();
     std::unique_ptr<protocol::Array<protocol::CSS::MediaQueryExpression>>
         expression_array =
             protocol::Array<protocol::CSS::MediaQueryExpression>::create();
     bool has_expression_items = false;
     for (size_t j = 0; j < expressions.size(); ++j) {
-      MediaQueryExp* media_query_exp = expressions.at(j).Get();
-      MediaQueryExpValue exp_value = media_query_exp->ExpValue();
+      const MediaQueryExp& media_query_exp = expressions.at(j);
+      MediaQueryExpValue exp_value = media_query_exp.ExpValue();
       if (!exp_value.is_value)
         continue;
       const char* value_name =
@@ -1647,7 +1648,7 @@ std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
               protocol::CSS::MediaQueryExpression::create()
                   .setValue(exp_value.value)
                   .setUnit(String(value_name))
-                  .setFeature(media_query_exp->MediaFeature())
+                  .setFeature(media_query_exp.MediaFeature())
                   .build();
 
       if (inspector_style_sheet && media->ParentRule())
