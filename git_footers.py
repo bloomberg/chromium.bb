@@ -13,7 +13,7 @@ from collections import defaultdict
 import git_common as git
 
 
-FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): (.*)$')
+FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): *(.*)$')
 CHROME_COMMIT_POSITION_PATTERN = re.compile(r'^([\w/\-\.]+)@{#(\d+)}$')
 
 

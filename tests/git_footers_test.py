@@ -35,6 +35,13 @@ My commit message is my best friend. It is my life. I must master it.
     self.assertEqual(
         git_footers.split_footers('\nActual: footer'),
         ([''], ['Actual: footer'], [('Actual', 'footer')]))
+    self.assertEqual(
+        git_footers.split_footers('H\n\nBug:\nAlso: footer'),
+        (['H', ''], ['Bug:', 'Also: footer'],
+         [('Bug', ''), ('Also', 'footer')]))
+    self.assertEqual(
+        git_footers.split_footers('H\n\nBug:      '),
+        (['H', ''], ['Bug:      '], [('Bug', '')]))
 
     self.assertEqual(
         git_footers.parse_footers(self._message), {})
@@ -45,6 +52,13 @@ My commit message is my best friend. It is my life. I must master it.
         git_footers.parse_footers(self._message + self._position_footer
                                                 + self._position_footer),
         { 'Cr-Commit-Position': [ self._position, self._position ] })
+    self.assertEqual(
+        git_footers.parse_footers(self._message +
+                                  'Bug:\n' +
+                                  self._position_footer),
+        { 'Bug': [''],
+          'Cr-Commit-Position': [ self._position ] })
+
 
   def testGetFooterChangeId(self):
     msg = '\n'.join(['whatever',
