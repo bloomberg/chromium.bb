@@ -24,6 +24,7 @@ TranslateDownloadManager::TranslateDownloadManager()
 TranslateDownloadManager::~TranslateDownloadManager() {}
 
 void TranslateDownloadManager::Shutdown() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   language_list_.reset();
   script_.reset();
   request_context_ = NULL;
@@ -99,11 +100,13 @@ void TranslateDownloadManager::ClearTranslateScriptForTesting() {
 }
 
 void TranslateDownloadManager::ResetForTesting() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   language_list_.reset(new TranslateLanguageList);
   script_.reset(new TranslateScript);
 }
 
 void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (script_.get() == NULL) {
     NOTREACHED();
     return;

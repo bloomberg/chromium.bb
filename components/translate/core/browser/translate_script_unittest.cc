@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_scheduler.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -15,6 +17,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,6 +32,9 @@ class TranslateScriptTest : public testing::Test {
     script_.reset(new TranslateScript);
     DCHECK(script_.get());
     TranslateDownloadManager::GetInstance()->set_application_locale("en");
+    TranslateDownloadManager::GetInstance()->set_request_context(
+        new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get()));
   }
 
   void TearDown() override { script_.reset(); }
@@ -46,7 +52,13 @@ class TranslateScriptTest : public testing::Test {
   void OnComplete(bool success, const std::string& script) {
   }
 
+  // Sets up the task scheduling/task-runner environment for each test.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+
+  // The translate script.
   std::unique_ptr<TranslateScript> script_;
+
+  // Factory to create programmatic URL fetchers.
   net::TestURLFetcherFactory url_fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateScriptTest);
