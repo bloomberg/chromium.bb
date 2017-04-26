@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -135,6 +136,20 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             + "            if (e.ports != null && e.ports.length > 0) {"
             + "               e.ports[0].postMessage(\"" + JS_MESSAGE + "\");"
             + "            }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+    private static final String ONLOAD_TITLE_CHANGE = "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        window.onload = function () {"
+            + "            document.title = \"nytimes.com\";"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+    private static final String DELAYED_TITLE_CHANGE = "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        window.onload = function () {"
+            + "           setTimeout(function (){ document.title = \"nytimes.com\"}, 200);"
             + "        }"
             + "   </script>"
             + "</body></html>";
@@ -1055,6 +1070,84 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
+    }
+
+    /**
+     * Tests that TITLE_ONLY state works as expected with a title getting set onload.
+     */
+    @SmallTest
+    public void testToolbarTitleOnlyStateWithProperTitle() throws InterruptedException {
+        final String url = mWebServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
+        hideDomainAndEnsureTitleIsSet(
+                url, CustomTabsConnection.SpeculationParams.NO_SPECULATION, "nytimes.com");
+    }
+
+    /**
+     * Tests that TITLE_ONLY state works as expected with a title getting set during prerendering.
+
+     */
+    @SmallTest
+    public void testToolbarTitleOnlyStateWithProperTitlePrerendered() throws InterruptedException {
+        final String url = mWebServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
+        hideDomainAndEnsureTitleIsSet(
+                url, CustomTabsConnection.SpeculationParams.PRERENDER, "nytimes.com");
+    }
+
+    /**
+     * Tests that TITLE_ONLY state works as expected with a title getting set delayed after load.
+
+     */
+    @SmallTest
+    public void testToolbarTitleOnlyStateWithDelayedTitle() throws InterruptedException {
+        final String url = mWebServer.setResponse("/test.html", DELAYED_TITLE_CHANGE, null);
+        hideDomainAndEnsureTitleIsSet(
+                url, CustomTabsConnection.SpeculationParams.NO_SPECULATION, "nytimes.com");
+    }
+
+    private void hideDomainAndEnsureTitleIsSet(
+            final String url, int speculation, final String expectedTitle) {
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = getInstrumentation().getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        intent.putExtra(
+                CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.SHOW_PAGE_TITLE);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        assertTrue(connection.newSession(token));
+        connection.mClientManager.setHideDomainForSession(token, true);
+
+        if (speculation != CustomTabsConnection.SpeculationParams.NO_SPECULATION) {
+            connection.setSpeculationModeForSession(token, speculation);
+            assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), null, null));
+            try {
+                ensureCompletedSpeculationForUrl(connection, url, speculation);
+            } catch (Exception e1) {
+                fail();
+            }
+        }
+
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return url.equals(currentTab.getUrl());
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                CustomTabToolbar toolbar =
+                        (CustomTabToolbar) getActivity().findViewById(R.id.toolbar);
+                TextView titleBar = (TextView) toolbar.findViewById(R.id.title_bar);
+                return titleBar != null && titleBar.isShown()
+                        && (titleBar.getText()).toString().equals(expectedTitle);
+            }
+        });
     }
 
     /**
