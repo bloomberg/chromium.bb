@@ -273,6 +273,10 @@ typedef enum {
 
 typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
 
+#if CONFIG_CFL
+typedef enum { CFL_PRED_U = 0, CFL_PRED_V = 1, CFL_PRED_PLANES } CFL_PRED_TYPE;
+#endif
+
 #if CONFIG_PALETTE
 typedef enum {
   TWO_COLORS,

@@ -16,8 +16,8 @@
 // alpha_cb and alpha_cr before the prediction are computed.
 void cfl_dc_pred(MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize,
                  TX_SIZE tx_size) {
-  const struct macroblockd_plane *const pd_cb = &xd->plane[1];
-  const struct macroblockd_plane *const pd_cr = &xd->plane[2];
+  const struct macroblockd_plane *const pd_cb = &xd->plane[AOM_PLANE_U];
+  const struct macroblockd_plane *const pd_cr = &xd->plane[AOM_PLANE_V];
 
   const uint8_t *const dst_cb = pd_cb->dst.buf;
   const uint8_t *const dst_cr = pd_cr->dst.buf;
@@ -67,8 +67,8 @@ void cfl_dc_pred(MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize,
     sum_cr += block_height * 129;
   }
 
-  xd->cfl->dc_pred[0] = (sum_cb + (num_pel >> 1)) / num_pel;
-  xd->cfl->dc_pred[1] = (sum_cr + (num_pel >> 1)) / num_pel;
+  xd->cfl->dc_pred[CFL_PRED_U] = (sum_cb + (num_pel >> 1)) / num_pel;
+  xd->cfl->dc_pred[CFL_PRED_V] = (sum_cr + (num_pel >> 1)) / num_pel;
 }
 
 // Predict the current transform block using CfL.

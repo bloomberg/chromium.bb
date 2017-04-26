@@ -532,7 +532,7 @@ typedef int16_t EobThresholdMD[TX_SIZES_ALL][TX_TYPES];
 #if CONFIG_CFL
 typedef struct {
   // CfL Performs its own block level DC_PRED for each chromatic plane
-  int dc_pred[2];
+  int dc_pred[CFL_PRED_PLANES];
 } CFL_CTX;
 #endif
 
