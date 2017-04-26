@@ -84,7 +84,7 @@ typedef enum {
 // GLOBAL_TRANS_TYPES 4 - up to affine
 // GLOBAL_TRANS_TYPES 6 - up to hor/ver trapezoids
 // GLOBAL_TRANS_TYPES 7 - up to full homography
-#define GLOBAL_TRANS_TYPES 3
+#define GLOBAL_TRANS_TYPES 4
 
 typedef struct {
 #if CONFIG_GLOBAL_MOTION

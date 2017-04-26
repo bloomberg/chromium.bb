@@ -5092,6 +5092,7 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 #endif
 
 #if CONFIG_GLOBAL_MOTION
+#define GLOBAL_TRANS_TYPES_ENC 3  // highest motion model to search
 static int gm_get_params_cost(WarpedMotionParams *gm,
                               WarpedMotionParams *ref_gm, int allow_hp) {
   assert(gm->wmtype < GLOBAL_TRANS_TYPES);
@@ -5207,7 +5208,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       if (ref_buf) {
         TransformationType model;
         aom_clear_system_state();
-        for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES; ++model) {
+        for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES_ENC; ++model) {
           double best_erroradvantage = kInfiniteErrAdv;
 
           // Initially set all params to identity.
