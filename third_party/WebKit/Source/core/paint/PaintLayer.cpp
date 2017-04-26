@@ -224,21 +224,25 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
   // LayoutTests/compositing/content-changed-chicken-egg.html
   DisableCompositingQueryAsserts disabler;
 
-  if (change_type == kCanvasChanged)
-    Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateAfterCompositingInputChange);
+  if (Compositor()) {
+    if (change_type == kCanvasChanged) {
+      Compositor()->SetNeedsCompositingUpdate(
+          kCompositingUpdateAfterCompositingInputChange);
+    }
 
-  if (change_type == kCanvasContextChanged) {
-    Compositor()->SetNeedsCompositingUpdate(
-        kCompositingUpdateAfterCompositingInputChange);
+    if (change_type == kCanvasContextChanged) {
+      Compositor()->SetNeedsCompositingUpdate(
+          kCompositingUpdateAfterCompositingInputChange);
 
-    // Although we're missing test coverage, we need to call
-    // GraphicsLayer::setContentsToPlatformLayer with the new platform
-    // layer for this canvas.
-    // See http://crbug.com/349195
-    if (HasCompositedLayerMapping())
-      GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
-          kGraphicsLayerUpdateSubtree);
+      // Although we're missing test coverage, we need to call
+      // GraphicsLayer::setContentsToPlatformLayer with the new platform
+      // layer for this canvas.
+      // See http://crbug.com/349195
+      if (HasCompositedLayerMapping()) {
+        GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
+            kGraphicsLayerUpdateSubtree);
+      }
+    }
   }
 
   if (CompositedLayerMapping* composited_layer_mapping =
@@ -385,7 +389,9 @@ void PaintLayer::UpdateTransformationMatrix() {
         *transform, box->Size(), ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
-    MakeMatrixRenderable(*transform, Compositor()->HasAcceleratedCompositing());
+    MakeMatrixRenderable(
+        *transform,
+        Compositor() ? Compositor()->HasAcceleratedCompositing() : false);
   }
 }
 
@@ -1031,8 +1037,10 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
        current = current->Parent())
     current->child_needs_compositing_inputs_update_ = true;
 
-  Compositor()->SetNeedsCompositingUpdate(
-      kCompositingUpdateAfterCompositingInputChange);
+  if (Compositor()) {
+    Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateAfterCompositingInputChange);
+  }
 }
 
 void PaintLayer::UpdateAncestorDependentCompositingInputs(
@@ -1259,9 +1267,11 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
 
   SetNeedsCompositingInputsUpdate();
 
-  if (!child->StackingNode()->IsStacked() &&
-      !GetLayoutObject().DocumentBeingDestroyed())
-    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+  if (Compositor()) {
+    if (!child->StackingNode()->IsStacked() &&
+        !GetLayoutObject().DocumentBeingDestroyed())
+      Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+  }
 
   if (child->StackingNode()->IsStacked() || child->FirstChild()) {
     // Dirty the z-order list in which we are contained. The
@@ -1293,9 +1303,11 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
   if (last_ == old_child)
     last_ = old_child->PreviousSibling();
 
-  if (!old_child->StackingNode()->IsStacked() &&
-      !GetLayoutObject().DocumentBeingDestroyed())
-    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+  if (Compositor()) {
+    if (!old_child->StackingNode()->IsStacked() &&
+        !GetLayoutObject().DocumentBeingDestroyed())
+      Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+  }
 
   if (old_child->StackingNode()->IsStacked() || old_child->FirstChild()) {
     // Dirty the z-order list in which we are contained.  When called via the
@@ -2960,7 +2972,8 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
     const ComputedStyle* old_style) {
   CompositingReasons old_potential_compositing_reasons_from_style =
       PotentialCompositingReasonsFromStyle();
-  Compositor()->UpdatePotentialCompositingReasonsFromStyle(this);
+  if (Compositor())
+    Compositor()->UpdatePotentialCompositingReasonsFromStyle(this);
 
   // This function implements an optimization for transforms and opacity.
   // A common pattern is for a touchmove handler to update the transform
@@ -3014,8 +3027,10 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   // not possibly have changed.
   rare_data_->composited_layer_mapping->SetNeedsGraphicsLayerUpdate(
       kGraphicsLayerUpdateLocal);
-  Compositor()->SetNeedsCompositingUpdate(
-      kCompositingUpdateAfterGeometryChange);
+  if (Compositor()) {
+    Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateAfterGeometryChange);
+  }
 
   if (scrollable_area_)
     scrollable_area_->UpdateAfterStyleChange(old_style);
