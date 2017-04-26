@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/cpp/memory/coordinator.h"
+#include "services/resource_coordinator/public/cpp/memory/memory_export.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -22,13 +24,13 @@ namespace memory_instrumentation {
 //
 // This cannot just be implemented by the Coordinator service, because there is
 // no Coordinator service in child processes. So, in a child process, the
-// delegate remotely connects to the Coordinator service. In the browser
-// process, the delegate locally connects to the Coordinator service.
-class MemoryDumpManagerDelegateImpl
-    : public base::trace_event::MemoryDumpManagerDelegate,
-      public mojom::ProcessLocalDumpManager {
+// local dump manager remotely connects to the Coordinator service. In the
+// browser process, it locally connects to the Coordinator service.
+class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
+    ProcessLocalDumpManagerImpl
+    : public NON_EXPORTED_BASE(mojom::ProcessLocalDumpManager) {
  public:
-  class Config {
+  class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT Config {
    public:
     Config(service_manager::Connector* connector,
            const std::string& service_name)
@@ -52,22 +54,23 @@ class MemoryDumpManagerDelegateImpl
     bool is_test_config_;
   };
 
-  explicit MemoryDumpManagerDelegateImpl(const Config& config);
-  ~MemoryDumpManagerDelegateImpl() override;
+  static void CreateInstance(const Config& config);
 
-  bool IsCoordinator() const override;
-
-  // The base::trace_event::MemoryDumpManager calls this.
+  // Implements base::trace_event::MemoryDumpManager::RequestGlobalDumpCallback.
+  // NOTE: Use MemoryDumpManager::RequestGlobalDump() to request gobal dump.
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
-      const base::trace_event::GlobalMemoryDumpCallback& callback) override;
+      const base::trace_event::GlobalMemoryDumpCallback& callback);
 
   Config config() { return config_; }
   void SetAsNonCoordinatorForTesting();
 
  private:
-  friend std::default_delete<MemoryDumpManagerDelegateImpl>;  // For testing
-  friend class MemoryDumpManagerDelegateImplTest;             // For testing
+  friend std::default_delete<ProcessLocalDumpManagerImpl>;  // For testing
+  friend class ProcessLocalDumpManagerImplTest;             // For testing
+
+  ProcessLocalDumpManagerImpl(const Config& config);
+  ~ProcessLocalDumpManagerImpl() override;
 
   // The ProcessLocalDumpManager interface. The coordinator calls this.
   void RequestProcessMemoryDump(
@@ -86,15 +89,11 @@ class MemoryDumpManagerDelegateImpl
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint64_t pending_memory_dump_guid_;
 
-  // Prevents racy access to |pending_memory_dump_guid_|.
   base::Lock pending_memory_dump_guid_lock_;
 
-  // Prevents racy access to |initialized_|.
-  base::Lock initialized_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryDumpManagerDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ProcessLocalDumpManagerImpl);
 };
 
 }  // namespace memory_instrumentation
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_MEMORY_DUMP_MANAGER_DELEGATE_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_PROCESS_LOCAL_DUMP_MANAGER_IMPL_H_

@@ -13,7 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
+#include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
 #include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
@@ -34,12 +34,10 @@ CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager)
     : failed_memory_dump_count_(0),
       initialize_memory_dump_manager_(initialize_memory_dump_manager) {
   if (initialize_memory_dump_manager) {
-    MemoryDumpManagerDelegateImpl::Config config(this);
-    auto delegate = base::MakeUnique<MemoryDumpManagerDelegateImpl>(config);
+    ProcessLocalDumpManagerImpl::CreateInstance(
+        ProcessLocalDumpManagerImpl::Config(this));
     base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
         mojom::kServiceTracingProcessId);
-    base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
-        std::move(delegate));
   }
   g_coordinator_impl = this;
 }

@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+component("resource_coordinator_cpp") {
   sources = [
     "memory/coordinator.h",
-    "memory/memory_dump_manager_delegate_impl.cc",
-    "memory/memory_dump_manager_delegate_impl.h",
+    "memory/process_local_dump_manager_impl.cc",
+    "memory/process_local_dump_manager_impl.h",
   ]
+
+  defines = [ "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_IMPLEMENTATION" ]
 
   deps = [
     ":struct_traits",
@@ -16,9 +18,11 @@ source_set("cpp") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/resource_coordinator/public/interfaces",
+    "//services/resource_coordinator/public/interfaces:interfaces_internal",
     "//services/service_manager/public/cpp",
   ]
+
+  allow_circular_includes_from = [ "//services/resource_coordinator/public/interfaces:interfaces_internal" ]
 }
 
 source_set("struct_traits") {
@@ -27,8 +31,10 @@ source_set("struct_traits") {
     "memory/memory_instrumentation_struct_traits.h",
   ]
 
+  defines = [ "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_IMPLEMENTATION" ]
+
   public_deps = [
     "//base",
-    "//services/resource_coordinator/public/interfaces",
+    "//services/resource_coordinator/public/interfaces:interfaces_internal",
   ]
 }

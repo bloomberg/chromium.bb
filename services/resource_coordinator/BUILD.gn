@@ -14,8 +14,7 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/resource_coordinator/public/cpp",
-    "//services/resource_coordinator/public/interfaces",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
 }
 
@@ -24,15 +23,14 @@ source_set("tests") {
 
   sources = [
     "memory/coordinator/coordinator_impl_unittest.cc",
-    "public/cpp/memory/memory_dump_manager_delegate_impl_unittest.cc",
+    "public/cpp/memory/process_local_dump_manager_impl_unittest.cc",
   ]
 
   deps = [
     ":lib",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/resource_coordinator/public/cpp",
-    "//services/resource_coordinator/public/interfaces",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//testing/gtest",
   ]
 }

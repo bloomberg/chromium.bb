@@ -181,7 +181,8 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 }
 
 MemoryDumpManager::MemoryDumpManager()
-    : memory_tracing_enabled_(0),
+    : is_coordinator_(false),
+      memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
       heap_profiling_enabled_(false) {
@@ -237,12 +238,14 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
 }
 
 void MemoryDumpManager::Initialize(
-    std::unique_ptr<MemoryDumpManagerDelegate> delegate) {
+    RequestGlobalDumpFunction request_dump_function,
+    bool is_coordinator) {
   {
     AutoLock lock(lock_);
-    DCHECK(delegate);
-    DCHECK(!delegate_);
-    delegate_ = std::move(delegate);
+    DCHECK(!request_dump_function.is_null());
+    DCHECK(request_dump_function_.is_null());
+    request_dump_function_ = request_dump_function;
+    is_coordinator_ = is_coordinator;
     EnableHeapProfilingIfNeeded();
   }
 
@@ -456,10 +459,10 @@ void MemoryDumpManager::RequestGlobalDump(
       MemoryDumpLevelOfDetailToString(level_of_detail));
   GlobalMemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
 
-  // The delegate will coordinate the IPC broadcast and at some point invoke
+  // The embedder will coordinate the IPC broadcast and at some point invoke
   // CreateProcessDump() to get a dump for the current process.
   MemoryDumpRequestArgs args = {guid, dump_type, level_of_detail};
-  delegate_->RequestGlobalMemoryDump(args, wrapped_callback);
+  request_dump_function_.Run(args, wrapped_callback);
 }
 
 void MemoryDumpManager::GetDumpProvidersForPolling(
@@ -823,7 +826,8 @@ void MemoryDumpManager::Enable(
 
   AutoLock lock(lock_);
 
-  DCHECK(delegate_);  // At this point we must have a delegate.
+  // At this point we must have the ability to request global dumps.
+  DCHECK(!request_dump_function_.is_null());
   session_state_ = session_state;
 
   DCHECK(!dump_thread_);
@@ -863,7 +867,7 @@ void MemoryDumpManager::Enable(
 
       // When peak detection is enabled, trigger a dump straight away as it
       // gives a good reference point for analyzing the trace.
-      if (delegate_->IsCoordinator()) {
+      if (is_coordinator_) {
         dump_thread_->task_runner()->PostTask(
             FROM_HERE, BindRepeating(&OnPeakDetected, trigger.level_of_detail));
       }
@@ -871,7 +875,7 @@ void MemoryDumpManager::Enable(
   }
 
   // Only coordinator process triggers periodic global memory dumps.
-  if (delegate_->IsCoordinator() && !periodic_config.triggers.empty()) {
+  if (is_coordinator_ && !periodic_config.triggers.empty()) {
     MemoryDumpScheduler::GetInstance()->Start(periodic_config,
                                               dump_thread_->task_runner());
   }

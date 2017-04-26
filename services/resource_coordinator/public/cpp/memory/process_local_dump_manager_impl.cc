@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
+#include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,10 +16,19 @@
 
 namespace memory_instrumentation {
 
-MemoryDumpManagerDelegateImpl::Config::~Config() {}
+ProcessLocalDumpManagerImpl::Config::~Config() {}
 
-MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
-    const MemoryDumpManagerDelegateImpl::Config& config)
+// static
+void ProcessLocalDumpManagerImpl::CreateInstance(const Config& config) {
+  static ProcessLocalDumpManagerImpl* instance = nullptr;
+  if (!instance) {
+    instance = new ProcessLocalDumpManagerImpl(config);
+  } else {
+    NOTREACHED();
+  }
+}
+
+ProcessLocalDumpManagerImpl::ProcessLocalDumpManagerImpl(const Config& config)
     : binding_(this),
       config_(config),
       task_runner_(nullptr),
@@ -34,21 +43,25 @@ MemoryDumpManagerDelegateImpl::MemoryDumpManagerDelegateImpl(
   }
   coordinator_->RegisterProcessLocalDumpManager(
       binding_.CreateInterfacePtrAndBind());
+
+  // Only one process should handle periodic dumping.
+  bool is_coordinator_process = !!config.coordinator();
+  base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+      base::BindRepeating(&ProcessLocalDumpManagerImpl::RequestGlobalMemoryDump,
+                          base::Unretained(this)),
+      is_coordinator_process);
 }
 
-MemoryDumpManagerDelegateImpl::~MemoryDumpManagerDelegateImpl() {}
+ProcessLocalDumpManagerImpl::~ProcessLocalDumpManagerImpl() {}
 
-bool MemoryDumpManagerDelegateImpl::IsCoordinator() const {
-  return task_runner_ != nullptr;
-}
-
-void MemoryDumpManagerDelegateImpl::RequestProcessMemoryDump(
+void ProcessLocalDumpManagerImpl::RequestProcessMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestProcessMemoryDumpCallback& callback) {
-  MemoryDumpManagerDelegate::CreateProcessDump(args, callback);
+  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
+      args, callback);
 }
 
-void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
+void ProcessLocalDumpManagerImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const base::trace_event::GlobalMemoryDumpCallback& callback) {
   // Note: This condition is here to match the old behavior. If the delegate is
@@ -58,7 +71,7 @@ void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
   // process, parallel requests will be cancelled.
   //
   // TODO(chiniforooshan): Unify the child and browser behavior.
-  if (IsCoordinator()) {
+  if (task_runner_) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&mojom::Coordinator::RequestGlobalMemoryDump,
@@ -75,21 +88,24 @@ void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
     pending_memory_dump_guid_ = args.dump_guid;
   }
   auto callback_proxy =
-      base::Bind(&MemoryDumpManagerDelegateImpl::MemoryDumpCallbackProxy,
+      base::Bind(&ProcessLocalDumpManagerImpl::MemoryDumpCallbackProxy,
                  base::Unretained(this), callback);
   coordinator_->RequestGlobalMemoryDump(args, callback_proxy);
 }
 
-void MemoryDumpManagerDelegateImpl::MemoryDumpCallbackProxy(
+void ProcessLocalDumpManagerImpl::MemoryDumpCallbackProxy(
     const base::trace_event::GlobalMemoryDumpCallback& callback,
     uint64_t dump_guid,
     bool success) {
-  DCHECK_NE(0U, pending_memory_dump_guid_);
-  pending_memory_dump_guid_ = 0;
+  {
+    base::AutoLock lock(pending_memory_dump_guid_lock_);
+    DCHECK_NE(0U, pending_memory_dump_guid_);
+    pending_memory_dump_guid_ = 0;
+  }
   callback.Run(dump_guid, success);
 }
 
-void MemoryDumpManagerDelegateImpl::SetAsNonCoordinatorForTesting() {
+void ProcessLocalDumpManagerImpl::SetAsNonCoordinatorForTesting() {
   task_runner_ = nullptr;
 }
 

@@ -4,7 +4,9 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("interfaces_internal") {
+  visibility = [ "//services/resource_coordinator/public/cpp:*" ]
+
   sources = [
     "memory/constants.mojom",
     "memory/memory_instrumentation.mojom",
@@ -14,4 +16,11 @@ mojom("interfaces") {
   public_deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  export_class_attribute =
+      "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT"
+  export_define =
+      "SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_IMPLEMENTATION=1"
+  export_header =
+      "services/resource_coordinator/public/cpp/memory/memory_export.h"
 }

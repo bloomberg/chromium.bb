@@ -66,7 +66,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
-#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
+#include "services/resource_coordinator/public/cpp/memory/process_local_dump_manager_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -488,12 +488,10 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new ChildMemoryMessageFilter());
 
     if (service_manager_connection_) {
-      memory_instrumentation::MemoryDumpManagerDelegateImpl::Config config(
+      memory_instrumentation::ProcessLocalDumpManagerImpl::Config config(
           GetConnector(), mojom::kBrowserServiceName);
-      auto delegate = base::MakeUnique<
-          memory_instrumentation::MemoryDumpManagerDelegateImpl>(config);
-      base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
-          std::move(delegate));
+      memory_instrumentation::ProcessLocalDumpManagerImpl::CreateInstance(
+          config);
     }
   }
 
