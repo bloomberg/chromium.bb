@@ -38,8 +38,11 @@ ClientPolicyController::ClientPolicyController() {
           .Build()));
   policies_.insert(std::make_pair(
       kCCTNamespace,
-      MakePolicy(kCCTNamespace, LifetimeType::TEMPORARY,
-                 base::TimeDelta::FromDays(2), kUnlimitedPages, 1)));
+      OfflinePageClientPolicyBuilder(kCCTNamespace, LifetimeType::TEMPORARY,
+                                     kUnlimitedPages, 1)
+          .SetExpirePeriod(base::TimeDelta::FromDays(2))
+          .SetIsDisabledWhenPrefetchDisabled(true)
+          .Build()));
   policies_.insert(std::make_pair(
       kDownloadNamespace, OfflinePageClientPolicyBuilder(
                               kDownloadNamespace, LifetimeType::PERSISTENT,
@@ -53,6 +56,7 @@ ClientPolicyController::ClientPolicyController() {
                                      LifetimeType::PERSISTENT, kUnlimitedPages,
                                      kUnlimitedPages)
           .SetIsSupportedByDownload(true)
+          .SetIsRemovedOnCacheReset(false)
           .Build()));
   policies_.insert(std::make_pair(
       kSuggestedArticlesNamespace,
@@ -60,6 +64,7 @@ ClientPolicyController::ClientPolicyController() {
                                      LifetimeType::TEMPORARY, kUnlimitedPages,
                                      kUnlimitedPages)
           .SetIsRemovedOnCacheReset(true)
+          .SetIsDisabledWhenPrefetchDisabled(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .Build()));
 
@@ -160,6 +165,26 @@ ClientPolicyController::GetNamespacesRestrictedToOriginalTab() const {
   }
 
   return *show_in_original_tab_cache_;
+}
+
+bool ClientPolicyController::IsDisabledWhenPrefetchDisabled(
+    const std::string& name_space) const {
+  return GetPolicy(name_space).feature_policy.disabled_when_prefetch_disabled;
+}
+
+const std::vector<std::string>&
+ClientPolicyController::GetNamespacesDisabledWhenPrefetchDisabled() const {
+  if (disabled_when_prefetch_disabled_cache_)
+    return *disabled_when_prefetch_disabled_cache_;
+
+  disabled_when_prefetch_disabled_cache_ =
+      base::MakeUnique<std::vector<std::string>>();
+  for (const auto& policy_item : policies_) {
+    if (policy_item.second.feature_policy.disabled_when_prefetch_disabled)
+      disabled_when_prefetch_disabled_cache_->emplace_back(policy_item.first);
+  }
+
+  return *disabled_when_prefetch_disabled_cache_;
 }
 
 void ClientPolicyController::AddPolicyForTest(

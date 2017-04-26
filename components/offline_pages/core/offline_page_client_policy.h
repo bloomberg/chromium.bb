@@ -55,12 +55,16 @@ struct FeaturePolicy {
   bool only_shown_in_original_tab;
   // Whether pages are removed on user-initiated cache reset. Defaults to true.
   bool is_removed_on_cache_reset;
+  // Whether the namespace should be disabled if prefetching-related preferences
+  // are disabled.
+  bool disabled_when_prefetch_disabled;
 
   FeaturePolicy()
       : is_supported_by_download(false),
         is_supported_by_recent_tabs(false),
         only_shown_in_original_tab(false),
-        is_removed_on_cache_reset(true) {}
+        is_removed_on_cache_reset(true),
+        disabled_when_prefetch_disabled(false) {}
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -141,6 +145,13 @@ class OfflinePageClientPolicyBuilder {
       const bool only_shown_in_original_tab) {
     policy_.feature_policy.only_shown_in_original_tab =
         only_shown_in_original_tab;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetIsDisabledWhenPrefetchDisabled(
+      const bool disabled_when_prefetch_disabled) {
+    policy_.feature_policy.disabled_when_prefetch_disabled =
+        disabled_when_prefetch_disabled;
     return *this;
   }
 

@@ -186,16 +186,17 @@ bool PrerenderingOffliner::LoadAndSave(
     const CompletionCallback& completion_callback,
     const ProgressCallback& progress_callback) {
   DCHECK(!pending_request_.get());
+  DCHECK(offline_page_model_);
 
   if (pending_request_) {
     DVLOG(1) << "Already have pending request";
     return false;
   }
 
-  // Do not allow loading for custom tabs clients if 3rd party cookies blocked.
-  // TODO(dewittj): Revise api to specify policy rather than hard code to
-  // name_space.
-  if (request.client_id().name_space == kCCTNamespace &&
+  ClientPolicyController* policy_controller =
+      offline_page_model_->GetPolicyController();
+  if (policy_controller->IsDisabledWhenPrefetchDisabled(
+          request.client_id().name_space) &&
       (AreThirdPartyCookiesBlocked(browser_context_) ||
        IsNetworkPredictionDisabled(browser_context_))) {
     DVLOG(1) << "WARNING: Unable to load when 3rd party cookies blocked or "
