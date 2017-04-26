@@ -115,7 +115,7 @@ ContentSubresourceFilterDriverFactory::
         content::NavigationHandle* navigation_handle) const {
   const GURL& url(navigation_handle->GetURL());
 
-  auto configurations = GetActiveConfigurations();
+  const auto configurations = GetActiveConfigurations();
   if (configurations->the_one_and_only().activation_level ==
       ActivationLevel::DISABLED)
     return ActivationDecision::ACTIVATION_DISABLED;
@@ -189,7 +189,7 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 
   RecordRedirectChainMatchPattern();
 
-  auto configurations = GetActiveConfigurations();
+  const auto configurations = GetActiveConfigurations();
   if (configurations->the_one_and_only().should_whitelist_site_on_reload &&
       NavigationIsPageReload(url, referrer, transition)) {
     // Whitelist this host for the current as well as subsequent navigations.
@@ -215,7 +215,7 @@ void ContentSubresourceFilterDriverFactory::WillProcessResponse(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  auto configurations = GetActiveConfigurations();
+  const auto configurations = GetActiveConfigurations();
   if (configurations->the_one_and_only().should_suppress_notifications)
     return;
 

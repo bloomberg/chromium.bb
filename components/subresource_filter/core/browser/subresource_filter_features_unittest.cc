@@ -42,7 +42,7 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, kActivationScopeNoSites);
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_level,
@@ -81,7 +81,7 @@ TEST(SubresourceFilterFeaturesTest, ActivationScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         kActivationLevelDisabled, test_case.activation_scope_param);
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(ActivationLevel::DISABLED, actual_configuration.activation_level);
@@ -134,7 +134,7 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         test_case.activation_level_param, test_case.activation_scope_param);
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_level,
@@ -192,7 +192,7 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
         kActivationLevelDisabled, kActivationScopeNoSites,
         test_case.activation_list_param);
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_activation_list,
@@ -231,7 +231,7 @@ TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
         {{kPerformanceMeasurementRateParameterName,
           test_case.perf_measurement_param}});
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_perf_measurement_rate,
@@ -267,7 +267,7 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
         {{kSuppressNotificationsParameterName,
           test_case.suppress_notifications_param}});
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_suppress_notifications_value,
@@ -303,7 +303,7 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
         {{kWhitelistSiteOnReloadParameterName,
           test_case.whitelist_site_on_reload_param}});
 
-    auto active_configurations = GetActiveConfigurations();
+    const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
         active_configurations->the_one_and_only();
     EXPECT_EQ(test_case.expected_whitelist_site_on_reload_value,
