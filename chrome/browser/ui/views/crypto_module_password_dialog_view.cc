@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -13,7 +14,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -123,6 +123,8 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
   password_entry_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   password_entry_->set_controller(this);
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
 
   views::ColumnSet* reason_column_set = layout->AddColumnSet(0);
@@ -135,13 +137,15 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
                         views::GridLayout::LEADING, 0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0, views::kUnrelatedControlLargeHorizontalSpacing);
+      0,
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(reason_label_);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, 1);
   layout->AddView(password_label_);

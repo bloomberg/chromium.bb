@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,7 +19,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -65,10 +65,13 @@ void FirstRunBubble::Init() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   layout->SetInsets(kTopInset, kLeftInset, kBottomInset, kRightInset);
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, provider->GetDistanceMetric(
+                                   views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(1, 0);
@@ -76,8 +79,9 @@ void FirstRunBubble::Init() {
   layout->StartRow(0, 0);
   layout->AddView(title);
   layout->AddView(change);
-  layout->StartRowWithPadding(0, 0, 0,
-      views::kRelatedControlSmallVerticalSpacing);
+  layout->StartRowWithPadding(
+      0, 0, 0,
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
   layout->AddView(subtext, columns->num_columns(), 1);
 }
 

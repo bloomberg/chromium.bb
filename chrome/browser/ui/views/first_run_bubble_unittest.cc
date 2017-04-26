@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #include "base/macros.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -82,6 +83,9 @@ FirstRunBubbleTest::~FirstRunBubbleTest() {}
 
 void FirstRunBubbleTest::SetUp() {
   ViewsTestBase::SetUp();
+  // Set the ChromeLayoutProvider as the default layout provider.
+  test_views_delegate()->set_layout_provider(
+      ChromeLayoutProvider::CreateLayoutProvider());
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &TemplateURLServiceFactory::BuildInstanceFor);
   TemplateURLService* turl_model =
