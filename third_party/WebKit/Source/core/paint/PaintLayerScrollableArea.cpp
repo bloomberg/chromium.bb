@@ -630,6 +630,21 @@ bool PaintLayerScrollableArea::UserInputScrollable(
   if (Box().IsIntrinsicallyScrollable(orientation))
     return true;
 
+  if (Box().IsLayoutView()) {
+    if (LocalFrame* frame = Box().GetFrame()) {
+      if (FrameView* frame_view = frame->View()) {
+        ScrollbarMode h_mode;
+        ScrollbarMode v_mode;
+        frame_view->CalculateScrollbarModes(h_mode, v_mode);
+        if (orientation == kHorizontalScrollbar &&
+            h_mode == kScrollbarAlwaysOff)
+          return false;
+        if (orientation == kVerticalScrollbar && v_mode == kScrollbarAlwaysOff)
+          return false;
+      }
+    }
+  }
+
   EOverflow overflow_style = (orientation == kHorizontalScrollbar)
                                  ? Box().Style()->OverflowX()
                                  : Box().Style()->OverflowY();
@@ -1240,8 +1255,12 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
         frame_view->CalculateScrollbarModes(h_mode, v_mode);
         if (h_mode == kScrollbarAlwaysOn)
           needs_horizontal_scrollbar = true;
+        else if (h_mode == kScrollbarAlwaysOff)
+          needs_horizontal_scrollbar = false;
         if (v_mode == kScrollbarAlwaysOn)
           needs_vertical_scrollbar = true;
+        else if (v_mode == kScrollbarAlwaysOff)
+          needs_vertical_scrollbar = false;
       }
     }
   }
@@ -1716,6 +1735,13 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet(bool has_overflow) {
 
   bool is_visible_to_hit_test = Box().Style()->VisibleToHitTesting();
   bool did_scroll_overflow = scrolls_overflow_;
+  if (Box().IsLayoutView()) {
+    ScrollbarMode h_mode;
+    ScrollbarMode v_mode;
+    frame_view->CalculateScrollbarModes(h_mode, v_mode);
+    if (h_mode == kScrollbarAlwaysOff && v_mode == kScrollbarAlwaysOff)
+      has_overflow = false;
+  }
   scrolls_overflow_ = has_overflow && is_visible_to_hit_test;
   if (did_scroll_overflow == ScrollsOverflow())
     return;
