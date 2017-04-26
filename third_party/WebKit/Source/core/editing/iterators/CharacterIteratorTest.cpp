@@ -43,7 +43,7 @@ TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
   SetBodyContent(body_content);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Node* div_node = GetDocument().GetElementById("div");
+  Node* div_node = GetDocument().getElementById("div");
   Range* entire_range = Range::Create(GetDocument(), div_node, 0, div_node, 3);
 
   EphemeralRange result =
@@ -59,7 +59,7 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   SetBodyContent(body_content);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Node* text_node = GetDocument().GetElementById("div")->lastChild();
+  Node* text_node = GetDocument().getElementById("div")->lastChild();
   Range* entire_range =
       Range::Create(GetDocument(), text_node, 1, text_node, 4);
   EXPECT_EQ(1u, entire_range->startOffset());

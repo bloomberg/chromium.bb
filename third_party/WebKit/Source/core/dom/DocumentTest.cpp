@@ -479,7 +479,7 @@ TEST_F(DocumentTest, StyleVersion) {
       "</style>"
       "<div id='x'><span class='c'></span></div>");
 
-  Element* element = GetDocument().GetElementById("x");
+  Element* element = GetDocument().getElementById("x");
   EXPECT_TRUE(element);
 
   uint64_t previous_style_version = GetDocument().StyleVersion();

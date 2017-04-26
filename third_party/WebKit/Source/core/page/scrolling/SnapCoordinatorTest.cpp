@@ -63,7 +63,7 @@ class SnapCoordinatorTest
   }
 
   Element& SnapContainer() {
-    return *GetDocument().GetElementById("snap-container");
+    return *GetDocument().getElementById("snap-container");
   }
 
   SnapCoordinator& Coordinator() { return *GetDocument().GetSnapCoordinator(); }
@@ -139,7 +139,7 @@ TEST_P(SnapCoordinatorTest, ZeroAndNegativeRepeat) {
 }
 
 TEST_P(SnapCoordinatorTest, SimpleSnapElement) {
-  Element& snap_element = *GetDocument().GetElementById("snap-element");
+  Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
   GetDocument().UpdateStyleAndLayout();
 
@@ -161,7 +161,7 @@ TEST_P(SnapCoordinatorTest, SimpleSnapElement) {
 }
 
 TEST_P(SnapCoordinatorTest, NestedSnapElement) {
-  Element& snap_element = *GetDocument().GetElementById("nested-snap-element");
+  Element& snap_element = *GetDocument().getElementById("nested-snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 20px 25px;");
   GetDocument().UpdateStyleAndLayout();
 
@@ -170,10 +170,10 @@ TEST_P(SnapCoordinatorTest, NestedSnapElement) {
 }
 
 TEST_P(SnapCoordinatorTest, NestedSnapElementCaptured) {
-  Element& snap_element = *GetDocument().GetElementById("nested-snap-element");
+  Element& snap_element = *GetDocument().getElementById("nested-snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 20px 25px;");
 
-  Element* intermediate = GetDocument().GetElementById("intermediate");
+  Element* intermediate = GetDocument().getElementById("intermediate");
   intermediate->setAttribute(styleAttr, "overflow: scroll;");
 
   GetDocument().UpdateStyleAndLayout();
@@ -186,7 +186,7 @@ TEST_P(SnapCoordinatorTest, NestedSnapElementCaptured) {
 
 TEST_P(SnapCoordinatorTest, PositionFixedSnapElement) {
   Element& snap_element =
-      *GetDocument().GetElementById("snap-element-fixed-position");
+      *GetDocument().getElementById("snap-element-fixed-position");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 1px 1px;");
   GetDocument().UpdateStyleAndLayout();
 
@@ -204,10 +204,10 @@ TEST_P(SnapCoordinatorTest, PositionFixedSnapElement) {
 
 TEST_P(SnapCoordinatorTest, RepeatAndSnapElementTogether) {
   GetDocument()
-      .GetElementById("snap-element")
+      .getElementById("snap-element")
       ->setAttribute(styleAttr, "scroll-snap-coordinate: 5px 10px;");
   GetDocument()
-      .GetElementById("nested-snap-element")
+      .getElementById("nested-snap-element")
       ->setAttribute(styleAttr, "scroll-snap-coordinate: 250px 450px;");
 
   SnapContainer().setAttribute(styleAttr,
@@ -232,7 +232,7 @@ TEST_P(SnapCoordinatorTest, RepeatAndSnapElementTogether) {
 }
 
 TEST_P(SnapCoordinatorTest, SnapPointsAreScrollOffsetIndependent) {
-  Element& snap_element = *GetDocument().GetElementById("snap-element");
+  Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
   SnapContainer().scrollBy(100, 100);
   GetDocument().UpdateStyleAndLayout();
@@ -244,7 +244,7 @@ TEST_P(SnapCoordinatorTest, SnapPointsAreScrollOffsetIndependent) {
 }
 
 TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
-  Element& snap_element = *GetDocument().GetElementById("snap-element");
+  Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
   GetDocument().UpdateStyleAndLayout();
 
@@ -258,7 +258,7 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   EXPECT_EQ(0U, SnapOffsets(SnapContainer(), kVerticalScrollbar).size());
 
   // Add a new snap element
-  Element& container = *GetDocument().GetElementById("snap-container");
+  Element& container = *GetDocument().getElementById("snap-container");
   container.setInnerHTML(
       "<div style='scroll-snap-coordinate: 20px 22px;'><div "
       "style='width:2000px; height:2000px;'></div></div>");

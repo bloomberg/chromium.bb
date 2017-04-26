@@ -202,7 +202,7 @@ TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
   LayoutBlock* frame_container =
       ToLayoutBlock(GetLayoutObjectByElementId("frameContainer"));
   LayoutObject* target =
-      ChildDocument().GetElementById("target")->GetLayoutObject();
+      ChildDocument().getElementById("target")->GetLayoutObject();
   LayoutRect rect(0, 0, 100, 100);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(frame_container, rect));
   // When passing from the iframe to the parent frame, the rect of (0.5, 0, 100,
@@ -242,7 +242,7 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
   EXPECT_TRUE(frame_div->MapToVisualRectInAncestorSpace(frame_container, rect));
   EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
-  Element* frame_element = GetDocument().GetElementById("frame");
+  Element* frame_element = GetDocument().getElementById("frame");
   frame_element->SetInlineStyleProperty(CSSPropertyDisplay, "none");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

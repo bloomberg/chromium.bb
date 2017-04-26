@@ -43,7 +43,7 @@ ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
     const char* host_element_id,
     const char* shadow_root_content) {
   ShadowRoot* shadow_root =
-      scope.GetElementById(AtomicString::FromUTF8(host_element_id))
+      scope.getElementById(AtomicString::FromUTF8(host_element_id))
           ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   shadow_root->setInnerHTML(String::FromUTF8(shadow_root_content),
                             ASSERT_NO_EXCEPTION);

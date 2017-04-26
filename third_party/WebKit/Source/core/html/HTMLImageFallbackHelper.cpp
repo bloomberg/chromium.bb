@@ -70,9 +70,9 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     return new_style;
 
   Element* place_holder =
-      element.UserAgentShadowRoot()->GetElementById("alttext-container");
+      element.UserAgentShadowRoot()->getElementById("alttext-container");
   Element* broken_image =
-      element.UserAgentShadowRoot()->GetElementById("alttext-image");
+      element.UserAgentShadowRoot()->getElementById("alttext-image");
   // Input elements have a UA shadow root of their own. We may not have replaced
   // it with fallback content yet.
   if (!place_holder || !broken_image)

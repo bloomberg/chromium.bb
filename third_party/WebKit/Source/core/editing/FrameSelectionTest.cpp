@@ -58,7 +58,7 @@ Text* FrameSelectionTest::AppendTextNode(const String& data) {
 
 TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
   SetBodyContent("<div id=sample>0123456789</div>abc");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   Node* const text = sample->firstChild();
   Selection().SetSelectedRange(
       EphemeralRange(Position(text, 3), Position(text, 6)), VP_DEFAULT_AFFINITY,
@@ -159,7 +159,7 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition2) {
 TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
   SetBodyContent("<span id=host></span>one");
   SetShadowContent("two<content></content>", "host");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   Node* const two = FlatTreeTraversal::FirstChild(*host);
   // Select "two" for selection in DOM tree
   // Select "twoone" for selection in Flat tree
@@ -179,7 +179,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
 
 TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
   SetBodyContent("<div id=sample>abc</div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(end_of_text).Build());
@@ -270,7 +270,7 @@ TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
 
 TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
   SetBodyContent("<div id=sample>abc</div>");
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(end_of_text)

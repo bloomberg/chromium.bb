@@ -137,7 +137,7 @@ class LinkSelectionTest : public LinkSelectionTestBase {
 
     auto* document = main_frame_->GetFrame()->GetDocument();
     ASSERT_NE(nullptr, document);
-    auto* link_to_select = document->GetElementById("link")->firstChild();
+    auto* link_to_select = document->getElementById("link")->firstChild();
     ASSERT_NE(nullptr, link_to_select);
     // We get larger range that we actually want to select, because we need a
     // slightly larger rect to include the last character to the selection.
@@ -226,7 +226,7 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload) {
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
   auto* document = main_frame_->GetFrame()->GetDocument();
-  auto* text_to_select = document->GetElementById("page_text")->firstChild();
+  auto* text_to_select = document->getElementById("page_text")->firstChild();
   ASSERT_NE(nullptr, text_to_select);
 
   // Select some page text outside the link element.
@@ -276,8 +276,8 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
     auto* document = main_frame_->GetFrame()->GetDocument();
     ASSERT_NE(nullptr, document);
 
-    auto* empty_div = document->GetElementById("empty_div");
-    auto* text_div = document->GetElementById("text_div");
+    auto* empty_div = document->getElementById("empty_div");
+    auto* text_div = document->getElementById("text_div");
     ASSERT_NE(nullptr, empty_div);
     ASSERT_NE(nullptr, text_div);
   }
@@ -312,7 +312,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
 
 TEST_F(LinkSelectionClickEventsTest, SingleAndDoubleClickWillBeHandled) {
   auto* document = main_frame_->GetFrame()->GetDocument();
-  auto* element = document->GetElementById("empty_div");
+  auto* element = document->getElementById("empty_div");
 
   {
     SCOPED_TRACE("Empty div, single click");
@@ -324,7 +324,7 @@ TEST_F(LinkSelectionClickEventsTest, SingleAndDoubleClickWillBeHandled) {
     CheckMouseClicks(*element, true);
   }
 
-  element = document->GetElementById("text_div");
+  element = document->getElementById("text_div");
 
   {
     SCOPED_TRACE("Text div, single click");

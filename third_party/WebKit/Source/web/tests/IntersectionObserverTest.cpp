@@ -62,7 +62,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   EXPECT_TRUE(observer->takeRecords(exception_state).IsEmpty());
   EXPECT_EQ(observer_callback->CallCount(), 0);
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
   observer->observe(target, exception_state);
   EXPECT_TRUE(Compositor().NeedsBeginFrame());
@@ -85,7 +85,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
       observer_init, *observer_callback, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
   observer->observe(target, exception_state);
 
@@ -144,7 +144,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
       observer_init, *observer_callback, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
   observer->observe(target, exception_state);
 

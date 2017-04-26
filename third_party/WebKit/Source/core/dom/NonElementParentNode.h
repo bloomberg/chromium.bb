@@ -13,7 +13,7 @@ namespace blink {
 class NonElementParentNode {
  public:
   static Element* getElementById(Document& document, const AtomicString& id) {
-    return document.GetElementById(id);
+    return document.getElementById(id);
   }
 
   static Element* getElementById(DocumentFragment& fragment,

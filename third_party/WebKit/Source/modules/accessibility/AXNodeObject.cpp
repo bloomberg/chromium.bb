@@ -130,7 +130,7 @@ class ObjectAttributeSetter : public SparseAttributeSetter {
     Node* node = obj.GetNode();
     if (!node || !node->IsElementNode())
       return;
-    Element* target = ToElement(node)->GetTreeScope().GetElementById(value);
+    Element* target = ToElement(node)->GetTreeScope().getElementById(value);
     if (!target)
       return;
     AXObject* ax_target = obj.AxObjectCache().GetOrCreate(target);
@@ -167,7 +167,7 @@ class ObjectVectorAttributeSetter : public SparseAttributeSetter {
     HeapVector<Member<AXObject>> objects;
     TreeScope& scope = node->GetTreeScope();
     for (const auto& id : ids) {
-      if (Element* id_element = scope.GetElementById(AtomicString(id))) {
+      if (Element* id_element = scope.getElementById(AtomicString(id))) {
         AXObject* ax_id_element = obj.AxObjectCache().GetOrCreate(id_element);
         if (ax_id_element && !ax_id_element->AccessibilityIsIgnored())
           objects.push_back(ax_id_element);
@@ -254,7 +254,7 @@ AXObject* AXNodeObject::ActiveDescendant() {
 
   Element* element = ToElement(GetNode());
   Element* descendant =
-      element->GetTreeScope().GetElementById(active_descendant_attr);
+      element->GetTreeScope().getElementById(active_descendant_attr);
   if (!descendant)
     return nullptr;
 

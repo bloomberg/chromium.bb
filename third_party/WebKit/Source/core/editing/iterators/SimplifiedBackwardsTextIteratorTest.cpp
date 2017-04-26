@@ -35,7 +35,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, SubrangeWithReplacedElements) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
 
   // We should not apply DOM tree version to containing shadow tree in
   // general. To record current behavior, we have this test. even if it
@@ -54,7 +54,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
 
   EphemeralRangeTemplate<EditingStrategy> range1(
       EphemeralRangeTemplate<EditingStrategy>::RangeOfContents(*host));
@@ -111,7 +111,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   const char* message =
       "|backIter%d| should have emitted '%s' in reverse order.";
 

@@ -205,7 +205,7 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate) {
 
   unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  GetDocument().GetElementById("d")->focus();
+  GetDocument().getElementById("d")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned element_count =
@@ -237,7 +237,7 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
 
   unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  GetDocument().GetElementById("d")->focus();
+  GetDocument().getElementById("d")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned element_count =
@@ -269,7 +269,7 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate) {
 
   unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  GetDocument().GetElementById("d")->focus();
+  GetDocument().getElementById("d")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned element_count =
@@ -303,7 +303,7 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate) {
 
   unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  GetDocument().GetElementById("d")->focus();
+  GetDocument().getElementById("d")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned element_count =
@@ -329,7 +329,7 @@ TEST_F(AffectedByFocusTest, FocusWithinCommonAncestor) {
 
   unsigned start_count = GetDocument().GetStyleEngine().StyleForElementCount();
 
-  GetDocument().GetElementById("focusme1")->focus();
+  GetDocument().getElementById("focusme1")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned element_count =
@@ -339,7 +339,7 @@ TEST_F(AffectedByFocusTest, FocusWithinCommonAncestor) {
 
   start_count += element_count;
 
-  GetDocument().GetElementById("focusme2")->focus();
+  GetDocument().getElementById("focusme2")->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   element_count =

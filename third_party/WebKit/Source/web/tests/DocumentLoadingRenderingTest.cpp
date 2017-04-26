@@ -216,7 +216,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded) {
   Compositor().BeginFrame();
 
   // Replace the stylesheet by changing href.
-  auto* element = GetDocument().GetElementById("link");
+  auto* element = GetDocument().getElementById("link");
   EXPECT_NE(nullptr, element);
   element->setAttribute(hrefAttr, "second.css");
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
@@ -260,7 +260,7 @@ TEST_F(DocumentLoadingRenderingTest,
   // this by doing offsetTop in a setTimeout, or by a parent frame executing
   // script that touched offsetTop in the child frame.
   auto* child_frame =
-      toHTMLIFrameElement(GetDocument().GetElementById("frame"));
+      toHTMLIFrameElement(GetDocument().getElementById("frame"));
   child_frame->contentDocument()
       ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -320,7 +320,7 @@ TEST_F(DocumentLoadingRenderingTest,
       "<body style='background: blue'>");
 
   auto* child_frame =
-      toHTMLIFrameElement(GetDocument().GetElementById("frame"));
+      toHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   // Frame while the child frame still has pending sheets.
   auto* frame1_callback = new CheckRafCallback();
@@ -410,7 +410,7 @@ TEST_F(DocumentLoadingRenderingTest,
   EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // If ignoringPendingStylesheets==true, element should get non-empty rect.
-  Element* element = GetDocument().GetElementById("test");
+  Element* element = GetDocument().getElementById("test");
   ClientRect* rect = element->getBoundingClientRect();
   EXPECT_TRUE(rect->width() > 0.f);
   EXPECT_TRUE(rect->height() > 0.f);

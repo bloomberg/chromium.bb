@@ -27,7 +27,7 @@ class HTMLCanvasElementModuleTest : public ::testing::Test {
     document->documentElement()->setInnerHTML(
         "<body><canvas id='c'></canvas></body>");
     document->View()->UpdateAllLifecyclePhases();
-    canvas_element_ = toHTMLCanvasElement(document->GetElementById("c"));
+    canvas_element_ = toHTMLCanvasElement(document->getElementById("c"));
   }
 
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }

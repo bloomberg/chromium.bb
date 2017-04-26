@@ -14,8 +14,8 @@ TEST_F(NodeTest, canStartSelection) {
   const char* body_content =
       "<a id=one href='http://www.msn.com'>one</a><b id=two>two</b>";
   SetBodyContent(body_content);
-  Node* one = GetDocument().GetElementById("one");
-  Node* two = GetDocument().GetElementById("two");
+  Node* one = GetDocument().getElementById("one");
+  Node* two = GetDocument().getElementById("two");
 
   EXPECT_FALSE(one->CanStartSelection());
   EXPECT_FALSE(one->firstChild()->CanStartSelection());
@@ -29,7 +29,7 @@ TEST_F(NodeTest, canStartSelectionWithShadowDOM) {
       "<a href='http://www.msn.com'><content></content></a>";
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
-  Node* one = GetDocument().GetElementById("one");
+  Node* one = GetDocument().getElementById("one");
 
   EXPECT_FALSE(one->CanStartSelection());
   EXPECT_FALSE(one->firstChild()->CanStartSelection());
@@ -38,7 +38,7 @@ TEST_F(NodeTest, canStartSelectionWithShadowDOM) {
 TEST_F(NodeTest, customElementState) {
   const char* body_content = "<div id=div></div>";
   SetBodyContent(body_content);
-  Element* div = GetDocument().GetElementById("div");
+  Element* div = GetDocument().getElementById("div");
   EXPECT_EQ(CustomElementState::kUncustomized, div->GetCustomElementState());
   EXPECT_TRUE(div->IsDefined());
   EXPECT_EQ(Node::kV0NotCustomElement, div->GetV0CustomElementState());

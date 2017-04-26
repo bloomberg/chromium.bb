@@ -20,7 +20,7 @@ class LayoutObjectTest : public RenderingTest {
 
 TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   SetBodyInnerHTML("<div id='div' style='position: fixed'>test</div>");
-  Element* div = GetDocument().GetElementById(AtomicString("div"));
+  Element* div = GetDocument().getElementById(AtomicString("div"));
   DCHECK(div);
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);

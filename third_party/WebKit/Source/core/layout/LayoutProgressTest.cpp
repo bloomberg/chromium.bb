@@ -24,7 +24,7 @@ TEST_F(LayoutProgressTest, AnimationScheduling) {
       "<progress id=\"progressElement\" value=0.3 max=1.0></progress>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* progress_element =
-      GetDocument().GetElementById(AtomicString("progressElement"));
+      GetDocument().getElementById(AtomicString("progressElement"));
   LayoutProgress* layout_progress =
       ToLayoutProgress(progress_element->GetLayoutObject());
 

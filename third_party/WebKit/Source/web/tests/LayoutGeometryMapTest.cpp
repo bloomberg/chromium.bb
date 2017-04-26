@@ -72,7 +72,7 @@ class LayoutGeometryMapTest
       return nullptr;
     LocalFrame* frame = iframe->GetFrame();
     Document* doc = frame->GetDocument();
-    Element* element = doc->GetElementById(element_id);
+    Element* element = doc->getElementById(element_id);
     if (!element)
       return nullptr;
     return element->GetLayoutBox();
@@ -85,7 +85,7 @@ class LayoutGeometryMapTest
       return nullptr;
     LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
     Document* doc = frame->GetDocument();
-    return doc->GetElementById(element_id);
+    return doc->getElementById(element_id);
   }
 
   static LayoutBox* GetLayoutBox(WebView* web_view,

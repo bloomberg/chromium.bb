@@ -43,7 +43,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   Compositor().BeginFrame();
   ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(target->GetLayoutObject());
   RefPtr<NGConstraintSpace> constraint_space =
@@ -68,7 +68,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   Compositor().BeginFrame();
   ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(target->GetLayoutObject());
   RefPtr<NGConstraintSpace> constraint_space =

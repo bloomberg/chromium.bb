@@ -1774,7 +1774,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   // Enter fullscreen.
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* element = document->GetElementById("fullscreenElement");
+  Element* element = document->getElementById("fullscreenElement");
   UserGestureIndicator gesture(DocumentUserGestureToken::Create(document));
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
@@ -1814,7 +1814,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   // Enter fullscreen.
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* element = document->GetElementById("fullscreenElement");
+  Element* element = document->getElementById("fullscreenElement");
   UserGestureIndicator gesture(DocumentUserGestureToken::Create(document));
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
@@ -1880,7 +1880,7 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
 
   // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-  Element* other_element = document->GetElementById("content");
+  Element* other_element = document->getElementById("content");
   Fullscreen::RequestFullscreen(*other_element);
 
   // Confirm that exiting fullscreen restores the parameters.
@@ -2946,7 +2946,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 
   HTMLInputElement* input_element;
 
-  input_element = toHTMLInputElement(document->GetElementById("date"));
+  input_element = toHTMLInputElement(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -2958,7 +2958,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->GetElementById("datetimelocal"));
+  input_element = toHTMLInputElement(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -2970,7 +2970,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->GetElementById("month"));
+  input_element = toHTMLInputElement(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -2982,7 +2982,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->GetElementById("time"));
+  input_element = toHTMLInputElement(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -2994,7 +2994,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->GetElementById("week"));
+  input_element = toHTMLInputElement(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3292,7 +3292,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler on a div results in a has-handlers call.
-  Element* parent_div = document->GetElementById("parentdiv");
+  Element* parent_div = document->getElementById("parentdiv");
   DCHECK(parent_div);
   registry->DidAddEventHandler(*parent_div, kTouchEvent);
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
@@ -3325,11 +3325,11 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler inside of a child iframe results in a has-handlers call.
-  Element* child_frame = document->GetElementById("childframe");
+  Element* child_frame = document->getElementById("childframe");
   DCHECK(child_frame);
   Document* child_document =
       toHTMLIFrameElement(child_frame)->contentDocument();
-  Element* child_div = child_document->GetElementById("childdiv");
+  Element* child_div = child_document->getElementById("childdiv");
   DCHECK(child_div);
   registry->DidAddEventHandler(*child_div, kTouchEvent);
   EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
@@ -3386,7 +3386,7 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
 
   Persistent<Document> document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* div = document->GetElementById("div");
+  Element* div = document->getElementById("div");
   EventHandlerRegistry& registry =
       document->GetPage()->GetEventHandlerRegistry();
 
@@ -3420,7 +3420,7 @@ TEST_P(WebViewTest, TextInputFlags) {
   // (A.1) Verifies autocorrect/autocomplete/spellcheck flags are Off and
   // autocapitalize is set to none.
   HTMLInputElement* input_element =
-      toHTMLInputElement(document->GetElementById("input"));
+      toHTMLInputElement(document->getElementById("input"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -3433,7 +3433,7 @@ TEST_P(WebViewTest, TextInputFlags) {
 
   // (A.2) Verifies autocorrect/autocomplete/spellcheck flags are On and
   // autocapitalize is set to sentences.
-  input_element = toHTMLInputElement(document->GetElementById("input2"));
+  input_element = toHTMLInputElement(document->getElementById("input2"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -3447,7 +3447,7 @@ TEST_P(WebViewTest, TextInputFlags) {
   // (B) <textarea> Verifies the default text input flags are
   // WebTextInputFlagAutocapitalizeSentences.
   HTMLTextAreaElement* text_area_element =
-      toHTMLTextAreaElement(document->GetElementById("textarea"));
+      toHTMLTextAreaElement(document->getElementById("textarea"));
   document->SetFocusedElement(
       text_area_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -4199,7 +4199,7 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
-  Element* vw_element = document->GetElementById("vw");
+  Element* vw_element = document->getElementById("vw");
 
   EXPECT_EQ(800, vw_element->OffsetWidth());
 
@@ -4244,7 +4244,7 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
-  Element* div = document->GetElementById("d");
+  Element* div = document->getElementById("d");
 
   EXPECT_EQ(MakeRGB(0, 128, 0),
             div->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
@@ -4280,8 +4280,8 @@ TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   Document* document = frame->GetFrame()->GetDocument();
-  Element* t1 = document->GetElementById("t1");
-  Element* t2 = document->GetElementById("t2");
+  Element* t1 = document->getElementById("t1");
+  Element* t2 = document->getElementById("t2");
 
   EXPECT_EQ(400, t1->OffsetWidth());
   EXPECT_EQ(400, t2->OffsetWidth());

@@ -55,10 +55,10 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("bodyDiv"));
+  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("bodyDiv"));
+  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -79,10 +79,10 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("bodyDiv"));
+  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("bodyDiv"));
+  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -104,21 +104,21 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the head css shouldn't change anything
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the body resource and pumping the tasks should continue parsing
   // and create the "after" div.
   css_body_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -145,20 +145,20 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "<div id=\"after1\"></div>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after1"));
-  EXPECT_FALSE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after1"));
+  EXPECT_FALSE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   main_resource.Write(
       "<link rel=stylesheet href=testBody2.css>"
       "<div id=\"after2\"></div>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after1"));
-  EXPECT_FALSE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after1"));
+  EXPECT_FALSE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   main_resource.Complete(
       "<link rel=stylesheet href=testBody3.css>"
@@ -166,44 +166,44 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after1"));
-  EXPECT_FALSE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after1"));
+  EXPECT_FALSE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   // Completing the head css shouldn't change anything
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after1"));
-  EXPECT_FALSE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after1"));
+  EXPECT_FALSE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   // Completing the second css shouldn't change anything
   css_body_resource2.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after1"));
-  EXPECT_FALSE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after1"));
+  EXPECT_FALSE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   // Completing the first css should allow the parser to continue past it and
   // the second css which was already completed and then pause again before the
   // third css.
   css_body_resource1.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after1"));
-  EXPECT_TRUE(GetDocument().GetElementById("after2"));
-  EXPECT_FALSE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after1"));
+  EXPECT_TRUE(GetDocument().getElementById("after2"));
+  EXPECT_FALSE(GetDocument().getElementById("after3"));
 
   // Completing the third css should let it continue to the end.
   css_body_resource3.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after1"));
-  EXPECT_TRUE(GetDocument().GetElementById("after2"));
-  EXPECT_TRUE(GetDocument().GetElementById("after3"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after1"));
+  EXPECT_TRUE(GetDocument().getElementById("after2"));
+  EXPECT_TRUE(GetDocument().getElementById("after3"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -224,8 +224,8 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
 
   // Completing the head css shouldn't change anything
   css_head_resource.Complete("");
@@ -252,21 +252,21 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the head css shouldn't change anything
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the body resource and pumping the tasks should continue parsing
   // and create the "after" div.
   css_body_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -290,21 +290,21 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the head css shouldn't change anything
   css_head_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_FALSE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_FALSE(GetDocument().getElementById("after"));
 
   // Completing the body resource and pumping the tasks should continue parsing
   // and create the "after" div.
   css_body_resource.Complete("");
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -326,8 +326,8 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
   css_head_resource.Complete("");
 }
 
@@ -350,8 +350,8 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
   css_head_resource.Complete("");
 }
 
@@ -381,8 +381,8 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "</body></html>");
 
   testing::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().GetElementById("before"));
-  EXPECT_TRUE(GetDocument().GetElementById("after"));
+  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_TRUE(GetDocument().getElementById("after"));
 
   css_async_resource.Complete("");
 }

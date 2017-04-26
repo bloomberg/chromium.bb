@@ -456,7 +456,7 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
 
 TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root = AttachShadow(*host);
@@ -493,7 +493,7 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
 
 TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root = AttachShadow(*host);
@@ -517,7 +517,7 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
 
 TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
   GetDocument().body()->setInnerHTML("<div id=host></div>");
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
   ShadowRoot& shadow_root = AttachShadow(*host);

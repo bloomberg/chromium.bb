@@ -111,7 +111,7 @@ class RenderingTest : public testing::Test {
   }
 
   LayoutObject* GetLayoutObjectByElementId(const char* id) const {
-    Node* node = GetDocument().GetElementById(id);
+    Node* node = GetDocument().getElementById(id);
     return node ? node->GetLayoutObject() : nullptr;
   }
 

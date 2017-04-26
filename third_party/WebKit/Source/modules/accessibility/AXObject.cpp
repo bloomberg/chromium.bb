@@ -959,7 +959,7 @@ void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
 
   TreeScope& scope = GetNode()->GetTreeScope();
   for (const auto& id : ids) {
-    if (Element* id_element = scope.GetElementById(AtomicString(id)))
+    if (Element* id_element = scope.getElementById(AtomicString(id)))
       elements.push_back(id_element);
   }
 }

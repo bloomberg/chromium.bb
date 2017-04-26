@@ -126,7 +126,7 @@ InputType::ValueMode TextFieldInputType::GetValueMode() const {
 
 SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
   return ToSpinButtonElementOrDie(
-      GetElement().UserAgentShadowRoot()->GetElementById(
+      GetElement().UserAgentShadowRoot()->getElementById(
           ShadowElementNames::SpinButton()));
 }
 
@@ -320,7 +320,7 @@ void TextFieldInputType::CreateShadowSubtree() {
 }
 
 Element* TextFieldInputType::ContainerElement() const {
-  return GetElement().UserAgentShadowRoot()->GetElementById(
+  return GetElement().UserAgentShadowRoot()->getElementById(
       ShadowElementNames::TextFieldContainer());
 }
 
@@ -333,7 +333,7 @@ void TextFieldInputType::DestroyShadowSubtree() {
 void TextFieldInputType::ListAttributeTargetChanged() {
   if (ChromeClient* chrome_client = this->GetChromeClient())
     chrome_client->TextFieldDataListChanged(GetElement());
-  Element* picker = GetElement().UserAgentShadowRoot()->GetElementById(
+  Element* picker = GetElement().UserAgentShadowRoot()->getElementById(
       ShadowElementNames::PickerIndicator());
   bool did_have_picker_indicator = picker;
   bool will_have_picker_indicator = GetElement().HasValidDataListOptions();

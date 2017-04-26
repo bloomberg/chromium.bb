@@ -86,7 +86,7 @@ TEST_F(VisibleUnitsTest, associatedLayoutObjectOfFirstLetterPunctuations) {
       "<style>p:first-letter {color:red;}</style><p id=sample>(a)bc</p>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   LayoutTextFragment* layout_object0 =
@@ -115,7 +115,7 @@ TEST_F(VisibleUnitsTest, associatedLayoutObjectOfFirstLetterSplit) {
       "<style>p:first-letter {color:red;}</style><p id=sample>abc</p>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
   ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
@@ -137,7 +137,7 @@ TEST_F(VisibleUnitsTest,
       "<div></div></div>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   LayoutTextFragment* layout_object0 =
@@ -157,7 +157,7 @@ TEST_F(VisibleUnitsTest, caretMinOffset) {
   const char* body_content = "<p id=one>one</p>";
   SetBodyContent(body_content);
 
-  Element* one = GetDocument().GetElementById("one");
+  Element* one = GetDocument().getElementById("one");
 
   EXPECT_EQ(0, CaretMinOffset(one->firstChild()));
 }
@@ -167,7 +167,7 @@ TEST_F(VisibleUnitsTest, caretMinOffsetWithFirstLetter) {
       "<style>#one:first-letter { font-size: 200%; }</style><p id=one>one</p>";
   SetBodyContent(body_content);
 
-  Element* one = GetDocument().GetElementById("one");
+  Element* one = GetDocument().getElementById("one");
 
   EXPECT_EQ(0, CaretMinOffset(one->firstChild()));
 }
@@ -182,8 +182,8 @@ TEST_F(VisibleUnitsTest, characterAfter) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
 
   EXPECT_EQ('2', CharacterAfter(
                      CreateVisiblePositionInDOMTree(*one->firstChild(), 1)));
@@ -262,9 +262,9 @@ TEST_F(VisibleUnitsTest, characterBefore) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
 
   EXPECT_EQ(0, CharacterBefore(CreateVisiblePositionInDOMTree(*one, 0)));
   EXPECT_EQ('2', CharacterBefore(CreateVisiblePositionInFlatTree(*one, 0)));
@@ -284,7 +284,7 @@ TEST_F(VisibleUnitsTest, computeInlineBoxPositionBidiIsolate) {
   SetBodyContent(
       "|<span id=sample style='unicode-bidi: isolate;'>foo<br>bar</span>|");
 
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   const InlineBoxPosition& actual =
@@ -301,8 +301,8 @@ TEST_F(VisibleUnitsTest, endOfDocument) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
 
   EXPECT_EQ(Position(two->firstChild(), 2),
             EndOfDocument(CreateVisiblePositionInDOMTree(*one->firstChild(), 0))
@@ -332,13 +332,13 @@ TEST_F(VisibleUnitsTest, endOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_EQ(
       Position(seven, 7),
@@ -411,7 +411,7 @@ TEST_F(VisibleUnitsTest, endOfParagraphFirstLetter) {
       "<style>div::first-letter { color: red }</style><div "
       "id=sample>1ab\nde</div>");
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   EXPECT_EQ(Position(text, 6),
@@ -442,7 +442,7 @@ TEST_F(VisibleUnitsTest, endOfParagraphFirstLetterPre) {
       "<style>pre::first-letter { color: red }</style><pre "
       "id=sample>1ab\nde</pre>");
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   EXPECT_EQ(Position(text, 3),
@@ -477,9 +477,9 @@ TEST_F(VisibleUnitsTest, endOfParagraphShadow) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
-  Element* three = GetDocument().GetElementById("three");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
+  Element* three = GetDocument().getElementById("three");
 
   EXPECT_EQ(
       Position(three->firstChild(), 3),
@@ -503,7 +503,7 @@ TEST_F(VisibleUnitsTest, endOfParagraphShadow) {
 TEST_F(VisibleUnitsTest, endOfParagraphSimple) {
   SetBodyContent("<div id=sample>1ab\nde</div>");
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   EXPECT_EQ(Position(text, 6),
@@ -532,7 +532,7 @@ TEST_F(VisibleUnitsTest, endOfParagraphSimple) {
 TEST_F(VisibleUnitsTest, endOfParagraphSimplePre) {
   SetBodyContent("<pre id=sample>1ab\nde</pre>");
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* text = sample->firstChild();
 
   EXPECT_EQ(Position(text, 3),
@@ -567,10 +567,10 @@ TEST_F(VisibleUnitsTest, endOfSentence) {
   SetShadowContent(shadow_content, "host");
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = shadow_root->GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = shadow_root->getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
 
   EXPECT_EQ(
       Position(two, 2),
@@ -624,11 +624,11 @@ TEST_F(VisibleUnitsTest, endOfWord) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
 
   EXPECT_EQ(
       Position(three, 3),
@@ -688,8 +688,8 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContent) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
 
   EXPECT_FALSE(IsEndOfEditableOrNonEditableContent(
       CreateVisiblePositionInDOMTree(*one->firstChild(), 1)));
@@ -706,7 +706,7 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContentWithInput) {
   const char* body_content = "<input id=sample value=ab>cde";
   SetBodyContent(body_content);
 
-  Node* text = ToTextControlElement(GetDocument().GetElementById("sample"))
+  Node* text = ToTextControlElement(GetDocument().getElementById("sample"))
                    ->InnerEditorElement()
                    ->firstChild();
 
@@ -737,13 +737,13 @@ TEST_F(VisibleUnitsTest, isEndOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_FALSE(IsEndOfLine(CreateVisiblePositionInDOMTree(*one, 0)));
   EXPECT_FALSE(IsEndOfLine(CreateVisiblePositionInFlatTree(*one, 0)));
@@ -781,13 +781,13 @@ TEST_F(VisibleUnitsTest, isLogicalEndOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_FALSE(IsLogicalEndOfLine(CreateVisiblePositionInDOMTree(*one, 0)));
   EXPECT_FALSE(IsLogicalEndOfLine(CreateVisiblePositionInFlatTree(*one, 0)));
@@ -887,9 +887,9 @@ TEST_F(VisibleUnitsTest, isEndOfParagraph) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
 
   EXPECT_FALSE(IsEndOfParagraph(CreateVisiblePositionInDOMTree(*one, 0)));
   EXPECT_FALSE(IsEndOfParagraph(CreateVisiblePositionInFlatTree(*one, 0)));
@@ -918,13 +918,13 @@ TEST_F(VisibleUnitsTest, isStartOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_TRUE(IsStartOfLine(CreateVisiblePositionInDOMTree(*one, 0)));
   EXPECT_TRUE(IsStartOfLine(CreateVisiblePositionInFlatTree(*one, 0)));
@@ -961,10 +961,10 @@ TEST_F(VisibleUnitsTest, isStartOfParagraph) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Node* zero = GetDocument().GetElementById("zero")->firstChild();
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
+  Node* zero = GetDocument().getElementById("zero")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
 
   EXPECT_TRUE(IsStartOfParagraph(CreateVisiblePositionInDOMTree(*zero, 0)));
   EXPECT_TRUE(IsStartOfParagraph(CreateVisiblePositionInFlatTree(*zero, 0)));
@@ -1035,11 +1035,11 @@ TEST_F(VisibleUnitsTest, leftPositionOf) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
-  Element* three = GetDocument().GetElementById("three");
-  Element* four = shadow_root->GetElementById("four");
-  Element* five = shadow_root->GetElementById("five");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
+  Element* three = GetDocument().getElementById("three");
+  Element* four = shadow_root->getElementById("four");
+  Element* five = shadow_root->getElementById("five");
 
   EXPECT_EQ(
       Position(two->firstChild(), 1),
@@ -1071,7 +1071,7 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* one = GetDocument().GetElementById("one");
+  Element* one = GetDocument().getElementById("one");
 
   LayoutObject* layout_object_from_dom_tree;
   LayoutRect layout_rect_from_dom_tree = LocalCaretRectOfPosition(
@@ -1098,13 +1098,13 @@ TEST_F(VisibleUnitsTest, logicalEndOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_EQ(Position(seven, 7),
             LogicalEndOfLine(CreateVisiblePositionInDOMTree(*one, 0))
@@ -1183,13 +1183,13 @@ TEST_F(VisibleUnitsTest, logicalStartOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_EQ(Position(one, 0),
             LogicalStartOfLine(CreateVisiblePositionInDOMTree(*one, 0))
@@ -1265,7 +1265,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Element* host = GetDocument().GetElementById("host");
+  Element* host = GetDocument().getElementById("host");
 
   EXPECT_EQ(Position::LastPositionInNode(host),
             MostForwardCaretPosition(Position::AfterNode(host)));
@@ -1279,7 +1279,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter) {
       "<style>p:first-letter {color:red;}</style><p id=sample> (2)45 </p>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample")->firstChild();
+  Node* sample = GetDocument().getElementById("sample")->firstChild();
 
   EXPECT_EQ(Position(sample->parentNode(), 0),
             MostBackwardCaretPosition(Position(sample, 0)));
@@ -1315,7 +1315,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit) {
       "<style>p:first-letter {color:red;}</style><p id=sample>abc</p>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample");
+  Node* sample = GetDocument().getElementById("sample");
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
   Text* remaining = ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
@@ -1345,9 +1345,9 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor) {
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
   UpdateAllLifecyclePhases();
 
-  Element* host = GetDocument().GetElementById("host");
-  Element* one = GetDocument().GetElementById("one");
-  Element* three = shadow_root->GetElementById("three");
+  Element* host = GetDocument().getElementById("host");
+  Element* one = GetDocument().getElementById("one");
+  Element* three = shadow_root->getElementById("three");
 
   EXPECT_EQ(Position(one->firstChild(), 1),
             MostBackwardCaretPosition(Position::AfterNode(host)));
@@ -1361,7 +1361,7 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionFirstLetter) {
       "<style>p:first-letter {color:red;}</style><p id=sample> (2)45 </p>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample")->firstChild();
+  Node* sample = GetDocument().getElementById("sample")->firstChild();
 
   EXPECT_EQ(Position(GetDocument().body(), 0),
             MostForwardCaretPosition(
@@ -1392,12 +1392,12 @@ TEST_F(VisibleUnitsTest, nextPositionOf) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Element* zero = GetDocument().GetElementById("zero");
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
-  Element* three = GetDocument().GetElementById("three");
-  Element* four = shadow_root->GetElementById("four");
-  Element* five = shadow_root->GetElementById("five");
+  Element* zero = GetDocument().getElementById("zero");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
+  Element* three = GetDocument().getElementById("three");
+  Element* four = shadow_root->getElementById("four");
+  Element* five = shadow_root->getElementById("five");
 
   EXPECT_EQ(Position(one->firstChild(), 0),
             NextPositionOf(CreateVisiblePosition(Position(zero, 1)))
@@ -1438,12 +1438,12 @@ TEST_F(VisibleUnitsTest, previousPositionOf) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* zero = GetDocument().GetElementById("zero")->firstChild();
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
+  Node* zero = GetDocument().getElementById("zero")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
 
   EXPECT_EQ(Position(zero, 0),
             PreviousPositionOf(CreateVisiblePosition(Position(zero, 1)))
@@ -1511,7 +1511,7 @@ TEST_F(VisibleUnitsTest, previousPositionOfOneCharPerLine) {
       "<div id=sample style='font-size: 500px'>A&#x714a;&#xfa67;</div>";
   SetBodyContent(body_content);
 
-  Node* sample = GetDocument().GetElementById("sample")->firstChild();
+  Node* sample = GetDocument().getElementById("sample")->firstChild();
 
   // In case of each line has one character, VisiblePosition are:
   // [C,Dn]   [C,Up]  [B, Dn]   [B, Up]
@@ -1534,7 +1534,7 @@ TEST_F(VisibleUnitsTest, previousPositionOfNoPreviousPosition) {
       " "  // This whitespace causes no previous position.
       "<div id='anchor'> bar</div>"
       "</span>");
-  const Position position(GetDocument().GetElementById("anchor")->firstChild(),
+  const Position position(GetDocument().getElementById("anchor")->firstChild(),
                           1);
   EXPECT_EQ(
       Position(),
@@ -1544,7 +1544,7 @@ TEST_F(VisibleUnitsTest, previousPositionOfNoPreviousPosition) {
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor) {
   const char* body_content = "<p id='sample'>00</p>";
   SetBodyContent(body_content);
-  Element* sample = GetDocument().GetElementById("sample");
+  Element* sample = GetDocument().getElementById("sample");
 
   EXPECT_FALSE(RendersInDifferentPosition(Position(), Position()));
   EXPECT_FALSE(
@@ -1561,8 +1561,8 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithHidden) {
       "<p><span id=one>11</span><span id=two style='display:none'>  "
       "</span></p>";
   SetBodyContent(body_content);
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
 
   EXPECT_TRUE(RendersInDifferentPosition(Position::LastPositionInNode(one),
                                          Position(two, 0)))
@@ -1574,8 +1574,8 @@ TEST_F(VisibleUnitsTest,
   const char* body_content =
       "<p><span id=one>11</span><span id=two>  </span></p>";
   SetBodyContent(body_content);
-  Element* one = GetDocument().GetElementById("one");
-  Element* two = GetDocument().GetElementById("two");
+  Element* one = GetDocument().getElementById("one");
+  Element* two = GetDocument().getElementById("two");
 
   EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(one),
                                           Position(two, 0)));
@@ -1589,8 +1589,8 @@ TEST_F(VisibleUnitsTest, renderedOffset) {
       "<div contenteditable><span id='sample1'>1</span><span "
       "id='sample2'>22</span></div>";
   SetBodyContent(body_content);
-  Element* sample1 = GetDocument().GetElementById("sample1");
-  Element* sample2 = GetDocument().GetElementById("sample2");
+  Element* sample1 = GetDocument().getElementById("sample1");
+  Element* sample2 = GetDocument().getElementById("sample2");
 
   EXPECT_FALSE(
       RendersInDifferentPosition(Position::AfterNode(sample1->firstChild()),
@@ -1610,11 +1610,11 @@ TEST_F(VisibleUnitsTest, rightPositionOf) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
 
   EXPECT_EQ(Position(), RightPositionOf(CreateVisiblePosition(Position(one, 1)))
                             .DeepEquivalent());
@@ -1652,8 +1652,8 @@ TEST_F(VisibleUnitsTest, startOfDocument) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
 
   EXPECT_EQ(Position(one, 0),
             StartOfDocument(CreateVisiblePositionInDOMTree(*one, 0))
@@ -1681,13 +1681,13 @@ TEST_F(VisibleUnitsTest, startOfLine) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = GetDocument().GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* six = shadow_root->GetElementById("six")->firstChild();
-  Node* seven = shadow_root->GetElementById("seven")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = GetDocument().getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* six = shadow_root->getElementById("six")->firstChild();
+  Node* seven = shadow_root->getElementById("seven")->firstChild();
 
   EXPECT_EQ(
       Position(one, 0),
@@ -1765,10 +1765,10 @@ TEST_F(VisibleUnitsTest, startOfParagraph) {
   SetBodyContent(body_content);
   SetShadowContent(shadow_content, "host");
 
-  Node* zero = GetDocument().GetElementById("zero")->firstChild();
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
+  Node* zero = GetDocument().getElementById("zero")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
 
   EXPECT_EQ(Position(zero, 0),
             StartOfParagraph(CreateVisiblePositionInDOMTree(*one, 1))
@@ -1822,10 +1822,10 @@ TEST_F(VisibleUnitsTest, startOfSentence) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = shadow_root->GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = shadow_root->getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
 
   EXPECT_EQ(Position(one, 0),
             StartOfSentence(CreateVisiblePositionInDOMTree(*one, 0))
@@ -1879,12 +1879,12 @@ TEST_F(VisibleUnitsTest, startOfWord) {
   SetBodyContent(body_content);
   ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* one = GetDocument().GetElementById("one")->firstChild();
-  Node* two = GetDocument().GetElementById("two")->firstChild();
-  Node* three = GetDocument().GetElementById("three")->firstChild();
-  Node* four = shadow_root->GetElementById("four")->firstChild();
-  Node* five = shadow_root->GetElementById("five")->firstChild();
-  Node* space = shadow_root->GetElementById("space")->firstChild();
+  Node* one = GetDocument().getElementById("one")->firstChild();
+  Node* two = GetDocument().getElementById("two")->firstChild();
+  Node* three = GetDocument().getElementById("three")->firstChild();
+  Node* four = shadow_root->getElementById("four")->firstChild();
+  Node* five = shadow_root->getElementById("five")->firstChild();
+  Node* space = shadow_root->getElementById("space")->firstChild();
 
   EXPECT_EQ(
       Position(one, 0),

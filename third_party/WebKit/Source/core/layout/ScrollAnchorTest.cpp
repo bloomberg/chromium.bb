@@ -90,12 +90,12 @@ TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
                                     0);
 
   // Height changed, verify metric updated once.
-  SetHeight(GetDocument().GetElementById("block1"), 200);
+  SetHeight(GetDocument().getElementById("block1"), 200);
   histogram_tester.ExpectUniqueSample(
       "Layout.ScrollAnchor.AdjustedScrollOffset", 1, 1);
 
   EXPECT_EQ(250, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("block2")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("block2")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -111,10 +111,10 @@ TEST_P(ScrollAnchorTest, Basic) {
   EXPECT_EQ(nullptr, GetScrollAnchor(viewport).AnchorObject());
 
   ScrollLayoutViewport(ScrollOffset(0, 150));
-  SetHeight(GetDocument().GetElementById("block1"), 200);
+  SetHeight(GetDocument().getElementById("block1"), 200);
 
   EXPECT_EQ(250, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("block2")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("block2")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 
   // ScrollableArea::userScroll should clear the anchor.
@@ -141,16 +141,16 @@ TEST_P(ScrollAnchorTest, VisualViewportAnchors) {
 
   // Scroll the visual viewport to bring #text to the top.
   int top =
-      GetDocument().GetElementById("text")->getBoundingClientRect()->top();
+      GetDocument().getElementById("text")->getBoundingClientRect()->top();
   v_viewport.SetLocation(FloatPoint(0, top));
 
-  SetHeight(GetDocument().GetElementById("div"), 10);
-  EXPECT_EQ(GetDocument().GetElementById("text")->GetLayoutObject(),
+  SetHeight(GetDocument().getElementById("div"), 10);
+  EXPECT_EQ(GetDocument().getElementById("text")->GetLayoutObject(),
             GetScrollAnchor(l_viewport).AnchorObject());
   EXPECT_EQ(top - 90, v_viewport.ScrollOffsetInt().Height());
 
-  SetHeight(GetDocument().GetElementById("div"), 100);
-  EXPECT_EQ(GetDocument().GetElementById("text")->GetLayoutObject(),
+  SetHeight(GetDocument().getElementById("div"), 100);
+  EXPECT_EQ(GetDocument().getElementById("text")->GetLayoutObject(),
             GetScrollAnchor(l_viewport).AnchorObject());
   EXPECT_EQ(top, v_viewport.ScrollOffsetInt().Height());
 
@@ -181,20 +181,20 @@ TEST_P(ScrollAnchorTest, ClippedScrollersSkipped) {
       "<div id='outerAnchor' class='anchor'></div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
+      ScrollerForElement(GetDocument().getElementById("scroller"));
   ScrollableArea* viewport = LayoutViewport();
 
-  GetDocument().GetElementById("scroller")->setScrollTop(100);
+  GetDocument().getElementById("scroller")->setScrollTop(100);
   ScrollLayoutViewport(ScrollOffset(0, 350));
 
-  SetHeight(GetDocument().GetElementById("innerChanger"), 200);
-  SetHeight(GetDocument().GetElementById("outerChanger"), 150);
+  SetHeight(GetDocument().getElementById("innerChanger"), 200);
+  SetHeight(GetDocument().getElementById("outerChanger"), 150);
 
   EXPECT_EQ(300, scroller->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("innerAnchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("innerAnchor")->GetLayoutObject(),
             GetScrollAnchor(scroller).AnchorObject());
   EXPECT_EQ(500, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("outerAnchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("outerAnchor")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -214,10 +214,10 @@ TEST_P(ScrollAnchorTest, AnchoringWhenContentRemoved) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 1600));
 
-  SetHeight(GetDocument().GetElementById("changer"), 0);
+  SetHeight(GetDocument().getElementById("changer"), 0);
 
   EXPECT_EQ(100, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("anchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("anchor")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -239,14 +239,14 @@ TEST_P(ScrollAnchorTest, AnchoringWhenContentRemovedFromScrollingDiv) {
       "</div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
+      ScrollerForElement(GetDocument().getElementById("scroller"));
 
-  GetDocument().GetElementById("scroller")->setScrollTop(1600);
+  GetDocument().getElementById("scroller")->setScrollTop(1600);
 
-  SetHeight(GetDocument().GetElementById("changer"), 0);
+  SetHeight(GetDocument().getElementById("changer"), 0);
 
   EXPECT_EQ(100, scroller->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("anchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("anchor")->GetLayoutObject(),
             GetScrollAnchor(scroller).AnchorObject());
 }
 
@@ -265,15 +265,15 @@ TEST_P(ScrollAnchorTest, ClearScrollAnchorsOnAncestors) {
   ScrollableArea* viewport = LayoutViewport();
 
   ScrollLayoutViewport(ScrollOffset(0, 250));
-  SetHeight(GetDocument().GetElementById("changer"), 300);
+  SetHeight(GetDocument().getElementById("changer"), 300);
 
   EXPECT_EQ(350, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("anchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("anchor")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 
   // Scrolling the nested scroller should clear the anchor on the main frame.
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
+      ScrollerForElement(GetDocument().getElementById("scroller"));
   scroller->ScrollBy(ScrollOffset(0, 100), kUserScroll);
   EXPECT_EQ(nullptr, GetScrollAnchor(viewport).AnchorObject());
 }
@@ -297,9 +297,9 @@ TEST_P(ScrollAnchorTest, AncestorClearingWithSiblingReference) {
       "<div id='s2' class='scroller'>"
       "  <div class='space'></div>"
       "</div>");
-  Element* s1 = GetDocument().GetElementById("s1");
-  Element* s2 = GetDocument().GetElementById("s2");
-  Element* anchor = GetDocument().GetElementById("anchor");
+  Element* s1 = GetDocument().getElementById("s1");
+  Element* s2 = GetDocument().getElementById("s2");
+  Element* anchor = GetDocument().getElementById("anchor");
 
   // Set non-zero scroll offsets for #s1 and #document
   s1->setScrollTop(100);
@@ -328,7 +328,7 @@ TEST_P(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 100));
 
-  GetDocument().GetElementById("block1")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("block1")->setAttribute(HTMLNames::styleAttr,
                                                        "height: 50.6px");
   Update();
 
@@ -349,9 +349,9 @@ TEST_P(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
       "</div></div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
-  Element* block1 = GetDocument().GetElementById("block1");
-  Element* block2 = GetDocument().GetElementById("block2");
+      ScrollerForElement(GetDocument().getElementById("scroller"));
+  Element* block1 = GetDocument().getElementById("block1");
+  Element* block2 = GetDocument().getElementById("block2");
 
   scroller->ScrollBy(ScrollOffset(0, 150), kUserScroll);
 
@@ -387,10 +387,10 @@ TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
 
   ScrollableArea* viewport = LayoutViewport();
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
-  Element* changer1 = GetDocument().GetElementById("changer1");
-  Element* changer2 = GetDocument().GetElementById("changer2");
-  Element* anchor = GetDocument().GetElementById("anchor");
+      ScrollerForElement(GetDocument().getElementById("scroller"));
+  Element* changer1 = GetDocument().getElementById("changer1");
+  Element* changer2 = GetDocument().getElementById("changer2");
+  Element* anchor = GetDocument().getElementById("anchor");
 
   scroller->ScrollBy(ScrollOffset(0, 150), kUserScroll);
   ScrollLayoutViewport(ScrollOffset(0, 50));
@@ -406,7 +406,7 @@ TEST_P(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
             GetScrollAnchor(viewport).AnchorObject());
 
   // Test that the inner scroller can be destroyed without crashing.
-  GetDocument().GetElementById("scroller")->remove();
+  GetDocument().getElementById("scroller")->remove();
   Update();
 }
 
@@ -427,14 +427,14 @@ TEST_P(ScrollAnchorTest, ExcludeAnonymousCandidates) {
       "<div id=a>after</div>");
 
   ScrollableArea* viewport = LayoutViewport();
-  Element* inline_elem = GetDocument().GetElementById("inline");
+  Element* inline_elem = GetDocument().getElementById("inline");
   EXPECT_TRUE(inline_elem->GetLayoutObject()->Parent()->IsAnonymous());
 
   // Scroll #div into view, making anonymous block a viable candidate.
-  GetDocument().GetElementById("div")->scrollIntoView();
+  GetDocument().getElementById("div")->scrollIntoView();
 
   // Trigger layout and verify that we don't anchor to the anonymous block.
-  SetHeight(GetDocument().GetElementById("a"), 100);
+  SetHeight(GetDocument().getElementById("a"), 100);
   Update();
   EXPECT_EQ(inline_elem->GetLayoutObject()->SlowFirstChild(),
             GetScrollAnchor(viewport).AnchorObject());
@@ -460,10 +460,10 @@ TEST_P(ScrollAnchorTest, FullyContainedInlineBlock) {
 
   ScrollLayoutViewport(ScrollOffset(0, 150));
 
-  Element* ib1 = GetDocument().GetElementById("ib1");
+  Element* ib1 = GetDocument().getElementById("ib1");
   ib1->setAttribute(HTMLNames::styleAttr, "line-height: 150px");
   Update();
-  EXPECT_EQ(GetDocument().GetElementById("ib2")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("ib2")->GetLayoutObject(),
             GetScrollAnchor(LayoutViewport()).AnchorObject());
 }
 
@@ -483,9 +483,9 @@ TEST_P(ScrollAnchorTest, TextBounds) {
 
   ScrollLayoutViewport(ScrollOffset(0, 150));
 
-  SetHeight(GetDocument().GetElementById("a"), 100);
+  SetHeight(GetDocument().getElementById("a"), 100);
   EXPECT_EQ(
-      GetDocument().GetElementById("b")->GetLayoutObject()->SlowFirstChild(),
+      GetDocument().getElementById("b")->GetLayoutObject()->SlowFirstChild(),
       GetScrollAnchor(LayoutViewport()).AnchorObject());
 }
 
@@ -502,8 +502,8 @@ TEST_P(ScrollAnchorTest, ExcludeFixedPosition) {
 
   ScrollLayoutViewport(ScrollOffset(0, 50));
 
-  SetHeight(GetDocument().GetElementById("a"), 100);
-  EXPECT_EQ(GetDocument().GetElementById("c")->GetLayoutObject(),
+  SetHeight(GetDocument().getElementById("a"), 100);
+  EXPECT_EQ(GetDocument().getElementById("c")->GetLayoutObject(),
             GetScrollAnchor(LayoutViewport()).AnchorObject());
 }
 
@@ -530,13 +530,13 @@ TEST_P(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
       "    <div id=a>after</div>"
       "</div></div>");
 
-  Element* scroller_element = GetDocument().GetElementById("scroller");
+  Element* scroller_element = GetDocument().getElementById("scroller");
   ScrollableArea* scroller = ScrollerForElement(scroller_element);
-  Element* abs_pos = GetDocument().GetElementById("abs");
-  Element* rel_pos = GetDocument().GetElementById("rel");
+  Element* abs_pos = GetDocument().getElementById("abs");
+  Element* rel_pos = GetDocument().getElementById("rel");
 
   scroller->ScrollBy(ScrollOffset(0, 25), kUserScroll);
-  SetHeight(GetDocument().GetElementById("a"), 100);
+  SetHeight(GetDocument().getElementById("a"), 100);
 
   // When the scroller is position:static, the anchor cannot be
   // position:absolute.
@@ -546,7 +546,7 @@ TEST_P(ScrollAnchorTest, ExcludeAbsolutePositionThatSticksToViewport) {
   scroller_element->setAttribute(HTMLNames::styleAttr, "position: relative");
   Update();
   scroller->ScrollBy(ScrollOffset(0, 25), kUserScroll);
-  SetHeight(GetDocument().GetElementById("a"), 125);
+  SetHeight(GetDocument().getElementById("a"), 125);
 
   // When the scroller is position:relative, the anchor may be
   // position:absolute.
@@ -578,7 +578,7 @@ TEST_P(ScrollAnchorTest, DescendsIntoAbsPosWithOffscreenStaticParent) {
       "</div>");
 
   ScrollLayoutViewport(ScrollOffset(0, 120));
-  SetHeight(GetDocument().GetElementById("changer"), 100);
+  SetHeight(GetDocument().getElementById("changer"), 100);
   EXPECT_EQ(220, LayoutViewport()->ScrollOffsetInt().Height());
 }
 
@@ -603,10 +603,10 @@ TEST_P(ScrollAnchorTest, DescendsIntoContainerWithOverflow) {
   ScrollableArea* viewport = LayoutViewport();
 
   ScrollLayoutViewport(ScrollOffset(0, 200));
-  SetHeight(GetDocument().GetElementById("changer"), 200);
+  SetHeight(GetDocument().getElementById("changer"), 200);
 
   EXPECT_EQ(300, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("bottom")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("bottom")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -631,7 +631,7 @@ TEST_P(ScrollAnchorTest, NegativeLayoutOverflow) {
   ScrollableArea* viewport = LayoutViewport();
 
   ScrollLayoutViewport(ScrollOffset(0, 250));
-  SetHeight(GetDocument().GetElementById("changer"), 200);
+  SetHeight(GetDocument().getElementById("changer"), 200);
   EXPECT_EQ(350, viewport->ScrollOffsetInt().Height());
 }
 
@@ -659,17 +659,17 @@ TEST_P(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
 
   EXPECT_EQ(
       0,
-      ToLayoutBox(GetDocument().GetElementById("zeroheight")->GetLayoutObject())
+      ToLayoutBox(GetDocument().getElementById("zeroheight")->GetLayoutObject())
           ->Size()
           .Height());
 
   ScrollableArea* viewport = LayoutViewport();
 
   ScrollLayoutViewport(ScrollOffset(0, 200));
-  SetHeight(GetDocument().GetElementById("a"), 100);
+  SetHeight(GetDocument().getElementById("a"), 100);
 
   EXPECT_EQ(200, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("float")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("float")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -688,7 +688,7 @@ TEST_P(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForMainScroller) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(0, 200));
 
-  GetDocument().GetElementById("header")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("header")->setAttribute(HTMLNames::styleAttr,
                                                        "position: fixed;");
   Update();
 
@@ -713,10 +713,10 @@ TEST_P(ScrollAnchorTest, ChangeInFlowStateDisablesAnchoringForScrollingDiv) {
       "</div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
-  GetDocument().GetElementById("scroller")->setScrollTop(100);
+      ScrollerForElement(GetDocument().getElementById("scroller"));
+  GetDocument().getElementById("scroller")->setScrollTop(100);
 
-  GetDocument().GetElementById("changer")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("changer")->setAttribute(HTMLNames::styleAttr,
                                                         "position: absolute;");
   Update();
 
@@ -746,10 +746,10 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedClampingAlsoDelaysAdjustment) {
       "    </div>"
       "</div>");
 
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(100);
 
-  SetHeight(GetDocument().GetElementById("before"), 100);
+  SetHeight(GetDocument().getElementById("before"), 100);
   EXPECT_EQ(150, ScrollerForElement(scroller)->ScrollOffsetInt().Height());
 }
 
@@ -775,10 +775,10 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
       "    </div>"
       "</div>");
 
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   scroller->setScrollTop(100);
 
-  GetDocument().GetElementById("spacer")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("spacer")->setAttribute(HTMLNames::styleAttr,
                                                        "margin-top: 50px");
   Update();
   EXPECT_EQ(100, ScrollerForElement(scroller)->ScrollOffsetInt().Height());
@@ -807,23 +807,23 @@ TEST_P(ScrollAnchorTest, OptOutElement) {
   ScrollLayoutViewport(ScrollOffset(0, 50));
 
   // No opt-out.
-  SetHeight(GetDocument().GetElementById("changer"), 100);
+  SetHeight(GetDocument().getElementById("changer"), 100);
   EXPECT_EQ(150, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("innerDiv")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("innerDiv")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 
   // Clear anchor and opt-out element.
   ScrollLayoutViewport(ScrollOffset(0, 10));
   GetDocument()
-      .GetElementById("firstDiv")
+      .getElementById("firstDiv")
       ->setAttribute(HTMLNames::styleAttr,
                      AtomicString("overflow-anchor: none"));
   Update();
 
   // Opted out element and it's children skipped.
-  SetHeight(GetDocument().GetElementById("changer"), 200);
+  SetHeight(GetDocument().getElementById("changer"), 200);
   EXPECT_EQ(260, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("secondDiv")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("secondDiv")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -853,10 +853,10 @@ TEST_P(ScrollAnchorTest, AnchorNodeAncestorChangingNonLayoutAffectingProperty) {
   ScrollLayoutViewport(ScrollOffset(0, 150));
 
   GetDocument().body()->setAttribute(HTMLNames::styleAttr, "color: red");
-  SetHeight(GetDocument().GetElementById("block1"), 200);
+  SetHeight(GetDocument().getElementById("block1"), 200);
 
   EXPECT_EQ(250, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("block2")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("block2")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -872,13 +872,13 @@ TEST_P(ScrollAnchorTest, TransformIsLayoutAffecting) {
   ScrollableArea* viewport = LayoutViewport();
 
   ScrollLayoutViewport(ScrollOffset(0, 50));
-  GetDocument().GetElementById("block1")->setAttribute(
+  GetDocument().getElementById("block1")->setAttribute(
       HTMLNames::styleAttr, "transform: matrix(1, 0, 0, 1, 25, 25);");
   Update();
 
-  GetDocument().GetElementById("block1")->setAttribute(
+  GetDocument().getElementById("block1")->setAttribute(
       HTMLNames::styleAttr, "transform: matrix(1, 0, 0, 1, 50, 50);");
-  SetHeight(GetDocument().GetElementById("a"), 100);
+  SetHeight(GetDocument().getElementById("a"), 100);
   Update();
 
   EXPECT_EQ(50, viewport->ScrollOffsetInt().Height());
@@ -905,18 +905,18 @@ TEST_P(ScrollAnchorTest, OptOutBody) {
       "</div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
+      ScrollerForElement(GetDocument().getElementById("scroller"));
   ScrollableArea* viewport = LayoutViewport();
 
-  GetDocument().GetElementById("scroller")->setScrollTop(100);
+  GetDocument().getElementById("scroller")->setScrollTop(100);
   ScrollLayoutViewport(ScrollOffset(0, 100));
 
-  SetHeight(GetDocument().GetElementById("innerChanger"), 200);
-  SetHeight(GetDocument().GetElementById("outerChanger"), 150);
+  SetHeight(GetDocument().getElementById("innerChanger"), 200);
+  SetHeight(GetDocument().getElementById("outerChanger"), 150);
 
   // Scroll anchoring should apply within #scroller.
   EXPECT_EQ(300, scroller->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("innerAnchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("innerAnchor")->GetLayoutObject(),
             GetScrollAnchor(scroller).AnchorObject());
   // Scroll anchoring should not apply within main frame.
   EXPECT_EQ(100, viewport->ScrollOffsetInt().Height());
@@ -946,21 +946,21 @@ TEST_P(ScrollAnchorTest, OptOutScrollingDiv) {
       "</div>");
 
   ScrollableArea* scroller =
-      ScrollerForElement(GetDocument().GetElementById("scroller"));
+      ScrollerForElement(GetDocument().getElementById("scroller"));
   ScrollableArea* viewport = LayoutViewport();
 
-  GetDocument().GetElementById("scroller")->setScrollTop(100);
+  GetDocument().getElementById("scroller")->setScrollTop(100);
   ScrollLayoutViewport(ScrollOffset(0, 100));
 
-  SetHeight(GetDocument().GetElementById("innerChanger"), 200);
-  SetHeight(GetDocument().GetElementById("outerChanger"), 150);
+  SetHeight(GetDocument().getElementById("innerChanger"), 200);
+  SetHeight(GetDocument().getElementById("outerChanger"), 150);
 
   // Scroll anchoring should not apply within #scroller.
   EXPECT_EQ(100, scroller->ScrollOffsetInt().Height());
   EXPECT_EQ(nullptr, GetScrollAnchor(scroller).AnchorObject());
   // Scroll anchoring should apply within main frame.
   EXPECT_EQ(250, viewport->ScrollOffsetInt().Height());
-  EXPECT_EQ(GetDocument().GetElementById("outerAnchor")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("outerAnchor")->GetLayoutObject(),
             GetScrollAnchor(viewport).AnchorObject());
 }
 
@@ -990,7 +990,7 @@ TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
       "</div>"
       "<div class='spacer'></div>");
 
-  Element* root_scroller_element = GetDocument().GetElementById("rootscroller");
+  Element* root_scroller_element = GetDocument().getElementById("rootscroller");
 
   NonThrowableExceptionState non_throw;
   GetDocument().setRootScroller(root_scroller_element, non_throw);
@@ -1008,11 +1008,11 @@ TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
 
   root_scroller_element->setScrollTop(600);
 
-  SetHeight(GetDocument().GetElementById("firstChild"), 1000);
+  SetHeight(GetDocument().getElementById("firstChild"), 1000);
 
   // Scroll anchoring should be applied to #rootScroller.
   EXPECT_EQ(1000, scroller->GetScrollOffset().Height());
-  EXPECT_EQ(GetDocument().GetElementById("target")->GetLayoutObject(),
+  EXPECT_EQ(GetDocument().getElementById("target")->GetLayoutObject(),
             GetScrollAnchor(scroller).AnchorObject());
   // Scroll anchoring should not apply within main frame.
   EXPECT_EQ(0, LayoutViewport()->GetScrollOffset().Height());
@@ -1043,7 +1043,7 @@ class ScrollAnchorCornerTest : public ScrollAnchorTest {
                    ScrollOffset start_offset,
                    ScrollOffset expected_adjustment) {
     ScrollableArea* viewport = LayoutViewport();
-    Element* element = GetDocument().GetElementById("changer");
+    Element* element = GetDocument().getElementById("changer");
 
     viewport->SetScrollOffset(start_offset, kUserScroll);
     element->setAttribute(HTMLNames::classAttr, "change");
@@ -1053,7 +1053,7 @@ class ScrollAnchorCornerTest : public ScrollAnchorTest {
     end_pos += expected_adjustment;
 
     EXPECT_EQ(end_pos, viewport->GetScrollOffset());
-    EXPECT_EQ(GetDocument().GetElementById("a")->GetLayoutObject(),
+    EXPECT_EQ(GetDocument().getElementById("a")->GetLayoutObject(),
               GetScrollAnchor(viewport).AnchorObject());
     EXPECT_EQ(corner, GetScrollAnchor(viewport).GetCorner());
 
@@ -1143,9 +1143,9 @@ TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
   ScrollableArea* viewport = LayoutViewport();
   ScrollLayoutViewport(ScrollOffset(150, 0));
 
-  Element* a = GetDocument().GetElementById("a");
-  Element* b = GetDocument().GetElementById("b");
-  Element* c = GetDocument().GetElementById("c");
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
+  Element* c = GetDocument().getElementById("c");
 
   a->setAttribute(HTMLNames::styleAttr, "height: 150px");
   Update();

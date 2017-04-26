@@ -223,7 +223,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -254,7 +254,7 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -277,7 +277,7 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -299,7 +299,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -330,7 +330,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -366,8 +366,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = GetDocument().GetElementById("parent");
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* parent = GetDocument().getElementById("parent");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -420,8 +420,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled());
-  Element* parent = GetDocument().GetElementById("parent");
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* parent = GetDocument().getElementById("parent");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -470,9 +470,9 @@ TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
       "<div id=\"black\">c</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* none = GetDocument().GetElementById("none");
-  Element* white = GetDocument().GetElementById("white");
-  Element* black = GetDocument().GetElementById("black");
+  Element* none = GetDocument().getElementById("none");
+  Element* white = GetDocument().getElementById("white");
+  Element* black = GetDocument().getElementById("black");
 
   PaintLayer* none_layer =
       ToLayoutBoxModelObject(none->GetLayoutObject())->Layer();
@@ -508,7 +508,7 @@ TEST_F(PaintLayerScrollableAreaTest,
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -538,7 +538,7 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayerScrollableArea* scrollable_area =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
@@ -565,7 +565,7 @@ TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
       "</style>"
       "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   ASSERT_TRUE(scroller);
   PaintLayerScrollableArea* scrollable_area =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->GetScrollableArea();
@@ -593,7 +593,7 @@ TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
       "  <div id='innerDiv'></div>"
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* outer_div = GetDocument().GetElementById("outerDiv");
+  Element* outer_div = GetDocument().getElementById("outerDiv");
   ASSERT_TRUE(outer_div);
   outer_div->GetLayoutObject()->SetNeedsLayout("test");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -621,7 +621,7 @@ TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
       "  </div>"
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* container = GetDocument().GetElementById("container");
+  Element* container = GetDocument().getElementById("container");
   ASSERT_TRUE(container);
   PaintLayerScrollableArea* scrollable_area =
       ToLayoutBoxModelObject(container->GetLayoutObject())->GetScrollableArea();

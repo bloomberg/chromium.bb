@@ -150,7 +150,7 @@ void CanvasRenderingContextUsageTrackingTest::SetUp() {
   document_->documentElement()->setInnerHTML(
       "<body><canvas id='c'></canvas></body>");
   document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = toHTMLCanvasElement(document_->GetElementById("c"));
+  canvas_element_ = toHTMLCanvasElement(document_->getElementById("c"));
   full_image_data_ = ImageData::Create(IntSize(10, 10));
 
   global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());

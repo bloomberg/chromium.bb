@@ -309,7 +309,7 @@ Element* SVGUseElement::ResolveTargetElement() {
   }
   if (!ResourceIsValid())
     return nullptr;
-  return resource_->GetDocument()->GetElementById(element_identifier_);
+  return resource_->GetDocument()->getElementById(element_identifier_);
 }
 
 void SVGUseElement::BuildPendingResource() {

@@ -14,7 +14,7 @@ class InsertIncrementalTextCommandTest : public EditingTestBase {};
 // http://crbug.com/706166
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsReplace) {
   SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(Position(sample->lastChild(), 1))
@@ -31,7 +31,7 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsReplace) {
 
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsNoReplace) {
   SetBodyContent("<div id=sample contenteditable><a>a</a>b&#x1F63A;</div>");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE3A});  // U+1F63A
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(Position(sample->lastChild(), 1))
@@ -50,7 +50,7 @@ TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsNoReplace) {
 TEST_F(InsertIncrementalTextCommandTest, SurrogatePairsTwo) {
   SetBodyContent(
       "<div id=sample contenteditable><a>a</a>b&#x1F63A;&#x1F63A;</div>");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   const String new_text(Vector<UChar>{0xD83D, 0xDE38});  // U+1F638
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(Position(sample->lastChild(), 1))

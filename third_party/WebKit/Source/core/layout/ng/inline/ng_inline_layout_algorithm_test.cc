@@ -187,7 +187,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
   // 30 == narrow-float's width.
   EXPECT_EQ(LayoutUnit(30), inline_text_box1->X());
 
-  Element* narrow_float = GetDocument().GetElementById("narrow-float");
+  Element* narrow_float = GetDocument().getElementById("narrow-float");
   // 8 == body's margin.
   EXPECT_EQ(8, narrow_float->OffsetLeft());
   EXPECT_EQ(8, narrow_float->OffsetTop());
@@ -224,7 +224,7 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   EXPECT_EQ(LayoutUnit(), inline_text_box1->X());
 
-  Element* wide_float = GetDocument().GetElementById("wide-float");
+  Element* wide_float = GetDocument().getElementById("wide-float");
   // 8 == body's margin.
   EXPECT_EQ(8, wide_float->OffsetLeft());
 }
@@ -258,11 +258,11 @@ TEST_F(NGInlineLayoutAlgorithmTest,
       </span>
     </div>
   )HTML");
-  Element* wide_float = GetDocument().GetElementById("left-wide");
+  Element* wide_float = GetDocument().getElementById("left-wide");
   // 8 == body's margin.
   EXPECT_EQ(8, wide_float->OffsetLeft());
 
-  Element* narrow_float = GetDocument().GetElementById("left-narrow");
+  Element* narrow_float = GetDocument().getElementById("left-narrow");
   // 160 float-wide's width + 8 body's margin.
   EXPECT_EQ(160 + 8, narrow_float->OffsetLeft());
 

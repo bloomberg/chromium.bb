@@ -702,7 +702,7 @@ TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = ChildDocument().GetElementById("target");
+  Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mapped_point =
       MapAncestorToLocal(target->GetLayoutObject(), nullptr, FloatPoint(10, 70),
@@ -732,7 +732,7 @@ TEST_P(MapCoordinatesTest, IFrameTransformed) {
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
   ChildDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = ChildDocument().GetElementById("target");
+  Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mapped_point = MapAncestorToLocal(
       target->GetLayoutObject(), nullptr, FloatPoint(200, 200),
@@ -766,7 +766,7 @@ TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = ChildDocument().GetElementById("target");
+  Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
   FloatPoint mapped_point =
       MapAncestorToLocal(target->GetLayoutObject(), nullptr, FloatPoint(0, 0),

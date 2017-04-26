@@ -108,9 +108,9 @@ void LayoutSliderContainer::UpdateLayout() {
     MutableStyleRef().SetDirection(TextDirection::kLtr);
   }
 
-  Element* thumb_element = input->UserAgentShadowRoot()->GetElementById(
+  Element* thumb_element = input->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SliderThumb());
-  Element* track_element = input->UserAgentShadowRoot()->GetElementById(
+  Element* track_element = input->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SliderTrack());
   LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : 0;
   LayoutBox* track = track_element ? track_element->GetLayoutBox() : 0;

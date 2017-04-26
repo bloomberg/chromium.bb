@@ -178,7 +178,7 @@ Text* GranularityStrategyTest::SetupTranslateZ(String str) {
       "</html>");
 
   Text* text = GetDocument().createTextNode(str);
-  Element* div = GetDocument().GetElementById("mytext");
+  Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -203,7 +203,7 @@ Text* GranularityStrategyTest::SetupTransform(String str) {
       "</html>");
 
   Text* text = GetDocument().createTextNode(str);
-  Element* div = GetDocument().GetElementById("mytext");
+  Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -228,7 +228,7 @@ Text* GranularityStrategyTest::SetupRotate(String str) {
       "</html>");
 
   Text* text = GetDocument().createTextNode(str);
-  Element* div = GetDocument().GetElementById("mytext");
+  Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -246,7 +246,7 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
   Text* text2 = GetDocument().createTextNode(str2);
   Text* text3 = GetDocument().createTextNode(str3);
   Element* span = HTMLSpanElement::Create(GetDocument());
-  Element* div = GetDocument().GetElementById("mytext");
+  Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text1);
   div->AppendChild(span);
   span->AppendChild(text2);
@@ -716,11 +716,11 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
   GetDocument().body()->setInnerHTML(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
-  Element* const host = GetDocument().GetElementById("host");
+  Element* const host = GetDocument().getElementById("host");
   ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
       ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
   shadow_root->setInnerHTML("<input type=range>");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
@@ -748,11 +748,11 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
   GetDocument().body()->setInnerHTML(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
-  Element* const host = GetDocument().GetElementById("host");
+  Element* const host = GetDocument().getElementById("host");
   ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
       ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
   shadow_root->setInnerHTML("<input type=range>");
-  Element* const sample = GetDocument().GetElementById("sample");
+  Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()

@@ -221,9 +221,9 @@ TEST_F(ImageQualityControllerTest,
       "<img id='myAnimatingImage' src='myimage'></img> <img "
       "id='myNonAnimatingImage' src='myimage2'></img>");
   LayoutImage* animating_image = ToLayoutImage(
-      GetDocument().GetElementById("myAnimatingImage")->GetLayoutObject());
+      GetDocument().getElementById("myAnimatingImage")->GetLayoutObject());
   LayoutImage* non_animating_image = ToLayoutImage(
-      GetDocument().GetElementById("myNonAnimatingImage")->GetLayoutObject());
+      GetDocument().getElementById("myNonAnimatingImage")->GetLayoutObject());
 
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();

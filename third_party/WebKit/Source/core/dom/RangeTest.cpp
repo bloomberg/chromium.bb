@@ -115,11 +115,11 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
       "id=\"inner-right\">2</span>3</span>");
 
   Element* outer =
-      GetDocument().GetElementById(AtomicString::FromUTF8("outer"));
+      GetDocument().getElementById(AtomicString::FromUTF8("outer"));
   Element* inner_left =
-      GetDocument().GetElementById(AtomicString::FromUTF8("inner-left"));
+      GetDocument().getElementById(AtomicString::FromUTF8("inner-left"));
   Element* inner_right =
-      GetDocument().GetElementById(AtomicString::FromUTF8("inner-right"));
+      GetDocument().getElementById(AtomicString::FromUTF8("inner-right"));
   Text* old_text = ToText(outer->childNodes()->item(2));
 
   Range* range_outer_outside = Range::Create(GetDocument(), outer, 0, outer, 5);
@@ -198,8 +198,8 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
       "<div><span id=span1>foo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = GetDocument().QuerySelector("div");
-  Element* span1 = GetDocument().GetElementById("span1");
-  Element* span2 = GetDocument().GetElementById("span2");
+  Element* span1 = GetDocument().getElementById("span1");
+  Element* span2 = GetDocument().getElementById("span2");
   Text* text = ToText(div->childNodes()->item(1));
 
   Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
@@ -220,8 +220,8 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
       "<div><span id=span1>foofoo</span>bar<span id=span2>baz</span></div>");
 
   Element* div = GetDocument().QuerySelector("div");
-  Element* span1 = GetDocument().GetElementById("span1");
-  Element* span2 = GetDocument().GetElementById("span2");
+  Element* span1 = GetDocument().getElementById("span1");
+  Element* span2 = GetDocument().getElementById("span2");
   Text* text = ToText(div->childNodes()->item(1));
 
   Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
@@ -246,8 +246,8 @@ TEST_F(RangeTest, ExpandNotCrash) {
 
 TEST_F(RangeTest, MultipleTextQuads) {
   SetBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
-  Position start(GetDocument().GetElementById("one")->firstChild(), 0);
-  Position end(GetDocument().GetElementById("two")->firstChild(), 3);
+  Position start(GetDocument().getElementById("one")->firstChild(), 0);
+  Position end(GetDocument().getElementById("two")->firstChild(), 3);
   Range* range = Range::Create(GetDocument(), start, end);
   Vector<FloatQuad> quads;
   range->TextQuads(quads);

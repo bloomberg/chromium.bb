@@ -3443,7 +3443,7 @@ void CompositedLayerMapping::InvalidateTargetElementForTesting() {
   // The below is an artificial construct formed intentionally to focus a
   // microbenchmark on the cost of paint with a partial invalidation.
   Element* target_element =
-      owning_layer_.GetLayoutObject().GetDocument().GetElementById(
+      owning_layer_.GetLayoutObject().GetDocument().getElementById(
           AtomicString(kTestPaintInvalidationTargetName));
   // TODO(wkorman): If we don't find the expected target element, we could
   // consider walking to the first leaf node so that the partial-invalidation

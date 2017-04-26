@@ -66,9 +66,9 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* x = GetDocument().GetElementById("x");
-  Element* y = GetDocument().GetElementById("y");
-  Element* z = GetDocument().GetElementById("z");
+  Element* x = GetDocument().getElementById("x");
+  Element* y = GetDocument().getElementById("y");
+  Element* z = GetDocument().getElementById("z");
   ASSERT_TRUE(x);
   ASSERT_TRUE(y);
   ASSERT_TRUE(z);

@@ -149,7 +149,7 @@ bool TextControlElement::PlaceholderShouldBeVisible() const {
 
 HTMLElement* TextControlElement::PlaceholderElement() const {
   return ToHTMLElementOrDie(
-      UserAgentShadowRoot()->GetElementById(ShadowElementNames::Placeholder()));
+      UserAgentShadowRoot()->getElementById(ShadowElementNames::Placeholder()));
 }
 
 void TextControlElement::UpdatePlaceholderVisibility() {
@@ -954,7 +954,7 @@ String TextControlElement::DirectionForFormData() const {
 
 HTMLElement* TextControlElement::InnerEditorElement() const {
   return ToHTMLElementOrDie(
-      UserAgentShadowRoot()->GetElementById(ShadowElementNames::InnerEditor()));
+      UserAgentShadowRoot()->getElementById(ShadowElementNames::InnerEditor()));
 }
 
 void TextControlElement::CopyNonAttributePropertiesFromElement(

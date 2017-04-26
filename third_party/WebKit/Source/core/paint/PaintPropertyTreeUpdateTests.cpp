@@ -31,7 +31,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
       "  <div class='forceScroll'></div>"
       "</div>"
       "<div class='forceScroll'></div>");
-  Element* overflow_a = GetDocument().GetElementById("overflowA");
+  Element* overflow_a = GetDocument().getElementById("overflowA");
   EXPECT_FALSE(FrameScroll()->ThreadedScrollingDisabled());
   EXPECT_FALSE(overflow_a->GetLayoutObject()
                    ->PaintProperties()
@@ -84,8 +84,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
       "  <div class='forceScroll'></div>"
       "</div>"
       "<div class='forceScroll'></div>");
-  Element* overflow_a = GetDocument().GetElementById("overflowA");
-  Element* overflow_b = GetDocument().GetElementById("overflowB");
+  Element* overflow_a = GetDocument().getElementById("overflowA");
+  Element* overflow_b = GetDocument().getElementById("overflowB");
 
   EXPECT_TRUE(FrameScroll()->HasBackgroundAttachmentFixedDescendants());
   EXPECT_TRUE(overflow_a->GetLayoutObject()
@@ -152,7 +152,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
   EXPECT_TRUE(FrameScroll(child)->HasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
-  auto* fixed_background = GetDocument().GetElementById("fixedBackground");
+  auto* fixed_background = GetDocument().getElementById("fixedBackground");
   fixed_background->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(FrameScroll(parent)->HasBackgroundAttachmentFixedDescendants());
@@ -188,7 +188,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
   EXPECT_TRUE(FrameScroll(child)->HasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
-  auto* fixed_background = ChildDocument().GetElementById("fixedBackground");
+  auto* fixed_background = ChildDocument().getElementById("fixedBackground");
   fixed_background->removeAttribute(HTMLNames::classAttr);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(FrameScroll(parent)->HasBackgroundAttachmentFixedDescendants());
@@ -232,8 +232,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
       "  <div class='forceScroll'></div>"
       "</div>"
       "<div class='forceScroll'></div>");
-  Element* overflow_a = GetDocument().GetElementById("overflowA");
-  Element* overflow_b = GetDocument().GetElementById("overflowB");
+  Element* overflow_a = GetDocument().getElementById("overflowA");
+  Element* overflow_b = GetDocument().getElementById("overflowB");
 
   // This should be false. We are not as strict about main thread scrolling
   // reasons as we could be.
@@ -289,10 +289,10 @@ TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
   frame_view->UpdateAllLifecyclePhases();
 
   LayoutObject* div_with_transform =
-      GetDocument().GetElementById("divWithTransform")->GetLayoutObject();
+      GetDocument().getElementById("divWithTransform")->GetLayoutObject();
   LayoutObject* child_layout_view = ChildDocument().GetLayoutView();
   LayoutObject* inner_div_with_transform =
-      ChildDocument().GetElementById("transform")->GetLayoutObject();
+      ChildDocument().getElementById("transform")->GetLayoutObject();
 
   // Initially, no objects should need a descendant update.
   EXPECT_FALSE(
@@ -361,7 +361,7 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
       "  style='transform: translate3d(4px, 5px, 6px);'/>");
 
   // Move the child frame offscreen so it becomes available for throttling.
-  auto* iframe = toHTMLIFrameElement(GetDocument().GetElementById("iframe"));
+  auto* iframe = toHTMLIFrameElement(GetDocument().getElementById("iframe"));
   iframe->setAttribute(HTMLNames::styleAttr, "transform: translateY(5555px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Ensure intersection observer notifications get delivered.
@@ -370,10 +370,10 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
   EXPECT_TRUE(ChildDocument().View()->IsHiddenForThrottling());
 
   auto* transform =
-      GetDocument().GetElementById("transform")->GetLayoutObject();
+      GetDocument().getElementById("transform")->GetLayoutObject();
   auto* iframe_layout_view = ChildDocument().GetLayoutView();
   auto* iframe_transform =
-      ChildDocument().GetElementById("iframeTransform")->GetLayoutObject();
+      ChildDocument().getElementById("iframeTransform")->GetLayoutObject();
 
   // Invalidate properties in the iframe and ensure ancestors are marked.
   iframe_transform->SetNeedsPaintPropertyUpdate();
@@ -433,7 +433,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
       "  #div { overflow:hidden; height:0px; }"
       "</style>"
       "<div id='div'></div>");
-  auto* div = GetDocument().GetElementById("div");
+  auto* div = GetDocument().getElementById("div");
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* clip_properties =
@@ -494,7 +494,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
       "</style>"
       "<div id='div' style='contain:paint;'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  auto* div = GetDocument().GetElementById("div");
+  auto* div = GetDocument().getElementById("div");
   auto* properties = div->GetLayoutObject()->PaintProperties()->OverflowClip();
   EXPECT_EQ(FloatRect(0, 0, 7, 6), properties->ClipRect().Rect());
 
@@ -507,7 +507,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
 // A basic sanity check for over-invalidation of paint properties.
 TEST_P(PaintPropertyTreeUpdateTest, NoPaintPropertyUpdateOnBackgroundChange) {
   SetBodyInnerHTML("<div id='div' style='background-color: blue'>DIV</div>");
-  auto* div = GetDocument().GetElementById("div");
+  auto* div = GetDocument().getElementById("div");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   div->setAttribute(HTMLNames::styleAttr, "background-color: green");
@@ -533,7 +533,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   FrameView* child_frame_view = ChildDocument().View();
   EXPECT_NE(nullptr, FrameScroll(child_frame_view));
 
-  auto* iframe_container = GetDocument().GetElementById("iframeContainer");
+  auto* iframe_container = GetDocument().getElementById("iframeContainer");
   iframe_container->setAttribute(HTMLNames::styleAttr, "visibility: hidden;");
   frame_view->UpdateAllLifecyclePhases();
 
@@ -544,7 +544,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 TEST_P(PaintPropertyTreeUpdateTest,
        TransformNodeWithAnimationLosesNodeWhenAnimationRemoved) {
   LoadTestData("transform-animation.html");
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->PaintProperties();
   EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
@@ -559,7 +559,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 TEST_P(PaintPropertyTreeUpdateTest,
        EffectNodeWithAnimationLosesNodeWhenAnimationRemoved) {
   LoadTestData("opacity-animation.html");
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->PaintProperties();
   EXPECT_TRUE(properties->Effect()->HasDirectCompositingReasons());
@@ -574,7 +574,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
        TransformNodeLosesCompositorElementIdWhenAnimationRemoved) {
   LoadTestData("transform-animation.html");
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "transform: translateX(2em)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -594,7 +594,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
        EffectNodeLosesCompositorElementIdWhenAnimationRemoved) {
   LoadTestData("opacity-animation.html");
 
-  Element* target = GetDocument().GetElementById("target");
+  Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "opacity: 0.2");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -625,13 +625,13 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
       "</div>");
 
   auto* perspective =
-      GetDocument().GetElementById("perspective")->GetLayoutObject();
+      GetDocument().getElementById("perspective")->GetLayoutObject();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(100),
             perspective->PaintProperties()->Perspective()->Matrix());
   EXPECT_EQ(FloatPoint3D(50, 0, 0),
             perspective->PaintProperties()->Perspective()->Origin());
 
-  auto* contents = GetDocument().GetElementById("contents");
+  auto* contents = GetDocument().getElementById("contents");
   contents->setAttribute(HTMLNames::styleAttr, "height: 200px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix().ApplyPerspective(100),
@@ -652,7 +652,7 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
       "</style>"
       "<div id='transform'></div>");
 
-  auto* transform = GetDocument().GetElementById("transform");
+  auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
   EXPECT_EQ(TransformationMatrix().Translate3d(50, 100, 0),
             transform_object->PaintProperties()->Transform()->Matrix());
@@ -681,7 +681,7 @@ TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
       "  <div id='clip'></div>"
       "</div>");
 
-  auto* outer = GetDocument().GetElementById("outer");
+  auto* outer = GetDocument().getElementById("outer");
   auto* clip = GetLayoutObjectByElementId("clip");
   EXPECT_EQ(FloatRect(45, 50, 105, 100),
             clip->PaintProperties()->CssClip()->ClipRect().Rect());
@@ -705,7 +705,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
   EXPECT_EQ(IntSize(100, 100), scroll_node->Clip());
   EXPECT_EQ(IntSize(200, 200), scroll_node->Bounds());
 
-  GetDocument().GetElementById("content")->setAttribute(
+  GetDocument().getElementById("content")->setAttribute(
       HTMLNames::styleAttr, "width: 200px; height: 300px");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(scroll_node,
@@ -745,7 +745,7 @@ TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {
   auto* transform = child->PaintProperties()->Transform();
   EXPECT_TRUE(transform->FlattensInheritedTransform());
 
-  GetDocument().GetElementById("parent")->setAttribute(
+  GetDocument().getElementById("parent")->setAttribute(
       HTMLNames::styleAttr, "transform-style: preserve-3d");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(transform, child->PaintProperties()->Transform());

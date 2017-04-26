@@ -362,7 +362,7 @@ Value FunId::Evaluate(EvaluationContext& context) const {
     // If there are several nodes with the same id, id() should return the first
     // one.  In WebKit, getElementById behaves so, too, although its behavior in
     // this case is formally undefined.
-    Node* node = context_scope.GetElementById(
+    Node* node = context_scope.getElementById(
         AtomicString(id_list.Substring(start_pos, end_pos - start_pos)));
     if (node && result_set.insert(node).is_new_entry)
       result->Append(node);

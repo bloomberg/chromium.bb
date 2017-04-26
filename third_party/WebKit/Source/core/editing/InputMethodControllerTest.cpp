@@ -50,7 +50,7 @@ Element* InputMethodControllerTest::InsertHTMLElement(const char* element_code,
                                                       const char* element_id) {
   GetDocument().write(element_code);
   GetDocument().UpdateStyleAndLayout();
-  Element* element = GetDocument().GetElementById(element_id);
+  Element* element = GetDocument().getElementById(element_id);
   element->focus();
   return element;
 }
@@ -1320,7 +1320,7 @@ TEST_F(InputMethodControllerTest, FinishCompositionRemovedRange) {
   input_a->setOuterHTML("", ASSERT_NO_EXCEPTION);
   EXPECT_EQ(kWebTextInputTypeNone, Controller().TextInputType());
 
-  GetDocument().GetElementById("b")->focus();
+  GetDocument().getElementById("b")->focus();
   EXPECT_EQ(kWebTextInputTypeTelephone, Controller().TextInputType());
 
   Controller().FinishComposingText(InputMethodController::kKeepSelection);

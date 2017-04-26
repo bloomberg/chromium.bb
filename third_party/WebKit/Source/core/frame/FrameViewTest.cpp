@@ -88,7 +88,7 @@ INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
 TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  GetDocument().GetElementById("a")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
                                                   "color: green");
   ChromeClient().has_scheduled_animation_ = false;
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -100,13 +100,13 @@ TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   ChromeClient().has_scheduled_animation_ = false;
   GetDocument()
-      .GetElementById("a")
+      .getElementById("a")
       ->GetLayoutObject()
       ->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
   ChromeClient().has_scheduled_animation_ = false;
   GetDocument()
-      .GetElementById("a")
+      .getElementById("a")
       ->GetLayoutObject()
       ->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
@@ -158,7 +158,7 @@ TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
-      GetDocument().GetElementById("sticky")->GetLayoutObject());
+      GetDocument().getElementById("sticky")->GetLayoutObject());
 
   // Deliberately invalidate the ancestor overflow layer. This approximates
   // http://crbug.com/696173, in which the ancestor overflow layer can be null
@@ -183,14 +183,14 @@ TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
-      GetDocument().GetElementById("sticky")->GetLayoutObject());
+      GetDocument().getElementById("sticky")->GetLayoutObject());
 
   EXPECT_TRUE(
       GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
 
   // Making the element non-sticky should remove it from the set of
   // viewport-constrained objects.
-  GetDocument().GetElementById("sticky")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -198,7 +198,7 @@ TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
       GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
 
   // And making it sticky again should put it back in that list.
-  GetDocument().GetElementById("sticky")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
                                                        "");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

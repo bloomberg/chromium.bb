@@ -43,12 +43,12 @@ LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
 LayoutSearchField::~LayoutSearchField() {}
 
 inline Element* LayoutSearchField::SearchDecorationElement() const {
-  return InputElement()->UserAgentShadowRoot()->GetElementById(
+  return InputElement()->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SearchDecoration());
 }
 
 inline Element* LayoutSearchField::CancelButtonElement() const {
-  return InputElement()->UserAgentShadowRoot()->GetElementById(
+  return InputElement()->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::ClearButton());
 }
 

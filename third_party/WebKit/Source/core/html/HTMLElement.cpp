@@ -1060,7 +1060,7 @@ HTMLMenuElement* HTMLElement::contextMenu() const {
   if (context_menu_id.IsNull())
     return nullptr;
 
-  Element* element = GetTreeScope().GetElementById(context_menu_id);
+  Element* element = GetTreeScope().getElementById(context_menu_id);
   // Not checking if the menu element is of type "popup".
   // Ignoring menu element type attribute is intentional according to the
   // standard.
@@ -1083,7 +1083,7 @@ void HTMLElement::setContextMenu(HTMLMenuElement* context_menu) {
   const AtomicString& context_menu_id(context_menu->FastGetAttribute(idAttr));
 
   if (!context_menu_id.IsNull() &&
-      context_menu == GetTreeScope().GetElementById(context_menu_id))
+      context_menu == GetTreeScope().getElementById(context_menu_id))
     setAttribute(contextmenuAttr, context_menu_id);
   else
     setAttribute(contextmenuAttr, "");

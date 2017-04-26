@@ -33,7 +33,7 @@ TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
       "  <div style='height:20px'>Item</div>"
       "  <div style='height:20px'>Item</div>"
       "</div>");
-  Element* list_element = GetDocument().GetElementById("list");
+  Element* list_element = GetDocument().getElementById("list");
   ASSERT_TRUE(list_element);
   LayoutBox* list_box = ToLayoutBox(list_element->GetLayoutObject());
   Element* item_element = ElementTraversal::FirstChild(*list_element);

@@ -80,7 +80,7 @@ TEST_P(CompositedLayerMappingTest, SimpleInterestRect) {
       "transform'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
@@ -95,7 +95,7 @@ TEST_P(CompositedLayerMappingTest, TallLayerInterestRect) {
       "transform'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
@@ -113,7 +113,7 @@ TEST_P(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
   GetDocument().GetSettings()->SetMainFrameClipsContent(false);
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
@@ -154,7 +154,7 @@ TEST_P(CompositedLayerMappingTest, RotatedInterestRect) {
       "transform; transform: rotateZ(45deg)'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -168,7 +168,7 @@ TEST_P(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
       "transform; transform: rotateY(89.9999deg)'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -189,7 +189,7 @@ TEST_P(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
       "transform; transform: rotateY(90deg)'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -203,7 +203,7 @@ TEST_P(CompositedLayerMappingTest, 3D45DegRotatedTallInterestRect) {
       "transform; transform: rotateY(45deg)'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -217,7 +217,7 @@ TEST_P(CompositedLayerMappingTest, RotatedTallInterestRect) {
       "transform; transform: rotateZ(45deg)'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -231,7 +231,7 @@ TEST_P(CompositedLayerMappingTest, WideLayerInterestRect) {
       "transform'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -248,7 +248,7 @@ TEST_P(CompositedLayerMappingTest, FixedPositionInterestRect) {
       "transform; position: fixed; top: 100px; left: 200px;'></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -263,7 +263,7 @@ TEST_P(CompositedLayerMappingTest, LayerOffscreenInterestRect) {
       "</div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
@@ -280,7 +280,7 @@ TEST_P(CompositedLayerMappingTest, ScrollingLayerInterestRect) {
       "<div style='width: 100px; height: 10000px'></div></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
@@ -297,7 +297,7 @@ TEST_P(CompositedLayerMappingTest, ClippedBigLayer) {
       "transform'></div></div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
@@ -321,7 +321,7 @@ TEST_P(CompositedLayerMappingTest, ClippingMaskLayer) {
                    style_without_clipping + "'></video>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* video_element = GetDocument().GetElementById("video");
+  Element* video_element = GetDocument().getElementById("video");
   GraphicsLayer* graphics_layer =
       ToLayoutBoxModelObject(video_element->GetLayoutObject())
           ->Layer()
@@ -353,7 +353,7 @@ TEST_P(CompositedLayerMappingTest, ScrollContentsFlattenForScroller) {
       "<div style='width: 1000px; height: 1000px;'>Foo</div>Foo</div>");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* element = GetDocument().GetElementById("scroller");
+  Element* element = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   CompositedLayerMapping* composited_layer_mapping =
@@ -551,7 +551,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
       "</div");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   GraphicsLayer* scrolling_layer =
       scroller->GetLayoutBox()->Layer()->GraphicsLayerBacking();
   EXPECT_RECT_EQ(IntRect(0, 0, 400, 4600),
@@ -615,7 +615,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   GraphicsLayer* scrolling_layer =
       scroller->GetLayoutBox()->Layer()->GraphicsLayerBacking();
 
@@ -631,7 +631,7 @@ TEST_P(CompositedLayerMappingTest,
                  PreviousInterestRect(scrolling_layer));
 
   // Paint invalidation and repaint should change previous paint interest rect.
-  GetDocument().GetElementById("content")->setTextContent("Change");
+  GetDocument().getElementById("content")->setTextContent("Change");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600),
                  RecomputeInterestRect(scrolling_layer));
@@ -651,7 +651,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
 
   EXPECT_EQ(GetDocument()
-                .GetElementById("inside")
+                .getElementById("inside")
                 ->GetLayoutBox()
                 ->VisualOverflowRect()
                 .Size()
@@ -659,7 +659,7 @@ TEST_P(CompositedLayerMappingTest,
             100);
 
   CompositedLayerMapping* grouped_mapping = GetDocument()
-                                                .GetElementById("squashed")
+                                                .getElementById("squashed")
                                                 ->GetLayoutBox()
                                                 ->Layer()
                                                 ->GroupedMapping();
@@ -687,7 +687,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
 
   CompositedLayerMapping* grouped_mapping = GetDocument()
-                                                .GetElementById("squashed")
+                                                .getElementById("squashed")
                                                 ->GetLayoutBox()
                                                 ->Layer()
                                                 ->GroupedMapping();
@@ -715,7 +715,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
       ScrollOffset(0.0, 8000.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* target = ChildDocument().GetElementById("target");
+  Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
 
   EXPECT_RECT_EQ(
@@ -818,7 +818,7 @@ TEST_P(CompositedLayerMappingTest,
       mapping->ForegroundLayer()->PaintingPhase());
 
   Element* negative_composited_child =
-      GetDocument().GetElementById("negative-composited-child");
+      GetDocument().getElementById("negative-composited-child");
   negative_composited_child->parentNode()->RemoveChild(
       negative_composited_child);
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -849,7 +849,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* element = GetDocument().GetElementById("target");
+  Element* element = GetDocument().getElementById("target");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -885,7 +885,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* scroller = GetDocument().GetElementById("scroller");
+  Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
@@ -1036,7 +1036,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1046,7 +1046,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   ASSERT_TRUE(child);
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
@@ -1119,7 +1119,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerSiblingUpdates) {
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1129,7 +1129,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerSiblingUpdates) {
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child1 = GetDocument().GetElementById("child1");
+  Element* child1 = GetDocument().getElementById("child1");
   ASSERT_TRUE(child1);
   PaintLayer* child1_paint_layer =
       ToLayoutBoxModelObject(child1->GetLayoutObject())->Layer();
@@ -1138,7 +1138,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerSiblingUpdates) {
       child1_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(child1_mapping);
 
-  Element* child2 = GetDocument().GetElementById("child2");
+  Element* child2 = GetDocument().getElementById("child2");
   ASSERT_TRUE(child2);
   PaintLayer* child2_paint_layer =
       ToLayoutBoxModelObject(child2->GetLayoutObject())->Layer();
@@ -1255,7 +1255,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerGrandchildUpdates) {
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1265,7 +1265,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerGrandchildUpdates) {
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   ASSERT_TRUE(child);
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
@@ -1274,7 +1274,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerGrandchildUpdates) {
       child_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(child_mapping);
 
-  Element* grandchild = GetDocument().GetElementById("grandchild");
+  Element* grandchild = GetDocument().getElementById("grandchild");
   ASSERT_TRUE(grandchild);
   PaintLayer* grandchild_paint_layer =
       ToLayoutBoxModelObject(grandchild->GetLayoutObject())->Layer();
@@ -1369,7 +1369,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredByBorderRadius) {
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1379,7 +1379,7 @@ TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredByBorderRadius) {
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   ASSERT_TRUE(child);
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
@@ -1411,7 +1411,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1421,7 +1421,7 @@ TEST_P(CompositedLayerMappingTest,
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   ASSERT_TRUE(child);
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
@@ -1453,7 +1453,7 @@ TEST_P(CompositedLayerMappingTest,
       "</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Element* ancestor = GetDocument().GetElementById("ancestor");
+  Element* ancestor = GetDocument().getElementById("ancestor");
   ASSERT_TRUE(ancestor);
   PaintLayer* ancestor_paint_layer =
       ToLayoutBoxModelObject(ancestor->GetLayoutObject())->Layer();
@@ -1463,7 +1463,7 @@ TEST_P(CompositedLayerMappingTest,
       ancestor_paint_layer->GetCompositedLayerMapping();
   ASSERT_FALSE(ancestor_mapping);
 
-  Element* child = GetDocument().GetElementById("child");
+  Element* child = GetDocument().getElementById("child");
   ASSERT_TRUE(child);
   PaintLayer* child_paint_layer =
       ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();

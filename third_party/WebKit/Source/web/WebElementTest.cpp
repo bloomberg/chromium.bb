@@ -77,7 +77,7 @@ void WebElementTest::InsertHTML(String html) {
 }
 
 WebElement WebElementTest::TestElement() {
-  Element* element = GetDocument().GetElementById("testElement");
+  Element* element = GetDocument().getElementById("testElement");
   DCHECK(element);
   return WebElement(element);
 }
@@ -114,7 +114,7 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
   InsertHTML(kEmptyBlock);
   ShadowRoot* root =
       GetDocument()
-          .GetElementById("testElement")
+          .getElementById("testElement")
           ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   root->setInnerHTML("<div>Hello World</div>");
   EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());

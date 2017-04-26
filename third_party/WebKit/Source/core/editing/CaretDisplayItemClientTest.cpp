@@ -363,8 +363,8 @@ TEST_F(CaretDisplayItemClientTest, CompositingChange) {
 
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  auto* container = GetDocument().GetElementById("container");
-  auto* editor = GetDocument().GetElementById("editor");
+  auto* container = GetDocument().getElementById("container");
+  auto* editor = GetDocument().getElementById("editor");
   auto* editor_block = ToLayoutBlock(editor->GetLayoutObject());
   Selection().SetSelection(
       SelectionInDOMTree::Builder().Collapse(Position(editor, 0)).Build());

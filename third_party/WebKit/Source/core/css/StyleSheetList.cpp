@@ -56,7 +56,7 @@ HTMLStyleElement* StyleSheetList::GetNamedItem(const AtomicString& name) const {
   // and doesn't look for name attribute. But unicity of stylesheet ids is good
   // practice anyway ;)
   // FIXME: We should figure out if we should change this or fix the spec.
-  Element* element = tree_scope_->GetElementById(name);
+  Element* element = tree_scope_->getElementById(name);
   return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;
 }
 
