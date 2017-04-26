@@ -39,9 +39,9 @@
 namespace blink {
 
 class Document;
-class LocalDOMWindow;
 class ExceptionState;
 class KURL;
+class LocalDOMWindow;
 
 // This class corresponds to the Location interface. Location is the only
 // interface besides Window that is accessible cross-origin and must handle

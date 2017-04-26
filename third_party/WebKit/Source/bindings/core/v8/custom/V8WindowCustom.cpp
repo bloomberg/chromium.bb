@@ -75,8 +75,7 @@ void V8Window::locationAttributeGetterCustom(
   Location* location = window->location();
   DCHECK(location);
 
-  // Keep the wrapper object for the return value alive as long as |this|
-  // object is alive in order to save creation time of the wrapper object.
+  // If we have already created a wrapper object in this world, returns it.
   if (DOMDataStore::SetReturnValue(info.GetReturnValue(), location))
     return;
 
@@ -100,17 +99,6 @@ void V8Window::locationAttributeGetterCustom(
   } else {
     wrapper = ToV8(location, holder, isolate);
   }
-
-  // Keep the wrapper object for the return value alive as long as |this|
-  // object is alive in order to save creation time of the wrapper object.
-  //
-  // TODO(dcheng): The hidden reference behavior is broken in many ways. We
-  // should be caching for all DOM attributes. Even if it's not critical for
-  // remote Location objects, we should clean this up to improve
-  // maintainability. In the long-term, this will be superseded by wrapper
-  // tracing.
-  V8PrivateProperty::GetSymbol(isolate, "KeepAlive#Window#location")
-      .Set(holder, wrapper);
 
   V8SetReturnValue(info, wrapper);
 }
