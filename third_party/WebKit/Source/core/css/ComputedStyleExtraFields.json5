@@ -164,5 +164,12 @@
       type_name: "EVerticalAlign",
       has_custom_compare_and_copy: true,
     },
+    {
+      name: "border",
+      field_template: "storage_only",
+      field_type_path: "core/style/BorderData",
+      field_group: "surround",
+      default_value: "BorderData()",
+    },
   ],
 }

@@ -53,7 +53,6 @@
 #include "core/style/StyleRareNonInheritedData.h"
 #include "core/style/StyleReflection.h"
 #include "core/style/StyleSelfAlignmentData.h"
-#include "core/style/StyleSurroundData.h"
 #include "core/style/StyleTransformData.h"
 #include "core/style/StyleVisualData.h"
 #include "core/style/StyleWillChangeData.h"
@@ -188,7 +187,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   DataRef<StyleBoxData> box_data_;
   DataRef<StyleVisualData> visual_data_;
   DataRef<StyleBackgroundData> background_data_;
-  DataRef<StyleSurroundData> surround_data_;
   DataRef<StyleRareNonInheritedData> rare_non_inherited_data_;
 
   // inherited attributes
@@ -598,27 +596,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void SetBorderBottomRightRadius(const LengthSize& s) {
     SET_VAR(surround_data_, border_.bottom_right_, s);
   }
-
-  // Offset properties.
-  // left
-  static Length InitialLeft() { return Length(); }
-  const Length& Left() const { return surround_data_->left_; }
-  void SetLeft(const Length& v) { SET_VAR(surround_data_, left_, v); }
-
-  // right
-  static Length InitialRight() { return Length(); }
-  const Length& Right() const { return surround_data_->right_; }
-  void SetRight(const Length& v) { SET_VAR(surround_data_, right_, v); }
-
-  // top
-  static Length InitialTop() { return Length(); }
-  const Length& Top() const { return surround_data_->top_; }
-  void SetTop(const Length& v) { SET_VAR(surround_data_, top_, v); }
-
-  // bottom
-  static Length InitialBottom() { return Length(); }
-  const Length& Bottom() const { return surround_data_->bottom_; }
-  void SetBottom(const Length& v) { SET_VAR(surround_data_, bottom_, v); }
 
   // box-shadow (aka -webkit-box-shadow)
   static ShadowList* InitialBoxShadow() { return 0; }
@@ -1094,36 +1071,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     rare_non_inherited_data_.Access()->isolation_ = v;
   }
 
-  // Margin properties.
-
-  // margin-top
-  static Length InitialMarginTop() { return Length(kFixed); }
-  const Length& MarginTop() const { return surround_data_->margin_top_; }
-  void SetMarginTop(const Length& v) {
-    SET_VAR(surround_data_, margin_top_, v);
-  }
-
-  // margin-bottom
-  static Length InitialMarginBottom() { return Length(kFixed); }
-  const Length& MarginBottom() const { return surround_data_->margin_bottom_; }
-  void SetMarginBottom(const Length& v) {
-    SET_VAR(surround_data_, margin_bottom_, v);
-  }
-
-  // margin-left
-  static Length InitialMarginLeft() { return Length(kFixed); }
-  const Length& MarginLeft() const { return surround_data_->margin_left_; }
-  void SetMarginLeft(const Length& v) {
-    SET_VAR(surround_data_, margin_left_, v);
-  }
-
-  // margin-right
-  static Length InitialMarginRight() { return Length(kFixed); }
-  const Length& MarginRight() const { return surround_data_->margin_right_; }
-  void SetMarginRight(const Length& v) {
-    SET_VAR(surround_data_, margin_right_, v);
-  }
-
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
   static EMarginCollapse InitialMarginBeforeCollapse() {
     return kMarginCollapseCollapse;
@@ -1300,38 +1247,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetOutlineOffset(int v) {
     SET_VAR(rare_non_inherited_data_, outline_.offset_, v);
-  }
-
-  // Padding properties.
-
-  // padding-bottom
-  static Length InitialPaddingBottom() { return Length(kFixed); }
-  const Length& PaddingBottom() const {
-    return surround_data_->padding_bottom_;
-  }
-  void SetPaddingBottom(const Length& v) {
-    SET_VAR(surround_data_, padding_bottom_, v);
-  }
-
-  // padding-left
-  static Length InitialPaddingLeft() { return Length(kFixed); }
-  const Length& PaddingLeft() const { return surround_data_->padding_left_; }
-  void SetPaddingLeft(const Length& v) {
-    SET_VAR(surround_data_, padding_left_, v);
-  }
-
-  // padding-right
-  static Length InitialPaddingRight() { return Length(kFixed); }
-  const Length& PaddingRight() const { return surround_data_->padding_right_; }
-  void SetPaddingRight(const Length& v) {
-    SET_VAR(surround_data_, padding_right_, v);
-  }
-
-  // padding-top
-  static Length InitialPaddingTop() { return Length(kFixed); }
-  const Length& PaddingTop() const { return surround_data_->padding_top_; }
-  void SetPaddingTop(const Length& v) {
-    SET_VAR(surround_data_, padding_top_, v);
   }
 
   // perspective (aka -webkit-perspective)

@@ -1,4 +1,6 @@
 {% from 'macros.tmpl' import license, print_if %}
+{% from 'fields/field.tmpl' import encode, getter_expression, declare_storage %}
+{% from 'fields/group.tmpl' import define_field_group_class %}
 {{license()}}
 
 #ifndef ComputedStyleBase_h
@@ -6,6 +8,7 @@
 
 #include "core/style/ComputedStyleConstants.h"
 #include "core/CoreExport.h"
+#include "core/style/DataRef.h"
 {% for path in include_paths %}
 #include "{{path}}"
 {% endfor %}
@@ -35,16 +38,16 @@ class CORE_EXPORT ComputedStyleBase {
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in fields if field.is_inherited and field.is_independent %}
-        {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
+    {% for field in computed_style.all_fields if field.is_inherited and field.is_independent %}
+        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
   }
 
   inline bool NonIndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in fields if field.is_inherited and not field.is_independent %}
-        {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
+    {% for field in computed_style.all_fields if field.is_inherited and not field.is_independent %}
+        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
   }
@@ -55,8 +58,8 @@ class CORE_EXPORT ComputedStyleBase {
 
   inline bool NonInheritedEqual(const ComputedStyleBase& o) const {
     return (
-    {% for field in fields if field.is_property and not field.is_inherited %}
-        {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
+    {% for field in computed_style.all_fields if field.is_property and not field.is_inherited %}
+        {{getter_expression(field)}} == o.{{getter_expression(field)}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
   }
@@ -79,21 +82,31 @@ class CORE_EXPORT ComputedStyleBase {
   // TODO(sashab): Remove initialFoo() static methods and update callers to
   // use resetFoo(), which can be more efficient.
 
-  {% for field in fields %}
+  {% for field in computed_style.all_fields %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_public_methods(field)|indent(2)}}
 
   {% endfor %}
+ private:
+  {% for subgroup in computed_style.subgroups %}
+  {{define_field_group_class(subgroup)|indent(2)}}
+
+  {% endfor %}
+
  protected:
   // Constructor and destructor are protected so that only the parent class ComputedStyle
   // can instantiate this class.
   ALWAYS_INLINE ComputedStyleBase() :
-  {% for field in fields %}
+  {% for field in computed_style.fields %}
       {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
   {% endfor %}
-  {}
+  {
+    {% for subgroup in computed_style.subgroups %}
+    {{subgroup.member_name}}.Init();
+    {% endfor %}
+  }
 
-  {% for field in fields %}
+  {% for field in computed_style.fields %}
   {% if field.field_template in ('storage_only', 'monotonic_flag', 'external') %}
   // {{field.property_name}}
   {{field_templates[field.field_template].decl_protected_methods(field)|indent(2)}}
@@ -103,14 +116,14 @@ class CORE_EXPORT ComputedStyleBase {
 
   ~ComputedStyleBase() = default;
 
- private:
   // Storage.
-  {% for field in fields %}
-  {% if field.is_bit_field %}
-  unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
-  {% else %}
-  {{field.type_name}} {{field.name}};
-  {% endif %}
+  {% for subgroup in computed_style.subgroups %}
+  DataRef<{{subgroup.type_name}}> {{subgroup.member_name}};
+  {% endfor %}
+
+ private:
+  {% for field in computed_style.fields %}
+  {{declare_storage(field)}}
   {% endfor %}
 };
 

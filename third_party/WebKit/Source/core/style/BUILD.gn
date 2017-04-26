@@ -104,8 +104,6 @@ blink_core_sources("rendering") {
     "StyleScrollSnapData.cpp",
     "StyleScrollSnapData.h",
     "StyleSelfAlignmentData.h",
-    "StyleSurroundData.cpp",
-    "StyleSurroundData.h",
     "StyleTransformData.cpp",
     "StyleTransformData.h",
     "StyleVisualData.cpp",

@@ -14,6 +14,22 @@ static_cast<{{field.type_name}}>({{value}})
 {%- endif %}
 {% endmacro %}
 
+{% macro getter_expression(field) %}
+{% if field.group_member_name -%}
+{{field.group_member_name}}->{{field.name}}
+{%- else -%}
+{{field.name}}
+{%- endif %}
+{% endmacro %}
+
+{% macro setter_expression(field) %}
+{% if field.group_member_name -%}
+{{field.group_member_name}}.Access()->{{field.name}}
+{%- else -%}
+{{field.name}}
+{%- endif %}
+{% endmacro %}
+
 {% macro nonconst_ref(field) %}
 {% if field.is_bit_field -%}
 {{field.type_name}}
@@ -27,5 +43,13 @@ static_cast<{{field.type_name}}>({{value}})
 {{field.type_name}}
 {%- else -%}
 const {{field.type_name}}&
+{%- endif %}
+{% endmacro %}
+
+{% macro declare_storage(field) %}
+{% if field.is_bit_field %}
+unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
+{%- else %}
+{{field.type_name}} {{field.name}};
 {%- endif %}
 {% endmacro %}

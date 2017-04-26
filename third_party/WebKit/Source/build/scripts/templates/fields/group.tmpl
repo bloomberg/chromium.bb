@@ -1,0 +1,40 @@
+{% from 'fields/field.tmpl' import encode, declare_storage %}
+{% from 'macros.tmpl' import print_if %}
+{% macro define_field_group_class(group): -%}
+class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
+ public:
+  static PassRefPtr<{{group.type_name}}> Create() {
+    return AdoptRef(new {{group.type_name}});
+  }
+  PassRefPtr<{{group.type_name}}> Copy() const {
+    return AdoptRef(new {{group.type_name}}(*this));
+  }
+
+  bool operator==(const {{group.type_name}}& other) const {
+    return (
+    {% for field in group.fields %}
+      {{field.name}} == other.{{field.name}}{{print_if(not loop.last, ' &&')}}
+    {% endfor %}
+    );
+  }
+  bool operator!=(const {{group.type_name}}& other) const { return !(*this == other); }
+
+  {% for field in group.fields %}
+  {{declare_storage(field)}}
+  {% endfor %}
+
+ private:
+  {{group.type_name}}() :
+  {% for field in group.fields %}
+      {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
+  {% endfor %}
+  {}
+
+  ALWAYS_INLINE {{group.type_name}}(const {{group.type_name}}& other) :
+      RefCounted<{{group.type_name}}>(),
+  {% for field in group.fields %}
+      {{field.name}}(other.{{field.name}}){{print_if(not loop.last, ',')}}
+  {% endfor %}
+  {}
+};
+{%- endmacro %}
