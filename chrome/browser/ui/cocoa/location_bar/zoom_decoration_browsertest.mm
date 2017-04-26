@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,12 +21,25 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/ui_base_switches.h"
 
-class ZoomDecorationTest : public InProcessBrowserTest {
+class ZoomDecorationTest : public InProcessBrowserTest,
+                           public ::testing::WithParamInterface<bool> {
  protected:
   ZoomDecorationTest()
       : InProcessBrowserTest(),
         should_quit_on_zoom_(false) {
+  }
+
+  // testing::Test:
+  void SetUp() override {
+    // TODO(crbug.com/630357): Remove parameterized testing for this class when
+    // secondary-ui-md is enabled by default on all platforms.
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kExtendMdToSecondaryUi);
+    }
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -80,7 +94,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
+IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, BubbleAtDefaultZoom) {
   ZoomDecoration* zoom_decoration = GetZoomDecoration();
 
   // TODO(wjmaclean): This shouldn't be necessary, but at present this test
@@ -113,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
 }
 
 // Regression test for https://crbug.com/462482.
-IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, IconRemainsVisibleAfterBubble) {
+IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, IconRemainsVisibleAfterBubble) {
   ZoomDecoration* zoom_decoration = GetZoomDecoration();
 
   // See comment in BubbleAtDefaultZoom regarding this next line.
@@ -138,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, IconRemainsVisibleAfterBubble) {
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
+IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, HideOnInputProgress) {
   ZoomDecoration* zoom_decoration = GetZoomDecoration();
 
   // Zoom in and reset.
@@ -152,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
+IN_PROC_BROWSER_TEST_P(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
   chrome::SetZoomBubbleAutoCloseDelayForTesting(0);
 
   // Create a new browser so that it can be closed properly.
@@ -164,3 +178,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
   browser2->window()->Close();
   content::RunAllPendingInMessageLoop();
 }
+
+// Prefix for test instantiations intentionally left blank since the test
+// fixture class has a single parameterization.
+INSTANTIATE_TEST_CASE_P(, ZoomDecorationTest, testing::Bool());

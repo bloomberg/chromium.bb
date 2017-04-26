@@ -32,7 +32,8 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
   // The zoom bubble should be anchored when not in fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_TRUE(zoom_bubble->GetAnchorView());
@@ -55,7 +56,8 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
 
   // The bubble should not be anchored when it is shown in non-immersive
   // fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
@@ -97,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should not be anchored when it is shown in immersive
   // fullscreen and the top-of-window views are not revealed.
-  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
@@ -111,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should be anchored when it is shown in immersive fullscreen
   // and the top-of-window views are revealed.
-  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
   zoom_bubble = ZoomBubbleView::GetZoomBubble();
   ASSERT_TRUE(zoom_bubble);
   EXPECT_TRUE(zoom_bubble->GetAnchorView());

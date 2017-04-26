@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -26,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -39,14 +41,17 @@ ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = nullptr;
 
 // static
 void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
+                                const gfx::Point& anchor_point,
                                 DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser && browser->window() &&
          browser->exclusive_access_manager()->fullscreen_controller());
 
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  bool is_fullscreen = browser_view->IsFullscreen();
   views::View* anchor_view = nullptr;
+  ImmersiveModeController* immersive_mode_controller = nullptr;
+  bool is_fullscreen = browser->window()->IsFullscreen();
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
     if (ui::MaterialDesignController::IsSecondaryUiMaterial())
@@ -54,6 +59,8 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
     else
       anchor_view = browser_view->GetLocationBarView()->zoom_view();
   }
+  immersive_mode_controller = browser_view->immersive_mode_controller();
+#endif
 
   // Find the extension that initiated the zoom change, if any.
   zoom::ZoomController* zoom_controller =
@@ -73,8 +80,8 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // bubble must be closed and a new one created.
   CloseCurrentBubble();
 
-  zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, reason,
-                                    browser_view->immersive_mode_controller());
+  zoom_bubble_ = new ZoomBubbleView(anchor_view, anchor_point, web_contents,
+                                    reason, immersive_mode_controller);
 
   // If the zoom change was initiated by an extension, capture the relevent
   // information from it.
@@ -84,6 +91,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
             ->extension());
   }
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // If we do not have an anchor view, parent the bubble to the content area.
   if (!anchor_view)
     zoom_bubble_->set_parent_window(web_contents->GetNativeView());
@@ -94,10 +102,18 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
     zoom_bubble_widget->AddObserver(
         browser_view->GetLocationBarView()->zoom_view());
   }
+#else
+  gfx::NativeView parent =
+      platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
+  DCHECK(parent);
+  zoom_bubble_->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  zoom_bubble_->set_parent_window(parent);
+  views::BubbleDialogDelegateView::CreateBubble(zoom_bubble_);
+#endif
 
   // Adjust for fullscreen after creation as it relies on the content size.
   if (is_fullscreen)
-    zoom_bubble_->AdjustForFullscreen(browser_view->GetBoundsInScreen());
+    zoom_bubble_->AdjustForFullscreen(browser->window()->GetBounds());
 
   zoom_bubble_->ShowForReason(reason);
 }
@@ -113,19 +129,30 @@ ZoomBubbleView* ZoomBubbleView::GetZoomBubble() {
   return zoom_bubble_;
 }
 
+void ZoomBubbleView::Refresh() {
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents_);
+  int zoom_percent = zoom_controller->GetZoomPercent();
+  label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_TOOLTIP_ZOOM, base::FormatPercent(zoom_percent)));
+  StartTimerIfNecessary();
+}
+
 ZoomBubbleView::ZoomBubbleView(
     views::View* anchor_view,
+    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
-    : LocationBarBubbleDelegateView(anchor_view, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       image_button_(nullptr),
       label_(nullptr),
       web_contents_(web_contents),
       auto_close_(reason == AUTOMATIC),
       immersive_mode_controller_(immersive_mode_controller) {
   set_notify_enter_exit_on_child(true);
-  immersive_mode_controller_->AddObserver(this);
+  if (immersive_mode_controller_)
+    immersive_mode_controller_->AddObserver(this);
   UseCompactMargins();
 }
 
@@ -186,8 +213,7 @@ void ZoomBubbleView::Init() {
   int zoom_percent = zoom_controller->GetZoomPercent();
   label_ = new views::Label(l10n_util::GetStringFUTF16(
       IDS_TOOLTIP_ZOOM, base::FormatPercent(zoom_percent)));
-  label_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
+  label_->SetFontList(GetTitleFontList());
   grid_layout->AddView(label_);
 
   // Second row.
@@ -247,15 +273,6 @@ void ZoomBubbleView::OnExtensionIconImageChanged(
   image_button_->SetImage(views::Button::STATE_NORMAL,
                           &extension_info_.icon_image->image_skia());
   image_button_->SchedulePaint();
-}
-
-void ZoomBubbleView::Refresh() {
-  zoom::ZoomController* zoom_controller =
-      zoom::ZoomController::FromWebContents(web_contents_);
-  int zoom_percent = zoom_controller->GetZoomPercent();
-  label_->SetText(l10n_util::GetStringFUTF16(
-      IDS_TOOLTIP_ZOOM, base::FormatPercent(zoom_percent)));
-  StartTimerIfNecessary();
 }
 
 void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
