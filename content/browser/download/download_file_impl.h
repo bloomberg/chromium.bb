@@ -231,7 +231,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
 
   // See |cancel_request_callback_|.
-  void CancelRequestOnUIThread(int64_t offset);
+  void CancelRequest(int64_t offset);
 
   // Print the internal states for debugging.
   void DebugStates() const;

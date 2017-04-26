@@ -62,7 +62,9 @@ void DownloadJob::SetPotentialFileLength(int64_t length) {
   }
 }
 
-void DownloadJob::CancelRequestWithOffset(int64_t offset) {}
+void DownloadJob::CancelRequestWithOffset(int64_t offset) {
+  NOTREACHED();
+}
 
 bool DownloadJob::IsParallelizable() const {
   return false;

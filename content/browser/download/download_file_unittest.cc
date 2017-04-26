@@ -989,7 +989,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   DestroyDownloadFile(0, false);
 }
 
-//  Activate and deplete one stream, later add the second stream.
+// Activate and deplete one stream, later add the second stream.
 TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
 
