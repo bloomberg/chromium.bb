@@ -43,6 +43,7 @@ from warnings import warn
 import auth
 import fix_encoding
 import gclient_utils
+import git_footers
 import gerrit_util
 import owners
 import owners_finder
@@ -286,40 +287,38 @@ class OutputApi(object):
         CQ_INCLUDE_TRYBOTS was updated.
     """
     description = cl.GetDescription(force=True)
-    all_bots = []
-    include_re = re.compile(r'^CQ_INCLUDE_TRYBOTS=(.*)', re.M | re.I)
-    m = include_re.search(description)
-    if m:
-      all_bots = [i.strip() for i in m.group(1).split(';') if i.strip()]
-    if set(all_bots) >= set(bots_to_include):
-      return []
-    # Sort the bots to keep them in some consistent order -- not required.
-    all_bots = sorted(set(all_bots) | set(bots_to_include))
-    new_include_trybots = 'CQ_INCLUDE_TRYBOTS=%s' % ';'.join(all_bots)
-    if m:
-      new_description = include_re.sub(new_include_trybots, description)
+    include_re = re.compile(r'^CQ_INCLUDE_TRYBOTS=(.*)$', re.M | re.I)
+
+    prior_bots = []
+    if cl.IsGerrit():
+      trybot_footers = git_footers.parse_footers(description).get(
+          git_footers.normalize_name('Cq-Include-Trybots'), [])
+      for f in trybot_footers:
+        prior_bots += [b.strip() for b in f.split(';') if b.strip()]
     else:
-      # If we're adding a new CQ_INCLUDE_TRYBOTS line then make
-      # absolutely sure to add it before any Change-Id: line, to avoid
-      # breaking Gerrit.
-      #
-      # The use of \n outside the capture group causes the last
-      # newline before Change-Id and any extra newlines after it to be
-      # consumed. They are re-added during the join operation.
-      #
-      # The filter operation drops the trailing empty string after the
-      # original string is split.
-      split_desc = filter(
-        None, re.split('\n(Change-Id: \w*)\n*', description, 1, re.M))
-      # Make sure to insert this before the last entry. For backward
-      # compatibility, ensure the CL description ends in a newline.
-      if len(split_desc) == 1:
-        insert_idx = 1
+      trybot_tags = include_re.finditer(description)
+      for t in trybot_tags:
+        prior_bots += [b.strip() for b in t.group(1).split(';') if b.strip()]
+
+    if set(prior_bots) >= set(bots_to_include):
+      return []
+    all_bots = ';'.join(sorted(set(prior_bots) | set(bots_to_include)))
+
+    if cl.IsGerrit():
+      description = git_footers.remove_footer(
+          description, 'Cq-Include-Trybots')
+      description = git_footers.add_footer(
+          description, 'Cq-Include-Trybots', all_bots,
+          before_keys=['Change-Id'])
+    else:
+      new_include_trybots = 'CQ_INCLUDE_TRYBOTS=%s' % all_bots
+      m = include_re.search(description)
+      if m:
+        description = include_re.sub(new_include_trybots, description)
       else:
-        insert_idx = len(split_desc) - 1
-      split_desc.insert(insert_idx, new_include_trybots)
-      new_description = '\n'.join(split_desc) + '\n'
-    cl.UpdateDescription(new_description, force=True)
+        description = '%s\n%s\n' % (description, new_include_trybots)
+
+    cl.UpdateDescription(description, force=True)
     return [self.PresubmitNotifyResult(message)]
 
 

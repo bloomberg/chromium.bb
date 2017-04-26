@@ -105,6 +105,7 @@ My commit message is my best friend. It is my life. I must master it.
     self.assertEqual(
         git_footers.add_footer('', 'Key', 'Value'),
         '\nKey: Value')
+
     self.assertEqual(
         git_footers.add_footer('Header with empty line.\n\n', 'Key', 'Value'),
         'Header with empty line.\n\nKey: Value')
@@ -144,6 +145,25 @@ My commit message is my best friend. It is my life. I must master it.
               'Top\n\nSome: footer\nOther: footer\nFinal: footer',
               'Key', 'value', after_keys=['Other'], before_keys=['Some']),
         'Top\n\nSome: footer\nOther: footer\nKey: value\nFinal: footer')
+
+  def testRemoveFooter(self):
+    self.assertEqual(
+        git_footers.remove_footer('message', 'Key'),
+        'message')
+
+    self.assertEqual(
+        git_footers.remove_footer('message\n\nSome: footer', 'Key'),
+        'message\n\nSome: footer')
+
+    self.assertEqual(
+        git_footers.remove_footer('message\n\nSome: footer\nKey: value', 'Key'),
+        'message\n\nSome: footer')
+
+    self.assertEqual(
+        git_footers.remove_footer(
+            'message\n\nKey: value\nSome: footer\nKey: value', 'Key'),
+        'message\n\nSome: footer')
+
 
   def testReadStdin(self):
     self.mock(git_footers.sys, 'stdin', StringIO.StringIO(

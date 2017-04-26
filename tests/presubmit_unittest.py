@@ -155,15 +155,14 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change',
-      'DoPostUploadExecuter', 'DoPresubmitChecks', 'GetPostUploadExecuter',
-      'GitAffectedFile', 'CallCommand', 'CommandData',
+      'AffectedFile', 'Change', 'DoPostUploadExecuter', 'DoPresubmitChecks',
+      'GetPostUploadExecuter', 'GitAffectedFile', 'CallCommand', 'CommandData',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
-      'auth', 'cPickle', 'cpplint', 'cStringIO',
-      'contextlib', 'canned_check_filter', 'fix_encoding', 'fnmatch',
-      'gclient_utils', 'glob', 'inspect', 'json', 'load_files', 'logging',
+      'auth', 'cPickle', 'cpplint', 'cStringIO', 'contextlib',
+      'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils',
+      'git_footers', 'glob', 'inspect', 'json', 'load_files', 'logging',
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'owners_finder',
       'pickle', 'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
@@ -1406,16 +1405,21 @@ class OutputApiUnittest(PresubmitTestsBase):
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
 
-  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text):
+  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text,
+                              is_gerrit=False):
     class FakeCL(object):
       def __init__(self, description):
         self._description = description
+        self._is_gerrit = is_gerrit
 
       def GetDescription(self, force=False):
         return self._description
 
       def UpdateDescription(self, description, force=False):
         self._description = description
+
+      def IsGerrit(self):
+        return self._is_gerrit
 
     def FakePresubmitNotifyResult(message):
       return message
@@ -1435,11 +1439,11 @@ class OutputApiUnittest(PresubmitTestsBase):
     # We need long lines in this test.
     # pylint: disable=line-too-long
 
-    # Deliberately has a space at the end to exercise space-stripping code.
+    # Deliberately has a spaces to exercise space-stripping code.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel 
+CQ_INCLUDE_TRYBOTS= master.tryserver.blink:linux_trusty_blink_rel ;master.tryserver.chromium.win:win_optional_gpu_tests_rel
 """,
       [
         'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
@@ -1461,53 +1465,6 @@ CQ_INCLUDE_TRYBOTS=master.tryserver.blink:linux_trusty_blink_rel;master.tryserve
 CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
 """)
 
-    # Starting without any CQ_INCLUDE_TRYBOTS line, but with a
-    # Change-Id: line (with no trailing newline), which must continue
-    # to be the last line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
-      [
-        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""")
-
-    # Starting without any CQ_INCLUDE_TRYBOTS line, but with a
-    # Change-Id: line (with a trailing newline), which must continue
-    # to be the last line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.mac:mac_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""")
-
-    # Starting with a CQ_INCLUDE_TRYBOTS line and a Change-Id: line,
-    # the latter of which must continue to be the last line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""")
-
     # All pre-existing bots are already in output set.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
@@ -1523,6 +1480,50 @@ CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.win:win_optional_gpu_tests_rel
 CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
 """)
 
+    # Equivalent tests for Gerrit (pre-existing Change-Id line).
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.mac:mac_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
+
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
+
+    self._testIncludingCQTrybots(
+      """A change to GPU-related code.
+
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_rel
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_dbg
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
+""",
+      [
+        'master.tryserver.chromium.linux:linux_optional_gpu_tests_rel',
+        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+      ],
+      """A change to GPU-related code.
+
+Cq-Include-Trybots: master.tryserver.chromium.linux:linux_optional_gpu_tests_dbg;master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
 
 
 class AffectedFileUnittest(PresubmitTestsBase):

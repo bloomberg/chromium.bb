@@ -127,6 +127,17 @@ def add_footer(message, key, value, after_keys=None, before_keys=None):
   return '\n'.join(top_lines + footer_lines)
 
 
+def remove_footer(message, key):
+  """Returns a message with all instances of given footer removed."""
+  key = normalize_name(key)
+  top_lines, footer_lines, _ = split_footers(message)
+  if not footer_lines:
+    return message
+  new_footer_lines = [
+      l for l in footer_lines if normalize_name(parse_footer(l)[0]) != key]
+  return '\n'.join(top_lines + new_footer_lines)
+
+
 def get_unique(footers, key):
   key = normalize_name(key)
   values = footers[key]
