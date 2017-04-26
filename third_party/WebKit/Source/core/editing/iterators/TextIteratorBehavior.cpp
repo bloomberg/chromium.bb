@@ -170,4 +170,20 @@ TextIteratorBehavior TextIteratorBehavior::IgnoresStyleVisibilityBehavior() {
       .Build();
 }
 
+// static
+TextIteratorBehavior TextIteratorBehavior::DefaultRangeLengthBehavior() {
+  return TextIteratorBehavior::Builder()
+      .SetEmitsObjectReplacementCharacter(true)
+      .Build();
+}
+
+// static
+TextIteratorBehavior
+TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior() {
+  return TextIteratorBehavior::Builder()
+      .SetEmitsObjectReplacementCharacter(true)
+      .SetEmitsCharactersBetweenAllVisiblePositions(true)
+      .Build();
+}
+
 }  // namespace blink

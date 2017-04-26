@@ -1394,17 +1394,22 @@ void CompositeEditCommand::MoveParagraphs(
       bool end_in_paragraph =
           ComparePositions(visible_end, end_of_paragraph_to_move) <= 0;
 
+      const TextIteratorBehavior behavior =
+          TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior();
+
       start_index = 0;
-      if (start_in_paragraph)
+      if (start_in_paragraph) {
         start_index = TextIterator::RangeLength(
             start_of_paragraph_to_move.ToParentAnchoredPosition(),
-            visible_start.ToParentAnchoredPosition(), true);
+            visible_start.ToParentAnchoredPosition(), behavior);
+      }
 
       end_index = 0;
-      if (end_in_paragraph)
+      if (end_in_paragraph) {
         end_index = TextIterator::RangeLength(
             start_of_paragraph_to_move.ToParentAnchoredPosition(),
-            visible_end.ToParentAnchoredPosition(), true);
+            visible_end.ToParentAnchoredPosition(), behavior);
+      }
     }
   }
 
@@ -1504,7 +1509,8 @@ void CompositeEditCommand::MoveParagraphs(
 
   destination_index = TextIterator::RangeLength(
       Position::FirstPositionInNode(GetDocument().documentElement()),
-      destination.ToParentAnchoredPosition(), true);
+      destination.ToParentAnchoredPosition(),
+      TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior());
 
   const SelectionInDOMTree& destination_selection =
       SelectionInDOMTree::Builder()

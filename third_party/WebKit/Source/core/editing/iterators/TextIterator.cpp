@@ -1341,18 +1341,12 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::RangeLength(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
-    bool for_selection_preservation) {
+    const TextIteratorBehavior& behavior) {
   DCHECK(start.GetDocument());
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       start.GetDocument()->Lifecycle());
 
   int length = 0;
-  const TextIteratorBehavior& behavior =
-      TextIteratorBehavior::Builder()
-          .SetEmitsObjectReplacementCharacter(true)
-          .SetEmitsCharactersBetweenAllVisiblePositions(
-              for_selection_preservation)
-          .Build();
   for (TextIteratorAlgorithm<Strategy> it(start, end, behavior); !it.AtEnd();
        it.Advance())
     length += it.length();
