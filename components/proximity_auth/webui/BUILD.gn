@@ -20,6 +20,7 @@ static_library("webui") {
     "//components/cryptauth",
     "//components/prefs",
     "//components/proximity_auth",
+    "//components/proximity_auth/ble",
     "//components/proximity_auth/logging",
     "//components/resources",
     "//content/public/browser",

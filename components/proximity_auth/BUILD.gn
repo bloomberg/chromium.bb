@@ -10,8 +10,6 @@ static_library("proximity_auth") {
     "bluetooth_connection.h",
     "bluetooth_connection_finder.cc",
     "bluetooth_connection_finder.h",
-    "bluetooth_low_energy_connection_finder.cc",
-    "bluetooth_low_energy_connection_finder.h",
     "bluetooth_util.cc",
     "bluetooth_util.h",
     "bluetooth_util_chromeos.cc",
@@ -54,11 +52,17 @@ static_library("proximity_auth") {
     "//components/cryptauth",
     "//components/cryptauth/ble",
     "//components/prefs",
+    "//components/proximity_auth/ble",
     "//components/proximity_auth/logging",
     "//components/signin/core/account_id:account_id",
     "//device/bluetooth",
     "//net",
   ]
+
+  # TODO(https://crbug.com/562683): This whitelists a circular include
+  # dependency between this target and the following targets which should not
+  # exist.
+  allow_circular_includes_from = [ "//components/proximity_auth/ble" ]
 
   if (is_chromeos) {
     deps += [ "//chromeos" ]
@@ -94,7 +98,6 @@ source_set("unit_tests") {
   sources = [
     "bluetooth_connection_finder_unittest.cc",
     "bluetooth_connection_unittest.cc",
-    "bluetooth_low_energy_connection_finder_unittest.cc",
     "messenger_impl_unittest.cc",
     "proximity_auth_pref_manager_unittest.cc",
     "proximity_auth_system_unittest.cc",
@@ -114,8 +117,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/cryptauth:test_support",
     "//components/cryptauth:unit_tests",
-    "//components/cryptauth/ble",
     "//components/prefs:test_support",
+    "//components/proximity_auth/ble:unit_tests",
     "//components/proximity_auth/logging",
     "//components/proximity_auth/logging:unit_tests",
     "//device/bluetooth:mocks",
