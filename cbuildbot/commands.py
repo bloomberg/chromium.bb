@@ -578,8 +578,8 @@ def GetFirmwareVersions(buildroot, board):
   result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
                                      capture_output=True, log_output=True,
                                      cwd=buildroot)
-  main = re.search(r'BIOS version:\s*(?P<version>.*)', result.output)
-  ec = re.search(r'EC version:\s*(?P<version>.*)', result.output)
+  main = re.search(r'BIOS \(RW\) version:\s*(?P<version>.*)', result.output)
+  ec = re.search(r'EC \(RW\) version:\s*(?P<version>.*)', result.output)
   return (main.group('version') if main else None,
           ec.group('version') if ec else None)
 

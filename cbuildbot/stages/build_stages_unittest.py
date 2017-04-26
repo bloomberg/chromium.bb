@@ -287,7 +287,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
     def _HookRunCommandFirmwareUpdate(rc):
       rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
-                      output='BIOS version: %s\nEC version: %s' %
+                      output='BIOS (RW) version: %s\nEC (RW) version: %s' %
                       (expected_main_firmware_version,
                        expected_ec_firmware_version))
 

@@ -683,36 +683,47 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   def testGetFirmwareVersions(self):
     self.rc.SetDefaultCmdResult(output='''
 
-flashrom(8): a273d7fd6663c665176159496bc014ff */build/nyan/usr/sbin/flashrom
-             ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.6.16, BuildID[sha1]=61d8a9676e433414fb0e22fa819b55be86329e44, stripped
+flashrom(8): 29c9ec509aaa9c1f575cca883d90980c */build/caroline/usr/sbin/flashrom
+             ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=eb6af9bb9e14e380676ad9607760c54addec4a3a, stripped
+             0.9.4  : 1bb61e1 : Feb 07 2017 18:29:17 UTC
 
-
-BIOS image:   4aba4c07a65b7bf82d72d8ed892f5dc5 */build/nyan/tmp/portage/chromeos-base/chromeos-firmware-nyan-0.0.1-r20/work/chromeos-firmware-nyan-0.0.1/.dist/nyan_fw_5771.10.0.tbz2/image.bin
-BIOS version: Google_Nyan.5771.10.0
-EC image:     7b6bb5035fa8101b41c954bce5250dae */build/nyan/tmp/portage/chromeos-base/chromeos-firmware-nyan-0.0.1-r20/work/chromeos-firmware-nyan-0.0.1/.dist/nyan_ec_5771.10.0.tbz2/ec.bin
-EC version:   nyan_v1.1.1782-23f1337
+BIOS image:   9f78f612c24ee7ec4ca4d2747b01d8b9 *chromeos-firmware-caroline-0.0.1/.dist/Caroline.7820.263.0.tbz2/image.bin
+BIOS version: Google_Caroline.7820.263.0
+BIOS (RW) image:   2cb5021b986fe024f20d242e1885e1e7 *chromeos-firmware-caroline-0.0.1/.dist/Caroline.7820.286.0.tbz2/image.bin
+BIOS (RW) version: Google_Caroline.7820.286.0
+EC image:     18569de94ea66ba0cad360c3b7d8e205 *chromeos-firmware-caroline-0.0.1/.dist/Caroline_EC.7820.263.0.tbz2/ec.bin
+EC version:   caroline_v1.9.357-ac5c7b4
+EC (RW) version:   caroline_v1.9.370-e8b9bd2
+PD image:     0ba8d6a0fa82c42fa42a98096e2b1480 *chromeos-firmware-caroline-0.0.1/.dist/Caroline_PD.7820.263.0.tbz2/ec.bin
+PD version:   caroline_pd_v1.9.357-ac5c7b4
+PD (RW) version:   caroline_pd_v1.9.370-e8b9bd2
+Extra files from folder: /mnt/host/source/src/private-overlays/overlay-caroline-private/chromeos-base/chromeos-firmware-caroline/files/extra
+Extra file: /build/caroline//bin/xxd
 
 Package Content:
-d7124c9a2680ff57f1c7d6521ac5ef8c *./mosys
-ad9520c70add670d8f2770a2a3c4115a *./gbb_utility
-7b6bb5035fa8101b41c954bce5250dae *./ec.bin
-a273d7fd6663c665176159496bc014ff *./flashrom
-d149f6413749ca6a0edddd52926f95ca *./dump_fmap
-5bfe13d9b7fef1dfd9d3dac185f94994 *./crossystem
+dc9b08c5b17a7d51f9acdf5d3e12ebb7 *./updater4.sh
+29c9ec509aaa9c1f575cca883d90980c *./flashrom
 3c3a99346d1ca1273cbcd86c104851ff *./shflags
-4aba4c07a65b7bf82d72d8ed892f5dc5 *./bios.bin
-2a484f3e107bf27a4d1068e03e74803c *./common.sh
-995a97518f90541d37c3f57a336d37db *./vpd
-b9270e726180af1ed59077d1ab2fc688 *./crosfw.sh
-f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
-4363fcfd6849b2ab1a7320b1c98a11f2 *./crosutil.sh
+d962372228f82700d179d53a509f9735 *./dump_fmap
+490c95d6123c208d20d84d7c16857c7c *./crosfw.sh
+deb421e949ffaa23102ef3cee640be2d *./bios.bin
+b0ca480cb2981b346f493ebc93a52e8a *./crosutil.sh
+fba6434300d36f7b013883b6a3d04b57 *./pd.bin
+03496184aef3ec6d5954528a5f15d8af *./crossystem
+d962372228f82700d179d53a509f9735 *./gbb_utility
+6ddd288ce20e28b90ef0b21613637b60 *./ec.bin
+7ca17c9b563383296ee9e2c353fdb766 *./updater_custom.sh
+c2728ed24809ec845c53398a15255f49 *./xxd
+c98ca54db130886142ad582a58e90ddc *./common.sh
+a3326e34e8c9f221cc2dcd2489284e30 *./mosys
+ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
 ''')
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
                   makedirs=True)
     result = commands.GetFirmwareVersions(self._buildroot, self._board)
-    versions = ('Google_Nyan.5771.10.0', 'nyan_v1.1.1782-23f1337')
+    versions = ('Google_Caroline.7820.286.0', 'caroline_v1.9.370-e8b9bd2')
     self.assertEquals(result, versions)
 
   def testGetModels(self):
