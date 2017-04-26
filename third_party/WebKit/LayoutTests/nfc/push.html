@@ -84,6 +84,16 @@ nfc_test(nfc => {
 }, 'nfc.push should succeed when NFC HW is enabled');
 
 nfc_test(nfc => {
+  return assertRejectsWithError(
+      navigator.nfc.push(test_text_data, { timeout: 'invalid' }), 'TypeError');
+}, 'nfc.push should fail when invalid timeout is provided');
+
+nfc_test(nfc => {
+  return assertRejectsWithError(
+      navigator.nfc.push(test_text_data, { timeout: -1 }), 'TypeError');
+}, 'nfc.push should fail when invalid negative timeout value is provided');
+
+nfc_test(nfc => {
   nfc.mockNFC.setPendingPushCompleted(false);
   return assertRejectsWithError(
       navigator.nfc.push(test_text_data,{ timeout: 1 }),
