@@ -113,6 +113,10 @@ class ArgumentSpec {
                           std::unique_ptr<base::Value>* out_value,
                           std::string* error) const;
 
+  // Returns an error message indicating the type of |value| does not match the
+  // expected type.
+  std::string GetInvalidTypeError(v8::Local<v8::Value> value) const;
+
   // The name of the argument.
   std::string name_;
 

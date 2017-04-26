@@ -5,9 +5,10 @@
 #include "extensions/renderer/argument_spec.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/api_type_reference_map.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
@@ -16,21 +17,56 @@ namespace extensions {
 
 namespace {
 
+// Returns a type string for the given |value|.
+const char* GetV8ValueTypeString(v8::Local<v8::Value> value) {
+  DCHECK(!value.IsEmpty());
+
+  if (value->IsNull())
+    return api_errors::kTypeNull;
+  if (value->IsUndefined())
+    return api_errors::kTypeUndefined;
+  if (value->IsInt32())
+    return api_errors::kTypeInteger;
+  if (value->IsNumber())
+    return api_errors::kTypeDouble;
+  if (value->IsBoolean())
+    return api_errors::kTypeBoolean;
+  if (value->IsString())
+    return api_errors::kTypeString;
+
+  // Note: check IsArray(), IsFunction(), and IsArrayBuffer[View]() before
+  // IsObject() since arrays, functions, and array buffers are objects.
+  if (value->IsArray())
+    return api_errors::kTypeList;
+  if (value->IsFunction())
+    return api_errors::kTypeFunction;
+  if (value->IsArrayBuffer() || value->IsArrayBufferView())
+    return api_errors::kTypeBinary;
+  if (value->IsObject())
+    return api_errors::kTypeObject;
+
+  // TODO(devlin): The list above isn't exhaustive (it's missing at least
+  // Symbol and Uint32). We may want to include those, since saying
+  // "expected int, found other" isn't super helpful. On the other hand, authors
+  // should be able to see what they passed.
+  return "other";
+}
+
+// Returns true if |value| is within the bounds specified by |minimum| and
+// |maximum|, populating |error| otherwise.
 template <class T>
-bool ParseFundamentalValueHelper(v8::Local<v8::Value> arg,
-                                 v8::Local<v8::Context> context,
-                                 const base::Optional<int>& minimum,
-                                 const base::Optional<int>& maximum,
-                                 std::unique_ptr<base::Value>* out_value) {
-  T val;
-  if (!gin::Converter<T>::FromV8(context->GetIsolate(), arg, &val))
+bool CheckFundamentalBounds(T value,
+                            const base::Optional<int>& minimum,
+                            const base::Optional<int>& maximum,
+                            std::string* error) {
+  if (minimum && value < *minimum) {
+    *error = api_errors::NumberTooSmall(*minimum);
     return false;
-  if (minimum && val < *minimum)
+  }
+  if (maximum && value > *maximum) {
+    *error = api_errors::NumberTooLarge(*maximum);
     return false;
-  if (maximum && val > *maximum)
-    return false;
-  if (out_value)
-    *out_value = base::MakeUnique<base::Value>(val);
+  }
   return true;
 }
 
@@ -168,8 +204,10 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
                                  std::unique_ptr<base::Value>* out_value,
                                  std::string* error) const {
   if (type_ == ArgumentType::FUNCTION) {
-    if (!value->IsFunction())
+    if (!value->IsFunction()) {
+      *error = GetInvalidTypeError(value);
       return false;
+    }
 
     if (out_value) {
       // Certain APIs (contextMenus) have functions as parameters other than the
@@ -194,7 +232,7 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
       if (choice->ParseArgument(context, value, refs, out_value, error))
         return true;
     }
-    *error = "Did not match any of the choices";
+    *error = api_errors::InvalidChoice();
     return false;
   }
 
@@ -207,7 +245,7 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
     // parameter and then an optional callback, we wouldn't necessarily be able
     // to match the arguments if we allowed functions as objects.
     if (!value->IsObject() || value->IsFunction() || value->IsArray()) {
-      *error = "Wrong type";
+      *error = GetInvalidTypeError(value);
       return false;
     }
     v8::Local<v8::Object> object = value.As<v8::Object>();
@@ -215,7 +253,7 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
   }
   if (type_ == ArgumentType::LIST) {
     if (!value->IsArray()) {
-      *error = "Wrong type";
+      *error = GetInvalidTypeError(value);
       return false;
     }
     v8::Local<v8::Array> array = value.As<v8::Array>();
@@ -223,7 +261,7 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
   }
   if (type_ == ArgumentType::BINARY) {
     if (!value->IsArrayBuffer() && !value->IsArrayBufferView()) {
-      *error = "Wrong type";
+      *error = GetInvalidTypeError(value);
       return false;
     }
     return ParseArgumentToAny(context, value, out_value, error);
@@ -245,26 +283,47 @@ bool ArgumentSpec::ParseArgumentToFundamental(
     std::unique_ptr<base::Value>* out_value,
     std::string* error) const {
   DCHECK(IsFundamentalType());
+
   switch (type_) {
-    case ArgumentType::INTEGER:
-      return ParseFundamentalValueHelper<int32_t>(value, context, minimum_,
-                                                  maximum_, out_value);
-    case ArgumentType::DOUBLE:
-      return ParseFundamentalValueHelper<double>(value, context, minimum_,
-                                                 maximum_, out_value);
-    case ArgumentType::STRING: {
-      if (!value->IsString())
+    case ArgumentType::INTEGER: {
+      if (!value->IsInt32()) {
+        *error = GetInvalidTypeError(value);
         return false;
+      }
+      int int_val = value.As<v8::Int32>()->Value();
+      if (!CheckFundamentalBounds(int_val, minimum_, maximum_, error))
+        return false;
+      if (out_value)
+        *out_value = base::MakeUnique<base::Value>(int_val);
+      return true;
+    }
+    case ArgumentType::DOUBLE: {
+      if (!value->IsNumber()) {
+        *error = GetInvalidTypeError(value);
+        return false;
+      }
+      double double_val = value.As<v8::Number>()->Value();
+      if (!CheckFundamentalBounds(double_val, minimum_, maximum_, error))
+        return false;
+      if (out_value)
+        *out_value = base::MakeUnique<base::Value>(double_val);
+      return true;
+    }
+    case ArgumentType::STRING: {
+      if (!value->IsString()) {
+        *error = GetInvalidTypeError(value);
+        return false;
+      }
 
       v8::Local<v8::String> v8_string = value.As<v8::String>();
       size_t length = static_cast<size_t>(v8_string->Length());
       if (min_length_ && length < *min_length_) {
-        *error = "Less than min length";
+        *error = api_errors::TooFewStringChars(*min_length_, length);
         return false;
       }
 
       if (max_length_ && length > *max_length_) {
-        *error = "Greater than max length";
+        *error = api_errors::TooManyStringChars(*max_length_, length);
         return false;
       }
 
@@ -277,8 +336,10 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       // We already checked that this is a string, so this should never fail.
       CHECK(gin::Converter<std::string>::FromV8(context->GetIsolate(), value,
                                                 &s));
-      if (!enum_values_.empty() && enum_values_.count(s) == 0)
+      if (!enum_values_.empty() && enum_values_.count(s) == 0) {
+        *error = api_errors::InvalidEnumValue(enum_values_);
         return false;
+      }
       if (out_value) {
         // TODO(devlin): If base::Value ever takes a std::string&&, we
         // could use std::move to construct.
@@ -287,8 +348,10 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       return true;
     }
     case ArgumentType::BOOLEAN: {
-      if (!value->IsBoolean())
+      if (!value->IsBoolean()) {
+        *error = GetInvalidTypeError(value);
         return false;
+      }
       if (out_value) {
         *out_value =
             base::MakeUnique<base::Value>(value.As<v8::Boolean>()->Value());
@@ -314,17 +377,22 @@ bool ArgumentSpec::ParseArgumentToObject(
     result = base::MakeUnique<base::DictionaryValue>();
 
   v8::Local<v8::Array> own_property_names;
-  if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names))
+  if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names)) {
+    *error = api_errors::ScriptThrewError();
     return false;
+  }
 
   // Track all properties we see from |properties_| to check if any are missing.
   // Use ArgumentSpec* instead of std::string for comparison + copy efficiency.
   std::set<const ArgumentSpec*> seen_properties;
   uint32_t length = own_property_names->Length();
+  std::string property_error;
   for (uint32_t i = 0; i < length; ++i) {
     v8::Local<v8::Value> key;
-    if (!own_property_names->Get(context, i).ToLocal(&key))
+    if (!own_property_names->Get(context, i).ToLocal(&key)) {
+      *error = api_errors::ScriptThrewError();
       return false;
+    }
     // In JS, all keys are strings or numbers (or symbols, but those are
     // excluded by GetOwnPropertyNames()). If you try to set anything else
     // (e.g. an object), it is converted to a string.
@@ -339,7 +407,7 @@ bool ArgumentSpec::ParseArgumentToObject(
     } else if (additional_properties_) {
       property_spec = additional_properties_.get();
     } else {
-      *error = base::StringPrintf("Unknown property: %s", *utf8_key);
+      *error = api_errors::UnexpectedProperty(*utf8_key);
       return false;
     }
 
@@ -359,7 +427,7 @@ bool ArgumentSpec::ParseArgumentToObject(
     // TODO(devlin): This matches current behavior, but it is correct?
     if (prop_value->IsUndefined() || prop_value->IsNull()) {
       if (!property_spec->optional_) {
-        *error = base::StringPrintf("Missing key: %s", *utf8_key);
+        *error = api_errors::MissingRequiredProperty(*utf8_key);
         return false;
       }
       continue;
@@ -367,7 +435,9 @@ bool ArgumentSpec::ParseArgumentToObject(
 
     std::unique_ptr<base::Value> property;
     if (!property_spec->ParseArgument(context, prop_value, refs,
-                                      result ? &property : nullptr, error)) {
+                                      result ? &property : nullptr,
+                                      &property_error)) {
+      *error = api_errors::PropertyError(*utf8_key, property_error);
       return false;
     }
     if (result)
@@ -377,7 +447,7 @@ bool ArgumentSpec::ParseArgumentToObject(
   for (const auto& pair : properties_) {
     const ArgumentSpec* spec = pair.second.get();
     if (!spec->optional_ && seen_properties.count(spec) == 0) {
-      *error = "Missing key: " + pair.first;
+      *error = api_errors::MissingRequiredProperty(pair.first.c_str());
       return false;
     }
   }
@@ -410,7 +480,7 @@ bool ArgumentSpec::ParseArgumentToObject(
     } while (next_check->IsObject());
 
     if (!found) {
-      *error = "Object is not of correct instance";
+      *error = api_errors::NotAnInstance(instance_of_->c_str());
       return false;
     }
   }
@@ -429,12 +499,12 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
 
   uint32_t length = value->Length();
   if (min_length_ && length < *min_length_) {
-    *error = "Less than min length";
+    *error = api_errors::TooFewArrayItems(*min_length_, length);
     return false;
   }
 
   if (max_length_ && length > *max_length_) {
-    *error = "Greater than max length";
+    *error = api_errors::TooManyArrayItems(*max_length_, length);
     return false;
   }
 
@@ -443,6 +513,7 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
   if (out_value)
     result = base::MakeUnique<base::ListValue>();
 
+  std::string item_error;
   for (uint32_t i = 0; i < length; ++i) {
     v8::MaybeLocal<v8::Value> maybe_subvalue = value->Get(context, i);
     v8::Local<v8::Value> subvalue;
@@ -456,8 +527,9 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
     if (!maybe_subvalue.ToLocal(&subvalue))
       return false;
     std::unique_ptr<base::Value> item;
-    if (!list_element_type_->ParseArgument(context, subvalue, refs,
-                                           result ? &item : nullptr, error)) {
+    if (!list_element_type_->ParseArgument(
+            context, subvalue, refs, result ? &item : nullptr, &item_error)) {
+      *error = api_errors::IndexError(i, item_error);
       return false;
     }
     if (result)
@@ -479,7 +551,7 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
     std::unique_ptr<base::Value> converted(
         converter->FromV8Value(value, context));
     if (!converted) {
-      *error = "Could not convert to 'any'.";
+      *error = api_errors::UnserializableValue();
       return false;
     }
     if (type_ == ArgumentType::BINARY)
@@ -487,6 +559,46 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
     *out_value = std::move(converted);
   }
   return true;
+}
+
+std::string ArgumentSpec::GetInvalidTypeError(
+    v8::Local<v8::Value> value) const {
+  const char* expected_type = nullptr;
+  switch (type_) {
+    case ArgumentType::INTEGER:
+      expected_type = api_errors::kTypeInteger;
+      break;
+    case ArgumentType::DOUBLE:
+      expected_type = api_errors::kTypeDouble;
+      break;
+    case ArgumentType::BOOLEAN:
+      expected_type = api_errors::kTypeBoolean;
+      break;
+    case ArgumentType::STRING:
+      expected_type = api_errors::kTypeString;
+      break;
+    case ArgumentType::OBJECT:
+      expected_type =
+          instance_of_ ? instance_of_->c_str() : api_errors::kTypeObject;
+      break;
+    case ArgumentType::LIST:
+      expected_type = api_errors::kTypeList;
+      break;
+    case ArgumentType::BINARY:
+      expected_type = api_errors::kTypeBinary;
+      break;
+    case ArgumentType::FUNCTION:
+      expected_type = api_errors::kTypeFunction;
+      break;
+    case ArgumentType::REF:
+      expected_type = ref_->c_str();
+      break;
+    case ArgumentType::CHOICES:
+    case ArgumentType::ANY:
+      NOTREACHED();
+  }
+
+  return api_errors::InvalidType(expected_type, GetV8ValueTypeString(value));
 }
 
 }  // namespace extensions
