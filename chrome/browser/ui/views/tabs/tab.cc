@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/paint/paint_shader.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"

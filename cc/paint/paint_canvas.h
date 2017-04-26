@@ -11,25 +11,19 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
+#include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
 
 class DisplayItemList;
 class PaintFlags;
-class PaintOpBuffer;
-
-using PaintRecord = PaintOpBuffer;
 
 class CC_PAINT_EXPORT PaintCanvas {
  public:
-  PaintCanvas() {}
   virtual ~PaintCanvas() {}
 
   virtual SkMetaData& getMetaData() = 0;
-
-  // TODO(enne): this only appears to mostly be used to determine if this is
-  // recording or not, so could be simplified or removed.
   virtual SkImageInfo imageInfo() const = 0;
 
   // TODO(enne): It would be nice to get rid of flush() entirely, as it
@@ -42,7 +36,7 @@ class CC_PAINT_EXPORT PaintCanvas {
 
   virtual int save() = 0;
   virtual int saveLayer(const SkRect* bounds, const PaintFlags* flags) = 0;
-  virtual int saveLayerAlpha(const SkRect* bounds, uint8_t alpha) = 0;
+  virtual int saveLayerAlpha(const SkRect* bounds, U8CPU alpha) = 0;
 
   virtual void restore() = 0;
   virtual int getSaveCount() const = 0;
@@ -93,8 +87,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual bool getDeviceClipBounds(SkIRect* bounds) const = 0;
   virtual void drawColor(SkColor color, SkBlendMode mode) = 0;
   void drawColor(SkColor color) { drawColor(color, SkBlendMode::kSrcOver); }
-
-  // TODO(enne): This is a synonym for drawColor with kSrc.  Remove it.
   virtual void clear(SkColor color) = 0;
 
   virtual void drawLine(SkScalar x0,
@@ -188,9 +180,6 @@ class CC_PAINT_EXPORT PaintCanvas {
  protected:
   friend class PaintSurface;
   friend class PaintRecorder;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
 };
 
 class CC_PAINT_EXPORT PaintCanvasAutoRestore {

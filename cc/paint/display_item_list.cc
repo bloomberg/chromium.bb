@@ -100,13 +100,9 @@ NOINLINE DISABLE_CFI_PERF void RasterItem(const DisplayItem& base_item,
       if (canvas->quickReject(item.picture->cullRect()))
         break;
 
-      // TODO(enne): Maybe the PaintRecord itself could know whether this
-      // was needed?  It's not clear whether these save/restore semantics
-      // that SkPicture handles during playback are things that should be
-      // kept around.
-      canvas->save();
+      // SkPicture always does a wrapping save/restore on the canvas, so it is
+      // not necessary here.
       item.picture->playback(canvas, callback);
-      canvas->restore();
       break;
     }
     case DisplayItem::FLOAT_CLIP: {
@@ -180,33 +176,6 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   canvas->restore();
 }
 
-// Atttempts to merge a CompositingDisplayItem and DrawingDisplayItem
-// into a single "draw with alpha".  This function returns true if
-// it was successful.  If false, then the caller is responsible for
-// drawing these items.  This is a DisplayItemList version of the
-// SkRecord optimization SkRecordNoopSaveLayerDrawRestores.
-static bool MergeAndDrawIfPossible(const CompositingDisplayItem& save_item,
-                                   const DrawingDisplayItem& draw_item,
-                                   SkCanvas* canvas) {
-  if (save_item.color_filter)
-    return false;
-  if (save_item.xfermode != SkBlendMode::kSrcOver)
-    return false;
-  // TODO(enne): I believe that lcd_text_requires_opaque_layer is not
-  // relevant here and that lcd text is preserved post merge, but I haven't
-  // tested that.
-  const PaintRecord* record = draw_item.picture.get();
-  if (record->approximateOpCount() != 1)
-    return false;
-
-  const PaintOp* op = record->GetFirstOp();
-  if (!op->IsDrawOp())
-    return false;
-
-  op->RasterWithAlpha(canvas, save_item.alpha);
-  return true;
-}
-
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
   gfx::Rect canvas_playback_rect;
@@ -215,33 +184,14 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 
   std::vector<size_t> indices;
   rtree_.Search(canvas_playback_rect, &indices);
-  for (size_t i = 0; i < indices.size(); ++i) {
+  for (size_t index : indices) {
+    RasterItem(items_[index], canvas, callback);
+
     // We use a callback during solid color analysis on the compositor thread to
     // break out early. Since we're handling a sequence of pictures via rtree
     // query results ourselves, we have to respect the callback and early out.
     if (callback && callback->abort())
       break;
-
-    const DisplayItem& item = items_[indices[i]];
-    // Optimize empty begin/end compositing and merge begin/draw/end compositing
-    // where possible.
-    // TODO(enne): remove empty clips here too?
-    // TODO(enne): does this happen recursively? Or is this good enough?
-    if (i < indices.size() - 2 && item.type == DisplayItem::COMPOSITING) {
-      const DisplayItem& second = items_[indices[i + 1]];
-      const DisplayItem& third = items_[indices[i + 2]];
-      if (second.type == DisplayItem::DRAWING &&
-          third.type == DisplayItem::END_COMPOSITING) {
-        if (MergeAndDrawIfPossible(
-                static_cast<const CompositingDisplayItem&>(item),
-                static_cast<const DrawingDisplayItem&>(second), canvas)) {
-          i += 2;
-          continue;
-        }
-      }
-    }
-
-    RasterItem(item, canvas, callback);
   }
 }
 
