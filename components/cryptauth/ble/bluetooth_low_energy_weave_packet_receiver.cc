@@ -21,7 +21,7 @@ const uint16_t kMaxPacketSizeLowerBound = 20;
 
 }  // namespace
 
-std::shared_ptr<BluetoothLowEnergyWeavePacketReceiver::Factory>
+BluetoothLowEnergyWeavePacketReceiver::Factory*
     BluetoothLowEnergyWeavePacketReceiver::Factory::factory_instance_ = nullptr;
 
 // static
@@ -29,14 +29,14 @@ std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver>
 BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
     ReceiverType receiver_type) {
   if (!factory_instance_) {
-    factory_instance_.reset(new Factory());
+    factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(receiver_type);
 }
 
 // static
 void BluetoothLowEnergyWeavePacketReceiver::Factory::SetInstanceForTesting(
-    std::shared_ptr<Factory> factory) {
+    Factory* factory) {
   factory_instance_ = factory;
 }
 

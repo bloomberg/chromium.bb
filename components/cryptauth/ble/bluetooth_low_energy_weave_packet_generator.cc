@@ -20,7 +20,7 @@ namespace cryptauth {
 namespace weave {
 
 // static.
-std::shared_ptr<BluetoothLowEnergyWeavePacketGenerator::Factory>
+BluetoothLowEnergyWeavePacketGenerator::Factory*
     BluetoothLowEnergyWeavePacketGenerator::Factory::factory_instance_ =
         nullptr;
 
@@ -28,14 +28,14 @@ std::shared_ptr<BluetoothLowEnergyWeavePacketGenerator::Factory>
 std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
 BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance() {
   if (!factory_instance_) {
-    factory_instance_.reset(new Factory());
+    factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance();
 }
 
 // static.
 void BluetoothLowEnergyWeavePacketGenerator::Factory::SetInstanceForTesting(
-    std::shared_ptr<Factory> factory) {
+    Factory* factory) {
   factory_instance_ = factory;
 }
 

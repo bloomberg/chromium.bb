@@ -38,7 +38,7 @@ const int kMaxNumberOfRetryAttempts = 2;
 }  // namespace
 
 // static
-std::shared_ptr<BluetoothLowEnergyWeaveClientConnection::Factory>
+BluetoothLowEnergyWeaveClientConnection::Factory*
     BluetoothLowEnergyWeaveClientConnection::Factory::factory_instance_ =
         nullptr;
 
@@ -51,7 +51,7 @@ BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
     const device::BluetoothUUID remote_service_uuid,
     BluetoothThrottler* bluetooth_throttler) {
   if (!factory_instance_) {
-    factory_instance_.reset(new Factory());
+    factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(
       remote_device,
@@ -63,7 +63,7 @@ BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
 
 // static
 void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
-    std::shared_ptr<Factory> factory) {
+    Factory* factory) {
   factory_instance_ = factory;
 }
 

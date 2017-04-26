@@ -114,7 +114,7 @@ class BluetoothLowEnergyWeavePacketReceiver {
         ReceiverType receiver_type);
 
     // Exposed for testing.
-    static void SetInstanceForTesting(std::shared_ptr<Factory> factory);
+    static void SetInstanceForTesting(Factory* factory);
 
    protected:
     // Exposed for testing.
@@ -122,7 +122,7 @@ class BluetoothLowEnergyWeavePacketReceiver {
     BuildInstance(ReceiverType receiver_type);
 
    private:
-    static std::shared_ptr<Factory> factory_instance_;
+    static Factory* factory_instance_;
   };
 
   ~BluetoothLowEnergyWeavePacketReceiver();

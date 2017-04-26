@@ -272,7 +272,7 @@ class BleConnectionManagerTest : public testing::Test {
         mock_adapter_, device::BluetoothUUID(std::string(kGattServerUuid)),
         mock_bluetooth_throttler_.get()));
     cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-        SetInstanceForTesting(std::move(fake_connection_factory_));
+        SetInstanceForTesting(fake_connection_factory_.get());
 
     fake_secure_channel_factory_ =
         base::WrapUnique(new FakeSecureChannelFactory());
