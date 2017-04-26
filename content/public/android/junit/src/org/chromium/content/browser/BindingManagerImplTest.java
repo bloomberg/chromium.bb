@@ -297,7 +297,7 @@ public class BindingManagerImplTest {
     }
 
     /**
-     * Verifies that the initial binding is removed after determinedVisibility() is called.
+     * Verifies that the initial binding is removed after onDeterminedVisibility() is called.
      */
     @Test
     @Feature({"ProcessManagement"})
@@ -315,8 +315,8 @@ public class BindingManagerImplTest {
             // Verify that the initial binding is held.
             Assert.assertTrue(connection.isInitialBindingBound());
 
-            // Call determinedVisibility() and verify that the initial binding was released.
-            manager.determinedVisibility(connection.getPid());
+            // Call onDeterminedVisibility() and verify that the initial binding was released.
+            manager.onDeterminedVisibility(connection.getPid());
             Assert.assertFalse(connection.isInitialBindingBound());
         }
     }
@@ -344,7 +344,7 @@ public class BindingManagerImplTest {
 
             // After initial binding is removed, the connection is no longer oom protected.
             manager.setInForeground(connection.getPid(), false);
-            manager.determinedVisibility(connection.getPid());
+            manager.onDeterminedVisibility(connection.getPid());
             ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
             Assert.assertFalse(message, connection.isOomProtectedOrWasWhenDied());
 
@@ -624,7 +624,7 @@ public class BindingManagerImplTest {
         Assert.assertFalse(connection.isModerateBindingBound());
 
         manager.setInForeground(connection.getPid(), false);
-        manager.determinedVisibility(connection.getPid());
+        manager.onDeterminedVisibility(connection.getPid());
         Assert.assertFalse(connection.isInitialBindingBound());
         Assert.assertTrue(connection.isModerateBindingBound());
     }
@@ -647,7 +647,7 @@ public class BindingManagerImplTest {
         Assert.assertFalse(connection.isModerateBindingBound());
 
         manager.setInForeground(connection.getPid(), true);
-        manager.determinedVisibility(connection.getPid());
+        manager.onDeterminedVisibility(connection.getPid());
         Assert.assertFalse(connection.isInitialBindingBound());
         Assert.assertTrue(connection.isStrongBindingBound());
         Assert.assertFalse(connection.isModerateBindingBound());
@@ -667,7 +667,7 @@ public class BindingManagerImplTest {
         connection.start(null /* startCallback */);
         manager.addNewConnection(connection.getPid(), connection);
         manager.setInForeground(connection.getPid(), false);
-        manager.determinedVisibility(connection.getPid());
+        manager.onDeterminedVisibility(connection.getPid());
         Assert.assertTrue(connection.isModerateBindingBound());
 
         manager.onSentToBackground();

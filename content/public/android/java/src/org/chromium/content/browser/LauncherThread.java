@@ -34,6 +34,10 @@ public final class LauncherThread {
         sHandler.postDelayed(r, delayMillis);
     }
 
+    public static void removeCallbacks(Runnable r) {
+        sHandler.removeCallbacks(r);
+    }
+
     public static boolean runningOnLauncherThread() {
         return sHandler.getLooper() == Looper.myLooper();
     }
