@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "content/public/browser/browsing_data_remover.h"
 
 class PluginPrefs;
 class PrefService;
@@ -84,8 +84,9 @@ class BrowsingDataSettingsFunction : public UIThreadExtensionFunction {
 //
 // Each child class must implement GetRemovalMask(), which returns the bitmask
 // of data types to remove.
-class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
-                                    public BrowsingDataRemover::Observer {
+class BrowsingDataRemoverFunction
+    : public ChromeAsyncExtensionFunction,
+      public content::BrowsingDataRemover::Observer {
  public:
   BrowsingDataRemoverFunction();
 
@@ -122,7 +123,9 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
   base::Time remove_since_;
   int removal_mask_;
   int origin_type_mask_;
-  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
+  ScopedObserver<content::BrowsingDataRemover,
+                 content::BrowsingDataRemover::Observer>
+      observer_;
 };
 
 class BrowsingDataRemoveAppcacheFunction : public BrowsingDataRemoverFunction {

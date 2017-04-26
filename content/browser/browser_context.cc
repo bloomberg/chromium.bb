@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -75,6 +76,7 @@ class ServiceUserIdHolder : public base::SupportsUserData::Data {
 };
 
 // Key names on BrowserContext.
+const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kMojoWasInitialized[] = "mojo-was-initialized";
 const char kServiceManagerConnection[] = "service-manager-connection";
@@ -232,6 +234,22 @@ storage::ExternalMountPoints* BrowserContext::GetMountPoints(
 #else
   return NULL;
 #endif
+}
+
+// static
+content::BrowsingDataRemover* content::BrowserContext::GetBrowsingDataRemover(
+    BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!context->GetUserData(kBrowsingDataRemoverKey)) {
+    std::unique_ptr<BrowsingDataRemoverImpl> remover =
+        base::MakeUnique<BrowsingDataRemoverImpl>(context);
+    remover->SetEmbedderDelegate(context->GetBrowsingDataRemoverDelegate());
+    context->SetUserData(kBrowsingDataRemoverKey, std::move(remover));
+  }
+
+  return static_cast<BrowsingDataRemoverImpl*>(
+      context->GetUserData(kBrowsingDataRemoverKey));
 }
 
 StoragePartition* BrowserContext::GetStoragePartition(
@@ -546,6 +564,10 @@ std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
   base::Base64Encode(base::RandBytesAsString(16), &salt);
   DCHECK(!salt.empty());
   return salt;
+}
+
+BrowsingDataRemoverDelegate* BrowserContext::GetBrowsingDataRemoverDelegate() {
+  return nullptr;
 }
 
 }  // namespace content

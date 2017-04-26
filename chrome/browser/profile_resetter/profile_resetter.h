@@ -18,9 +18,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/browsing_data_remover.h"
 
 class Profile;
 
@@ -32,7 +32,7 @@ class CancellationFlag;
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
 class ProfileResetter : public base::NonThreadSafe,
-                        public BrowsingDataRemover::Observer {
+                        public content::BrowsingDataRemover::Observer {
  public:
   // Flags indicating what aspects of a profile shall be reset.
   enum Resettable {
@@ -102,7 +102,7 @@ class ProfileResetter : public base::NonThreadSafe,
 
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
-  BrowsingDataRemover* cookies_remover_;
+  content::BrowsingDataRemover* cookies_remover_;
 
   std::unique_ptr<TemplateURLService::Subscription> template_url_service_sub_;
 

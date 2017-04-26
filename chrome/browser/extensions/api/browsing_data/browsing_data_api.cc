@@ -13,8 +13,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -24,6 +23,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 
@@ -72,38 +72,38 @@ const char kDeleteProhibitedError[] = "Browsing history and downloads are not "
 namespace {
 int MaskForKey(const char* key) {
   if (strcmp(key, extension_browsing_data_api_constants::kAppCacheKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_APP_CACHE;
+    return content::BrowsingDataRemover::DATA_TYPE_APP_CACHE;
   if (strcmp(key, extension_browsing_data_api_constants::kCacheKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_CACHE;
+    return content::BrowsingDataRemover::DATA_TYPE_CACHE;
   if (strcmp(key, extension_browsing_data_api_constants::kCookiesKey) == 0) {
-    return BrowsingDataRemover::DATA_TYPE_COOKIES;
+    return content::BrowsingDataRemover::DATA_TYPE_COOKIES;
   }
   if (strcmp(key, extension_browsing_data_api_constants::kDownloadsKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
+    return content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
   if (strcmp(key, extension_browsing_data_api_constants::kFileSystemsKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS;
+    return content::BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS;
   if (strcmp(key, extension_browsing_data_api_constants::kFormDataKey) == 0)
     return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
   if (strcmp(key, extension_browsing_data_api_constants::kHistoryKey) == 0)
     return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
   if (strcmp(key, extension_browsing_data_api_constants::kIndexedDBKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
+    return content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
   if (strcmp(key, extension_browsing_data_api_constants::kLocalStorageKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE;
+    return content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE;
   if (strcmp(key,
              extension_browsing_data_api_constants::kChannelIDsKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS;
+    return content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS;
   if (strcmp(key, extension_browsing_data_api_constants::kPasswordsKey) == 0)
     return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
   if (strcmp(key, extension_browsing_data_api_constants::kPluginDataKey) == 0)
     return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
   if (strcmp(key, extension_browsing_data_api_constants::kServiceWorkersKey) ==
       0)
-    return BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS;
+    return content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS;
   if (strcmp(key, extension_browsing_data_api_constants::kCacheStorageKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE;
+    return content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE;
   if (strcmp(key, extension_browsing_data_api_constants::kWebSQLKey) == 0)
-    return BrowsingDataRemover::DATA_TYPE_WEB_SQL;
+    return content::BrowsingDataRemover::DATA_TYPE_WEB_SQL;
 
   return 0;
 }
@@ -114,7 +114,7 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
   // Enterprise policy or user preference might prohibit deleting browser or
   // download history.
   if ((removal_mask & ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY) ||
-      (removal_mask & BrowsingDataRemover::DATA_TYPE_DOWNLOADS)) {
+      (removal_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS)) {
     return prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   }
   return true;
@@ -309,8 +309,8 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
 }
 
 void BrowsingDataRemoverFunction::StartRemoving() {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(GetProfile());
   // Add a ref (Balanced in OnBrowsingDataRemoverDone)
   AddRef();
 
@@ -329,7 +329,7 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
     int* origin_type_mask) {
   // Parse the |options| dictionary to generate the origin set mask. Default to
   // UNPROTECTED_WEB if the developer doesn't specify anything.
-  *origin_type_mask = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+  *origin_type_mask = content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
 
   const base::DictionaryValue* d = NULL;
   if (options.HasKey(extension_browsing_data_api_constants::kOriginTypesKey)) {
@@ -350,7 +350,7 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
         return false;
       }
       *origin_type_mask |=
-          value ? BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB : 0;
+          value ? content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB : 0;
     }
 
     // Protected web.
@@ -361,7 +361,7 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
         return false;
       }
       *origin_type_mask |=
-          value ? BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB : 0;
+          value ? content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB : 0;
     }
 
     // Extensions.
@@ -401,28 +401,28 @@ bool BrowsingDataRemoveFunction::GetRemovalMask(int* removal_mask) {
 }
 
 bool BrowsingDataRemoveAppcacheFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_APP_CACHE;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_APP_CACHE;
   return true;
 }
 
 bool BrowsingDataRemoveCacheFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_CACHE;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_CACHE;
   return true;
 }
 
 bool BrowsingDataRemoveCookiesFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_COOKIES |
-                  BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+                  content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS;
   return true;
 }
 
 bool BrowsingDataRemoveDownloadsFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
   return true;
 }
 
 bool BrowsingDataRemoveFileSystemsFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS;
   return true;
 }
 
@@ -437,12 +437,12 @@ bool BrowsingDataRemoveHistoryFunction::GetRemovalMask(int* removal_mask) {
 }
 
 bool BrowsingDataRemoveIndexedDBFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
   return true;
 }
 
 bool BrowsingDataRemoveLocalStorageFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE;
   return true;
 }
 
@@ -458,16 +458,16 @@ bool BrowsingDataRemovePasswordsFunction::GetRemovalMask(int* removal_mask) {
 
 bool BrowsingDataRemoveServiceWorkersFunction::GetRemovalMask(
     int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS;
   return true;
 }
 
 bool BrowsingDataRemoveCacheStorageFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE;
   return true;
 }
 
 bool BrowsingDataRemoveWebSQLFunction::GetRemovalMask(int* removal_mask) {
-  *removal_mask = BrowsingDataRemover::DATA_TYPE_WEB_SQL;
+  *removal_mask = content::BrowsingDataRemover::DATA_TYPE_WEB_SQL;
   return true;
 }

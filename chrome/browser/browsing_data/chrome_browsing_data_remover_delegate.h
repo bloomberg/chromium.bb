@@ -12,12 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/common/features.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/browsing_data_remover_delegate.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
@@ -41,19 +42,23 @@ class PluginDataRemover;
 
 // A delegate used by BrowsingDataRemover to delete data specific to Chrome
 // as the embedder.
-class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
+class ChromeBrowsingDataRemoverDelegate
+    : public content::BrowsingDataRemoverDelegate,
+      public KeyedService
 #if BUILDFLAG(ENABLE_PLUGINS)
-    , public PepperFlashSettingsManager::Client
+      ,
+      public PepperFlashSettingsManager::Client
 #endif
 {
  public:
-  // This is an extension of BrowsingDataRemover::RemoveDataMask which includes
-  // all datatypes therefrom and adds additional Chrome-specific ones.
+  // This is an extension of content::BrowsingDataRemover::RemoveDataMask which
+  // includes all datatypes therefrom and adds additional Chrome-specific ones.
   // TODO(crbug.com/668114): Extend this to uint64_t to ensure that we won't
   // run out of space anytime soon.
   enum DataType {
     // Embedder can start adding datatypes after the last platform datatype.
-    DATA_TYPE_EMBEDDER_BEGIN = BrowsingDataRemover::DATA_TYPE_CONTENT_END << 1,
+    DATA_TYPE_EMBEDDER_BEGIN =
+        content::BrowsingDataRemover::DATA_TYPE_CONTENT_END << 1,
 
     // Chrome-specific datatypes.
     DATA_TYPE_HISTORY = DATA_TYPE_EMBEDDER_BEGIN,
@@ -72,57 +77,60 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
 
     // "Site data" includes storage backend accessible to websites and some
     // additional metadata kept by the browser (e.g. site usage data).
-    DATA_TYPE_SITE_DATA = BrowsingDataRemover::DATA_TYPE_APP_CACHE |
-                          BrowsingDataRemover::DATA_TYPE_COOKIES |
-                          BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS |
-                          BrowsingDataRemover::DATA_TYPE_INDEXED_DB |
-                          BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE |
-                          BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS |
-                          BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE |
-                          BrowsingDataRemover::DATA_TYPE_WEB_SQL |
-                          BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-                          DATA_TYPE_PLUGIN_DATA |
+    DATA_TYPE_SITE_DATA =
+        content::BrowsingDataRemover::DATA_TYPE_APP_CACHE |
+        content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+        content::BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS |
+        content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB |
+        content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE |
+        content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS |
+        content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE |
+        content::BrowsingDataRemover::DATA_TYPE_WEB_SQL |
+        content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
+        DATA_TYPE_PLUGIN_DATA |
 #if defined(OS_ANDROID)
-                          DATA_TYPE_WEB_APP_DATA |
+        DATA_TYPE_WEB_APP_DATA |
 #endif
-                          DATA_TYPE_SITE_USAGE_DATA |
-                          DATA_TYPE_DURABLE_PERMISSION |
-                          DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
+        DATA_TYPE_SITE_USAGE_DATA |
+        DATA_TYPE_DURABLE_PERMISSION |
+        DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATA_TYPES =
-        DATA_TYPE_SITE_DATA | BrowsingDataRemover::DATA_TYPE_CACHE,
+        DATA_TYPE_SITE_DATA | content::BrowsingDataRemover::DATA_TYPE_CACHE,
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
     FILTERABLE_DATA_TYPES = DATA_TYPE_SITE_DATA |
-                            BrowsingDataRemover::DATA_TYPE_CACHE |
-                            BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
+                            content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                            content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
     ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |
-                     BrowsingDataRemover::DATA_TYPE_CACHE |
-                     BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
+                     content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                     content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
                      DATA_TYPE_FORM_DATA |
                      DATA_TYPE_HISTORY |
                      DATA_TYPE_PASSWORDS |
-                     BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+                     content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
 
     // Includes all available remove options. Meant to be used when the Profile
     // is scheduled to be deleted, and all possible data should be wiped from
     // disk as soon as possible.
-    WIPE_PROFILE = ALL_DATA_TYPES | BrowsingDataRemover::DATA_TYPE_NO_CHECKS,
+    WIPE_PROFILE =
+        ALL_DATA_TYPES | content::BrowsingDataRemover::DATA_TYPE_NO_CHECKS,
   };
 
-  // This is an extension of BrowsingDataRemover::OriginType which includes all
-  // origin types therefrom and adds additional Chrome-specific ones.
+  // This is an extension of content::BrowsingDataRemover::OriginType which
+  // includes all origin types therefrom and adds additional Chrome-specific
+  // ones.
   enum OriginType {
     // Embedder can start adding origin types after the last
     // platform origin type.
-    ORIGIN_TYPE_EMBEDDER_BEGIN = BrowsingDataRemover::ORIGIN_TYPE_CONTENT_END
-                                 << 1,
+    ORIGIN_TYPE_EMBEDDER_BEGIN =
+        content::BrowsingDataRemover::ORIGIN_TYPE_CONTENT_END << 1,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Packaged apps and extensions (chrome-extension://*).
@@ -130,11 +138,12 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
 #endif
 
     // All origin types.
-    ALL_ORIGIN_TYPES = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
+    ALL_ORIGIN_TYPES =
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                       ORIGIN_TYPE_EXTENSION |
+        ORIGIN_TYPE_EXTENSION |
 #endif
-                       BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+        content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
   };
 
   // Important sites protect a small set of sites from the deletion of certain
@@ -172,9 +181,13 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   // BrowsingDataRemoverDelegate:
-  BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher GetOriginTypeMatcher()
-      const override;
+  content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
+  GetOriginTypeMatcher() const override;
+  bool MayRemoveDownloadHistory() const override;
   void RemoveEmbedderData(
       const base::Time& delete_begin,
       const base::Time& delete_end,

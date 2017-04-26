@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_
+#ifndef CONTENT_PUBLIC_TEST_BROWSING_DATA_REMOVER_TEST_UTIL_H_
+#define CONTENT_PUBLIC_TEST_BROWSING_DATA_REMOVER_TEST_UTIL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/test_utils.h"
+
+namespace content {
 
 // This class can be used to wait for a BrowsingDataRemover to complete
 // operation. It is not suitable for repeated use.
@@ -26,7 +28,7 @@ class BrowsingDataRemoverCompletionObserver
   void OnBrowsingDataRemoverDone() override;
 
  private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
   ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionObserver);
@@ -64,4 +66,6 @@ class BrowsingDataRemoverCompletionInhibitor {
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionInhibitor);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_BROWSING_DATA_REMOVER_TEST_UTIL_H_

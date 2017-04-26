@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
+#include "content/browser/browsing_data/browsing_data_remover_impl.h"
 
 #include <map>
 #include <set>
@@ -16,13 +16,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
+#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -41,10 +39,8 @@
 #include "url/origin.h"
 
 using base::UserMetricsAction;
-using content::BrowserContext;
-using content::BrowserThread;
-using content::BrowsingDataFilterBuilder;
-using content::DOMStorageContext;
+
+namespace content {
 
 namespace {
 
@@ -167,7 +163,7 @@ void BrowsingDataRemoverImpl::SubTask::CompletionCallback() {
 }
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
-    content::BrowserContext* browser_context)
+    BrowserContext* browser_context)
     : browser_context_(browser_context),
       remove_mask_(-1),
       origin_type_mask_(-1),
@@ -203,23 +199,14 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   }
 }
 
-void BrowsingDataRemoverImpl::Shutdown() {
-  embedder_delegate_.reset();
-}
-
 void BrowsingDataRemoverImpl::SetRemoving(bool is_removing) {
   DCHECK_NE(is_removing_, is_removing);
   is_removing_ = is_removing;
 }
 
 void BrowsingDataRemoverImpl::SetEmbedderDelegate(
-    std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) {
-  embedder_delegate_ = std::move(embedder_delegate);
-}
-
-BrowsingDataRemoverDelegate*
-BrowsingDataRemoverImpl::GetEmbedderDelegate() const {
-  return embedder_delegate_.get();
+    BrowsingDataRemoverDelegate* embedder_delegate) {
+  embedder_delegate_ = embedder_delegate;
 }
 
 bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
@@ -236,19 +223,18 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
 }
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
-                                 const base::Time& delete_end,
-                                 int remove_mask,
-                                 int origin_type_mask) {
+                                     const base::Time& delete_end,
+                                     int remove_mask,
+                                     int origin_type_mask) {
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<BrowsingDataFilterBuilder>(), nullptr);
 }
 
-void BrowsingDataRemoverImpl::RemoveAndReply(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
-    Observer* observer) {
+void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
+                                             const base::Time& delete_end,
+                                             int remove_mask,
+                                             int origin_type_mask,
+                                             Observer* observer) {
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<BrowsingDataFilterBuilder>(), observer);
@@ -292,18 +278,13 @@ void BrowsingDataRemoverImpl::RemoveInternal(
   // Remove() and RemoveAndReply() pass a null pointer to indicate no filter.
   // No filter is equivalent to one that |IsEmptyBlacklist()|.
   if (!filter_builder) {
-    filter_builder = BrowsingDataFilterBuilder::Create(
-        BrowsingDataFilterBuilder::BLACKLIST);
+    filter_builder =
+        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
     DCHECK(filter_builder->IsEmptyBlacklist());
   }
 
-  task_queue_.emplace(
-      delete_begin,
-      delete_end,
-      remove_mask,
-      origin_type_mask,
-      std::move(filter_builder),
-      observer);
+  task_queue_.emplace(delete_begin, delete_end, remove_mask, origin_type_mask,
+                      std::move(filter_builder), observer);
 
   // If this is the only scheduled task, execute it immediately. Otherwise,
   // it will be automatically executed when all tasks scheduled before it
@@ -318,10 +299,8 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK(!task_queue_.empty());
   const RemovalTask& removal_task = task_queue_.front();
 
-  RemoveImpl(removal_task.delete_begin,
-             removal_task.delete_end,
-             removal_task.remove_mask,
-             *removal_task.filter_builder,
+  RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
+             removal_task.remove_mask, *removal_task.filter_builder,
              removal_task.origin_type_mask);
 }
 
@@ -363,17 +342,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
 
   UMA_HISTOGRAM_ENUMERATION(
-      "History.ClearBrowsingData.UserDeletedCookieOrCache",
-      choice, MAX_CHOICE_VALUE);
-
-  // Managed devices and supervised users can have restrictions on history
-  // deletion.
-  // TODO(crbug.com/668114): This should be provided via ContentBrowserClient
-  // once BrowsingDataRemoverImpl moves to content.
-  PrefService* prefs =
-      Profile::FromBrowserContext(browser_context_)->GetPrefs();
-  bool may_delete_history =
-      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+      "History.ClearBrowsingData.UserDeletedCookieOrCache", choice,
+      MAX_CHOICE_VALUE);
 
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
@@ -382,12 +352,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
-  if ((remove_mask & DATA_TYPE_DOWNLOADS) && may_delete_history) {
+  if ((remove_mask & DATA_TYPE_DOWNLOADS) &&
+      (!embedder_delegate_ || embedder_delegate_->MayRemoveDownloadHistory())) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
-    content::DownloadManager* download_manager =
+    DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser_context_);
-    download_manager->RemoveDownloadsByURLAndTime(filter,
-                                                  delete_begin_, delete_end_);
+    download_manager->RemoveDownloadsByURLAndTime(filter, delete_begin_,
+                                                  delete_end_);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -399,8 +370,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::URLRequestContextGetter> rq_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-          GetURLRequestContext();
+        BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetURLRequestContext();
     clear_channel_ids_.Start();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -421,36 +392,34 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // between UNPROTECTED_WEB and other origin types.
   if (remove_mask & DATA_TYPE_COOKIES &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
-    storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
+    storage_partition_remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
   }
   if (remove_mask & DATA_TYPE_LOCAL_STORAGE) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
+        StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;
   }
   if (remove_mask & DATA_TYPE_INDEXED_DB) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+        StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
   }
   if (remove_mask & DATA_TYPE_WEB_SQL) {
-    storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+    storage_partition_remove_mask |= StoragePartition::REMOVE_DATA_MASK_WEBSQL;
   }
   if (remove_mask & DATA_TYPE_APP_CACHE) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_APPCACHE;
+        StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   }
   if (remove_mask & DATA_TYPE_SERVICE_WORKERS) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
+        StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
   }
   if (remove_mask & DATA_TYPE_CACHE_STORAGE) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE;
+        StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE;
   }
   if (remove_mask & DATA_TYPE_FILE_SYSTEMS) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
+        StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
   }
 
   // Content Decryption Modules used by Encrypted Media store licenses in a
@@ -458,10 +427,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Flash (which are deleted father down in this method).
   if (remove_mask & DATA_TYPE_MEDIA_LICENSES) {
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
+        StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
   }
 
-  content::StoragePartition* storage_partition;
+  StoragePartition* storage_partition;
   if (storage_partition_for_testing_) {
     storage_partition = storage_partition_for_testing_;
   } else {
@@ -473,22 +442,22 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     clear_storage_partition_data_.Start();
 
     uint32_t quota_storage_remove_mask =
-        ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
+        ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
 
     if (delete_begin_ == base::Time() ||
         ((origin_type_mask_ & ~ORIGIN_TYPE_UNPROTECTED_WEB) != 0)) {
       // If we're deleting since the beginning of time, or we're removing
       // protected origins, then remove persistent quota data.
       quota_storage_remove_mask |=
-          content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
+          StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
     }
 
     // If cookies are supposed to be conditionally deleted from the storage
     // partition, create a cookie matcher function.
-    content::StoragePartition::CookieMatcherFunction cookie_matcher;
+    StoragePartition::CookieMatcherFunction cookie_matcher;
     if (!filter_builder.IsEmptyBlacklist() &&
         (storage_partition_remove_mask &
-            content::StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
+         StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
       cookie_matcher = filter_builder.BuildCookieFilter();
     }
 
@@ -521,7 +490,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
     storage_partition_remove_mask |=
-        content::StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
+        StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -543,12 +512,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   if (embedder_delegate_) {
     clear_embedder_data_.Start();
     embedder_delegate_->RemoveEmbedderData(
-        delete_begin_,
-        delete_end_,
-        remove_mask,
-        filter_builder,
-        origin_type_mask,
-        clear_embedder_data_.GetCompletionCallback());
+        delete_begin_, delete_end_, remove_mask, filter_builder,
+        origin_type_mask, clear_embedder_data_.GetCompletionCallback());
   }
 
   // Notify in case all actions taken were synchronous.
@@ -570,7 +535,7 @@ void BrowsingDataRemoverImpl::SetWouldCompleteCallbackForTesting(
 }
 
 void BrowsingDataRemoverImpl::OverrideStoragePartitionForTesting(
-    content::StoragePartition* storage_partition) {
+    StoragePartition* storage_partition) {
   storage_partition_for_testing_ = storage_partition;
 }
 
@@ -608,8 +573,7 @@ BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
 
 bool BrowsingDataRemoverImpl::AllDone() {
   return !synchronous_clear_operations_.is_pending() &&
-         !clear_embedder_data_.is_pending() &&
-         !clear_cache_.is_pending() &&
+         !clear_embedder_data_.is_pending() && !clear_cache_.is_pending() &&
          !clear_channel_ids_.is_pending() &&
          !clear_http_auth_cache_.is_pending() &&
          !clear_storage_partition_data_.is_pending();
@@ -679,3 +643,5 @@ base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {
 
   return weak_ptr;
 }
+
+}  // namespace content

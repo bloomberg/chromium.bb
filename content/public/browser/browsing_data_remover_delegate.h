@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_DELEGATE_H_
 
 #include "base/callback_forward.h"
 
@@ -13,13 +13,13 @@ namespace base {
 class Time;
 }
 
-namespace content {
-class BrowsingDataFilterBuilder;
-}
-
 namespace storage {
 class SpecialStoragePolicy;
 }
+
+namespace content {
+
+class BrowsingDataFilterBuilder;
 
 class BrowsingDataRemoverDelegate {
  public:
@@ -39,14 +39,19 @@ class BrowsingDataRemoverDelegate {
   // being called on the UI and IO thread.
   virtual EmbedderOriginTypeMatcher GetOriginTypeMatcher() const = 0;
 
+  // Whether the embedder allows the removal of download history.
+  virtual bool MayRemoveDownloadHistory() const = 0;
+
   // Removes embedder-specific data.
   virtual void RemoveEmbedderData(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       int remove_mask,
-      const content::BrowsingDataFilterBuilder& filter_builder,
+      const BrowsingDataFilterBuilder& filter_builder,
       int origin_type_mask,
       const base::Closure& callback) = 0;
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_DELEGATE_H_

@@ -540,15 +540,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) {}
 
   // Clears browser cache.
+  // TODO(crbug.com/668114): Deprecated. Use BrowsingDataRemover instead.
   virtual void ClearCache(RenderFrameHost* rfh) {}
 
   // Clears browser cookies.
+  // TODO(crbug.com/668114): Deprecated. Use BrowsingDataRemover instead.
   virtual void ClearCookies(RenderFrameHost* rfh) {}
 
   // Clears |browser_context|'s data stored for the given |origin|.
   // The datatypes to be removed are specified by |remove_cookies|,
   // |remove_storage|, and |remove_cache|. Note that cookies should be removed
   // for the entire eTLD+1 of |origin|. Must call |callback| when finished.
+  // TODO(crbug.com/668114): Depreacated. Use BrowsingDataRemover instead.
   virtual void ClearSiteData(content::BrowserContext* browser_context,
                              const url::Origin& origin,
                              bool remove_cookies,

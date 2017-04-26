@@ -2,20 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_H_
-#define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_H_
 
 #include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
-#include "components/keyed_service/core/keyed_service.h"
+
+class GURL;
+
+namespace storage {
+class SpecialStoragePolicy;
+}
 
 namespace content {
+
 class BrowsingDataFilterBuilder;
-}
+class BrowsingDataRemoverDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowsingDataRemover is responsible for removing data related to browsing:
@@ -25,8 +31,8 @@ class BrowsingDataFilterBuilder;
 //
 //  0. Instantiation.
 //
-//       BrowsingDataRemover* remover =
-//           BrowsingDataRemoverFactory::GetForBrowserContext(browser_context);
+//       content::BrowsingDataRemover* remover =
+//           content::BrowserContext::GetBrowsingDataRemover(browser_context);
 //
 //  1. No observer.
 //
@@ -34,7 +40,7 @@ class BrowsingDataFilterBuilder;
 //
 //  2. Using an observer to report when one's own removal task is finished.
 //
-//       class CookiesDeleter : public BrowsingDataRemover::Observer {
+//       class CookiesDeleter : public content::BrowsingDataRemover::Observer {
 //         CookiesDeleter() { remover->AddObserver(this); }
 //         ~CookiesDeleter() { remover->RemoveObserver(this); }
 //
@@ -52,7 +58,7 @@ class BrowsingDataFilterBuilder;
 //
 // TODO(crbug.com/668114): BrowsingDataRemover does not currently support plugin
 // data deletion. Use PluginDataRemover instead.
-class BrowsingDataRemover : public KeyedService {
+class BrowsingDataRemover {
  public:
   // Mask used for Remove.
   enum DataType {
@@ -128,11 +134,9 @@ class BrowsingDataRemover : public KeyedService {
     virtual ~Observer() {}
   };
 
-  // Called by the embedder to provide the delegate that will take care of
-  // deleting embedder-specific data.
+  // A delegate that will take care of deleting embedder-specific data.
   virtual void SetEmbedderDelegate(
-      std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) = 0;
-  virtual BrowsingDataRemoverDelegate* GetEmbedderDelegate() const = 0;
+      BrowsingDataRemoverDelegate* embedder_delegate) = 0;
 
   // Determines whether |origin| matches the |origin_type_mask| according to
   // the |special_storage_policy|.
@@ -164,7 +168,7 @@ class BrowsingDataRemover : public KeyedService {
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder) = 0;
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) = 0;
 
   // A version of the above that in addition informs the |observer| when the
   // removal task is finished.
@@ -173,7 +177,7 @@ class BrowsingDataRemover : public KeyedService {
       const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
-      std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
       Observer* observer) = 0;
 
   // Observers.
@@ -200,4 +204,6 @@ class BrowsingDataRemover : public KeyedService {
   virtual int GetLastUsedOriginTypeMask() = 0;
 };
 
-#endif // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSING_DATA_REMOVER_H_

@@ -28,23 +28,20 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
-#include "chrome/test/base/testing_profile.h"
+#include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/features/features.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
@@ -59,10 +56,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-using content::BrowserThread;
-using content::BrowserContext;
-using content::BrowsingDataFilterBuilder;
-using content::StoragePartition;
 using testing::_;
 using testing::ByRef;
 using testing::Eq;
@@ -76,6 +69,8 @@ using testing::Not;
 using testing::Return;
 using testing::SizeIs;
 using testing::WithArgs;
+
+namespace content {
 
 namespace {
 
@@ -135,7 +130,7 @@ class TestStoragePartition : public StoragePartition {
   TestStoragePartition() {}
   ~TestStoragePartition() override {}
 
-  // content::StoragePartition implementation.
+  // StoragePartition implementation.
   base::FilePath GetPath() override { return base::FilePath(); }
   net::URLRequestContextGetter* GetURLRequestContext() override {
     return nullptr;
@@ -144,32 +139,21 @@ class TestStoragePartition : public StoragePartition {
     return nullptr;
   }
   storage::QuotaManager* GetQuotaManager() override { return nullptr; }
-  content::AppCacheService* GetAppCacheService() override { return nullptr; }
+  AppCacheService* GetAppCacheService() override { return nullptr; }
   storage::FileSystemContext* GetFileSystemContext() override {
     return nullptr;
   }
   storage::DatabaseTracker* GetDatabaseTracker() override { return nullptr; }
-  content::DOMStorageContext* GetDOMStorageContext() override {
+  DOMStorageContext* GetDOMStorageContext() override { return nullptr; }
+  IndexedDBContext* GetIndexedDBContext() override { return nullptr; }
+  ServiceWorkerContext* GetServiceWorkerContext() override { return nullptr; }
+  CacheStorageContext* GetCacheStorageContext() override { return nullptr; }
+  PlatformNotificationContext* GetPlatformNotificationContext() override {
     return nullptr;
   }
-  content::IndexedDBContext* GetIndexedDBContext() override { return nullptr; }
-  content::ServiceWorkerContext* GetServiceWorkerContext() override {
-    return nullptr;
-  }
-  content::CacheStorageContext* GetCacheStorageContext() override {
-    return nullptr;
-  }
-  content::PlatformNotificationContext* GetPlatformNotificationContext()
-      override {
-    return nullptr;
-  }
-  content::HostZoomMap* GetHostZoomMap() override { return nullptr; }
-  content::HostZoomLevelContext* GetHostZoomLevelContext() override {
-    return nullptr;
-  }
-  content::ZoomLevelDelegate* GetZoomLevelDelegate() override {
-    return nullptr;
-  }
+  HostZoomMap* GetHostZoomMap() override { return nullptr; }
+  HostZoomLevelContext* GetHostZoomLevelContext() override { return nullptr; }
+  ZoomLevelDelegate* GetZoomLevelDelegate() override { return nullptr; }
 
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
@@ -242,9 +226,7 @@ class TestStoragePartition : public StoragePartition {
   }
 
  private:
-  void AsyncRunCallback(const base::Closure& callback) {
-    callback.Run();
-  }
+  void AsyncRunCallback(const base::Closure& callback) { callback.Run(); }
 
   StoragePartitionRemovalData storage_partition_removal_data_;
 
@@ -267,8 +249,7 @@ class ProbablySameFilterMatcher
  public:
   explicit ProbablySameFilterMatcher(
       const base::Callback<bool(const GURL&)>& filter)
-      : to_match_(filter) {
-  }
+      : to_match_(filter) {}
 
   virtual bool MatchAndExplain(const base::Callback<bool(const GURL&)>& filter,
                                MatchResultListener* listener) const {
@@ -277,8 +258,8 @@ class ProbablySameFilterMatcher
     if (filter.is_null() != to_match_.is_null())
       return false;
 
-    const GURL urls_to_test_[] =
-        {kOrigin1, kOrigin2, kOrigin3, GURL("invalid spec")};
+    const GURL urls_to_test_[] = {kOrigin1, kOrigin2, kOrigin3,
+                                  GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
       if (filter.Run(url) != to_match_.Run(url)) {
         if (listener)
@@ -320,8 +301,8 @@ class RemoveCookieTester {
 
   // Returns true, if the given cookie exists in the cookie store.
   bool ContainsCookie() {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
+    scoped_refptr<MessageLoopRunner> message_loop_runner =
+        new MessageLoopRunner();
     quit_closure_ = message_loop_runner->QuitClosure();
     get_cookie_success_ = false;
     cookie_store_->GetCookiesWithOptionsAsync(
@@ -333,8 +314,8 @@ class RemoveCookieTester {
   }
 
   void AddCookie() {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
+    scoped_refptr<MessageLoopRunner> message_loop_runner =
+        new MessageLoopRunner();
     quit_closure_ = message_loop_runner->QuitClosure();
     cookie_store_->SetCookieWithOptionsAsync(
         kOrigin1, "A=1", net::CookieOptions(),
@@ -377,9 +358,10 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
  public:
   explicit RemoveChannelIDTester(BrowserContext* browser_context) {
     net::URLRequestContext* url_request_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context)
-            ->GetURLRequestContext()->GetURLRequestContext();
-    channel_id_service_ = url_request_context-> channel_id_service();
+        BrowserContext::GetDefaultStoragePartition(browser_context)
+            ->GetURLRequestContext()
+            ->GetURLRequestContext();
+    channel_id_service_ = url_request_context->channel_id_service();
     ssl_config_service_ = url_request_context->ssl_config_service();
     ssl_config_service_->AddObserver(this);
   }
@@ -407,18 +389,15 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   }
 
   void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
-    GetChannelIDStore()->GetAllChannelIDs(
-        base::Bind(&RemoveChannelIDTester::GetAllChannelIDsCallback,
-                   channel_ids));
+    GetChannelIDStore()->GetAllChannelIDs(base::Bind(
+        &RemoveChannelIDTester::GetAllChannelIDsCallback, channel_ids));
   }
 
   net::ChannelIDStore* GetChannelIDStore() {
     return channel_id_service_->GetChannelIDStore();
   }
 
-  int ssl_config_changed_count() const {
-    return ssl_config_changed_count_;
-  }
+  int ssl_config_changed_count() const { return ssl_config_changed_count_; }
 
   // net::SSLConfigService::Observer implementation:
   void OnSSLConfigChanged() override { ssl_config_changed_count_++; }
@@ -442,14 +421,14 @@ class RemoveLocalStorageTester {
   explicit RemoveLocalStorageTester(BrowserContext* browser_context)
       : browser_context_(browser_context) {
     dom_storage_context_ =
-        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetDOMStorageContext();
+        BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetDOMStorageContext();
   }
 
   // Returns true, if the given origin URL exists.
   bool DOMStorageExistsForOrigin(const GURL& origin) {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
+    scoped_refptr<MessageLoopRunner> message_loop_runner =
+        new MessageLoopRunner();
     quit_closure_ = message_loop_runner->QuitClosure();
     GetLocalStorageUsage();
     message_loop_runner->Run();
@@ -478,12 +457,12 @@ class RemoveLocalStorageTester {
     base::TouchFile(storage_path.Append(kDomStorageOrigin1), now, now);
 
     base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin2),
-                    one_day_ago, one_day_ago);
+    base::TouchFile(storage_path.Append(kDomStorageOrigin2), one_day_ago,
+                    one_day_ago);
 
     base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin3),
-                    sixty_days_ago, sixty_days_ago);
+    base::TouchFile(storage_path.Append(kDomStorageOrigin3), sixty_days_ago,
+                    sixty_days_ago);
 
     base::TouchFile(storage_path.Append(kDomStorageExt), now, now);
   }
@@ -494,17 +473,16 @@ class RemoveLocalStorageTester {
         base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
                    base::Unretained(this)));
   }
-  void OnGotLocalStorageUsage(
-      const std::vector<content::LocalStorageUsageInfo>& infos) {
+  void OnGotLocalStorageUsage(const std::vector<LocalStorageUsageInfo>& infos) {
     infos_ = infos;
     quit_closure_.Run();
   }
 
   // We don't own these pointers.
   BrowserContext* browser_context_;
-  content::DOMStorageContext* dom_storage_context_ = nullptr;
+  DOMStorageContext* dom_storage_context_ = nullptr;
 
-  std::vector<content::LocalStorageUsageInfo> infos_;
+  std::vector<LocalStorageUsageInfo> infos_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
@@ -513,20 +491,20 @@ class RemoveLocalStorageTester {
 class RemoveDownloadsTester {
  public:
   explicit RemoveDownloadsTester(BrowserContext* browser_context)
-      : download_manager_(new content::MockDownloadManager()) {
-    content::BrowserContext::SetDownloadManagerForTesting(
+      : download_manager_(new MockDownloadManager()) {
+    BrowserContext::SetDownloadManagerForTesting(
         browser_context, base::WrapUnique(download_manager_));
     EXPECT_EQ(download_manager_,
-              content::BrowserContext::GetDownloadManager(browser_context));
+              BrowserContext::GetDownloadManager(browser_context));
     EXPECT_CALL(*download_manager_, Shutdown());
   }
 
   ~RemoveDownloadsTester() {}
 
-  content::MockDownloadManager* download_manager() { return download_manager_; }
+  MockDownloadManager* download_manager() { return download_manager_; }
 
  private:
-  content::MockDownloadManager* download_manager_;  // Owned by browser context.
+  MockDownloadManager* download_manager_;  // Owned by browser context.
 
   DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);
 };
@@ -535,18 +513,9 @@ class RemoveDownloadsTester {
 
 class BrowsingDataRemoverImplTest : public testing::Test {
  public:
-  BrowsingDataRemoverImplTest()
-      : browser_context_(new TestingProfile()) {
-    // TODO(crbug.com/668114): To create a BrowsingDataRemoverImpl, we currently
-    // need a BrowsingDataRemoverFactory which only exists for a Profile.
-    // Therefore, this test must use a TestingProfile for now. Switch it to
-    // a BrowserContext or TestBrowserContext when BrowsingDataRemoverImpl
-    // moves to content/. Furthermore, when in content/, BrowsingDataRemoverImpl
-    // will have no delegate. For now, explicitly set it to nullptr.
+  BrowsingDataRemoverImplTest() : browser_context_(new TestBrowserContext()) {
     remover_ = static_cast<BrowsingDataRemoverImpl*>(
-        BrowsingDataRemoverFactory::GetForBrowserContext(
-            browser_context_.get()));
-    remover_->SetEmbedderDelegate(nullptr);
+        BrowserContext::GetBrowsingDataRemover(browser_context_.get()));
   }
 
   ~BrowsingDataRemoverImplTest() override {}
@@ -575,9 +544,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
       origin_type_mask |= BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
 
     BrowsingDataRemoverCompletionObserver completion_observer(remover_);
-    remover_->RemoveAndReply(
-        delete_begin, delete_end, remove_mask, origin_type_mask,
-        &completion_observer);
+    remover_->RemoveAndReply(delete_begin, delete_end, remove_mask,
+                             origin_type_mask, &completion_observer);
     completion_observer.BlockUntilCompletion();
 
     // Save so we can verify later.
@@ -605,36 +573,26 @@ class BrowsingDataRemoverImplTest : public testing::Test {
         storage_partition.GetStoragePartitionRemovalData();
   }
 
-  BrowserContext* GetBrowserContext() {
-    return browser_context_.get();
-  }
+  BrowserContext* GetBrowserContext() { return browser_context_.get(); }
 
   void DestroyBrowserContext() { browser_context_.reset(); }
 
-  const base::Time& GetBeginTime() {
-    return remover_->GetLastUsedBeginTime();
-  }
+  const base::Time& GetBeginTime() { return remover_->GetLastUsedBeginTime(); }
 
-  int GetRemovalMask() {
-    return remover_->GetLastUsedRemovalMask();
-  }
+  int GetRemovalMask() { return remover_->GetLastUsedRemovalMask(); }
 
-  int GetOriginTypeMask() {
-    return remover_->GetLastUsedOriginTypeMask();
-  }
+  int GetOriginTypeMask() { return remover_->GetLastUsedOriginTypeMask(); }
 
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
     return storage_partition_removal_data_;
   }
 
-  content::MockSpecialStoragePolicy* CreateMockPolicy() {
-    mock_policy_ = new content::MockSpecialStoragePolicy();
+  MockSpecialStoragePolicy* CreateMockPolicy() {
+    mock_policy_ = new MockSpecialStoragePolicy();
     return mock_policy_.get();
   }
 
-  content::MockSpecialStoragePolicy* mock_policy() {
-    return mock_policy_.get();
-  }
+  MockSpecialStoragePolicy* mock_policy() { return mock_policy_.get(); }
 
   bool Match(const GURL& origin,
              int mask,
@@ -646,12 +604,12 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   // Cached pointer to BrowsingDataRemoverImpl for access to testing methods.
   BrowsingDataRemoverImpl* remover_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserContext> browser_context_;
 
   StoragePartitionRemovalData storage_partition_removal_data_;
 
-  scoped_refptr<content::MockSpecialStoragePolicy> mock_policy_;
+  scoped_refptr<MockSpecialStoragePolicy> mock_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImplTest);
 };
@@ -733,7 +691,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainBlacklist) {
 // Test that removing cookies clears HTTP auth data.
 TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
   net::HttpNetworkSession* http_session =
-      content::BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
           ->GetURLRequestContext()
           ->GetURLRequestContext()
           ->http_transaction_factory()
@@ -821,7 +779,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsForServerIdentifiers) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
-  content::MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
   policy->AddProtected(kOrigin1.GetOrigin());
 
@@ -850,7 +808,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveProtectedLocalStorageForever) {
   // Protect kOrigin1.
-  content::MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  MockSpecialStoragePolicy* policy = CreateMockPolicy();
   policy->AddProtected(kOrigin1.GetOrigin());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
@@ -879,9 +837,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveProtectedLocalStorageForever) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveLocalStorageForLastWeek) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   CreateMockPolicy();
-#endif
 
   BlockUntilBrowsingDataRemoved(
       base::Time::Now() - base::TimeDelta::FromDays(7), base::Time::Max(),
@@ -917,8 +873,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveMultipleTypes) {
   int removal_mask = BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
                      BrowsingDataRemover::DATA_TYPE_COOKIES;
 
-  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
-                                removal_mask, false);
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), removal_mask,
+                                false);
 
   EXPECT_EQ(removal_mask, GetRemovalMask());
   EXPECT_EQ(BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
@@ -969,9 +925,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForeverBoth) {
 
 TEST_F(BrowsingDataRemoverImplTest,
        RemoveQuotaManagedDataForeverOnlyTemporary) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   CreateMockPolicy();
-#endif
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1015,9 +969,7 @@ TEST_F(BrowsingDataRemoverImplTest,
 
 TEST_F(BrowsingDataRemoverImplTest,
        RemoveQuotaManagedDataForeverOnlyPersistent) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   CreateMockPolicy();
-#endif
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1060,9 +1012,7 @@ TEST_F(BrowsingDataRemoverImplTest,
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForeverNeither) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   CreateMockPolicy();
-#endif
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1231,7 +1181,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForLastWeek) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
-  content::MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
   policy->AddProtected(kOrigin1.GetOrigin());
 
@@ -1275,7 +1225,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
-  content::MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
   policy->AddProtected(kOrigin1.GetOrigin());
 
@@ -1326,7 +1276,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedOrigins) {
-  content::MockSpecialStoragePolicy* policy = CreateMockPolicy();
+  MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
   policy->AddProtected(kOrigin1.GetOrigin());
 
@@ -1374,9 +1324,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedOrigins) {
 
 TEST_F(BrowsingDataRemoverImplTest,
        RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
   CreateMockPolicy();
-#endif
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1438,7 +1386,7 @@ class InspectableCompletionObserver
 
 TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
 
   // The |completion_inhibitor| on the stack should prevent removal sessions
   // from completing until after ContinueToCompletion() is called.
@@ -1470,7 +1418,7 @@ TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
 
 TEST_F(BrowsingDataRemoverImplTest, EarlyShutdown) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
   InspectableCompletionObserver completion_observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
   remover->RemoveAndReply(
@@ -1500,9 +1448,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByTimeOnly) {
   base::Callback<bool(const GURL&)> filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(
-      *tester.download_manager(),
-      RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));
+  EXPECT_CALL(*tester.download_manager(),
+              RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
@@ -1516,9 +1463,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
   base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
 
-  EXPECT_CALL(
-      *tester.download_manager(),
-      RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));
+  EXPECT_CALL(*tester.download_manager(),
+              RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));
 
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
@@ -1533,8 +1479,7 @@ class MultipleTasksObserver {
   class Target : public BrowsingDataRemover::Observer {
    public:
     Target(MultipleTasksObserver* parent, BrowsingDataRemover* remover)
-        : parent_(parent),
-          observer_(this) {
+        : parent_(parent), observer_(this) {
       observer_.Add(remover);
     }
     ~Target() override {}
@@ -1555,13 +1500,9 @@ class MultipleTasksObserver {
         last_called_target_(nullptr) {}
   ~MultipleTasksObserver() {}
 
-  void ClearLastCalledTarget() {
-    last_called_target_ = nullptr;
-  }
+  void ClearLastCalledTarget() { last_called_target_ = nullptr; }
 
-  Target* GetLastCalledTarget() {
-    return last_called_target_;
-  }
+  Target* GetLastCalledTarget() { return last_called_target_; }
 
   Target* target_a() { return &target_a_; }
   Target* target_b() { return &target_b_; }
@@ -1580,7 +1521,7 @@ class MultipleTasksObserver {
 
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
   EXPECT_FALSE(remover->is_removing());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
@@ -1628,8 +1569,8 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
     // Remove.* instead. This also serves as a test that those methods are all
     // correctly reduced to RemoveInternal().
     if (!task.observer && task.filter_builder->IsEmptyBlacklist()) {
-      remover->Remove(task.delete_begin, task.delete_end,
-                      task.remove_mask, task.origin_type_mask);
+      remover->Remove(task.delete_begin, task.delete_end, task.remove_mask,
+                      task.origin_type_mask);
     } else if (task.filter_builder->IsEmptyBlacklist()) {
       remover->RemoveAndReply(task.delete_begin, task.delete_end,
                               task.remove_mask, task.origin_type_mask,
@@ -1639,10 +1580,9 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
                                 task.remove_mask, task.origin_type_mask,
                                 std::move(task.filter_builder));
     } else {
-      remover->RemoveWithFilterAndReply(task.delete_begin, task.delete_end,
-                                        task.remove_mask, task.origin_type_mask,
-                                        std::move(task.filter_builder),
-                                        task.observer);
+      remover->RemoveWithFilterAndReply(
+          task.delete_begin, task.delete_end, task.remove_mask,
+          task.origin_type_mask, std::move(task.filter_builder), task.observer);
     }
   }
 
@@ -1676,7 +1616,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
 // inhibition is executed correctly and doesn't crash.
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
   EXPECT_FALSE(remover->is_removing());
 
   int test_removal_masks[] = {
@@ -1713,3 +1653,5 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
 
   EXPECT_FALSE(remover->is_removing());
 }
+
+}  // namespace content

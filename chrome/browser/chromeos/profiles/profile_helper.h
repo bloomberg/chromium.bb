@@ -14,9 +14,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browsing_data_remover.h"
 
 class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest;
 class ArcAppTest;
@@ -61,7 +61,7 @@ class FileFlusher;
 //    GetActiveUserProfileDir()
 // 3. Get mapping from user_id_hash to Profile instance/profile path etc.
 class ProfileHelper
-    : public BrowsingDataRemover::Observer,
+    : public content::BrowsingDataRemover::Observer,
       public OAuth2LoginManager::Observer,
       public user_manager::UserManager::UserSessionStateObserver {
  public:
@@ -216,7 +216,7 @@ class ProfileHelper
   base::Closure on_clear_profile_stage_finished_;
 
   // A currently running browsing data remover.
-  BrowsingDataRemover* browsing_data_remover_;
+  content::BrowsingDataRemover* browsing_data_remover_;
 
   // Used for testing by unit tests and FakeUserManager/MockUserManager.
   std::map<const user_manager::User*, Profile*> user_to_profile_for_testing_;

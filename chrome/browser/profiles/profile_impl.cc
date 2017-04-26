@@ -36,6 +36,8 @@
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -1026,6 +1028,11 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::SSLHostStateDelegate* ProfileImpl::GetSSLHostStateDelegate() {
   return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
+}
+
+content::BrowsingDataRemoverDelegate*
+ProfileImpl::GetBrowsingDataRemoverDelegate() {
+  return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
 }
 
 // TODO(mlamouri): we should all these BrowserContext implementation to Profile

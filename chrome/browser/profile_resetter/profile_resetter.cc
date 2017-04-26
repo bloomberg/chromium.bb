@@ -13,8 +13,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -37,6 +36,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -237,10 +237,10 @@ void ProfileResetter::ResetCookiesAndSiteData() {
   DCHECK(CalledOnValidThread());
   DCHECK(!cookies_remover_);
 
-  cookies_remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
+  cookies_remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_);
   cookies_remover_->AddObserver(this);
   int remove_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-                    BrowsingDataRemover::DATA_TYPE_CACHE;
+                    content::BrowsingDataRemover::DATA_TYPE_CACHE;
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
 
@@ -249,7 +249,7 @@ void ProfileResetter::ResetCookiesAndSiteData() {
     remove_mask &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
   cookies_remover_->RemoveAndReply(
       base::Time(), base::Time::Max(), remove_mask,
-      BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, this);
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, this);
 }
 
 void ProfileResetter::ResetExtensions() {

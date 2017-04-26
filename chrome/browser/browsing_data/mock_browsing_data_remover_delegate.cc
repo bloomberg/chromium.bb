@@ -14,9 +14,13 @@ MockBrowsingDataRemoverDelegate::~MockBrowsingDataRemoverDelegate() {
   DCHECK(!expected_calls_.size()) << "Expectations were set but not verified.";
 }
 
-BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
+content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
 MockBrowsingDataRemoverDelegate::GetOriginTypeMatcher() const {
-  return BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher();
+  return content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher();
+}
+
+bool MockBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() const {
+  return true;
 }
 
 void MockBrowsingDataRemoverDelegate::RemoveEmbedderData(
