@@ -776,12 +776,14 @@ void OmniboxViewViews::OnBlur() {
   views::Textfield::OnBlur();
   model()->OnWillKillFocus();
 
-  // If ZeroSuggest is active, we may have refused to show an update to the
-  // underlying permanent URL that happened while the popup was open, so
-  // revert to ensure that update is shown now.  Otherwise, make sure to call
-  // CloseOmniboxPopup() unconditionally, so that if ZeroSuggest is in the midst
-  // of running but hasn't yet opened the popup, it will be halted.
-  if (!model()->user_input_in_progress() && model()->popup_model()->IsOpen())
+  // If ZeroSuggest is active, and there is evidence that there is a text
+  // update to show, revert to ensure that update is shown now.  Otherwise,
+  // at least call CloseOmniboxPopup(), so that if ZeroSuggest is in the
+  // midst of running but hasn't yet opened the popup, it will be halted.
+  // If we fully reverted in this case, we'd lose the cursor/highlight
+  // information saved above.
+  if (!model()->user_input_in_progress() && model()->popup_model()->IsOpen() &&
+      text() != model()->PermanentText())
     RevertAll();
   else
     CloseOmniboxPopup();
