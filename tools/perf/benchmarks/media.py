@@ -41,6 +41,8 @@ class _MSEMeasurement(legacy_page_test.LegacyPageTest):
 
 # android: See media.android.tough_video_cases below
 # crbug.com/565180: Only include cases that report time_to_play
+@benchmark.Owner(emails=['crouleau@chromium.org'],
+                 component='Internals>Media')
 @benchmark.Disabled('android')
 class MediaToughVideoCases(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
@@ -85,7 +87,8 @@ class MediaToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
 
 # crbug.com/565180: Only include cases that don't report time_to_play
 @benchmark.Disabled('android')
-@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
+                 component='Internals>Media')
 class MediaExtra(perf_benchmark.PerfBenchmark):
   """Obtains extra media metrics for key user scenarios."""
   test = media.Media
@@ -96,8 +99,9 @@ class MediaExtra(perf_benchmark.PerfBenchmark):
     return 'media.tough_video_cases_extra'
 
 
-@benchmark.Disabled('android', 'mac')
-@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
+@benchmark.Disabled('all')  # crbug/676345
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
+                 component='Internals>Media')
 class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media
@@ -109,6 +113,8 @@ class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('l', 'android-webview')  # WebView: crbug.com/419689.
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
+                 component='Internals>Media')
 class MediaAndroidToughVideoCases(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
@@ -154,7 +160,10 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
         ['--disable-gesture-requirement-for-media-playback'])
 
 
+# This isn't running anywhere. See crbug/709161.
 @benchmark.Enabled('chromeos')
+@benchmark.Owner(emails=['crouleau@chromium.org'],
+                 component='Internals>Media')
 class MediaChromeOS4kOnly(perf_benchmark.PerfBenchmark):
   """Benchmark for media performance on ChromeOS using only is_4k test content.
   """
@@ -172,7 +181,10 @@ class MediaChromeOS4kOnly(perf_benchmark.PerfBenchmark):
     return 'media.chromeOS4kOnly.tough_video_cases'
 
 
+# This isn't running anywhere. See crbug/709161.
 @benchmark.Enabled('chromeos')
+@benchmark.Owner(emails=['crouleau@chromium.org'],
+                 component='Internals>Media')
 class MediaChromeOS(perf_benchmark.PerfBenchmark):
   """Benchmark for media performance on all ChromeOS platforms.
 
@@ -191,7 +203,8 @@ class MediaChromeOS(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android-webview')  # crbug.com/419689
-@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'])
+@benchmark.Owner(emails=['crouleau@chromium.org', 'videostack-eng@google.com'],
+                 component='Internals>Media>Source')
 class MediaSourceExtensions(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key media source extensions functions."""
   test = _MSEMeasurement
