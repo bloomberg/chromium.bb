@@ -29,6 +29,10 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
  public:
   virtual ~ThreadedWorklet() = default;
 
+  // Called when addModule() is called for the first time.
+  virtual void Initialize() = 0;
+  virtual bool IsInitialized() const = 0;
+
   // Worklet
   ScriptPromise addModule(ScriptState*, const String& url) final;
 

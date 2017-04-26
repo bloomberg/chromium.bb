@@ -67,6 +67,8 @@ void ThreadedWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   for (const auto& script_loader : loader_to_resolver_map_.Keys())
     script_loader->Cancel();
   loader_to_resolver_map_.clear();
+  if (IsInitialized())
+    GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
   Worklet::ContextDestroyed(execution_context);
 }
 
