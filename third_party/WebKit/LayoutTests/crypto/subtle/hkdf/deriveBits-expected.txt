@@ -5,9 +5,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Derive 0 bits from the HKDF key
 PASS derivedBits.byteLength is 0
-Derive 4 bits from the HKDF key
+Derive 8 bits from the HKDF key
 PASS derivedBits.byteLength is 1
-PASS derivedBits.getUint8(0) is 0x80
+PASS derivedBits.getUint8(0) is 141
 PASS successfullyParsed is true
 
 TEST COMPLETE

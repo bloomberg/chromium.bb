@@ -331,6 +331,11 @@ Status Status::ErrorHkdfLengthTooLong() {
                 "The length provided for HKDF is too large.");
 }
 
+Status Status::ErrorHkdfLengthNotWholeByte() {
+  return Status(blink::kWebCryptoErrorTypeOperation,
+                "The length provided for HKDF is not a multiple of 8 bits.");
+}
+
 Status Status::ErrorHkdfDeriveBitsLengthNotSpecified() {
   // TODO(nharper): The spec might change so that an OperationError should be
   // thrown here instead of a TypeError.
