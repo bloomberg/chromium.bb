@@ -337,7 +337,7 @@ int main(int argc, char** argv) {
   // Build UI thread message loop. This is used by platform
   // implementations for event polling & running background tasks.
   base::MessageLoopForUI message_loop;
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("OzoneDemo");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("OzoneDemo");
 
   ui::OzonePlatform::InitializeForUI();
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()

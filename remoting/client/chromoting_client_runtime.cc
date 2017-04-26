@@ -28,7 +28,7 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 }
 
 ChromotingClientRuntime::ChromotingClientRuntime() {
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("Remoting");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("Remoting");
 
   if (!base::MessageLoop::current()) {
     VLOG(1) << "Starting main message loop";

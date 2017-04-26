@@ -118,7 +118,7 @@ void CronetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("CronetIos");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("CronetIos");
 
   url::Initialize();
   base::CommandLine::Init(0, nullptr);

@@ -78,7 +78,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   // Required to find the ICU data file, used by some file_util routines.
   base::i18n::InitializeICU();
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("It2Me");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("It2Me");
 
   remoting::LoadResources("");
 

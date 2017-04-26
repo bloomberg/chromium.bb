@@ -157,10 +157,6 @@ class BASE_EXPORT TaskScheduler {
   // afterwards. CHECKs on failure. For tests, prefer
   // base::test::ScopedTaskEnvironment (ensures isolation).
   static void CreateAndStartWithDefaultParams(StringPiece name);
-
-  // Deprecated. Use CreateAndStartWithDefaultParams() instead.
-  // TODO(fdoray): Redirect callers to CreateAndStartWithDefaultParams().
-  static void CreateAndSetSimpleTaskScheduler(StringPiece name);
 #endif  // !defined(OS_NACL)
 
   // Creates a ready to start task scheduler. |name| is used to label threads

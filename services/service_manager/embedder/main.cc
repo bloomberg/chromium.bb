@@ -189,7 +189,7 @@ void NonEmbedderProcessInit() {
   base::debug::EnableInProcessStackDumping();
 #endif
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("ServiceManagerProcess");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");
 }
 
 void WaitForDebuggerIfNecessary() {
