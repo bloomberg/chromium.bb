@@ -157,16 +157,8 @@ if (window.testRunner) {
         PerfTestRunner.log("Running " + iterationCount + " times");
         if (test.doNotIgnoreInitialRun)
             completedIterations++;
-
-        if (runner && test.tracingCategories && window.testRunner &&
-            window.testRunner.supportTracing) {
-            window.testRunner.traceEventsToMeasure = test.traceEventsToMeasure;
-            window.testRunner.startTracing(test.tracingCategories, function() {
-                scheduleNextRun(scheduler, runner);
-            });
-        } else if (runner) {
+        if (runner)
             scheduleNextRun(scheduler, runner);
-        }
     }
 
     function scheduleNextRun(scheduler, runner) {
@@ -233,17 +225,8 @@ if (window.testRunner) {
             logInDocument("Got an exception while finalizing the test with name=" + exception.name + ", message=" + exception.message);
         }
 
-        if (window.testRunner) {
-            if (currentTest.traceEventsToMeasure &&
-                testRunner.supportTracing) {
-                testRunner.stopTracingAndMeasure(
-                    currentTest.traceEventsToMeasure, function() {
-                        testRunner.notifyDone();
-                    });
-            } else {
-                testRunner.notifyDone();
-            }
-        }
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
 
     PerfTestRunner.prepareToMeasureValuesAsync = function (test) {
@@ -265,25 +248,6 @@ if (window.testRunner) {
             finish();
     }
 
-    function addRunTestStartMarker() {
-      if (!window.testRunner || !window.testRunner.supportTracing)
-          return;
-      if (completedIterations < 0)
-          console.time('blink_perf.runTest.warmup');
-      else
-          console.time('blink_perf.runTest');
-    }
-
-    function addRunTestEndMarker() {
-      if (!window.testRunner || !window.testRunner.supportTracing)
-          return;
-      if (completedIterations < 0)
-          console.timeEnd('blink_perf.runTest.warmup');
-      else
-          console.timeEnd('blink_perf.runTest');
-    }
-
-
     PerfTestRunner.measureFrameTime = function (test) {
         PerfTestRunner.unit = "ms";
         PerfTestRunner.bufferedLog = true;
@@ -297,12 +261,9 @@ if (window.testRunner) {
 
     var lastFrameTime = -1;
     function measureFrameTimeOnce() {
-        if (lastFrameTime != -1)
-          addRunTestEndMarker();
         var now = PerfTestRunner.now();
         var result = lastFrameTime == -1 ? -1 : now - lastFrameTime;
         lastFrameTime = now;
-        addRunTestStartMarker();
 
         var returnValue = currentTest.run();
         if (returnValue - 0 === returnValue) {
@@ -329,9 +290,7 @@ if (window.testRunner) {
         PerfTestRunner.gc();
 
         var start = PerfTestRunner.now();
-        addRunTestStartMarker();
         var returnValue = currentTest.run();
-        addRunTestEndMarker();
         var end = PerfTestRunner.now();
 
         if (returnValue - 0 === returnValue) {
