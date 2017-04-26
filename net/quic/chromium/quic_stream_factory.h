@@ -392,8 +392,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::set<QuicChromiumClientSession*> SessionSet;
   typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
   typedef std::map<QuicChromiumClientSession*, IPEndPoint> SessionPeerIPMap;
-  typedef std::map<Job*, std::unique_ptr<Job>> JobSet;
-  typedef std::map<QuicServerId, JobSet> JobMap;
+  typedef std::map<QuicServerId, std::unique_ptr<Job>> JobMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<QuicServerId, RequestSet> ServerIDRequestsMap;
   typedef std::map<QuicServerId, std::unique_ptr<CertVerifierJob>>

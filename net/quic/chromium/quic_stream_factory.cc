@@ -898,19 +898,13 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   // Associate with active job to |server_id| if such exists.
   auto it = active_jobs_.find(server_id);
   if (it != active_jobs_.end()) {
-    const JobSet& job_set = it->second;
-    // TODO(zhongyi): figure out how to link the NetLogs if there are more than
-    // one job serving the same server id, i.e., auxiliary job is also
-    // created.
-    if (job_set.size() == 1) {
-      const NetLogWithSource& job_net_log = job_set.begin()->first->net_log();
-      job_net_log.AddEvent(
-          NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
-          net_log.source().ToEventParametersCallback());
-      net_log.AddEvent(
-          NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
-          job_net_log.source().ToEventParametersCallback());
-    }
+    const NetLogWithSource& job_net_log = it->second->net_log();
+    job_net_log.AddEvent(
+        NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
+        net_log.source().ToEventParametersCallback());
+    net_log.AddEvent(
+        NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_QUIC_STREAM_FACTORY_JOB,
+        job_net_log.source().ToEventParametersCallback());
     job_requests_map_[server_id].insert(request);
     return ERR_IO_PENDING;
   }
@@ -942,8 +936,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
     job_requests_map_[server_id].insert(request);
-    Job* job_ptr = job.get();
-    active_jobs_[server_id][job_ptr] = std::move(job);
+    active_jobs_[server_id] = std::move(job);
     return rv;
   }
   if (rv == OK) {
@@ -1007,16 +1000,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   // Copy |server_id|, because |job| might be destroyed before this method
   // returns.
   const QuicServerId server_id(job->key().server_id());
-  if (rv != OK) {
-    JobSet* jobs = &(active_jobs_[server_id]);
-    if (jobs->size() > 1) {
-      // If there is another pending job, then we can delete this job and let
-      // the other job handle the request.
-      job->Cancel();
-      jobs->erase(job);
-      return;
-    }
-  }
 
   ServerIDRequestsMap::iterator requests_iter =
       job_requests_map_.find(server_id);
@@ -1045,12 +1028,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     request->OnRequestComplete(rv);
   }
 
-  for (auto& other_job : active_jobs_[server_id]) {
-    if (other_job.first != job)
-      other_job.first->Cancel();
-  }
-
-  active_jobs_[server_id].clear();
   active_jobs_.erase(server_id);
   job_requests_map_.erase(requests_iter);
 }

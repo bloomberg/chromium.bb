@@ -104,15 +104,6 @@ void QuicStreamFactoryPeer::SetYieldAfterDuration(
   factory->yield_after_duration_ = yield_after_duration;
 }
 
-size_t QuicStreamFactoryPeer::GetNumberOfActiveJobs(
-    QuicStreamFactory* factory,
-    const QuicServerId& server_id) {
-  auto it = factory->active_jobs_.find(server_id);
-  if (it == factory->active_jobs_.end())
-    return 0;
-  return it->second.size();
-}
-
 bool QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
     QuicStreamFactory* factory,
     const QuicServerId& quic_server_id) {
