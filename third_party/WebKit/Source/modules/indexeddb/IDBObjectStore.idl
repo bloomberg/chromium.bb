@@ -40,12 +40,10 @@
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest clear();
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest get(any key);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
-    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAll([Default=Undefined] optional any range,
-                                                                                    [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
-    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAllKeys([Default=Undefined] optional any range,
-                                                                             [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAll([Default=Undefined] optional any query,
+                                                                                    [EnforceRange] optional unsigned long count);
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAllKeys([Default=Undefined] optional any query,
+                                                                             [EnforceRange] optional unsigned long count);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
 
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range,
