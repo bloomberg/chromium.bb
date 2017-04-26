@@ -431,33 +431,34 @@ bool IsValidNFCRecord(const NFCRecord& record) {
   return false;
 }
 
-DOMException* IsValidNFCRecordArray(const HeapVector<NFCRecord>& records) {
-  // https://w3c.github.io/web-nfc/#the-push-method
-  // If NFCMessage.data is empty, reject promise with SyntaxError
+bool IsValidNFCRecordArray(const HeapVector<NFCRecord>& records) {
   if (records.IsEmpty())
-    return DOMException::Create(kSyntaxError);
+    return false;
 
   for (const auto& record : records) {
     if (!IsValidNFCRecord(record))
-      return DOMException::Create(kSyntaxError);
+      return false;
   }
 
-  return nullptr;
+  return true;
 }
 
-DOMException* IsValidNFCPushMessage(const NFCPushMessage& message) {
+bool IsValidNFCPushMessage(const NFCPushMessage& message) {
+  // If NFCPushMessage of invalid type, reject promise with TypeError
   if (!message.isNFCMessage() && !message.isString() &&
       !message.isArrayBuffer())
-    return DOMException::Create(kTypeMismatchError);
+    return false;
 
   if (message.isNFCMessage()) {
+    // https://w3c.github.io/web-nfc/#the-push-method
+    // If NFCMessage.data is empty, reject promise with TypeError
     if (!message.getAsNFCMessage().hasData())
-      return DOMException::Create(kTypeMismatchError);
+      return false;
 
     return IsValidNFCRecordArray(message.getAsNFCMessage().data());
   }
 
-  return nullptr;
+  return true;
 }
 
 bool SetURL(const String& origin,
@@ -614,9 +615,12 @@ ScriptPromise NFC::push(ScriptState* script_state,
   if (!promise.IsEmpty())
     return promise;
 
-  DOMException* exception = IsValidNFCPushMessage(push_message);
-  if (exception)
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+  if (!IsValidNFCPushMessage(push_message)) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "Invalid NFCPushMessage type was provided."));
+  }
 
   device::nfc::mojom::blink::NFCMessagePtr message =
       device::nfc::mojom::blink::NFCMessage::From(push_message);

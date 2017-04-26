@@ -9,6 +9,9 @@
 
 const invalid_messages =
     [
+      // Invalid NFCPushMessage type
+      undefined,
+
       // NFCMessage.data: should have at least 1 valid record.
       // https://w3c.github.io/web-nfc/#the-push-method - Step 8.
       createMessage([{}]),
@@ -56,18 +59,13 @@ const invalid_messages =
     ];
 
 nfc_test(nfc => {
-  return assertRejectsWithError(navigator.nfc.push(undefined),
-      'TypeMismatchError');
-}, 'Test that passing undefined to nfc.push would raise TypeMismatchError.');
-
-nfc_test(nfc => {
   let promises = [];
   invalid_messages.forEach(message => {
     promises.push(
-        assertRejectsWithError(navigator.nfc.push(message), 'SyntaxError'));
+        assertRejectsWithError(navigator.nfc.push(message), 'TypeError'));
   });
   return Promise.all(promises)
-}, 'Test that promise is rejected with SyntaxError if NFCMessage is invalid.');
+}, 'Test that promise is rejected with TypeError if NFCMessage is invalid.');
 
 nfc_test(nfc => {
   nfc.mockNFC.setHWStatus(NFCHWStatus.DISABLED);
