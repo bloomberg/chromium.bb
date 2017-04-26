@@ -188,6 +188,7 @@ class LinuxPort(base.Port):
             _log.warn('xdpyinfo check failed with exit code %s while starting Xvfb on "%s".', exit_code, display)
             self.host.sleep(0.1)
         _log.fatal('Failed to start Xvfb on display "%s" (xdpyinfo check failed).', display)
+        self._stop_xvfb()
 
     def _find_display(self):
         """Tries to find a free X display, looping if necessary."""
@@ -219,8 +220,7 @@ class LinuxPort(base.Port):
             for line in self.host.filesystem.read_text_file(self._xvfb_stderr.name).splitlines():
                 _log.warn('Xvfb stderr:  %s', line)
             self.host.filesystem.remove(self._xvfb_stderr.name)
-
-
+        self._xvfb_stdout = self._xvfb_stderr = self._xvfb_process = None
 
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()
