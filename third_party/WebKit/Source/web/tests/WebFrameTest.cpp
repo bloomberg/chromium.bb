@@ -6956,11 +6956,11 @@ class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
   bool WasFrameScrolled() const { return did_scroll_frame_; }
 
   // WebFrameClient:
-  void DidChangeScrollOffset(WebLocalFrame* frame) override {
-    if (frame->Parent())
+  void DidChangeScrollOffset() override {
+    if (Frame()->Parent())
       return;
     EXPECT_FALSE(did_scroll_frame_);
-    FrameView* view = ToWebLocalFrameImpl(frame)->GetFrameView();
+    FrameView* view = ToWebLocalFrameImpl(Frame())->GetFrameView();
     // FrameView can be scrolled in FrameView::setFixedVisibleContentRect which
     // is called from LocalFrame::createView (before the frame is associated
     // with the the view).

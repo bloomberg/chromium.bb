@@ -4625,8 +4625,7 @@ void RenderFrameImpl::WillReleaseScriptContext(blink::WebLocalFrame* frame,
     observer.WillReleaseScriptContext(context, world_id);
 }
 
-void RenderFrameImpl::DidChangeScrollOffset(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::DidChangeScrollOffset() {
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 
   for (auto& observer : observers_)

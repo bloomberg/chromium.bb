@@ -1113,7 +1113,7 @@ TEST_P(VisualViewportTest, TestWebViewResizeCausesViewportConstrainedLayout) {
 class MockWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   MOCK_METHOD1(ShowContextMenu, void(const WebContextMenuData&));
-  MOCK_METHOD1(DidChangeScrollOffset, void(WebLocalFrame*));
+  MOCK_METHOD0(DidChangeScrollOffset, void());
 };
 
 MATCHER_P2(ContextMenuAtLocation,
@@ -1167,7 +1167,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   // should still appear at the location of the event, relative to the WebView.
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
   webViewImpl()->SetPageScaleFactor(2);
-  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset(_));
+  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset());
   visualViewport.SetLocation(FloatPoint(60, 80));
   EXPECT_CALL(mockWebFrameClient, ShowContextMenu(ContextMenuAtLocation(
                                       mouseDownEvent.PositionInWidget().x,
@@ -1196,17 +1196,17 @@ TEST_P(VisualViewportTest, TestClientNotifiedOfScrollEvents) {
   webViewImpl()->SetPageScaleFactor(2);
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
 
-  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset(_));
+  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset());
   visualViewport.SetLocation(FloatPoint(60, 80));
   Mock::VerifyAndClearExpectations(&mockWebFrameClient);
 
   // Scroll vertically.
-  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset(_));
+  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset());
   visualViewport.SetLocation(FloatPoint(60, 90));
   Mock::VerifyAndClearExpectations(&mockWebFrameClient);
 
   // Scroll horizontally.
-  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset(_));
+  EXPECT_CALL(mockWebFrameClient, DidChangeScrollOffset());
   visualViewport.SetLocation(FloatPoint(70, 90));
 
   // Reset the old client so destruction can occur naturally.

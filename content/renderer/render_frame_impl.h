@@ -630,7 +630,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 v8::Local<v8::Context> context,
                                 int world_id) override;
-  void DidChangeScrollOffset(blink::WebLocalFrame* frame) override;
+  void DidChangeScrollOffset() override;
   void WillInsertBody(blink::WebLocalFrame* frame) override;
   void ReportFindInPageMatchCount(int request_id,
                                   int count,
