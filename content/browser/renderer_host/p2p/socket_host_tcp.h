@@ -54,13 +54,23 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool SetOption(P2PSocketOption option, int value) override;
 
  protected:
+  struct SendBuffer {
+    SendBuffer();
+    SendBuffer(int32_t packet_id, scoped_refptr<net::DrainableIOBuffer> buffer);
+    SendBuffer(const SendBuffer& rhs);
+    ~SendBuffer();
+
+    int32_t rtc_packet_id;
+    scoped_refptr<net::DrainableIOBuffer> buffer;
+  };
+
   // Derived classes will provide the implementation.
   virtual int ProcessInput(char* input, int input_len) = 0;
   virtual void DoSend(const net::IPEndPoint& to,
                       const std::vector<char>& data,
                       const rtc::PacketOptions& options) = 0;
 
-  void WriteOrQueue(scoped_refptr<net::DrainableIOBuffer>& buffer);
+  void WriteOrQueue(SendBuffer& send_buffer);
   void OnPacket(const std::vector<char>& data);
   void OnError();
 
@@ -91,8 +101,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;
-  std::queue<scoped_refptr<net::DrainableIOBuffer> > write_queue_;
-  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+  std::queue<SendBuffer> write_queue_;
+  SendBuffer write_buffer_;
 
   bool write_pending_;
 
