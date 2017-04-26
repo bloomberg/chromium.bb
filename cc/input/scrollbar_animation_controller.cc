@@ -230,7 +230,7 @@ void ScrollbarAnimationController::WillUpdateScroll() {
 }
 
 void ScrollbarAnimationController::DidRequestShowFromMainThread() {
-  // TODO(skobes): Call DidScrollUpdate here (suppressed for crbug.com/706927).
+  DidScrollUpdate();
 }
 
 void ScrollbarAnimationController::DidResize() {
