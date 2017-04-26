@@ -39,8 +39,13 @@
 #include <fcntl.h>
 
 #include <xf86drm.h>
+
+#ifdef HAVE_LIBDRM_INTEL
 #include <i915_drm.h>
 #include <intel_bufmgr.h>
+#elif HAVE_LIBDRM_FREEDRENO
+#include <freedreno/freedreno_drmif.h>
+#endif
 #include <drm_fourcc.h>
 
 #include <wayland-client.h>
@@ -48,6 +53,8 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
+
+struct buffer;
 
 struct display {
 	struct wl_display *display;
@@ -60,14 +67,31 @@ struct display {
 	int req_dmabuf_immediate;
 };
 
+struct drm_device {
+	int fd;
+	char *name;
+
+	int (*alloc_bo)(struct buffer *buf);
+	void (*free_bo)(struct buffer *buf);
+	int (*export_bo_to_prime)(struct buffer *buf);
+	int (*map_bo)(struct buffer *buf);
+	void (*unmap_bo)(struct buffer *buf);
+};
+
 struct buffer {
 	struct wl_buffer *buffer;
 	int busy;
 
+	struct drm_device *dev;
 	int drm_fd;
 
+#ifdef HAVE_LIBDRM_INTEL
 	drm_intel_bufmgr *bufmgr;
 	drm_intel_bo *bo;
+#elif HAVE_LIBDRM_FREEDRENO
+	struct fd_device *fd_dev;
+	struct fd_bo *bo;
+#endif /* HAVE_LIBDRM_FREEDRENO */
 
 	uint32_t gem_handle;
 	int dmabuf_fd;
@@ -111,31 +135,10 @@ static const struct wl_buffer_listener buffer_listener = {
 	buffer_release
 };
 
+
+#ifdef HAVE_LIBDRM_INTEL
 static int
-drm_connect(struct buffer *my_buf)
-{
-	/* This won't work with card0 as we need to be authenticated; instead,
-	 * boot with drm.rnodes=1 and use that. */
-	my_buf->drm_fd = open("/dev/dri/renderD128", O_RDWR);
-	if (my_buf->drm_fd < 0)
-		return 0;
-
-	my_buf->bufmgr = drm_intel_bufmgr_gem_init(my_buf->drm_fd, 32);
-	if (!my_buf->bufmgr)
-		return 0;
-
-	return 1;
-}
-
-static void
-drm_shutdown(struct buffer *my_buf)
-{
-	drm_intel_bufmgr_destroy(my_buf->bufmgr);
-	close(my_buf->drm_fd);
-}
-
-static int
-alloc_bo(struct buffer *my_buf)
+intel_alloc_bo(struct buffer *my_buf)
 {
 	/* XXX: try different tiling modes for testing FB modifiers. */
 	uint32_t tiling = I915_TILING_NONE;
@@ -160,13 +163,13 @@ alloc_bo(struct buffer *my_buf)
 }
 
 static void
-free_bo(struct buffer *my_buf)
+intel_free_bo(struct buffer *my_buf)
 {
 	drm_intel_bo_unreference(my_buf->bo);
 }
 
 static int
-map_bo(struct buffer *my_buf)
+intel_map_bo(struct buffer *my_buf)
 {
 	if (drm_intel_gem_bo_map_gtt(my_buf->bo) != 0)
 		return 0;
@@ -175,6 +178,68 @@ map_bo(struct buffer *my_buf)
 
 	return 1;
 }
+
+static int
+intel_bo_export_to_prime(struct buffer *buffer)
+{
+	return drm_intel_bo_gem_export_to_prime(buffer->bo, &buffer->dmabuf_fd);
+}
+
+static void
+intel_unmap_bo(struct buffer *my_buf)
+{
+	drm_intel_gem_bo_unmap_gtt(my_buf->bo);
+}
+#elif HAVE_LIBDRM_FREEDRENO
+#define ALIGN(v, a) ((v + a - 1) & ~(a - 1))
+
+static
+int fd_alloc_bo(struct buffer *buf)
+{
+	int flags = DRM_FREEDRENO_GEM_CACHE_WCOMBINE;
+	int size = buf->width * buf->height * buf->bpp / 8;
+	buf->fd_dev = fd_device_new(buf->drm_fd);
+
+	buf->bo = fd_bo_new(buf->fd_dev, size, flags);
+
+	if (!buf->bo)
+		return 0;
+	buf->stride = ALIGN(buf->width, 32) * buf->bpp / 8;
+	return 1;
+}
+
+static
+void fd_free_bo(struct buffer *buf)
+{
+	fd_bo_del(buf->bo);
+}
+
+static
+int fd_bo_export_to_prime(struct buffer *buf)
+{
+	buf->dmabuf_fd = fd_bo_dmabuf(buf->bo);
+	if (buf->dmabuf_fd > 0)
+		return 0;
+
+	return 1;
+}
+
+static
+int fd_map_bo(struct buffer *buf)
+{
+	buf->mmap = fd_bo_map(buf->bo);
+
+	if (buf->mmap != NULL)
+		return 1;
+
+	return 0;
+}
+
+static
+void fd_unmap_bo(struct buffer *buf)
+{
+}
+#endif
 
 static void
 fill_content(struct buffer *my_buf)
@@ -194,10 +259,77 @@ fill_content(struct buffer *my_buf)
 }
 
 static void
-unmap_bo(struct buffer *my_buf)
+drm_device_destroy(struct buffer *buf)
 {
-	drm_intel_gem_bo_unmap_gtt(my_buf->bo);
+#ifdef HAVE_LIBDRM_INTEL
+	drm_intel_bufmgr_destroy(buf->bufmgr);
+#elif HAVE_LIBDRM_FREEDRENO
+	fd_device_del(buf->fd_dev);
+#endif
+
+	close(buf->drm_fd);
 }
+
+static int
+drm_device_init(struct buffer *buf)
+{
+	struct drm_device *dev = calloc(1, sizeof(struct drm_device));
+
+	drmVersionPtr version = drmGetVersion(buf->drm_fd);
+
+	dev->fd = buf->drm_fd;
+	dev->name = strdup(version->name);
+	if (0) {
+		/* nothing */
+	}
+#ifdef HAVE_LIBDRM_INTEL
+	else if (!strcmp(dev->name, "i915")) {
+		buf->bufmgr = drm_intel_bufmgr_gem_init(buf->drm_fd, 32);
+		if (!buf->bufmgr)
+			return 0;
+		dev->alloc_bo = intel_alloc_bo;
+		dev->free_bo = intel_free_bo;
+		dev->export_bo_to_prime = intel_bo_export_to_prime;
+		dev->map_bo = intel_map_bo;
+		dev->unmap_bo = intel_unmap_bo;
+	}
+#elif HAVE_LIBDRM_FREEDRENO
+	else if (!strcmp(dev->name, "msm")) {
+		dev->alloc_bo = fd_alloc_bo;
+		dev->free_bo = fd_free_bo;
+		dev->export_bo_to_prime = fd_bo_export_to_prime;
+		dev->map_bo = fd_map_bo;
+		dev->unmap_bo = fd_unmap_bo;
+	}
+#endif
+	else {
+		fprintf(stderr, "Error: drm device %s unsupported.\n",
+			dev->name);
+		free(dev);
+		return 0;
+	}
+	buf->dev = dev;
+	return 1;
+}
+
+static int
+drm_connect(struct buffer *my_buf)
+{
+	/* This won't work with card0 as we need to be authenticated; instead,
+	 * boot with drm.rnodes=1 and use that. */
+	my_buf->drm_fd = open("/dev/dri/renderD128", O_RDWR);
+	if (my_buf->drm_fd < 0)
+		return 0;
+
+	return drm_device_init(my_buf);
+}
+
+static void
+drm_shutdown(struct buffer *my_buf)
+{
+	drm_device_destroy(my_buf);
+}
+
 
 static void
 create_succeeded(void *data,
@@ -237,30 +369,32 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 	struct zwp_linux_buffer_params_v1 *params;
 	uint64_t modifier;
 	uint32_t flags;
+	struct drm_device *drm_dev;
 
 	if (!drm_connect(buffer)) {
 		fprintf(stderr, "drm_connect failed\n");
 		goto error;
 	}
+	drm_dev = buffer->dev;
 
 	buffer->width = width;
 	buffer->height = height;
 	buffer->bpp = 32; /* hardcoded XRGB8888 format */
 
-	if (!alloc_bo(buffer)) {
+	if (!drm_dev->alloc_bo(buffer)) {
 		fprintf(stderr, "alloc_bo failed\n");
 		goto error1;
 	}
 
-	if (!map_bo(buffer)) {
+	if (!drm_dev->map_bo(buffer)) {
 		fprintf(stderr, "map_bo failed\n");
 		goto error2;
 	}
 	fill_content(buffer);
-	unmap_bo(buffer);
+	drm_dev->unmap_bo(buffer);
 
-	if (drm_intel_bo_gem_export_to_prime(buffer->bo, &buffer->dmabuf_fd) != 0) {
-		fprintf(stderr, "drm_intel_bo_gem_export_to_prime failed\n");
+	if (drm_dev->export_bo_to_prime(buffer) != 0) {
+		fprintf(stderr, "gem_export_to_prime failed\n");
 		goto error2;
 	}
 	if (buffer->dmabuf_fd < 0) {
@@ -301,7 +435,7 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 	return 0;
 
 error2:
-	free_bo(buffer);
+	drm_dev->free_bo(buffer);
 error1:
 	drm_shutdown(buffer);
 error:
@@ -405,6 +539,7 @@ create_window(struct display *display, int width, int height)
 static void
 destroy_window(struct window *window)
 {
+	struct drm_device* dev;
 	int i;
 
 	if (window->callback)
@@ -415,7 +550,8 @@ destroy_window(struct window *window)
 			continue;
 
 		wl_buffer_destroy(window->buffers[i].buffer);
-		free_bo(&window->buffers[i]);
+		dev = window->buffers[i].dev;
+		dev->free_bo(&window->buffers[i]);
 		close(window->buffers[i].dmabuf_fd);
 		drm_shutdown(&window->buffers[i]);
 	}
@@ -475,16 +611,26 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
-dmabuf_format(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf, uint32_t format)
+dmabuf_modifiers(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf,
+		 uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo)
 {
 	struct display *d = data;
 
 	if (format == DRM_FORMAT_XRGB8888)
 		d->xrgb8888_format_found = 1;
+
+	/* XXX: do something useful with modifiers */
+}
+
+static void
+dmabuf_format(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf, uint32_t format)
+{
+	/* XXX: will be deprecated. */
 }
 
 static const struct zwp_linux_dmabuf_v1_listener dmabuf_listener = {
-	dmabuf_format
+	dmabuf_format,
+	dmabuf_modifiers
 };
 
 static void
