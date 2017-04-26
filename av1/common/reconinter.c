@@ -355,13 +355,10 @@ const uint8_t *av1_get_compound_type_mask_inverse(
 #endif
     BLOCK_SIZE sb_type) {
   assert(is_masked_compound_type(comp_data->type));
-  (void)sb_type;
   switch (comp_data->type) {
-#if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
                                           !comp_data->wedge_sign, sb_type);
-#endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG:
       return invert_mask(mask_buffer, comp_data->seg_mask, h, w, stride);
@@ -373,13 +370,10 @@ const uint8_t *av1_get_compound_type_mask_inverse(
 const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type) {
   assert(is_masked_compound_type(comp_data->type));
-  (void)sb_type;
   switch (comp_data->type) {
-#if CONFIG_WEDGE
     case COMPOUND_WEDGE:
       return av1_get_contiguous_soft_mask(comp_data->wedge_index,
                                           comp_data->wedge_sign, sb_type);
-#endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG: return comp_data->seg_mask;
 #endif  // CONFIG_COMPOUND_SEGMENT

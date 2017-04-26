@@ -205,12 +205,9 @@ extern const wedge_params_type wedge_params_lookup[BLOCK_SIZES];
 
 static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
                                               BLOCK_SIZE sb_type) {
-  (void)sb_type;
   switch (type) {
-    case COMPOUND_AVERAGE: return 1;
-#if CONFIG_WEDGE
+    case COMPOUND_AVERAGE: (void)sb_type; return 1;
     case COMPOUND_WEDGE: return wedge_params_lookup[sb_type].bits > 0;
-#endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
     case COMPOUND_SEG: return sb_type >= BLOCK_8X8;
 #endif  // CONFIG_COMPOUND_SEGMENT
