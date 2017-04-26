@@ -85,7 +85,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   }
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("Me2Me");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
 
   // Mac OS X requires that the main thread be a UI message loop in order to
   // receive distributed notifications from the System Preferences pane. An

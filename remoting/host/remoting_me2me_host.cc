@@ -1641,7 +1641,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("Me2Me");
+  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;

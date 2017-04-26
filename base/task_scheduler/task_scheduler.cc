@@ -65,11 +65,6 @@ void TaskScheduler::CreateAndStartWithDefaultParams(StringPiece name) {
        {StandbyThreadPolicy::LAZY, kForegroundBlockingMaxThreads,
         kSuggestedReclaimTime}});
 }
-
-// static
-void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
-  CreateAndStartWithDefaultParams(name);
-}
 #endif  // !defined(OS_NACL)
 
 void TaskScheduler::Create(StringPiece name) {
