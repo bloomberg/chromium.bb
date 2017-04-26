@@ -8,14 +8,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 
 // static
 FeatureEngagementTrackerFactory*
@@ -43,8 +42,9 @@ KeyedService* FeatureEngagementTrackerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits().MayBlock().WithPriority(
+              base::TaskPriority::BACKGROUND));
 
   base::FilePath storage_dir = profile->GetPath().Append(
       chrome::kFeatureEngagementTrackerStorageDirname);
