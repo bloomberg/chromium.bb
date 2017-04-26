@@ -1907,11 +1907,22 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
 #if CONFIG_CB4X4
     if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y))
+                            xd->plane[1].subsampling_y)) {
       write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
 #else  // !CONFIG_CB4X4
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
 #endif  // CONFIG_CB4X4
+
+#if CONFIG_CFL
+      if (mbmi->uv_mode == DC_PRED) {
+        write_cfl_alphas(ec_ctx, mbmi->skip, mbmi->cfl_alpha_idx,
+                         mbmi->cfl_alpha_signs, w);
+      }
+#endif
+
+#if CONFIG_CB4X4
+    }
+#endif
 
 #if CONFIG_EXT_INTRA
     write_intra_angle_info(xd, ec_ctx, w);

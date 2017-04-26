@@ -1543,12 +1543,29 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
 #if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y))
+                          xd->plane[1].subsampling_y)) {
     mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
   (void)mi_row;
   (void)mi_col;
+#endif
+
+#if CONFIG_CFL
+    // TODO(ltrudeau) support PALETTE
+    if (mbmi->uv_mode == DC_PRED) {
+      mbmi->cfl_alpha_idx = read_cfl_alphas(
+#if CONFIG_EC_ADAPT
+          xd->tile_ctx,
+#else
+          cm->fc,
+#endif  // CONFIG_EC_ADAPT
+          r, mbmi->skip, mbmi->cfl_alpha_signs);
+    }
+#endif  // CONFIG_CFL
+
+#if CONFIG_CB4X4
+  }
 #endif
 
 #if CONFIG_EXT_INTRA
