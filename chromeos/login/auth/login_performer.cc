@@ -79,6 +79,11 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
 void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::RecordAction(UserMetricsAction("Login_Success"));
+
+  // Do not distinguish between offline and online success.
+  UMA_HISTOGRAM_ENUMERATION("Login.SuccessReason", OFFLINE_AND_ONLINE,
+                            NUM_SUCCESS_REASONS);
+
   VLOG(1) << "LoginSuccess hash: " << user_context.GetUserIDHash();
   DCHECK(delegate_);
   // After delegate_->OnAuthSuccess(...) is called, delegate_ releases
