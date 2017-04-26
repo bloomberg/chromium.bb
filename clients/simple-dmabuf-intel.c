@@ -57,6 +57,7 @@ struct display {
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct zwp_linux_dmabuf_v1 *dmabuf;
 	int xrgb8888_format_found;
+	int req_dmabuf_immediate;
 };
 
 struct buffer {
@@ -282,7 +283,16 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 				       modifier >> 32,
 				       modifier & 0xffffffff);
 	zwp_linux_buffer_params_v1_add_listener(params, &params_listener, buffer);
-	zwp_linux_buffer_params_v1_create(params,
+	if (display->req_dmabuf_immediate) {
+		buffer->buffer = zwp_linux_buffer_params_v1_create_immed(params,
+					  buffer->width,
+					  buffer->height,
+					  DRM_FORMAT_XRGB8888,
+					  flags);
+		wl_buffer_add_listener(buffer->buffer, &buffer_listener, buffer);
+	}
+	else
+		zwp_linux_buffer_params_v1_create(params,
 					  buffer->width,
 					  buffer->height,
 					  DRM_FORMAT_XRGB8888,
@@ -506,7 +516,8 @@ registry_handle_global(void *data, struct wl_registry *registry,
 					     id, &zwp_fullscreen_shell_v1_interface, 1);
 	} else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
 		d->dmabuf = wl_registry_bind(registry,
-					     id, &zwp_linux_dmabuf_v1_interface, 1);
+					     id, &zwp_linux_dmabuf_v1_interface,
+					     d->req_dmabuf_immediate ? 2 : 1);
 		zwp_linux_dmabuf_v1_add_listener(d->dmabuf, &dmabuf_listener, d);
 	}
 }
@@ -523,7 +534,7 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 static struct display *
-create_display(void)
+create_display(int is_immediate)
 {
 	struct display *display;
 
@@ -537,6 +548,7 @@ create_display(void)
 
 	/* XXX: fake, because the compositor does not yet advertise anything */
 	display->xrgb8888_format_found = 1;
+	display->req_dmabuf_immediate = is_immediate;
 
 	display->registry = wl_display_get_registry(display->display);
 	wl_registry_add_listener(display->registry,
@@ -590,9 +602,22 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display *display;
 	struct window *window;
+	int is_immediate = 0;
 	int ret = 0;
 
-	display = create_display();
+	if (argc > 1) {
+		if (!strcmp(argv[1], "immed")) {
+			is_immediate = 1;
+		}
+		else {
+			fprintf(stderr, "usage:\n\tsimple-dmabuf-intel [options]\n"
+				"available options:\n\timmed: avoid dmabuf "
+				"creation roundtrip and import immediately\n");
+			return 1;
+		}
+	}
+
+	display = create_display(is_immediate);
 	window = create_window(display, 250, 250);
 	if (!window)
 		return 1;
@@ -602,7 +627,8 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	/* Here we retrieve the linux-dmabuf objects, or error */
+	/* Here we retrieve the linux-dmabuf objects if executed without immed,
+	 * or error */
 	wl_display_roundtrip(display->display);
 
 	if (!running)
