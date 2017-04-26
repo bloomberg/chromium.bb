@@ -6658,8 +6658,27 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
   FakeContentLayerClient client_;
 };
 
+class LayerTreeTestSingleTextureMaskLayerForSurfaceWithContentRectNotAtOrigin
+    : public LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = false;
+  }
+};
+
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin);
+    LayerTreeTestSingleTextureMaskLayerForSurfaceWithContentRectNotAtOrigin);
+
+class LayerTreeTestMultiTextureMaskLayerForSurfaceWithContentRectNotAtOrigin
+    : public LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestMultiTextureMaskLayerForSurfaceWithContentRectNotAtOrigin);
 
 class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
  protected:
@@ -6771,15 +6790,30 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
+class LayerTreeTestSingleTextureMaskLayerForSurfaceWithClippedLayer
+    : public LayerTreeTestMaskLayerForSurfaceWithClippedLayer {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = false;
+  }
+};
+
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMaskLayerForSurfaceWithClippedLayer);
+    LayerTreeTestSingleTextureMaskLayerForSurfaceWithClippedLayer);
+
+class LayerTreeTestMultiTextureMaskLayerForSurfaceWithClippedLayer
+    : public LayerTreeTestMaskLayerForSurfaceWithClippedLayer {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestMultiTextureMaskLayerForSurfaceWithClippedLayer);
 
 class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     // Root
     //  |
@@ -6895,7 +6929,27 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithScaling);
+class LayerTreeTestSingleTextureMaskLayerWithScaling
+    : public LayerTreeTestMaskLayerWithScaling {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = false;
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestSingleTextureMaskLayerWithScaling);
+
+class LayerTreeTestMultiTextureMaskLayerWithScaling
+    : public LayerTreeTestMaskLayerWithScaling {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = true;
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMultiTextureMaskLayerWithScaling);
 
 class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
  protected:
@@ -7000,7 +7054,27 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
+class LayerTreeTestSingleTextureMaskLayerWithDifferentBounds
+    : public LayerTreeTestMaskLayerWithDifferentBounds {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = false;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestSingleTextureMaskLayerWithDifferentBounds);
+
+class LayerTreeTestMultiTextureMaskLayerWithDifferentBounds
+    : public LayerTreeTestMaskLayerWithDifferentBounds {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_mask_tiling = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeTestMultiTextureMaskLayerWithDifferentBounds);
 
 class LayerTreeTestPageScaleFlags : public LayerTreeTest {
  protected:
