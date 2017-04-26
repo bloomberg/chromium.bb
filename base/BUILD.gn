@@ -2585,6 +2585,7 @@ if (is_android) {
       "//testing/android/reporter:reporter_java",
       "//third_party/android_support_test_runner:exposed_instrumentation_api_publish_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/android_tools:android_support_chromium_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
     ]
@@ -2594,6 +2595,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/BaseInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4ClassRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumAndroidJUnitRunner.java",
+      "test/android/javatests/src/org/chromium/base/test/BaseChromiumRunnerCommon.java",
       "test/android/javatests/src/org/chromium/base/test/BaseTestResult.java",
       "test/android/javatests/src/org/chromium/base/test/SetUpTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/SetUpStatement.java",
