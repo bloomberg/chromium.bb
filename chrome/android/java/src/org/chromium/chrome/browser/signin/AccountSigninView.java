@@ -139,7 +139,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      */
     public void init(ProfileDataCache profileData, Delegate delegate, Listener listener) {
         mProfileData = profileData;
-        mProfileData.setObserver(this);
+        mProfileData.addObserver(this);
         mDelegate = delegate;
         mListener = listener;
         showSigninPage();
