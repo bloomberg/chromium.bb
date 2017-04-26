@@ -20,7 +20,7 @@ namespace cryptauth {
 namespace {
 
 // The duration of a EID period in milliseconds.
-const int64_t kEidPeriodMs = base::TimeDelta::FromMinutes(15).InMilliseconds();
+const int64_t kEidPeriodMs = 15 * 60 * 1000;  // 15 minutes
 
 // The number of periods to look forward and backwards when calculating the
 // neartest EIDs.
