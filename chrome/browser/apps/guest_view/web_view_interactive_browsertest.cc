@@ -710,10 +710,6 @@ IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
 // off focused.
 IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest,
                        Focus_FocusBeforeNavigation) {
-  // TODO(avallee): Determine if test is relevant with OOPIF or fix the bug.
-  // http://crbug.com/672947
-  if (GetParam())
-    return;
   TestHelper("testFocusBeforeNavigation", "web_view/focus", NO_TEST_SERVER);
 }
 

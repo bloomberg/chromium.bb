@@ -1521,10 +1521,13 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   if (!render_manager->GetRenderWidgetHostView())
     CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
 
+  auto* outer_web_contents_impl =
+      static_cast<WebContentsImpl*>(outer_web_contents);
+  auto* outer_contents_frame_impl =
+      static_cast<RenderFrameHostImpl*>(outer_contents_frame);
   // Create a link to our outer WebContents.
-  node_.ConnectToOuterWebContents(
-      static_cast<WebContentsImpl*>(outer_web_contents),
-      static_cast<RenderFrameHostImpl*>(outer_contents_frame));
+  node_.ConnectToOuterWebContents(outer_web_contents_impl,
+                                  outer_contents_frame_impl);
 
   DCHECK(outer_contents_frame);
 
@@ -1532,8 +1535,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   // SiteInstance of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
   render_manager->CreateOuterDelegateProxy(
-      outer_contents_frame->GetSiteInstance(),
-      static_cast<RenderFrameHostImpl*>(outer_contents_frame));
+      outer_contents_frame->GetSiteInstance(), outer_contents_frame_impl);
 
   render_manager->SetRWHViewForInnerContents(
       render_manager->GetRenderWidgetHostView());
@@ -1541,6 +1543,11 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   static_cast<RenderWidgetHostViewChildFrame*>(
       render_manager->GetRenderWidgetHostView())
       ->RegisterFrameSinkId();
+
+  if (outer_web_contents_impl->frame_tree_.GetFocusedFrame() ==
+      outer_contents_frame_impl->frame_tree_node()) {
+    SetFocusedFrame(frame_tree_.root(), nullptr);
+  }
 
   // At this point, we should destroy the TextInputManager which will notify all
   // the RWHV in this WebContents. The RWHV in this WebContents should use the
