@@ -99,7 +99,7 @@ class WTF_EXPORT String {
   String(StringImpl* impl) : impl_(impl) {}
   String(PassRefPtr<StringImpl> impl) : impl_(std::move(impl)) {}
 
-  void Swap(String& o) { impl_.Swap(o.impl_); }
+  void swap(String& o) { impl_.Swap(o.impl_); }
 
   template <typename CharType>
   static String Adopt(StringBuffer<CharType>& buffer) {
@@ -488,7 +488,7 @@ inline bool EqualIgnoringNullity(const Vector<UChar, inlineCapacity>& a,
 }
 
 inline void swap(String& a, String& b) {
-  a.Swap(b);
+  a.swap(b);
 }
 
 // Definitions of string operations
