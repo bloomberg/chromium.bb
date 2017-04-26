@@ -526,6 +526,7 @@ template("test_runner_script") {
       ]
     }
 
+    _device_test = true
     if (_test_type == "gtest") {
       assert(defined(invoker.test_suite))
       test_runner_args += [
@@ -570,6 +571,7 @@ template("test_runner_script") {
         "--test-suite",
         invoker.test_suite,
       ]
+      _device_test = false
     } else if (_test_type == "linker") {
       test_runner_args += [
         "--test-apk",
@@ -609,7 +611,7 @@ template("test_runner_script") {
       }
       test_runner_args += [ "--fast-local-dev" ]
     }
-    if (is_asan) {
+    if (_device_test && is_asan) {
       test_runner_args += [ "--tool=asan" ]
     }
 
