@@ -41,6 +41,12 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     return Create(Buffer()->Slice(begin));
   }
 
+  bool IsNeuterable(v8::Isolate*);
+
+  // Transfer the ArrayBuffer if it is neuterable, otherwise make a copy and
+  // transfer that.
+  bool Transfer(v8::Isolate*, WTF::ArrayBufferContents& result);
+
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
 

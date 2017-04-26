@@ -33,6 +33,10 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
     return Create(WTF::ArrayBuffer::Create(contents));
   }
 
+  bool ShareContentsWith(WTF::ArrayBufferContents& result) {
+    return Buffer()->ShareContentsWith(result);
+  }
+
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
 
