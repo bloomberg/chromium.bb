@@ -177,7 +177,7 @@ void MessageCenterView::ClearAllClosableNotifications() {
   if (is_closing_)
     return;
 
-  is_clearing_ = true;
+  is_clearing_all_notifications_ = true;
   UpdateButtonBarStatus();
   SetViewHierarchyEnabled(scroller_, false);
   message_list_view_->ClearAllClosableNotifications(
@@ -185,7 +185,7 @@ void MessageCenterView::ClearAllClosableNotifications() {
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
-  is_clearing_ = false;
+  is_clearing_all_notifications_ = false;
   SetViewHierarchyEnabled(scroller_, true);
   button_bar_->SetCloseAllButtonEnabled(false);
 
@@ -625,7 +625,7 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
 
 void MessageCenterView::UpdateButtonBarStatus() {
   // Disables all buttons during animation of cleaning of all notifications.
-  if (is_clearing_) {
+  if (is_clearing_all_notifications_) {
     button_bar_->SetSettingsAndQuietModeButtonsEnabled(false);
     button_bar_->SetCloseAllButtonEnabled(false);
     return;
