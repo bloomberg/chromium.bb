@@ -26,13 +26,15 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     content::ProtocolHandlerMap* protocol_handlers,
     ProtocolHandlerMap context_protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
-    HeadlessBrowserContextOptions* options)
+    HeadlessBrowserContextOptions* options,
+    net::NetLog* net_log)
     : io_task_runner_(std::move(io_task_runner)),
       file_task_runner_(std::move(file_task_runner)),
       user_agent_(options->user_agent()),
       host_resolver_rules_(options->host_resolver_rules()),
       proxy_server_(options->proxy_server()),
-      request_interceptors_(std::move(request_interceptors)) {
+      request_interceptors_(std::move(request_interceptors)),
+      net_log_(net_log) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -78,7 +80,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
 
     if (!host_resolver_rules_.empty()) {
       std::unique_ptr<net::HostResolver> host_resolver(
-          net::HostResolver::CreateDefaultResolver(nullptr /* net_log */));
+          net::HostResolver::CreateDefaultResolver(net_log_));
       std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
       mapped_host_resolver->SetRulesFromString(host_resolver_rules_);
@@ -93,6 +95,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     builder.SetInterceptors(std::move(request_interceptors_));
 
     url_request_context_ = builder.Build();
+    url_request_context_->set_net_log(net_log_);
   }
 
   return url_request_context_.get();

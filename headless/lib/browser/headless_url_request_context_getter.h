@@ -35,7 +35,8 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
       content::ProtocolHandlerMap* protocol_handlers,
       ProtocolHandlerMap context_protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
-      HeadlessBrowserContextOptions* options);
+      HeadlessBrowserContextOptions* options,
+      net::NetLog* net_log);
 
   // net::URLRequestContextGetter implementation:
   net::URLRequestContext* GetURLRequestContext() override;
@@ -62,6 +63,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
+  net::NetLog* net_log_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessURLRequestContextGetter);
 };
