@@ -224,6 +224,8 @@ static_library("headless_lib") {
               "lib/browser/headless_devtools_manager_delegate.cc",
               "lib/browser/headless_devtools_manager_delegate.h",
               "lib/browser/headless_macros.h",
+              "lib/browser/headless_net_log.cc",
+              "lib/browser/headless_net_log.h",
               "lib/browser/headless_network_delegate.cc",
               "lib/browser/headless_network_delegate.h",
               "lib/browser/headless_permission_manager.cc",
