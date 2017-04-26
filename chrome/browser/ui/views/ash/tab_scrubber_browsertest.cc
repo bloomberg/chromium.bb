@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -329,8 +330,11 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, MultiBrowser) {
 }
 
 // Tests that tab scrubbing works correctly for a full-screen browser.
-// TODO(crbug.com/708612): Re-enable the test after the bug is fixed.
-IN_PROC_BROWSER_TEST_F(TabScrubberTest, DISABLED_FullScreenBrowser) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
+  // Initializes the position of mouse. Makes the mouse away from the tabstrip
+  // to prevent any interference on this test.
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
+      gfx::Point(0, browser()->window()->GetBounds().height())));
   AddTabs(browser(), 6);
   browser()->tab_strip_model()->ActivateTabAt(4, false);
 
