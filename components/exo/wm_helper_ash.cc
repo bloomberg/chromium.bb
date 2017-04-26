@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {
@@ -31,9 +31,7 @@ WMHelperAsh::WMHelperAsh() {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
-  // TODO(crbug.com/709225): Mushrome doesn't have a DeviceDataManager.
-  if (ash::ShellPort::Get()->GetAshConfig() != ash::Config::MUS)
-    ui::DeviceDataManager::GetInstance()->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
   ash::Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
 }
 
@@ -49,9 +47,7 @@ WMHelperAsh::~WMHelperAsh() {
     ash::Shell::Get()->cursor_manager()->RemoveObserver(this);
   ash::Shell::Get()->activation_client()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
-  // TODO(crbug.com/709225): Mushrome doesn't have a DeviceDataManager.
-  if (ash::ShellPort::Get()->GetAshConfig() != ash::Config::MUS)
-    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   ash::Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(this);
 }
 
