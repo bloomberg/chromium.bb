@@ -123,8 +123,8 @@ class CreateElement {
     if (!document)
       document = HTMLDocument::Create();
     NonThrowableExceptionState no_exceptions;
-    Element* element =
-        document->createElementNS(namespace_uri_, local_name_, no_exceptions);
+    Element* element = document->createElementNS(nullptr, namespace_uri_,
+                                                 local_name_, no_exceptions);
     for (const auto& attribute : attributes_)
       element->setAttribute(attribute.first, attribute.second);
     return element;

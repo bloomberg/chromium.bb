@@ -189,13 +189,13 @@ TEST(CustomElementTest, StateByCreateElement) {
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(HTMLNames::xhtmlNamespaceURI, data.name,
-                                       ASSERT_NO_EXCEPTION);
+    element = document.createElementNS(nullptr, HTMLNames::xhtmlNamespaceURI,
+                                       data.name, ASSERT_NO_EXCEPTION);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(SVGNames::svgNamespaceURI, data.name,
-                                       ASSERT_NO_EXCEPTION);
+    element = document.createElementNS(nullptr, SVGNames::svgNamespaceURI,
+                                       data.name, ASSERT_NO_EXCEPTION);
     EXPECT_EQ(CustomElementState::kUncustomized,
               element->GetCustomElementState())
         << data.name;

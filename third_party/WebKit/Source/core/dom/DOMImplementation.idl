@@ -24,7 +24,8 @@
     DependentLifetime,
 ] interface DOMImplementation {
     [NewObject, RaisesException] DocumentType createDocumentType(DOMString qualifiedName, DOMString publicId, DOMString systemId);
-    [NewObject, RaisesException] XMLDocument createDocument(DOMString? namespaceURI, [TreatNullAs=EmptyString] DOMString qualifiedName, optional DocumentType? doctype = null);
+    // TODO(dominicc): Remove CallWith= when crbug/648179 is fixed.
+    [CallWith=EnteredWindow, NewObject, RaisesException] XMLDocument createDocument(DOMString? namespaceURI, [TreatNullAs=EmptyString] DOMString qualifiedName, optional DocumentType? doctype = null);
     // FIXME: createHTMLDocument should return a Document. crbug.com/238368
     // FIXME: The title argument should not have a default value. crbug.com/335871
     [NewObject] HTMLDocument createHTMLDocument(optional DOMString title = null);
