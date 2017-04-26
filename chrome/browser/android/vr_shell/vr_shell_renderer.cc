@@ -208,6 +208,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           uniform lowp vec4 color;
           uniform mediump float fade_point;
           uniform mediump float fade_end;
+          uniform mediump float u_Opacity;
 
           void main() {
             mediump vec2 uv = v_TexCoordinate;
@@ -218,7 +219,8 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             mediump float total_fade = front_fade_factor * back_fade_factor;
             lowp vec4 texture_color = texture2D(texture_unit, uv);
             lowp vec4 final_color = color * texture_color;
-            gl_FragColor = vec4(final_color.xyz, final_color.w * total_fade);
+            gl_FragColor = vec4(final_color.xyz,
+                                final_color.w * total_fade * u_Opacity);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::GRADIENT_QUAD_FRAGMENT_SHADER:
@@ -244,9 +246,11 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           precision mediump float;
           uniform sampler2D u_texture;
           varying vec2 v_TexCoordinate;
+          uniform mediump float u_Opacity;
 
           void main() {
-            gl_FragColor = texture2D(u_texture, v_TexCoordinate);
+            lowp vec4 texture_color = texture2D(u_texture, v_TexCoordinate);
+            gl_FragColor = vec4(texture_color.xyz, texture_color.w * u_Opacity);
           }
           /* clang-format on */);
     default:
@@ -544,6 +548,7 @@ LaserRenderer::LaserRenderer()
   color_handle_ = glGetUniformLocation(program_handle_, "color");
   fade_point_handle_ = glGetUniformLocation(program_handle_, "fade_point");
   fade_end_handle_ = glGetUniformLocation(program_handle_, "fade_end");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 
   glGenTextures(1, &texture_data_handle_);
   glBindTexture(GL_TEXTURE_2D, texture_data_handle_);
@@ -557,7 +562,7 @@ LaserRenderer::LaserRenderer()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void LaserRenderer::Draw(const vr::Mat4f& view_proj_matrix) {
+void LaserRenderer::Draw(float opacity, const vr::Mat4f& view_proj_matrix) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Link texture data with texture unit.
@@ -569,6 +574,7 @@ void LaserRenderer::Draw(const vr::Mat4f& view_proj_matrix) {
               kLaserColor[3]);
   glUniform1f(fade_point_handle_, kFadePoint);
   glUniform1f(fade_end_handle_, kFadeEnd);
+  glUniform1f(opacity_handle_, opacity);
 
   glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 
@@ -584,6 +590,7 @@ ControllerRenderer::ControllerRenderer()
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
 
 ControllerRenderer::~ControllerRenderer() = default;
@@ -632,8 +639,11 @@ void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
 }
 
 void ControllerRenderer::Draw(VrControllerModel::State state,
+                              float opacity,
                               const vr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
+
+  glUniform1f(opacity_handle_, opacity);
 
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(view_proj_matrix).data());

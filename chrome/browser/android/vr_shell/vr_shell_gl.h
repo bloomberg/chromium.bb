@@ -130,8 +130,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController();
-  void HandleControllerInput(const gfx::Vector3dF& forward_vector);
+  void UpdateController(const gfx::Vector3dF& head_direction);
+  void HandleControllerInput(const gfx::Vector3dF& head_direction);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
   void SendEventsToTarget(InputTarget input_target, int pixel_x, int pixel_y);
@@ -231,6 +231,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gfx::Vector3dF controller_start_direction_;
 
   std::unique_ptr<FPSMeter> fps_meter_;
+
+  gfx::Point3F pointer_start_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

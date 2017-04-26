@@ -177,6 +177,69 @@ void QuatToMatrix(const Quatf& quat, Mat4f* out) {
            {{0.0f, 0.0f, 0.0f, 1.0f}}}};
 }
 
+vr::Quatf GetVectorRotation(const gfx::Vector3dF& from,
+                            const gfx::Vector3dF& to) {
+  float dot = gfx::DotProduct(from, to);
+  float norm = sqrt(from.LengthSquared() * to.LengthSquared());
+  float real = norm + dot;
+  gfx::Vector3dF w;
+  if (real < 1.e-6f * norm) {
+    real = 0.0f;
+    w = fabsf(from.x()) > fabsf(from.z())
+            ? gfx::Vector3dF{-from.y(), from.x(), 0.0f}
+            : gfx::Vector3dF{0.0f, -from.z(), from.y()};
+  } else {
+    w = gfx::CrossProduct(from, to);
+  }
+  vr::Quatf result{w.x(), w.y(), w.z(), real};
+  NormalizeQuat(&result);
+  return result;
+}
+
+vr::Quatf QuatSum(const vr::Quatf& a, const vr::Quatf& b) {
+  return {a.qx + b.qx, a.qy + b.qy, a.qz + b.qz, a.qw + b.qw};
+}
+
+vr::Quatf QuatProduct(const vr::Quatf& a, const vr::Quatf& b) {
+  return {a.qw * b.qx + a.qx * b.qw + a.qy * b.qz - a.qz * b.qy,
+          a.qw * b.qy - a.qx * b.qz + a.qy * b.qw + a.qz * b.qx,
+          a.qw * b.qz + a.qx * b.qy - a.qy * b.qx + a.qz * b.qw,
+          a.qw * b.qw - a.qx * b.qx - a.qy * b.qy - a.qz * b.qz};
+}
+
+vr::Quatf ScaleQuat(const vr::Quatf& q, float s) {
+  return {q.qx * s, q.qy * s, q.qz * s, q.qw * s};
+}
+
+vr::Quatf InvertQuat(const vr::Quatf& quat) {
+  return {-quat.qx, -quat.qy, -quat.qz, quat.qw};
+}
+
+float QuatAngleDegrees(const vr::Quatf& a, const vr::Quatf& b) {
+  return QuatProduct(b, InvertQuat(a)).qw;
+}
+
+vr::Quatf QuatLerp(const vr::Quatf& a, const vr::Quatf& b, float t) {
+  auto result = QuatSum(ScaleQuat(a, 1.0f - t), ScaleQuat(b, t));
+  NormalizeQuat(&result);
+  return result;
+}
+
+gfx::Vector3dF QuatSlerp(const gfx::Vector3dF& v_start,
+                         const gfx::Vector3dF& v_end,
+                         float percent) {
+  auto start = v_start;
+  auto end = v_end;
+  NormalizeVector(&start);
+  NormalizeVector(&end);
+  float dot = Clampf(gfx::DotProduct(start, end), -1.0f, 1.0f);
+  float theta = acos(dot) * percent;
+  auto relative_vec = end - gfx::ScaleVector3d(start, dot);
+  NormalizeVector(&relative_vec);
+  return gfx::ScaleVector3d(start, cos(theta)) +
+         gfx::ScaleVector3d(relative_vec, sin(theta));
+}
+
 gfx::Point3F GetRayPoint(const gfx::Point3F& rayOrigin,
                          const gfx::Vector3dF& rayVector,
                          float scale) {
@@ -197,6 +260,30 @@ bool XZAngle(const gfx::Vector3dF& vec1,
   float cross_p = vec1.x() * vec2.z() - vec1.z() * vec2.x();
   *angle = asin(cross_p / (len1 * len2));
   return true;
+}
+
+gfx::Vector3dF ToVector(const gfx::Point3F& p) {
+  return {p.x(), p.y(), p.z()};
+}
+
+gfx::Point3F ToPoint(const gfx::Vector3dF& p) {
+  return {p.x(), p.y(), p.z()};
+}
+
+gfx::Point3F ScalePoint(const gfx::Point3F& p, const gfx::Vector3dF& s) {
+  return gfx::ScalePoint(p, s.x(), s.y(), s.z());
+}
+
+gfx::Vector3dF ScaleVector(const gfx::Vector3dF& v, const gfx::Vector3dF& s) {
+  return gfx::ScaleVector3d(v, s.x(), s.y(), s.z());
+}
+
+float Clampf(float value, float min, float max) {
+  if (value < min)
+    return min;
+  if (value > max)
+    return max;
+  return value;
 }
 
 }  // namespace vr

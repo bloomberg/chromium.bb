@@ -20,6 +20,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "animation.h",
       "easing.cc",
       "easing.h",
+      "elbow_model.cc",
+      "elbow_model.h",
       "fps_meter.cc",
       "fps_meter.h",
       "gltf_asset.cc",

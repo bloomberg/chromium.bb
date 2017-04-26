@@ -9,7 +9,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/vr_shell/elbow_model.h"
 #include "device/vr/vr_math.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
@@ -41,11 +43,18 @@ constexpr float kNanoSecondsPerSecond = 1.0e9f;
 
 constexpr int kMaxNumOfExtrapolations = 2;
 
-static constexpr gfx::Point3F kControllerPosition = {0.2f, -0.5f, -0.15f};
+// Distance from the center of the controller to start rendering the laser.
+constexpr float kLaserStartDisplacement = 0.045;
 
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
-  position->set_x(std::min(std::max(0.0f, position->x()), 1.0f));
-  position->set_y(std::min(std::max(0.0f, position->y()), 1.0f));
+  position->set_x(vr::Clampf(position->x(), 0.0f, 1.0f));
+  position->set_y(vr::Clampf(position->y(), 0.0f, 1.0f));
+}
+
+float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
+  return (gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos -
+          last_timestamp_nanos) /
+         kNanoSecondsPerSecond;
 }
 
 }  // namespace
@@ -53,7 +62,10 @@ void ClampTouchpadPosition(gfx::Vector2dF* position) {
 VrController::VrController(gvr_context* vr_context) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   Initialize(vr_context);
+  elbow_model_ = base::MakeUnique<ElbowModel>(handedness_);
   Reset();
+  last_timestamp_nanos_ =
+      gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
 }
 
 VrController::~VrController() {
@@ -114,18 +126,24 @@ vr::Quatf VrController::Orientation() const {
 }
 
 void VrController::GetTransform(vr::Mat4f* out) const {
-  // TODO(acondor): Position and orientation needs to be obtained
-  // from an elbow model.
-  // Placing the controller in a fixed position for now.
-  vr::SetIdentityM(out);
-  // Changing rotation point.
-  vr::TranslateM(*out, gfx::Vector3dF(0, 0, 0.05), out);
-  vr::Mat4f quat_to_matrix;
-  vr::QuatToMatrix(Orientation(), &quat_to_matrix);
-  vr::MatrixMul(quat_to_matrix, *out, out);
-  gfx::Vector3dF translation(kControllerPosition.x(), kControllerPosition.y(),
-                             kControllerPosition.z() - 0.05);
-  vr::TranslateM(*out, translation, out);
+  QuatToMatrix(elbow_model_->GetControllerRotation(), out);
+  auto position = elbow_model_->GetControllerPosition();
+  vr::TranslateM(*out, vr::ToVector(position), out);
+}
+
+float VrController::GetOpacity() const {
+  return elbow_model_->GetAlphaValue();
+}
+
+gfx::Point3F VrController::GetPointerStart() const {
+  auto controller_position = elbow_model_->GetControllerPosition();
+  gfx::Vector3dF pointer_direction{0.0f, -sin(kErgoAngleOffset),
+                                   -cos(kErgoAngleOffset)};
+  vr::Mat4f rotation_mat;
+  vr::QuatToMatrix(Orientation(), &rotation_mat);
+  pointer_direction = vr::MatrixVectorRotate(rotation_mat, pointer_direction);
+  return controller_position +
+         gfx::ScaleVector3d(pointer_direction, kLaserStartDisplacement);
 }
 
 VrControllerModel::State VrController::GetModelState() const {
@@ -162,7 +180,7 @@ bool VrController::IsConnected() {
   return controller_state_->GetConnectionState() == gvr::kControllerConnected;
 }
 
-void VrController::UpdateState() {
+void VrController::UpdateState(const gfx::Vector3dF& head_direction) {
   const int32_t old_status = controller_state_->GetApiStatus();
   const int32_t old_connection_state = controller_state_->GetConnectionState();
   // Read current controller state.
@@ -174,6 +192,12 @@ void VrController::UpdateState() {
             << gvr_controller_connection_state_to_string(
                    controller_state_->GetConnectionState());
   }
+
+  const gvr::Vec3f& gvr_gyro = controller_state_->GetGyro();
+  elbow_model_->Update({IsConnected(), Orientation(),
+                        gfx::Vector3dF(gvr_gyro.x, gvr_gyro.y, gvr_gyro.z),
+                        head_direction,
+                        DeltaTimeSeconds(last_timestamp_nanos_)});
 }
 
 void VrController::UpdateTouchInfo() {
@@ -185,10 +209,7 @@ void VrController::UpdateTouchInfo() {
     extrapolated_touch_++;
     touch_position_changed_ = true;
     // Fill the touch_info
-    float duration =
-        (gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos -
-         last_timestamp_nanos_) /
-        kNanoSecondsPerSecond;
+    float duration = DeltaTimeSeconds(last_timestamp_nanos_);
     touch_info_->touch_point.position.set_x(cur_touch_point_->position.x() +
                                             overall_velocity_.x() * duration);
     touch_info_->touch_point.position.set_y(cur_touch_point_->position.y() +
