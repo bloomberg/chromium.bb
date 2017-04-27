@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/composition_underline.h"
+#include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace ui {
 
@@ -28,11 +29,6 @@ class IMEStructTraitsTest : public testing::Test,
 
  private:
   // mojom::IMEStructTraitsTest:
-  void EchoCompositionText(
-      const CompositionText& in,
-      const EchoCompositionTextCallback& callback) override {
-    callback.Run(in);
-  }
   void EchoTextInputMode(TextInputMode in,
                          const EchoTextInputModeCallback& callback) override {
     callback.Run(in);
@@ -115,9 +111,9 @@ TEST_F(IMEStructTraitsTest, CompositionText) {
       CompositionUnderline(3, 6, SK_ColorRED, true, SK_ColorGREEN));
   input.selection = gfx::Range(1, 7);
 
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
   CompositionText output;
-  proxy->EchoCompositionText(input, &output);
+  EXPECT_TRUE(mojom::CompositionText::Deserialize(
+      mojom::CompositionText::Serialize(&input), &output));
 
   EXPECT_EQ(input, output);
 }
