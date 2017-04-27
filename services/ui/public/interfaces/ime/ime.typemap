@@ -4,6 +4,7 @@
 
 mojom = "//services/ui/public/interfaces/ime/ime.mojom"
 public_headers = [
+  "//ui/base/ime/candidate_window.h",
   "//ui/base/ime/composition_text.h",
   "//ui/base/ime/composition_underline.h",
   "//ui/base/ime/text_input_mode.h",
@@ -21,6 +22,8 @@ deps = [
 ]
 
 type_mappings = [
+  "ui.mojom.CandidateWindowEntry=ui::CandidateWindow::Entry",
+  "ui.mojom.CandidateWindowProperties=ui::CandidateWindow::CandidateWindowProperty",
   "ui.mojom.CompositionText=ui::CompositionText",
   "ui.mojom.CompositionUnderline=ui::CompositionUnderline",
   "ui.mojom.TextInputMode=ui::TextInputMode",

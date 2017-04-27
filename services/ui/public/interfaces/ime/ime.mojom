@@ -9,6 +9,53 @@ import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
 
+// Specifies where to display the candidate window.
+enum CandidateWindowPosition {
+  // Candidate window follows the cursor.
+  kCursor,
+
+  // Candidate window is locked to the beginning of the composition.
+  kComposition
+};
+
+struct CandidateWindowProperties {
+  // Number of candidates to display per page.
+  int32 page_size;
+
+  // Should candidate window be rendered vertical or horizontal.
+  bool vertical;
+
+  // Text that is shown at the bottom of the candidate window.
+  string auxiliary_text;
+
+  // True to display auxiliary text, false to hide it.
+  bool auxiliary_text_visible;
+
+  // Position and visibility of cursor in the candidate window.
+  int32 cursor_position;
+  bool cursor_visible;
+
+  // Where to display the candidate window.
+  CandidateWindowPosition window_position;
+};
+
+// Represents a candidate window entry.
+struct CandidateWindowEntry {
+  // Value of the candidate.
+  string value;
+
+  // Short string displayed next to the candidate, often the shortcut key or
+  // index.
+  string label;
+
+  // Additional text describing the candidate.
+  string annotation;
+
+  // The usage or detailed description of the candidate.
+  string description_title;
+  string description_body;
+};
+
 // Represents an underlined segment of text currently composed by IME.
 // Corresponds to ui::CompositionUnderline.
 struct CompositionUnderline {
