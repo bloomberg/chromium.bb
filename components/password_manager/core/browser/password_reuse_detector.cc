@@ -79,6 +79,11 @@ void PasswordReuseDetector::CheckReuse(
   }
 }
 
+void PasswordReuseDetector::SaveSyncPasswordHash(
+    const base::string16& password) {
+  // TODO(crbug.com/657041) Implement saving of sync password hash.
+}
+
 void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
   if (form.password_value.size() < kMinPasswordLengthToCheck)
     return;

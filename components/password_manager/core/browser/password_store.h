@@ -241,6 +241,9 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void CheckReuse(const base::string16& input,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
+
+  // Saves a hash of |password| for password reuse checking.
+  void SaveSyncPasswordHash(const base::string16& password);
 #endif
 
  protected:
@@ -402,6 +405,9 @@ class PasswordStore : protected PasswordStoreSync,
   void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
                       const base::string16& input,
                       const std::string& domain);
+
+  // Synchronous implementation of SaveSyncPasswordHash().
+  void SaveSyncPasswordHashImpl(const base::string16& password);
 #endif
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).
