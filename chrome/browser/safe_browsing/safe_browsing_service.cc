@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -195,9 +195,9 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
     // Set up the ChannelIDService
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
         new net::SQLiteChannelIDStore(
-            ChannelIDFilePath(),
-            BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-                base::SequencedWorkerPool::GetSequenceToken()));
+            ChannelIDFilePath(), base::CreateSequencedTaskRunnerWithTraits(
+                                     base::TaskTraits().MayBlock().WithPriority(
+                                         base::TaskPriority::BACKGROUND)));
     channel_id_service_.reset(new net::ChannelIDService(
         new net::DefaultChannelIDStore(channel_id_db.get())));
     safe_browsing_request_context_->set_channel_id_service(
