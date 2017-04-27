@@ -283,7 +283,7 @@
     },
     'cc': {
       'filepath': 'cc/|'\
-                  'content/common/cc_messages'
+                  'components/viz/'
     },
     'chrome_elf': {
       'filepath': 'chrome_elf',
