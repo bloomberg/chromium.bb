@@ -4138,13 +4138,13 @@ TEST_F(URLRequestTestHTTP,
         context.CreateRequest(url, DEFAULT_PRIORITY, &d));
     r->Start();
 
-    base::RunLoop().Run();
-
     {
       HttpRequestHeaders headers;
       EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-      EXPECT_TRUE(headers.HasHeader("Authorization"));
+      EXPECT_FALSE(headers.HasHeader("Authorization"));
     }
+
+    base::RunLoop().Run();
 
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(200, r->GetResponseCode());

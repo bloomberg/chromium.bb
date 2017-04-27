@@ -280,8 +280,6 @@ class MockNetworkTransaction
 
   bool done_reading_called_;
 
-  CompletionCallback callback_;  // used for pause and restart.
-
   base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
 
 };

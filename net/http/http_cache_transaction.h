@@ -164,10 +164,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int ResumeNetworkStart() override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
-  // Invoked when parallel validation cannot proceed due to response failure
-  // and this transaction needs to be restarted.
-  void SetValidatingCannotProceed();
-
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -224,9 +220,6 @@ class HttpCache::Transaction : public HttpTransaction {
     STATE_PARTIAL_HEADERS_RECEIVED,
     STATE_CACHE_READ_METADATA,
     STATE_CACHE_READ_METADATA_COMPLETE,
-    STATE_HEADERS_PHASE_CANNOT_PROCEED,
-    STATE_FINISH_HEADERS,
-    STATE_FINISH_HEADERS_COMPLETE,
 
     // These states are entered from Read/AddTruncatedFlag.
     STATE_NETWORK_READ,
@@ -295,9 +288,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoPartialHeadersReceived();
   int DoCacheReadMetadata();
   int DoCacheReadMetadataComplete(int result);
-  int DoHeadersPhaseCannotProceed();
-  int DoFinishHeaders(int result);
-  int DoFinishHeadersComplete(int result);
   int DoNetworkRead();
   int DoNetworkReadComplete(int result);
   int DoCacheReadData();
@@ -440,12 +430,7 @@ class HttpCache::Transaction : public HttpTransaction {
   void SyncCacheEntryStatusToResponse();
   void RecordHistograms();
 
-  // Called to signal completion of asynchronous IO. Note that this callback is
-  // used in the conventional sense where one layer calls the callback of the
-  // layer above it e.g. this callback gets called from the network transaction
-  // layer. In addition, it is also used for HttpCache layer to let this
-  // transaction know when it is out of a queued state in ActiveEntry and can
-  // continue its processing.
+  // Called to signal completion of asynchronous IO.
   void OnIOComplete(int result);
 
   // When in a DoLoop, use this to set the next state as it verifies that the
@@ -471,7 +456,6 @@ class HttpCache::Transaction : public HttpTransaction {
   const HttpResponseInfo* new_response_;
   std::string cache_key_;
   Mode mode_;
-  Mode original_mode_;  // Used when restarting the transaction.
   bool reading_;  // We are already reading. Never reverts to false once set.
   bool invalid_range_;  // We may bypass the cache for this request.
   bool truncated_;  // We don't have all the response data.
