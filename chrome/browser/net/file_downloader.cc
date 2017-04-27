@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -43,12 +43,9 @@ FileDownloader::FileDownloader(
     fetcher_->Start();
   } else {
     base::PostTaskAndReplyWithResult(
-        base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+        BrowserThread::GetBlockingPool()
+            ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
             .get(),
         FROM_HERE, base::Bind(&base::PathExists, local_path_),
         base::Bind(&FileDownloader::OnFileExistsCheckDone,
@@ -85,12 +82,9 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   base::PostTaskAndReplyWithResult(
-      base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+      BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
           .get(),
       FROM_HERE, base::Bind(&base::Move, response_path, local_path_),
       base::Bind(&FileDownloader::OnFileMoveDone,
