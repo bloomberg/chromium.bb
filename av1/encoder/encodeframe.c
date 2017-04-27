@@ -4785,32 +4785,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                         INT64_MAX, pc_root);
     }
   }
-#if CONFIG_SUBFRAME_PROB_UPDATE
-  if (cm->do_subframe_update &&
-      cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    const int mi_rows_per_update =
-        MI_SIZE * AOMMAX(cm->mi_rows / MI_SIZE / COEF_PROBS_BUFS, 1);
-    if ((mi_row + MI_SIZE) % mi_rows_per_update == 0 &&
-        mi_row + MI_SIZE < cm->mi_rows &&
-        cm->coef_probs_update_idx < COEF_PROBS_BUFS - 1) {
-      TX_SIZE t;
-      SUBFRAME_STATS *subframe_stats = &cpi->subframe_stats;
-
-      for (t = 0; t < TX_SIZES; ++t)
-        av1_full_to_model_counts(cpi->td.counts->coef[t],
-                                 cpi->td.rd_counts.coef_counts[t]);
-      av1_partial_adapt_probs(cm, mi_row, mi_col);
-      ++cm->coef_probs_update_idx;
-      av1_copy(subframe_stats->coef_probs_buf[cm->coef_probs_update_idx],
-               cm->fc->coef_probs);
-      av1_copy(subframe_stats->coef_counts_buf[cm->coef_probs_update_idx],
-               cpi->td.rd_counts.coef_counts);
-      av1_copy(subframe_stats->eob_counts_buf[cm->coef_probs_update_idx],
-               cm->counts.eob_branch);
-      av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
-    }
-  }
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {

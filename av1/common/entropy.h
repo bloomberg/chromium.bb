@@ -32,10 +32,6 @@ extern "C" {
 #define QCTX_BINS (1 << QCTX_BIN_BITS)
 #endif  // CONFIG_Q_ADAPT_PROBS
 
-#if CONFIG_SUBFRAME_PROB_UPDATE
-#define COEF_PROBS_BUFS 16
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
-
 // Coefficient token alphabet
 #define ZERO_TOKEN 0        // 0     Extra Bits 0+0
 #define ONE_TOKEN 1         // 1     Extra Bits 0+1
@@ -199,9 +195,6 @@ void av1_adapt_coef_probs(struct AV1Common *cm);
 #if CONFIG_EC_ADAPT
 void av1_adapt_coef_cdfs(struct AV1Common *cm, struct frame_contexts *pre_fc);
 #endif
-#if CONFIG_SUBFRAME_PROB_UPDATE
-void av1_partial_adapt_probs(struct AV1Common *cm, int mi_row, int mi_col);
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.

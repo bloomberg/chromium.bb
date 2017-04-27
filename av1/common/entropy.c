@@ -6141,14 +6141,7 @@ static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                              unsigned int update_factor) {
   const FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
   av1_coeff_probs_model *const probs = cm->fc->coef_probs[tx_size];
-#if CONFIG_SUBFRAME_PROB_UPDATE
-  const av1_coeff_probs_model *const pre_probs =
-      cm->partial_prob_update
-          ? (const av1_coeff_probs_model *)cm->starting_coef_probs[tx_size]
-          : pre_fc->coef_probs[tx_size];
-#else
   const av1_coeff_probs_model *const pre_probs = pre_fc->coef_probs[tx_size];
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
   const av1_coeff_count_model *const counts =
       (const av1_coeff_count_model *)cm->counts.coef[tx_size];
   const unsigned int(*eob_counts)[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS] =
@@ -6209,9 +6202,6 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     update_factor = COEF_MAX_UPDATE_FACTOR;
     count_sat = COEF_COUNT_SAT;
   }
-#if CONFIG_SUBFRAME_PROB_UPDATE
-  if (cm->partial_prob_update == 1) update_factor = COEF_MAX_UPDATE_FACTOR;
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 #if CONFIG_LV_MAP
   av1_adapt_txb_probs(cm, count_sat, update_factor);
@@ -6221,18 +6211,6 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     adapt_coef_probs(cm, tx_size, count_sat, update_factor);
 #endif
 }
-
-#if CONFIG_SUBFRAME_PROB_UPDATE
-void av1_partial_adapt_probs(AV1_COMMON *cm, int mi_row, int mi_col) {
-  (void)mi_row;
-  (void)mi_col;
-
-  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    cm->partial_prob_update = 1;
-    av1_adapt_coef_probs(cm);
-  }
-}
-#endif  // CONFIG_SUBFRAME_PROB_UPDATE
 
 #if CONFIG_EC_ADAPT
 static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
