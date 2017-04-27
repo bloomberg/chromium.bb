@@ -101,6 +101,12 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewPresent) {
   [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGRect:frame]]
       frame];
   EXPECT_TRUE(CGRectEqualToRect(frame, [webViewScrollViewProxy_ frame]));
+
+  [[[mockScrollView_ expect] andReturnValue:@YES] isDragging];
+  EXPECT_TRUE([webViewScrollViewProxy_ isDragging]);
+
+  [[[mockScrollView_ expect] andReturnValue:@NO] isDragging];
+  EXPECT_FALSE([webViewScrollViewProxy_ isDragging]);
 }
 
 // Tests that CRWWebViewScrollViewProxy returns the correct property values when
@@ -117,6 +123,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewAbsent) {
   EXPECT_TRUE(
       CGSizeEqualToSize(CGSizeZero, [webViewScrollViewProxy_ contentSize]));
   EXPECT_TRUE(CGRectEqualToRect(CGRectZero, [webViewScrollViewProxy_ frame]));
+  EXPECT_FALSE([webViewScrollViewProxy_ isDragging]);
 
   // Make sure setting the properties is fine too.
   // Arbitrary point.
