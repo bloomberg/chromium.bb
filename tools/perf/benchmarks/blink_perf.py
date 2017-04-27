@@ -146,7 +146,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     options.AppendExtraBrowserArgs([
         '--js-flags=--expose_gc',
         '--enable-experimental-web-platform-features',
-        '--disable-gesture-requirement-for-media-playback',
+        '--ignore-autoplay-restrictions',
         '--enable-experimental-canvas-features',
         # TODO(qinmin): After fixing crbug.com/592017, remove this command line.
         '--reduce-security-for-testing'

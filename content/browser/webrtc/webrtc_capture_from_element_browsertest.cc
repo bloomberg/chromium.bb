@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 
 #if defined(OS_ANDROID)
@@ -62,7 +63,7 @@ class WebRtcCaptureFromElementBrowserTest
 
     // Allow <video>/<audio>.play() when not initiated by user gesture.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableGestureRequirementForMediaPlayback);
+        switches::kIgnoreAutoplayRestrictionsForTests);
     // Allow experimental canvas features.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalCanvasFeatures);

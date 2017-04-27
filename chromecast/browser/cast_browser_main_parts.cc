@@ -216,48 +216,50 @@ struct DefaultCommandLineSwitch {
 
 DefaultCommandLineSwitch g_default_switches[] = {
 #if defined(OS_ANDROID)
-  // Disables Chromecast-specific WiFi-related features on ATV for now.
-  { switches::kNoWifi, "" },
-  { switches::kDisableGestureRequirementForMediaPlayback, ""},
-  { switches::kDisableMediaSuspend, ""},
+    // Disables Chromecast-specific WiFi-related features on ATV for now.
+    {switches::kNoWifi, ""},
+    // TODO(714676): this should probably set the no restrictions autoplay
+    // policy instead.
+    {switches::kIgnoreAutoplayRestrictionsForTests, ""},
+    {switches::kDisableMediaSuspend, ""},
 #else
-  // GPU shader disk cache disabling is largely to conserve disk space.
-  { switches::kDisableGpuShaderDiskCache, "" },
-  // Enable media sessions by default (even on non-Android platforms).
-  { switches::kEnableDefaultMediaSession, "" },
+    // GPU shader disk cache disabling is largely to conserve disk space.
+    {switches::kDisableGpuShaderDiskCache, ""},
+    // Enable media sessions by default (even on non-Android platforms).
+    {switches::kEnableDefaultMediaSession, ""},
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_ANDROID)
-  { switches::kDisableGLDrawingForTests, "" },
+    {switches::kDisableGLDrawingForTests, ""},
 #else
-  { switches::kDisableGpu, "" },
+    {switches::kDisableGpu, ""},
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_LINUX)
 #if defined(ARCH_CPU_X86_FAMILY)
-  // This is needed for now to enable the x11 Ozone platform to work with
-  // current Linux/NVidia OpenGL drivers.
-  { switches::kIgnoreGpuBlacklist, ""},
+    // This is needed for now to enable the x11 Ozone platform to work with
+    // current Linux/NVidia OpenGL drivers.
+    {switches::kIgnoreGpuBlacklist, ""},
 #elif defined(ARCH_CPU_ARM_FAMILY)
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
-  {switches::kEnableHardwareOverlays, "cast"},
+    {switches::kEnableHardwareOverlays, "cast"},
 #endif
 #endif
 #endif  // defined(OS_LINUX)
-  // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
-  // against GPU process creation (which is otherwise triggered from
-  // BrowserThreadsStarted).  The GPU process will be created as soon as a
-  // renderer needs it, which always happens after main loop starts.
-  { switches::kDisableGpuEarlyInit, "" },
-  // TODO(halliwell): Cast builds don't support ES3. Remove this switch when
-  // support is added (crbug.com/659395)
-  { switches::kDisableES3GLContext, "" },
-  // Enable navigator.connection API.
-  // TODO(derekjchow): Remove this switch when enabled by default.
-  { switches::kEnableNetworkInformation, "" },
-  // TODO(halliwell): Remove after fixing b/35422666.
-  { switches::kEnableUseZoomForDSF, "false" },
-  { NULL, NULL },  // Termination
+    // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
+    // against GPU process creation (which is otherwise triggered from
+    // BrowserThreadsStarted).  The GPU process will be created as soon as a
+    // renderer needs it, which always happens after main loop starts.
+    {switches::kDisableGpuEarlyInit, ""},
+    // TODO(halliwell): Cast builds don't support ES3. Remove this switch when
+    // support is added (crbug.com/659395)
+    {switches::kDisableES3GLContext, ""},
+    // Enable navigator.connection API.
+    // TODO(derekjchow): Remove this switch when enabled by default.
+    {switches::kEnableNetworkInformation, ""},
+    // TODO(halliwell): Remove after fixing b/35422666.
+    {switches::kEnableUseZoomForDSF, "false"},
+    {nullptr, nullptr},  // Termination
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {

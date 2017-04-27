@@ -647,13 +647,6 @@ const char kEnableTokenBindingName[] = "Token Binding.";
 
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 
-const char kGestureRequirementForMediaPlaybackName[] =
-    "Gesture requirement for media playback";
-
-const char kGestureRequirementForMediaPlaybackDescription[] =
-    "User gesture requirement for playing media elements. Disabling this "
-    "will allow autoplay to work.";
-
 const char kPassiveDocumentEventListenersDescription[] =
     "Forces touchstart, and touchmove event listeners on document level "
     "targets (which haven't requested otherwise) to be treated as passive.";

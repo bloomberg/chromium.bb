@@ -19,8 +19,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.media.MediaSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.Callable;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  * See also content layer org.chromium.content.browser.VideoFullscreenOrientationLockTest
  */
 @CommandLineFlags.Add({"enable-features=VideoFullscreenOrientationLock",
-        ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK})
+        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
 public class VideoFullscreenOrientationLockChromeTest extends ChromeTabbedActivityTestBase {
     private static final String TEST_URL = "content/test/data/media/video-player.html";
     private static final String VIDEO_URL = "content/test/data/media/bear.webm";
