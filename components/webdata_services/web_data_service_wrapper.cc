@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "components/payments/android/payment_manifest_web_data_service.h"
 #include "components/payments/android/payment_method_manifest_table.h"
 #include "components/payments/android/web_app_manifest_section_table.h"
 #endif
@@ -128,6 +129,13 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   password_web_data_->Init();
 #endif
 
+#if defined(OS_ANDROID)
+  payment_manifest_web_data_ = new payments::PaymentManifestWebDataService(
+      web_database_,
+      base::Bind(show_error_callback, ERROR_LOADING_PAYMENT_MANIFEST),
+      ui_thread);
+#endif
+
   autofill_web_data_->GetAutofillBackend(
       base::Bind(&InitSyncableServicesOnDBThread, db_thread, flare,
                  autofill_web_data_, context_path, application_locale));
@@ -143,6 +151,10 @@ void WebDataServiceWrapper::Shutdown() {
 
 #if defined(OS_WIN)
   password_web_data_->ShutdownOnUIThread();
+#endif
+
+#if defined(OS_ANDROID)
+  payment_manifest_web_data_->ShutdownOnUIThread();
 #endif
 
   web_database_->ShutdownDatabase();
@@ -166,5 +178,12 @@ scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
 scoped_refptr<PasswordWebDataService>
 WebDataServiceWrapper::GetPasswordWebData() {
   return password_web_data_.get();
+}
+#endif
+
+#if defined(OS_ANDROID)
+scoped_refptr<payments::PaymentManifestWebDataService>
+WebDataServiceWrapper::GetPaymentManifestWebData() {
+  return payment_manifest_web_data_.get();
 }
 #endif

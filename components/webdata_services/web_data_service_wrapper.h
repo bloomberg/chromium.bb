@@ -23,6 +23,12 @@ class WebDatabaseService;
 class PasswordWebDataService;
 #endif
 
+#if defined(OS_ANDROID)
+namespace payments {
+class PaymentManifestWebDataService;
+}  // namespace payments
+#endif
+
 namespace autofill {
 class AutofillWebDataService;
 }  // namespace autofill
@@ -42,6 +48,7 @@ class WebDataServiceWrapper : public KeyedService {
     ERROR_LOADING_KEYWORD,
     ERROR_LOADING_TOKEN,
     ERROR_LOADING_PASSWORD,
+    ERROR_LOADING_PAYMENT_MANIFEST,
   };
 
   // Shows an error message if a loading error occurs.
@@ -79,6 +86,10 @@ class WebDataServiceWrapper : public KeyedService {
 #if defined(OS_WIN)
   virtual scoped_refptr<PasswordWebDataService> GetPasswordWebData();
 #endif
+#if defined(OS_ANDROID)
+  virtual scoped_refptr<payments::PaymentManifestWebDataService>
+  GetPaymentManifestWebData();
+#endif
 
  protected:
   // For testing.
@@ -93,6 +104,11 @@ class WebDataServiceWrapper : public KeyedService {
 
 #if defined(OS_WIN)
   scoped_refptr<PasswordWebDataService> password_web_data_;
+#endif
+
+#if defined(OS_ANDROID)
+  scoped_refptr<payments::PaymentManifestWebDataService>
+      payment_manifest_web_data_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);

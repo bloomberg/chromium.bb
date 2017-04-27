@@ -26,7 +26,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     @Override
     public void create(
             WebContents webContents, Set<String> methods, PaymentAppCreatedCallback callback) {
-        AndroidPaymentAppFinder.find(webContents, methods,
+        AndroidPaymentAppFinder.find(webContents, methods, new PaymentManifestWebDataService(),
                 new PaymentManifestDownloader(webContents), new PaymentManifestParser(),
                 new PackageManagerDelegate(), callback);
     }

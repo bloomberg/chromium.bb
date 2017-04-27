@@ -70,6 +70,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     private final Set<String> mNonUriPaymentMethods;
     private final Set<URI> mUriPaymentMethods;
     private final PaymentManifestDownloader mDownloader;
+    private final PaymentManifestWebDataService mWebDataService;
     private final PaymentManifestParser mParser;
     private final PackageManagerDelegate mPackageManagerDelegate;
     private final PaymentAppCreatedCallback mCallback;
@@ -83,6 +84,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      */
     private final Map<URI, Set<ResolveInfo>> mPendingApps;
 
+    /**
+     * List of payment manifest verifiers. Note that each non basic card payment method has a
+     * dedicated payment manifest verifier.
+     */
+    private final List<PaymentManifestVerifier> mManifestVerifiers;
+
     /** A map of Android package name to the payment app. */
     private final Map<String, AndroidPaymentApp> mResult;
 
@@ -93,6 +100,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      * @param methods                The list of payment methods requested by the merchant. For
      *                               example, "https://bobpay.com", "https://android.com/pay",
      *                               "basic-card".
+     * @param webDataService         The web data service to cache manifest.
      * @param downloader             The manifest downloader.
      * @param parser                 The manifest parser.
      * @param packageManagerDelegate The package information retriever.
@@ -100,16 +108,18 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      *                               all Android payment apps have been found.
      */
     public static void find(WebContents webContents, Set<String> methods,
-            PaymentManifestDownloader downloader, PaymentManifestParser parser,
-            PackageManagerDelegate packageManagerDelegate, PaymentAppCreatedCallback callback) {
-        new AndroidPaymentAppFinder(
-                webContents, methods, downloader, parser, packageManagerDelegate, callback)
+            PaymentManifestWebDataService webDataService, PaymentManifestDownloader downloader,
+            PaymentManifestParser parser, PackageManagerDelegate packageManagerDelegate,
+            PaymentAppCreatedCallback callback) {
+        new AndroidPaymentAppFinder(webContents, methods, webDataService, downloader, parser,
+                packageManagerDelegate, callback)
                 .findAndroidPaymentApps();
     }
 
     private AndroidPaymentAppFinder(WebContents webContents, Set<String> methods,
-            PaymentManifestDownloader downloader, PaymentManifestParser parser,
-            PackageManagerDelegate packageManagerDelegate, PaymentAppCreatedCallback callback) {
+            PaymentManifestWebDataService webDataService, PaymentManifestDownloader downloader,
+            PaymentManifestParser parser, PackageManagerDelegate packageManagerDelegate,
+            PaymentAppCreatedCallback callback) {
         mWebContents = webContents;
 
         // For non-URI payment method names, only names published by W3C should be supported.
@@ -140,10 +150,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         }
 
         mDownloader = downloader;
+        mWebDataService = webDataService;
         mParser = parser;
         mPackageManagerDelegate = packageManagerDelegate;
         mCallback = callback;
         mPendingApps = new HashMap<>();
+        mManifestVerifiers = new ArrayList<>();
         mResult = new HashMap<>();
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
@@ -164,7 +176,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             appSupportedMethods.add(getPaymentMethodNames(apps.get(i).activityInfo));
         }
 
-        List<PaymentManifestVerifier> verifiers = new ArrayList<>();
         for (URI uriMethodName : mUriPaymentMethods) {
             List<ResolveInfo> supportedApps =
                     filterAppsByMethodName(apps, appSupportedMethods, uriMethodName.toString());
@@ -174,11 +185,12 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             // manifest file needs to be parsed. The startup can take up to 2 seconds.
             if (!mParser.isUtilityProcessRunning()) mParser.startUtilityProcess();
 
-            verifiers.add(new PaymentManifestVerifier(uriMethodName, supportedApps, mDownloader,
-                    mParser, mPackageManagerDelegate, this /* callback */));
+            mManifestVerifiers.add(
+                    new PaymentManifestVerifier(uriMethodName, supportedApps, mWebDataService,
+                            mDownloader, mParser, mPackageManagerDelegate, this /* callback */));
             mPendingApps.put(uriMethodName, new HashSet<>(supportedApps));
 
-            if (verifiers.size() == MAX_NUMBER_OF_MANIFESTS) {
+            if (mManifestVerifiers.size() == MAX_NUMBER_OF_MANIFESTS) {
                 Log.d(TAG, "Reached maximum number of allowed payment app manifests.");
                 break;
             }
@@ -193,13 +205,13 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             }
         }
 
-        if (verifiers.isEmpty()) {
+        if (mManifestVerifiers.isEmpty()) {
             onSearchFinished();
             return;
         }
 
-        for (int i = 0; i < verifiers.size(); i++) {
-            verifiers.get(i).verify();
+        for (int i = 0; i < mManifestVerifiers.size(); i++) {
+            mManifestVerifiers.get(i).verify();
         }
     }
 
@@ -290,14 +302,22 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         if (mPendingApps.isEmpty()) onSearchFinished();
     }
 
+    @Override
+    public void onVerifyFinished(PaymentManifestVerifier verifier) {
+        mManifestVerifiers.remove(verifier);
+        if (!mManifestVerifiers.isEmpty()) return;
+
+        assert mPendingApps.isEmpty();
+        mWebDataService.destroy();
+        if (mParser.isUtilityProcessRunning()) mParser.stopUtilityProcess();
+    }
+
     /**
      * Checks for IS_READY_TO_PAY service in each valid payment app and returns the valid apps
      * to the caller. Called when finished verifying all payment methods and apps.
      */
     private void onSearchFinished() {
         assert mPendingApps.isEmpty();
-
-        if (mParser.isUtilityProcessRunning()) mParser.stopUtilityProcess();
 
         if (!mIsIncognito) {
             List<ResolveInfo> resolveInfos =
