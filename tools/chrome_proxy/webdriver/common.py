@@ -414,7 +414,8 @@ class TestDriver:
 
     return bool(histogram)
 
-  def GetHTTPResponses(self, include_favicon=False, skip_domainless_pages=True):
+  def GetHTTPResponses(self, include_favicon=False, skip_domainless_pages=True,
+      override_has_logs=False):
     """Parses the Performance Logs and returns a list of HTTPResponse objects.
 
     Use caution when calling this function  multiple times. Only responses
@@ -426,10 +427,14 @@ class TestDriver:
       include_favicon: A bool that if True will include responses for favicons.
       skip_domainless_pages: If True, only responses with a net_loc as in RFC
         1808 will be included. Pages such as about:blank will be skipped.
+      override_has_logs: Allows the _has_logs property to be set if there was
+        not a page load but an XHR was expected instead.
     Returns:
       A list of HTTPResponse objects, each representing a single completed HTTP
       transaction by Chrome.
     """
+    if override_has_logs:
+      self._has_logs = True
     def MakeHTTPResponse(log_dict):
       params = log_dict['params']
       response_dict = params['response']
