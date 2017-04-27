@@ -6,6 +6,7 @@ package org.chromium.device.nfc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -13,6 +14,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -577,6 +579,50 @@ public class NFCTest {
 
         verify(mockCallback).call(mErrorCaptor.capture());
         assertEquals(NfcErrorType.NOT_FOUND, mErrorCaptor.getValue().errorType);
+    }
+
+    /**
+     * Test that when tag is disconnected during read operation, IllegalStateException is handled.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testTagDisconnectedDuringRead() throws IOException, FormatException {
+        TestNfcImpl nfc = new TestNfcImpl(mContext);
+        nfc.setActivityForTesting(mActivity);
+        nfc.setClient(mNfcClient);
+        WatchResponse mockWatchCallback = mock(WatchResponse.class);
+        nfc.watch(createNfcWatchOptions(), mockWatchCallback);
+
+        // Force read operation to fail
+        doThrow(IllegalStateException.class).when(mNfcTagHandler).read();
+
+        // Mocks 'NFC tag found' event.
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+
+        // Check that client was not notified.
+        verify(mNfcClient, times(0))
+                .onWatch(mOnWatchCallbackCaptor.capture(), any(NfcMessage.class));
+    }
+
+    /**
+     * Test that when tag is disconnected during write operation, IllegalStateException is handled.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testTagDisconnectedDuringWrite() throws IOException, FormatException {
+        TestNfcImpl nfc = new TestNfcImpl(mContext);
+        nfc.setActivityForTesting(mActivity);
+        PushResponse mockCallback = mock(PushResponse.class);
+
+        // Force write operation to fail
+        doThrow(IllegalStateException.class).when(mNfcTagHandler).write(any(NdefMessage.class));
+        nfc.push(createNfcMessage(), createNfcPushOptions(), mockCallback);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback).call(mErrorCaptor.capture());
+
+        // Test that correct error is returned.
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NfcErrorType.IO_ERROR, mErrorCaptor.getValue().errorType);
     }
 
     private NfcPushOptions createNfcPushOptions() {
