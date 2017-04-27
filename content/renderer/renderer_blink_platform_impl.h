@@ -81,7 +81,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebCookieJar* CookieJar() override;
   blink::WebThemeEngine* ThemeEngine() override;
-  std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
+  blink::WebSpeechSynthesizer* CreateSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
   virtual bool sandboxEnabled();
   unsigned long long VisitedLinkHash(const char* canonicalURL,
@@ -104,8 +104,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
-      override;
+  blink::WebStorageNamespace* CreateLocalStorageNamespace() override;
   blink::Platform::FileHandle DatabaseOpenFile(
       const blink::WebString& vfs_file_name,
       int desired_flags) override;
@@ -128,7 +127,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebPublicSuffixList* PublicSuffixList() override;
   blink::WebScrollbarBehavior* ScrollbarBehavior() override;
   blink::WebIDBFactory* IdbFactory() override;
-  std::unique_ptr<blink::WebServiceWorkerCacheStorage> CreateCacheStorage(
+  blink::WebServiceWorkerCacheStorage* CacheStorage(
       const blink::WebSecurityOrigin& security_origin) override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
@@ -142,7 +141,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   unsigned AudioHardwareOutputChannels() override;
   blink::WebDatabaseObserver* DatabaseObserver() override;
 
-  std::unique_ptr<blink::WebAudioDevice> CreateAudioDevice(
+  blink::WebAudioDevice* CreateAudioDevice(
       unsigned input_channels,
       unsigned channels,
       const blink::WebAudioLatencyHint& latency_hint,
@@ -154,21 +153,18 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                          const char* audio_file_data,
                          size_t data_size) override;
 
-  std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
+  blink::WebMIDIAccessor* CreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
   void SampleGamepads(device::Gamepads&) override;
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(
+  blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client) override;
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
-  std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler()
-      override;
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
+  blink::WebRTCCertificateGenerator* CreateRTCCertificateGenerator() override;
+  blink::WebMediaRecorderHandler* CreateMediaRecorderHandler() override;
+  blink::WebMediaStreamCenter* CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
-  std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
+  blink::WebCanvasCaptureHandler* CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
       blink::WebMediaStreamTrack* track) override;
@@ -178,15 +174,13 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void CreateHTMLAudioElementCapturer(
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player) override;
-  std::unique_ptr<blink::WebImageCaptureFrameGrabber>
-  CreateImageCaptureFrameGrabber() override;
-  std::unique_ptr<blink::WebGraphicsContext3DProvider>
-  CreateOffscreenGraphicsContext3DProvider(
+  blink::WebImageCaptureFrameGrabber* CreateImageCaptureFrameGrabber() override;
+  blink::WebGraphicsContext3DProvider* CreateOffscreenGraphicsContext3DProvider(
       const blink::Platform::ContextAttributes& attributes,
       const blink::WebURL& top_document_web_url,
       blink::WebGraphicsContext3DProvider* share_provider,
       blink::Platform::GraphicsInfo* gl_info) override;
-  std::unique_ptr<blink::WebGraphicsContext3DProvider>
+  blink::WebGraphicsContext3DProvider*
   CreateSharedOffscreenGraphicsContext3DProvider() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(

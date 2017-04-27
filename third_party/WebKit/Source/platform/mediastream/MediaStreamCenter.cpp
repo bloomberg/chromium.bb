@@ -52,7 +52,9 @@ MediaStreamCenter& MediaStreamCenter::Instance() {
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : private_(Platform::Current()->CreateMediaStreamCenter(this)) {}
+    : private_(
+          WTF::WrapUnique(Platform::Current()->CreateMediaStreamCenter(this))) {
+}
 
 MediaStreamCenter::~MediaStreamCenter() {}
 

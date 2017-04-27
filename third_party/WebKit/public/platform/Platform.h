@@ -94,6 +94,7 @@ class WebPlatformEventListener;
 class WebFallbackThemeEngine;
 class WebFileSystem;
 class WebFileUtilities;
+class WebFlingAnimator;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
@@ -169,7 +170,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual WebFallbackThemeEngine* FallbackThemeEngine() { return nullptr; }
 
   // May return null.
-  virtual std::unique_ptr<WebSpeechSynthesizer> CreateSpeechSynthesizer(
+  virtual WebSpeechSynthesizer* CreateSpeechSynthesizer(
       WebSpeechSynthesizerClient*) {
     return nullptr;
   }
@@ -182,7 +183,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Creates a device for audio I/O.
   // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
-  virtual std::unique_ptr<WebAudioDevice> CreateAudioDevice(
+  virtual WebAudioDevice* CreateAudioDevice(
       unsigned number_of_input_channels,
       unsigned number_of_channels,
       const WebAudioLatencyHint& latency_hint,
@@ -196,8 +197,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Creates a platform dependent WebMIDIAccessor. MIDIAccessor under platform
   // creates and owns it.
-  virtual std::unique_ptr<WebMIDIAccessor> CreateMIDIAccessor(
-      WebMIDIAccessorClient*);
+  virtual WebMIDIAccessor* CreateMIDIAccessor(WebMIDIAccessorClient*) {
+    return nullptr;
+  }
 
   // Blob ----------------------------------------------------------------
 
@@ -250,7 +252,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // DOM Storage --------------------------------------------------
 
   // Return a LocalStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateLocalStorageNamespace();
+  virtual WebStorageNamespace* CreateLocalStorageNamespace() { return nullptr; }
 
   // FileSystem ----------------------------------------------------------
 
@@ -274,8 +276,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Cache Storage ----------------------------------------------------------
 
-  virtual std::unique_ptr<WebServiceWorkerCacheStorage> CreateCacheStorage(
-      const WebSecurityOrigin&);
+  // The caller is responsible for deleting the returned object.
+  virtual WebServiceWorkerCacheStorage* CacheStorage(const WebSecurityOrigin&) {
+    return nullptr;
+  }
 
   // Gamepad -------------------------------------------------------------
 
@@ -391,7 +395,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Threads -------------------------------------------------------
 
   // Creates an embedder-defined thread.
-  virtual std::unique_ptr<WebThread> CreateThread(const char* name);
+  virtual WebThread* CreateThread(const char* name) { return nullptr; }
 
   // Returns an interface to the current thread. This is owned by the
   // embedder.
@@ -493,18 +497,22 @@ class BLINK_PLATFORM_EXPORT Platform {
   // created or initialized.
   // Passing an existing provider to shareContext will create the new context
   // in the same share group as the one passed.
-  virtual std::unique_ptr<WebGraphicsContext3DProvider>
+  virtual WebGraphicsContext3DProvider*
   CreateOffscreenGraphicsContext3DProvider(
       const ContextAttributes&,
       const WebURL& top_document_url,
       WebGraphicsContext3DProvider* share_context,
-      GraphicsInfo*);
+      GraphicsInfo*) {
+    return nullptr;
+  }
 
   // Returns a newly allocated and initialized offscreen context provider,
   // backed by the process-wide shared main thread context. Returns null if
   // the context cannot be created or initialized.
-  virtual std::unique_ptr<WebGraphicsContext3DProvider>
-  CreateSharedOffscreenGraphicsContext3DProvider();
+  virtual WebGraphicsContext3DProvider*
+  CreateSharedOffscreenGraphicsContext3DProvider() {
+    return nullptr;
+  }
 
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() {
     return nullptr;
@@ -520,12 +528,16 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebCompositorSupport* CompositorSupport() { return nullptr; }
 
+  virtual WebFlingAnimator* CreateFlingAnimator() { return nullptr; }
+
   // Creates a new fling animation curve instance for device |deviceSource|
   // with |velocity| and already scrolled |cumulativeScroll| pixels.
-  virtual std::unique_ptr<WebGestureCurve> CreateFlingAnimationCurve(
+  virtual WebGestureCurve* CreateFlingAnimationCurve(
       WebGestureDevice device_source,
       const WebFloatPoint& velocity,
-      const WebSize& cumulative_scroll);
+      const WebSize& cumulative_scroll) {
+    return nullptr;
+  }
 
   // Whether the command line flag: --disable-gpu-compositing or --disable-gpu
   // exists or not
@@ -538,26 +550,35 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.
   // May return null if WebRTC functionality is not avaliable or if it's out of
   // resources.
-  virtual std::unique_ptr<WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*);
+  virtual WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
+      WebRTCPeerConnectionHandlerClient*) {
+    return nullptr;
+  }
 
   // Creates a WebMediaRecorderHandler to record MediaStreams.
   // May return null if the functionality is not available or out of resources.
-  virtual std::unique_ptr<WebMediaRecorderHandler> CreateMediaRecorderHandler();
+  virtual WebMediaRecorderHandler* CreateMediaRecorderHandler() {
+    return nullptr;
+  }
 
   // May return null if WebRTC functionality is not available or out of
   // resources.
-  virtual std::unique_ptr<WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator();
+  virtual WebRTCCertificateGenerator* CreateRTCCertificateGenerator() {
+    return nullptr;
+  }
 
   // May return null if WebRTC functionality is not available or out of
   // resources.
-  virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter(
-      WebMediaStreamCenterClient*);
+  virtual WebMediaStreamCenter* CreateMediaStreamCenter(
+      WebMediaStreamCenterClient*) {
+    return nullptr;
+  }
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
-  virtual std::unique_ptr<WebCanvasCaptureHandler>
-  CreateCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*);
+  virtual WebCanvasCaptureHandler*
+  CreateCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*) {
+    return nullptr;
+  }
 
   // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
   // by the second parameter.
@@ -568,8 +589,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
   // May return null if the functionality is not available.
-  virtual std::unique_ptr<WebImageCaptureFrameGrabber>
-  CreateImageCaptureFrameGrabber();
+  virtual WebImageCaptureFrameGrabber* CreateImageCaptureFrameGrabber() {
+    return nullptr;
+  }
 
   // WebWorker ----------------------------------------------------------
 
@@ -676,17 +698,21 @@ class BLINK_PLATFORM_EXPORT Platform {
   // document's policy (may be nullptr), its container policy (may be empty),
   // the header policy with which it was delivered (may be empty), and the
   // document's origin.
-  virtual std::unique_ptr<WebFeaturePolicy> CreateFeaturePolicy(
+  virtual WebFeaturePolicy* CreateFeaturePolicy(
       const WebFeaturePolicy* parent_policy,
       const WebParsedFeaturePolicy& container_policy,
       const WebParsedFeaturePolicy& policy_header,
-      const WebSecurityOrigin&);
+      const WebSecurityOrigin&) {
+    return nullptr;
+  }
 
   // Create a new feature policy for a document whose origin has changed, given
   // the previous policy object and the new origin.
-  virtual std::unique_ptr<WebFeaturePolicy> DuplicateFeaturePolicyWithOrigin(
+  virtual WebFeaturePolicy* DuplicateFeaturePolicyWithOrigin(
       const WebFeaturePolicy&,
-      const WebSecurityOrigin&);
+      const WebSecurityOrigin&) {
+    return nullptr;
+  }
 
  protected:
   Platform();
