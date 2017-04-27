@@ -4,12 +4,11 @@
 
 #include "printing/printed_document.h"
 
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreFoundation/CoreFoundation.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 #include "base/logging.h"
 #include "printing/page_number.h"
-#include "printing/pdf_metafile_cg_mac.h"
 #include "printing/printed_page.h"
 
 namespace printing {
@@ -32,16 +31,11 @@ void PrintedDocument::RenderPrintedPage(
   page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 
   const MetafilePlayer* metafile = page.metafile();
-
   // Each Metafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
-  PdfMetafileCg::RenderPageParams params;
+  struct Metafile::MacRenderPageParams params;
   params.autorotate = true;
-  std::vector<char> buffer;
-  if (metafile->GetDataAsVector(&buffer)) {
-    PdfMetafileCg::RenderPage(buffer, page_number, context,
-                              content_area.ToCGRect(), params);
-  }
+  metafile->RenderPage(page_number, context, content_area.ToCGRect(), params);
 }
 
 }  // namespace printing
