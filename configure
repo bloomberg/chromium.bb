@@ -279,7 +279,6 @@ EXPERIMENT_LIST="
     motion_var
     ncobmc
     warped_motion
-    entropy
     q_adapt_probs
     subframe_prob_update
     bitstream_debug
