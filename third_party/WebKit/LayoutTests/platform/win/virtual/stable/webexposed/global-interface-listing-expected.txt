@@ -3081,6 +3081,14 @@ interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents
     method constructor
+interface InputEvent : UIEvent
+    attribute @@toStringTag
+    getter data
+    getter dataTransfer
+    getter inputType
+    getter isComposing
+    method constructor
+    method getTargetRanges
 interface IntersectionObserver
     attribute @@toStringTag
     getter root
@@ -5532,6 +5540,14 @@ interface SpeechSynthesisUtterance : EventTarget
     setter text
     setter voice
     setter volume
+interface StaticRange
+    attribute @@toStringTag
+    getter collapsed
+    getter endContainer
+    getter endOffset
+    getter startContainer
+    getter startOffset
+    method constructor
 interface StereoPannerNode : AudioNode
     attribute @@toStringTag
     getter pan

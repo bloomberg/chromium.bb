@@ -1253,7 +1253,7 @@ public class ImeTest {
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
         // TODO(changwan): reduce the number of selection changes.
         mRule.waitForEventLogs(
-                "keydown(229),compositionstart(),compositionupdate(a),input,keyup(229),"
+                "keydown(229),compositionstart(),compositionupdate(a),input(a),keyup(229),"
                 + "selectionchange,selectionchange");
         mRule.clearEventLogs();
 
@@ -1270,7 +1270,7 @@ public class ImeTest {
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
         // TODO(changwan): reduce the number of selection changes.
         mRule.waitForEventLogs("keydown(229),compositionstart(),compositionupdate(a),"
-                + "input,keyup(229),selectionchange,selectionchange");
+                + "input(a),keyup(229),selectionchange,selectionchange");
         mRule.clearEventLogs();
 
         mRule.finishComposingText();
@@ -1289,7 +1289,7 @@ public class ImeTest {
         mRule.commitText("a", 1);
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
 
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(a),keyup(229),selectionchange");
     }
 
     @Test
@@ -1299,7 +1299,7 @@ public class ImeTest {
         mRule.commitText("a", 1);
         mRule.waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
 
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(a),keyup(229),selectionchange");
     }
 
     @Test
@@ -1312,7 +1312,7 @@ public class ImeTest {
 
         mRule.commitText("hello", 1);
         mRule.waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(hello),keyup(229),selectionchange");
         mRule.clearEventLogs();
 
         mRule.setSelection(2, 2);
@@ -1334,7 +1334,7 @@ public class ImeTest {
     public void testInputTextEvents_DeleteSurroundingText() throws Throwable {
         mRule.commitText("hello", 1);
         mRule.waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(hello),keyup(229),selectionchange");
         mRule.clearEventLogs();
 
         mRule.setSelection(2, 2);
@@ -1359,7 +1359,7 @@ public class ImeTest {
 
         mRule.commitText("hello", 1);
         mRule.waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(hello),keyup(229),selectionchange");
         mRule.clearEventLogs();
 
         mRule.setSelection(2, 2);
@@ -1380,7 +1380,7 @@ public class ImeTest {
     public void testInputTextEvents_DeleteSurroundingTextInCodePoints() throws Throwable {
         mRule.commitText("hello", 1);
         mRule.waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-        mRule.waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
+        mRule.waitForEventLogs("keydown(229),input(hello),keyup(229),selectionchange");
         mRule.clearEventLogs();
 
         mRule.setSelection(2, 2);
