@@ -54,7 +54,7 @@
         this.listen(this.__parent, 'iron-activate', '_onParentIronActivate');
       },
 
-      dettached: function() {
+      detached: function() {
         this.unlisten(this.__parent, 'iron-activate', '_onParentIronActivate');
       },
 
@@ -62,11 +62,8 @@
        * Expand the submenu content.
        */
       open: function() {
-        if (!this.disabled && !this._active) {
-          this.$.collapse.show();
-          this._active = true;
-          this.__trigger && this.__trigger.classList.add('iron-selected');
-          this.__content && this.__content.focus();
+        if (!this.disabled) {
+          this.opened = true;
         }
       },
 
@@ -74,18 +71,14 @@
        * Collapse the submenu content.
        */
       close: function() {
-        if (this._active) {
-          this.$.collapse.hide();
-          this._active = false;
-          this.__trigger && this.__trigger.classList.remove('iron-selected');
-        }
+        this.opened = false;
       },
 
       /**
        * Toggle the submenu.
        */
       toggle: function() {
-        if (this._active) {
+        if (this.opened) {
           this.close();
         } else {
           this.open();
@@ -106,8 +99,11 @@
        */
       _openedChanged: function(opened, oldOpened) {
         if (opened) {
+          this.__trigger && this.__trigger.classList.add('iron-selected');
+          this.__content && this.__content.focus();
           this.fire('paper-submenu-open');
         } else if (oldOpened != null) {
+          this.__trigger && this.__trigger.classList.remove('iron-selected');
           this.fire('paper-submenu-close');
         }
       },
@@ -137,7 +133,7 @@
        */
       _disabledChanged: function(disabled) {
         Polymer.IronControlState._disabledChanged.apply(this, arguments);
-        if (disabled && this._active) {
+        if (disabled && this.opened) {
           this.close();
         }
       },
