@@ -757,7 +757,7 @@ TEST_F(SingleOverlayOnTopTest, DamageRect) {
       resource_provider_.get(), pass.get(), render_pass_filters,
       render_pass_background_filters, &candidate_list, nullptr, nullptr,
       &damage_rect_, &content_bounds_);
-  DCHECK(damage_rect_.IsEmpty());
+  EXPECT_TRUE(damage_rect_.IsEmpty());
 }
 
 TEST_F(SingleOverlayOnTopTest, NoCandidates) {
@@ -850,11 +850,13 @@ TEST_F(SingleOverlayOnTopTest, AcceptBlending) {
   OverlayCandidateList candidate_list;
   base::flat_map<int, FilterOperations*> render_pass_filters;
   base::flat_map<int, FilterOperations*> render_pass_background_filters;
+  damage_rect_ = quad->rect;
   overlay_processor_->ProcessForOverlays(
       resource_provider_.get(), pass.get(), render_pass_filters,
       render_pass_background_filters, &candidate_list, nullptr, nullptr,
       &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
+  EXPECT_FALSE(damage_rect_.IsEmpty());
 }
 
 TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {
