@@ -126,7 +126,14 @@ class CertificateReportingService : public KeyedService {
 
    private:
     void SendInternal(const Report& report);
-    void ErrorCallback(int report_id, const GURL& url, int error);
+    // Called when a report upload fails either because of a net error or a
+    // non-HTTP 200 response code. See
+    // TransportSecurityState::ReportSenderInterface for parameters.
+    void ErrorCallback(int report_id,
+                       const GURL& url,
+                       int net_error,
+                       int http_response_code);
+    // Called when a report upload is successful.
     void SuccessCallback(int report_id);
 
     std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_;

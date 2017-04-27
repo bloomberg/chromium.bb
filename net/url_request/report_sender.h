@@ -31,7 +31,8 @@ class NET_EXPORT ReportSender
       public TransportSecurityState::ReportSenderInterface {
  public:
   using SuccessCallback = base::Callback<void()>;
-  using ErrorCallback = base::Callback<void(const GURL&, int)>;
+  using ErrorCallback = base::Callback<
+      void(const GURL&, int /* net_error */, int /* http_response_code */)>;
 
   // Represents whether or not to send cookies along with reports.
   enum CookiesPreference { SEND_COOKIES, DO_NOT_SEND_COOKIES };

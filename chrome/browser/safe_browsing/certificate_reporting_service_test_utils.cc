@@ -11,6 +11,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
@@ -189,6 +190,9 @@ int DelayableCertReportURLRequestJob::ReadRawData(net::IOBuffer* buf,
 void DelayableCertReportURLRequestJob::GetResponseInfo(
     net::HttpResponseInfo* info) {
   // Report sender ignores responses. Return empty response.
+  if (!should_fail_) {
+    info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
+  }
 }
 
 void DelayableCertReportURLRequestJob::Resume() {

@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
+#include "net/http/http_status_code.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/report_sender.h"
@@ -33,8 +34,12 @@ const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
 const uint32_t kServerPublicKeyTestVersion = 16;
 
-void ErrorCallback(bool* called, const GURL& report_uri, int net_error) {
+void ErrorCallback(bool* called,
+                   const GURL& report_uri,
+                   int net_error,
+                   int http_response_code) {
   EXPECT_NE(net::OK, net_error);
+  EXPECT_EQ(-1, http_response_code);
   *called = true;
 }
 
@@ -50,12 +55,12 @@ class MockCertificateReportSender : public net::ReportSender {
       : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
   ~MockCertificateReportSender() override {}
 
-  void Send(
-      const GURL& report_uri,
-      base::StringPiece content_type,
-      base::StringPiece report,
-      const base::Callback<void()>& success_callback,
-      const base::Callback<void(const GURL&, int)>& error_callback) override {
+  void Send(const GURL& report_uri,
+            base::StringPiece content_type,
+            base::StringPiece report,
+            const base::Callback<void()>& success_callback,
+            const base::Callback<void(const GURL&, int, int)>& error_callback)
+      override {
     latest_report_uri_ = report_uri;
     report.CopyToString(&latest_report_);
     content_type.CopyToString(&latest_content_type_);
@@ -127,19 +132,21 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
                                kServerPublicKeyTestVersion,
                                base::WrapUnique(mock_report_sender));
   https_reporter.SendExtendedReportingReport(
-      kDummyReport, base::Closure(), base::Callback<void(const GURL&, int)>());
+      kDummyReport, base::Callback<void()>(),
+      base::Callback<void(const GURL&, int, int)>());
   EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
   // Data should be encrypted when sent to an HTTP URL.
   MockCertificateReportSender* http_mock_report_sender =
       new MockCertificateReportSender();
-  GURL http_url(kDummyHttpReportUri);
+  const GURL http_url(kDummyHttpReportUri);
   ErrorReporter http_reporter(http_url, server_public_key_,
                               kServerPublicKeyTestVersion,
                               base::WrapUnique(http_mock_report_sender));
   http_reporter.SendExtendedReportingReport(
-      kDummyReport, base::Closure(), base::Callback<void(const GURL&, int)>());
+      kDummyReport, base::Callback<void()>(),
+      base::Callback<void(const GURL&, int, int)>());
 
   EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
   EXPECT_EQ("application/octet-stream",
@@ -170,7 +177,7 @@ TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
   context.set_network_delegate(&test_delegate);
   context.Init();
 
-  GURL report_uri(
+  const GURL report_uri(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
   ErrorReporter reporter(&context, report_uri,
                          net::ReportSender::DO_NOT_SEND_COOKIES);
@@ -186,7 +193,7 @@ TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
   EXPECT_FALSE(success_callback_called);
 }
 
-// Tests that an UMA histogram is recorded if a report fails to send.
+// Tests that an UMA histogram is recorded if a report is successfully sent.
 TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
   net::URLRequestMockDataJob::AddUrlHandler();
 
@@ -197,7 +204,8 @@ TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
   context.set_network_delegate(&test_delegate);
   context.Init();
 
-  GURL report_uri(net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
+  const GURL report_uri(
+      net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
   ErrorReporter reporter(&context, report_uri,
                          net::ReportSender::DO_NOT_SEND_COOKIES);
 

@@ -11,6 +11,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
@@ -93,11 +94,15 @@ void ReportSender::OnResponseStarted(URLRequest* request, int net_error) {
   if (net_error != OK) {
     DVLOG(1) << "Failed to send report for " << request->url().host();
     if (!callback_info->error_callback().is_null())
-      callback_info->error_callback().Run(request->url(), net_error);
-  } else if (!callback_info->success_callback().is_null()) {
-    callback_info->success_callback().Run();
+      callback_info->error_callback().Run(request->url(), net_error, -1);
+  } else if (request->GetResponseCode() != net::HTTP_OK) {
+    if (!callback_info->error_callback().is_null())
+      callback_info->error_callback().Run(request->url(), OK,
+                                          request->GetResponseCode());
+  } else {
+    if (!callback_info->success_callback().is_null())
+      callback_info->success_callback().Run();
   }
-
   CHECK_GT(inflight_requests_.erase(request), 0u);
 }
 
