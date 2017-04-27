@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -350,17 +351,24 @@ public class SectionListTest {
     @Test
     @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testSynchroniseWithSourceWithStaleSection() {
+        final int initialSectionSize = 2;
+        final int updatedSectionSize = 5;
         registerCategory(mSuggestionSource, CATEGORY1, 1);
-        registerCategory(mSuggestionSource, CATEGORY2, 2);
+        registerCategory(mSuggestionSource, CATEGORY2, initialSectionSize);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
         SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
         sectionList.refreshSuggestions();
 
+        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
+                is(initialSectionSize));
+
         // New suggestions are added, which will make CATEGORY2 stale.
         bindViewHolders(sectionList);
-        mSuggestionSource.setSuggestionsForCategory(CATEGORY2,
-                createDummySuggestions(CATEGORY2, 5));
+        mSuggestionSource.setSuggestionsForCategory(
+                CATEGORY2, createDummySuggestions(updatedSectionSize, CATEGORY2));
         assertTrue(sectionList.getSectionForTesting(CATEGORY2).isDataStale());
+        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
+                is(initialSectionSize));
 
         clearInvocations(mSuggestionSource);
         sectionList.synchroniseWithSource();
@@ -370,6 +378,8 @@ public class SectionListTest {
         inOrder.verify(mSuggestionSource).getSuggestionsForCategory(CATEGORY2);
         // CATEGORY1 doesn't need to be refreshed.
         inOrder.verify(mSuggestionSource, never()).getSuggestionsForCategory(CATEGORY1);
+        assertThat(sectionList.getSectionForTesting(CATEGORY2).getSuggestionsCount(),
+                is(updatedSectionSize));
     }
 
     @Test
