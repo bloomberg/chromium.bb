@@ -51,6 +51,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -2199,7 +2200,8 @@ TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
   ssl_data.next_proto = kProtoHTTP2;
 
   std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
-      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate));
+      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
   spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
 
@@ -2274,7 +2276,8 @@ TEST_F(SpdyNetworkTransactionTest,
   ssl_data.next_proto = kProtoHTTP2;
 
   std::unique_ptr<URLRequest> request(spdy_url_request_context.CreateRequest(
-      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate));
+      GURL(kDefaultUrl), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
   spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(&ssl_data);
   spdy_url_request_context.socket_factory().AddSocketDataProvider(&data);
 
@@ -2336,7 +2339,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   {
     SpdyURLRequestContext spdy_url_request_context;
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
-        default_url_, DEFAULT_PRIORITY, &d));
+        default_url_, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
     spdy_url_request_context.socket_factory().
@@ -2413,7 +2416,7 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   SpdyURLRequestContext spdy_url_request_context;
   {
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
-        default_url_, DEFAULT_PRIORITY, &d));
+        default_url_, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
 
@@ -2425,7 +2428,8 @@ TEST_F(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
     EXPECT_EQ(contents, d.data_received());
 
     std::unique_ptr<URLRequest> r2(spdy_url_request_context.CreateRequest(
-        GURL(GetDefaultUrlWithPath("/foo.dat")), DEFAULT_PRIORITY, &d2));
+        GURL(GetDefaultUrlWithPath("/foo.dat")), DEFAULT_PRIORITY, &d2,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data2);
 
