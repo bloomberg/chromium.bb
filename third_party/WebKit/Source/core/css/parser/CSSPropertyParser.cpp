@@ -753,7 +753,7 @@ static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range) {
 // offset: <offset-path> <offset-distance> <offset-rotation>
 bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
   const CSSValue* offset_path =
-      CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_, false);
+      CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_);
   const CSSValue* offset_distance =
       ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
   const CSSValue* offset_rotation = ConsumeOffsetRotate(range_);
@@ -1753,8 +1753,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyD:
       return CSSPropertyOffsetPathUtils::ConsumePathOrNone(range_);
     case CSSPropertyOffsetPath:
-      return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
-          range_, context_, unresolved_property == CSSPropertyAliasMotionPath);
+      return CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_);
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:

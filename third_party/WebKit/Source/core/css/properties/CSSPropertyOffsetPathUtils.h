@@ -16,8 +16,7 @@ class CSSValue;
 class CSSPropertyOffsetPathUtils {
   STATIC_ONLY(CSSPropertyOffsetPathUtils);
   static CSSValue* ConsumeOffsetPath(CSSParserTokenRange&,
-                                     const CSSParserContext*,
-                                     bool);
+                                     const CSSParserContext*);
   static CSSValue* ConsumePathOrNone(CSSParserTokenRange&);
 };
 
