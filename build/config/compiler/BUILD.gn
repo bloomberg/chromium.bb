@@ -94,9 +94,7 @@ declare_args() {
   # branches)
   optimize_for_fuzzing = false
 
-  # Optimize symbol files for maximizing goma cache hit rate. This isn't
-  # on by default when goma is enabled because setting this to true may make
-  # it harder to debug binaries.
+  # Optimize symbol files for maximizing goma cache hit rate.
   strip_absolute_paths_from_debug_symbols = false
 }
 
