@@ -97,7 +97,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "ipc/ipc_sync_channel.h"
-#include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -673,7 +672,7 @@ void ChromeContentRendererClient::DeferMediaLoad(
   // TODO(dalecurtis): Include an idle check too.  http://crbug.com/509135
   if ((render_frame->IsHidden() && !has_played_media_before &&
        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kIgnoreAutoplayRestrictionsForTests)) ||
+           switches::kDisableGestureRequirementForMediaPlayback)) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
     new MediaLoadDeferrer(render_frame, closure);
     return;

@@ -709,6 +709,12 @@ extern const char kEnableTokenBindingName[];
 // 'Token Binding'.
 extern const char kEnableTokenBindingDescription[];
 
+// Title for the flag for gesture requiment for media playback
+extern const char kGestureRequirementForMediaPlaybackName[];
+
+// Description for the flag for gesture requiment for media playback
+extern const char kGestureRequirementForMediaPlaybackDescription[];
+
 // Description for the flag to adjust the default behaviour for document level
 // passive touch listeners.
 extern const char kPassiveDocumentEventListenersDescription[];

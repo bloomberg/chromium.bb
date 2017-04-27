@@ -97,7 +97,8 @@ class MediaSessionImplVisibilityBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+    command_line->AppendSwitch(
+        switches::kDisableGestureRequirementForMediaPlayback);
 #if !defined(OS_ANDROID)
     command_line->AppendSwitch(switches::kEnableDefaultMediaSession);
 #endif  // !defined(OS_ANDROID)
