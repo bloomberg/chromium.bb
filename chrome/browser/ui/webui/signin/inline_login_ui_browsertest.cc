@@ -865,6 +865,33 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
   ui_test_utils::NavigateToURL(browser(), url);
 }
 
+// Make sure that "success.html" can be loaded by chrome://chrome-signin.
+// http://crbug.com/709117
+IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
+                       LoadSuccessContinueURL) {
+  ui_test_utils::NavigateToURL(browser(), GetSigninPromoURL());
+  WaitUntilUIReady(browser());
+
+  const std::string success_url =
+      GaiaUrls::GetInstance()->signin_completed_continue_url().spec();
+  const char* kLoadSuccessPageScript =
+      "var handler = function(e) {"
+      "  if (e.url == '%s') {"
+      "    window.domAutomationController.send('success_page_loaded');"
+      "  }"
+      "};"
+      "var extension_webview = inline.login.getAuthExtHost().webview_;"
+      "extension_webview.addEventListener('loadcommit', handler);"
+      "extension_webview.src = '%s';";
+  std::string script = base::StringPrintf(
+      kLoadSuccessPageScript, success_url.c_str(), success_url.c_str());
+
+  std::string message;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(), script, &message));
+  EXPECT_EQ("success_page_loaded", message);
+}
+
 // Make sure that the gaia iframe cannot trigger top-frame navigation.
 // TODO(guohui): flaky on trybot crbug/364759.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
