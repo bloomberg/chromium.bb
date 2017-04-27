@@ -16,13 +16,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_checker.h"
+#include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
-#include "components/update_client/crx_update_item.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/updater_state.h"
 #include "components/update_client/utils.h"
@@ -47,11 +47,10 @@ const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
 
 // Returns a string representing a sequence of download complete events
 // corresponding to each download metrics in |item|.
-std::string BuildDownloadCompleteEventElements(const CrxUpdateItem* item) {
+std::string BuildDownloadCompleteEventElements(const Component& component) {
   using base::StringAppendF;
   std::string download_events;
-  for (size_t i = 0; i != item->download_metrics.size(); ++i) {
-    const CrxDownloader::DownloadMetrics& metrics = item->download_metrics[i];
+  for (const auto& metrics : component.download_metrics()) {
     std::string event("<event eventtype=\"14\"");
     StringAppendF(&event, " eventresult=\"%d\"", metrics.error == 0);
     StringAppendF(&event, " downloader=\"%s\"",
@@ -82,59 +81,62 @@ std::string BuildDownloadCompleteEventElements(const CrxUpdateItem* item) {
   return download_events;
 }
 
-// Returns a string representing one ping event for the update of an item.
+// Returns a string representing one ping event for the update of a component.
 // The event type for this ping event is 3.
-std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item) {
-  DCHECK(item->state == CrxUpdateItem::State::kNoUpdate ||
-         item->state == CrxUpdateItem::State::kUpdated);
+std::string BuildUpdateCompleteEventElement(const Component& component) {
+  DCHECK(component.state() == ComponentState::kUpdateError ||
+         component.state() == ComponentState::kUpdated);
 
   using base::StringAppendF;
 
   std::string ping_event("<event eventtype=\"3\"");
-  const int event_result = item->state == CrxUpdateItem::State::kUpdated;
+  const int event_result = component.state() == ComponentState::kUpdated;
   StringAppendF(&ping_event, " eventresult=\"%d\"", event_result);
-  if (item->error_category)
-    StringAppendF(&ping_event, " errorcat=\"%d\"", item->error_category);
-  if (item->error_code)
-    StringAppendF(&ping_event, " errorcode=\"%d\"", item->error_code);
-  if (item->extra_code1)
-    StringAppendF(&ping_event, " extracode1=\"%d\"", item->extra_code1);
-  if (HasDiffUpdate(item))
-    StringAppendF(&ping_event, " diffresult=\"%d\"", !item->diff_update_failed);
-  if (item->diff_error_category) {
+  if (component.error_category())
+    StringAppendF(&ping_event, " errorcat=\"%d\"", component.error_category());
+  if (component.error_code())
+    StringAppendF(&ping_event, " errorcode=\"%d\"", component.error_code());
+  if (component.extra_code1())
+    StringAppendF(&ping_event, " extracode1=\"%d\"", component.extra_code1());
+  if (HasDiffUpdate(component))
+    StringAppendF(&ping_event, " diffresult=\"%d\"",
+                  !component.diff_update_failed());
+  if (component.diff_error_category()) {
     StringAppendF(&ping_event, " differrorcat=\"%d\"",
-                  item->diff_error_category);
+                  component.diff_error_category());
   }
-  if (item->diff_error_code)
-    StringAppendF(&ping_event, " differrorcode=\"%d\"", item->diff_error_code);
-  if (item->diff_extra_code1) {
+  if (component.diff_error_code())
+    StringAppendF(&ping_event, " differrorcode=\"%d\"",
+                  component.diff_error_code());
+  if (component.diff_extra_code1()) {
     StringAppendF(&ping_event, " diffextracode1=\"%d\"",
-                  item->diff_extra_code1);
+                  component.diff_extra_code1());
   }
-  if (!item->previous_fp.empty())
-    StringAppendF(&ping_event, " previousfp=\"%s\"", item->previous_fp.c_str());
-  if (!item->next_fp.empty())
-    StringAppendF(&ping_event, " nextfp=\"%s\"", item->next_fp.c_str());
+  if (!component.previous_fp().empty())
+    StringAppendF(&ping_event, " previousfp=\"%s\"",
+                  component.previous_fp().c_str());
+  if (!component.next_fp().empty())
+    StringAppendF(&ping_event, " nextfp=\"%s\"", component.next_fp().c_str());
   StringAppendF(&ping_event, "/>");
   return ping_event;
 }
 
-// Returns a string representing one ping event for the uninstall of an item.
-// The event type for this ping event is 4.
-std::string BuildUninstalledEventElement(const CrxUpdateItem* item) {
-  DCHECK(item->state == CrxUpdateItem::State::kUninstalled);
+// Returns a string representing one ping event for the uninstall of a
+// component. The event type for this ping event is 4.
+std::string BuildUninstalledEventElement(const Component& component) {
+  DCHECK(component.state() == ComponentState::kUninstalled);
 
   using base::StringAppendF;
 
   std::string ping_event("<event eventtype=\"4\" eventresult=\"1\"");
-  if (item->extra_code1)
-    StringAppendF(&ping_event, " extracode1=\"%d\"", item->extra_code1);
+  if (component.extra_code1())
+    StringAppendF(&ping_event, " extracode1=\"%d\"", component.extra_code1());
   StringAppendF(&ping_event, "/>");
   return ping_event;
 }
 
-// Builds a ping message for the specified update item.
-std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
+// Builds a ping message for the specified component.
+std::string BuildPing(const Configurator& config, const Component& component) {
   const char app_element_format[] =
       "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
       "%s"
@@ -142,13 +144,13 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
       "</app>";
 
   std::string ping_event;
-  switch (item->state) {
-    case CrxUpdateItem::State::kNoUpdate:  // Fall through.
-    case CrxUpdateItem::State::kUpdated:
-      ping_event = BuildUpdateCompleteEventElement(item);
+  switch (component.state()) {
+    case ComponentState::kUpdateError:  // Fall through.
+    case ComponentState::kUpdated:
+      ping_event = BuildUpdateCompleteEventElement(component);
       break;
-    case CrxUpdateItem::State::kUninstalled:
-      ping_event = BuildUninstalledEventElement(item);
+    case ComponentState::kUninstalled:
+      ping_event = BuildUninstalledEventElement(component);
       break;
     default:
       NOTREACHED();
@@ -157,11 +159,12 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
 
   const std::string app_element(base::StringPrintf(
       app_element_format,
-      item->id.c_str(),                                    // "appid"
-      item->previous_version.GetString().c_str(),          // "version"
-      item->next_version.GetString().c_str(),              // "nextversion"
-      ping_event.c_str(),                                  // ping event
-      BuildDownloadCompleteEventElements(item).c_str()));  // download events
+      component.id().c_str(),                            // "appid"
+      component.previous_version().GetString().c_str(),  // "version"
+      component.next_version().GetString().c_str(),      // "nextversion"
+      ping_event.c_str(),                                // ping event
+      BuildDownloadCompleteEventElements(component)
+          .c_str()));  // download events
 
   // The ping request does not include any updater state.
   return BuildProtocolRequest(
@@ -178,7 +181,7 @@ class PingSender {
   explicit PingSender(const scoped_refptr<Configurator>& config);
   ~PingSender();
 
-  bool SendPing(const CrxUpdateItem* item);
+  bool SendPing(const Component& component);
 
  private:
   void OnRequestSenderComplete(int error,
@@ -206,12 +209,11 @@ void PingSender::OnRequestSenderComplete(int error,
   delete this;
 }
 
-bool PingSender::SendPing(const CrxUpdateItem* item) {
-  DCHECK(item);
+bool PingSender::SendPing(const Component& component) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto urls(config_->PingUrl());
-  if (item->component.requires_network_encryption)
+  if (component.crx_component().requires_network_encryption)
     RemoveUnsecureUrls(&urls);
 
   if (urls.empty())
@@ -219,7 +221,7 @@ bool PingSender::SendPing(const CrxUpdateItem* item) {
 
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
-      false, BuildPing(*config_, item), urls,
+      false, BuildPing(*config_, component), urls,
       base::Bind(&PingSender::OnRequestSenderComplete, base::Unretained(this)));
   return true;
 }
@@ -230,11 +232,14 @@ PingManager::PingManager(const scoped_refptr<Configurator>& config)
     : config_(config) {}
 
 PingManager::~PingManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool PingManager::SendPing(const CrxUpdateItem* item) {
-  std::unique_ptr<PingSender> ping_sender(new PingSender(config_));
-  if (!ping_sender->SendPing(item))
+bool PingManager::SendPing(const Component& component) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto ping_sender = base::MakeUnique<PingSender>(config_);
+  if (!ping_sender->SendPing(component))
     return false;
 
   // The ping sender object self-deletes after sending the ping asynchrously.

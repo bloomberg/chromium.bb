@@ -7,11 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 
 namespace update_client {
 
 class Configurator;
-struct CrxUpdateItem;
+class Component;
 
 // Sends fire-and-forget pings.
 class PingManager {
@@ -23,9 +24,11 @@ class PingManager {
   // ping is queued up and may be sent in the future, or false, if an error
   // occurs right away. The ping itself is not persisted and it will be
   // discarded if it can't be sent for any reason.
-  virtual bool SendPing(const CrxUpdateItem* item);
+  virtual bool SendPing(const Component& component);
 
  private:
+  base::ThreadChecker thread_checker_;
+
   const scoped_refptr<Configurator> config_;
 
   DISALLOW_COPY_AND_ASSIGN(PingManager);

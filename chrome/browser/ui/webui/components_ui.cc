@@ -23,7 +23,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/component_updater/component_updater_service.h"
+#include "components/update_client/crx_update_item.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -215,33 +215,33 @@ base::string16 ComponentsUI::ComponentEventToString(Events event) {
 }
 
 base::string16 ComponentsUI::ServiceStatusToString(
-    update_client::CrxUpdateItem::State state) {
+    update_client::ComponentState state) {
   // TODO(sorin): handle kDownloaded. For now, just handle it as kUpdating.
   switch (state) {
-    case update_client::CrxUpdateItem::State::kNew:
+    case update_client::ComponentState::kNew:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NEW);
-    case update_client::CrxUpdateItem::State::kChecking:
+    case update_client::ComponentState::kChecking:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_CHECKING);
-    case update_client::CrxUpdateItem::State::kCanUpdate:
+    case update_client::ComponentState::kCanUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATE);
-    case update_client::CrxUpdateItem::State::kDownloadingDiff:
+    case update_client::ComponentState::kDownloadingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL_DIFF);
-    case update_client::CrxUpdateItem::State::kDownloading:
+    case update_client::ComponentState::kDownloading:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DNL);
-    case update_client::CrxUpdateItem::State::kUpdatingDiff:
+    case update_client::ComponentState::kUpdatingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF);
-    case update_client::CrxUpdateItem::State::kUpdating:
+    case update_client::ComponentState::kUpdating:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATING);
-    case update_client::CrxUpdateItem::State::kDownloaded:
+    case update_client::ComponentState::kDownloaded:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DOWNLOADED);
-    case update_client::CrxUpdateItem::State::kUpdated:
+    case update_client::ComponentState::kUpdated:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATED);
-    case update_client::CrxUpdateItem::State::kUpToDate:
+    case update_client::ComponentState::kUpToDate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPTODATE);
-    case update_client::CrxUpdateItem::State::kNoUpdate:
+    case update_client::ComponentState::kUpdateError:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NOUPDATE);
-    case update_client::CrxUpdateItem::State::kUninstalled:  // Fall through.
-    case update_client::CrxUpdateItem::State::kLastStatus:
+    case update_client::ComponentState::kUninstalled:  // Fall through.
+    case update_client::ComponentState::kLastStatus:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
   }
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);

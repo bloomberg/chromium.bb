@@ -162,6 +162,11 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
   EXPECT_EQ(1, post_interceptor_1_->GetCount())
       << post_interceptor_1_->GetRequestsAsString();
 
+  EXPECT_EQ(0, post_interceptor_2_->GetHitCount())
+      << post_interceptor_2_->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor_2_->GetCount())
+      << post_interceptor_2_->GetRequestsAsString();
+
   // Sanity check the request.
   EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
 

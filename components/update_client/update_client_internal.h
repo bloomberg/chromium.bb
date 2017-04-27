@@ -62,8 +62,8 @@ class UpdateClientImpl : public UpdateClient {
 
   base::ThreadChecker thread_checker_;
 
-  // True is Stop method has been called.
-  bool is_stopped_;
+  // True if Stop method has been called.
+  bool is_stopped_ = false;
 
   scoped_refptr<Configurator> config_;
 

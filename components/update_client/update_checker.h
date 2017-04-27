@@ -12,33 +12,35 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/update_client/crx_update_item.h"
+#include "components/update_client/component.h"
 #include "components/update_client/update_response.h"
 #include "url/gurl.h"
 
 namespace update_client {
 
-class PersistedData;
 class Configurator;
+class PersistedData;
 
 class UpdateChecker {
  public:
   using UpdateCheckCallback =
-      base::Callback<void(int error,
-                          const UpdateResponse::Results& results,
-                          int retry_after_sec)>;
+      base::Callback<void(int error, int retry_after_sec)>;
 
   using Factory = std::unique_ptr<UpdateChecker> (*)(
       const scoped_refptr<Configurator>& config,
       PersistedData* persistent);
 
-  virtual ~UpdateChecker() {}
+  virtual ~UpdateChecker() = default;
 
-  // Initiates an update check for the |items_to_check|. |additional_attributes|
-  // provides a way to customize the <request> element. This value is inserted
-  // as-is, therefore it must be well-formed as an XML attribute string.
+  // Initiates an update check for the components specified by their ids.
+  // |additional_attributes| provides a way to customize the <request> element.
+  // This value is inserted as-is, therefore it must be well-formed as an
+  // XML attribute string.
+  // On completion, the state of |components| is mutated as required by the
+  // server response received.
   virtual bool CheckForUpdates(
-      const IdToCrxUpdateItemMap& items_to_check,
+      const std::vector<std::string>& ids_to_check,
+      const IdToComponentPtrMap& components,
       const std::string& additional_attributes,
       bool enabled_component_updates,
       const UpdateCheckCallback& update_check_callback) = 0;
@@ -48,7 +50,7 @@ class UpdateChecker {
       PersistedData* persistent);
 
  protected:
-  UpdateChecker() {}
+  UpdateChecker() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateChecker);

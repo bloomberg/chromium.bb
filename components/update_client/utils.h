@@ -28,8 +28,8 @@ class URLRequestContextGetter;
 
 namespace update_client {
 
+class Component;
 struct CrxComponent;
-struct CrxUpdateItem;
 
 // Defines a name-value pair that represents an installer attribute.
 // Installer attributes are component-specific metadata, which may be serialized
@@ -89,8 +89,8 @@ bool FetchSuccess(const net::URLFetcher& fetcher);
 // fetch is pending or canceled.
 int GetFetchError(const net::URLFetcher& fetcher);
 
-// Returns true if the |update_item| contains a valid differential update url.
-bool HasDiffUpdate(const CrxUpdateItem* update_item);
+// Returns true if the |component| contains a valid differential update url.
+bool HasDiffUpdate(const Component& component);
 
 // Returns true if the |status_code| represents a server error 5xx.
 bool IsHttpServerError(int status_code);
