@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">የድምጽ ቅጥነት ይቀንሱ</translation>
 <translation id="2999945368667127852">ምንም ቀጣይ የሚዲያ ንዑስ ፕሮግራም የለም።</translation>
 <translation id="3012414509011670858">ምንም ቀዳሚ ክፍል የለም።</translation>
+<translation id="3014130421870723208">@ed 8dot</translation>
 <translation id="3030432017085518523">የምናሌ ንጥል ሬዲዮ አዝራር</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ትእምርተ ጭረት}one{# ትእምርተ ጭረቶች}other{# ትእምርተ ጭረቶች}}</translation>
 <translation id="3040901448410802366">የሂደት አመልካች</translation>
@@ -661,6 +662,7 @@
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">የቃል ማስተጋባት</translation>
 <translation id="713824876195128146">ቀጣይ የጽሑፍ ጥቅስ</translation>
+<translation id="7143034430156387447">በባለ6 እና 8 ነጥብ ብሬይል መካከል ቀያይር</translation>
 <translation id="7161771961008409533">ብቅ-ባይ አዝራር</translation>
 <translation id="7165714724802225287">የአሁኑ የማሳያ ቅጥ ምትር ነው።</translation>
 <translation id="7167657087543110">የቁምፊ ማስተጋባት</translation>
@@ -820,6 +822,7 @@
 <translation id="8856538297388979332">ትዕዛዞችን ለመከለስ ላይ ወይም ታች ይጫኑ፣ ለማግበር enterን ይጫኑ</translation>
 <translation id="8864099967139188018">ምንም ቀጣይ የደረጃ 6 ርዕስ የለም።</translation>
 <translation id="8882002077197914455">የረድፍ ራስጌ</translation>
+<translation id="8883850400338911892">urled 8dot</translation>
 <translation id="8896347895970027998">ChromeVox እንዲገብር ወይም እንዲቦዝን ይቀያይሩ።</translation>
 <translation id="8898516272131543774">የስርዓተ ነጥብ ማስተጋባት ዑደት</translation>
 <translation id="8900148057318340779">የቅድመ-ቅጥያ ቁልፍ</translation>

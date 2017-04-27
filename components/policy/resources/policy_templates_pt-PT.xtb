@@ -665,6 +665,15 @@ Se esta definição estiver ativada ou por configurar, os utilizadores podem ati
 
 Se esta definição estiver desativada, os utilizadores não podem ativar o proxy e o computador não poderá partilhar as impressoras nele instaladas com o <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Ativa a conclusão de processos no Gestor de tarefas</translation>
+<translation id="3307746730474515290">Controla os tipos de aplicação/extensão que podem ser instalados e limita o acesso de tempo de execução.
+
+          Esta definição coloca numa lista de autorizações os tipos permitidos de extensão/aplicação que podem ser instalados no <ph name="PRODUCT_NAME" /> e os anfitriões com que podem interagir. O valor é uma lista de strings, em que cada uma deve ser uma das seguintes: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para obter mais informações sobre estes tipos.
+
+          Tenha em atenção que esta política também afeta extensões e aplicações de instalação forçada através de ExtensionInstallForcelist.
+
+          Se esta definição estiver configurada, as extensões/aplicações que tenham um tipo que não esteja na lista não são instaladas.
+
+          Se esta definição não estiver configurada, não são aplicadas nenhumas restrições aos tipos de extensão/aplicação aceitáveis.</translation>
 <translation id="3322771899429619102">Permite definir uma lista de padrões de URL que especificam os sites autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenBlockedForUrls", tal substitui estas exceções.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
@@ -722,6 +731,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
+<translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
@@ -1051,6 +1061,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="489803897780524242">Colocação do termo de pesquisa de controlo de parâmetros para o fornecedor de pesquisa predefinido</translation>
 <translation id="4899708173828500852">Ativar Navegação Segura</translation>
 <translation id="4906194810004762807">Taxa de atualização para a Política do Dispositivo</translation>
+<translation id="4962262530309732070">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_NAME" /> permite a opção Adicionar pessoa a partir do gestor de utilizadores.
+
+      Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gestor de utilizadores.</translation>
 <translation id="4971529314808359013">Permite-lhe especificar uma lista de padrões de URL que especifica sites para os quais o <ph name="PRODUCT_NAME" /> deve selecionar automaticamente um certificado de cliente, caso o site solicite um certificado.
 
           O valor tem de ser uma matriz de dicionários JSON em forma de string. Cada dicionário tem de ter o formato { "padrão": "$URL_PATTERN", "filtro" : $FILTER }, no qual $URL_PATTERN é um padrão de definição de conteúdo. $FILTER restringe a partir de que certificados de cliente o navegador seleciona automaticamente. Independentemente do filtro, apenas são selecionados os certificados que correspondam ao pedido de certificado do servidor. Se $FILTER tiver o formato { "EMISSOR": { "CN": "$ISSUER_CN" } }, apenas são selecionados os certificados de cliente que são emitidos por um certificado com o CommonName $ISSUER_CN. Se $FILTER for o dicionário vazio {}, a seleção de certificados de cliente não é adicionalmente restrita.

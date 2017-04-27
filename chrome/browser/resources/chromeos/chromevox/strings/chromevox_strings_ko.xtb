@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">음조 낮춤</translation>
 <translation id="2999945368667127852">다음 미디어 위젯이 없습니다.</translation>
 <translation id="3012414509011670858">이전 섹션이 없음</translation>
+<translation id="3014130421870723208">@수정 입력란 8점</translation>
 <translation id="3030432017085518523">메뉴 항목 라디오 버튼</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{아포스트로피}other{아포스트로피 #개}}</translation>
 <translation id="3040901448410802366">진행률 표시기</translation>
@@ -662,6 +663,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">단어 에코</translation>
 <translation id="713824876195128146">다음 블록 인용</translation>
+<translation id="7143034430156387447">6점 점자와 8점 점자 간 전환</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
 <translation id="7165714724802225287">현재 인터리브 디스플레이 스타일입니다.</translation>
 <translation id="7167657087543110">문자 에코</translation>
@@ -821,6 +823,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8856538297388979332">명령어를 확인하려면 위/아래를 누르고 실행하려면 Enter 키를 누릅니다.</translation>
 <translation id="8864099967139188018">다음 수준 6 제목이 없습니다.</translation>
 <translation id="8882002077197914455">행 헤더</translation>
+<translation id="8883850400338911892">url 수정 입력란 8점</translation>
 <translation id="8896347895970027998">ChromeVox를 활성화 또는 비활성화로 전환</translation>
 <translation id="8898516272131543774">순환 구두점 에코</translation>
 <translation id="8900148057318340779">Prefix 키</translation>

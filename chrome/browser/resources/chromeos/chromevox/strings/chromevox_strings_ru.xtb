@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Понизить тон</translation>
 <translation id="2999945368667127852">Следующего виджета мультимедиа нет.</translation>
 <translation id="3012414509011670858">Предыдущего раздела нет.</translation>
+<translation id="3014130421870723208">@ред. 8точ.</translation>
 <translation id="3030432017085518523">Пункт меню переключатель</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофа}many{# апострофов}other{# apostrophes}}</translation>
 <translation id="3040901448410802366">Индикатор выполнения</translation>
@@ -662,6 +663,7 @@
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">Озвучивание слов.</translation>
 <translation id="713824876195128146">Перейти к следующей цитате</translation>
+<translation id="7143034430156387447">Переключение между 6- и 8-точечным шрифтами</translation>
 <translation id="7161771961008409533">Кнопка-переключатель</translation>
 <translation id="7165714724802225287">Текущий стиль дисплея: чередующийся.</translation>
 <translation id="7167657087543110">Озвучивание символов.</translation>
@@ -821,6 +823,7 @@
 <translation id="8856538297388979332">С помощью стрелок вверх и вниз выберите команду. Чтобы активировать ее, нажмите клавишу ВВОД.</translation>
 <translation id="8864099967139188018">Следующего заголовка шестого уровня нет.</translation>
 <translation id="8882002077197914455">Заголовок строки</translation>
+<translation id="8883850400338911892">изм. url 8точ.</translation>
 <translation id="8896347895970027998">Включить или отключить ChromeVox.</translation>
 <translation id="8898516272131543774">Повторно озвучивать пунктуацию</translation>
 <translation id="8900148057318340779">Клавиша-префикс</translation>

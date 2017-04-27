@@ -645,6 +645,15 @@
 
       如果已停用此设置，用户将无法启用代理，该计算机也就无法与 <ph name="CLOUD_PRINT_NAME" />共享其打印机。</translation>
 <translation id="3297010562646015826">允许在任务管理器中结束进程</translation>
+<translation id="3307746730474515290">控制可以安装哪些类型的应用/扩展程序并限制运行时访问。
+
+          此设置会将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用所属的类型以及可与其互动的主机列入白名单。此设置的值是一个字符串列表，系统可接受的字符串为："extension"、"theme"、"user_script"、"hosted_app"、"legacy_packaged_app"、"platform_app"。如需详细了解这些类型，请参阅 <ph name="PRODUCT_NAME" /> 扩展程序文档。
+
+          请注意，此政策还会影响通过 ExtensionInstallForcelist 强制安装的扩展程序和应用。
+
+          如果此设置已配置，用户将无法安装所属类型不在上述列表范围内的扩展程序/应用。
+
+          如果此设置未配置，用户则可随意安装任何类型的扩展程序/应用。</translation>
 <translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
@@ -700,6 +709,7 @@
 <translation id="3660562134618097814">在用户登录期间转移 SAML IdP Cookie</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
+<translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
@@ -1023,6 +1033,9 @@
 <translation id="489803897780524242">此参数可控制是否为默认搜索服务提供商替换搜索字词</translation>
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="4906194810004762807">设备策略的更新频率</translation>
+<translation id="4962262530309732070">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 会允许通过用户管理器添加用户。
+
+      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 会禁止通过用户管理器创建新的个人资料。</translation>
 <translation id="4971529314808359013">可让您指定一系列网址格式，从而指定 <ph name="PRODUCT_NAME" /> 应为哪些网站自动选择客户端证书（如果相应网站要求提供证书 ）。
 
           此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 样式，其中 $URL_PATTERN 是内容设置格式，而 $FILTER 会限制相应浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与该服务器的证书请求相匹配的证书。如果 $FILTER 采用 { "ISSUER": { "CN": "$ISSUER_CN" } } 样式，系统则只会选择由 CommonName 为 $ISSUER_CN 的证书颁发机构颁发的客户端证书。如果 $FILTER 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。

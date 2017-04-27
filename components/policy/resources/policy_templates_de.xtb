@@ -654,6 +654,15 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
 <translation id="3297010562646015826">Ermöglicht das Beenden von Prozessen im Task-Manager</translation>
+<translation id="3307746730474515290">Legt fest, welche Typen von Apps bzw. Erweiterungen installiert werden können, und beschränkt den Zugriff während der Laufzeit.
+
+          Diese Einstellung erstellt eine weiße Liste der Typen von Erweiterungen bzw. Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, und legt fest, mit welchen Hosts sie interagieren dürfen. Bei dem Wert handelt es sich um eine Liste mit Strings, die jeweils einem der folgenden Typen entsprechen: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu <ph name="PRODUCT_NAME" />-Erweiterungen.
+
+          Diese Richtlinie betrifft auch Erweiterungen und Apps, deren Installation mit ExtensionInstallForcelist erzwungen wurde.
+
+          Wenn diese Einstellung konfiguriert wurde, werden Erweiterungen oder Apps, die keinem der Typen auf der Liste entsprechen, nicht installiert.
+
+          Wenn diese Einstellung nicht konfiguriert wurde, bestehen keine Einschränkungen für zulässige Erweiterungs- bzw. App-Typen.</translation>
 <translation id="3322771899429619102">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Schlüsselgenerierung gestattet ist. Wenn ein URL-Muster in "KeygenBlockedForUrls" angegeben ist, werden diese Ausnahmen dadurch überschrieben.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
@@ -708,6 +717,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
+<translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -1037,6 +1047,9 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
+<translation id="4962262530309732070">Wenn für diese Richtlinie "true" festgelegt wurde oder sie nicht konfiguriert ist, erlaubt <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager.
+
+      Ist für die Richtlinie "false" festgelegt, lässt <ph name="PRODUCT_NAME" /> die Erstellung neuer Profile im Nutzermanager nicht zu.</translation>
 <translation id="4971529314808359013">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die <ph name="PRODUCT_NAME" /> automatisch ein Clientzertifikat auswählen soll, wenn die Website ein Zertifikat anfordert.
 
           Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format { "pattern": "$URL_PATTERN", "filter" : $FILTER } haben, wobei $URL_PATTERN ein Muster zur Festlegung der Inhalte ist. $FILTER schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanfrage des Servers übereinstimmen. Wenn $FILTER das Format { "ISSUER": { "CN": "$ISSUER_CN" } } hat, werden außerdem nur Clientzertifikate ausgewählt, die von einem Zertifikat mit dem CommonName $ISSUER_CN ausgestellt werden. Wenn $FILTER das leere Wörterbuch {} ist, wird die Auswahl an Clientzertifikaten nicht zusätzlich eingeschränkt.

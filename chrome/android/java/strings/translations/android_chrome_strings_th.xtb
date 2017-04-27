@@ -12,6 +12,7 @@
 <translation id="1137305377394488060">ชั่วโมงที่ผ่านมา</translation>
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
 <translation id="1146678959555564648">เข้าสู่ VR</translation>
+<translation id="116280672541001035">ใช้ไป</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">ลบ</translation>
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
@@ -64,6 +65,7 @@
 <translation id="1513858653616922153">ลบรหัสผ่าน</translation>
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
+<translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
@@ -85,7 +87,6 @@
 <translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1756600373018374892">แตะปุ่มนี้เพื่อเข้าถึงแท็บอย่างรวดเร็ว</translation>
 <translation id="1807246157184219062">สว่าง</translation>
-<translation id="1825719650605518411">ประสบการณ์กับ First Run</translation>
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
 <translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
@@ -105,6 +106,7 @@
 <translation id="2020525020270327736">คัดลอกเว็บไซต์</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
+<translation id="2073732792864401646">รีเซ็ตสถิติ</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2095887075102408547">เมื่อเปิดคุณลักษณะนี้ Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการบีบอัดหน้าเว็บที่คุณเข้าชมก่อนที่จะดาวน์โหลดหน้าเหล่านั้น Google จะมองไม่เห็นและไม่เพิ่มประสิทธิภาพหน้าที่เข้าถึงโดยใช้การเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บไม่ระบุตัวตน</translation>
@@ -112,13 +114,16 @@
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2111511281910874386">ไปที่หน้า</translation>
 <translation id="2126426811489709554">สนับสนุนโดย Chrome</translation>
+<translation id="2131665479022868825">ประหยัดไป <ph name="DATA" /></translation>
 <translation id="213279576345780926">ปิด <ph name="TAB_TITLE" /> แล้ว</translation>
 <translation id="2139186145475833000">เพิ่มไปยังหน้าจอหลัก</translation>
 <translation id="2146738493024040262">เปิด Instant App</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
+<translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
+<translation id="2246961355222023276">ใช้อินเทอร์เน็ตไป:</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
@@ -136,6 +141,7 @@
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
 <translation id="2440823041667407902">การเข้าถึงตำแหน่ง</translation>
+<translation id="2450083983707403292">คุณต้องการเริ่มดาวน์โหลด <ph name="FILE_NAME" /> อีกครั้งไหม</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2496180316473517155">ประวัติการเข้าชมที่เรียกดู</translation>
@@ -219,6 +225,7 @@
 <translation id="3435896845095436175">เปิดการใช้งาน</translation>
 <translation id="3443221991560634068">โหลดหน้าปัจจุบันอีกครั้ง</translation>
 <translation id="3452612588551937789">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
+<translation id="3487093336331957349">คำแนะนำการค้นหาและเว็บไซต์</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
@@ -304,6 +311,7 @@
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
+<translation id="4445444302979002552">ใช้บริการการคาดคะเนเพื่อแนะนำข้อความค้นหาและเว็บไซต์</translation>
 <translation id="4452548195519783679">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4453340223357552416">ดาวน์โหลด <ph name="FILE_NAME" /> ไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
 <translation id="4479647676395637221">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้กล้องถ่ายรูปของคุณ (แนะนำ)</translation>
@@ -327,6 +335,7 @@
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
 <translation id="4686372254213217147">ขนาดต้นฉบับ</translation>
+<translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}}</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="4699172675775169585">รูปภาพและไฟล์ในแคช</translation>
 <translation id="4714588616299687897">ประหยัดการใช้ข้อมูลถึง 60%</translation>
@@ -495,6 +504,7 @@
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
 <translation id="6343192674172527289">ไม่พบการดาวน์โหลด</translation>
+<translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> แห่ง}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> แห่ง}}</translation>
 <translation id="6364438453358674297">ต้องการนำคำแนะนำออกจากประวัติการเข้าชมใช่ไหม</translation>
 <translation id="6383961787135158834">ล้างที่เก็บข้อมูลไซต์…</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
@@ -529,6 +539,7 @@
 <translation id="662080504995468778">อยู่ต่อ</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
+<translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
 <translation id="6656545060687952787">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK" />อัปเดตสิทธิ์<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6659594942844771486">แท็บ</translation>
@@ -559,7 +570,6 @@
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
-<translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
@@ -633,6 +643,7 @@
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
+<translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}}</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="7788788617745289808">Chrome ต้องการเข้าถึงกล้องเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
@@ -708,6 +719,7 @@
 <translation id="854522910157234410">เปิดหน้านี้</translation>
 <translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="856481929701340285">ขอเว็บไซต์เดสก์ท็อป</translation>
+<translation id="8569404424186215731">ตั้งแต่วันที่ <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 สัปดาห์ที่แล้ว</translation>
 <translation id="857509777403223202">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามค่ำ</translation>
 <translation id="857943718398505171">อนุญาตแล้ว (แนะนำ)</translation>
@@ -770,6 +782,7 @@
 <translation id="9187199695613236444">มุมมองสำหรับอุปกรณ์เคลื่อนที่</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9216841883364897953">รายละเอียดปริมาณการใช้อินเทอร์เน็ต</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="932599481871055447">ประหยัดเน็ตมือถือและท่องเว็บได้เร็วขึ้น</translation>
@@ -780,6 +793,7 @@
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="970715775301869095">เหลือ <ph name="MINUTES" /> นาที</translation>
 <translation id="974555521953189084">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
+<translation id="977929483582859929">ประหยัดอินเทอร์เน็ตได้:</translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
 <translation id="982182592107339124">การดำเนินการนี้จะล้างข้อมูลสำหรับทุกเว็บไซต์ รวมถึง:</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>

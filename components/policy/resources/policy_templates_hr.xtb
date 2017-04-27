@@ -661,6 +661,15 @@
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Omogućuje završavanje postupaka u Upravitelju zadataka</translation>
+<translation id="3307746730474515290">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati i ograničava pristup za vrijeme izvođenja.
+
+          Ova postavka sadrži popis dopuštenih vrsta proširenja/aplikacija koje se mogu instalirati u proizvodu <ph name="PRODUCT_NAME" /> i hostova s kojima mogu stupiti u interakciju. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Više informacija o tim vrstama potražite u dokumentaciji o proširenjima proizvoda <ph name="PRODUCT_NAME" />.
+
+          Imajte na umu da to pravilo također utječe na proširenja i aplikacije čija se instalacija mora nametnuti popisom ExtensionInstallForcelist.
+
+          Ako je ta postavka konfigurirana, proširenja/aplikacije vrste koja nije na popisu neće se instalirati.
+
+          Ako ta postavka ostane nekonfigurirana, neće se primijeniti ograničenja o prihvatljivim vrstama proširenja/aplikacija.</translation>
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
@@ -719,6 +728,7 @@
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
+<translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
 <translation id="3758089716224084329">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
@@ -1049,6 +1059,9 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="489803897780524242">Parametar koji kontrolira položaj pojma za pretraživanje za zadanog pružatelja usluge pretraživanja</translation>
 <translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
 <translation id="4906194810004762807">Brzina osvježavanja za pravilo uređaja</translation>
+<translation id="4962262530309732070">Ako se pravilo postavi na točno ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
+
+      Ako se pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
 <translation id="4971529314808359013">Omogućuje vam da navedete popis uzoraka URL-ova koji određuju web-lokacije za koje <ph name="PRODUCT_NAME" /> treba automatski odabrati klijentski certifikat, ako web-lokacija zahtijeva certifikat.
 
           Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.

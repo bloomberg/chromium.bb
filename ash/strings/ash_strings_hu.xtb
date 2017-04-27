@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome-eszköz</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1698760176351776263">IPv6-cím: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi kikapcsolva.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">Túlcsordulás gomb</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
+<translation id="207439088875642105">Ez a fiók gyerekeknek készült; <ph name="FIRST_PARENT_EMAIL" /> és <ph name="SECOND_PARENT_EMAIL" /> felügyelete mellett.</translation>
 <translation id="2122028596993374965">„<ph name="TAB_NAME" />” lap „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
 <translation id="2208323208084708176">Egységes asztali mód</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">Monó hang</translation>
 <translation id="3009178788565917040">Kimenet</translation>
 <translation id="3019353588588144572">Akkumulátor teljes feltöltéséig hátralévő idő: <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">Ez a fiók gyerekeknek készült; <ph name="MANAGER_EMAIL" /> felügyelete mellett.</translation>
 <translation id="3050422059534974565">A CAPS LOCK be van kapcsolva.
 Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
 <translation id="5313326810920013265">Bluetooth-beállítások</translation>
 <translation id="5331975486040154427">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
+<translation id="5397578532367286026">A felhasználó használati adatait és előzményeit a kezelő (<ph name="MANAGER_EMAIL" />) a chrome.com webhelyen tekintheti meg.</translation>
 <translation id="5430931332414098647">Azonnali internetmegosztás</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Minden elérhető felhasználót hozzáadott a munkamenethez.</translation>

@@ -692,6 +692,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu cài đặt này được bật, người dùng không thể bật proxy và máy sẽ không được phép chia sẻ máy in với <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Bật kết thúc quá trình trong Trình quản lý tác vụ</translation>
+<translation id="3307746730474515290">Kiểm soát các loại ứng dụng/tiện ích được phép cài đặt và giới hạn truy cập thời gian chạy.
+
+          Cài đặt này liệt kê các loại tiện ích/ứng dụng được cho phép có thể cài đặt được trong <ph name="PRODUCT_NAME" /> và loại máy chủ lưu trữ mà chúng có thể tương tác. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số loại sau: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
+
+          Xin lưu ý rằng chính sách này cũng ảnh hưởng đến tiện ích và ứng dụng được buộc cài đặt qua ExtensionInstallForcelist.
+
+          Nếu cài đặt này được định cấu hình, tiện ích/ứng dụng có loại không nằm trong danh sách sẽ không được cài đặt.
+
+          Nếu cài đặt này không được định cấu hình, không có giới hạn về loại tiện ích/ứng dụng được chấp nhận nào được đặt ra.</translation>
 <translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
@@ -749,6 +758,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích</translation>
 <translation id="3711895659073496551">Tạm ngừng</translation>
+<translation id="3736879847913515635">Cho phép thêm người trong trình quản lý người dùng</translation>
 <translation id="3750220015372671395">Chặn tạo khóa trên các trang web này</translation>
 <translation id="3756011779061588474">Chặn chế độ của nhà phát triển</translation>
 <translation id="3758089716224084329">Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME" /> sử dụng và không cho người dùng thay đổi cài đặt proxy.
@@ -1090,6 +1100,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="489803897780524242">Tham số kiểm soát vị trí cụm từ tìm kiếm cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4899708173828500852">Bật Duyệt web an toàn</translation>
 <translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
+<translation id="4962262530309732070">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ cho phép Thêm người từ trình quản lý người dùng.
+
+      Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép tạo hồ sơ mới từ trình quản lý người dùng.</translation>
 <translation id="4971529314808359013">Cho phép bạn chỉ định danh sách mẫu url. Những mẫu url này chỉ định các trang web theo đó <ph name="PRODUCT_NAME" /> sẽ tự động chọn chứng chỉ ứng dụng, nếu trang web yêu cầu chứng chỉ.
 
           Giá trị phải là một dãy từ điển JSON dạng chuỗi. Mỗi từ điển đều phải có dạng { "pattern": "$URL_PATTERN", "filter" : $FILTER }, trong đó $URL_PATTERN là mẫu cài đặt nội dung. $FILTER giới hạn các chứng chỉ ứng dụng mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Nếu $FILTER có dạng { "ISSUER": { "CN": "$ISSUER_CN" } } thì thêm nữa, chỉ những chứng chỉ ứng dụng do chứng chỉ có CommonName $ISSUER_CN cấp mới được chọn. Nếu $FILTER là từ điển trống {}, lựa chọn chứng chỉ ứng dụng sẽ không bị hạn chế thêm.

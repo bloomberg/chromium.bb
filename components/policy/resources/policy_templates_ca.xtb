@@ -662,6 +662,15 @@ Si s'activa aquest paràmetre o si no es configura, els usuaris podran activar e
 
 Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor intermediari i l'ordinador no podrà compartir les seves impressores amb <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Activa la finalització de processos al gestor de tasques</translation>
+<translation id="3307746730474515290">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar i limita l'accés al temps d'execució.
+
+          Aquesta configuració afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" /> i estableix amb quins amfitrions poden interaccionar. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Consulta la documentació de les extensions de <ph name="PRODUCT_NAME" /> per obtenir més informació sobre aquests tipus.
+
+          Tingues en compte que aquesta política també afecta les extensions i les aplicacions que s'han d'instal·lar obligatòriament mitjançant ExtensionInstallForcelist.
+
+          Si es configura aquest paràmetre, no s'instal·laran les extensions o les aplicacions d'un tipus que no aparegui a la llista.
+
+          Si no es configura aquest paràmetre, no s'aplicarà cap restricció als tipus d'extensions i d'aplicacions acceptables.</translation>
 <translation id="3322771899429619102">Us permet definir una llista de patrons d'URL que especifiquin els llocs que estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenBlockedForUrls", la política substitueix aquestes excepcions.
 
 
@@ -718,6 +727,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
+<translation id="3736879847913515635">Permet que s'utilitzi l'opció Afegeix una persona a l'administrador d'usuaris</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
@@ -1045,6 +1055,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="489803897780524242">Paràmetre que controla la ubicació del terme de cerca del proveïdor de cerca predeterminat</translation>
 <translation id="4899708173828500852">Activa Navegació segura</translation>
 <translation id="4906194810004762807">Freqüència d'actualització de la política de dispositiu</translation>
+<translation id="4962262530309732070">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà que s'utilitzi l'opció Afegeix una persona des de l'administrador d'usuaris.
+
+      Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà crear perfils des de l'administrador d'usuaris.</translation>
 <translation id="4971529314808359013">Us permet especificar una llista de patrons d'URL que especifiquin els llocs per als quals <ph name="PRODUCT_NAME" /> ha de seleccionar automàticament un certificat de client, si en sol·liciten un.
 
           El valor ha de ser un conjunt de diccionaris JSON escrits en cadenes. Cada diccionari ha de tenir la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, on $URL_PATTERN és un patró que estableix el contingut. $FILTER restringeix els certificats de client que el navegador seleccionarà automàticament. Sigui quin sigui el filtre, només se seleccionaran els certificats que compleixin la sol·licitud de certificat del servidor. Si $FILTER té la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, hi ha una restricció més: només se seleccionen el certificats de client emesos per un certificat que té $ISSUER_CN com a nom comú (CommonName). Si $FILTER és el diccionari buit {}, la selecció de certificats de client no té restriccions addicionals.

@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1698760176351776263">Indirizzo IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">Questo dispositivo è gestito dall'azienda</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">Pulsante Overflow</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
+<translation id="207439088875642105">Si tratta di un account di minori gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Interrompi la trasmissione di <ph name="TAB_NAME" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2208323208084708176">Modalità desktop unificato</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">Audio in formato mono</translation>
 <translation id="3009178788565917040">Uscita</translation>
 <translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">Si tratta di un account di minori gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3050422059534974565">La funzione BLOC MAIUSC è attiva.
 Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3077734595579995578">maiusc</translation>
@@ -139,6 +143,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5313326810920013265">Impostazioni Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
+<translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5430931332414098647">Tethering istantaneo</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">A questa sessione sono già stati aggiunti tutti gli utenti disponibili.</translation>

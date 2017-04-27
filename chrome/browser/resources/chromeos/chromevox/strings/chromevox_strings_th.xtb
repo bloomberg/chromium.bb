@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">ลดระดับเสียง</translation>
 <translation id="2999945368667127852">ไม่มีวิดเจ็ตสื่อถัดไป</translation>
 <translation id="3012414509011670858">ไม่มีส่วนก่อนหน้า</translation>
+<translation id="3014130421870723208">@แก้ไขช่อง 8 จุด</translation>
 <translation id="3030432017085518523">ปุ่มตัวเลือกรายการเมนู</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{อะโพสโทรฟี}other{# อะโพสโทรฟี}}</translation>
 <translation id="3040901448410802366">ตัวบอกสถานะความคืบหน้า</translation>
@@ -660,6 +661,7 @@
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">พูดคำ</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
+<translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
 <translation id="7161771961008409533">ปุ่มป๊อปอัป</translation>
 <translation id="7165714724802225287">รูปแบบการแสดงผลปัจจุบันคือข้อความแทรก</translation>
 <translation id="7167657087543110">พูดอักขระ</translation>
@@ -819,6 +821,7 @@
 <translation id="8856538297388979332">กดขึ้นหรือลงเพื่อดูคำสั่ง กด Enter เพื่อเปิดใช้งาน</translation>
 <translation id="8864099967139188018">ไม่มีส่วนหัวระดับ 6 ถัดไป</translation>
 <translation id="8882002077197914455">ส่วนหัวของแถว</translation>
+<translation id="8883850400338911892">urlแก้ไขช่อง 8 จุด</translation>
 <translation id="8896347895970027998">สลับระหว่างการเปิด/ปิดใช้งาน ChromeVox</translation>
 <translation id="8898516272131543774">พูดรอบเครื่องหมายวรรคตอน</translation>
 <translation id="8900148057318340779">คีย์ส่วนหน้า</translation>

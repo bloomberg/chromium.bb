@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Diminuir timbre</translation>
 <translation id="2999945368667127852">Não existe nenhum widget multimédia seguinte.</translation>
 <translation id="3012414509011670858">Não existe nenhuma secção anterior.</translation>
+<translation id="3014130421870723208">@ed 8pon</translation>
 <translation id="3030432017085518523">Botão de opção de item de menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apóstrofo}other{# apóstrofos}}</translation>
 <translation id="3040901448410802366">Indicador de progresso</translation>
@@ -662,6 +663,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">eco da palavra</translation>
 <translation id="713824876195128146">Blockquote seguinte</translation>
+<translation id="7143034430156387447">Alternar entre braille de 6 e 8 pontos</translation>
 <translation id="7161771961008409533">Botão pop-up</translation>
 <translation id="7165714724802225287">O estilo atual do ecrã é intercalado.</translation>
 <translation id="7167657087543110">eco dos carateres</translation>
@@ -821,6 +823,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8856538297388979332">Prima para cima ou para baixo para rever os comandos, prima Enter para ativar</translation>
 <translation id="8864099967139188018">Não existe nenhum título de nível 6 seguinte.</translation>
 <translation id="8882002077197914455">Cabeçalho da linha</translation>
+<translation id="8883850400338911892">urled 8pon</translation>
 <translation id="8896347895970027998">Ative ou desative o ChromeVox.</translation>
 <translation id="8898516272131543774">Eco da pontuação de ciclo</translation>
 <translation id="8900148057318340779">Tecla de prefixo</translation>

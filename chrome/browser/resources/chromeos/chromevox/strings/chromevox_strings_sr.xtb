@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Смањивање регистра</translation>
 <translation id="2999945368667127852">Не постоји виџет за следећу медијску датотеку.</translation>
 <translation id="3012414509011670858">Нема претходног одељка.</translation>
+<translation id="3014130421870723208">@изм 8тач</translation>
 <translation id="3030432017085518523">Дугме за избор ставке менија</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофа}other{# апострофа}}</translation>
 <translation id="3040901448410802366">Индикатор напретка</translation>
@@ -662,6 +663,7 @@
 <translation id="7116595520562830928">више редова</translation>
 <translation id="712735679809149106">одјек речи</translation>
 <translation id="713824876195128146">Следећи издвојени цитат</translation>
+<translation id="7143034430156387447">Прелази са Брајеве азбуке са 6 тачака на 8 тачака и обрнуто.</translation>
 <translation id="7161771961008409533">Искачуће дугме</translation>
 <translation id="7165714724802225287">Актуелни стил приказа је „преклапање“.</translation>
 <translation id="7167657087543110">одјек знакова</translation>
@@ -821,6 +823,7 @@
 <translation id="8856538297388979332">Притисните нагоре или надоле да бисте прегледали команде и притисните Enter за активацију</translation>
 <translation id="8864099967139188018">Нема следећег заглавља 6. нивоа.</translation>
 <translation id="8882002077197914455">Заглавље реда</translation>
+<translation id="8883850400338911892">urlизм 8тач</translation>
 <translation id="8896347895970027998">Активирање или деактивирање ChromeVox-а.</translation>
 <translation id="8898516272131543774">Циклични одјек интерпункције</translation>
 <translation id="8900148057318340779">Тастер за префикс</translation>

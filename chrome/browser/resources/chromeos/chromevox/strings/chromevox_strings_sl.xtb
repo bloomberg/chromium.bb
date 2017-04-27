@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Zmanjšanje višine tona</translation>
 <translation id="2999945368667127852">Ni pripomočka za naslednjo predstavnost.</translation>
 <translation id="3012414509011670858">Ni prejšnjega razdelka.</translation>
+<translation id="3014130421870723208">@pu 8pik</translation>
 <translation id="3030432017085518523">Izbirni gumb menijskega elementa</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{opuščaj}one{# opuščaj}two{# opuščaja}few{# opuščaji}other{# opuščajev}}</translation>
 <translation id="3040901448410802366">Kazalnik poteka</translation>
@@ -662,6 +663,7 @@
 <translation id="7116595520562830928">večvrst</translation>
 <translation id="712735679809149106">izgovarjanje besed ob vnosu</translation>
 <translation id="713824876195128146">Naslednji citat v bloku</translation>
+<translation id="7143034430156387447">Preklop med braillovo pisavo s 6 pikami in z 8 pikami</translation>
 <translation id="7161771961008409533">Pojavni gumb</translation>
 <translation id="7165714724802225287">Trenutno je izbran prepleten slog prikaza.</translation>
 <translation id="7167657087543110">izgovarjanje znakov ob vnosu</translation>
@@ -821,6 +823,7 @@
 <translation id="8856538297388979332">Pritisnite gor ali dol, če si želite ogledati ukaze; sprožite jih s pritiskom na »enter«</translation>
 <translation id="8864099967139188018">Ni naslednjega naslova na ravni 6.</translation>
 <translation id="8882002077197914455">Glava vrstice</translation>
+<translation id="8883850400338911892">urlpu 8pik</translation>
 <translation id="8896347895970027998">Omogočanje ali onemogočanje funkcije ChromeVox.</translation>
 <translation id="8898516272131543774">Kroženje med možnostmi izgovarjanja ločil</translation>
 <translation id="8900148057318340779">Ključ predpone</translation>

@@ -665,6 +665,15 @@ Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voi
 
 Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta käyttöön eikä kone voi jakaa tulostimiaan palvelussa <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Salli prosessien lopettaminen tehtävänhallinnassa</translation>
+<translation id="3307746730474515290">Hallinnoi, minkä tyyppisiä laajennuksia tai sovelluksia saa asentaa ja rajoittaa suorituksenaikaista käyttöä.
+
+          Tämä asetus lisää sallittujen luetteloon ne sovellus- tai laajennustyypit, jotka tuotteeseen <ph name="PRODUCT_NAME" /> saa asentaa ja minkä isäntien kanssa ne saavat olla vuorovaikutuksessa. Arvo on merkkijonojen luettelo. Kunkin merkkijonon tulee olla jokin seuraavista: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Saat lisätietoja näistä tyypeistä kohteen <ph name="PRODUCT_NAME" /> laajennuksien dokumentaatiosta.
+
+          Huomaa, että tämä käytäntö koskee myös laajennuksia ja sovelluksia, jotka pakotetaan asennettaviksi ExtensionInstallForcelist-käytännön avulla.
+
+          Jos tämä asetus on määritetty, sallittujen luetteloon kuulumattomia sovellus- tai laajennustyyppejä ei asenneta.
+
+          Jos tätä asetusta ei ole määritetty, kaiken tyyppisiä sovelluksia ja laajennuksia voi asentaa.</translation>
 <translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
@@ -722,6 +731,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
+<translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -1052,6 +1062,9 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="489803897780524242">Parametri, joka hallitsee oletushakupalvelun hakutermien sijoittelua</translation>
 <translation id="4899708173828500852">Ota selaussuoja käyttöön</translation>
 <translation id="4906194810004762807">Laitekäytännön päivitystiheys</translation>
+<translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
+
+      Jos tämän käytännön arvoksi on määritetty epätosi, <ph name="PRODUCT_NAME" /> ei salli käyttäjien hallinnan luovan uusia profiileja.</translation>
 <translation id="4971529314808359013">Antaa käyttäjän määrittää listan URL-osoitemalleista, joita vastaaville sivustoille <ph name="PRODUCT_NAME" /> valitsee automaattisesti asiakasvarmenteen sivuston pyytäessä varmennetta.
 
           Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.

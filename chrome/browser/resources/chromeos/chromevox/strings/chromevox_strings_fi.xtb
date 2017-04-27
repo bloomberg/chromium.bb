@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Vähennä äänenkorkeutta</translation>
 <translation id="2999945368667127852">Ei seuraavaa mediawidgetiä.</translation>
 <translation id="3012414509011670858">Ei edeltävää osiota.</translation>
+<translation id="3014130421870723208">@muok 8pist</translation>
 <translation id="3030432017085518523">Valikkokohde radiopainike</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{heittomerkki}other{# heittomerkkiä}}</translation>
 <translation id="3040901448410802366">Edistymisen osoitin</translation>
@@ -662,6 +663,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">sanojen puhuminen</translation>
 <translation id="713824876195128146">Seuraava estoviittaus</translation>
+<translation id="7143034430156387447">Vaihda 6 ja 8 pisteen pistekirjoituksen välillä</translation>
 <translation id="7161771961008409533">Ponnahduspainike</translation>
 <translation id="7165714724802225287">Tämänhetkinen näyttötyyli on lomittainen.</translation>
 <translation id="7167657087543110">merkkien puhuminen</translation>
@@ -821,6 +823,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8856538297388979332">Selaa komentoja painamalla ylös tai alas, valitse painamalla enteriä</translation>
 <translation id="8864099967139188018">Ei seuraavia tason 6 otsikoita.</translation>
 <translation id="8882002077197914455">Rivin otsikko</translation>
+<translation id="8883850400338911892">urlmuok 8pist</translation>
 <translation id="8896347895970027998">Ota ChromeVox käyttöön tai poista se käytöstä.</translation>
 <translation id="8898516272131543774">Ota välimerkkien puhuminen käyttöön tai pois käytöstä</translation>
 <translation id="8900148057318340779">Etuliitenäppäin</translation>

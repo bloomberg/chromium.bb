@@ -656,6 +656,15 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y la computadora no podrá compartir las impresoras con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Permite finalizar procesos en el Administrador de tareas</translation>
+<translation id="3307746730474515290">Controla los tipos de apps o de extensiones que se pueden instalar y limita el acceso al tiempo de ejecución.
+
+          Esta configuración indica los tipos de extensiones o de apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista de strings; cada una debe contener la siguiente información: "extensión", "tema", "secuencia de comandos del usuario", "app alojada", "app empaquetada heredada", "app de plataforma". Consulta la documentación de las extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
+
+          Ten en cuenta que esta política también afecta las extensiones y apps que se instalan a la fuerza mediante ExtensionInstallForcelist.
+
+          Si se establece esta configuración, no se instalarán las apps y extensiones con un tipo que no aparezca en la lista.
+
+          Si no se establece esta configuración, no se aplica ninguna restricción a los tipos de apps o extensiones que se aceptan.</translation>
 <translation id="3322771899429619102">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenBlockedForUrls", se anulan estas excepciones.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
@@ -714,6 +723,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3660562134618097814">Transferir cookies del IdP de SAML durante el acceso</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
@@ -1044,6 +1054,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="489803897780524242">Parámetro que controla la ubicación del término de búsqueda para el proveedor de búsqueda predeterminado</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de la Política de dispositivos</translation>
+<translation id="4962262530309732070">Si esta política se establece como verdadera o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción para agregar una persona desde el Administrador de usuarios.
+
+      Si esta política se establece como falsa, <ph name="PRODUCT_NAME" /> no permitirá la creación de perfiles nuevos desde el Administrador de usuarios.</translation>
 <translation id="4971529314808359013">Permite especificar una lista de patrones de url que especifican sitios para los cuales <ph name="PRODUCT_NAME" /> debería seleccionar de forma automática un certificado de cliente, en caso de que el sitio requiera un certificado.
 
           El valor debe ser una serie de diccionarios JSON con strings. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER restringe los certificados de cliente que el navegador seleccionará de forma automática. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán de forma adicional los certificados de cliente emitidos por un certificado con el nombre común $ISSUER_CN. Si $FILTER es el diccionario vacío {}, la selección de certificados de cliente no se restringe de forma adicional.

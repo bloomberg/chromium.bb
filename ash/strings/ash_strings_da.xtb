@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome-enhed</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">Denne enhed er virksomhedsadministreret</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">Knappen Overflow</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">Denne enhed administreres af <ph name="DOMAIN" />.</translation>
+<translation id="207439088875642105">Dette er en børnekonto, som administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Stop med at caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">Dette er en børnekonto, som administreres af <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3050422059534974565">CAPS LOCK er slået til.
 Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
+<translation id="5397578532367286026">Denne brugers forbrug og historik kan ses af administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>

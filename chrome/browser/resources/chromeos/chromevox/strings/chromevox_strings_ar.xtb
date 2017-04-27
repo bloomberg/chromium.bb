@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">خفض درجة الصوت</translation>
 <translation id="2999945368667127852">ليس هناك أداة للوسائط التالية.</translation>
 <translation id="3012414509011670858">ليس هناك قسم سابق.</translation>
+<translation id="3014130421870723208">@ ببرايل 8 نقاط</translation>
 <translation id="3030432017085518523">زر اختيار عنصر القائمة</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{فاصلة عليا واحدة}zero{# apostrophes}two{فاصلتان علويتان (}few{# فواصل علوية}many{# فاصلة علوية}other{# من الفواصل العلوية}}</translation>
 <translation id="3040901448410802366">مؤشر التقدم</translation>
@@ -662,6 +663,7 @@
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">صدى الكلمة</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
+<translation id="7143034430156387447">التبديل بين نمط برايل ذي 6 نقاط و8 نقاط</translation>
 <translation id="7161771961008409533">زر بقائمة منبثقة</translation>
 <translation id="7165714724802225287">نمط العرض الحالي هو تضمين النص.</translation>
 <translation id="7167657087543110">صدى الحرف</translation>
@@ -821,6 +823,7 @@
 <translation id="8856538297388979332">‏اضغط على السهم لأعلى أو لأسفل لمراجعة الأوامر، واضغط على enter للتنشيط</translation>
 <translation id="8864099967139188018">ليس هناك عنوان تالٍ من المستوى السادس.</translation>
 <translation id="8882002077197914455">عنوان الصف</translation>
+<translation id="8883850400338911892">‏URL ببرايل 8 نقاط</translation>
 <translation id="8896347895970027998">‏تبديل ChromeVox بين الوضع نشط أو غير نشط.</translation>
 <translation id="8898516272131543774">دورة صدى علامات الترقيم</translation>
 <translation id="8900148057318340779">مفتاح بادئة</translation>

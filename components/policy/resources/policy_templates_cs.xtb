@@ -679,6 +679,15 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
 
       Pokud je toto nastavení deaktivováno, uživatelé proxy server nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Umožňuje ukončování procesů ve Správci úloh</translation>
+<translation id="3307746730474515290">Určuje, jaké typy aplikací nebo rozšíření lze instalovat, a omezuje přístup k běhovému prostředí.
+
+          Toto nastavení uvádí seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />, a hostitelů, se kterými mohou komunikovat. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
+
+          Tato zásada se vztahuje i na rozšíření a aplikace, jejichž instalace je vynucena prostřednictvím zásady ExtensionInstallForcelist.
+
+          Pokud je toto nastavení nakonfigurováno, typy rozšíření a aplikací, které nejsou na seznamu uvedeny, nebudou nainstalovány.
+
+          Pokud je toto nastavení ponecháno nenakonfigurované, žádná omezení týkající se přijatelných typů rozšíření a aplikací vynucována nebudou.</translation>
 <translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -734,6 +743,7 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
+<translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -1077,6 +1087,9 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="489803897780524242">Parametr nastavující nahrazení vyhledávacích dotazů pro výchozího poskytovatele vyhledávání</translation>
 <translation id="4899708173828500852">Aktivovat Bezpečné prohlížení</translation>
 <translation id="4906194810004762807">Obnovovací frekvence zásad pro zařízení</translation>
+<translation id="4962262530309732070">Pokud je tato zásada nastavena na hodnotu true nebo nastavena není, bude <ph name="PRODUCT_NAME" /> povolovat přidávání osob ze správce uživatelů.
+
+      Pokud je tato zásada nastavena na hodnotu false, <ph name="PRODUCT_NAME" /> vytváření nových profilů ze správce uživatelů povolovat nebude.</translation>
 <translation id="4971529314808359013">Umožňuje zadat seznam vzorů adres URL, pro které by měl prohlížeč <ph name="PRODUCT_NAME" /> automaticky vybrat klientský certifikát, pokud o něj web požádá.
 
           Hodnota musí být pole slovníků JSON převedených na řetězce. Každý slovník musí mít tvar { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kde $URL_PATTERN je vzor nastavení obsahu. $FILTER omezuje klientské certifikáty, ze kterých bude prohlížeč automaticky vybírat. Nezávisle na filtru budou vybrány pouze ty certifikáty, které odpovídají žádosti serveru o certifikát. Pokud má $FILTER tvar { "ISSUER": { "CN": "$ISSUER_CN" } }, budou navíc vybrány pouze ty klientské certifikáty, které byly vydány certifikátem s běžným názvem $ISSUER_CN. Pokud je $FILTER prázdný slovník {}, výběr klientských certifikátů není nijak dále omezen.

@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome சாதனம்</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
 <translation id="1698760176351776263">IPv6 முகவரி: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">இந்தச் சாதனத்தை நிர்வகிப்பது: நிறுவனம்</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
 <translation id="1823873187264960516">ஈதர்நெட்: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">வைஃபை முடக்கத்தில் உள்ளது.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">கூடுதல் விருப்பங்களுக்கான பொத்தான்</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390"><ph name="DOMAIN" /> ஆல் இந்த சாதனம் நிர்வகிக்கப்படுகிறது.</translation>
+<translation id="207439088875642105">இது <ph name="FIRST_PARENT_EMAIL" /> மற்றும் <ph name="SECOND_PARENT_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" />ஐ <ph name="RECEIVER_NAME" />க்கு அனுப்புவதை நிறுத்து</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
 <translation id="2208323208084708176">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறை</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">மோனோ ஆடியோ</translation>
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="3019353588588144572"><ph name="TIME_REMAINING" /> இல் பேட்டரி முழுவதும் சார்ஜ் ஆகிவிடும்</translation>
+<translation id="3047477924825107454">இது <ph name="MANAGER_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்</translation>
 <translation id="3050422059534974565">CAPS LOCK இயக்கத்தில் உள்ளது.
 ரத்துசெய்ய Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -122,7 +126,7 @@
 <translation id="4481530544597605423">இணைக்காத சாதனங்கள்</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: இணைக்கிறது...</translation>
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
-<translation id="453661520163887813">முழு சார்ஜ் ஆக <ph name="TIME" /> வரை உள்ளது</translation>
+<translation id="453661520163887813">முழு சார்ஜாக <ph name="TIME" /> ஆகும்</translation>
 <translation id="4544944664594876241">திரையைப் பூட்டுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
@@ -139,6 +143,7 @@
 <translation id="523505283826916779">அணுகல்தன்மை அமைப்புகள்</translation>
 <translation id="5313326810920013265">புளூடூத் அமைப்புகள்</translation>
 <translation id="5331975486040154427">USB-C சாதனம் (இடது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
+<translation id="5397578532367286026">இந்தப் பயனரின் பயன்பாடு மற்றும் வரலாறு chrome.com இன் நிர்வாகியால் (<ph name="MANAGER_EMAIL" />) மதிப்பாய்வு செய்யப்படும்.</translation>
 <translation id="5430931332414098647">உடனடி இணைப்பு முறை</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>

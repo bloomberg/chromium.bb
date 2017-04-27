@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome डिवाइस</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">यह डिवाइस एंटरप्राइज़ द्वारा प्रबंधित है</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">ओवरफ़्लो बटन</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
+<translation id="207439088875642105">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> को <ph name="TAB_NAME" /> कास्ट करना बंद करें</translation>
 <translation id="2127372758936585790">कम-शक्ति वाला चार्जर</translation>
 <translation id="2208323208084708176">संयुक्त डेस्कटॉप मोड</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बैटरी के पूरी तरह से चार्ज होने में शेष समय, <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="MANAGER_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
 <translation id="3050422059534974565">CAPS LOCK चालू है.
 रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
+<translation id="5397578532367286026">इस उपयोगकर्ता के उपयोग और इतिहास की प्रबंधक (<ph name="MANAGER_EMAIL" />) द्वारा chrome.com पर समीक्षा की जा सकती है.</translation>
 <translation id="5430931332414098647">झटपट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>

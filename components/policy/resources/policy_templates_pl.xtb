@@ -664,6 +664,15 @@
 
       W przypadku wyłączenia ustawienia użytkownicy nie mogą włączyć serwera proxy ani udostępnić w <ph name="CLOUD_PRINT_NAME" /> drukarek podłączonych do komputera.</translation>
 <translation id="3297010562646015826">Umożliwia kończenie procesów w Menedżerze zadań</translation>
+<translation id="3307746730474515290">Określa typy aplikacji lub rozszerzeń, których instalowanie jest dozwolone, i ogranicza dostęp w czasie działania.
+
+          To ustawienie zawiera białą listę dozwolonych trybów rozszerzeń/aplikacji, które można instalować w <ph name="PRODUCT_NAME" />, oraz hostów, z którymi mogą się one komunikować. Wartością jest lista ciągów znaków. Powinny to być ciągi znaków z tego zbioru: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach znajdziesz w dokumentacji na temat rozszerzeń do <ph name="PRODUCT_NAME" />.
+
+          Uwaga: ta zasada wpływa też na rozszerzenia i aplikacje, których instalację wymusza zasada ExtensionInstallForcelist.
+
+          Jeśli to ustawienie jest skonfigurowane, rozszerzenia/aplikacje, których typ nie znajduje się na liście, nie zostaną zainstalowane.
+
+          Jeśli to ustawienie nie jest skonfigurowane, nie są egzekwowane żadne ograniczenia akceptowalnych typów aplikacji/rozszerzeń.</translation>
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
@@ -719,6 +728,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
+<translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
 <translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>
 <translation id="3756011779061588474">Zablokuj tryb programisty</translation>
 <translation id="3758089716224084329">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
@@ -1043,6 +1053,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="489803897780524242">Parametr sterujący zamianą wyszukiwanego hasła dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="4899708173828500852">Włącz Bezpieczne przeglądanie</translation>
 <translation id="4906194810004762807">Częstotliwość odświeżania zasad dotyczących urządzeń</translation>
+<translation id="4962262530309732070">Jeśli ta zasada jest włączona lub nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> zezwala na dodawanie osób z poziomu menedżera użytkowników.
+
+      Jeśli ta zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na tworzenie nowych profili z poziomu menedżera użytkowników.</translation>
 <translation id="4971529314808359013">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikaty klienta, jeśli dana witryna żąda certyfikatu.
 
           Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.

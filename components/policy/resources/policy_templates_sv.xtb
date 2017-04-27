@@ -702,6 +702,15 @@
 
       Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Gör det möjligt att avsluta processer i Aktivitetshanteraren</translation>
+<translation id="3307746730474515290">Styr vilka typer av appar/tillägg som får installeras och begränsar körningsåtkomst.
+
+          Med den här inställningen anges vilka tillåttna typer av tillägg/appar som får installeras i <ph name="PRODUCT_NAME" /> och vilka värdar dessa kan interagera med. Värdet är en stränglista som ska vara något av följande: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Läs hela dokumentationen om tillägg för <ph name="PRODUCT_NAME" /> om du vill veta mer om dessa typer.
+
+          Observera att policyn även påverkar tillägg och appar så att installationen av dem tvingas fram via ExtensionInstallForcelist.
+
+          Om inställningen konfigureras installeras inte tillägg/appar som har en typ som inte finns med på listan.
+
+          Om denna inställning ingen konfigureras tillämpas inga begränsningar för godkända typer av tillägg/appar.</translation>
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
@@ -759,6 +768,7 @@
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
+<translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
 <translation id="3756011779061588474">Blockera utvecklarläget</translation>
 <translation id="3758089716224084329">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och förhindra att användare ändrar sina proxyinställningar.
@@ -1108,6 +1118,9 @@
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
 <translation id="4906194810004762807">Uppdateringsfrekvens för enhetspolicy</translation>
+<translation id="4962262530309732070">Om den här principen är inställd på sant eller inte har konfigurerats tillåts Lägg till person i användarhanteraren av <ph name="PRODUCT_NAME" />.
+
+      Om principen är inställd på falskt tillåter <ph name="PRODUCT_NAME" /> inte att nya profiler skapas i profilhanteraren.</translation>
 <translation id="4971529314808359013">Med den här principen kan du ange en lista med webbadressmönster som anger för vilka webbplatser <ph name="PRODUCT_NAME" /> ska välja ett klientcertifikat automatiskt, om webbplatsen kräver ett certifikat.
 
           Värdet måste vara JSON-ordlistor i strängformat i en matris. Varje ordlista måste ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, där $URL_PATTERN är ett innehållsinställningsmönster. $FILTER begränsar vilka klientcertifikat webbläsaren automatiskt väljer mellan. Oavsett vilket filter som används väljs bara certifikat som matchar serverns certifikatbegäran. Om $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } } är det dessutom endast klientcertifikat som har skapats av ett certifikat med CommonName $ISSUER_CN som väljs. Om $FILTER är en tom ordlista {} begränsas inte valet av klientcertifikat ytterligare.

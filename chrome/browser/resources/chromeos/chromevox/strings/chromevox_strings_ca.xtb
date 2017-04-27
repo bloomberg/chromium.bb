@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">Disminueix la presentació.</translation>
 <translation id="2999945368667127852">No hi ha cap widget multimèdia a continuació.</translation>
 <translation id="3012414509011670858">No hi ha cap secció anterior.</translation>
+<translation id="3014130421870723208">@ed 8punts</translation>
 <translation id="3030432017085518523">Botó d'opció de l'element del menú</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apòstrof}other{# apòstrofs}}</translation>
 <translation id="3040901448410802366">Indicador de progrés</translation>
@@ -661,6 +662,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">retorn de paraules</translation>
 <translation id="713824876195128146">Cita de bloc següent</translation>
+<translation id="7143034430156387447">Alterna entre braille de sis i vuit punts</translation>
 <translation id="7161771961008409533">Botó emergent</translation>
 <translation id="7165714724802225287">L'estil de pantalla actual és entrellaçat.</translation>
 <translation id="7167657087543110">retorn de caràcters</translation>
@@ -820,6 +822,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="8856538297388979332">Premeu la tecla cap amunt o cap avall per revisar les ordres o bé premeu retorn per activar.</translation>
 <translation id="8864099967139188018">No hi ha cap capçalera més del nivell 6.</translation>
 <translation id="8882002077197914455">Capçalera de fila</translation>
+<translation id="8883850400338911892">edurl 8punts</translation>
 <translation id="8896347895970027998">Activa o desactiva ChromeVox.</translation>
 <translation id="8898516272131543774">Retorn de la puntuació del cicle.</translation>
 <translation id="8900148057318340779">Tecla de prefix</translation>

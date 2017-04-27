@@ -701,6 +701,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Enables ending processes in Task Manager</translation>
+<translation id="3307746730474515290">Controls which app/extension types are allowed to be installed and limits runtime access.
+
+          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" /> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+
+          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
+
+          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
+
+          If this setting is left non-configured, no restrictions on the acceptable extension/app types are enforced.</translation>
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
@@ -758,6 +767,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
+<translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -1107,6 +1117,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="489803897780524242">Parameter controlling search term placement for the default search provider</translation>
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
 <translation id="4906194810004762807">Refresh rate for Device Policy</translation>
+<translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
+
+      If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the user manager.</translation>
 <translation id="4971529314808359013">Allows you to specify a list of URL patterns that specify sites for which <ph name="PRODUCT_NAME" /> should automatically select a client certificate, if the site requests a certificate.
 
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.

@@ -12,6 +12,7 @@
 <translation id="1137305377394488060">прошли сат</translation>
 <translation id="1145536944570833626">Избришите постојеће податке</translation>
 <translation id="1146678959555564648">Уђи у ВР</translation>
+<translation id="116280672541001035">Искоришћено</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="1181037720776840403">Уклони</translation>
 <translation id="1197267115302279827">Премести обележиваче</translation>
@@ -64,6 +65,7 @@
 <translation id="1513858653616922153">Избриши лозинку</translation>
 <translation id="1549000191223877751">Премести у други прозор</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
+<translation id="1569387923882100876">Повезани уређај</translation>
 <translation id="1571304935088121812">Копирај корисничко име</translation>
 <translation id="1612196535745283361">Chrome-у је потребан приступ локацији да би тражио уређаје. Приступ локацији је <ph name="BEGIN_LINK" />искључен за овај уређај<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -85,7 +87,6 @@
 <translation id="17513872634828108">Отворене картице</translation>
 <translation id="1756600373018374892">Додирните ово дугме ради бржег приступа картицама.</translation>
 <translation id="1807246157184219062">Светлa</translation>
-<translation id="1825719650605518411">Доживљај првог покретања</translation>
 <translation id="1829244130665387512">Пронађи на страници</translation>
 <translation id="1832521218263067499">Инциденти у вези са безбедношћу</translation>
 <translation id="1853692000353488670">Нова картица без архивирања</translation>
@@ -105,6 +106,7 @@
 <translation id="2020525020270327736">Копирај сајт</translation>
 <translation id="2038563949887743358">Укључи захтевање верзије сајта за рачунаре</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB – друге апликације</translation>
+<translation id="2073732792864401646">Ресетуј статистику</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. од <ph name="TOTAL_RESULTS" /> резултата</translation>
 <translation id="2095887075102408547">Када укључите ову функцију, Chrome користи Google сервере да би компримовао странице које посећујете пре него што их преузме. Google неће оптимизовати нити видети странице којима приступате помоћу приватних веза (HTTPS) или на картицама Без архивирања.</translation>
@@ -112,13 +114,16 @@
 <translation id="2100273922101894616">Аутоматско пријављивање</translation>
 <translation id="2111511281910874386">Иди на страницу</translation>
 <translation id="2126426811489709554">Омогућава Chrome</translation>
+<translation id="2131665479022868825">Сачувано: <ph name="DATA" /></translation>
 <translation id="213279576345780926">Затворили сте картицу <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Додај на почетни екран</translation>
 <translation id="2146738493024040262">Отвори инстант апликацију</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2154710561487035718">Копирање URL адресе</translation>
+<translation id="2156074688469523661">Преостали сајтови (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Заштите себе и уређај од опасних сајтова</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, веб-апликација. <ph name="APP_URL" /></translation>
+<translation id="2246961355222023276">Искоришћени подаци:</translation>
 <translation id="2268044343513325586">Прецизирај</translation>
 <translation id="2286841657746966508">Адреса за наплату</translation>
 <translation id="2315043854645842844">Оперативни систем не подржава избор сертификата за клијента.</translation>
@@ -136,6 +141,7 @@
 <translation id="2414886740292270097">Тамнa</translation>
 <translation id="2433507940547922241">Изглед</translation>
 <translation id="2440823041667407902">Приступ локацији</translation>
+<translation id="2450083983707403292">Да ли желите да поново почнете да преузимате датотеку <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Подешавања сајта</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2496180316473517155">Историја прегледања</translation>
@@ -219,6 +225,7 @@
 <translation id="3435896845095436175">Омогући</translation>
 <translation id="3443221991560634068">Поновно учитавање актуелне странице</translation>
 <translation id="3452612588551937789">Пријавите се на Google налог да би вам обележивачи, историја, лозинке и друга подешавања били доступни на свим уређајима.</translation>
+<translation id="3487093336331957349">Предлози за претрагу и сајтове</translation>
 <translation id="3492207499832628349">Нова картица без архивирања</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /> о предложеном садржају</translation>
 <translation id="3518985090088779359">Прихвати и настави</translation>
@@ -304,6 +311,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Користите Sogou за претрагу</translation>
 <translation id="4412992751769744546">Дозволи колачиће треће стране</translation>
+<translation id="4445444302979002552">Користи услуге предвиђања за приказивање предлога за термине за претрагу и веб-сајтове</translation>
 <translation id="4452548195519783679">Обележивач је додат у <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Датотека <ph name="FILE_NAME" /> је преузета у <ph name="PRODUCT_NAME" />-у</translation>
 <translation id="4479647676395637221">Питај пре него што дозволиш сајтовима да користе камеру (препоручено)</translation>
@@ -327,6 +335,7 @@
 <translation id="4665282149850138822"><ph name="NAME" /> је додат на почетни екран</translation>
 <translation id="4684427112815847243">Синхронизуј све</translation>
 <translation id="4686372254213217147">Оригинална величина</translation>
+<translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4698413471314543145">Недостаје функција од критичне важности потребна за покретање Chrome-а; или инсталација Chrome-а није комплетна или није компатибилна са овом верзијом Android-а.</translation>
 <translation id="4699172675775169585">Кеширане слике и датотеке</translation>
 <translation id="4714588616299687897">Уштедите до 60% података</translation>
@@ -495,6 +504,7 @@
 <translation id="6333140779060797560">Дељење преко <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Шифровање</translation>
 <translation id="6343192674172527289">Нису пронађена преузимања</translation>
+<translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Желите ли да уклоните предлог из историје?</translation>
 <translation id="6383961787135158834">Обриши меморију сајта…</translation>
 <translation id="6388207532828177975">Обриши и ресетуј</translation>
@@ -529,6 +539,7 @@
 <translation id="662080504995468778">Не затварај</translation>
 <translation id="6627583120233659107">Измени директоријум</translation>
 <translation id="6643016212128521049">Обриши</translation>
+<translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Chrome-у је потребан приступ локацији за скенирање уређаја. <ph name="BEGIN_LINK" />Ажурирајте дозволе<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -559,7 +570,6 @@
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6963766334940102469">Избриши обележиваче</translation>
 <translation id="6965382102122355670">Потврди</translation>
-<translation id="6973630695168034713">Директоријуми</translation>
 <translation id="6978479750597523876">Ресетуј подешавања за превођење</translation>
 <translation id="6979737339423435258">Одувек</translation>
 <translation id="6981982820502123353">Приступачност</translation>
@@ -633,6 +643,7 @@ Google налог можда има друге облике историје п�
 <translation id="7765158879357617694">Премести</translation>
 <translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
+<translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="7788788617745289808">Chrome-у је потребан приступ за камеру да би га делио са овим сајтом.</translation>
 <translation id="7791543448312431591">Додај</translation>
@@ -708,6 +719,7 @@ Google налог можда има друге облике историје п�
 <translation id="854522910157234410">Отвори ову страницу</translation>
 <translation id="8562452229998620586">Сачуване лозинке ће се појавити овде.</translation>
 <translation id="856481929701340285">Захтевај сајт за рачунар</translation>
+<translation id="8569404424186215731">од <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последње 4 недеље</translation>
 <translation id="857509777403223202">Још чланака ће се појавити ускоро. Желимо вам пријатно вече!</translation>
 <translation id="857943718398505171">Дозвољено (препоручено)</translation>
@@ -770,6 +782,7 @@ Google налог можда има друге облике историје п�
 <translation id="9187199695613236444">Приказ за мобилне уређаје</translation>
 <translation id="9188680907066685419">Одјавите се са налога којим се управља</translation>
 <translation id="9206873250291191720">А</translation>
+<translation id="9216841883364897953">Преглед потрошње података</translation>
 <translation id="9219103736887031265">Слике</translation>
 <translation id="932327136139879170">Почетна</translation>
 <translation id="932599481871055447">Уштедите на подацима и прегледајте брже</translation>
@@ -780,6 +793,7 @@ Google налог можда има друге облике историје п�
 <translation id="969096075394517431">Промени језике</translation>
 <translation id="970715775301869095">Још <ph name="MINUTES" /> мин</translation>
 <translation id="974555521953189084">Унесите приступну фразу да да бисте започели синхронизацију</translation>
+<translation id="977929483582859929">Сачувани подаци:</translation>
 <translation id="981121421437150478">Офлајн</translation>
 <translation id="982182592107339124">Овим бришете податке за све сајтове, укључујући:</translation>
 <translation id="983192555821071799">Затвори све картице</translation>

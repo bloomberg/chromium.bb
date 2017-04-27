@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 アドレス: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">このデバイスは会社が管理しています</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">オーバーフロー ボタン</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
+<translation id="2049639323467105390">この端末は <ph name="DOMAIN" /> によって管理されています。</translation>
+<translation id="207439088875642105">これは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> によって管理されている子供向けのアカウントです</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> への <ph name="TAB_NAME" /> のキャストを停止する</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">モノラル音声</translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">これは <ph name="MANAGER_EMAIL" /> によって管理されている子供向けのアカウントです</translation>
 <translation id="3050422059534974565">CapsLock がオンになっています。
 検索/Shift キーを押すと解除されます。</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@
 <translation id="523505283826916779">ユーザー補助の設定</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
+<translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
 <translation id="5430931332414098647">インスタント テザリング</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
