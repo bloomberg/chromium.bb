@@ -126,7 +126,9 @@ static struct av1_token intra_filter_encodings[INTRA_FILTERS];
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTER
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 static struct av1_token compound_type_encodings[COMPOUND_TYPES];
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static struct av1_token motion_mode_encodings[MOTION_MODES];
@@ -177,7 +179,9 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_EXT_INTER
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
