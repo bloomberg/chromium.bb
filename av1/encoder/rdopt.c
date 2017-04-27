@@ -3296,7 +3296,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
   INTRA_FILTER filter, best_filter = INTRA_FILTER_LINEAR;
 #endif  // CONFIG_INTRA_INTERP
-  int64_t this_rd, best_rd_in, rd_cost[16];
+  int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
   TX_SIZE best_tx_size = mic->mbmi.tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
 
