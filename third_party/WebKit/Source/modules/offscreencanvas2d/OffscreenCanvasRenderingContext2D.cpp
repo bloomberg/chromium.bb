@@ -245,6 +245,18 @@ bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
   return this->GetImageBuffer();
 }
 
+CanvasColorSpace OffscreenCanvasRenderingContext2D::ColorSpace() const {
+  return color_params().color_space();
+}
+
+String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
+  return CanvasRenderingContext::ColorSpaceAsString();
+}
+
+CanvasPixelFormat OffscreenCanvasRenderingContext2D::PixelFormat() const {
+  return color_params().pixel_format();
+}
+
 bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
   return image_buffer_ && image_buffer_->IsAccelerated();
 }

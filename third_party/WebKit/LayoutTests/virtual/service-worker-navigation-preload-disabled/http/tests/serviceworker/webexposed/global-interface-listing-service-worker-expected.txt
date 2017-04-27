@@ -596,7 +596,6 @@ interface ImageData
     getter height
     getter width
     method constructor
-    method createImageData
     method getColorSettings
 interface InstallEvent : ExtendableEvent
     method constructor

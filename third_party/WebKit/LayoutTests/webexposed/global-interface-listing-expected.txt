@@ -3799,7 +3799,6 @@ interface ImageData
     getter height
     getter width
     method constructor
-    method createImageData
     method getColorSettings
 interface InputDeviceCapabilities
     attribute @@toStringTag

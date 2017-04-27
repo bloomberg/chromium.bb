@@ -37,16 +37,6 @@ typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
     Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface ImageData {
-
-    // The following createImageData functions are used instead of the regular constructors
-    // as currently Blink IDL does not allow to put custom constructors behind a flag
-    // (crbug.com/672978). These must be replaced with regular constructor declaration
-    // as specified in the proposal before shipping.
-    // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
-
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
-    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
-
     [RuntimeEnabled=ExperimentalCanvasFeatures] ImageDataColorSettings getColorSettings();
 
     readonly attribute unsigned long width;
