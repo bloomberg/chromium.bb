@@ -18,6 +18,10 @@
   width: 100%;
 }
 
+html[screen=login] #signin-banner-container1 {
+  margin-bottom: 6px;
+}
+
 #signin-banner-container2 {
   display: inline-block;
   position: relative;
@@ -34,12 +38,12 @@ html[dir=rtl] #signin-banner-container2 {
   border-radius: 4px;
   color: whitesmoke;
   display: none;
-  font-size: 15px;
   left: -50%;
+  max-width: 722px;
   padding: 20px;
   position: relative;
   text-align: center;
-  width: 722px;
+  width: max-content;
 }
 
 html[dir=rtl] #signin-banner {
@@ -49,6 +53,10 @@ html[dir=rtl] #signin-banner {
 
 html[screen=user-adding] #signin-banner {
   display: inline-block;
+}
+
+html[screen=login] #signin-banner {
+  padding: 20px 24px;
 }
 
 html[screen=login] #signin-banner,
