@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
@@ -251,7 +251,9 @@ class FakeVideoCaptureManager {
 // Test param is the version of stabel device id used by audio node.
 class CrasAudioHandlerTest : public testing::TestWithParam<int> {
  public:
-  CrasAudioHandlerTest() {}
+  CrasAudioHandlerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~CrasAudioHandlerTest() override {}
 
   void SetUp() override {
@@ -409,7 +411,7 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;         // Not owned.
   FakeCrasAudioClient* fake_cras_audio_client_ = nullptr;  // Not owned.
   std::unique_ptr<TestObserver> test_observer_;

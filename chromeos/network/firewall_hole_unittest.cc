@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_permission_broker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,7 +30,9 @@ ACTION_TEMPLATE(InvokeCallback,
 
 class FirewallHoleTest : public testing::Test {
  public:
-  FirewallHoleTest() {}
+  FirewallHoleTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~FirewallHoleTest() override {}
 
   void SetUp() override {
@@ -51,7 +54,7 @@ class FirewallHoleTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  protected:
   base::RunLoop run_loop_;

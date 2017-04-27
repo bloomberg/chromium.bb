@@ -5,8 +5,8 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,9 @@ void CopySystemSalt(std::string* out_system_salt,
 
 class SystemSaltGetterTest : public testing::Test {
  protected:
-  SystemSaltGetterTest() : fake_cryptohome_client_(NULL) {}
+  SystemSaltGetterTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     fake_cryptohome_client_ = new FakeCryptohomeClient;
@@ -40,8 +42,8 @@ class SystemSaltGetterTest : public testing::Test {
     DBusThreadManager::Shutdown();
   }
 
-  base::MessageLoopForUI message_loop_;
-  FakeCryptohomeClient* fake_cryptohome_client_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
 };
 
 TEST_F(SystemSaltGetterTest, GetSystemSalt) {

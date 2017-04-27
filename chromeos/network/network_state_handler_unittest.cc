@@ -14,8 +14,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -198,7 +198,9 @@ namespace chromeos {
 class NetworkStateHandlerTest : public testing::Test {
  public:
   NetworkStateHandlerTest()
-      : device_test_(nullptr),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        device_test_(nullptr),
         manager_test_(nullptr),
         profile_test_(nullptr),
         service_test_(nullptr) {}
@@ -295,7 +297,7 @@ class NetworkStateHandlerTest : public testing::Test {
     network_state_handler_->GetTetherNetworkList(limit, list);
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
   ShillDeviceClient::TestInterface* device_test_;
