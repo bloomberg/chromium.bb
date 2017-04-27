@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../controls/controlled_radio_button.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../controls/settings_radio_group.html">
@@ -9,7 +8,11 @@
 
 <dom-module id="settings-on-startup-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .block {
+        display: block;
+      }
+    </style>
     <div class="settings-box block first">
       <settings-radio-group id="onStartupRadioGroup"
           pref="{{prefs.session.restore_on_startup}}">
