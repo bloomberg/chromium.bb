@@ -124,9 +124,6 @@ String Deprecation::DeprecationMessage(CSSPropertyID unresolved_property) {
     case CSSPropertyAliasMotionRotation:
       return replacedWillBeRemoved("motion-rotation", "offset-rotate", M58,
                                    "6390764217040896");
-    case CSSPropertyAliasMotionPath:
-      return replacedWillBeRemoved("motion-path", "offset-path", M58,
-                                   "6390764217040896");
     case CSSPropertyOffsetRotation:
       return replacedWillBeRemoved("offset-rotation", "offset-rotate", M58,
                                    "6390764217040896");

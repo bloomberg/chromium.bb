@@ -1228,7 +1228,6 @@ class CORE_EXPORT UseCounter {
     kDocumentCreateTouchTargetWrongType = 1610,
     kDocumentCreateTouchMoreThanSevenArguments = 1612,
     kLongTaskObserver = 1615,
-    kCSSMotionInEffect = 1616,
     kCSSOffsetInEffect = 1617,
     // The above items are available in M55 branch
 

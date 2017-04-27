@@ -1394,10 +1394,6 @@
       alias_for: "offset-distance",
     },
     {
-      name: "motion-path",
-      alias_for: "offset-path",
-    },
-    {
       name: "motion-rotation",
       alias_for: "offset-rotation",
     },

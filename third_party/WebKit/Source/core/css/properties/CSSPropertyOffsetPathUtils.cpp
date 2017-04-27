@@ -45,18 +45,12 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
 
 CSSValue* CSSPropertyOffsetPathUtils::ConsumeOffsetPath(
     CSSParserTokenRange& range,
-    const CSSParserContext* context,
-    bool is_motion_path) {
+    const CSSParserContext* context) {
   CSSValue* value = ConsumePathOrNone(range);
 
   // Count when we receive a valid path other than 'none'.
-  if (value && !value->IsIdentifierValue()) {
-    if (is_motion_path) {
-      context->Count(UseCounter::kCSSMotionInEffect);
-    } else {
-      context->Count(UseCounter::kCSSOffsetInEffect);
-    }
-  }
+  if (value && !value->IsIdentifierValue())
+    context->Count(UseCounter::kCSSOffsetInEffect);
   return value;
 }
 

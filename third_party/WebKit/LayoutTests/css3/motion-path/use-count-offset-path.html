@@ -9,7 +9,6 @@
 
 <div id="target"></div>
 <script>
-var CSSMotionInEffect = 1616; // From UseCounter.h
 var CSSOffsetInEffect = 1617; // From UseCounter.h
 
 test(function() {
@@ -20,7 +19,5 @@ test(function() {
   document.head.appendChild(styleElement);
 
   assert_true(internals.isUseCounted(document, CSSOffsetInEffect));
-
-  assert_false(internals.isUseCounted(document, CSSMotionInEffect));
 });
 </script>
