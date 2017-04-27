@@ -464,7 +464,7 @@ public class SuggestionsSection extends InnerNode {
     }
 
     /** Clears the suggestions and related data, resetting the state of the section. */
-    private void clearData() {
+    public void clearData() {
         mSuggestionsList.clear();
         mNumberOfSuggestionsSeen = 0;
         mHasAppended = false;

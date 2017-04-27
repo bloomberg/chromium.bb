@@ -110,6 +110,8 @@ public class SectionList
             mSections.put(category, section);
             mSuggestionsRanker.registerCategory(category);
             addChild(section);
+        } else {
+            section.clearData();
         }
 
         // Set the new suggestions.
