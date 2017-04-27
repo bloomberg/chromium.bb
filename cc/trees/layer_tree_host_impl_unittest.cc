@@ -12287,7 +12287,6 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_size);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   sk_sp<SkImage> checkerable_image =
       CreateDiscardableImage(gfx::Size(500, 500));
   recording_source->add_draw_image(checkerable_image, gfx::Point(0, 0));

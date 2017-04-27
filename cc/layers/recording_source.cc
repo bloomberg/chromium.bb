@@ -29,7 +29,6 @@ namespace cc {
 
 RecordingSource::RecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
-      generate_discardable_images_metadata_(false),
       requires_clear_(false),
       is_solid_color_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
@@ -56,8 +55,7 @@ void RecordingSource::FinishDisplayItemListUpdate() {
   TRACE_EVENT0("cc", "RecordingSource::FinishDisplayItemListUpdate");
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
-  if (generate_discardable_images_metadata_)
-    display_list_->GenerateDiscardableImagesMetadata();
+  display_list_->GenerateDiscardableImagesMetadata();
 }
 
 void RecordingSource::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
@@ -119,11 +117,6 @@ void RecordingSource::SetEmptyBounds() {
 
 void RecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
-}
-
-void RecordingSource::SetGenerateDiscardableImagesMetadata(
-    bool generate_metadata) {
-  generate_discardable_images_metadata_ = generate_metadata;
 }
 
 void RecordingSource::SetBackgroundColor(SkColor background_color) {

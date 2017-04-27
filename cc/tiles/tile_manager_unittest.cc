@@ -2371,7 +2371,6 @@ TEST_F(CheckerImagingTileManagerTest,
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
 
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
       base::MakeUnique<testing::StrictMock<MockImageGenerator>>(
@@ -2413,7 +2412,6 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
 
   int dimension = 450;
   sk_sp<SkImage> image1 =
@@ -2586,7 +2584,6 @@ TEST_F(CheckerImagingTileManagerMemoryTest, AddsAllNowTilesToImageDecodeQueue) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
 
   int dimension = 450;
   sk_sp<SkImage> image1 =

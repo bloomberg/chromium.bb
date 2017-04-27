@@ -842,10 +842,6 @@ void RenderThreadImpl::Init(
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
-  // TODO(vmpstr): If the flag sticks, we should clean it up and always have
-  // image decode tasks.
-  are_image_decode_tasks_enabled_ = true;
-
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
@@ -1570,10 +1566,6 @@ RenderThreadImpl::CreateSyntheticBeginFrameSource() {
 
 cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
   return categorized_worker_pool_->GetTaskGraphRunner();
-}
-
-bool RenderThreadImpl::AreImageDecodeTasksEnabled() {
-  return are_image_decode_tasks_enabled_;
 }
 
 bool RenderThreadImpl::IsThreadedAnimationEnabled() {

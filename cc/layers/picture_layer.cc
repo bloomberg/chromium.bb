@@ -83,11 +83,6 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     recording_source_.reset(new RecordingSource);
   recording_source_->SetSlowdownRasterScaleFactor(
       host->GetDebugState().slow_down_raster_scale_factor);
-  // If we need to enable image decode tasks, then we have to generate the
-  // discardable images metadata.
-  const LayerTreeSettings& settings = layer_tree_host()->GetSettings();
-  recording_source_->SetGenerateDiscardableImagesMetadata(
-      settings.image_decode_tasks_enabled);
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {

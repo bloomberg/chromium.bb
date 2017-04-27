@@ -102,7 +102,6 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
-  layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
@@ -145,7 +144,6 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
-  layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
@@ -193,7 +191,6 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
       FakeCompositorFrameSink::Create3d());
   LayerTreeSettings layer_tree_settings = LayerTreeSettings();
-  layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(
       layer_tree_settings, &impl_task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);

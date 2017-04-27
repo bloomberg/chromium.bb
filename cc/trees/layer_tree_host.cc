@@ -108,8 +108,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       mutator_host_(params->mutator_host) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
-  DCHECK(!settings_.enable_checker_imaging ||
-         settings_.image_decode_tasks_enabled);
 
   mutator_host_->SetMutatorHostClient(this);
 

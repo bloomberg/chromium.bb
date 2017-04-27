@@ -68,7 +68,6 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
                                                   translate_transform);
   recording_source->add_draw_image_with_transform(discardable_image[1][1],
                                                   rotate_transform);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   bool can_use_lcd_text = true;
@@ -127,33 +126,11 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
   }
 }
 
-TEST(RecordingSourceTest, NoGatherImageEmptyImages) {
-  gfx::Rect recorded_viewport(0, 0, 256, 256);
-
-  std::unique_ptr<FakeRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport);
-  recording_source->SetGenerateDiscardableImagesMetadata(false);
-  recording_source->Rerecord();
-
-  scoped_refptr<RasterSource> raster_source =
-      CreateRasterSource(recording_source.get());
-
-  // If recording source do not gather images, raster source is not going to
-  // get images.
-  {
-    std::vector<DrawImage> images;
-    raster_source->GetDiscardableImagesInRect(recorded_viewport, 1.f,
-                                              DefaultColorSpace(), &images);
-    EXPECT_TRUE(images.empty());
-  }
-}
-
 TEST(RecordingSourceTest, EmptyImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster_source =
@@ -208,7 +185,6 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
   recording_source->add_draw_image(non_discardable_image, gfx::Point(128, 0));
   recording_source->add_draw_image(non_discardable_image, gfx::Point(0, 128));
   recording_source->add_draw_image(non_discardable_image, gfx::Point(150, 150));
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster_source =
@@ -258,7 +234,6 @@ TEST(RecordingSourceTest, DiscardableImages) {
   recording_source->add_draw_image(discardable_image[1][0], gfx::Point(0, 130));
   recording_source->add_draw_image(discardable_image[1][1],
                                    gfx::Point(140, 140));
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster_source =
@@ -331,7 +306,6 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   recording_source->add_draw_image(discardable_image[0][1], gfx::Point(260, 0));
   recording_source->add_draw_image(discardable_image[1][1],
                                    gfx::Point(260, 260));
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster_source =

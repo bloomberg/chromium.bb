@@ -80,10 +80,6 @@ cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-bool FakeCompositorDependencies::AreImageDecodeTasksEnabled() {
-  return false;
-}
-
 bool FakeCompositorDependencies::IsThreadedAnimationEnabled() {
   return true;
 }
