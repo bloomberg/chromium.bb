@@ -32,8 +32,6 @@
 
 #include "platform/fonts/SimpleFontData.h"
 
-using namespace WTF;
-
 namespace blink {
 
 #if !OS(ANDROID)

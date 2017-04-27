@@ -47,9 +47,6 @@
 #include "platform/wtf/text/Unicode.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
-using namespace WTF;
-using namespace Unicode;
-
 namespace blink {
 
 Font::Font() : can_shape_word_by_word_(0), shape_word_by_word_computed_(0) {}

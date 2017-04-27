@@ -28,8 +28,6 @@
 #include "platform/CalculationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 
-using namespace WTF;
-
 namespace blink {
 
 class CalculationValueHandleMap {

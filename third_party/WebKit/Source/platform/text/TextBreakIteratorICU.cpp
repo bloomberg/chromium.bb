@@ -32,8 +32,6 @@
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
 
-using namespace WTF;
-
 namespace blink {
 
 class LineBreakIteratorPool final {
