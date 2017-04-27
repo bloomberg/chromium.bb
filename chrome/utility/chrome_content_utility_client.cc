@@ -247,6 +247,14 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   if (command_line->HasSwitch(switches::kUtilityProcessRunningElevated))
     utility_process_running_elevated_ = true;
 
+  content::ServiceManagerConnection* connection =
+      content::ChildThread::Get()->GetServiceManagerConnection();
+
+  // NOTE: Some utility process instances are not connected to the Service
+  // Manager. Nothing left to do in that case.
+  if (!connection)
+    return;
+
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
@@ -289,10 +297,9 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
                            base::ThreadTaskRunnerHandle::Get());
 #endif
   }
-  content::ChildThread::Get()
-      ->GetServiceManagerConnection()
-      ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
-          std::move(registry)));
+
+  connection->AddConnectionFilter(
+      base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
 bool ChromeContentUtilityClient::OnMessageReceived(
