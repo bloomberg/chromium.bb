@@ -9,6 +9,7 @@ import cPickle
 import functools
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -274,7 +275,9 @@ class _Drover(object):
       return True
 
     self._run_git_command(['reset', '--hard'])
-    self._run_git_command(['cl', 'upload'],
+
+    author = self._run_git_command(['log', '-1', '--format=%ae']).strip()
+    self._run_git_command(['cl', 'upload', '--tbrs', author],
                           error_message='Upload failed',
                           interactive=True)
 
@@ -293,6 +296,9 @@ class _Drover(object):
       interactive: A bool containing whether the command requires user
           interaction. If false, the command will be provided with no input and
           the output is captured.
+
+    Returns:
+      stdout as a string, or stdout interleaved with stderr if self._verbose
 
     Raises:
       Error: The command failed to complete successfully.
@@ -320,6 +326,9 @@ class _Drover(object):
     Args:
       args: A list of strings containing the args to pass to git.
       stdin: A string to provide on stdin.
+
+    Returns:
+      stdout as a string, or stdout interleaved with stderr if self._verbose
 
     Raises:
       Error: The command failed to complete successfully.
