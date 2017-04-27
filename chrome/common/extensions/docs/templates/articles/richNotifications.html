@@ -1,5 +1,12 @@
 <h1 id="richNotifications">Rich Notifications</h1>
 
+<p class="note">
+<strong>Platform difference:</strong> In Chrome version 59, notifications
+appear differently for Mac OS X users. Instead of Chrome's own
+notifications, users see native Mac OS X notifications.
+<a href="https://developers.google.com/web/updates/2017/04/native-mac-os-notifications">Learn more in this article</a>.
+</p>
+
 <p>The <a href="https://developer.chrome.com/apps/notifications">rich notifications API</a>
 lets you create notifications using templates and
 show these notifications to users in the user's system tray:
@@ -68,6 +75,11 @@ error on other platforms.
 Priority 0 is the default priority.
 Priorities > 0 are shown for increasing duration and
 more high priority notifications can be displayed in the system tray.
+</p>
+
+<p class="note">
+<strong>Platform difference:</strong> The <code>priority</code> does not
+affect the order of notifications in Chrome version 59+ on Mac OS X.
 </p>
 
 <p>
@@ -143,6 +155,11 @@ template type also includes an <code>imageUrl</code>, which is a link to
 an image that is previewed within the notification:
 </p>
 
+<p class="note">
+<strong>Platform difference:</strong> Images will not be display to users using
+Chrome version 59+ on Mac OS X.
+</p>
+
 <pre>
 var opt = {
   type: "basic",
@@ -167,6 +184,11 @@ The <code>list</code> template displays <code>items</code>
 in a list format:
 </p>
 
+<p class="note">
+<strong>Platform difference:</strong> Only the first list item is
+displayed to users in Chrome version 59+ on Mac OS X.
+</p>
+
 <pre>
 var opt = {
   type: "list",
@@ -186,6 +208,12 @@ The <code>progress</code> template displays a progress bar where current
 progress ranges from 0 to 100:
 </p>
 
+<p class="note">
+<strong>Platform difference:</strong> In Chrome version 59+ on Mac OS X, the
+progress bar displays as a percentage value in the title of the notification
+instead of displaying a progress bar.
+</p>
+
 <pre>
 var opt = {
   type: "progress",
@@ -195,7 +223,6 @@ var opt = {
   progress: 42
 }
 </pre>
-
 
 <h2 id="events">Listening for and responding to events</h2>
 
@@ -225,4 +252,3 @@ function replyBtnClick {
   <a href="app_lifecycle#create_event_page">event page</a>,
 so that notifications can pop-up even when the app or extension isn't running.
 </p>
-
