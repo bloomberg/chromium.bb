@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
@@ -72,9 +71,10 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
     // task on the blocking pool.
 #if defined(OS_MACOSX)
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
-        base::Bind(&base::EnsureProcessTerminated, Passed(&process_)));
+        FROM_HERE,
+        base::TaskTraits().MayBlock().WithPriority(
+            base::TaskPriority::BACKGROUND),
+        base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));
 #else
     base::EnsureProcessTerminated(std::move(process_));
 #endif
@@ -146,10 +146,11 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
   read_file_ = read_file.GetPlatformFile();
 #endif
 
-  scoped_refptr<base::TaskRunner> task_runner(
-      content::BrowserThread::GetBlockingPool()->
-          GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+  scoped_refptr<base::TaskRunner> task_runner(base::CreateTaskRunnerWithTraits(
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::USER_VISIBLE)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
   read_stream_.reset(new net::FileStream(std::move(read_file), task_runner));
   write_stream_.reset(new net::FileStream(std::move(write_file), task_runner));
