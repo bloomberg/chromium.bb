@@ -39,6 +39,7 @@
 namespace offline_pages {
 
 namespace {
+const char kOriginalTabNamespace[] = "original_tab_testing_namespace";
 const char kTestClientNamespace[] = "default";
 const char kUserRequestedNamespace[] = "download";
 const GURL kTestUrl("http://example.com");
@@ -224,6 +225,14 @@ OfflinePageModelImplTest::~OfflinePageModelImplTest() {}
 void OfflinePageModelImplTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   model_ = BuildModel(BuildStore());
+  model_->GetPolicyController()->AddPolicyForTest(
+      kOriginalTabNamespace,
+      OfflinePageClientPolicyBuilder(
+          kOriginalTabNamespace,
+          offline_pages::LifetimePolicy::LifetimeType::TEMPORARY,
+          kUnlimitedPages, kUnlimitedPages)
+          .SetIsOnlyShownInOriginalTab(true));
+
   model_->AddObserver(this);
   PumpLoop();
 }
@@ -1033,9 +1042,7 @@ TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
-  // TODO(dewittj): Remove the "Last N" restriction in favor of a better query
-  // interface.  See https://crbug.com/622763 for information.
-  const ClientId last_n_client_id(kLastNNamespace, "1234");
+  const ClientId last_n_client_id(kOriginalTabNamespace, "1234");
   SavePage(kTestUrl3, last_n_client_id);
 
   std::set<GURL> input;

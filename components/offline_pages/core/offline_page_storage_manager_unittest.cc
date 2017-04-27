@@ -13,7 +13,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/archive_manager.h"
-#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model_impl.h"
@@ -28,6 +27,9 @@ using StorageStats = offline_pages::ArchiveManager::StorageStats;
 namespace offline_pages {
 
 namespace {
+const char kOneDayNamespace[] = "temporary_namespace_1day";
+const char kOneWeekNamespace[] = "temporary_namespace_7day";
+const char kPersistentNamespace[] = "persistent_namespace";
 const GURL kTestUrl("http://example.com");
 const base::FilePath::CharType kFilePath[] = FILE_PATH_LITERAL("/data");
 const int64_t kTestFileSize = 1 << 19;  // Make a page 512KB.
@@ -49,11 +51,30 @@ class OfflinePageTestModel : public OfflinePageModelImpl {
  public:
   OfflinePageTestModel(std::vector<PageSettings> page_settings,
                        base::SimpleTestClock* clock,
+                       ClientPolicyController* policy_controller,
                        TestOptions options = TestOptions::DEFAULT)
-      : policy_controller_(new ClientPolicyController()),
+      : policy_controller_(policy_controller),
         clock_(clock),
         options_(options),
         next_offline_id_(0) {
+    policy_controller_->AddPolicyForTest(
+        kOneDayNamespace,
+        OfflinePageClientPolicyBuilder(kOneDayNamespace,
+                                       LifetimePolicy::LifetimeType::TEMPORARY,
+                                       kUnlimitedPages, kUnlimitedPages)
+            .SetExpirePeriod(base::TimeDelta::FromDays(1)));
+    policy_controller_->AddPolicyForTest(
+        kOneWeekNamespace,
+        OfflinePageClientPolicyBuilder(kOneWeekNamespace,
+                                       LifetimePolicy::LifetimeType::TEMPORARY,
+                                       kUnlimitedPages, 1)
+            .SetExpirePeriod(base::TimeDelta::FromDays(7)));
+    policy_controller_->AddPolicyForTest(
+        kPersistentNamespace,
+        OfflinePageClientPolicyBuilder(kPersistentNamespace,
+                                       LifetimePolicy::LifetimeType::PERSISTENT,
+                                       kUnlimitedPages, kUnlimitedPages)
+            .SetIsRemovedOnCacheReset(false));
     for (const auto& setting : page_settings)
       AddPages(setting);
   }
@@ -82,12 +103,17 @@ class OfflinePageTestModel : public OfflinePageModelImpl {
 
   base::SimpleTestClock* clock() { return clock_; }
 
+  ClientPolicyController* GetPolicyController() override {
+    return policy_controller_;
+  }
+
  private:
   std::map<int64_t, OfflinePageItem> pages_;
 
   std::vector<OfflinePageItem> removed_pages_;
 
-  std::unique_ptr<ClientPolicyController> policy_controller_;
+  // Owned by the test.
+  ClientPolicyController* policy_controller_;
 
   base::SimpleTestClock* clock_;
 
@@ -217,7 +243,8 @@ void OfflinePageStorageManagerTest::Initialize(
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   clock_ = clock.get();
   clock_->SetNow(base::Time::Now());
-  model_.reset(new OfflinePageTestModel(page_settings, clock_, options));
+  model_.reset(new OfflinePageTestModel(page_settings, clock_,
+                                        policy_controller_.get(), options));
 
   if (stats.free_disk_space == 0)
     stats.free_disk_space = kFreeSpaceNormal;
@@ -249,7 +276,7 @@ void OfflinePageStorageManagerTest::OnPagesCleared(size_t pages_cleared_count,
 
 TEST_F(OfflinePageStorageManagerTest, TestClearPagesLessThanLimit) {
   Initialize(std::vector<PageSettings>(
-      {{kBookmarkNamespace, 1, 1}, {kLastNNamespace, 1, 1}}));
+      {{kOneWeekNamespace, 1, 1}, {kOneDayNamespace, 1, 1}}));
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   TryClearPages();
   EXPECT_EQ(2, last_cleared_page_count());
@@ -260,7 +287,7 @@ TEST_F(OfflinePageStorageManagerTest, TestClearPagesLessThanLimit) {
 
 TEST_F(OfflinePageStorageManagerTest, TestClearPagesMoreThanLimit) {
   Initialize(std::vector<PageSettings>(
-      {{kBookmarkNamespace, 10, 15}, {kLastNNamespace, 5, 30}}));
+      {{kOneWeekNamespace, 10, 15}, {kOneDayNamespace, 5, 30}}));
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   TryClearPages();
   EXPECT_EQ(45, last_cleared_page_count());
@@ -271,7 +298,7 @@ TEST_F(OfflinePageStorageManagerTest, TestClearPagesMoreThanLimit) {
 
 TEST_F(OfflinePageStorageManagerTest, TestClearPagesMoreFreshPages) {
   Initialize(std::vector<PageSettings>(
-                 {{kBookmarkNamespace, 30, 0}, {kLastNNamespace, 100, 1}}),
+                 {{kOneWeekNamespace, 30, 0}, {kOneDayNamespace, 100, 1}}),
              {1000 * (1 << 20), 0});
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   TryClearPages();
@@ -281,8 +308,8 @@ TEST_F(OfflinePageStorageManagerTest, TestClearPagesMoreFreshPages) {
   EXPECT_EQ(1, static_cast<int>(model()->GetRemovedPages().size()));
 }
 
-TEST_F(OfflinePageStorageManagerTest, TestDeleteAsyncPages) {
-  Initialize(std::vector<PageSettings>({{kAsyncNamespace, 20, 0}}));
+TEST_F(OfflinePageStorageManagerTest, TestDeletePersistentPages) {
+  Initialize(std::vector<PageSettings>({{kPersistentNamespace, 20, 0}}));
   clock()->Advance(base::TimeDelta::FromDays(367));
   TryClearPages();
   EXPECT_EQ(0, last_cleared_page_count());
@@ -293,7 +320,7 @@ TEST_F(OfflinePageStorageManagerTest, TestDeleteAsyncPages) {
 
 TEST_F(OfflinePageStorageManagerTest, TestDeletionFailed) {
   Initialize(std::vector<PageSettings>(
-                 {{kBookmarkNamespace, 10, 10}, {kLastNNamespace, 10, 10}}),
+                 {{kOneWeekNamespace, 10, 10}, {kOneDayNamespace, 10, 10}}),
              {kFreeSpaceNormal, 0}, TestOptions::DELETE_FAILURE);
   TryClearPages();
   EXPECT_EQ(20, last_cleared_page_count());
@@ -304,7 +331,7 @@ TEST_F(OfflinePageStorageManagerTest, TestDeletionFailed) {
 
 TEST_F(OfflinePageStorageManagerTest, TestStorageTimeInterval) {
   Initialize(std::vector<PageSettings>(
-      {{kBookmarkNamespace, 10, 10}, {kLastNNamespace, 10, 10}}));
+      {{kOneWeekNamespace, 10, 10}, {kOneDayNamespace, 10, 10}}));
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   TryClearPages();
   EXPECT_EQ(20, last_cleared_page_count());
@@ -332,13 +359,13 @@ TEST_F(OfflinePageStorageManagerTest, TestStorageTimeInterval) {
 }
 
 TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
-  Initialize(std::vector<PageSettings>({{kBookmarkNamespace, 30, 0},
-                                        {kLastNNamespace, 100, 1},
-                                        {kAsyncNamespace, 40, 0}}),
+  Initialize(std::vector<PageSettings>({{kOneWeekNamespace, 30, 0},
+                                        {kOneDayNamespace, 100, 1},
+                                        {kPersistentNamespace, 40, 0}}),
              {1000 * (1 << 20), 0});
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   LifetimePolicy policy =
-      policy_controller()->GetPolicy(kLastNNamespace).lifetime_policy;
+      policy_controller()->GetPolicy(kOneDayNamespace).lifetime_policy;
 
   TryClearPages();
   EXPECT_EQ(1, last_cleared_page_count());
@@ -365,7 +392,7 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
 
   // Adding more fresh pages to make it go over limit.
   clock()->Advance(base::TimeDelta::FromMinutes(5));
-  model()->AddPages({kBookmarkNamespace, 400, 0});
+  model()->AddPages({kOneWeekNamespace, 400, 0});
   int64_t total_size_before = model()->GetTotalSize();
   int64_t available_space = 300 * (1 << 20);  // 300 MB
   test_archive_manager()->SetValues({available_space, total_size_before});
