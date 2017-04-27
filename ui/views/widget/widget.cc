@@ -581,26 +581,26 @@ void Widget::Close() {
     return;
   }
 
-  bool can_close = true;
-  if (non_client_view_)
-    can_close = non_client_view_->CanClose();
-  if (can_close) {
-    SaveWindowPlacement();
+  if (non_client_view_ && !non_client_view_->CanClose())
+    return;
 
-    // During tear-down the top-level focus manager becomes unavailable to
-    // GTK tabbed panes and their children, so normal deregistration via
-    // |FormManager::ViewRemoved()| calls are fouled.  We clear focus here
-    // to avoid these redundant steps and to avoid accessing deleted views
-    // that may have been in focus.
-    if (is_top_level() && focus_manager_.get())
-      focus_manager_->SetFocusedView(NULL);
+  // The actions below can cause this function to be called again, so mark
+  // |this| as closed early. See crbug.com/714334
+  widget_closed_ = true;
+  SaveWindowPlacement();
 
-    for (WidgetObserver& observer : observers_)
-      observer.OnWidgetClosing(this);
+  // During tear-down the top-level focus manager becomes unavailable to
+  // GTK tabbed panes and their children, so normal deregistration via
+  // |FocusManager::ViewRemoved()| calls are fouled.  We clear focus here
+  // to avoid these redundant steps and to avoid accessing deleted views
+  // that may have been in focus.
+  if (is_top_level() && focus_manager_.get())
+    focus_manager_->SetFocusedView(nullptr);
 
-    native_widget_->Close();
-    widget_closed_ = true;
-  }
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetClosing(this);
+
+  native_widget_->Close();
 }
 
 void Widget::CloseNow() {
