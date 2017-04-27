@@ -1863,11 +1863,12 @@ static void build_intra_predictors_high(
   int base = 128 << (xd->bd - 8);
   assert(tx_size_wide[tx_size] == tx_size_high[tx_size]);
 
-// 127 127 127 .. 127 127 127 127 127 127
-// 129  A   B  ..  Y   Z
-// 129  C   D  ..  W   X
-// 129  E   F  ..  U   V
-// 129  G   H  ..  S   T   T   T   T   T
+  // base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
+  // base+1   A      B  ..     Y      Z
+  // base+1   C      D  ..     W      X
+  // base+1   E      F  ..     U      V
+  // base+1   G      H  ..     S      T      T      T      T      T
+  aom_memset16(left_data, base + 1, sizeof(left_data) / sizeof(*left_data));
 
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
@@ -2031,12 +2032,13 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #endif  // CONFIG_FILTER_INTRA
   assert(tx_size_wide[tx_size] == tx_size_high[tx_size]);
 
-// 127 127 127 .. 127 127 127 127 127 127
-// 129  A   B  ..  Y   Z
-// 129  C   D  ..  W   X
-// 129  E   F  ..  U   V
-// 129  G   H  ..  S   T   T   T   T   T
-// ..
+  // 127 127 127 .. 127 127 127 127 127 127
+  // 129  A   B  ..  Y   Z
+  // 129  C   D  ..  W   X
+  // 129  E   F  ..  U   V
+  // 129  G   H  ..  S   T   T   T   T   T
+  // ..
+  memset(left_data, 129, sizeof(left_data));
 
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
