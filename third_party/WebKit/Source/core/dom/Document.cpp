@@ -1721,14 +1721,14 @@ Range* Document::createRange() {
 
 NodeIterator* Document::createNodeIterator(Node* root,
                                            unsigned what_to_show,
-                                           NodeFilter* filter) {
+                                           V8NodeFilterCondition* filter) {
   DCHECK(root);
   return NodeIterator::Create(root, what_to_show, filter);
 }
 
 TreeWalker* Document::createTreeWalker(Node* root,
                                        unsigned what_to_show,
-                                       NodeFilter* filter) {
+                                       V8NodeFilterCondition* filter) {
   DCHECK(root);
   return TreeWalker::Create(root, what_to_show, filter);
 }

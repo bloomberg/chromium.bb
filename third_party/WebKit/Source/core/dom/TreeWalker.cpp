@@ -33,7 +33,7 @@ namespace blink {
 
 TreeWalker::TreeWalker(Node* root_node,
                        unsigned what_to_show,
-                       NodeFilter* filter)
+                       V8NodeFilterCondition* filter)
     : NodeIteratorBase(this, root_node, what_to_show, filter),
       current_(root()) {}
 

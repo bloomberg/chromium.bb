@@ -37,8 +37,6 @@
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLLinkElement.h"
-#include "bindings/core/v8/V8NodeFilter.h"
-#include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerGlobalScope.h"
@@ -50,7 +48,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/FlexibleArrayBufferView.h"
-#include "core/dom/NodeFilter.h"
 #include "core/dom/QualifiedName.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -74,25 +71,6 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-NodeFilter* ToNodeFilter(v8::Local<v8::Value> callback,
-                         v8::Local<v8::Object> creation_context,
-                         ScriptState* script_state) {
-  if (callback->IsNull())
-    return nullptr;
-  NodeFilter* filter = NodeFilter::Create();
-
-  v8::Local<v8::Value> filter_wrapper =
-      ToV8(filter, creation_context, script_state->GetIsolate());
-  if (filter_wrapper.IsEmpty())
-    return nullptr;
-
-  NodeFilterCondition* condition = V8NodeFilterCondition::Create(
-      callback, filter_wrapper.As<v8::Object>(), script_state);
-  filter->SetCondition(condition);
-
-  return filter;
-}
 
 bool ToBooleanSlow(v8::Isolate* isolate,
                    v8::Local<v8::Value> value,

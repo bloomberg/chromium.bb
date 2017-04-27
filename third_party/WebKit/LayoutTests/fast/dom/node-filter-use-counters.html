@@ -14,8 +14,8 @@ test(function() {
     filter.called = true;
   };
 
-  var iterator = document.createNodeIterator(document, 0, filter);
-  iterator.filter.acceptNode(document);
+  var iterator = document.createNodeIterator(document, NodeFilter.SHOW_ALL, filter);
+  iterator.nextNode();
   assert_true(filter.called);
 }, 'NodeFilter UseCounter for callback function');
 
@@ -32,8 +32,8 @@ test(function() {
     }
   };
 
-  var iterator = document.createNodeIterator(document, 0, filter);
-  iterator.filter.acceptNode(document);
+  var iterator = document.createNodeIterator(document, NodeFilter.SHOW_ALL, filter);
+  iterator.nextNode();
   assert_true(filter.called);
 }, 'NodeFilter UseCounter for callback function');
 </script>

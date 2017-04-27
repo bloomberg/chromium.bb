@@ -43,7 +43,7 @@ class NodeIterator final : public GarbageCollected<NodeIterator>,
  public:
   static NodeIterator* Create(Node* root_node,
                               unsigned what_to_show,
-                              NodeFilter* filter) {
+                              V8NodeFilterCondition* filter) {
     return new NodeIterator(root_node, what_to_show, filter);
   }
 
@@ -64,7 +64,7 @@ class NodeIterator final : public GarbageCollected<NodeIterator>,
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  NodeIterator(Node*, unsigned what_to_show, NodeFilter*);
+  NodeIterator(Node*, unsigned what_to_show, V8NodeFilterCondition*);
 
   class NodePointer {
     DISALLOW_NEW();

@@ -32,13 +32,13 @@ namespace blink {
 
 class ExceptionState;
 class Node;
-class NodeFilter;
+class V8NodeFilterCondition;
 
 class NodeIteratorBase : public GarbageCollectedMixin {
  public:
   Node* root() const { return root_.Get(); }
   unsigned whatToShow() const { return what_to_show_; }
-  NodeFilter* filter() const { return filter_.Get(); }
+  V8NodeFilterCondition* filter() const { return filter_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -47,13 +47,16 @@ class NodeIteratorBase : public GarbageCollectedMixin {
   // In order to properly trace wrappers it is necessary for TraceWrapperMember
   // to find the object header from within the mixin. |childThis| is safe to
   // find the header so we pass it instead of |this|.
-  NodeIteratorBase(void* child_this, Node*, unsigned what_to_show, NodeFilter*);
+  NodeIteratorBase(void* child_this,
+                   Node*,
+                   unsigned what_to_show,
+                   V8NodeFilterCondition*);
   unsigned AcceptNode(Node*, ExceptionState&) const;
 
  private:
   Member<Node> root_;
   unsigned what_to_show_;
-  TraceWrapperMember<NodeFilter> filter_;
+  TraceWrapperMember<V8NodeFilterCondition> filter_;
 };
 
 }  // namespace blink

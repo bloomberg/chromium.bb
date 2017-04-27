@@ -9,6 +9,7 @@
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "v8/include/v8.h"
 
@@ -28,6 +29,12 @@ inline v8::Local<v8::Value> ToV8(NotShared<T> value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8(value.View(), creation_context, isolate);
+}
+
+inline v8::Local<v8::Value> ToV8(const V8NodeFilterCondition* value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  return value ? value->Callback(isolate) : v8::Null(isolate).As<v8::Value>();
 }
 
 }  // namespace blink

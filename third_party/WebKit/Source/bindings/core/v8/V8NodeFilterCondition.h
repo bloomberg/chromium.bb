@@ -31,10 +31,10 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/dom/NodeFilterCondition.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -44,44 +44,33 @@ class Node;
 class ScriptState;
 
 // V8NodeFilterCondition maintains a Javascript implemented callback for
-// filtering Node returned by NodeIterator/TreeWalker.
-// A NodeFilterCondition is referenced by a NodeFilter, and A NodeFilter is
-// referenced by a NodeIterator/TreeWalker. As V8NodeFilterCondition maintains
-// a Javascript callback which may reference Document, we need to avoid circular
-// reference spanning V8/Blink object space.
-// To address this issue, V8NodeFilterCondition holds a weak reference to
-// |m_filter|, the Javascript value, and the whole reference is exposed to V8 to
-// let V8 GC handle collection of |m_filter|.
-// (DOM)
-// NodeIterator  ----RefPtr----> NodeFilter ----RefPtr----> NodeFilterCondition
-//   |   ^                        |   ^                        |
-//  weak |                       weak |                ScopedPersistent(weak)
-//   | RefPtr                     | RefPtr                     |
-//   v   |                        v   |                        v
-// NodeIterator  --HiddenValue--> NodeFilter --HiddenValue--> JS Callback
-// (V8)
-class V8NodeFilterCondition final : public NodeFilterCondition {
+// filtering Node returned by NodeIterator/TreeWalker.  A V8NodeFilterCondition
+// is referenced by a NodeIterator/TreeWalker.
+//
+// Binding generator should generate this code.  See crbug.com/630986.
+class V8NodeFilterCondition final : public NodeFilterCondition,
+                                    public TraceWrapperBase {
  public:
-  static V8NodeFilterCondition* Create(v8::Local<v8::Value> filter,
-                                       v8::Local<v8::Object> owner,
-                                       ScriptState* script_state) {
-    return new V8NodeFilterCondition(filter, owner, script_state);
+  static V8NodeFilterCondition* CreateOrNull(v8::Local<v8::Value> filter,
+                                             ScriptState* script_state) {
+    return filter->IsNull() ? nullptr
+                            : new V8NodeFilterCondition(filter, script_state);
   }
 
   ~V8NodeFilterCondition() override;
+  DECLARE_TRACE_WRAPPERS();
 
-  unsigned AcceptNode(Node*, ExceptionState&) const override;
+  unsigned acceptNode(Node*, ExceptionState&) const override;
+  v8::Local<v8::Value> Callback(v8::Isolate* isolate) const {
+    return filter_.NewLocal(isolate);
+  }
 
  private:
-  // As the value |filter| is maintained by V8GC, the |owner| which references
-  // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
-  // to hold a strong reference to |filter|.
   V8NodeFilterCondition(v8::Local<v8::Value> filter,
-                        v8::Local<v8::Object> owner,
                         ScriptState*);
 
   RefPtr<ScriptState> script_state_;
-  ScopedPersistent<v8::Value> filter_;
+  TraceWrapperV8Reference<v8::Object> filter_;
 };
 
 }  // namespace blink
