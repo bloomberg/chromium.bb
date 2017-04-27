@@ -35,7 +35,7 @@ void DocumentMarkerListEditor::AddMarker(MarkerList* list,
 
 bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
                                            int length,
-                                           MarkerList* dst_list) {
+                                           DocumentMarkerList* dst_list) {
   DCHECK_GT(length, 0);
   bool didMoveMarker = false;
   unsigned end_offset = length - 1;
@@ -50,7 +50,7 @@ bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
     if (marker.EndOffset() > end_offset)
       marker.SetEndOffset(end_offset);
 
-    DocumentMarkerListEditor::AddMarker(dst_list, &marker);
+    dst_list->Add(&marker);
     didMoveMarker = true;
   }
 
