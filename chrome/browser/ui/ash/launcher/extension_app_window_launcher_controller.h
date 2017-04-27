@@ -22,20 +22,20 @@ namespace extensions {
 class AppWindow;
 }
 
-class ChromeLauncherControllerImpl;
+class ChromeLauncherController;
 class Profile;
 class ExtensionAppWindowLauncherItemController;
 
 // AppWindowLauncherController observes the app window registry and the
 // aura window manager. It handles adding and removing launcher items from
-// ChromeLauncherControllerImpl.
+// ChromeLauncherController.
 class ExtensionAppWindowLauncherController
     : public AppWindowLauncherController,
       public extensions::AppWindowRegistry::Observer,
       public aura::WindowObserver {
  public:
   explicit ExtensionAppWindowLauncherController(
-      ChromeLauncherControllerImpl* owner);
+      ChromeLauncherController* owner);
   ~ExtensionAppWindowLauncherController() override;
 
   // AppWindowLauncherController:

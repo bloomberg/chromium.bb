@@ -6,11 +6,11 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 AppWindowLauncherController::AppWindowLauncherController(
-    ChromeLauncherControllerImpl* owner)
+    ChromeLauncherController* owner)
     : owner_(owner) {
   if (ash::Shell::HasInstance()) {
     if (ash::Shell::Get()->GetPrimaryRootWindow()) {

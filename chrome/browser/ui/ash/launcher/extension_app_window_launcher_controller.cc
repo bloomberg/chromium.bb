@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -50,7 +50,7 @@ std::string GetAppShelfId(AppWindow* app_window) {
 }  // namespace
 
 ExtensionAppWindowLauncherController::ExtensionAppWindowLauncherController(
-    ChromeLauncherControllerImpl* owner)
+    ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
   AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
   registry_.insert(registry);

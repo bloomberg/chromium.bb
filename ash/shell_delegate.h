@@ -88,7 +88,7 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenUrlFromArc(const GURL& url) = 0;
 
   // Functions called when the shelf is initialized and shut down.
-  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  // TODO(msw): Refine ChromeLauncherController lifetime management.
   virtual void ShelfInit() = 0;
   virtual void ShelfShutdown() = 0;
 

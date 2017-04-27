@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -15,7 +15,7 @@
 #include "ui/aura/window.h"
 
 MultiProfileAppWindowLauncherController::
-    MultiProfileAppWindowLauncherController(ChromeLauncherControllerImpl* owner)
+    MultiProfileAppWindowLauncherController(ChromeLauncherController* owner)
     : ExtensionAppWindowLauncherController(owner) {
   // We might have already active windows.
   extensions::AppWindowRegistry* registry =

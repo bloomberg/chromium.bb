@@ -1344,8 +1344,6 @@ split_static_library("ui") {
       "ash/launcher/browser_status_monitor.h",
       "ash/launcher/chrome_launcher_controller.cc",
       "ash/launcher/chrome_launcher_controller.h",
-      "ash/launcher/chrome_launcher_controller_impl.cc",
-      "ash/launcher/chrome_launcher_controller_impl.h",
       "ash/launcher/chrome_launcher_controller_util.cc",
       "ash/launcher/chrome_launcher_controller_util.h",
       "ash/launcher/desktop_shell_launcher_context_menu.cc",

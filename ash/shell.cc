@@ -409,7 +409,7 @@ void Shell::CreateShelfView() {
   DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
 
   // Notify the ShellDelegate that the shelf is being initialized.
-  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  // TODO(msw): Refine ChromeLauncherController lifetime management.
   shell_delegate_->ShelfInit();
 
   if (!shelf_window_watcher_)
@@ -729,7 +729,7 @@ Shell::~Shell() {
   shelf_model()->DestroyItemDelegates();
 
   // Notify the ShellDelegate that the shelf is shutting down.
-  // TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+  // TODO(msw): Refine ChromeLauncherController lifetime management.
   shell_delegate_->ShelfShutdown();
 
   // Removes itself as an observer of |pref_service_|.
