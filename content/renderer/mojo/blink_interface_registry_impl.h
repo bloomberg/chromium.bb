@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/InterfaceRegistry.h"
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace content {
@@ -18,7 +18,7 @@ namespace content {
 class BlinkInterfaceRegistryImpl : public blink::InterfaceRegistry {
  public:
   explicit BlinkInterfaceRegistryImpl(
-      base::WeakPtr<service_manager::InterfaceRegistry> interface_registry);
+      base::WeakPtr<service_manager::BinderRegistry> interface_registry);
   ~BlinkInterfaceRegistryImpl();
 
   // blink::InterfaceRegistry override.
@@ -26,7 +26,7 @@ class BlinkInterfaceRegistryImpl : public blink::InterfaceRegistry {
                     const blink::InterfaceFactory& factory) override;
 
  private:
-  const base::WeakPtr<service_manager::InterfaceRegistry> interface_registry_;
+  const base::WeakPtr<service_manager::BinderRegistry> interface_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkInterfaceRegistryImpl);
 };

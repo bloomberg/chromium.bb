@@ -21,8 +21,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

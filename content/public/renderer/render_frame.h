@@ -38,7 +38,7 @@ class Size;
 }
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 class InterfaceProvider;
 }
 
@@ -156,9 +156,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Return true if this frame is hidden.
   virtual bool IsHidden() = 0;
 
-  // Returns the InterfaceRegistry that this process uses to expose interfaces
+  // Returns the BinderRegistry that this process uses to expose interfaces
   // to the application running in this frame.
-  virtual service_manager::InterfaceRegistry* GetInterfaceRegistry() = 0;
+  virtual service_manager::BinderRegistry* GetInterfaceRegistry() = 0;
 
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.

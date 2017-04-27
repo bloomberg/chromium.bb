@@ -30,7 +30,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "printing/features/features.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"

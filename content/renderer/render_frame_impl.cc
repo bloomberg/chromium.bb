@@ -179,7 +179,6 @@
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
@@ -1153,12 +1152,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       frame_bindings_control_binding_(this),
       has_accessed_initial_document_(false),
       weak_factory_(this) {
-  // We don't have a service_manager::Connection at this point, so use empty
-  // identity/specs.
-  // TODO(beng): We should fix this, so we can apply policy about which
-  //             interfaces get exposed.
-  interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-      mojom::kNavigation_FrameSpec);
+  interface_registry_ = base::MakeUnique<service_manager::BinderRegistry>();
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = MakeRequest(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
@@ -1323,7 +1317,11 @@ void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
 void RenderFrameImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  interface_registry_->BindInterface(interface_name, std::move(interface_pipe));
+  // TODO(beng): We should be getting this info from the frame factory request.
+  service_manager::ServiceInfo browser_info =
+      ChildThreadImpl::current()->GetBrowserServiceInfo();
+  interface_registry_->BindInterface(browser_info.identity, interface_name,
+                                     std::move(interface_pipe));
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -2571,7 +2569,7 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
 }
 
-service_manager::InterfaceRegistry* RenderFrameImpl::GetInterfaceRegistry() {
+service_manager::BinderRegistry* RenderFrameImpl::GetInterfaceRegistry() {
   return interface_registry_.get();
 }
 
@@ -2741,6 +2739,7 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
+  // TODO(beng): We should be getting this info from the frame factory request.
   service_manager::ServiceInfo browser_info =
       ChildThreadImpl::current()->GetBrowserServiceInfo();
   service_manager::Connector* connector = ChildThread::Get()->GetConnector();

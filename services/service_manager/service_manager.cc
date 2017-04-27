@@ -26,7 +26,6 @@
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -50,6 +49,50 @@ const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
   return result == mojom::ConnectResult::SUCCEEDED;
+}
+
+// Returns the set of capabilities required from the target.
+CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
+                                       const Identity& target) {
+  CapabilitySet capabilities;
+
+  // Start by looking for specs specific to the supplied identity.
+  auto it = source_spec.requires.find(target.name());
+  if (it != source_spec.requires.end()) {
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(capabilities, capabilities.begin()));
+  }
+
+  // Apply wild card rules too.
+  it = source_spec.requires.find("*");
+  if (it != source_spec.requires.end()) {
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(capabilities, capabilities.begin()));
+  }
+  return capabilities;
+}
+
+// Generates a single set of interfaces that is the union of all interfaces
+// exposed by the target for the capabilities requested by the source.
+InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
+                                   const Identity& target,
+                                   const InterfaceProviderSpec& target_spec) {
+  InterfaceSet exposed_interfaces;
+  // TODO(beng): remove this once we can assert that an InterfaceRegistry must
+  //             always be constructed with a valid identity.
+  if (!target.IsValid()) {
+    exposed_interfaces.insert("*");
+    return exposed_interfaces;
+  }
+  CapabilitySet capabilities = GetRequestedCapabilities(source_spec, target);
+  for (const auto& capability : capabilities) {
+    auto it = target_spec.provides.find(capability);
+    if (it != target_spec.provides.end()) {
+      for (const auto& interface_name : it->second)
+        exposed_interfaces.insert(interface_name);
+    }
+  }
+  return exposed_interfaces;
 }
 
 }  // namespace
