@@ -67,6 +67,8 @@ class CC_EXPORT OverlayCandidate {
   gfx::Rect clip_rect;
   // If the quad is clipped after composition.
   bool is_clipped;
+  // If the quad doesn't require blending.
+  bool is_opaque;
   // True if the texture for this overlay should be the same one used by the
   // output surface's main overlay.
   bool use_output_surface_for_resource;

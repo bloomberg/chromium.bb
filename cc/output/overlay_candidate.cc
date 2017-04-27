@@ -176,6 +176,7 @@ OverlayCandidate::OverlayCandidate()
       format(gfx::BufferFormat::RGBA_8888),
       uv_rect(0.f, 0.f, 1.f, 1.f),
       is_clipped(false),
+      is_opaque(false),
       use_output_surface_for_resource(false),
       resource_id(0),
 #if defined(OS_ANDROID)
@@ -211,6 +212,7 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
 
   candidate->clip_rect = quad->shared_quad_state->clip_rect;
   candidate->is_clipped = quad->shared_quad_state->is_clipped;
+  candidate->is_opaque = !quad->ShouldDrawWithBlending();
 
   switch (quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
