@@ -169,7 +169,7 @@ TEST(AutocompleteInputTest, InputType) {
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
-                            std::string(), GURL(),
+                            std::string(), GURL(), base::string16(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
                             true, false, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
@@ -209,8 +209,9 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos, "com",
-                            GURL(), OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, false, TestSchemeClassifier());
+                            GURL(), base::string16(),
+                            OmniboxEventProto::INVALID_SPEC, true, false, true,
+                            true, false, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == metrics::OmniboxInputType::URL)
       EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
@@ -221,7 +222,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteInputTest, InputCrash) {
   AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
-                          std::string(), GURL(),
+                          std::string(), GURL(), base::string16(),
                           OmniboxEventProto::INVALID_SPEC, true, false, true,
                           true, false, TestSchemeClassifier());
 }
@@ -266,7 +267,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
-                            std::string(), GURL(),
+                            std::string(), GURL(), base::string16(),
                             OmniboxEventProto::INVALID_SPEC, true, false, true,
                             true, false, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
@@ -306,10 +307,10 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
 
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input,
-                            input_cases[i].cursor_position, std::string(),
-                            GURL(), OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true, false, TestSchemeClassifier());
+    AutocompleteInput input(
+        input_cases[i].input, input_cases[i].cursor_position, std::string(),
+        GURL(), base::string16(), OmniboxEventProto::INVALID_SPEC, true, false,
+        true, true, false, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());

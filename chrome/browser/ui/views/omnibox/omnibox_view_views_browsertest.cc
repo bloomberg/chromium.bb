@@ -321,8 +321,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   matches.push_back(match);
   const AutocompleteInput input(
       base::ASCIIToUTF16("a"), base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
-      TestSchemeClassifier());
+      base::string16(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
+      true, true, false, TestSchemeClassifier());
   results.AppendMatches(input, matches);
   results.SortAndCull(
       input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle) {
   matches.push_back(match);
   const AutocompleteInput input(
       base::ASCIIToUTF16("autocomplete-result"), 19, "autocomplete-result",
-      GURL("http://autocomplete-result/"),
+      GURL("http://autocomplete-result/"), base::string16(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,
       TestSchemeClassifier());
   results.AppendMatches(input, matches);

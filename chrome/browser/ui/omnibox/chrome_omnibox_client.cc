@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -151,7 +152,8 @@ const GURL& ChromeOmniboxClient::GetURL() const {
 }
 
 const base::string16& ChromeOmniboxClient::GetTitle() const {
-  return controller_->GetWebContents()->GetTitle();
+  return CurrentPageExists() ? controller_->GetWebContents()->GetTitle()
+                             : base::EmptyString16();
 }
 
 gfx::Image ChromeOmniboxClient::GetFavicon() const {

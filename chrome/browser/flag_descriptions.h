@@ -3314,6 +3314,14 @@ extern const char kAutoplayPolicyNoUserGestureRequired[];
 // Description of the autoplay policy that requires a user gesture.
 extern const char kAutoplayPolicyUserGestureRequired[];
 
+// Name of the about: flag for displaying the title of the omnibox match for
+// current URL.
+extern const char kOmniboxDisplayTitleForCurrentUrlName[];
+
+// Description of the about: flag for displaying the title of the omnibox match
+// for current URL.
+extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

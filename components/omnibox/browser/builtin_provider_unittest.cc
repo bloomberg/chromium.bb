@@ -102,8 +102,8 @@ class BuiltinProviderTest : public testing::Test {
           "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
       const AutocompleteInput input(
           cases[i].input, base::string16::npos, std::string(), GURL(),
-          metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true,
-          false, TestSchemeClassifier());
+          base::string16(), metrics::OmniboxEventProto::INVALID_SPEC, true,
+          false, true, true, false, TestSchemeClassifier());
       provider_->Start(input, false);
       EXPECT_TRUE(provider_->done());
       matches = provider_->matches();
@@ -297,8 +297,8 @@ TEST_F(BuiltinProviderTest, AboutBlank) {
 TEST_F(BuiltinProviderTest, DoesNotSupportMatchesOnFocus) {
   const AutocompleteInput input(
       ASCIIToUTF16("chrome://m"), base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, true, false, true, true, true,
-      TestSchemeClassifier());
+      base::string16(), metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+      true, true, true, TestSchemeClassifier());
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }
@@ -384,8 +384,8 @@ TEST_F(BuiltinProviderTest, Inlining) {
         "case %" PRIuS ": %s", i, base::UTF16ToUTF8(cases[i].input).c_str()));
     const AutocompleteInput input(
         cases[i].input, base::string16::npos, std::string(), GURL(),
-        metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true,
-        false, TestSchemeClassifier());
+        base::string16(), metrics::OmniboxEventProto::INVALID_SPEC, false,
+        false, true, true, false, TestSchemeClassifier());
     provider_->Start(input, false);
     EXPECT_TRUE(provider_->done());
     matches = provider_->matches();

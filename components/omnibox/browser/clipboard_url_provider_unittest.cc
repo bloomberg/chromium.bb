@@ -41,10 +41,11 @@ class ClipboardURLProviderTest : public testing::Test {
   }
 
   AutocompleteInput CreateAutocompleteInput(bool from_omnibox_focus) {
-    return AutocompleteInput(
-        base::string16(), base::string16::npos, std::string(),
-        GURL(kCurrentURL), metrics::OmniboxEventProto::INVALID_SPEC, false,
-        false, false, false, from_omnibox_focus, classifier_);
+    return AutocompleteInput(base::string16(), base::string16::npos,
+                             std::string(), GURL(kCurrentURL), base::string16(),
+                             metrics::OmniboxEventProto::INVALID_SPEC, false,
+                             false, false, false, from_omnibox_focus,
+                             classifier_);
   }
 
  protected:

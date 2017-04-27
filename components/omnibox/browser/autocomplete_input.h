@@ -37,6 +37,10 @@ class AutocompleteInput {
   // Query refinement is only used by mobile ports, so only these set
   // |current_url| to a non-empty string.
   //
+  // |current_title| is the title of the page the user is viewing when accessing
+  // the omnibox. This is sometimes set as the description if returning a
+  // URL-what-you-typed match for the current URL.
+  //
   // |current_page_classification| represents the type of page the user is
   // viewing and manner in which the user is accessing the omnibox; it's
   // more than simply the URL.  It includes, for example, whether the page
@@ -72,6 +76,7 @@ class AutocompleteInput {
                     size_t cursor_position,
                     const std::string& desired_tld,
                     const GURL& current_url,
+                    const base::string16& current_title,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
                     bool prevent_inline_autocomplete,
@@ -147,6 +152,10 @@ class AutocompleteInput {
   // The current URL, or an invalid GURL if query refinement is not desired.
   const GURL& current_url() const { return current_url_; }
 
+  // The title of the current page, corresponding to the current URL, or empty
+  // if this is not available.
+  const base::string16& current_title() const { return current_title_; }
+
   // The type of page that is currently behind displayed and how it is
   // displayed (e.g., with search term replacement or without).
   metrics::OmniboxEventProto::PageClassification current_page_classification()
@@ -209,6 +218,7 @@ class AutocompleteInput {
   base::string16 text_;
   size_t cursor_position_;
   GURL current_url_;
+  base::string16 current_title_;
   metrics::OmniboxEventProto::PageClassification current_page_classification_;
   metrics::OmniboxInputType::Type type_;
   url::Parsed parts_;

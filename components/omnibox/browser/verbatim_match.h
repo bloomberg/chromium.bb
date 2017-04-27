@@ -16,13 +16,15 @@ class HistoryURLProvider;
 // Returns a verbatim match for input.text() with a relevance of
 // |verbatim_relevance|. If |verbatim_relevance| is negative then a default
 // value is used. If the desired |destination_url| is already known and a
-// |history_url_provider| is also provided, this may be more efficient (see
+// |history_url_provider| is also provided, use |destination_description| as the
+// description. Providing |history_url_provider| also may be more efficient (see
 // implementation for details) than the default code path.
 // input.text() must not be empty.
 AutocompleteMatch VerbatimMatchForURL(
     AutocompleteProviderClient* client,
     const AutocompleteInput& input,
     const GURL& destination_url,
+    const base::string16& destination_description,
     HistoryURLProvider* history_url_provider,
     int verbatim_relevance);
 

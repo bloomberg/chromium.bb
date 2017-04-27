@@ -279,6 +279,7 @@ TEST_F(BookmarkProviderTest, Positions) {
   for (size_t i = 0; i < arraysize(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
+                            base::string16(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true, false, TestSchemeClassifier());
     provider_->Start(input, false);
@@ -359,6 +360,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
   for (size_t i = 0; i < arraysize(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
+                            base::string16(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true, false, TestSchemeClassifier());
     provider_->Start(input, false);
@@ -415,6 +417,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
         " and url=" + query_data[i].url;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
+                            base::string16(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true, false, TestSchemeClassifier());
     const base::string16 fixed_up_input(
@@ -459,6 +462,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     std::string description = "for query=" + query_data[i].query;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
+                            base::string16(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
                             false, false, true, false, TestSchemeClassifier());
     provider_->Start(input, false);
@@ -488,7 +492,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
 
 TEST_F(BookmarkProviderTest, DoesNotProvideMatchesOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("foo"), base::string16::npos,
-                          std::string(), GURL(),
+                          std::string(), GURL(), base::string16(),
                           metrics::OmniboxEventProto::INVALID_SPEC, false,
                           false, false, true, true, TestSchemeClassifier());
   provider_->Start(input, false);

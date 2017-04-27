@@ -31,6 +31,7 @@ extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kSearchProviderContextAllowHttpsUrls;
 extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestSwapTitleAndUrl;
+extern const base::Feature kDisplayTitleForCurrentUrl;
 }
 
 // The set of parameters customizing the HUP scoring.

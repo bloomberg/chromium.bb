@@ -136,6 +136,7 @@ class PhysicalWebProviderTest : public testing::Test {
   static AutocompleteInput CreateInputForNTP() {
     return AutocompleteInput(
         base::string16(), base::string16::npos, std::string(), GURL(),
+        base::string16(),
         metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
         false, false, true, true, true, TestSchemeClassifier());
   }
@@ -144,7 +145,7 @@ class PhysicalWebProviderTest : public testing::Test {
   // as the current web page.
   static AutocompleteInput CreateInputWithCurrentUrl(const std::string& url) {
     return AutocompleteInput(base::UTF8ToUTF16(url), base::string16::npos,
-                             std::string(), GURL(url),
+                             std::string(), GURL(url), base::string16(),
                              metrics::OmniboxEventProto::OTHER, false, false,
                              true, true, true, TestSchemeClassifier());
   }
@@ -325,6 +326,7 @@ TEST_F(PhysicalWebProviderTest, TestNoMatchesWithUserInput) {
   std::string text("user input");
   const AutocompleteInput input(
       base::UTF8ToUTF16(text), text.length(), std::string(), GURL(),
+      base::string16(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       true, false, true, true, false, TestSchemeClassifier());
   provider_->Start(input, false);
@@ -343,7 +345,7 @@ TEST_F(PhysicalWebProviderTest, TestEmptyInputAfterTyping) {
   // user typed a query and then deleted it. The provider should generate
   // suggestions for the zero-suggest case. No default match should be created.
   const AutocompleteInput input(
-      base::string16(), 0, std::string(), GURL(),
+      base::string16(), 0, std::string(), GURL(), base::string16(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       true, false, true, true, false, TestSchemeClassifier());
   provider_->Start(input, false);
@@ -437,7 +439,7 @@ TEST_F(PhysicalWebProviderTest, TestNearbyURLCountHistograms) {
 
   AutocompleteInput zero_suggest_input(CreateInputForNTP());
   AutocompleteInput after_typing_input(
-      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(),
+      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(), base::string16(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       true, false, true, true, false, TestSchemeClassifier());
 
@@ -487,7 +489,7 @@ TEST_F(PhysicalWebProviderTest, TestNearbyURLCountAfterTypingWithoutFocus) {
   EXPECT_TRUE(data_source);
 
   AutocompleteInput after_typing_input(
-      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(),
+      base::UTF8ToUTF16("Example"), 7, std::string(), GURL(), base::string16(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       true, false, true, true, false, TestSchemeClassifier());
 

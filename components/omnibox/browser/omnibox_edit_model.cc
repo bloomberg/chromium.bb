@@ -392,14 +392,13 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
 
   input_ = AutocompleteInput(
       input_text, cursor_position, std::string(), client_->GetURL(),
-      ClassifyPage(),
+      client_->GetTitle(), ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
           (has_selected_text && inline_autocomplete_text_.empty()) ||
           (paste_state_ != NONE),
       is_keyword_selected(),
       is_keyword_selected() || allow_exact_keyword_match_, true, false,
       client_->GetSchemeClassifier());
-
   omnibox_controller_->StartAutocomplete(input_);
 }
 
@@ -456,7 +455,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // Internet Explorer, but not Firefox.
     input_ = AutocompleteInput(
         has_temporary_text_ ? view_->GetText() : input_.text(),
-        input_.cursor_position(), "com", GURL(),
+        input_.cursor_position(), "com", GURL(), base::string16(),
         input_.current_page_classification(),
         input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
         input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
@@ -551,8 +550,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_text, base::string16::npos, std::string(),
       // Somehow we can occasionally get here with no active tab.  It's not
       // clear why this happens.
-      client_->GetURL(), ClassifyPage(), false, false, true, true, false,
-      client_->GetSchemeClassifier());
+      client_->GetURL(), client_->GetTitle(), ClassifyPage(), false, false,
+      true, true, false, client_->GetSchemeClassifier());
   std::unique_ptr<OmniboxNavigationObserver> observer(
       client_->CreateOmniboxNavigationObserver(
           input_text, match,
@@ -869,10 +868,10 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // We avoid PermanentURL() here because it's not guaranteed to give us the
     // actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    input_ =
-        AutocompleteInput(permanent_text_, base::string16::npos, std::string(),
-                          client_->GetURL(), ClassifyPage(), false, false, true,
-                          true, true, client_->GetSchemeClassifier());
+    input_ = AutocompleteInput(
+        permanent_text_, base::string16::npos, std::string(), client_->GetURL(),
+        client_->GetTitle(), ClassifyPage(), false, false, true, true, true,
+        client_->GetSchemeClassifier());
     autocomplete_controller()->Start(input_);
   }
 
