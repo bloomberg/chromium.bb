@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/sys_byteorder.h"
-#include "net/base/net_export.h"
 #include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/hpack/hpack_decoder_interface.h"
 #include "net/spdy/core/hpack/hpack_encoder.h"
@@ -23,6 +22,7 @@
 #include "net/spdy/core/spdy_headers_handler_interface.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/zero_copy_output_buffer.h"
+#include "net/spdy/platform/api/spdy_export.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 
@@ -64,7 +64,7 @@ class SpdyFramerPeer;
 //      been delivered for the control frame.
 // During step 2, if the visitor is not interested in accepting the header data,
 // it should return a no-op implementation of SpdyHeadersHandlerInterface.
-class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
+class SPDY_EXPORT_PRIVATE SpdyFramerVisitorInterface {
  public:
   virtual ~SpdyFramerVisitorInterface() {}
 
@@ -247,7 +247,7 @@ class ExtensionVisitorInterface {
 // operates.
 //
 // Most HTTP2 implementations need not bother with this interface at all.
-class NET_EXPORT_PRIVATE SpdyFramerDebugVisitorInterface {
+class SPDY_EXPORT_PRIVATE SpdyFramerDebugVisitorInterface {
  public:
   virtual ~SpdyFramerDebugVisitorInterface() {}
 
@@ -268,7 +268,7 @@ class NET_EXPORT_PRIVATE SpdyFramerDebugVisitorInterface {
                                         size_t frame_len) {}
 };
 
-class NET_EXPORT_PRIVATE SpdyFramer {
+class SPDY_EXPORT_PRIVATE SpdyFramer {
  public:
   // HTTP2 states.
   enum SpdyState {
@@ -393,7 +393,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Iteratively converts a SpdyFrameWithHeaderBlockIR into an appropriate
   // sequence of SpdySerializedFrames.
-  class NET_EXPORT_PRIVATE SpdyFrameIterator {
+  class SPDY_EXPORT_PRIVATE SpdyFrameIterator {
    public:
     // Creates an iterator with the provided framer.
     // Does not take ownership of |framer|.
@@ -437,7 +437,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Iteratively converts a SpdyHeadersIR (with a possibly huge
   // SpdyHeaderBlock) into an appropriate sequence of SpdySerializedFrames, and
   // write to the output.
-  class NET_EXPORT_PRIVATE SpdyHeaderFrameIterator : public SpdyFrameIterator {
+  class SPDY_EXPORT_PRIVATE SpdyHeaderFrameIterator : public SpdyFrameIterator {
    public:
     // Does not take ownership of |framer|. Take ownership of |headers_ir|.
     SpdyHeaderFrameIterator(SpdyFramer* framer,
@@ -457,7 +457,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Iteratively converts a SpdyPushPromiseIR (with a possibly huge
   // SpdyHeaderBlock) into an appropriate sequence of SpdySerializedFrames, and
   // write to the output.
-  class NET_EXPORT_PRIVATE SpdyPushPromiseFrameIterator
+  class SPDY_EXPORT_PRIVATE SpdyPushPromiseFrameIterator
       : public SpdyFrameIterator {
    public:
     // Does not take ownership of |framer|. Take ownership of |push_promise_ir|.

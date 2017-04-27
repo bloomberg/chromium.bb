@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "net/base/net_export.h"
+#include "net/spdy/platform/api/spdy_export.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 
@@ -20,14 +20,14 @@ namespace test {
 class HeaderIndexingPeer;
 }
 
-NET_EXPORT_PRIVATE extern int32_t FLAGS_gfe_spdy_indexing_set_bound;
-NET_EXPORT_PRIVATE extern int32_t FLAGS_gfe_spdy_tracking_set_bound;
+SPDY_EXPORT_PRIVATE extern int32_t FLAGS_gfe_spdy_indexing_set_bound;
+SPDY_EXPORT_PRIVATE extern int32_t FLAGS_gfe_spdy_tracking_set_bound;
 
 // Maintain two headers sets: Indexing set and tracking
 // set. Call ShouldIndex() for each header to decide if to index it. If for some
 // connections, we decide to index all headers, we may still want to call
 // UpdateSets to log the headers into both sets.
-class NET_EXPORT HeaderIndexing {
+class SPDY_EXPORT_PRIVATE HeaderIndexing {
  public:
   using HeaderSet = std::unordered_set<SpdyString>;
 
