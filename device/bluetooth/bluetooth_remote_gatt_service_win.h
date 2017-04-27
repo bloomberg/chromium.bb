@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"

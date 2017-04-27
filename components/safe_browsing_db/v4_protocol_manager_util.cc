@@ -5,6 +5,7 @@
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 #include "base/base64.h"
+#include "base/hash.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"

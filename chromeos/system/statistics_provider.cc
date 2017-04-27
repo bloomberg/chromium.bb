@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -263,7 +264,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
   bool oem_manifest_loaded_;
   std::string region_;
   std::unique_ptr<base::Value> regional_data_;
-  base::hash_map<std::string, RegionDataExtractor> regional_data_extractors_;
+  base::flat_map<std::string, RegionDataExtractor> regional_data_extractors_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatisticsProviderImpl);

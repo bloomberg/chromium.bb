@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_TESTING_FAKE_DB_H_
 #define COMPONENTS_LEVELDB_PROTO_TESTING_FAKE_DB_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -23,7 +24,7 @@ class FakeDB : public ProtoDatabase<T> {
   using Callback = base::Callback<void(bool)>;
 
  public:
-  using EntryMap = typename base::hash_map<std::string, T>;
+  using EntryMap = std::map<std::string, T>;
 
   explicit FakeDB(EntryMap* db);
   ~FakeDB() override;

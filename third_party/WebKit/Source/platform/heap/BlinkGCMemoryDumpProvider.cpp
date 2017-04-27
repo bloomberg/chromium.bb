@@ -4,6 +4,8 @@
 
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 
+#include <unordered_map>
+
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -67,8 +69,8 @@ bool BlinkGCMemoryDumpProvider::OnMemoryDump(
   if (is_heap_profiling_enabled_) {
     // Overhead should always be reported, regardless of light vs. heavy.
     base::trace_event::TraceEventMemoryOverhead overhead;
-    base::hash_map<base::trace_event::AllocationContext,
-                   base::trace_event::AllocationMetrics>
+    std::unordered_map<base::trace_event::AllocationContext,
+                       base::trace_event::AllocationMetrics>
         metrics_by_context;
     {
       MutexLocker locker(allocation_register_mutex_);

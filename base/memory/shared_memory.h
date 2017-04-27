@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"

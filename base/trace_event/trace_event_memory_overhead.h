@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
+
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
@@ -60,7 +62,8 @@ class BASE_EXPORT TraceEventMemoryOverhead {
     size_t allocated_size_in_bytes;
     size_t resident_size_in_bytes;
   };
-  using map_type = small_map<hash_map<const char*, ObjectCountAndSize>, 16>;
+  using map_type =
+      small_map<std::unordered_map<const char*, ObjectCountAndSize>, 16>;
   map_type allocated_objects_;
 
   void AddOrCreateInternal(const char* object_type,
