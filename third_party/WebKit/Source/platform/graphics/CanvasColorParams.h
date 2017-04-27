@@ -37,6 +37,9 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorSpace color_space() const { return color_space_; }
   CanvasPixelFormat pixel_format() const { return pixel_format_; }
 
+  void SetCanvasColorSpace(CanvasColorSpace);
+  void SetCanvasPixelFormat(CanvasPixelFormat);
+
   // Returns true if the canvas uses blends output color space values (that is,
   // not linear space colors).
   bool UsesOutputSpaceBlending() const;
