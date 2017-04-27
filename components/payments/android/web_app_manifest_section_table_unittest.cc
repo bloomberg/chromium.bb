@@ -50,9 +50,9 @@ class WebAppManifestSectionTableTest : public testing::Test {
 TEST_F(WebAppManifestSectionTableTest, GetNonExistManifest) {
   WebAppManifestSectionTable* web_app_manifest_section_table =
       WebAppManifestSectionTable::FromWebDatabase(db_.get());
-  mojom::WebAppManifestSectionPtr retrieved_manifest =
+  std::vector<mojom::WebAppManifestSectionPtr> retrieved_manifest =
       web_app_manifest_section_table->GetWebAppManifest("https://bobpay.com");
-  ASSERT_TRUE(retrieved_manifest.get() == nullptr);
+  ASSERT_TRUE(retrieved_manifest.empty());
 }
 
 TEST_F(WebAppManifestSectionTableTest, AddAndGetManifest) {
@@ -60,29 +60,30 @@ TEST_F(WebAppManifestSectionTableTest, AddAndGetManifest) {
   std::vector<uint8_t> fingerprint_two = GenerateFingerprint(32);
 
   // create a bobpay web app manifest.
-  mojom::WebAppManifestSectionPtr manifest =
-      mojom::WebAppManifestSection::New();
-  manifest->id = "com.bobpay";
-  manifest->min_version = static_cast<int64_t>(1);
-  manifest->fingerprints.push_back(fingerprint_one);
-  manifest->fingerprints.push_back(fingerprint_two);
+  std::vector<mojom::WebAppManifestSectionPtr> manifest;
+  mojom::WebAppManifestSectionPtr section = mojom::WebAppManifestSection::New();
+  section->id = "com.bobpay";
+  section->min_version = static_cast<int64_t>(1);
+  section->fingerprints.push_back(fingerprint_one);
+  section->fingerprints.push_back(fingerprint_two);
+  manifest.emplace_back(std::move(section));
 
   // Adds the manifest to the table.
   WebAppManifestSectionTable* web_app_manifest_section_table =
       WebAppManifestSectionTable::FromWebDatabase(db_.get());
-  ASSERT_TRUE(
-      web_app_manifest_section_table->AddWebAppManifest(manifest.get()));
+  ASSERT_TRUE(web_app_manifest_section_table->AddWebAppManifest(manifest));
 
   // Gets and verifys the manifest.
-  mojom::WebAppManifestSectionPtr retrieved_manifest =
+  std::vector<mojom::WebAppManifestSectionPtr> retrieved_manifest =
       web_app_manifest_section_table->GetWebAppManifest("com.bobpay");
-  ASSERT_EQ(retrieved_manifest->id, "com.bobpay");
-  ASSERT_EQ(retrieved_manifest->min_version, 1);
-  ASSERT_EQ(retrieved_manifest->fingerprints.size(), 2U);
+  ASSERT_EQ(retrieved_manifest.size(), 1U);
+  ASSERT_EQ(retrieved_manifest[0]->id, "com.bobpay");
+  ASSERT_EQ(retrieved_manifest[0]->min_version, 1);
+  ASSERT_EQ(retrieved_manifest[0]->fingerprints.size(), 2U);
 
   // Verify the two fingerprints.
-  ASSERT_TRUE(retrieved_manifest->fingerprints[0] == fingerprint_one);
-  ASSERT_TRUE(retrieved_manifest->fingerprints[1] == fingerprint_two);
+  ASSERT_TRUE(retrieved_manifest[0]->fingerprints[0] == fingerprint_one);
+  ASSERT_TRUE(retrieved_manifest[0]->fingerprints[1] == fingerprint_two);
 }
 
 TEST_F(WebAppManifestSectionTableTest, AddAndGetMultipleManifests) {
@@ -95,44 +96,48 @@ TEST_F(WebAppManifestSectionTableTest, AddAndGetMultipleManifests) {
       WebAppManifestSectionTable::FromWebDatabase(db_.get());
 
   // Adds bobpay manifest to the table.
-  mojom::WebAppManifestSectionPtr manifest_1 =
+  std::vector<mojom::WebAppManifestSectionPtr> manifest_1;
+  mojom::WebAppManifestSectionPtr manifest_1_section =
       mojom::WebAppManifestSection::New();
-  manifest_1->id = "com.bobpay";
-  manifest_1->min_version = static_cast<int64_t>(1);
+  manifest_1_section->id = "com.bobpay";
+  manifest_1_section->min_version = static_cast<int64_t>(1);
   // Adds two finger prints.
-  manifest_1->fingerprints.push_back(fingerprint_one);
-  manifest_1->fingerprints.push_back(fingerprint_two);
-  ASSERT_TRUE(
-      web_app_manifest_section_table->AddWebAppManifest(manifest_1.get()));
+  manifest_1_section->fingerprints.push_back(fingerprint_one);
+  manifest_1_section->fingerprints.push_back(fingerprint_two);
+  manifest_1.emplace_back(std::move(manifest_1_section));
+  ASSERT_TRUE(web_app_manifest_section_table->AddWebAppManifest(manifest_1));
 
   // Adds alicepay manifest to the table.
-  mojom::WebAppManifestSectionPtr manifest_2 =
+  std::vector<mojom::WebAppManifestSectionPtr> manifest_2;
+  mojom::WebAppManifestSectionPtr manifest_2_section =
       mojom::WebAppManifestSection::New();
-  manifest_2->id = "com.alicepay";
-  manifest_2->min_version = static_cast<int64_t>(2);
+  manifest_2_section->id = "com.alicepay";
+  manifest_2_section->min_version = static_cast<int64_t>(2);
   // Adds two finger prints.
-  manifest_2->fingerprints.push_back(fingerprint_three);
-  manifest_2->fingerprints.push_back(fingerprint_four);
-  ASSERT_TRUE(
-      web_app_manifest_section_table->AddWebAppManifest(manifest_2.get()));
+  manifest_2_section->fingerprints.push_back(fingerprint_three);
+  manifest_2_section->fingerprints.push_back(fingerprint_four);
+  manifest_2.emplace_back(std::move(manifest_2_section));
+  ASSERT_TRUE(web_app_manifest_section_table->AddWebAppManifest(manifest_2));
 
   // Verifys bobpay manifest.
-  mojom::WebAppManifestSectionPtr bobpay_manifest =
+  std::vector<mojom::WebAppManifestSectionPtr> bobpay_manifest =
       web_app_manifest_section_table->GetWebAppManifest("com.bobpay");
-  ASSERT_EQ(bobpay_manifest->id, "com.bobpay");
-  ASSERT_EQ(bobpay_manifest->min_version, 1);
-  ASSERT_EQ(bobpay_manifest->fingerprints.size(), 2U);
-  ASSERT_TRUE(bobpay_manifest->fingerprints[0] == fingerprint_one);
-  ASSERT_TRUE(bobpay_manifest->fingerprints[1] == fingerprint_two);
+  ASSERT_EQ(bobpay_manifest.size(), 1U);
+  ASSERT_EQ(bobpay_manifest[0]->id, "com.bobpay");
+  ASSERT_EQ(bobpay_manifest[0]->min_version, 1);
+  ASSERT_EQ(bobpay_manifest[0]->fingerprints.size(), 2U);
+  ASSERT_TRUE(bobpay_manifest[0]->fingerprints[0] == fingerprint_one);
+  ASSERT_TRUE(bobpay_manifest[0]->fingerprints[1] == fingerprint_two);
 
   // Verifys alicepay manifest.
-  mojom::WebAppManifestSectionPtr alicepay_manifest =
+  std::vector<mojom::WebAppManifestSectionPtr> alicepay_manifest =
       web_app_manifest_section_table->GetWebAppManifest("com.alicepay");
-  ASSERT_EQ(alicepay_manifest->id, "com.alicepay");
-  ASSERT_EQ(alicepay_manifest->min_version, 2);
-  ASSERT_EQ(alicepay_manifest->fingerprints.size(), 2U);
-  ASSERT_TRUE(alicepay_manifest->fingerprints[0] == fingerprint_three);
-  ASSERT_TRUE(alicepay_manifest->fingerprints[1] == fingerprint_four);
+  ASSERT_EQ(alicepay_manifest.size(), 1U);
+  ASSERT_EQ(alicepay_manifest[0]->id, "com.alicepay");
+  ASSERT_EQ(alicepay_manifest[0]->min_version, 2);
+  ASSERT_EQ(alicepay_manifest[0]->fingerprints.size(), 2U);
+  ASSERT_TRUE(alicepay_manifest[0]->fingerprints[0] == fingerprint_three);
+  ASSERT_TRUE(alicepay_manifest[0]->fingerprints[1] == fingerprint_four);
 }
 
 }  // namespace

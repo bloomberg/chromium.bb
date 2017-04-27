@@ -40,13 +40,15 @@ class WebAppManifestSectionTable : public WebDatabaseTable {
   bool IsSyncable() override;
   bool MigrateToVersion(int version, bool* update_compatible_version) override;
 
-  // Adds the web app |*manifest|. Note that the previous web app manifest will
+  // Adds the web app |manifest|. Note that the previous web app manifest will
   // be deleted.
-  bool AddWebAppManifest(mojom::WebAppManifestSection* manifest);
+  bool AddWebAppManifest(
+      const std::vector<mojom::WebAppManifestSectionPtr>& manifest);
 
-  // Gets manifest of the |web_app|. Returns nullptr if no manifest exists for
-  // the |web_app|.
-  mojom::WebAppManifestSectionPtr GetWebAppManifest(const std::string& web_app);
+  // Gets manifest of the |web_app|. Returns empty vector if no manifest exists
+  // for the |web_app|.
+  std::vector<mojom::WebAppManifestSectionPtr> GetWebAppManifest(
+      const std::string& web_app);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppManifestSectionTable);

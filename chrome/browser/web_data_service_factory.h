@@ -24,6 +24,12 @@ class WebDataServiceWrapper;
 class PasswordWebDataService;
 #endif
 
+#if defined(OS_ANDROID)
+namespace payments {
+class PaymentManifestWebDataService;
+}
+#endif
+
 namespace autofill {
 class AutofillWebDataService;
 }
@@ -59,6 +65,12 @@ class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
   static scoped_refptr<PasswordWebDataService> GetPasswordWebDataForProfile(
       Profile* profile,
       ServiceAccessType access_type);
+#endif
+
+#if defined(OS_ANDROID)
+  static scoped_refptr<payments::PaymentManifestWebDataService>
+  GetPaymentManifestWebDataForProfile(Profile* profile,
+                                      ServiceAccessType access_type);
 #endif
 
   static WebDataServiceFactory* GetInstance();
