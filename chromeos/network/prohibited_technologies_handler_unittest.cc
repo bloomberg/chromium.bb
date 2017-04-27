@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -27,7 +27,9 @@ namespace chromeos {
 
 class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
  public:
-  ProhibitedTechnologiesHandlerTest() {}
+  ProhibitedTechnologiesHandlerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -110,7 +112,7 @@ class ProhibitedTechnologiesHandlerTest : public NetworkStateTest {
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::DictionaryValue global_config_disable_wifi;
   base::DictionaryValue global_config_disable_wifi_and_cell;
 

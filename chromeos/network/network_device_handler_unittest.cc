@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
@@ -31,7 +31,9 @@ const char kDefaultPin[] = "1111";
 
 class NetworkDeviceHandlerTest : public testing::Test {
  public:
-  NetworkDeviceHandlerTest() : fake_device_client_(NULL) {}
+  NetworkDeviceHandlerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~NetworkDeviceHandlerTest() override {}
 
   void SetUp() override {
@@ -99,12 +101,11 @@ class NetworkDeviceHandlerTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string result_;
-
-  FakeShillDeviceClient* fake_device_client_;
+  FakeShillDeviceClient* fake_device_client_ = nullptr;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
-  base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
   network_handler::DictionaryResultCallback properties_success_callback_;
   network_handler::StringResultCallback string_success_callback_;
