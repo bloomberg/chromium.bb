@@ -376,6 +376,13 @@ void Shell::UpdateShelfVisibility() {
     root->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
 }
 
+PrefService* Shell::GetActiveUserPrefService() const {
+  if (shell_port_->GetAshConfig() == Config::MASH)
+    return pref_service_.get();
+
+  return shell_delegate_->GetActiveUserPrefService();
+}
+
 WebNotificationTray* Shell::GetWebNotificationTray() {
   return GetPrimaryRootWindowController()
       ->GetStatusAreaWidget()

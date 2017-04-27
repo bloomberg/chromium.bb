@@ -25,6 +25,8 @@
 #include "ash/wm_window.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 
@@ -58,7 +60,8 @@ TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
       force_maximize_on_first_run_(false),
-      touchscreen_enabled_in_local_pref_(true) {}
+      touchscreen_enabled_in_local_pref_(true),
+      pref_service_(base::MakeUnique<TestingPrefServiceSimple>()) {}
 
 TestShellDelegate::~TestShellDelegate() {}
 
@@ -145,6 +148,10 @@ base::string16 TestShellDelegate::GetProductName() const {
 
 gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
+}
+
+PrefService* TestShellDelegate::GetActiveUserPrefService() const {
+  return pref_service_.get();
 }
 
 bool TestShellDelegate::IsTouchscreenEnabledInPrefs(

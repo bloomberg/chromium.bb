@@ -364,7 +364,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
   }
-  PrefService* pref_service() { return pref_service_.get(); }
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
@@ -421,6 +420,17 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
+
+  // Gets the current active user pref service.
+  // In classic ash, it will be null if there's no active user.
+  // In the case of mash, it can be null if it failed to or hasn't yet
+  // connected to the pref service.
+  //
+  // NOTE: Users of this pref service MUST listen to
+  // ash::SessionObserver::OnActiveUserSessionChanged() and recall this function
+  // to get the newly activated user's pref service, and use it to re-read the
+  // desired stored settings.
+  PrefService* GetActiveUserPrefService() const;
 
   // Returns WebNotificationTray on the primary root window.
   WebNotificationTray* GetWebNotificationTray();
