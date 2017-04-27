@@ -97,10 +97,7 @@ button:hover {
 
 .error-code {
   color: #646464;
-  display: inline;
   font-size: .86667em;
-  margin-top: 15px;
-  opacity: 1;
   text-transform: uppercase;
 }
 
