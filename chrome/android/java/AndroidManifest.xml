@@ -362,7 +362,8 @@ by a child template that "extends" this file.
             android:exported="false"
             android:taskAffinity="{{ manifest_package }}.ChromeTabbedActivity2"
             android:launchMode="singleTask"
-            {{ self.chrome_activity_common() }}>
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }}>
         </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
             android:theme="@style/TabbedModeTheme"
