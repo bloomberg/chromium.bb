@@ -17,6 +17,7 @@ import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -47,7 +48,7 @@ public class SogouPromoDialog extends PromoDialog {
     private static final int CHOICE_ENUM_COUNT = 4;
 
     /** Run when the dialog is dismissed. */
-    private final Runnable mOnDismissedRunnable;
+    private final Callback<Boolean> mOnDismissedCallback;
 
     private final LocaleManager mLocaleManager;
     private final ClickableSpan mSpan = new NoUnderlineClickableSpan() {
@@ -68,12 +69,12 @@ public class SogouPromoDialog extends PromoDialog {
      * Creates an instance of the dialog.
      */
     public SogouPromoDialog(
-            Context context, LocaleManager localeManager, @Nullable Runnable onDismissed) {
+            Context context, LocaleManager localeManager, @Nullable Callback<Boolean> onDismissed) {
         super(context);
         mLocaleManager = localeManager;
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
-        mOnDismissedRunnable = onDismissed;
+        mOnDismissedCallback = onDismissed;
     }
 
     @Override
@@ -150,6 +151,6 @@ public class SogouPromoDialog extends PromoDialog {
         RecordHistogram.recordEnumeratedHistogram(
                 "SpecialLocale.PromotionDialog", mChoice, CHOICE_ENUM_COUNT);
 
-        if (mOnDismissedRunnable != null) mOnDismissedRunnable.run();
+        if (mOnDismissedCallback != null) mOnDismissedCallback.onResult(true);
     }
 }

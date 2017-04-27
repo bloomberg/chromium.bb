@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
@@ -178,10 +179,11 @@ public class LocaleManager {
      * See {@link LocaleManager#getSearchEnginePromoShowType()} for possible types and logic.
      *
      * @param context     Context showing the dialog.
-     * @param onDismissed Run when the dialog has been dismissed.
+     * @param onDismissed Notified when the dialog is dismissed and whether the user acted on it.
      * @return Whether such dialog is needed.
      */
-    public boolean showSearchEnginePromoIfNeeded(Context context, @Nullable Runnable onDismissed) {
+    public boolean showSearchEnginePromoIfNeeded(
+            Context context, @Nullable Callback<Boolean> onDismissed) {
         int shouldShow = getSearchEnginePromoShowType();
         switch (shouldShow) {
             case SEARCH_ENGINE_PROMO_DONT_SHOW:
@@ -191,8 +193,8 @@ public class LocaleManager {
                 return true;
             case SEARCH_ENGINE_PROMO_SHOW_EXISTING:
             case SEARCH_ENGINE_PROMO_SHOW_NEW:
-                // TODO(dfalcantara): Show the search engine dialog.
-                return false;
+                DefaultSearchEnginePromoDialog.show(context, shouldShow, onDismissed);
+                return true;
             default:
                 assert false;
                 return false;

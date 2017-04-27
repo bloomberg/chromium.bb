@@ -494,6 +494,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/invalidation/InvalidationController.java",
   "java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java",
   "java/src/org/chromium/chrome/browser/invalidation/UniqueIdInvalidationClientNameGenerator.java",
+  "java/src/org/chromium/chrome/browser/locale/DefaultSearchEnginePromoDialog.java",
   "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
   "java/src/org/chromium/chrome/browser/locale/SogouPromoDialog.java",
   "java/src/org/chromium/chrome/browser/locale/SpecialLocaleHandler.java",

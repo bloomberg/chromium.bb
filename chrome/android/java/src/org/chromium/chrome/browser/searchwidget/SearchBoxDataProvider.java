@@ -6,14 +6,11 @@ package org.chromium.chrome.browser.searchwidget;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 
-class SearchBoxDataProvider implements ToolbarDataProvider, TemplateUrlService.LoadListener {
+class SearchBoxDataProvider implements ToolbarDataProvider {
     private Tab mTab;
-    private String mVerbatimUrl;
 
     /**
      * Called when native library is loaded and a tab has been initialized.
@@ -21,22 +18,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider, TemplateUrlService.L
      */
     public void onNativeLibraryReady(Tab tab) {
         assert LibraryLoader.isInitialized();
-
         mTab = tab;
-
-        TemplateUrlService service = TemplateUrlService.getInstance();
-        service.registerLoadListener(this);
-        service.load();
-    }
-
-    @Override
-    public void onTemplateUrlServiceLoaded() {
-        // For zero suggest, the default search engine's URL is used as the first suggestion.
-        TemplateUrlService service = TemplateUrlService.getInstance();
-        service.unregisterLoadListener(this);
-        String searchEngineUrl = service.getSearchEngineUrlFromTemplateUrl(
-                service.getDefaultSearchEngineTemplateUrl().getKeyword());
-        mVerbatimUrl = LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;
     }
 
     @Override
@@ -72,6 +54,6 @@ class SearchBoxDataProvider implements ToolbarDataProvider, TemplateUrlService.L
 
     @Override
     public String getCurrentUrl() {
-        return mVerbatimUrl;
+        return SearchWidgetProvider.getDefaultSearchEngineUrl();
     }
 }
