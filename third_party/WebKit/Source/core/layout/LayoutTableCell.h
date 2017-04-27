@@ -187,8 +187,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutUnit BorderBefore() const override;
   LayoutUnit BorderAfter() const override;
 
-  void CollectBorderValues(LayoutTable::CollapsedBorderValues&);
-  static void SortBorderValues(LayoutTable::CollapsedBorderValues&);
+  void CollectCollapsedBorderValues(LayoutTable::CollapsedBorderValues&);
+  static void SortCollapsedBorderValues(LayoutTable::CollapsedBorderValues&);
 
   void UpdateLayout() override;
 
@@ -366,15 +366,15 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutSize OffsetFromContainer(const LayoutObject*) const override;
   LayoutRect LocalVisualRect() const override;
 
-  LayoutUnit BorderHalfLeft(bool outer) const;
-  LayoutUnit BorderHalfRight(bool outer) const;
-  LayoutUnit BorderHalfTop(bool outer) const;
-  LayoutUnit BorderHalfBottom(bool outer) const;
+  LayoutUnit CollapsedBorderHalfLeft(bool outer) const;
+  LayoutUnit CollapsedBorderHalfRight(bool outer) const;
+  LayoutUnit CollapsedBorderHalfTop(bool outer) const;
+  LayoutUnit CollapsedBorderHalfBottom(bool outer) const;
 
-  LayoutUnit BorderHalfStart(bool outer) const;
-  LayoutUnit BorderHalfEnd(bool outer) const;
-  LayoutUnit BorderHalfBefore(bool outer) const;
-  LayoutUnit BorderHalfAfter(bool outer) const;
+  LayoutUnit CollapsedBorderHalfStart(bool outer) const;
+  LayoutUnit CollapsedBorderHalfEnd(bool outer) const;
+  LayoutUnit CollapsedBorderHalfBefore(bool outer) const;
+  LayoutUnit CollapsedBorderHalfAfter(bool outer) const;
 
   void SetIntrinsicPaddingBefore(int p) { intrinsic_padding_before_ = p; }
   void SetIntrinsicPaddingAfter(int p) { intrinsic_padding_after_ = p; }

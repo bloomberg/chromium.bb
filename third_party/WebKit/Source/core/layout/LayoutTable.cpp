@@ -803,11 +803,11 @@ void LayoutTable::RecalcCollapsedBordersIfNeeded() {
       for (LayoutTableCell* cell = row->FirstCell(); cell;
            cell = cell->NextCell()) {
         DCHECK_EQ(cell->Table(), this);
-        cell->CollectBorderValues(collapsed_borders_);
+        cell->CollectCollapsedBorderValues(collapsed_borders_);
       }
     }
   }
-  LayoutTableCell::SortBorderValues(collapsed_borders_);
+  LayoutTableCell::SortCollapsedBorderValues(collapsed_borders_);
 }
 
 void LayoutTable::AddOverflowFromChildren() {
