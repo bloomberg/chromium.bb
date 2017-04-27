@@ -5,12 +5,15 @@
 #import <Foundation/Foundation.h>
 
 #include "base/format_macros.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_private.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A constant holding some number of tabs that will trigger an easter egg.
 const NSInteger kStackButtonEasterEggTabCount = kStackButtonMaxTabCount + 1;
@@ -31,11 +34,12 @@ namespace {
 class ToolbarControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
-    toolbarController_.reset([[ToolbarController alloc]
-        initWithStyle:ToolbarControllerStyleLightMode]);
+    PlatformTest::SetUp();
+    toolbarController_ = [[ToolbarController alloc]
+        initWithStyle:ToolbarControllerStyleLightMode];
   }
 
-  base::scoped_nsobject<ToolbarController> toolbarController_;
+  ToolbarController* toolbarController_;
 };
 
 // Verify that if tab count is set to zero, the title is blank, but the a11y

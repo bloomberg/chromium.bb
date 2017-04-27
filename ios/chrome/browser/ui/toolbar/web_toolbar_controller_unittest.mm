@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -21,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface UIView (SubViewTesting)
 - (NSMutableArray*)allSubviews;
@@ -69,15 +72,15 @@ class WebToolbarControllerTest : public BlockCleanupTest {
     id urlLoader = [OCMockObject niceMockForProtocol:@protocol(UrlLoader)];
 
     // Create the WebToolbarController using the test objects.
-    web_toolbar_controller_.reset([[WebToolbarController alloc]
+    web_toolbar_controller_ = [[WebToolbarController alloc]
         initWithDelegate:delegate
                urlLoader:urlLoader
             browserState:chrome_browser_state_.get()
-         preloadProvider:nil]);
+         preloadProvider:nil];
     [web_toolbar_controller_ setUnitTesting:YES];
   }
   void TearDown() override {
-    web_toolbar_controller_.reset();
+    web_toolbar_controller_ = nil;
     BlockCleanupTest::TearDown();
   }
 
@@ -85,7 +88,7 @@ class WebToolbarControllerTest : public BlockCleanupTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TestToolbarModel* toolbar_model_;  // weak. Owned by toolbar_model_ios_.
   std::unique_ptr<TestToolbarModelIOS> toolbar_model_ios_;
-  base::scoped_nsobject<WebToolbarController> web_toolbar_controller_;
+  WebToolbarController* web_toolbar_controller_;
 };
 
 TEST_F(WebToolbarControllerTest, TestUpdateToolbar_NavigationButtonsEnabled) {
