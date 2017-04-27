@@ -18,7 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -482,6 +482,8 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     net::NetworkDelegate* network_delegate) const {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  const base::TaskTraits kTraits = base::TaskTraits().MayBlock();
+
   // The PathService is threadsafe.
   base::FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
@@ -493,11 +495,9 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     // Once logged in to the portal, HTTPS requests return the page that was
     // actually requested.
     return new URLRequestMockHTTPJob(
-        request,
-        network_delegate,
+        request, network_delegate,
         root_http.Append(FILE_PATH_LITERAL("title2.html")),
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        base::CreateTaskRunnerWithTraits(kTraits));
   } else if (request->url() == kMockHttpsQuickTimeoutUrl) {
     if (behind_captive_portal_)
       return new URLRequestFailedJob(
@@ -505,11 +505,9 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     // Once logged in to the portal, HTTPS requests return the page that was
     // actually requested.
     return new URLRequestMockHTTPJob(
-        request,
-        network_delegate,
+        request, network_delegate,
         root_http.Append(FILE_PATH_LITERAL("title2.html")),
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        base::CreateTaskRunnerWithTraits(kTraits));
   } else {
     // The URL should be the captive portal test URL.
     EXPECT_TRUE(request->url() == kMockCaptivePortalTestUrl ||
@@ -520,27 +518,21 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
       // by the captive portal.
       if (request->url() == kMockCaptivePortal511Url) {
         return new URLRequestMockHTTPJob(
-            request,
-            network_delegate,
+            request, network_delegate,
             root_http.Append(FILE_PATH_LITERAL("captive_portal/page511.html")),
-            BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+            base::CreateTaskRunnerWithTraits(kTraits));
       }
       return new URLRequestMockHTTPJob(
-          request,
-          network_delegate,
+          request, network_delegate,
           root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")),
-          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+          base::CreateTaskRunnerWithTraits(kTraits));
     }
 
     // After logging in to the portal, the test URLs return a 204 response.
     return new URLRequestMockHTTPJob(
-        request,
-        network_delegate,
+        request, network_delegate,
         root_http.Append(FILE_PATH_LITERAL("captive_portal/page204.html")),
-        BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+        base::CreateTaskRunnerWithTraits(kTraits));
   }
 }
 
