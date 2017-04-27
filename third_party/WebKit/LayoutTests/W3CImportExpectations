@@ -276,7 +276,8 @@ external/wpt/geolocation-API [ Skip ]
 ## Owners: dom-dev@chromium.org
 # external/wpt/html-imports [ Pass ]
 external/wpt/html-longdesc [ Skip ]
-external/wpt/html-media-capture [ Skip ]
+## Owners: rijubrata.bhaumik@intel.com,mcasas@chromium.org
+# external/wpt/html-media-capture [ Pass ]
 external/wpt/http [ Skip ]
 ## Owners: none; No tests in the directory.
 # external/wpt/images [ Pass ]
