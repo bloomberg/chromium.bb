@@ -8,23 +8,42 @@
 
 namespace payments {
 
-class CvcUnmaskViewControllerTest : public PaymentRequestBrowserTestBase {
+class PaymentRequestCvcUnmaskViewControllerTest
+    : public PaymentRequestBrowserTestBase {
  protected:
-  CvcUnmaskViewControllerTest()
+  PaymentRequestCvcUnmaskViewControllerTest()
       : PaymentRequestBrowserTestBase(
             "/payment_request_no_shipping_test.html") {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CvcUnmaskViewControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestCvcUnmaskViewControllerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CvcUnmaskViewControllerTest, CvcSentToResponse) {
+IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
+                       CvcSentToResponse) {
   AddCreditCard(autofill::test::GetCreditCard());  // Visa.
 
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("012"));
 
+  ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
+}
+
+// Test that going in the CVC editor, backing out and opening it again to pay
+// does not crash.
+IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
+                       OpenGoBackOpenPay) {
+  AddCreditCard(autofill::test::GetCreditCard());  // Visa.
+
+  InvokePaymentRequestUI();
+  OpenCVCPromptWithCVC(base::ASCIIToUTF16("012"));
+
+  // Go back before confirming the CVC.
+  ClickOnBackArrow();
+
+  // Now pay for real.
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("012"));
   ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
 }
 
