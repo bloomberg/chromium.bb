@@ -9,6 +9,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "gin/data_object_builder.h"
 
 namespace extensions {
 
@@ -37,9 +38,7 @@ v8::Local<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
   // Convert |api_name| and |bind_to| into their v8::Strings to pass
   // through the v8 APIs.
   v8::Local<v8::String> v8_api_name;
-  v8::Local<v8::String> v8_bind_to;
-  if (!ToV8String(isolate, api_name_, &v8_api_name) ||
-      !ToV8String(isolate, bind_to_, &v8_bind_to)) {
+  if (!ToV8String(isolate, api_name_, &v8_api_name)) {
     NOTREACHED();
     return v8::Local<v8::Object>();
   }
@@ -94,7 +93,6 @@ v8::Local<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
   v8::Local<v8::Function> generate = generate_value.As<v8::Function>();
 
   // require('binding').Binding.create(api_name).generate();
-  v8::Local<v8::Object> object = v8::Object::New(isolate);
   v8::Local<v8::Value> compiled_schema;
   if (!CallFunction(v8_context, generate, binding_instance, 0, nullptr,
                     &compiled_schema)) {
@@ -104,10 +102,8 @@ v8::Local<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
 
   // var result = {};
   // result[bind_to] = ...;
-  if (!SetProperty(v8_context, object, v8_bind_to, compiled_schema)) {
-    NOTREACHED();
-    return v8::Local<v8::Object>();
-  }
+  v8::Local<v8::Object> object =
+      gin::DataObjectBuilder(isolate).Set(bind_to_, compiled_schema).Build();
 
   // Log UMA with microsecond accuracy*; maxes at 10 seconds.
   // *Obviously, limited by our TimeTicks implementation, but as close as

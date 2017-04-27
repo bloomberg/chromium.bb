@@ -15,6 +15,7 @@
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gin/arguments.h"
+#include "gin/data_object_builder.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "skia/ext/benchmarking_canvas.h"
@@ -258,16 +259,12 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     buffer_pixels[i + 3] = SkGetPackedA32(c);
   }
 
-  v8::Local<v8::Object> result = v8::Object::New(isolate);
-  result->Set(v8::String::NewFromUtf8(isolate, "width"),
-              v8::Number::New(isolate, snapped_clip.width()));
-  result->Set(v8::String::NewFromUtf8(isolate, "height"),
-              v8::Number::New(isolate, snapped_clip.height()));
-  result->Set(v8::String::NewFromUtf8(isolate, "data"),
-              blink::WebArrayBufferConverter::ToV8Value(
-                  &buffer, context->Global(), isolate));
-
-  args->Return(result);
+  args->Return(gin::DataObjectBuilder(isolate)
+                   .Set("width", snapped_clip.width())
+                   .Set("height", snapped_clip.height())
+                   .Set("data", blink::WebArrayBufferConverter::ToV8Value(
+                                    &buffer, context->Global(), isolate))
+                   .Build());
 }
 
 void SkiaBenchmarking::GetOps(gin::Arguments* args) {
