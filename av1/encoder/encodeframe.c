@@ -299,13 +299,11 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
+  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width,
 #if CONFIG_DEPENDENT_HORZTILES
-  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width, cm->mi_rows,
-                 cm->mi_cols, cm->dependent_horz_tiles);
-#else
-  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width, cm->mi_rows,
-                 cm->mi_cols);
-#endif
+                 cm->dependent_horz_tiles,
+#endif  // CONFIG_DEPENDENT_HORZTILES
+                 cm->mi_rows, cm->mi_cols);
 
   // Set up source buffers.
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col);
@@ -364,8 +362,11 @@ static void set_offsets_supertx(const AV1_COMP *const cpi, ThreadData *td,
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
-  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width, cm->mi_rows,
-                 cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, mi_height, mi_col, mi_width,
+#if CONFIG_DEPENDENT_HORZTILES
+                 cm->dependent_horz_tiles,
+#endif  // CONFIG_DEPENDENT_HORZTILES
+                 cm->mi_rows, cm->mi_cols);
 }
 
 static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
@@ -405,6 +406,9 @@ static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
          !(mi_row_pred & (mi_height - mi_size_high[BLOCK_8X8])));
 #endif
   set_mi_row_col(xd, tile, mi_row_pred, mi_height, mi_col_pred, mi_width,
+#if CONFIG_DEPENDENT_HORZTILES
+                 cm->dependent_horz_tiles,
+#endif  // CONFIG_DEPENDENT_HORZTILES
                  cm->mi_rows, cm->mi_cols);
   xd->up_available = (mi_row_ori > tile->mi_row_start);
   xd->left_available = (mi_col_ori > tile->mi_col_start);

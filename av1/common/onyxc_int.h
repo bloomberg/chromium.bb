@@ -601,68 +601,32 @@ static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh) {
   }
 }
 
+static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
+                                  int mi_row, int bh, int mi_col, int bw,
 #if CONFIG_DEPENDENT_HORZTILES
-static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
-                                  int mi_row, int bh, int mi_col, int bw,
-                                  int mi_rows, int mi_cols,
-                                  int dependent_horz_tile_flag) {
-  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
-  xd->mb_to_bottom_edge = ((mi_rows - bh - mi_row) * MI_SIZE) * 8;
-  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
-  xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
-
-  if (dependent_horz_tile_flag) {
-#if CONFIG_TILE_GROUPS
-    xd->up_available = (mi_row > tile->mi_row_start) || !tile->tg_horz_boundary;
-#else
-    xd->up_available = (mi_row > 0);
-#endif
-  } else {
-    // Are edges available for intra prediction?
-    xd->up_available = (mi_row > tile->mi_row_start);
-  }
-
-  xd->left_available = (mi_col > tile->mi_col_start);
-  if (xd->up_available) {
-    xd->above_mi = xd->mi[-xd->mi_stride];
-    // above_mi may be NULL in encoder's first pass.
-    xd->above_mbmi = xd->above_mi ? &xd->above_mi->mbmi : NULL;
-  } else {
-    xd->above_mi = NULL;
-    xd->above_mbmi = NULL;
-  }
-
-  if (xd->left_available) {
-    xd->left_mi = xd->mi[-1];
-    // left_mi may be NULL in encoder's first pass.
-    xd->left_mbmi = xd->left_mi ? &xd->left_mi->mbmi : NULL;
-  } else {
-    xd->left_mi = NULL;
-    xd->left_mbmi = NULL;
-  }
-
-  xd->n8_h = bh;
-  xd->n8_w = bw;
-#if CONFIG_REF_MV
-  xd->is_sec_rect = 0;
-  if (xd->n8_w < xd->n8_h)
-    if (mi_col & (xd->n8_h - 1)) xd->is_sec_rect = 1;
-
-  if (xd->n8_w > xd->n8_h)
-    if (mi_row & (xd->n8_w - 1)) xd->is_sec_rect = 1;
-#endif
-}
-#else
-static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
-                                  int mi_row, int bh, int mi_col, int bw,
+                                  int dependent_horz_tile_flag,
+#endif  // CONFIG_DEPENDENT_HORZTILES
                                   int mi_rows, int mi_cols) {
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
   xd->mb_to_bottom_edge = ((mi_rows - bh - mi_row) * MI_SIZE) * 8;
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
 
-  // Are edges available for intra prediction?
-  xd->up_available = (mi_row > tile->mi_row_start);
+#if CONFIG_DEPENDENT_HORZTILES
+  if (dependent_horz_tile_flag) {
+#if CONFIG_TILE_GROUPS
+    xd->up_available = (mi_row > tile->mi_row_start) || !tile->tg_horz_boundary;
+#else
+    xd->up_available = (mi_row > 0);
+#endif  // CONFIG_TILE_GROUPS
+  } else {
+#endif  // CONFIG_DEPENDENT_HORZTILES
+    // Are edges available for intra prediction?
+    xd->up_available = (mi_row > tile->mi_row_start);
+#if CONFIG_DEPENDENT_HORZTILES
+  }
+#endif  // CONFIG_DEPENDENT_HORZTILES
+
   xd->left_available = (mi_col > tile->mi_col_start);
   if (xd->up_available) {
     xd->above_mi = xd->mi[-xd->mi_stride];
@@ -691,9 +655,8 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 
   if (xd->n8_w > xd->n8_h)
     if (mi_row & (xd->n8_w - 1)) xd->is_sec_rect = 1;
-#endif
+#endif  // CONFIG_REF_MV
 }
-#endif
 
 static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
                                                const MODE_INFO *mi,

@@ -642,15 +642,12 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       xd->left_available = (mb_col != 0);
       xd->mi[0]->mbmi.sb_type = bsize;
       xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
+      set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
+                     mb_col * mb_scale, mi_size_wide[bsize],
 #if CONFIG_DEPENDENT_HORZTILES
-      set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
-                     mb_col * mb_scale, mi_size_wide[bsize], cm->mi_rows,
-                     cm->mi_cols, cm->dependent_horz_tiles);
-#else
-      set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
-                     mb_col * mb_scale, mi_size_wide[bsize], cm->mi_rows,
-                     cm->mi_cols);
-#endif
+                     cm->dependent_horz_tiles,
+#endif  // CONFIG_DEPENDENT_HORZTILES
+                     cm->mi_rows, cm->mi_cols);
 
       set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize]);
 
