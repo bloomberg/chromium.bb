@@ -392,7 +392,7 @@ bool WebGLFramebuffer::IsBound(GLenum target) const {
 
 void WebGLFramebuffer::DrawBuffers(const Vector<GLenum>& bufs) {
   draw_buffers_ = bufs;
-  filtered_draw_buffers_.Resize(draw_buffers_.size());
+  filtered_draw_buffers_.resize(draw_buffers_.size());
   for (size_t i = 0; i < filtered_draw_buffers_.size(); ++i)
     filtered_draw_buffers_[i] = GL_NONE;
   DrawBuffersIfNecessary(true);

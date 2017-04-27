@@ -119,7 +119,7 @@ IDBKey::KeyArray IDBKey::ToMultiEntryArray() const {
             });
   const auto end = std::unique(result.begin(), result.end());
   DCHECK_LE(static_cast<size_t>(end - result.begin()), result.size());
-  result.Resize(end - result.begin());
+  result.resize(end - result.begin());
   return result;
 }
 

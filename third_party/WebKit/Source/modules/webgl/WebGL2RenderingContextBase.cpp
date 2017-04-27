@@ -217,7 +217,7 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   ContextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                            &num_combined_texture_image_units);
   sampler_units_.clear();
-  sampler_units_.Resize(num_combined_texture_image_units);
+  sampler_units_.resize(num_combined_texture_image_units);
 
   max_transform_feedback_separate_attribs_ = 0;
   // This must be queried before instantiating any transform feedback
@@ -234,7 +234,7 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   ContextGL()->GetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
                            &max_uniform_buffer_bindings);
   bound_indexed_uniform_buffers_.clear();
-  bound_indexed_uniform_buffers_.Resize(max_uniform_buffer_bindings);
+  bound_indexed_uniform_buffers_.resize(max_uniform_buffer_bindings);
   max_bound_uniform_buffer_index_ = 0;
 
   pack_row_length_ = 0;
@@ -4456,7 +4456,7 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
     uniform_strings.push_back(keep_alive.back().data());
   }
 
-  result.Resize(uniform_names.size());
+  result.resize(uniform_names.size());
   ContextGL()->GetUniformIndices(ObjectOrZero(program), uniform_strings.size(),
                                  uniform_strings.data(), result.data());
   return result;

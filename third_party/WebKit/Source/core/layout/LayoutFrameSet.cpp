@@ -62,8 +62,8 @@ void LayoutFrameSet::ComputePreferredLogicalWidths() {
 }
 
 void LayoutFrameSet::GridAxis::Resize(int size) {
-  sizes_.Resize(size);
-  deltas_.Resize(size);
+  sizes_.resize(size);
+  deltas_.resize(size);
   deltas_.Fill(0);
 
   // To track edges for resizability and borders, we need to be (size + 1). This
@@ -71,8 +71,8 @@ void LayoutFrameSet::GridAxis::Resize(int size) {
   // right/bottom edges in order to make its own decisions about what to do. We
   // are capable of tainting that parent frameset's borders, so we have to cache
   // this info.
-  prevent_resize_.Resize(size + 1);
-  allow_border_.Resize(size + 1);
+  prevent_resize_.resize(size + 1);
+  allow_border_.resize(size + 1);
 }
 
 void LayoutFrameSet::LayOutAxis(GridAxis& axis,

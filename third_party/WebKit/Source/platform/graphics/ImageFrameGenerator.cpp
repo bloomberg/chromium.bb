@@ -281,7 +281,7 @@ void ImageFrameGenerator::SetHasAlpha(size_t index, bool has_alpha) {
   MutexLocker lock(alpha_mutex_);
   if (index >= has_alpha_.size()) {
     const size_t old_size = has_alpha_.size();
-    has_alpha_.Resize(index + 1);
+    has_alpha_.resize(index + 1);
     for (size_t i = old_size; i < has_alpha_.size(); ++i)
       has_alpha_[i] = true;
   }

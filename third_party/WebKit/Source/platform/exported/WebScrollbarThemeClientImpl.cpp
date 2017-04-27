@@ -92,7 +92,7 @@ void WebScrollbarThemeClientImpl::GetTickmarks(
     Vector<IntRect>& tickmarks) const {
   WebVector<WebRect> web_tickmarks;
   scrollbar_.GetTickmarks(web_tickmarks);
-  tickmarks.Resize(web_tickmarks.size());
+  tickmarks.resize(web_tickmarks.size());
   for (size_t i = 0; i < web_tickmarks.size(); ++i)
     tickmarks[i] = web_tickmarks[i];
 }

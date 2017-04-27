@@ -98,7 +98,7 @@ template <typename IntegerType>
 void TestBoundaries() {
   const unsigned kBufferSize = 256;
   Vector<char, kBufferSize> buffer;
-  buffer.Resize(kBufferSize);
+  buffer.resize(kBufferSize);
 
   const IntegerType min = std::numeric_limits<IntegerType>::min();
   CString min_string_data = String::Number(min).Latin1();
@@ -117,7 +117,7 @@ template <typename IntegerType>
 void TestNumbers() {
   const unsigned kBufferSize = 256;
   Vector<char, kBufferSize> buffer;
-  buffer.Resize(kBufferSize);
+  buffer.resize(kBufferSize);
 
   for (int i = -100; i < 100; ++i) {
     const IntegerType number = static_cast<IntegerType>(i);

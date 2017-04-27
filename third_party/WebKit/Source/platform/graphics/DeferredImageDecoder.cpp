@@ -282,7 +282,7 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   ActivateLazyDecoding();
 
   const size_t previous_size = frame_data_.size();
-  frame_data_.Resize(actual_decoder_->FrameCount());
+  frame_data_.resize(actual_decoder_->FrameCount());
 
   // We have encountered a broken image file. Simply bail.
   if (frame_data_.size() < previous_size)

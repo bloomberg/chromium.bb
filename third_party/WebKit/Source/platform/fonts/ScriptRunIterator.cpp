@@ -21,7 +21,7 @@ void ICUScriptData::GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
   // Leave room to insert primary script. It's not strictly necessary but
   // it ensures that the result won't ever be greater than kMaxScriptCount,
   // which some client someday might expect.
-  dst.Resize(kMaxScriptCount - 1);
+  dst.resize(kMaxScriptCount - 1);
   // Note, ICU convention is to return the number of available items
   // regardless of the capacity passed to the call. So count can be greater
   // than dst->size(), if a later version of the unicode data has more
@@ -43,7 +43,7 @@ void ICUScriptData::GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
     return;
   }
 
-  dst.Resize(count);
+  dst.resize(count);
 
   if (primary_script == dst.at(0)) {
     // Only one script (might be common or inherited -- these are never in
@@ -290,7 +290,7 @@ bool ScriptRunIterator::MergeSets() {
   // Only change current if the run continues.
   int written = std::distance(current_set_.begin(), current_write_it);
   if (written > 0) {
-    current_set_.Resize(written);
+    current_set_.resize(written);
     return true;
   }
   return false;
@@ -348,10 +348,10 @@ bool ScriptRunIterator::Fetch(size_t* pos, UChar32* ch) {
       next_set_ = ahead_set_;
       next_set_.erase(0);
       // Discard the remaining values, we'll inherit.
-      ahead_set_.Resize(1);
+      ahead_set_.resize(1);
     } else {
       // Else, this applies to anything.
-      ahead_set_.Resize(1);
+      ahead_set_.resize(1);
     }
   }
   return true;

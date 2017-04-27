@@ -415,7 +415,7 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   int axis_count = typeface->getVariationDesignPosition(nullptr, 0);
   if (axis_count > 0) {
     Vector<SkFontArguments::VariationPosition::Coordinate> axis_values;
-    axis_values.Resize(axis_count);
+    axis_values.resize(axis_count);
     if (typeface->getVariationDesignPosition(axis_values.data(),
                                              axis_values.size()) > 0) {
       hb_font_set_variations(

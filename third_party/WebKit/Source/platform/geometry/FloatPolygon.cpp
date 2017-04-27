@@ -92,7 +92,7 @@ FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices,
                            WindRule fill_rule)
     : vertices_(std::move(vertices)), fill_rule_(fill_rule) {
   unsigned n_vertices = NumberOfVertices();
-  edges_.Resize(n_vertices);
+  edges_.resize(n_vertices);
   empty_ = n_vertices < 3;
 
   if (n_vertices)
@@ -139,7 +139,7 @@ FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices,
     }
   }
 
-  edges_.Resize(edge_index);
+  edges_.resize(edge_index);
   empty_ = edges_.size() < 3;
 
   if (empty_)
@@ -159,7 +159,7 @@ bool FloatPolygon::OverlappingEdges(
   edge_tree_.AllOverlaps(FloatPolygon::EdgeInterval(min_y, max_y, 0),
                          overlapping_edge_intervals);
   unsigned overlapping_edge_intervals_size = overlapping_edge_intervals.size();
-  result.Resize(overlapping_edge_intervals_size);
+  result.resize(overlapping_edge_intervals_size);
   for (unsigned i = 0; i < overlapping_edge_intervals_size; ++i) {
     const FloatPolygonEdge* edge = static_cast<const FloatPolygonEdge*>(
         overlapping_edge_intervals[i].Data());

@@ -140,7 +140,7 @@ InitialColumnHeightFinder::InitialColumnHeightFinder(
     : ColumnBalancer(column_set,
                      logical_top_in_flow_thread,
                      logical_bottom_in_flow_thread) {
-  shortest_struts_.Resize(column_set.UsedColumnCount());
+  shortest_struts_.resize(column_set.UsedColumnCount());
   for (auto& strut : shortest_struts_)
     strut = LayoutUnit::Max();
   Traverse();

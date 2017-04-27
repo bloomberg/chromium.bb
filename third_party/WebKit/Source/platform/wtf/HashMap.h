@@ -711,7 +711,7 @@ inline void CopyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection,
   typedef
       typename HashMap<T, U, V, W, X, Y>::const_iterator::KeysIterator iterator;
 
-  vector.Resize(collection.size());
+  vector.resize(collection.size());
 
   iterator it = collection.begin().Keys();
   iterator end = collection.end().Keys();
@@ -731,7 +731,7 @@ inline void CopyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection,
   typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::ValuesIterator
       iterator;
 
-  vector.Resize(collection.size());
+  vector.resize(collection.size());
 
   iterator it = collection.begin().Values();
   iterator end = collection.end().Values();

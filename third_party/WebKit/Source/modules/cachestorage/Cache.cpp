@@ -290,7 +290,7 @@ class Cache::BarrierCallbackForPut final
         cache_(cache),
         resolver_(resolver) {
     ASSERT(0 < number_of_remaining_operations_);
-    batch_operations_.Resize(number_of_operations);
+    batch_operations_.resize(number_of_operations);
   }
 
   void OnSuccess(size_t index,
@@ -571,9 +571,9 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
     return ScriptPromise::CastUndefined(script_state);
 
   HeapVector<RequestInfo> request_infos;
-  request_infos.Resize(requests.size());
+  request_infos.resize(requests.size());
   Vector<ScriptPromise> promises;
-  promises.Resize(requests.size());
+  promises.resize(requests.size());
   for (size_t i = 0; i < requests.size(); ++i) {
     if (!requests[i]->url().ProtocolIsInHTTPFamily())
       return ScriptPromise::Reject(script_state,

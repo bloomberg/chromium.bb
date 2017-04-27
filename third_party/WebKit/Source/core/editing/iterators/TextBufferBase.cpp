@@ -8,7 +8,7 @@ namespace blink {
 
 TextBufferBase::TextBufferBase() {
   buffer_.ReserveCapacity(1024);
-  buffer_.Resize(Capacity());
+  buffer_.resize(Capacity());
 }
 
 void TextBufferBase::ShiftData(size_t) {}
@@ -29,8 +29,8 @@ UChar* TextBufferBase::EnsureDestination(size_t length) {
 
 void TextBufferBase::Grow(size_t demand) {
   size_t old_capacity = Capacity();
-  buffer_.Resize(demand);
-  buffer_.Resize(Capacity());
+  buffer_.resize(demand);
+  buffer_.resize(Capacity());
   ShiftData(old_capacity);
 }
 

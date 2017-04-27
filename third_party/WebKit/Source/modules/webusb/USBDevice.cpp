@@ -716,7 +716,7 @@ void USBDevice::OnConfigurationSelected(bool success,
     claimed_interfaces_.Resize(num_interfaces);
     interface_state_change_in_progress_.ClearAll();
     interface_state_change_in_progress_.Resize(num_interfaces);
-    selected_alternates_.Resize(num_interfaces);
+    selected_alternates_.resize(num_interfaces);
     selected_alternates_.Fill(0);
     in_endpoints_.ClearAll();
     out_endpoints_.ClearAll();

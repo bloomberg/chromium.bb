@@ -401,7 +401,7 @@ bool SecurityOrigin::IsLocalhost() const {
   DCHECK(host_.ContainsOnlyASCII());
   StringUTF8Adaptor utf8(host_);
   Vector<uint8_t, 4> ip_number;
-  ip_number.Resize(4);
+  ip_number.resize(4);
 
   int num_components;
   url::Component host_component(0, utf8.length());

@@ -126,7 +126,7 @@ struct URLEscapeSequence {
     // where every %-sign introduces a valid escape sequence, but there may be
     // characters between the sequences.
     Vector<char, 512> buffer;
-    buffer.Resize(
+    buffer.resize(
         run_length);  // Unescaping hex sequences only makes the length smaller.
     char* p = buffer.data();
     const CharType* run_end = run + run_length;

@@ -113,9 +113,9 @@ void StringBuilder::Resize(unsigned new_size) {
   length_ = new_size;
   if (HasBuffer()) {
     if (is8_bit_)
-      buffer8_->Resize(new_size);
+      buffer8_->resize(new_size);
     else
-      buffer16_->Resize(new_size);
+      buffer16_->resize(new_size);
   }
 }
 

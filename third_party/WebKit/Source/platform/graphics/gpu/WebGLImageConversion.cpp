@@ -2939,7 +2939,7 @@ bool WebGLImageConversion::PackImageData(
                               source_image_sub_rectangle.Height(), depth,
                               params, &packed_size, 0, 0) != GL_NO_ERROR)
     return false;
-  data.Resize(packed_size);
+  data.resize(packed_size);
 
   return PackPixels(reinterpret_cast<const uint8_t*>(pixels), source_format,
                     source_image_width, source_image_height,
@@ -2973,7 +2973,7 @@ bool WebGLImageConversion::ExtractImageData(
                               source_image_sub_rectangle.Height(), depth,
                               params, &packed_size, 0, 0) != GL_NO_ERROR)
     return false;
-  data.Resize(packed_size);
+  data.resize(packed_size);
 
   if (!PackPixels(image_data, source_data_format, width, height,
                   source_image_sub_rectangle, depth, 0, unpack_image_height,
@@ -3003,7 +3003,7 @@ bool WebGLImageConversion::ExtractTextureData(unsigned width,
                                       &bytes_per_component))
     return false;
   unsigned bytes_per_pixel = components_per_pixel * bytes_per_component;
-  data.Resize(width * height * bytes_per_pixel);
+  data.resize(width * height * bytes_per_pixel);
 
   if (!PackPixels(static_cast<const uint8_t*>(pixels), source_data_format,
                   width, height, IntRect(0, 0, width, height), 1,

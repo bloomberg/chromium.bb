@@ -127,7 +127,7 @@ void BaseRenderingContext2D::UnwindStateStack() {
 void BaseRenderingContext2D::Reset() {
   ValidateStateStack();
   UnwindStateStack();
-  state_stack_.Resize(1);
+  state_stack_.resize(1);
   state_stack_.front() = CanvasRenderingContext2DState::Create();
   path_.Clear();
   if (PaintCanvas* c = ExistingDrawingCanvas()) {

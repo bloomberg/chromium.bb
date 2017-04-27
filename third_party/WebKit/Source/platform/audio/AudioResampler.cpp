@@ -54,7 +54,7 @@ void AudioResampler::ConfigureChannels(unsigned number_of_channels) {
     for (unsigned i = current_size; i < number_of_channels; ++i)
       kernels_.push_back(WTF::MakeUnique<AudioResamplerKernel>(this));
   } else
-    kernels_.Resize(number_of_channels);
+    kernels_.resize(number_of_channels);
 
   // Reconfigure our source bus to the new channel size.
   source_bus_ = AudioBus::Create(number_of_channels, 0, false);

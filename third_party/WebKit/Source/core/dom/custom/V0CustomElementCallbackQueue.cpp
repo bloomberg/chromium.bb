@@ -66,7 +66,7 @@ bool V0CustomElementCallbackQueue::ProcessInElementQueue(
   if (Owner() == caller && index_ == queue_.size()) {
     // This processInQueue exhausted the queue; shrink it.
     index_ = 0;
-    queue_.Resize(0);
+    queue_.resize(0);
     owner_ = -1;
   }
 

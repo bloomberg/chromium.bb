@@ -220,7 +220,7 @@ PassRefPtr<DeferredTaskHandler> DeferredTaskHandler::Create() {
 DeferredTaskHandler::~DeferredTaskHandler() {
   DCHECK(!automatic_pull_nodes_.size());
   if (automatic_pull_nodes_need_updating_)
-    rendering_automatic_pull_nodes_.Resize(automatic_pull_nodes_.size());
+    rendering_automatic_pull_nodes_.resize(automatic_pull_nodes_.size());
   DCHECK(!rendering_automatic_pull_nodes_.size());
 }
 

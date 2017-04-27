@@ -58,7 +58,7 @@ void HitTestCache::AddCachedResult(const HitTestResult& result,
   if (dom_tree_version != dom_tree_version_)
     Clear();
   if (items_.size() < HIT_TEST_CACHE_SIZE)
-    items_.Resize(update_index_ + 1);
+    items_.resize(update_index_ + 1);
 
   items_.at(update_index_).CacheValues(result);
   dom_tree_version_ = dom_tree_version;

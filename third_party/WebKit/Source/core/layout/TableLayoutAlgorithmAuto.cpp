@@ -161,7 +161,7 @@ void TableLayoutAlgorithmAuto::FullRecalc() {
   effective_logical_width_dirty_ = true;
 
   unsigned n_eff_cols = table_->NumEffectiveColumns();
-  layout_struct_.Resize(n_eff_cols);
+  layout_struct_.resize(n_eff_cols);
   layout_struct_.Fill(Layout());
   span_cells_.Fill(0);
 

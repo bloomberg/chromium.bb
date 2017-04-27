@@ -637,7 +637,7 @@ void InlineTextBox::CharacterWidths(Vector<float>& widths) const {
   Vector<CharacterRange> ranges = font.IndividualCharacterRanges(text_run);
   DCHECK_EQ(ranges.size(), len_);
 
-  widths.Resize(ranges.size());
+  widths.resize(ranges.size());
   for (unsigned i = 0; i < ranges.size(); i++)
     widths[i] = ranges[i].Width();
 }

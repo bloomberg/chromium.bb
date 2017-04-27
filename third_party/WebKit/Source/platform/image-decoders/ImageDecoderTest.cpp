@@ -59,7 +59,7 @@ class TestImageDecoder : public ImageDecoder {
                   unsigned width = 100,
                   unsigned height = 100) {
     SetSize(width, height);
-    frame_buffer_cache_.Resize(num_frames);
+    frame_buffer_cache_.resize(num_frames);
     for (size_t i = 0; i < num_frames; ++i)
       frame_buffer_cache_[i].SetOriginalFrameRect(IntRect(0, 0, width, height));
   }

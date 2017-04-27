@@ -597,7 +597,7 @@ void HTMLSelectElement::SaveListboxActiveSelection() {
   // 3. Drag the mouse pointer onto the fourth OPTION
   //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
   //   updateListBoxSelection needs to clear selection of the fifth OPTION.
-  cached_state_for_active_selection_.Resize(0);
+  cached_state_for_active_selection_.resize(0);
   for (const auto& option : GetOptionList()) {
     cached_state_for_active_selection_.push_back(option->Selected());
   }
@@ -750,7 +750,7 @@ void HTMLSelectElement::SetRecalcListItems() {
 
 void HTMLSelectElement::RecalcListItems() const {
   TRACE_EVENT0("blink", "HTMLSelectElement::recalcListItems");
-  list_items_.Resize(0);
+  list_items_.resize(0);
 
   should_recalc_list_items_ = false;
 

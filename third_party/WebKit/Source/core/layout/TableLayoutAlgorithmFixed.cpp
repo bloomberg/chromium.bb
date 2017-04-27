@@ -80,7 +80,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
 
   // iterate over all <col> elements
   unsigned n_eff_cols = table_->NumEffectiveColumns();
-  width_.Resize(n_eff_cols);
+  width_.resize(n_eff_cols);
   width_.Fill(Length(kAuto));
 
   unsigned current_effective_column = 0;

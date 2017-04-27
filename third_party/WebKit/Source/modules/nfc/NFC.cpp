@@ -257,7 +257,7 @@ struct TypeConverter<NFCMessagePtr, blink::NFCMessage> {
   static NFCMessagePtr Convert(const blink::NFCMessage& message) {
     NFCMessagePtr messagePtr = NFCMessage::New();
     messagePtr->url = message.url();
-    messagePtr->data.Resize(message.data().size());
+    messagePtr->data.resize(message.data().size());
     for (size_t i = 0; i < message.data().size(); ++i) {
       NFCRecordPtr record = NFCRecord::From(message.data()[i]);
       if (record.is_null())

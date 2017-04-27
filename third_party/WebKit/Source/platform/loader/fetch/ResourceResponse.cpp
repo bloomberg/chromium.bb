@@ -245,7 +245,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->was_fallback_required_by_service_worker_ =
       was_fallback_required_by_service_worker_;
   data->service_worker_response_type_ = service_worker_response_type_;
-  data->url_list_via_service_worker_.Resize(
+  data->url_list_via_service_worker_.resize(
       url_list_via_service_worker_.size());
   std::transform(url_list_via_service_worker_.begin(),
                  url_list_via_service_worker_.end(),

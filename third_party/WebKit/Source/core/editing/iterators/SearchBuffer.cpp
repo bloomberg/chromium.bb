@@ -113,7 +113,7 @@ inline void SearchBuffer::Append(const CharType* characters, size_t length) {
   size_t old_length = buffer_.size();
   size_t usable_length = std::min(buffer_.capacity() - old_length, length);
   DCHECK(usable_length);
-  buffer_.Resize(old_length + usable_length);
+  buffer_.resize(old_length + usable_length);
   UChar* destination = buffer_.data() + old_length;
   StringImpl::CopyChars(destination, characters, usable_length);
   FoldQuoteMarksAndSoftHyphens(destination, usable_length);

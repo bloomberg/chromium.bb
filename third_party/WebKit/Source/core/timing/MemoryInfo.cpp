@@ -106,7 +106,7 @@ size_t QuantizeMemorySize(size_t size) {
   DEFINE_STATIC_LOCAL(Vector<size_t>, bucket_size_list, ());
 
   if (bucket_size_list.IsEmpty()) {
-    bucket_size_list.Resize(kNumberOfBuckets);
+    bucket_size_list.resize(kNumberOfBuckets);
 
     float size_of_next_bucket =
         10000000.0;  // First bucket size is roughly 10M.

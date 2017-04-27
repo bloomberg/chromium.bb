@@ -147,7 +147,7 @@ class JPEGImageEncoderStateImpl final : public JPEGImageEncoderState {
 static void PrepareOutput(j_compress_ptr cinfo) {
   JPEGOutputBuffer* out = static_cast<JPEGOutputBuffer*>(cinfo->dest);
   const size_t kInternalBufferSize = 8192;
-  out->buffer.Resize(kInternalBufferSize);
+  out->buffer.resize(kInternalBufferSize);
   out->next_output_byte = out->buffer.data();
   out->free_in_buffer = out->buffer.size();
 }
@@ -280,7 +280,7 @@ bool JPEGImageEncoder::EncodeWithPreInitializedState(
       static_cast<JPEGImageEncoderStateImpl*>(encoder_state.get());
 
   Vector<JSAMPLE> row;
-  row.Resize(encoder_state_impl->Cinfo()->image_width *
+  row.resize(encoder_state_impl->Cinfo()->image_width *
              encoder_state_impl->Cinfo()->input_components);
 
   SET_JUMP_BUFFER(encoder_state_impl->Cinfo(), false);

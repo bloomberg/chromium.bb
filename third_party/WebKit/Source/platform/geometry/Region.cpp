@@ -446,7 +446,7 @@ Region::Shape Region::Shape::ShapeOperation(const Shape& shape1,
     SegmentIterator s2 = segments2;
 
     // Clear vector without dropping capacity.
-    segments.Resize(0);
+    segments.resize(0);
     DCHECK(segments.capacity());
 
     // Now iterate over the segments in each span and construct a new vector of

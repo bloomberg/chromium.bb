@@ -48,7 +48,7 @@ void NotificationResourcesLoader::Start(
             WTF::Bind(&NotificationResourcesLoader::DidLoadBadge,
                       WrapWeakPersistent(this)));
 
-  action_icons_.Resize(num_actions);
+  action_icons_.resize(num_actions);
   for (size_t i = 0; i < num_actions; i++)
     LoadImage(execution_context, NotificationImageLoader::Type::kActionIcon,
               notification_data.actions[i].icon,

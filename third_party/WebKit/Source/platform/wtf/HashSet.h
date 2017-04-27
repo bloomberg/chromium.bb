@@ -314,7 +314,7 @@ inline void CopyToVector(const C& collection, W& vector) {
   {
     // Disallow GC across resize allocation, see crbug.com/568173
     typename W::GCForbiddenScope scope;
-    vector.Resize(collection.size());
+    vector.resize(collection.size());
   }
 
   iterator it = collection.begin();
