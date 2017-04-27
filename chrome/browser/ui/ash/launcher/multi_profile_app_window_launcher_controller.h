@@ -14,7 +14,7 @@ class MultiProfileAppWindowLauncherController
     : public ExtensionAppWindowLauncherController {
  public:
   explicit MultiProfileAppWindowLauncherController(
-      ChromeLauncherControllerImpl* owner);
+      ChromeLauncherController* owner);
   ~MultiProfileAppWindowLauncherController() override;
 
   // Overridden from AppWindowLauncherController:

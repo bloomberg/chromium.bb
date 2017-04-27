@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -60,7 +60,7 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 }  // namespace
 
 ArcAppDeferredLauncherController::ArcAppDeferredLauncherController(
-    ChromeLauncherControllerImpl* owner)
+    ChromeLauncherController* owner)
     : owner_(owner), weak_ptr_factory_(this) {
   if (arc::IsArcAllowedForProfile(owner->profile())) {
     observed_profile_ = owner->profile();

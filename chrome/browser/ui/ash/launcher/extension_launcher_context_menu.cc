@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -29,7 +29,7 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 }  // namespace
 
 ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
-    ChromeLauncherControllerImpl* controller,
+    ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     ash::WmShelf* wm_shelf)
     : LauncherContextMenu(controller, item, wm_shelf) {

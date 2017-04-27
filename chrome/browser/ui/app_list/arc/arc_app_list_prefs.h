@@ -246,7 +246,7 @@ class ArcAppListPrefs
   void SimulateDefaultAppAvailabilityTimeoutForTesting();
 
  private:
-  friend class ChromeLauncherControllerImplTest;
+  friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
 
   // See the Create methods.

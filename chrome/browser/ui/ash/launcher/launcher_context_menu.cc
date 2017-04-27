@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
@@ -42,7 +42,7 @@ bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
 
 // static
 LauncherContextMenu* LauncherContextMenu::Create(
-    ChromeLauncherControllerImpl* controller,
+    ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     ash::WmShelf* wm_shelf) {
   DCHECK(controller);
@@ -60,10 +60,9 @@ LauncherContextMenu* LauncherContextMenu::Create(
   return new ExtensionLauncherContextMenu(controller, item, wm_shelf);
 }
 
-LauncherContextMenu::LauncherContextMenu(
-    ChromeLauncherControllerImpl* controller,
-    const ash::ShelfItem* item,
-    ash::WmShelf* wm_shelf)
+LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
+                                         const ash::ShelfItem* item,
+                                         ash::WmShelf* wm_shelf)
     : ui::SimpleMenuModel(nullptr),
       controller_(controller),
       item_(item ? *item : ash::ShelfItem()),

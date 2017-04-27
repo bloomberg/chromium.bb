@@ -44,7 +44,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
@@ -499,7 +499,7 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
 
 void ChromeShellDelegate::ShelfInit() {
   if (!launcher_controller_) {
-    launcher_controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+    launcher_controller_ = base::MakeUnique<ChromeLauncherController>(
         nullptr, ash::Shell::Get()->shelf_model());
     launcher_controller_->Init();
   }

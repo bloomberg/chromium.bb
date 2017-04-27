@@ -22,7 +22,7 @@ namespace keyboard {
 class KeyboardUI;
 }
 
-class ChromeLauncherControllerImpl;
+class ChromeLauncherController;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
@@ -71,7 +71,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
+  std::unique_ptr<ChromeLauncherController> launcher_controller_;
 
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;

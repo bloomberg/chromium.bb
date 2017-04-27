@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 #include <stddef.h>
 
@@ -228,8 +228,8 @@ class TestLauncherControllerHelper : public LauncherControllerHelper {
 
   // LauncherControllerHelper:
   std::string GetAppID(content::WebContents* tab) override {
-    return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
-        std::string();
+    return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab]
+                                                      : std::string();
   }
 
   bool IsValidIDForCurrentUser(const std::string& id) const override {
@@ -340,14 +340,15 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
 
 }  // namespace
 
-// A test ChromeLauncherControllerImpl subclass that uses TestShelfController.
-class TestChromeLauncherControllerImpl : public ChromeLauncherControllerImpl {
+// A test ChromeLauncherController subclass that uses TestShelfController.
+class TestChromeLauncherController : public ChromeLauncherController {
  public:
-  TestChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model)
-      : ChromeLauncherControllerImpl(profile, model) {}
+  TestChromeLauncherController(Profile* profile, ash::ShelfModel* model)
+      : ChromeLauncherController(profile, model) {}
 
-  // ChromeLauncherControllerImpl:
-  using ChromeLauncherControllerImpl::ReleaseProfile;
+  // ChromeLauncherController:
+  using ChromeLauncherController::AttachProfile;
+  using ChromeLauncherController::ReleaseProfile;
   bool ConnectToShelfController() override {
     // Set the shelf controller pointer to a test instance; this is run in init.
     if (!shelf_controller_.is_bound())
@@ -362,29 +363,28 @@ class TestChromeLauncherControllerImpl : public ChromeLauncherControllerImpl {
  private:
   TestShelfController test_shelf_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherController);
 };
 
 // A shell delegate that owns a ChromeLauncherController, like production.
-// TODO(msw): Refine ChromeLauncherControllerImpl lifetime management.
+// TODO(msw): Refine ChromeLauncherController lifetime management.
 // TODO(msw): Avoid relying on TestShellDelegate's ShelfInitializer.
 class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
  public:
   ChromeLauncherTestShellDelegate() {}
 
-  // Create a ChromeLauncherControllerImpl instance.
-  ChromeLauncherControllerImpl* CreateLauncherController(Profile* profile) {
-    launcher_controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+  // Create a ChromeLauncherController instance.
+  ChromeLauncherController* CreateLauncherController(Profile* profile) {
+    launcher_controller_ = base::MakeUnique<ChromeLauncherController>(
         profile, ash::Shell::Get()->shelf_model());
     return launcher_controller_.get();
   }
 
-  // Create a TestChromeLauncherControllerImpl instance.
-  TestChromeLauncherControllerImpl* CreateTestLauncherController(
-      Profile* profile) {
-    auto controller = base::MakeUnique<TestChromeLauncherControllerImpl>(
+  // Create a TestChromeLauncherController instance.
+  TestChromeLauncherController* CreateTestLauncherController(Profile* profile) {
+    auto controller = base::MakeUnique<TestChromeLauncherController>(
         profile, ash::Shell::Get()->shelf_model());
-    TestChromeLauncherControllerImpl* controller_weak = controller.get();
+    TestChromeLauncherController* controller_weak = controller.get();
     launcher_controller_ = std::move(controller);
     launcher_controller_->Init();
     return controller_weak;
@@ -394,17 +394,17 @@ class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
   void ShelfShutdown() override { launcher_controller_.reset(); }
 
  private:
-  std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
+  std::unique_ptr<ChromeLauncherController> launcher_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
 };
 
-class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
+class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
-  ChromeLauncherControllerImplTest()
+  ChromeLauncherControllerTest()
       : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false) {}
 
-  ~ChromeLauncherControllerImplTest() override {}
+  ~ChromeLauncherControllerTest() override {}
 
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -602,7 +602,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   // Create a launcher controller instance, owned by the test shell delegate.
   // Returns a pointer to the uninitialized controller.
-  ChromeLauncherControllerImpl* CreateLauncherController() {
+  ChromeLauncherController* CreateLauncherController() {
     launcher_controller_ = shell_delegate_->CreateLauncherController(profile());
     return launcher_controller_;
   }
@@ -625,9 +625,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   // Destroy and recreate the controller; clear and reinitialize the ShelfModel.
   // Returns a pointer to the uninitialized controller, owned by shell delegate.
-  // TODO(msw): This does not accurately represent ChromeLauncherControllerImpl
+  // TODO(msw): This does not accurately represent ChromeLauncherController
   // lifetime or usage in production, and does not accurately simulate restarts.
-  ChromeLauncherControllerImpl* RecreateLauncherController() {
+  ChromeLauncherController* RecreateLauncherController() {
     // Destroy any existing controller first; only one may exist at a time.
     ResetLauncherController();
     while (model_->item_count() > 0)
@@ -822,7 +822,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   // Gets the IDs of the currently pinned app items.
-  void GetPinnedAppIds(ChromeLauncherControllerImpl* controller,
+  void GetPinnedAppIds(ChromeLauncherController* controller,
                        std::vector<std::string>* app_ids) {
     app_ids->clear();
     for (const auto& item : model_->items()) {
@@ -1046,7 +1046,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
-  ChromeLauncherControllerImpl* launcher_controller_ = nullptr;
+  ChromeLauncherController* launcher_controller_ = nullptr;
   ChromeLauncherTestShellDelegate* shell_delegate_ = nullptr;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
   ash::ShelfModel* model_ = nullptr;
@@ -1071,28 +1071,28 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     return new TestBrowserWindowAura(std::move(window));
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
 
-class ChromeLauncherControllerImplWithArcTest
-    : public ChromeLauncherControllerImplTest,
+class ChromeLauncherControllerWithArcTest
+    : public ChromeLauncherControllerTest,
       public ::testing::WithParamInterface<bool> {
  protected:
-  ChromeLauncherControllerImplWithArcTest() { auto_start_arc_test_ = true; }
-  ~ChromeLauncherControllerImplWithArcTest() override {}
+  ChromeLauncherControllerWithArcTest() { auto_start_arc_test_ = true; }
+  ~ChromeLauncherControllerWithArcTest() override {}
 
   void SetUp() override {
     if (GetParam())
       arc::SetArcAlwaysStartForTesting();
-    ChromeLauncherControllerImplTest::SetUp();
+    ChromeLauncherControllerTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplWithArcTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerImplWithArcTest,
+                        ChromeLauncherControllerWithArcTest,
                         ::testing::Bool());
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
@@ -1107,9 +1107,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
   ~WebContentsDestroyedWatcher() override {}
 
   // Waits until the WebContents is destroyed.
-  void Wait() {
-    message_loop_runner_->Run();
-  }
+  void Wait() { message_loop_runner_->Run(); }
 
  private:
   // Overridden WebContentsObserver methods.
@@ -1190,13 +1188,12 @@ class V2App {
 };
 
 // The testing framework to test multi profile scenarios.
-class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
-    : public ChromeLauncherControllerImplTest {
+class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
+    : public ChromeLauncherControllerTest {
  protected:
-  MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest() {}
+  MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest() {}
 
-  ~MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest()
-      override {}
+  ~MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest() override {}
 
   // Overwrite the Setup function to enable multi profile and needed objects.
   void SetUp() override {
@@ -1216,12 +1213,12 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
     chromeos::WallpaperManager::Initialize();
 
     // Initialize the rest.
-    ChromeLauncherControllerImplTest::SetUp();
+    ChromeLauncherControllerTest::SetUp();
     shell_delegate_->set_multi_profiles_enabled(true);
   }
 
   void TearDown() override {
-    ChromeLauncherControllerImplTest::TearDown();
+    ChromeLauncherControllerTest::TearDown();
     user_manager_enabler_.reset();
     for (ProfileToNameMap::iterator it = created_profiles_.begin();
          it != created_profiles_.end(); ++it)
@@ -1327,34 +1324,33 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
   ProfileToNameMap created_profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(
-      MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest);
+      MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest);
 };
 
-class ChromeLauncherControllerImplMultiProfileWithArcTest
-    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,  // NOLINT(whitespace/line_length)
+class ChromeLauncherControllerMultiProfileWithArcTest
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       public ::testing::WithParamInterface<bool> {
  protected:
-  ChromeLauncherControllerImplMultiProfileWithArcTest() {
+  ChromeLauncherControllerMultiProfileWithArcTest() {
     auto_start_arc_test_ = true;
   }
-  ~ChromeLauncherControllerImplMultiProfileWithArcTest() override {}
+  ~ChromeLauncherControllerMultiProfileWithArcTest() override {}
 
   void SetUp() override {
     if (GetParam())
       arc::SetArcAlwaysStartForTesting();
-    MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest::
-        SetUp();
+    MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerImplMultiProfileWithArcTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMultiProfileWithArcTest);
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerImplMultiProfileWithArcTest,
+                        ChromeLauncherControllerMultiProfileWithArcTest,
                         ::testing::Bool());
 
-TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
+TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1370,8 +1366,7 @@ TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest,
-       ArcAppPinCrossPlatformWorkflow) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Work on ARC disabled platform first.
   const std::string arc_app_id1 =
       ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -1481,11 +1476,8 @@ TEST_P(ChromeLauncherControllerImplWithArcTest,
             GetPinnedAppStatus());
 }
 
-/*
- * Test ChromeLauncherControllerImpl correctly merges policy pinned apps
- * and user pinned apps
- */
-TEST_F(ChromeLauncherControllerImplTest, MergePolicyAndUserPrefPinnedApps) {
+// Ensure correct merging of policy pinned apps and user pinned apps.
+TEST_F(ChromeLauncherControllerTest, MergePolicyAndUserPrefPinnedApps) {
   InitLauncherController();
 
   extension_service_->AddExtension(extension1_.get());
@@ -1532,7 +1524,7 @@ TEST_F(ChromeLauncherControllerImplTest, MergePolicyAndUserPrefPinnedApps) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced reverse
 // order.
-TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsReverseOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsReverseOrder) {
   InitLauncherController();
 
   syncer::SyncChangeList sync_list;
@@ -1570,7 +1562,7 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsReverseOrder) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned them (on another system) when they are synced random
 // order.
-TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsRandomOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsRandomOrder) {
   InitLauncherController();
 
   syncer::SyncChangeList sync_list;
@@ -1607,8 +1599,7 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsRandomOrder) {
 // Check that the restauration of launcher items is happening in the same order
 // as the user has pinned / moved them (on another system) when they are synced
 // random order - including the chrome icon.
-TEST_F(ChromeLauncherControllerImplTest,
-       RestoreDefaultAppsRandomOrderChromeMoved) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsRandomOrderChromeMoved) {
   InitLauncherController();
 
   syncer::SyncChangeList sync_list;
@@ -1645,7 +1636,7 @@ TEST_F(ChromeLauncherControllerImplTest,
 }
 
 // Check that syncing to a different state does the correct thing.
-TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsResyncOrder) {
+TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsResyncOrder) {
   InitLauncherController();
 
   syncer::SyncChangeList sync_list0;
@@ -1703,7 +1694,7 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsResyncOrder) {
 }
 
 // Test the V1 app interaction flow: run it, activate it, close it.
-TEST_F(ChromeLauncherControllerImplTest, V1AppRunActivateClose) {
+TEST_F(ChromeLauncherControllerTest, V1AppRunActivateClose) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1738,7 +1729,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppRunActivateClose) {
 }
 
 // Test the V1 app interaction flow: pin it, run it, close it, unpin it.
-TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunCloseUnpin) {
+TEST_F(ChromeLauncherControllerTest, V1AppPinRunCloseUnpin) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1782,7 +1773,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunCloseUnpin) {
 }
 
 // Test the V1 app interaction flow: run it, pin it, close it, unpin it.
-TEST_F(ChromeLauncherControllerImplTest, V1AppRunPinCloseUnpin) {
+TEST_F(ChromeLauncherControllerTest, V1AppRunPinCloseUnpin) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1826,7 +1817,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppRunPinCloseUnpin) {
 }
 
 // Test the V1 app interaction flow: pin it, run it, unpin it, close it.
-TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunUnpinClose) {
+TEST_F(ChromeLauncherControllerTest, V1AppPinRunUnpinClose) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1870,7 +1861,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunUnpinClose) {
 }
 
 // Ensure unpinned V1 app ordering is properly restored after user changes.
-TEST_F(ChromeLauncherControllerImplTest, CheckRunningV1AppOrder) {
+TEST_F(ChromeLauncherControllerTest, CheckRunningV1AppOrder) {
   InitLauncherController();
   // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
@@ -1919,7 +1910,7 @@ TEST_F(ChromeLauncherControllerImplTest, CheckRunningV1AppOrder) {
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
   InitLauncherController();
 
   const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
@@ -2009,7 +2000,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
 
 // Ensure the deferred controller does not override the active app controller
 // (crbug.com/701152).
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunchForActiveApp) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   InitLauncherController();
   SendListOfArcApps();
   arc_test_.StopArcInstance();
@@ -2055,12 +2046,12 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunchForActiveApp) {
   EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 }
 
-TEST_P(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
+TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
   // TODO(crbug.com/654622): This test breaks with a non-null static instance.
-  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
+  ChromeLauncherController::set_instance_for_test(nullptr);
 
   SetLauncherControllerHelper(new TestLauncherControllerHelper);
 
@@ -2130,7 +2121,7 @@ TEST_P(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
   arc_window3->CloseNow();
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2173,7 +2164,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
 
 // Test race creation/deletion of ARC app.
 // TODO(khmel): Remove after moving everything to wayland protocol.
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2220,7 +2211,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2249,7 +2240,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
 
 // Validate that ARC app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2294,7 +2285,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPin) {
 }
 
 // Validates that ARC app pins persist across OptOut/OptIn.
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2344,7 +2335,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinOptOutOptIn) {
 
 // Check that with multi profile V1 apps are properly added / removed from the
 // shelf.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppUpdateOnUserSwitch) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2375,7 +2366,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 }
 
 // Check edge cases with multi profile V1 apps in the shelf.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppUpdateOnUserSwitchEdgecases) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2411,7 +2402,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 }
 
 // Check edge case where a visiting V1 app gets closed (crbug.com/321374).
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1CloseOnVisitingDesktop) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2455,7 +2446,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 }
 
 // Check edge cases with multi profile V1 apps in the shelf.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppUpdateOnUserSwitchEdgecases2) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2493,7 +2484,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
 // Check that activating an item which is on another user's desktop, will bring
 // it back.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        TestLauncherActivationPullsBackWindow) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2531,7 +2522,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
 // Check that a running windowed V1 application will be properly pinned and
 // unpinned when the order gets changed through a profile / policy change.
-TEST_F(ChromeLauncherControllerImplTest,
+TEST_F(ChromeLauncherControllerTest,
        RestoreDefaultAndRunningV1AppsResyncOrder) {
   InitLauncherController();
 
@@ -2577,7 +2568,7 @@ TEST_F(ChromeLauncherControllerImplTest,
 
 // Check that a running unpinned V2 application will be properly pinned and
 // unpinned when the order gets changed through a profile / policy change.
-TEST_F(ChromeLauncherControllerImplTest,
+TEST_F(ChromeLauncherControllerTest,
        RestoreDefaultAndRunningV2AppsResyncOrder) {
   InitLauncherController();
   syncer::SyncChangeList sync_list0;
@@ -2622,7 +2613,7 @@ TEST_F(ChromeLauncherControllerImplTest,
 
 // Each user has a different set of applications pinned. Check that when
 // switching between the two users, the state gets properly set.
-TEST_F(ChromeLauncherControllerImplTest, UserSwitchIconRestore) {
+TEST_F(ChromeLauncherControllerTest, UserSwitchIconRestore) {
   syncer::SyncChangeList user_a;
   syncer::SyncChangeList user_b;
 
@@ -2650,8 +2641,7 @@ TEST_F(ChromeLauncherControllerImplTest, UserSwitchIconRestore) {
 // Each user has a different set of applications pinned, and one user has an
 // application running. Check that when switching between the two users, the
 // state gets properly set.
-TEST_F(ChromeLauncherControllerImplTest,
-       UserSwitchIconRestoreWithRunningV2App) {
+TEST_F(ChromeLauncherControllerTest, UserSwitchIconRestoreWithRunningV2App) {
   syncer::SyncChangeList user_a;
   syncer::SyncChangeList user_b;
 
@@ -2685,7 +2675,7 @@ TEST_F(ChromeLauncherControllerImplTest,
 // application running. The chrome icon is not the last item in the list.
 // Check that when switching between the two users, the state gets properly set.
 // There was once a bug associated with this.
-TEST_F(ChromeLauncherControllerImplTest,
+TEST_F(ChromeLauncherControllerTest,
        UserSwitchIconRestoreWithRunningV2AppChromeInMiddle) {
   syncer::SyncChangeList user_a;
   syncer::SyncChangeList user_b;
@@ -2713,7 +2703,7 @@ TEST_F(ChromeLauncherControllerImplTest,
             GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerImplTest, Policy) {
+TEST_F(ChromeLauncherControllerTest, Policy) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
 
@@ -2759,7 +2749,7 @@ TEST_F(ChromeLauncherControllerImplTest, Policy) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerImplTest, UnpinWithUninstall) {
+TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
 
@@ -2775,7 +2765,7 @@ TEST_F(ChromeLauncherControllerImplTest, UnpinWithUninstall) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension4_->id()));
 }
 
-TEST_F(ChromeLauncherControllerImplTest, SyncUpdates) {
+TEST_F(ChromeLauncherControllerTest, SyncUpdates) {
   extension_service_->AddExtension(extension2_.get());
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());
@@ -2843,7 +2833,7 @@ TEST_F(ChromeLauncherControllerImplTest, SyncUpdates) {
   EXPECT_EQ(expected_pinned_apps, actual_pinned_apps);
 }
 
-TEST_F(ChromeLauncherControllerImplTest, ImportLegacyPin) {
+TEST_F(ChromeLauncherControllerTest, ImportLegacyPin) {
   // Note extension3_ is actually Gmail app which is default pinned.
   extension_service_->AddExtension(extension3_.get());
   InitLauncherController();
@@ -2890,7 +2880,7 @@ TEST_F(ChromeLauncherControllerImplTest, ImportLegacyPin) {
   EXPECT_EQ("AppList, Chrome, App4, App2, App5", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerImplTest, PendingInsertionOrder) {
+TEST_F(ChromeLauncherControllerTest, PendingInsertionOrder) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());
 
@@ -2919,7 +2909,7 @@ TEST_F(ChromeLauncherControllerImplTest, PendingInsertionOrder) {
 }
 
 // Ensure |controller| creates the expected menu items for the given shelf item.
-void CheckAppMenu(ChromeLauncherControllerImpl* controller,
+void CheckAppMenu(ChromeLauncherController* controller,
                   const ash::ShelfItem& item,
                   size_t expected_item_count,
                   base::string16 expected_item_titles[]) {
@@ -2930,7 +2920,7 @@ void CheckAppMenu(ChromeLauncherControllerImpl* controller,
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
-TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
+TEST_F(ChromeLauncherControllerTest, BrowserMenuGeneration) {
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   chrome::NewTab(browser());
 
@@ -2947,7 +2937,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
   browser()->window()->Show();
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL("http://test1"), title1);
-  base::string16 one_menu_item[] = { title1 };
+  base::string16 one_menu_item[] = {title1};
 
   CheckAppMenu(launcher_controller_, item_browser, 1, one_menu_item);
 
@@ -2970,7 +2960,7 @@ TEST_F(ChromeLauncherControllerImplTest, BrowserMenuGeneration) {
 }
 
 // Check the multi profile case where only user related browsers should show up.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        BrowserMenuGenerationTwoUsers) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -2988,7 +2978,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   browser()->window()->Show();
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL("http://test1"), title1);
-  base::string16 one_menu_item1[] = { title1 };
+  base::string16 one_menu_item1[] = {title1};
   CheckAppMenu(launcher_controller_, item_browser, 1, one_menu_item1);
 
   // Create a browser for another user and check that it is not included in the
@@ -2999,7 +2989,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
       multi_user_util::GetAccountIdFromProfile(profile2));
   std::unique_ptr<Browser> browser2(
       CreateBrowserAndTabWithProfile(profile2, user2, "http://test2"));
-  base::string16 one_menu_item2[] = { ASCIIToUTF16(user2) };
+  base::string16 one_menu_item2[] = {ASCIIToUTF16(user2)};
   CheckAppMenu(launcher_controller_, item_browser, 1, one_menu_item1);
 
   // Switch to the other user and make sure that only that browser window gets
@@ -3019,7 +3009,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 // refocus logic.
 // Note that the extension matching logic is tested by the extension system
 // and does not need a separate test here.
-TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
 
@@ -3053,16 +3043,13 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
 
-  base::string16 one_menu_item[] = { title1 };
+  base::string16 one_menu_item[] = {title1};
   CheckAppMenu(launcher_controller_, item_gmail, 1, one_menu_item);
 
   // Create one empty tab.
   chrome::NewTab(browser());
   base::string16 title2 = ASCIIToUTF16("Test2");
-  NavigateAndCommitActiveTabWithTitle(
-      browser(),
-      GURL("https://bla"),
-      title2);
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL("https://bla"), title2);
 
   // and another one with another gmail instance.
   chrome::NewTab(browser());
@@ -3081,12 +3068,12 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
   launcher_controller_->Close(item_gmail.id);
 
   CheckAppMenu(launcher_controller_, item_gmail, 0, nullptr);
-  base::string16 browser_menu_item2[] = { title2 };
+  base::string16 browser_menu_item2[] = {title2};
   CheckAppMenu(launcher_controller_, item_browser, 1, browser_menu_item2);
 }
 
 // Check the multi profile case where only user related apps should show up.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppMenuGenerationTwoUsers) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
@@ -3116,7 +3103,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   base::string16 title1 = ASCIIToUTF16("Test1");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
 
-  base::string16 one_menu_item[] = { title1 };
+  base::string16 one_menu_item[] = {title1};
   CheckAppMenu(launcher_controller_, item_gmail, 1, one_menu_item);
 
   // Create a second profile and switch to that user.
@@ -3140,7 +3127,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
 // Check that V2 applications are creating items properly in the launcher when
 // instantiated by the current user.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsers) {
   InitLauncherController();
   // Create a profile for our second user (will be destroyed by the framework).
@@ -3168,7 +3155,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 // Check that V2 applications are creating items properly in edge cases:
 // a background user creates a V2 app, gets active and inactive again and then
 // deletes the app.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsersEdgeCases) {
   InitLauncherController();
   // Create a profile for our second user (will be destroyed by the framework).
@@ -3211,7 +3198,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
 // Check that V2 applications will be made visible on the target desktop if
 // another window of the same type got previously teleported there.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppFollowsTeleportedWindow) {
   InitLauncherController();
   chrome::MultiUserWindowManager* manager =
@@ -3282,7 +3269,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 
 // Check that V2 applications hide correctly on the shelf when the app window
 // is hidden.
-TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHiddenWindows) {
   InitLauncherController();
 
@@ -3354,7 +3341,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
 }
 
 // Checks that the generated menu list properly activates items.
-TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   InitLauncherControllerWithBrowser();
 
   // Add |extension3_| to the launcher and add two items.
@@ -3402,7 +3389,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuExecution) {
 }
 
 // Checks that the generated menu list properly deletes items.
-TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
+TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   InitLauncherControllerWithBrowser();
 
   // Add |extension3_| to the launcher and add two items.
@@ -3445,12 +3432,12 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
 }
 
 // Tests that panels create launcher items correctly
-TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
+TEST_F(ChromeLauncherControllerTest, AppPanels) {
   InitLauncherController();
   model_observer_->clear_counts();
   const std::string app_id = extension1_->id();
 
-  // app_icon_loader is owned by ChromeLauncherControllerImpl.
+  // app_icon_loader is owned by ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl();
   app_icon_loader->AddSupportedApp(app_id);
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
@@ -3489,7 +3476,7 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
 
 // Tests that the Gmail extension matches more than the app itself claims with
 // the manifest file.
-TEST_F(ChromeLauncherControllerImplTest, GmailMatching) {
+TEST_F(ChromeLauncherControllerTest, GmailMatching) {
   InitLauncherControllerWithBrowser();
 
   // Create a Gmail browser tab.
@@ -3522,14 +3509,13 @@ TEST_F(ChromeLauncherControllerImplTest, GmailMatching) {
 }
 
 // Tests that the Gmail extension does not match the offline verison.
-TEST_F(ChromeLauncherControllerImplTest, GmailOfflineMatching) {
+TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
   InitLauncherControllerWithBrowser();
 
   // Create a Gmail browser tab.
   chrome::NewTab(browser());
   base::string16 title = ASCIIToUTF16("Test");
-  NavigateAndCommitActiveTabWithTitle(browser(),
-                                      GURL(offline_gmail_url),
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(offline_gmail_url),
                                       title);
   content::WebContents* content =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -3547,7 +3533,7 @@ TEST_F(ChromeLauncherControllerImplTest, GmailOfflineMatching) {
 }
 
 // Verify that the launcher item positions are persisted and restored.
-TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
+TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   InitLauncherController();
 
   TestLauncherControllerHelper* helper = new TestLauncherControllerHelper;
@@ -3588,7 +3574,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
   SetLauncherControllerHelper(helper);
   launcher_controller_->Init();
 
-  // Check ShelfItems are restored after resetting ChromeLauncherControllerImpl.
+  // Check ShelfItems are restored after resetting ChromeLauncherController.
   EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[0].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[1].type);
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
@@ -3596,7 +3582,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
 }
 
 // Verifies pinned apps are persisted and restored.
-TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
+TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   InitLauncherControllerWithBrowser();
   size_t initial_size = model_->items().size();
 
@@ -3607,7 +3593,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetLauncherControllerHelper(helper);
 
-  // app_icon_loader is owned by ChromeLauncherControllerImpl.
+  // app_icon_loader is owned by ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl;
   app_icon_loader->AddSupportedApp("1");
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
@@ -3626,7 +3612,7 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   helper = new TestLauncherControllerHelper(profile());
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetLauncherControllerHelper(helper);
-  // app_icon_loader is owned by ChromeLauncherControllerImpl.
+  // app_icon_loader is owned by ChromeLauncherController.
   app_icon_loader = new TestAppIconLoaderImpl;
   app_icon_loader->AddSupportedApp("1");
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
@@ -3642,14 +3628,14 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   ASSERT_EQ(initial_size, model_->items().size());
 }
 
-TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
+TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   InitLauncherControllerWithBrowser();
 
   const std::string app_id1 = extension1_->id();
   const std::string app_id2 = extension2_->id();
   const std::string app_id3 = extension3_->id();
   // app_icon_loader1 and app_icon_loader2 are owned by
-  // ChromeLauncherControllerImpl.
+  // ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader1 = new TestAppIconLoaderImpl();
   TestAppIconLoaderImpl* app_icon_loader2 = new TestAppIconLoaderImpl();
   app_icon_loader1->AddSupportedApp(app_id1);
@@ -3703,7 +3689,7 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo = CreateAppInfo(
       "Some App", "SomeActivity", "com.example.app", OrientationLock::NONE);
@@ -3722,7 +3708,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
             GetPinnableForAppID(app_id, profile()));
 }
 
-TEST_P(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
   // TODO(victorhsieh): Implement opt-in and opt-out.
   if (arc::ShouldArcAlwaysStart())
     return;
@@ -3784,7 +3770,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
 }
 
 // Test the application menu of a shelf item with multiple ARC windows.
-TEST_P(ChromeLauncherControllerImplWithArcTest, ShelfItemWithMultipleWindows) {
+TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   InitLauncherControllerWithBrowser();
 
   arc::mojom::AppInfo appinfo =
@@ -3845,7 +3831,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ShelfItemWithMultipleWindows) {
 namespace {
 
 class ChromeLauncherControllerOrientationTest
-    : public ChromeLauncherControllerImplWithArcTest {
+    : public ChromeLauncherControllerWithArcTest {
  public:
   ChromeLauncherControllerOrientationTest() {}
   ~ChromeLauncherControllerOrientationTest() override {}
@@ -3923,7 +3909,7 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Bool());
 
 class ChromeLauncherControllerArcDefaultAppsTest
-    : public ChromeLauncherControllerImplTest,
+    : public ChromeLauncherControllerTest,
       public ::testing::WithParamInterface<bool> {
  public:
   ChromeLauncherControllerArcDefaultAppsTest() {}
@@ -3934,7 +3920,7 @@ class ChromeLauncherControllerArcDefaultAppsTest
     if (GetParam())
       arc::SetArcAlwaysStartForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
-    ChromeLauncherControllerImplTest::SetUp();
+    ChromeLauncherControllerTest::SetUp();
   }
 
  private:
@@ -4166,7 +4152,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
 
 // Checks the case when several app items have the same ordinal position (which
 // is valid case).
-TEST_F(ChromeLauncherControllerImplTest, CheckPositionConflict) {
+TEST_F(ChromeLauncherControllerTest, CheckPositionConflict) {
   InitLauncherController();
 
   extension_service_->AddExtension(extension1_.get());
@@ -4216,7 +4202,7 @@ TEST_F(ChromeLauncherControllerImplTest, CheckPositionConflict) {
 
 // Test the case when sync app is turned off and we need to use local copy to
 // support user's pins.
-TEST_F(ChromeLauncherControllerImplTest, SyncOffLocalUpdate) {
+TEST_F(ChromeLauncherControllerTest, SyncOffLocalUpdate) {
   InitLauncherController();
 
   extension_service_->AddExtension(extension1_.get());
@@ -4247,14 +4233,14 @@ TEST_F(ChromeLauncherControllerImplTest, SyncOffLocalUpdate) {
 }
 
 // Tests that shelf profile preferences are loaded on login.
-TEST_F(ChromeLauncherControllerImplTest, PrefsLoadedOnLogin) {
+TEST_F(ChromeLauncherControllerTest, PrefsLoadedOnLogin) {
   PrefService* prefs = profile()->GetTestingPrefService();
   prefs->SetString(prefs::kShelfAlignmentLocal, "Left");
   prefs->SetString(prefs::kShelfAlignment, "Left");
   prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, "Always");
   prefs->SetString(prefs::kShelfAutoHideBehavior, "Always");
 
-  TestChromeLauncherControllerImpl* test_launcher_controller =
+  TestChromeLauncherController* test_launcher_controller =
       shell_delegate_->CreateTestLauncherController(profile());
 
   // Simulate login for the test controller.
@@ -4273,8 +4259,8 @@ TEST_F(ChromeLauncherControllerImplTest, PrefsLoadedOnLogin) {
 }
 
 // Tests that the shelf controller's changes are not wastefully echoed back.
-TEST_F(ChromeLauncherControllerImplTest, DoNotEchoShelfControllerChanges) {
-  TestChromeLauncherControllerImpl* test_launcher_controller =
+TEST_F(ChromeLauncherControllerTest, DoNotEchoShelfControllerChanges) {
+  TestChromeLauncherController* test_launcher_controller =
       shell_delegate_->CreateTestLauncherController(profile());
 
   // Simulate login for the test controller.

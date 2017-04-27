@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -98,9 +98,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     DCHECK(!ChromeLauncherController::instance());
     // TODO(crbug.com/557406): Synchronize this ShelfModel with the one in Ash.
     chrome_shelf_model_ = base::MakeUnique<ash::ShelfModel>();
-    chrome_launcher_controller_ =
-        base::MakeUnique<ChromeLauncherControllerImpl>(
-            nullptr, chrome_shelf_model_.get());
+    chrome_launcher_controller_ = base::MakeUnique<ChromeLauncherController>(
+        nullptr, chrome_shelf_model_.get());
     chrome_launcher_controller_->Init();
     chrome_shell_content_state_ = base::MakeUnique<ChromeShellContentState>();
   }

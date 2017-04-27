@@ -16,7 +16,7 @@ class ShelfModel;
 
 class AshInit;
 class CastConfigClientMediaRouter;
-class ChromeLauncherControllerImpl;
+class ChromeLauncherController;
 class ChromeNewWindowClient;
 class ChromeShellContentState;
 class ImmersiveContextMus;
@@ -57,7 +57,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // These are only used in Mash; corresponding instances are owned by Ash's
   // ShelfController and ChromeShellDelegate in classic Ash.
   std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
-  std::unique_ptr<ChromeLauncherControllerImpl> chrome_launcher_controller_;
+  std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

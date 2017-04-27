@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
@@ -44,12 +44,12 @@ class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
   explicit ChromeLauncherTestShellDelegate(Profile* profile)
       : profile_(profile) {}
 
-  ChromeLauncherControllerImpl* controller() { return controller_.get(); }
+  ChromeLauncherController* controller() { return controller_.get(); }
 
   // ash::test::TestShellDelegate:
   void ShelfInit() override {
     if (!controller_) {
-      controller_ = base::MakeUnique<ChromeLauncherControllerImpl>(
+      controller_ = base::MakeUnique<ChromeLauncherController>(
           profile_, ash::Shell::Get()->shelf_model());
       controller_->Init();
     }
@@ -58,7 +58,7 @@ class ChromeLauncherTestShellDelegate : public ash::test::TestShellDelegate {
 
  private:
   Profile* profile_;
-  std::unique_ptr<ChromeLauncherControllerImpl> controller_;
+  std::unique_ptr<ChromeLauncherController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
 };
@@ -116,7 +116,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   Profile* profile() { return &profile_; }
 
-  ChromeLauncherControllerImpl* controller() {
+  ChromeLauncherController* controller() {
     return shell_delegate_->controller();
   }
 

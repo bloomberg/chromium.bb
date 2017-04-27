@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 #include <stddef.h>
 
@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
@@ -89,11 +90,6 @@ using extensions::Extension;
 using content::WebContents;
 
 namespace {
-
-ChromeLauncherControllerImpl* GetChromeLauncherControllerImpl() {
-  return static_cast<ChromeLauncherControllerImpl*>(
-      ChromeLauncherController::instance());
-}
 
 // A callback that records the action taken when a shelf item is selected.
 void SelectItemCallback(ash::ShelfAction* action_taken,
@@ -228,7 +224,7 @@ class LauncherPlatformAppBrowserTest
     // Ensure ash starts the session and creates the shelf and controller.
     SessionControllerClient::FlushForTesting();
 
-    controller_ = GetChromeLauncherControllerImpl();
+    controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
   }
@@ -257,7 +253,7 @@ class LauncherPlatformAppBrowserTest
     return shelf_model()->GetShelfItemDelegate(id);
   }
 
-  ChromeLauncherControllerImpl* controller_;
+  ChromeLauncherController* controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherPlatformAppBrowserTest);
@@ -276,8 +272,7 @@ enum RipOffCommand {
 
 class ShelfAppBrowserTest : public ExtensionBrowserTest {
  protected:
-  ShelfAppBrowserTest() : shelf_(NULL), model_(NULL), controller_(NULL) {
-  }
+  ShelfAppBrowserTest() : shelf_(NULL), model_(NULL), controller_(NULL) {}
 
   ~ShelfAppBrowserTest() override {}
 
@@ -288,7 +283,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     shelf_ =
         ash::WmShelf::ForWindow(ash::ShellPort::Get()->GetPrimaryRootWindow());
     model_ = ash::Shell::Get()->shelf_model();
-    controller_ = GetChromeLauncherControllerImpl();
+    controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     ExtensionBrowserTest::SetUpOnMainThread();
   }
@@ -301,14 +296,13 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
         .size();
   }
 
-  const Extension* LoadAndLaunchExtension(
-      const char* name,
-      extensions::LaunchContainer container,
-      WindowOpenDisposition disposition) {
+  const Extension* LoadAndLaunchExtension(const char* name,
+                                          extensions::LaunchContainer container,
+                                          WindowOpenDisposition disposition) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        profile())->extension_service();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
     const Extension* extension =
         service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
@@ -319,8 +313,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   }
 
   ash::ShelfID CreateShortcut(const char* name) {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        profile())->extension_service();
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile())->extension_service();
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
@@ -403,7 +397,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
   ash::WmShelf* shelf_;
   ash::ShelfModel* model_;
-  ChromeLauncherControllerImpl* controller_;
+  ChromeLauncherController* controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTest);
@@ -604,8 +598,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Then run second app.
-  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2",
-                                                         "Launched");
+  const Extension* extension2 =
+      LoadAndLaunchPlatformApp("launch_2", "Launched");
   AppWindow* window2 = CreateAppWindow(browser()->profile(), extension2);
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
@@ -646,8 +640,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   // Then run second app.
-  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2",
-                                                         "Launched");
+  const Extension* extension2 =
+      LoadAndLaunchPlatformApp("launch_2", "Launched");
   AppWindow* window2 = CreateAppWindow(browser()->profile(), extension2);
   ++item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
@@ -1076,13 +1070,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, Navigation) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 
   // Navigate away.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("http://www.example.com/path0/bar.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("http://www.example.com/path0/bar.html"));
   EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
 
   // Navigate back.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("http://www.example.com/path1/foo.html"));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("http://www.example.com/path1/foo.html"));
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 }
 
@@ -1117,8 +1111,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
   // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
   // active tab at index 1 to |tab_strip_model2|.
   content::WebContents* detached_tab = tab_strip_model1->DetachWebContentsAt(1);
-  tab_strip_model2->InsertWebContentsAt(1,
-                                        detached_tab,
+  tab_strip_model2->InsertWebContentsAt(1, detached_tab,
                                         TabStripModel::ADD_ACTIVE);
   EXPECT_EQ(1, tab_strip_model1->count());
   EXPECT_EQ(2, tab_strip_model2->count());
@@ -1334,7 +1327,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
 
 // Checks that a windowed application does not add an item to the browser list.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
-    WindowedAppDoesNotAddToBrowser) {
+                       WindowedAppDoesNotAddToBrowser) {
   // Get the number of items in the browser menu.
   size_t items = NumberOfDetectedLauncherBrowsers(false);
   size_t running_browser = chrome::GetTotalBrowserCount();
@@ -1431,8 +1424,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
 
 // Check that the keyboard activation of a launcher item tabs properly through
 // the items at hand.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
-                       AltNumberAppsTabbing) {
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AltNumberAppsTabbing) {
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
   ui::BaseWindow* window1 =
@@ -1444,8 +1436,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
-  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2",
-                                                         "Launched");
+  const Extension* extension2 =
+      LoadAndLaunchPlatformApp("launch_2", "Launched");
   ui::BaseWindow* window2 =
       CreateAppWindow(browser()->profile(), extension2)->GetBaseWindow();
 
@@ -2009,8 +2001,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   RipOffItemIndex(browser_index, &generator, &test, RIP_OFF_ITEM);
   // => It should not have been removed and the location should be unchanged.
   EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(browser_index,
-            GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
+  EXPECT_EQ(browser_index, GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
   // Make sure that the hide state has been unset after the snap back animation
   // finished.
   ash::ShelfButton* button = test.GetButton(browser_index);
@@ -2045,9 +2036,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   test.RunMessageLoopUntilAnimationsDone();
   int app2_index = GetIndexOfShelfItemType(ash::TYPE_PINNED_APP);
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
-  RipOffItemIndex(app2_index,
-                  &generator,
-                  &test,
+  RipOffItemIndex(app2_index, &generator, &test,
                   RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE);
   controller_->UnpinAppWithID("app2");
   test.RunMessageLoopUntilAnimationsDone();
@@ -2285,8 +2274,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
   // Open a settings window. Number of browser items should remain unchanged,
   // number of shelf items should increase.
   settings_manager->ShowChromePageForProfile(
-      browser()->profile(),
-      chrome::GetSettingsUrl(std::string()));
+      browser()->profile(), chrome::GetSettingsUrl(std::string()));
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);

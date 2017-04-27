@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
 class ArcAppDeferredLauncherItemController;
-class ChromeLauncherControllerImpl;
+class ChromeLauncherController;
 
 // ArcAppDeferredLauncherController displays visual feedback that the ARC
 // application the user has just activated is waiting for ARC to be ready, and
@@ -25,8 +25,7 @@ class ArcAppDeferredLauncherController
     : public ArcAppListPrefs::Observer,
       public arc::ArcSessionManager::Observer {
  public:
-  explicit ArcAppDeferredLauncherController(
-      ChromeLauncherControllerImpl* owner);
+  explicit ArcAppDeferredLauncherController(ChromeLauncherController* owner);
   ~ArcAppDeferredLauncherController() override;
 
   bool HasApp(const std::string& app_id) const;
@@ -66,7 +65,7 @@ class ArcAppDeferredLauncherController
   void RegisterNextUpdate();
 
   // Unowned pointers.
-  ChromeLauncherControllerImpl* owner_;
+  ChromeLauncherController* owner_;
   Profile* observed_profile_ = nullptr;
 
   AppControllerMap app_controller_map_;

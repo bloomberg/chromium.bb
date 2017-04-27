@@ -23,7 +23,7 @@ class Window;
 }
 
 class ArcAppWindowLauncherItemController;
-class ChromeLauncherControllerImpl;
+class ChromeLauncherController;
 
 class Profile;
 
@@ -33,7 +33,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public ash::ShellObserver,
                                        public ArcAppListPrefs::Observer {
  public:
-  explicit ArcAppWindowLauncherController(ChromeLauncherControllerImpl* owner);
+  explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
 
   // Returns shelf app id. Play Store app is mapped to ARC platform host app.
