@@ -370,7 +370,7 @@ void NativeExtensionBindingsSystem::DidCreateScriptContext(
   DCHECK(!per_context_data->GetUserData(kBindingsSystemPerContextKey));
   auto data = base::MakeUnique<BindingsSystemPerContextData>(
       weak_factory_.GetWeakPtr());
-  per_context_data->SetUserData(kBindingsSystemPerContextKey, data.release());
+  per_context_data->SetUserData(kBindingsSystemPerContextKey, std::move(data));
 
   if (get_internal_api_.IsEmpty()) {
     get_internal_api_.Set(

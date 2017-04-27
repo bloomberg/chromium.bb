@@ -70,7 +70,7 @@ APIEventPerContextData* GetContextData(v8::Local<v8::Context> context,
         base::MakeUnique<APIEventPerContextData>(context->GetIsolate());
     data = api_data.get();
     per_context_data->SetUserData(kExtensionAPIEventPerContextKey,
-                                  api_data.release());
+                                  std::move(api_data));
   }
 
   return data;

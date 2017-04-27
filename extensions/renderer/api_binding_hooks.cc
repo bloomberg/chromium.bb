@@ -172,7 +172,7 @@ v8::Local<v8::Object> GetJSHookInterfaceObject(
         base::MakeUnique<APIHooksPerContextData>(context->GetIsolate());
     data = api_data.get();
     per_context_data->SetUserData(kExtensionAPIHooksPerContextKey,
-                                  api_data.release());
+                                  std::move(api_data));
   }
 
   auto iter = data->hook_interfaces.find(api_name);
