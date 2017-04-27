@@ -138,6 +138,8 @@ class PLATFORM_EXPORT WrapperVisitor {
     TraceWrappers(traceable);
   }
 
+  // TODO(mlippautz): Add |template <typename T> TraceWrappers(const
+  // TraceWrapperV8Reference<T>&)|.
   virtual void TraceWrappers(
       const TraceWrapperV8Reference<v8::Value>&) const = 0;
   virtual void MarkWrapper(const v8::PersistentBase<v8::Value>*) const = 0;

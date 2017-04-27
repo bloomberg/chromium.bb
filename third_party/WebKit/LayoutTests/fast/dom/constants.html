@@ -53,34 +53,6 @@ function test() {
     shouldBe("window.CSSRule.FONT_FACE_RULE", 5);
     shouldBe("window.CSSRule.PAGE_RULE", 6);
 
-    var nodeIterator;
-    try {
-        nodeIterator = document.createNodeIterator(document,
-                                                   NodeFilter.SHOW_ELEMENT,
-                                                   function () { return NodeFilter.FILTER_ACCEPT; },
-                                                   false);
-    } catch(e) {
-        nodeIterator = new Object();
-    }
-
-    nodeFilter = nodeIterator.filter;
-    shouldBe("nodeFilter.FILTER_ACCEPT", 1);
-    shouldBe("nodeFilter.FILTER_REJECT", 2);
-    shouldBe("nodeFilter.FILTER_SKIP", 3);
-    shouldBe("nodeFilter.SHOW_ALL", 4294967295);
-    shouldBe("nodeFilter.SHOW_ELEMENT", 0x00000001);
-    shouldBe("nodeFilter.SHOW_ATTRIBUTE", 0x00000002);
-    shouldBe("nodeFilter.SHOW_TEXT", 0x00000004);
-    shouldBe("nodeFilter.SHOW_CDATA_SECTION", 0x00000008);
-    shouldBe("nodeFilter.SHOW_ENTITY_REFERENCE", 0x00000010);
-    shouldBe("nodeFilter.SHOW_ENTITY", 0x00000020);
-    shouldBe("nodeFilter.SHOW_PROCESSING_INSTRUCTION", 0x00000040);
-    shouldBe("nodeFilter.SHOW_COMMENT", 0x00000080);
-    shouldBe("nodeFilter.SHOW_DOCUMENT", 0x00000100);
-    shouldBe("nodeFilter.SHOW_DOCUMENT_TYPE", 0x00000200);
-    shouldBe("nodeFilter.SHOW_DOCUMENT_FRAGMENT", 0x00000400);
-    shouldBe("nodeFilter.SHOW_NOTATION", 0x00000800);
-
     shouldBe("window.NodeFilter.FILTER_ACCEPT", 1);
     shouldBe("window.NodeFilter.FILTER_REJECT", 2);
     shouldBe("window.NodeFilter.FILTER_SKIP", 3);
@@ -115,7 +87,7 @@ function test() {
 <p>This page tests CSSRule, NodeFilter, and Event. It tests:</p>
 <ol>
     <li>Whether their global constructors have the correct constant values</li>
-    <li>Whether their objects have the correct constant values</li>
+    <li>Whether their objects have the correct constant values, except NodeFilter</li>
 </ol>
 <hr>
 <div id='console'></div>

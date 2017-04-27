@@ -32,11 +32,13 @@ namespace blink {
 class ExceptionState;
 class Node;
 
+// TODO(tkent): This abstraction isn't helpful. Fold this into
+// V8NodeFilterCondition.
 class NodeFilterCondition
     : public GarbageCollectedFinalized<NodeFilterCondition> {
  public:
   virtual ~NodeFilterCondition() {}
-  virtual unsigned AcceptNode(Node*, ExceptionState&) const = 0;
+  virtual unsigned acceptNode(Node*, ExceptionState&) const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -42,32 +42,29 @@
 namespace blink {
 
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter,
-                                             v8::Local<v8::Object> owner,
                                              ScriptState* script_state)
-    : script_state_(script_state) {
-  // ..acceptNode(..) will only dispatch m_filter if m_filter->IsObject().
-  // We'll make sure m_filter is either usable by acceptNode or empty.
+    : script_state_(script_state), filter_(this) {
+  // ..acceptNode(..) will only dispatch filter_ if filter_->IsObject().
+  // We'll make sure filter_ is either usable by acceptNode or empty.
   // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
-  if (!filter.IsEmpty() && filter->IsObject()) {
-    V8PrivateProperty::GetV8NodeFilterConditionFilter(
-        script_state->GetIsolate())
-        .Set(owner, filter);
-    filter_.Set(script_state->GetIsolate(), filter);
-    filter_.SetPhantom();
-  }
+  if (!filter.IsEmpty() && filter->IsObject())
+    filter_.Set(script_state->GetIsolate(), filter.As<v8::Object>());
 }
 
 V8NodeFilterCondition::~V8NodeFilterCondition() {}
 
-unsigned V8NodeFilterCondition::AcceptNode(
+DEFINE_TRACE_WRAPPERS(V8NodeFilterCondition) {
+  visitor->TraceWrappers(filter_.Cast<v8::Value>());
+}
+
+unsigned V8NodeFilterCondition::acceptNode(
     Node* node,
     ExceptionState& exception_state) const {
   v8::Isolate* isolate = script_state_->GetIsolate();
   DCHECK(!script_state_->GetContext().IsEmpty());
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Value> filter = filter_.NewLocal(isolate);
+  v8::Local<v8::Object> filter = filter_.NewLocal(isolate);
 
-  DCHECK(filter.IsEmpty() || filter->IsObject());
   if (filter.IsEmpty())
     return NodeFilter::kFilterAccept;
 
@@ -81,14 +78,8 @@ unsigned V8NodeFilterCondition::AcceptNode(
     callback = v8::Local<v8::Function>::Cast(filter);
     receiver = v8::Undefined(isolate);
   } else {
-    v8::Local<v8::Object> filter_object;
-    if (!filter->ToObject(script_state_->GetContext())
-             .ToLocal(&filter_object)) {
-      exception_state.ThrowTypeError("NodeFilter is not an object");
-      return NodeFilter::kFilterReject;
-    }
     v8::Local<v8::Value> value;
-    if (!filter_object
+    if (!filter
              ->Get(script_state_->GetContext(),
                    V8AtomicString(isolate, "acceptNode"))
              .ToLocal(&value) ||

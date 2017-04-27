@@ -123,7 +123,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
     'EventListener': 'EventListener*',
-    'NodeFilter': 'NodeFilter*',
+    'NodeFilter': 'V8NodeFilterCondition*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
@@ -370,6 +370,7 @@ INCLUDES_FOR_TYPE = {
                            'core/html/HTMLDataListOptionsCollection.h',
                            'core/html/HTMLFormControlsCollection.h',
                            'core/html/HTMLTableRowsCollection.h']),
+    'NodeFilter': set(['bindings/core/v8/V8NodeFilterCondition.h']),
     'NodeList': set(['bindings/core/v8/V8NodeList.h',
                      'core/dom/NameNodeList.h',
                      'core/dom/NodeList.h',
@@ -522,7 +523,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'DOMString': '{v8_value}',
     # Interface types
     'FlexibleArrayBufferView': 'ToFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
-    'NodeFilter': 'ToNodeFilter({v8_value}, info.Holder(), ScriptState::Current({isolate}))',
+    'NodeFilter': 'V8NodeFilterCondition::CreateOrNull({v8_value}, ScriptState::Current({isolate}))',
     'Promise': 'ScriptPromise::Cast(ScriptState::Current({isolate}), {v8_value})',
     'ScriptValue': 'ScriptValue(ScriptState::Current({isolate}), {v8_value})',
     'Window': 'ToDOMWindow({isolate}, {v8_value})',
@@ -843,6 +844,7 @@ V8_SET_RETURN_VALUE = {
     'FrozenArray': 'V8SetReturnValue(info, {cpp_value})',
     'Date': 'V8SetReturnValue(info, {cpp_value})',
     'EventHandler': 'V8SetReturnValue(info, {cpp_value})',
+    'NodeFilter': 'V8SetReturnValue(info, {cpp_value})',
     'ScriptValue': 'V8SetReturnValue(info, {cpp_value})',
     'SerializedScriptValue': 'V8SetReturnValue(info, {cpp_value})',
     # Records.
@@ -903,7 +905,7 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = idl_type.v8_conversion_type(extended_attributes)
     # SetReturn-specific overrides
-    if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array', 'FrozenArray']:
+    if this_v8_conversion_type in ['Date', 'EventHandler', 'NodeFilter', 'ScriptValue', 'SerializedScriptValue', 'array', 'FrozenArray']:
         # Convert value to V8 and then use general V8SetReturnValue
         cpp_value = idl_type.cpp_value_to_v8_value(cpp_value, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
@@ -948,6 +950,7 @@ CPP_VALUE_TO_V8_VALUE = {
         'V8AbstractEventListener::Cast({cpp_value})->GetListenerOrNull(' +
         '{isolate}, impl->GetExecutionContext()) : ' +
         'v8::Null({isolate}).As<v8::Value>()'),
+    'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',
     'SerializedScriptValue': 'V8Deserialize({isolate}, {cpp_value})',

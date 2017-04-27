@@ -42,7 +42,7 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8NodeFilter.h"
+#include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ShadowRoot.h"
@@ -780,7 +780,7 @@ static void nodeFilterAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
 
   TestObject* impl = V8TestObject::toImpl(holder);
 
-  V8SetReturnValueFast(info, WTF::GetPtr(impl->nodeFilterAttribute()), impl);
+  V8SetReturnValue(info, ToV8(WTF::GetPtr(impl->nodeFilterAttribute()), info.Holder(), info.GetIsolate()));
 }
 
 static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -791,7 +791,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
-  NodeFilter* cppValue = ToNodeFilter(v8Value, info.Holder(), ScriptState::Current(info.GetIsolate()));
+  V8NodeFilterCondition* cppValue = V8NodeFilterCondition::CreateOrNull(v8Value, ScriptState::Current(info.GetIsolate()));
 
   impl->setNodeFilterAttribute(cppValue);
 }
@@ -5592,7 +5592,7 @@ static void passPermissiveDictionaryMethodMethod(const v8::FunctionCallbackInfo<
 static void nodeFilterMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
-  V8SetReturnValue(info, impl->nodeFilterMethod());
+  V8SetReturnValue(info, ToV8(impl->nodeFilterMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -5713,8 +5713,8 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
     return;
   }
 
-  NodeFilter* nodeFilterArg;
-  nodeFilterArg = ToNodeFilter(info[0], info.Holder(), ScriptState::Current(info.GetIsolate()));
+  V8NodeFilterCondition* nodeFilterArg;
+  nodeFilterArg = V8NodeFilterCondition::CreateOrNull(info[0], ScriptState::Current(info.GetIsolate()));
 
   impl->voidMethodNodeFilterArg(nodeFilterArg);
 }

@@ -25,12 +25,15 @@
 #ifndef NodeFilter_h
 #define NodeFilter_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/NodeFilterCondition.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+// We never create NodeFilter instances.
+// The IDL interface 'NodeFilter' is represented by V8NodeFilterCondition and a
+// V8 value in Blink.
 class NodeFilter final : public GarbageCollected<NodeFilter>,
                          public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -64,24 +67,15 @@ class NodeFilter final : public GarbageCollected<NodeFilter>,
     kShowNotation = 0x00000800
   };
 
-  static NodeFilter* Create(NodeFilterCondition* condition) {
-    return new NodeFilter(condition);
+  unsigned acceptNode(Node*, ExceptionState&) const {
+    NOTREACHED();
+    return kFilterReject;
   }
 
-  static NodeFilter* Create() { return new NodeFilter(); }
-
-  unsigned acceptNode(Node*, ExceptionState&) const;
-
-  void SetCondition(NodeFilterCondition* condition) { condition_ = condition; }
-
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit NodeFilter(NodeFilterCondition* condition) : condition_(condition) {}
-
-  NodeFilter() {}
-
-  Member<NodeFilterCondition> condition_;
+  NodeFilter() = delete;
 };
 
 }  // namespace blink
