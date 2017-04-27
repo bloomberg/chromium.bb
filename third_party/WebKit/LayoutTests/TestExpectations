@@ -80,9 +80,6 @@ crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composi
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 
-crbug.com/703403 paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
-crbug.com/703403 virtual/disable-spinvalidation/paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
-
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
 
