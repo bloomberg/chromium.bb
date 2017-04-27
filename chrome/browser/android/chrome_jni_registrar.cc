@@ -38,6 +38,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/contextualsearch/ctr_suppression.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
+#include "chrome/browser/android/customtabs/origin_verifier.h"
 #include "chrome/browser/android/data_usage/data_use_tab_ui_manager_android.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "chrome/browser/android/devtools_server.h"
@@ -358,6 +359,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"OmniboxUrlEmphasizer",
      OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer},
     {"OmniboxViewUtil", OmniboxViewUtil::RegisterOmniboxViewUtil},
+    {"OriginVerifier", customtabs::RegisterOriginVerifier},
     {"OverlayPanelContent", RegisterOverlayPanelContent},
     {"PartnerBookmarksReader",
      PartnerBookmarksReader::RegisterPartnerBookmarksReader},
