@@ -396,13 +396,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);
         }
 
-        if (TextUtils.isEmpty(params.getLinkUrl())
-                || params.getLinkUrl().equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+        if (isEmptyUrl(params.getLinkUrl())) {
             disabledOptions.add(ContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_TAB);
             disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
-            disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
         }
 
         if (MailTo.isMailTo(params.getLinkUrl())) {
@@ -484,7 +481,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (mMode == CUSTOM_TAB_MODE) {
             try {
                 URI uri = new URI(getUrl(params));
-                if (UrlUtilities.isInternalScheme(uri)) {
+                if (UrlUtilities.isInternalScheme(uri) || isEmptyUrl(getUrl(params))) {
                     disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
                     disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
                     disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
@@ -604,6 +601,18 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         return true;
+    }
+
+    /**
+     * Checks whether a url is empty or blank.
+     * @param url The url need to be checked.
+     * @return True if the url is empty or "about:blank".
+     */
+    private boolean isEmptyUrl(String url) {
+        if (TextUtils.isEmpty(url) || url.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+            return true;
+        }
+        return false;
     }
 
     /**
