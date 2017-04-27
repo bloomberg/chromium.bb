@@ -31,11 +31,16 @@
     <color name="toolbar_shadow_color">#1d000000</color>
     <color name="white_alpha_50">#80ffffff</color>
     <color name="white_alpha_70">#B3FFFFFF</color>
-    <color name="black_alpha_30">#4d000000</color>
-    <color name="black_alpha_40">#66000000</color>
     <color name="toolbar_light_tint">#A3000000</color>
     <color name="light_grey">#ccc</color>
     <color name="modal_dialog_scrim_color">#7f000000</color>
+
+    <!-- New list of common text colors -->
+    <color name="black_alpha_30">#4d000000</color>
+    <color name="black_alpha_38">#61000000</color>
+    <color name="black_alpha_40">#66000000</color>
+    <color name="black_alpha_54">#8a000000</color>
+    <color name="black_alpha_87">#de000000</color>
 
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">#4285f4</color>

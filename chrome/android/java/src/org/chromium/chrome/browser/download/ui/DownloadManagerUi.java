@@ -10,17 +10,11 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.support.graphics.drawable.VectorDrawableCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
@@ -41,7 +35,6 @@ import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -168,8 +161,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     private final BackendProvider mBackendProvider;
     private final SnackbarManager mSnackbarManager;
 
-    private final SpaceDisplay mSpaceDisplay;
-    private final ListView mFilterView;
     private final UndoDeletionSnackbarController mUndoDeletionSnackbarController;
     private final RecyclerView mRecyclerView;
 
@@ -200,12 +191,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
-        DrawerLayout drawerLayout = null;
-        if (!DeviceFormFactor.isLargeTablet(activity)) {
-            drawerLayout = (DrawerLayout) mMainView;
-            addDrawerListener(drawerLayout);
-        }
-
         mSelectableListLayout = (SelectableListLayout<DownloadHistoryItemWrapper>)
                 mMainView.findViewById(R.id.selectable_list);
 
@@ -223,25 +208,16 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         mHistoryAdapter.initialize(mBackendProvider);
         addObserver(mHistoryAdapter);
 
-        mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
-        mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
-        mSpaceDisplay.onChanged();
-
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
         addObserver(mFilterAdapter);
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(),
-                0, drawerLayout, R.id.normal_menu_group, R.id.selection_mode_menu_group, null, true,
-                this);
-        mToolbar.setTitle(R.string.menu_downloads);
+                R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
+                R.id.normal_menu_group, R.id.selection_mode_menu_group, null, true, this);
+        mToolbar.initializeFilterSpinner(mFilterAdapter);
         mToolbar.initializeSearchView(this, R.string.download_manager_search, R.id.search_menu_id);
         addObserver(mToolbar);
-
-        mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
-        mFilterView.setAdapter(mFilterAdapter);
-        mFilterView.setOnItemClickListener(mFilterAdapter);
 
         mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
 
@@ -269,8 +245,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         mBackendProvider.destroy();
 
-        mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
-
         mSelectableListLayout.onDestroyed();
     }
 
@@ -280,13 +254,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
      * @return Whether the back button was handled.
      */
     public boolean onBackPressed() {
-        if (mMainView instanceof DrawerLayout) {
-            DrawerLayout drawerLayout = (DrawerLayout) mMainView;
-            if (drawerLayout.isDrawerOpen(Gravity.START)) {
-                closeDrawer();
-                return true;
-            }
-        }
         if (mBackendProvider.getSelectionDelegate().isSelectionEnabled()) {
             mBackendProvider.getSelectionDelegate().clearSelection();
             return true;
@@ -344,16 +311,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     /**
-     * @see DrawerLayout#openDrawer(int)
-     */
-    @VisibleForTesting
-    public void openDrawer() {
-        if (mMainView instanceof DrawerLayout) {
-            ((DrawerLayout) mMainView).openDrawer(GravityCompat.START);
-        }
-    }
-
-    /**
      * Adds a {@link DownloadUiObserver} to observe the changes in the download manager.
      */
     public void addObserver(DownloadUiObserver observer) {
@@ -366,15 +323,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
      */
     public void removeObserver(DownloadUiObserver observer) {
         mObservers.removeObserver(observer);
-    }
-
-    /**
-     * @see DrawerLayout#closeDrawer(int)
-     */
-    void closeDrawer() {
-        if (mMainView instanceof DrawerLayout) {
-            ((DrawerLayout) mMainView).closeDrawer(GravityCompat.START);
-        }
     }
 
     /**
@@ -488,27 +436,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         return itemsToRemove;
     }
 
-    private void addDrawerListener(DrawerLayout drawer) {
-        drawer.addDrawerListener(new DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                RecordUserAction.record("Android.DownloadManager.OpenDrawer");
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-            }
-        });
-    }
-
     private void dismissUndoDeletionSnackbars() {
         mSnackbarManager.dismissSnackbars(mUndoDeletionSnackbarController);
     }
@@ -528,11 +455,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     @VisibleForTesting
     public DownloadHistoryAdapter getDownloadHistoryAdapterForTests() {
         return mHistoryAdapter;
-    }
-
-    /** Returns the {@link SpaceDisplay}. */
-    public SpaceDisplay getSpaceDisplayForTests() {
-        return mSpaceDisplay;
     }
 
     /** Sets a BackendProvider that is used in place of a real one. */

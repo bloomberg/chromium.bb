@@ -545,17 +545,23 @@ public class DownloadHistoryAdapterTest {
 
     /** Checks that the adapter has the correct items in the right places. */
     private void checkAdapterContents(Object... expectedItems) {
-        Assert.assertEquals(expectedItems.length, mAdapter.getItemCount());
+        if (expectedItems.length == 0) {
+            Assert.assertEquals(0, mAdapter.getItemCount());
+            return;
+        }
+
+        // Leave the first element of the adapter which is the space usage header.
+        Assert.assertEquals(expectedItems.length + 1, mAdapter.getItemCount());
         for (int i = 0; i < expectedItems.length; i++) {
             if (expectedItems[i] == null) {
                 // Expect a date.
                 // TODO(dfalcantara): Check what date the header is showing.
-                Assert.assertEquals(TYPE_DATE, mAdapter.getItemViewType(i));
+                Assert.assertEquals(TYPE_DATE, mAdapter.getItemViewType(i + 1));
             } else {
                 // Expect a particular item.
-                Assert.assertEquals(TYPE_NORMAL, mAdapter.getItemViewType(i));
+                Assert.assertEquals(TYPE_NORMAL, mAdapter.getItemViewType(i + 1));
                 Assert.assertEquals(expectedItems[i],
-                        ((DownloadHistoryItemWrapper) mAdapter.getItemAt(i).second).getItem());
+                        ((DownloadHistoryItemWrapper) mAdapter.getItemAt(i + 1).second).getItem());
             }
         }
     }
