@@ -50,7 +50,7 @@ class ResizeObserver;
 
 class ElementRareData : public NodeRareData {
  public:
-  static ElementRareData* Create(NodeLayoutData* node_layout_data) {
+  static ElementRareData* Create(NodeRenderingData* node_layout_data) {
     return new ElementRareData(node_layout_data);
   }
 
@@ -225,7 +225,7 @@ class ElementRareData : public NodeRareData {
 
   Member<AccessibleNode> accessible_node_;
 
-  explicit ElementRareData(NodeLayoutData*);
+  explicit ElementRareData(NodeRenderingData*);
 };
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ElementRareData);
 
@@ -233,7 +233,7 @@ inline LayoutSize DefaultMinimumSizeForResizing() {
   return LayoutSize(LayoutUnit::Max(), LayoutUnit::Max());
 }
 
-inline ElementRareData::ElementRareData(NodeLayoutData* node_layout_data)
+inline ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
     : NodeRareData(node_layout_data),
       minimum_size_for_resizing_(DefaultMinimumSizeForResizing()),
       class_list_(nullptr) {
