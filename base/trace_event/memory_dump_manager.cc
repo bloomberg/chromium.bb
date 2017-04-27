@@ -182,7 +182,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 
 MemoryDumpManager::MemoryDumpManager()
     : is_coordinator_(false),
-      memory_tracing_enabled_(0),
+      is_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
       heap_profiling_enabled_(false) {
@@ -197,6 +197,11 @@ MemoryDumpManager::MemoryDumpManager()
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
+  AutoLock lock(lock_);
+  if (dump_thread_) {
+    dump_thread_->Stop();
+    dump_thread_.reset();
+  }
 }
 
 void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
@@ -394,7 +399,7 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
     DCHECK(!(*mdp_iter)->owned_dump_provider);
     (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
   } else if (strict_thread_check_blacklist_.count((*mdp_iter)->name) == 0 ||
-             subtle::NoBarrier_Load(&memory_tracing_enabled_)) {
+             subtle::NoBarrier_Load(&is_enabled_)) {
     // If dump provider's name is on |strict_thread_check_blacklist_|, then the
     // DCHECK is fired only when tracing is enabled. Otherwise the DCHECK is
     // fired even when tracing is not enabled (stricter).
@@ -437,7 +442,7 @@ void MemoryDumpManager::RequestGlobalDump(
     const GlobalMemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all or if the dump mode
   // is not allowed.
-  if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)) ||
+  if (!UNLIKELY(subtle::NoBarrier_Load(&is_enabled_)) ||
       !IsDumpModeAllowed(level_of_detail)) {
     VLOG(1) << kLogPrefix << " failed because " << kTraceCategory
             << " tracing category is not enabled or the requested dump mode is "
@@ -492,6 +497,20 @@ bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
   return false;
 }
 
+scoped_refptr<base::SequencedTaskRunner>
+MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
+  lock_.AssertAcquired();
+
+  if (dump_thread_)
+    return dump_thread_->task_runner();
+
+  dump_thread_ = MakeUnique<Thread>("MemoryInfra");
+  bool started = dump_thread_->Start();
+  CHECK(started);
+
+  return dump_thread_->task_runner();
+}
+
 void MemoryDumpManager::CreateProcessDump(
     const MemoryDumpRequestArgs& args,
     const ProcessMemoryDumpCallback& callback) {
@@ -515,12 +534,9 @@ void MemoryDumpManager::CreateProcessDump(
   {
     AutoLock lock(lock_);
 
-    // |dump_thread_| can be nullptr is tracing was disabled before reaching
-    // here. SetupNextMemoryDump() is robust enough to tolerate it and will
-    // NACK the dump.
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
         args, dump_providers_, session_state_, callback,
-        dump_thread_ ? dump_thread_->task_runner() : nullptr));
+        GetOrCreateBgTaskRunnerLocked()));
 
     // Safety check to prevent reaching here without calling RequestGlobalDump,
     // with disallowed modes. If |session_state_| is null then tracing is
@@ -554,22 +570,22 @@ void MemoryDumpManager::SetupNextMemoryDump(
   // (for discounting trace memory overhead) while holding the |lock_|.
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
-  // |dump_thread_| might be destroyed before getting this point.
-  // It means that tracing was disabled right before starting this dump.
-  // Anyway either tracing is stopped or this was the last hop, create a trace
+  // MDM might have been disabled before getting to this point.
+  // Anyway either MDM is disabled or this was the last hop, create a trace
   // event, add it to the trace and finalize process dump invoking the callback.
-  if (!pmd_async_state->dump_thread_task_runner.get()) {
+  if (!subtle::NoBarrier_Load(&is_enabled_)) {
     if (pmd_async_state->pending_dump_providers.empty()) {
-      VLOG(1) << kLogPrefix << " failed because dump thread was destroyed"
+      VLOG(1) << kLogPrefix << " failed because MemoryDumpManager was disabled"
               << " before finalizing the dump";
     } else {
-      VLOG(1) << kLogPrefix << " failed because dump thread was destroyed"
+      VLOG(1) << kLogPrefix << " failed because MemoryDumpManager was disabled"
               << " before dumping "
               << pmd_async_state->pending_dump_providers.back().get()->name;
     }
     pmd_async_state->dump_successful = false;
     pmd_async_state->pending_dump_providers.clear();
   }
+
   if (pmd_async_state->pending_dump_providers.empty())
     return FinalizeDumpAndAddToTrace(std::move(pmd_async_state));
 
@@ -588,7 +604,7 @@ void MemoryDumpManager::SetupNextMemoryDump(
   }
 
   // If the dump provider did not specify a task runner affinity, dump on
-  // |dump_thread_| which is already checked above for presence.
+  // |dump_thread_|.
   SequencedTaskRunner* task_runner = mdpinfo->task_runner.get();
   if (!task_runner) {
     DCHECK(mdpinfo->options.dumps_on_single_thread_task_runner);
@@ -794,12 +810,6 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
 void MemoryDumpManager::Enable(
     const TraceConfig::MemoryDumpConfig& memory_dump_config) {
-  // Spin-up the thread used to invoke unbound dump providers.
-  std::unique_ptr<Thread> dump_thread(new Thread("MemoryInfra"));
-  if (!dump_thread->Start()) {
-    LOG(ERROR) << "Failed to start the memory-infra thread for tracing";
-    return;
-  }
 
   scoped_refptr<MemoryDumpSessionState> session_state =
       new MemoryDumpSessionState;
@@ -835,10 +845,7 @@ void MemoryDumpManager::Enable(
   DCHECK(!request_dump_function_.is_null());
   session_state_ = session_state;
 
-  DCHECK(!dump_thread_);
-  dump_thread_ = std::move(dump_thread);
-
-  subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
+  subtle::NoBarrier_Store(&is_enabled_, 1);
 
   MemoryDumpScheduler::Config periodic_config;
   bool peak_detector_configured = false;
@@ -860,7 +867,7 @@ void MemoryDumpManager::Enable(
       MemoryPeakDetector::GetInstance()->Setup(
           BindRepeating(&MemoryDumpManager::GetDumpProvidersForPolling,
                         Unretained(this)),
-          dump_thread_->task_runner(),
+          GetOrCreateBgTaskRunnerLocked(),
           BindRepeating(&OnPeakDetected, trigger.level_of_detail));
 
       MemoryPeakDetector::Config peak_config;
@@ -873,7 +880,7 @@ void MemoryDumpManager::Enable(
       // When peak detection is enabled, trigger a dump straight away as it
       // gives a good reference point for analyzing the trace.
       if (is_coordinator_) {
-        dump_thread_->task_runner()->PostTask(
+        GetOrCreateBgTaskRunnerLocked()->PostTask(
             FROM_HERE, BindRepeating(&OnPeakDetected, trigger.level_of_detail));
       }
     }
@@ -882,7 +889,7 @@ void MemoryDumpManager::Enable(
   // Only coordinator process triggers periodic global memory dumps.
   if (is_coordinator_ && !periodic_config.triggers.empty()) {
     MemoryDumpScheduler::GetInstance()->Start(periodic_config,
-                                              dump_thread_->task_runner());
+                                              GetOrCreateBgTaskRunnerLocked());
   }
 }
 
@@ -890,22 +897,15 @@ void MemoryDumpManager::Disable() {
   // There might be a memory dump in progress while this happens. Therefore,
   // ensure that the MDM state which depends on the tracing enabled / disabled
   // state is always accessed by the dumping methods holding the |lock_|.
-  if (!subtle::NoBarrier_Load(&memory_tracing_enabled_))
+  if (!subtle::NoBarrier_Load(&is_enabled_))
     return;
-  subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
-  std::unique_ptr<Thread> dump_thread;
+  subtle::NoBarrier_Store(&is_enabled_, 0);
   {
     AutoLock lock(lock_);
     MemoryDumpScheduler::GetInstance()->Stop();
     MemoryPeakDetector::GetInstance()->TearDown();
-    dump_thread = std::move(dump_thread_);
     session_state_ = nullptr;
   }
-
-  // Thread stops are blocking and must be performed outside of the |lock_|
-  // or will deadlock (e.g., if SetupNextMemoryDump() tries to acquire it).
-  if (dump_thread)
-    dump_thread->Stop();
 }
 
 bool MemoryDumpManager::IsDumpModeAllowed(MemoryDumpLevelOfDetail dump_mode) {
@@ -920,7 +920,7 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     const MemoryDumpProviderInfo::OrderedSet& dump_providers,
     scoped_refptr<MemoryDumpSessionState> session_state,
     ProcessMemoryDumpCallback callback,
-    scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner)
+    scoped_refptr<SequencedTaskRunner> dump_thread_task_runner)
     : req_args(req_args),
       session_state(std::move(session_state)),
       callback(callback),
