@@ -289,7 +289,7 @@
     },
     {
       name: "CSSSelectorsFocusWithin",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSSnapSize",
