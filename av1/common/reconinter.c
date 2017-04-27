@@ -28,29 +28,6 @@
 #if CONFIG_EXT_INTER
 
 #define NSMOOTHERS 1
-#define USE_SOFT_WEIGHTS_IN_WEDGE 1
-static int get_masked_weight(int m, int smoothness) {
-#define SMOOTHER_LEN 32
-  static const uint8_t smoothfn[NSMOOTHERS][2 * SMOOTHER_LEN + 1] = { {
-#if USE_SOFT_WEIGHTS_IN_WEDGE
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  4,  7,  13, 21, 32, 43,
-      51, 57, 60, 62, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-#else
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  64, 64, 32, 64,
-      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-#endif  // USE_SOFT_WEIGHTS_IN_WEDGE
-  } };
-  if (m < -SMOOTHER_LEN)
-    return 0;
-  else if (m > SMOOTHER_LEN)
-    return (1 << WEDGE_WEIGHT_BITS);
-  else
-    return smoothfn[smoothness][m + SMOOTHER_LEN];
-}
 
 // [smoother][negative][direction]
 DECLARE_ALIGNED(16, static uint8_t,
@@ -90,9 +67,65 @@ static wedge_code_type wedge_codebook_8_heqw[8] = {
   { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 6 },
   { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 6, 4 },
 };
+
+static const wedge_code_type wedge_codebook_32_hgtw[32] = {
+  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
+  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
+  { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 4 },
+  { WEDGE_HORIZONTAL, 4, 6 }, { WEDGE_VERTICAL, 4, 4 },
+  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
+  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
+  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
+  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
+  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
+  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
+  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
+  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
+  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
+  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
+  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
+  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
+};
+
+static const wedge_code_type wedge_codebook_32_hltw[32] = {
+  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
+  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
+  { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 4, 4 },
+  { WEDGE_VERTICAL, 6, 4 },   { WEDGE_HORIZONTAL, 4, 4 },
+  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
+  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
+  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
+  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
+  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
+  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
+  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
+  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
+  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
+  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
+  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
+  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
+};
+
+static const wedge_code_type wedge_codebook_32_heqw[32] = {
+  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
+  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
+  { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 6 },
+  { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 6, 4 },
+  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
+  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
+  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
+  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
+  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
+  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
+  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
+  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
+  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
+  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
+  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
+  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
+};
 */
 
-#if !USE_LARGE_WEDGE_CODEBOOK
 static const wedge_code_type wedge_codebook_16_hgtw[16] = {
   { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
   { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
@@ -184,125 +217,6 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
   { 0, NULL, NULL, 0, NULL },
 #endif  // CONFIG_EXT_PARTITION
 };
-
-#else
-
-static const wedge_code_type wedge_codebook_32_hgtw[32] = {
-  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
-  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
-  { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 4 },
-  { WEDGE_HORIZONTAL, 4, 6 }, { WEDGE_VERTICAL, 4, 4 },
-  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
-  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
-  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
-  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
-  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
-  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
-  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
-  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
-  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
-  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
-  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
-  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
-};
-
-static const wedge_code_type wedge_codebook_32_hltw[32] = {
-  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
-  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
-  { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 4, 4 },
-  { WEDGE_VERTICAL, 6, 4 },   { WEDGE_HORIZONTAL, 4, 4 },
-  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
-  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
-  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
-  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
-  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
-  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
-  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
-  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
-  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
-  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
-  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
-  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
-};
-
-static const wedge_code_type wedge_codebook_32_heqw[32] = {
-  { WEDGE_OBLIQUE27, 4, 4 },  { WEDGE_OBLIQUE63, 4, 4 },
-  { WEDGE_OBLIQUE117, 4, 4 }, { WEDGE_OBLIQUE153, 4, 4 },
-  { WEDGE_HORIZONTAL, 4, 2 }, { WEDGE_HORIZONTAL, 4, 6 },
-  { WEDGE_VERTICAL, 2, 4 },   { WEDGE_VERTICAL, 6, 4 },
-  { WEDGE_OBLIQUE27, 4, 1 },  { WEDGE_OBLIQUE27, 4, 2 },
-  { WEDGE_OBLIQUE27, 4, 3 },  { WEDGE_OBLIQUE27, 4, 5 },
-  { WEDGE_OBLIQUE27, 4, 6 },  { WEDGE_OBLIQUE27, 4, 7 },
-  { WEDGE_OBLIQUE153, 4, 1 }, { WEDGE_OBLIQUE153, 4, 2 },
-  { WEDGE_OBLIQUE153, 4, 3 }, { WEDGE_OBLIQUE153, 4, 5 },
-  { WEDGE_OBLIQUE153, 4, 6 }, { WEDGE_OBLIQUE153, 4, 7 },
-  { WEDGE_OBLIQUE63, 1, 4 },  { WEDGE_OBLIQUE63, 2, 4 },
-  { WEDGE_OBLIQUE63, 3, 4 },  { WEDGE_OBLIQUE63, 5, 4 },
-  { WEDGE_OBLIQUE63, 6, 4 },  { WEDGE_OBLIQUE63, 7, 4 },
-  { WEDGE_OBLIQUE117, 1, 4 }, { WEDGE_OBLIQUE117, 2, 4 },
-  { WEDGE_OBLIQUE117, 3, 4 }, { WEDGE_OBLIQUE117, 5, 4 },
-  { WEDGE_OBLIQUE117, 6, 4 }, { WEDGE_OBLIQUE117, 7, 4 },
-};
-
-const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-#endif
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-#if CONFIG_WEDGE
-  { 5, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
-    wedge_masks[BLOCK_8X8] },
-  { 5, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
-    wedge_masks[BLOCK_8X16] },
-  { 5, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_16X8], 0,
-    wedge_masks[BLOCK_16X8] },
-  { 5, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_16X16], 0,
-    wedge_masks[BLOCK_16X16] },
-  { 5, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_16X32], 0,
-    wedge_masks[BLOCK_16X32] },
-  { 5, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_32X16], 0,
-    wedge_masks[BLOCK_32X16] },
-  { 5, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
-    wedge_masks[BLOCK_32X32] },
-  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
-    wedge_masks[BLOCK_32X64] },
-  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
-    wedge_masks[BLOCK_64X32] },
-  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
-    wedge_masks[BLOCK_64X64] },
-#else
-  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_8X8], 0,
-    wedge_masks[BLOCK_8X8] },
-  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_8X16], 0,
-    wedge_masks[BLOCK_8X16] },
-  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_16X8], 0,
-    wedge_masks[BLOCK_16X8] },
-  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_16X16], 0,
-    wedge_masks[BLOCK_16X16] },
-  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_16X32], 0,
-    wedge_masks[BLOCK_16X32] },
-  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_32X16], 0,
-    wedge_masks[BLOCK_32X16] },
-  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_32X32], 0,
-    wedge_masks[BLOCK_32X32] },
-  { 0, wedge_codebook_32_hgtw, wedge_signflip_lookup[BLOCK_32X64], 0,
-    wedge_masks[BLOCK_32X64] },
-  { 0, wedge_codebook_32_hltw, wedge_signflip_lookup[BLOCK_64X32], 0,
-    wedge_masks[BLOCK_64X32] },
-  { 0, wedge_codebook_32_heqw, wedge_signflip_lookup[BLOCK_64X64], 0,
-    wedge_masks[BLOCK_64X64] },
-#endif  // CONFIG_WEDGE
-#if CONFIG_EXT_PARTITION
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-  { 0, NULL, NULL, 0, NULL },
-#endif  // CONFIG_EXT_PARTITION
-};
-#endif  // USE_LARGE_WEDGE_CODEBOOK
 
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
                                              BLOCK_SIZE sb_type) {
@@ -510,38 +424,103 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
 #endif  // COMPOUND_SEGMENT_TYPE
 #endif  // CONFIG_COMPOUND_SEGMENT
 
+#if MASK_MASTER_SIZE == 64
+static const uint8_t wedge_master_oblique_odd[NSMOOTHERS][MASK_MASTER_SIZE] = {
+  {
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  6,  18,
+      37, 53, 60, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+  }
+};
+static const uint8_t wedge_master_oblique_even[NSMOOTHERS][MASK_MASTER_SIZE] = {
+  {
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  4,  11, 27,
+      46, 58, 62, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+      64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+  }
+};
+static const uint8_t wedge_master_vertical[NSMOOTHERS][MASK_MASTER_SIZE] = { {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  7,  21,
+    43, 57, 62, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+} };
+
+static void shift_copy(const uint8_t *src, uint8_t *dst, int shift, int width) {
+  if (shift >= 0) {
+    memcpy(dst + shift, src, width - shift);
+    memset(dst, src[0], shift);
+  } else {
+    shift = -shift;
+    memcpy(dst, src + shift, width - shift);
+    memset(dst + width - shift, src[width - 1], shift);
+  }
+}
+#else
+static const double smoother_param[NSMOOTHERS] = { 2.83 };
+#endif  // MASK_MASTER_SIZE == 64
+
 static void init_wedge_master_masks() {
   int i, j, s;
   const int w = MASK_MASTER_SIZE;
   const int h = MASK_MASTER_SIZE;
   const int stride = MASK_MASTER_STRIDE;
-  const int a[2] = { 2, 1 };
-  const double asqrt = sqrt(a[0] * a[0] + a[1] * a[1]);
   for (s = 0; s < NSMOOTHERS; s++) {
-    for (i = 0; i < h; ++i)
+#if MASK_MASTER_SIZE == 64
+    // Generate prototype by shifting the masters
+    int shift = h / 4;
+    for (i = 0; i < h; i += 2) {
+      shift_copy(wedge_master_oblique_even[s],
+                 &wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride], shift,
+                 MASK_MASTER_SIZE);
+      shift--;
+      shift_copy(wedge_master_oblique_odd[s],
+                 &wedge_mask_obl[s][1][WEDGE_OBLIQUE63][(i + 1) * stride],
+                 shift, MASK_MASTER_SIZE);
+      memcpy(&wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride],
+             wedge_master_vertical[s],
+             MASK_MASTER_SIZE * sizeof(wedge_master_vertical[s][0]));
+      memcpy(&wedge_mask_obl[s][1][WEDGE_VERTICAL][(i + 1) * stride],
+             wedge_master_vertical[s],
+             MASK_MASTER_SIZE * sizeof(wedge_master_vertical[s][0]));
+    }
+#else
+    const int a[2] = { 2, 1 };
+    const double asqrt = sqrt(a[0] * a[0] + a[1] * a[1]);
+    for (i = 0; i < h; i++) {
       for (j = 0; j < w; ++j) {
         int x = (2 * j + 1 - w);
         int y = (2 * i + 1 - h);
-        int m = (int)rint((a[0] * x + a[1] * y) / asqrt);
-        wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j] =
-            wedge_mask_obl[s][1][WEDGE_OBLIQUE27][j * stride + i] =
-                get_masked_weight(m, s);
+        double d = (a[0] * x + a[1] * y) / asqrt;
+        const int msk = (int)rint((1.0 + tanh(d / smoother_param[s])) * 32);
+        wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j] = msk;
+        const int mskx = (int)rint((1.0 + tanh(x / smoother_param[s])) * 32);
+        wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j] = mskx;
+      }
+    }
+#endif  // MASK_MASTER_SIZE == 64
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; ++j) {
+        const int msk = wedge_mask_obl[s][1][WEDGE_OBLIQUE63][i * stride + j];
+        wedge_mask_obl[s][1][WEDGE_OBLIQUE27][j * stride + i] = msk;
         wedge_mask_obl[s][1][WEDGE_OBLIQUE117][i * stride + w - 1 - j] =
             wedge_mask_obl[s][1][WEDGE_OBLIQUE153][(w - 1 - j) * stride + i] =
-                (1 << WEDGE_WEIGHT_BITS) - get_masked_weight(m, s);
+                (1 << WEDGE_WEIGHT_BITS) - msk;
         wedge_mask_obl[s][0][WEDGE_OBLIQUE63][i * stride + j] =
             wedge_mask_obl[s][0][WEDGE_OBLIQUE27][j * stride + i] =
-                (1 << WEDGE_WEIGHT_BITS) - get_masked_weight(m, s);
+                (1 << WEDGE_WEIGHT_BITS) - msk;
         wedge_mask_obl[s][0][WEDGE_OBLIQUE117][i * stride + w - 1 - j] =
             wedge_mask_obl[s][0][WEDGE_OBLIQUE153][(w - 1 - j) * stride + i] =
-                get_masked_weight(m, s);
-        wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j] =
-            wedge_mask_obl[s][1][WEDGE_HORIZONTAL][j * stride + i] =
-                get_masked_weight(x, s);
+                msk;
+        const int mskx = wedge_mask_obl[s][1][WEDGE_VERTICAL][i * stride + j];
+        wedge_mask_obl[s][1][WEDGE_HORIZONTAL][j * stride + i] = mskx;
         wedge_mask_obl[s][0][WEDGE_VERTICAL][i * stride + j] =
             wedge_mask_obl[s][0][WEDGE_HORIZONTAL][j * stride + i] =
-                (1 << WEDGE_WEIGHT_BITS) - get_masked_weight(x, s);
+                (1 << WEDGE_WEIGHT_BITS) - mskx;
       }
+    }
   }
 }
 
@@ -632,7 +611,7 @@ static void build_masked_compound_wedge_extend(
     default: assert(0); return;
   }
   aom_blend_a64_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
-                     mask, mask_stride, h, w, subh, subw);
+                     mask, (int)mask_stride, h, w, subh, subw);
 }
 
 #if CONFIG_HIGHBITDEPTH
@@ -660,8 +639,8 @@ static void build_masked_compound_wedge_extend_highbd(
     default: assert(0); return;
   }
   aom_highbd_blend_a64_mask(dst_8, dst_stride, src0_8, src0_stride, src1_8,
-                            src1_stride, mask, mask_stride, h, w, subh, subw,
-                            bd);
+                            src1_stride, mask, (int)mask_stride, h, w, subh,
+                            subw, bd);
 }
 #endif  // CONFIG_HIGHBITDEPTH
 #else

@@ -156,14 +156,8 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_EXT_INTER
-// Set to one to use larger codebooks
-#define USE_LARGE_WEDGE_CODEBOOK 0
-
-#if USE_LARGE_WEDGE_CODEBOOK
-#define MAX_WEDGE_TYPES (1 << 5)
-#else
+// Set to (1 << 5) if the 32-ary codebooks are used for any bock size
 #define MAX_WEDGE_TYPES (1 << 4)
-#endif
 
 #define MAX_WEDGE_SIZE_LOG2 5  // 32x32
 #define MAX_WEDGE_SIZE (1 << MAX_WEDGE_SIZE_LOG2)
@@ -729,8 +723,8 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_MOTION_VAR
 
 #if CONFIG_EXT_INTER
-#define MASK_MASTER_SIZE (2 * MAX_SB_SIZE)
-#define MASK_MASTER_STRIDE (2 * MAX_SB_SIZE)
+#define MASK_MASTER_SIZE ((MAX_WEDGE_SIZE) << 1)
+#define MASK_MASTER_STRIDE (MASK_MASTER_SIZE)
 
 void av1_init_wedge_masks();
 
