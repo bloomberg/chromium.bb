@@ -84,6 +84,18 @@ class JumpList : public sessions::TabRestoreServiceObserver,
     // Items in the "Recently Closed" category of the application JumpList,
     // protected by the list_lock_.
     ShellLinkItemList recently_closed_pages_;
+
+    // A boolean flag indicating if "Most Visited" category of the JumpList
+    // has new updates therefore its icons need to be updated.
+    // By default, this flag is set to false. If there's any change in
+    // TabRestoreService, this flag will be set to true.
+    bool most_visited_pages_have_updates_ = false;
+
+    // A boolean flag indicating if "Recently Closed" category of the JumpList
+    // has new updates therefore its icons need to be updated.
+    // By default, this flag is set to false. If there's any change in TopSites
+    // service, this flag will be set to true.
+    bool recently_closed_pages_have_updates_ = false;
   };
 
   // Observer callback for TabRestoreService::Observer to notify when a tab is
@@ -115,16 +127,20 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   explicit JumpList(Profile* profile);  // Use JumpListFactory instead
   ~JumpList() override;
 
-  // Creates a ShellLinkItem object from a tab (or a window) and add it to the
-  // given list.
-  // These functions are copied from the RecentlyClosedTabsHandler class for
-  // compatibility with the new-tab page.
+  // The AddTab and AddWindow functions are copied from the
+  // RecentlyClosedTabsHandler class for compatibility with the new-tab page.
+
+  // Adds a new ShellLinkItem for |tab| to |data| provided that doing so will
+  // not exceed |max_items|.
   bool AddTab(const sessions::TabRestoreService::Tab& tab,
-              ShellLinkItemList* list,
-              size_t max_items);
+              size_t max_items,
+              JumpListData* data);
+
+  // Adds a new ShellLinkItem for each tab in |window| to |data| provided that
+  // doing so will not exceed |max_items|.
   void AddWindow(const sessions::TabRestoreService::Window& window,
-                 ShellLinkItemList* list,
-                 size_t max_items);
+                 size_t max_items,
+                 JumpListData* data);
 
   // Starts loading a favicon for each URL in |icon_urls_|.
   // This function sends a query to HistoryService.
@@ -186,11 +202,12 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // comes in before it finishes.
   base::CancelableTaskTracker::TaskId task_id_;
 
-  // A task runner running tasks to update the jumplist in JumpListIcons.
-  scoped_refptr<base::SingleThreadTaskRunner> update_jumplisticons_task_runner_;
+  // A task runner running tasks to update the JumpList.
+  scoped_refptr<base::SingleThreadTaskRunner> update_jumplist_task_runner_;
 
-  // A task runner running tasks to delete JumpListIconsOld directory.
-  scoped_refptr<base::SequencedTaskRunner> delete_jumplisticonsold_task_runner_;
+  // A task runner running tasks to delete JumpListIcons directory and
+  // JumpListIconsOld directory.
+  scoped_refptr<base::SequencedTaskRunner> delete_jumplisticons_task_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;
