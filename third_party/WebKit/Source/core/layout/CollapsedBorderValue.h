@@ -30,10 +30,21 @@
 
 namespace blink {
 
+enum EBorderPrecedence {
+  kBorderPrecedenceOff,
+  kBorderPrecedenceTable,
+  kBorderPrecedenceColumnGroup,
+  kBorderPrecedenceColumn,
+  kBorderPrecedenceRowGroup,
+  kBorderPrecedenceRow,
+  kBorderPrecedenceCell
+};
+
 class CollapsedBorderValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
+  // Constructs a CollapsedBorderValue for non-existence border.
   CollapsedBorderValue()
       : color_(0),
         width_(0),
@@ -48,7 +59,9 @@ class CollapsedBorderValue {
         width_(border.NonZero() ? border.Width() : 0),
         style_(border.Style()),
         precedence_(precedence),
-        transparent_(border.IsTransparent()) {}
+        transparent_(border.IsTransparent()) {
+    DCHECK(precedence != kBorderPrecedenceOff);
+  }
 
   unsigned Width() const { return style_ > kBorderStyleHidden ? width_ : 0; }
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
@@ -71,9 +84,7 @@ class CollapsedBorderValue {
            IsSameIgnoringColor(o);
   }
 
-  bool IsVisible() const {
-    return Style() > kBorderStyleHidden && !IsTransparent() && Exists();
-  }
+  bool IsVisible() const { return Width() && !IsTransparent(); }
 
   bool ShouldPaint(
       const CollapsedBorderValue& table_current_border_value) const {

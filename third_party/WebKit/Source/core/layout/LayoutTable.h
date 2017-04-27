@@ -29,8 +29,8 @@
 #include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/layout/CollapsedBorderValue.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/style/CollapsedBorderValue.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

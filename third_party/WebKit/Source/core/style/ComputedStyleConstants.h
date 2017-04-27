@@ -106,16 +106,6 @@ enum EBorderStyle {
   kBorderStyleDouble
 };
 
-enum EBorderPrecedence {
-  kBorderPrecedenceOff,
-  kBorderPrecedenceTable,
-  kBorderPrecedenceColumnGroup,
-  kBorderPrecedenceColumn,
-  kBorderPrecedenceRowGroup,
-  kBorderPrecedenceRow,
-  kBorderPrecedenceCell
-};
-
 enum OutlineIsAuto { kOutlineIsAutoOff = 0, kOutlineIsAutoOn };
 
 enum EMarginCollapse {

@@ -5,7 +5,6 @@
 #ifndef TableCellPainter_h
 #define TableCellPainter_h
 
-#include "core/style/CollapsedBorderValue.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/wtf/Allocator.h"
 
