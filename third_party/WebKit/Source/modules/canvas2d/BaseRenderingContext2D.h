@@ -187,6 +187,20 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   ImageData* createImageData(ImageData*, ExceptionState&) const;
   ImageData* createImageData(int width, int height, ExceptionState&) const;
+  ImageData* createImageData(unsigned,
+                             unsigned,
+                             ImageDataColorSettings&,
+                             ExceptionState&) const;
+  ImageData* createImageData(ImageDataArray&,
+                             unsigned,
+                             unsigned,
+                             ExceptionState&) const;
+  ImageData* createImageData(ImageDataArray&,
+                             unsigned,
+                             unsigned,
+                             ImageDataColorSettings&,
+                             ExceptionState&) const;
+
   ImageData* getImageData(int sx, int sy, int sw, int sh, ExceptionState&);
   void putImageData(ImageData*, int dx, int dy, ExceptionState&);
   void putImageData(ImageData*,
@@ -237,6 +251,16 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual ColorBehavior DrawImageColorBehavior() const = 0;
 
   virtual void WillDrawImage(CanvasImageSource*) const {}
+
+  virtual CanvasColorSpace ColorSpace() const {
+    return kLegacyCanvasColorSpace;
+  };
+  virtual String ColorSpaceAsString() const {
+    return kLegacyCanvasColorSpaceName;
+  }
+  virtual CanvasPixelFormat PixelFormat() const {
+    return kRGBA8CanvasPixelFormat;
+  }
 
   void RestoreMatrixClipStack(PaintCanvas*) const;
 
@@ -372,6 +396,10 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void ClearCanvas();
   bool RectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
+
+  ImageDataColorSettings GetColorSettingsAsImageDataColorSettings() const;
+
+  bool color_management_enabled_;
 };
 
 template <typename DrawFunc, typename ContainsFunc>

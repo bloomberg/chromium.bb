@@ -390,51 +390,21 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
   WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
                                   WTF::ArrayBufferContents::kNotShared);
 
-  // Skia does not support unpremultiplied read with an F16 to 8888 conversion
-  bool use_f16_workaround =
-      surface_->color_params().GetSkColorType() == kRGBA_F16_SkColorType;
-
-  SkAlphaType alpha_type = (multiplied == kPremultiplied || use_f16_workaround)
+  SkAlphaType alpha_type = (multiplied == kPremultiplied)
                                ? kPremul_SkAlphaType
                                : kUnpremul_SkAlphaType;
-  // The workaround path use a canvas draw under the hood, which can only
-  // use N32 at this time.
   SkColorType color_type =
-      use_f16_workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
+      (surface_->color_params().GetSkColorType() == kRGBA_F16_SkColorType)
+          ? kRGBA_F16_SkColorType
+          : kRGBA_8888_SkColorType;
 
-  // Only use sRGB when the surface has a color space.  Converting untagged
-  // pixels to a particular color space is not well-defined in Skia.
-  sk_sp<SkColorSpace> color_space =
-      surface_->color_params().GetSkColorSpaceForSkSurfaces();
-
-  SkImageInfo info = SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
-                                       alpha_type, std::move(color_space));
+  SkImageInfo info = SkImageInfo::Make(
+      rect.Width(), rect.Height(), color_type, alpha_type,
+      surface_->color_params().GetSkColorSpaceForSkSurfaces());
 
   snapshot->readPixels(info, result.Data(), bytes_per_pixel * rect.Width(),
                        rect.X(), rect.Y());
   gpu_readback_invoked_in_current_frame_ = true;
-
-  if (use_f16_workaround) {
-    uint32_t* pixel = (uint32_t*)result.Data();
-    size_t pixel_count = alloc_size_in_bytes / sizeof(uint32_t);
-    // TODO(skbug.com/5853): make readPixels support RGBA output so that we no
-    // longer
-    // have to do this.
-    if (kN32_SkColorType == kBGRA_8888_SkColorType) {
-      // Convert BGRA to RGBA if necessary on this platform.
-      SkSwapRB(pixel, pixel, pixel_count);
-    }
-    // TODO(skbug.com/5853): We should really be doing the unpremultiply in
-    // linear space
-    // and skia should provide that service.
-    if (multiplied == kUnmultiplied) {
-      for (; pixel_count; --pixel_count) {
-        *pixel = SkUnPreMultiply::UnPreMultiplyPreservingByteOrder(*pixel);
-        ++pixel;
-      }
-    }
-  }
-
   result.Transfer(contents);
   return true;
 }

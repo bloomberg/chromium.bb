@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <body>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../../../resources/testharness.js"></script>
+<script src="../../../../../resources/testharnessreport.js"></script>
 <script>
 
 var dataU8 = new Uint8ClampedArray([255, 192, 128, 64]);
@@ -23,24 +23,25 @@ function checkColorSettings(colorSettings, colorSpace, storageFormat) {
 }
 
 function runTest(colorSettings, expectedColorSettings) {
-  experimental = new ImageData(1,1);
+  var canvas = document.createElement("canvas");
+  var ctx = canvas.getContext("2d");
   
-  imageData = experimental.createImageData(1, 1, colorSettings);
+  imageData = ctx.createImageData(1, 1, colorSettings);
   checkDataTypeAgainstStorageFormat(imageData.dataUnion, colorSettings.storageFormat);
   assert_array_equals(imageData.dataUnion, [0, 0, 0, 0]);
   checkColorSettings(imageData.getColorSettings(), expectedColorSettings.colorSpace, expectedColorSettings.storageFormat);
 
-  imageData = experimental.createImageData(dataU8, 1, 1, colorSettings);
+  imageData = ctx.createImageData(dataU8, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Uint8ClampedArray]");
   assert_array_equals(imageData.dataUnion, dataU8);
   checkColorSettings(imageData.getColorSettings(), expectedColorSettings.colorSpace, "uint8");
 
-  imageData = experimental.createImageData(dataU16, 1, 1, colorSettings);
+  imageData = ctx.createImageData(dataU16, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Uint16Array]");
   assert_array_equals(imageData.dataUnion, dataU16);
   checkColorSettings(imageData.getColorSettings(), expectedColorSettings.colorSpace, "uint16");
 
-  imageData = experimental.createImageData(dataF32, 1, 1, colorSettings);
+  imageData = ctx.createImageData(dataF32, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Float32Array]");
   assert_array_equals(imageData.dataUnion, dataF32);
   checkColorSettings(imageData.getColorSettings(), expectedColorSettings.colorSpace, "float32");

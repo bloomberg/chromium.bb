@@ -279,6 +279,18 @@ void CanvasRenderingContext2D::WillDrawImage(CanvasImageSource* source) const {
   canvas()->WillDrawImageTo2DContext(source);
 }
 
+CanvasColorSpace CanvasRenderingContext2D::ColorSpace() const {
+  return color_params().color_space();
+}
+
+String CanvasRenderingContext2D::ColorSpaceAsString() const {
+  return CanvasRenderingContext::ColorSpaceAsString();
+}
+
+CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
+  return color_params().pixel_format();
+}
+
 ColorBehavior CanvasRenderingContext2D::DrawImageColorBehavior() const {
   return CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas();
 }

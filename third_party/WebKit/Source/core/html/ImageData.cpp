@@ -276,11 +276,15 @@ ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
   return new ImageData(IntSize(width, height), data.View());
 }
 
-ImageData* ImageData::createImageData(
+ImageData* ImageData::CreateImageData(
     unsigned width,
     unsigned height,
     const ImageDataColorSettings& color_settings,
     ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
+      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+    return nullptr;
+
   if (!ImageData::ValidateConstructorArguments(
           kParamWidth | kParamHeight, nullptr, width, height, nullptr,
           &color_settings, &exception_state))
@@ -297,12 +301,17 @@ ImageData* ImageData::createImageData(
   return new ImageData(IntSize(width, height), buffer_view, &color_settings);
 }
 
-ImageData* ImageData::createImageData(ImageDataArray& data,
+ImageData* ImageData::CreateImageData(ImageDataArray& data,
                                       unsigned width,
                                       unsigned height,
                                       ImageDataColorSettings& color_settings,
                                       ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
+      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+    return nullptr;
+
   DOMArrayBufferView* buffer_view = nullptr;
+
   // When pixels data is provided, we need to override the storage format of
   // ImageDataColorSettings with the one that matches the data type of the
   // pixels.
@@ -571,6 +580,16 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
     default:
       NOTREACHED();
   }
+  return nullptr;
+}
+
+DOMArrayBufferBase* ImageData::BufferBase() const {
+  if (data_)
+    return data_->BufferBase();
+  if (data_u16_)
+    return data_u16_->BufferBase();
+  if (data_f32_)
+    return data_f32_->BufferBase();
   return nullptr;
 }
 

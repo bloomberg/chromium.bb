@@ -90,15 +90,15 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                            unsigned height,
                            ExceptionState&);
 
-  ImageData* createImageData(unsigned width,
-                             unsigned height,
-                             const ImageDataColorSettings&,
-                             ExceptionState&);
-  ImageData* createImageData(ImageDataArray&,
-                             unsigned width,
-                             unsigned height,
-                             ImageDataColorSettings&,
-                             ExceptionState&);
+  static ImageData* CreateImageData(unsigned width,
+                                    unsigned height,
+                                    const ImageDataColorSettings&,
+                                    ExceptionState&);
+  static ImageData* CreateImageData(ImageDataArray&,
+                                    unsigned width,
+                                    unsigned height,
+                                    ImageDataColorSettings&,
+                                    ExceptionState&);
 
   void getColorSettings(ImageDataColorSettings& result) {
     result = color_settings_;
@@ -130,6 +130,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   ImageDataArray& dataUnion() { return data_union_; }
   const ImageDataArray& dataUnion() const { return data_union_; }
   void dataUnion(ImageDataArray& result) { result = data_union_; };
+
+  DOMArrayBufferBase* BufferBase() const;
 
   sk_sp<SkColorSpace> GetSkColorSpace();
   bool ImageDataInCanvasColorSettings(const CanvasColorSpace&,

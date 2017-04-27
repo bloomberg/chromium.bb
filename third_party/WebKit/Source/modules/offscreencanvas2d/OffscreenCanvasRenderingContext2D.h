@@ -113,6 +113,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool IsPaintable() const final;
 
   RefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
+
+  CanvasColorSpace ColorSpace() const override;
+  String ColorSpaceAsString() const override;
+  CanvasPixelFormat PixelFormat() const override;
 };
 
 // TODO(fserb): remove this.

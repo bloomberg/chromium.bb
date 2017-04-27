@@ -76,6 +76,12 @@
     [RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
+ 
+    // If OffscreenCanva ships before color managed canvas, this method must remain behind flag.
+    // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
+
 
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)
