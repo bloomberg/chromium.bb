@@ -167,6 +167,20 @@ TEST_F('MaterialBookmarksStoreClientTest', 'All', function() {
   mocha.run();
 });
 
+function MaterialBookmarksToolbarTest() {}
+
+MaterialBookmarksToolbarTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'toolbar_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksToolbarTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksUtilTest() {}
 
 MaterialBookmarksUtilTest.prototype = {

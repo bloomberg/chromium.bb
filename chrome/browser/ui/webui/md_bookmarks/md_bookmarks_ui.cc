@@ -36,9 +36,10 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                      IDS_MD_BOOKMARK_MANAGER_ADD_BOOKMARK_TITLE);
   AddLocalizedString(source, "addFolderTitle",
                      IDS_MD_BOOKMARK_MANAGER_ADD_FOLDER_TITLE);
-  AddLocalizedString(source, "cancelEdit", IDS_CANCEL);
+  AddLocalizedString(source, "cancel", IDS_CANCEL);
   AddLocalizedString(source, "clearSearch",
                      IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH);
+  AddLocalizedString(source, "delete", IDS_DELETE);
   AddLocalizedString(source, "editBookmarkTitle", IDS_BOOKMARK_EDITOR_TITLE);
   AddLocalizedString(source, "editDialogInvalidUrl",
                      IDS_BOOKMARK_MANAGER_INVALID_URL);
@@ -48,6 +49,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                              IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER);
   AddLocalizedString(source, "emptyList",
                      IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST);
+  AddLocalizedString(source, "itemsSelected",
+                     IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED);
   AddLocalizedString(source, "menuAddBookmark",
                      IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
   AddLocalizedString(source, "menuAddFolder",

@@ -52,7 +52,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
     });
 
     test('search bar is focused on load in wide mode', function() {
-      toolbar.$['main-toolbar'].narrow_ = false;
+      toolbar.$['main-toolbar'].narrow = false;
 
       historyResult(createHistoryInfo(), []);
       return PolymerTest.flushTasks().then(() => {
@@ -65,7 +65,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
     });
 
     test('search bar is not focused on load in narrow mode', function() {
-      toolbar.$['main-toolbar'].narrow_ = true;
+      toolbar.$['main-toolbar'].narrow = true;
 
       historyResult(createHistoryInfo(), []);
       return PolymerTest.flushTasks().then(() => {
