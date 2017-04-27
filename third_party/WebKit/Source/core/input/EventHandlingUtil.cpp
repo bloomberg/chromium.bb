@@ -83,6 +83,10 @@ PaintLayer* LayerForNode(Node* node) {
   return layer;
 }
 
+bool IsInDocument(EventTarget* n) {
+  return n && n->ToNode() && n->ToNode()->isConnected();
+}
+
 ScrollableArea* AssociatedScrollableArea(const PaintLayer* layer) {
   if (PaintLayerScrollableArea* scrollable_area = layer->GetScrollableArea()) {
     if (scrollable_area->ScrollsOverflow())
