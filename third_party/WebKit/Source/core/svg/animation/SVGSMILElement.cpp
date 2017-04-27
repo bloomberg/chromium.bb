@@ -377,8 +377,8 @@ SMILTime SVGSMILElement::ParseClockValue(const String& data) {
 
   double result = 0;
   bool ok;
-  size_t double_point_one = parse.Find(':');
-  size_t double_point_two = parse.Find(':', double_point_one + 1);
+  size_t double_point_one = parse.find(':');
+  size_t double_point_two = parse.find(':', double_point_one + 1);
   if (double_point_one == 2 && double_point_two == 5 && parse.length() >= 8) {
     result += parse.Substring(0, 2).ToUIntStrict(&ok) * 60 * 60;
     if (!ok)
@@ -411,9 +411,9 @@ bool SVGSMILElement::ParseCondition(const String& value,
 
   double sign = 1.;
   bool ok;
-  size_t pos = parse_string.Find('+');
+  size_t pos = parse_string.find('+');
   if (pos == kNotFound) {
-    pos = parse_string.Find('-');
+    pos = parse_string.find('-');
     if (pos != kNotFound)
       sign = -1.;
   }
@@ -431,7 +431,7 @@ bool SVGSMILElement::ParseCondition(const String& value,
   }
   if (condition_string.IsEmpty())
     return false;
-  pos = condition_string.Find('.');
+  pos = condition_string.find('.');
 
   String base_id;
   String name_string;

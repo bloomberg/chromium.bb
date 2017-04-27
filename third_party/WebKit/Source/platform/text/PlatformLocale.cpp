@@ -424,9 +424,9 @@ String Locale::StripInvalidNumberCharacters(const String& input,
   builder.ReserveCapacity(input.length());
   for (unsigned i = 0; i < input.length(); ++i) {
     UChar ch = input[i];
-    if (standard_chars.Find(ch) != kNotFound)
+    if (standard_chars.find(ch) != kNotFound)
       builder.Append(ch);
-    else if (acceptable_number_characters_.Find(ch) != kNotFound)
+    else if (acceptable_number_characters_.find(ch) != kNotFound)
       builder.Append(ch);
   }
   return builder.ToString();

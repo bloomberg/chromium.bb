@@ -622,8 +622,8 @@ static void ParseCacheHeader(const String& header,
   const String safe_header = header.RemoveCharacters(IsControlCharacter);
   unsigned max = safe_header.length();
   for (unsigned pos = 0; pos < max; /* pos incremented in loop */) {
-    size_t next_comma_position = safe_header.Find(',', pos);
-    size_t next_equal_sign_position = safe_header.Find('=', pos);
+    size_t next_comma_position = safe_header.find(',', pos);
+    size_t next_equal_sign_position = safe_header.find('=', pos);
     if (next_equal_sign_position != kNotFound &&
         (next_equal_sign_position < next_comma_position ||
          next_comma_position == kNotFound)) {
@@ -637,16 +637,16 @@ static void ParseCacheHeader(const String& header,
       String value = safe_header.Substring(pos, max - pos).StripWhiteSpace();
       if (value[0] == '"') {
         // The value is a quoted string
-        size_t next_double_quote_position = value.Find('"', 1);
+        size_t next_double_quote_position = value.find('"', 1);
         if (next_double_quote_position != kNotFound) {
           // Store the value as a quoted string without quotes
           result.push_back(std::pair<String, String>(
               directive, value.Substring(1, next_double_quote_position - 1)
                              .StripWhiteSpace()));
-          pos += (safe_header.Find('"', pos) - pos) +
+          pos += (safe_header.find('"', pos) - pos) +
                  next_double_quote_position + 1;
           // Move past next comma, if there is one
-          size_t next_comma_position2 = safe_header.Find(',', pos);
+          size_t next_comma_position2 = safe_header.find(',', pos);
           if (next_comma_position2 != kNotFound)
             pos += next_comma_position2 - pos + 1;
           else
@@ -661,14 +661,14 @@ static void ParseCacheHeader(const String& header,
         }
       } else {
         // The value is a token until the next comma
-        size_t next_comma_position2 = value.Find(',');
+        size_t next_comma_position2 = value.find(',');
         if (next_comma_position2 != kNotFound) {
           // The value is delimited by the next comma
           result.push_back(std::pair<String, String>(
               directive,
               TrimToNextSeparator(
                   value.Substring(0, next_comma_position2).StripWhiteSpace())));
-          pos += (safe_header.Find(',', pos) - pos) + 1;
+          pos += (safe_header.find(',', pos) - pos) + 1;
         } else {
           // The rest is the value; no change to value needed
           result.push_back(

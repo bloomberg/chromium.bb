@@ -766,7 +766,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
             SpliceBuffer(kSpaceCharacter, node_, 0, run_start, run_start + 1);
           offset_ = run_start + 1;
         } else {
-          size_t subrun_end = str.Find('\n', run_start);
+          size_t subrun_end = str.find('\n', run_start);
           if (subrun_end == kNotFound || subrun_end > run_end) {
             subrun_end = run_end;
             subrun_end =

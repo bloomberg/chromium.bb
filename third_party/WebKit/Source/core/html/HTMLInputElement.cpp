@@ -1334,7 +1334,7 @@ static inline bool IsRFC2616TokenCharacter(UChar ch) {
 }
 
 static bool IsValidMIMEType(const String& type) {
-  size_t slash_position = type.Find('/');
+  size_t slash_position = type.find('/');
   if (slash_position == kNotFound || !slash_position ||
       slash_position == type.length() - 1)
     return false;

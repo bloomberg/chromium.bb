@@ -219,7 +219,7 @@ void VTTParser::CollectMetadataHeader(const String& line) {
   // Step 12.4 If line contains the character ":" (A U+003A COLON), then set
   // metadata's name to the substring of line before the first ":" character and
   // metadata's value to the substring after this character.
-  size_t colon_position = line.Find(':');
+  size_t colon_position = line.find(':');
   if (colon_position == kNotFound)
     return;
 

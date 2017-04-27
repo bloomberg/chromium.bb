@@ -452,7 +452,7 @@ static void FillContainerFromString(ContainerNode* paragraph,
     return;
   }
 
-  DCHECK_EQ(string.Find('\n'), kNotFound) << string;
+  DCHECK_EQ(string.find('\n'), kNotFound) << string;
 
   Vector<String> tab_list;
   string.Split('\t', true, tab_list);
@@ -546,7 +546,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
 
   // A string with no newlines gets added inline, rather than being put into a
   // paragraph.
-  if (string.Find('\n') == kNotFound) {
+  if (string.find('\n') == kNotFound) {
     FillContainerFromString(fragment, string);
     return fragment;
   }

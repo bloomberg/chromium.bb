@@ -125,11 +125,11 @@ void URLSearchParams::SetInput(const String& query_string) {
   size_t query_string_length = query_string.length();
   while (start < query_string_length) {
     size_t name_start = start;
-    size_t name_value_end = query_string.Find('&', start);
+    size_t name_value_end = query_string.find('&', start);
     if (name_value_end == kNotFound)
       name_value_end = query_string_length;
     if (name_value_end > start) {
-      size_t end_of_name = query_string.Find('=', start);
+      size_t end_of_name = query_string.find('=', start);
       if (end_of_name == kNotFound || end_of_name > name_value_end)
         end_of_name = name_value_end;
       String name = DecodeString(

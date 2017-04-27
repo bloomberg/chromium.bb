@@ -922,7 +922,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   String header_content_language =
       response_.HttpHeaderField(HTTPNames::Content_Language);
   if (!header_content_language.IsEmpty()) {
-    size_t comma_index = header_content_language.Find(',');
+    size_t comma_index = header_content_language.find(',');
     // kNotFound == -1 == don't truncate
     header_content_language.Truncate(comma_index);
     header_content_language =

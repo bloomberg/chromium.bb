@@ -86,7 +86,7 @@ struct Unicode16BitEscapeSequence {
 struct URLEscapeSequence {
   enum { kSequenceSize = 3 };  // e.g. %41
   static size_t FindInString(const String& string, size_t start_position) {
-    return string.Find('%', start_position);
+    return string.find('%', start_position);
   }
   static size_t FindEndOfRun(const String& string,
                              size_t start_position,

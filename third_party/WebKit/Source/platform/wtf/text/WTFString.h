@@ -165,14 +165,14 @@ class WTF_EXPORT String {
   static String NumberToStringFixedWidth(double, unsigned decimal_places);
 
   // Find characters.
-  size_t Find(UChar c, unsigned start = 0) const {
+  size_t find(UChar c, unsigned start = 0) const {
     return impl_ ? impl_->Find(c, start) : kNotFound;
   }
-  size_t Find(LChar c, unsigned start = 0) const {
+  size_t find(LChar c, unsigned start = 0) const {
     return impl_ ? impl_->Find(c, start) : kNotFound;
   }
-  size_t Find(char c, unsigned start = 0) const {
-    return Find(static_cast<LChar>(c), start);
+  size_t find(char c, unsigned start = 0) const {
+    return find(static_cast<LChar>(c), start);
   }
   size_t Find(CharacterMatchFunctionPtr match_function,
               unsigned start = 0) const {
@@ -201,7 +201,7 @@ class WTF_EXPORT String {
     return impl_ ? impl_->FindIgnoringASCIICase(value, start) : kNotFound;
   }
 
-  bool Contains(char c) const { return Find(c) != kNotFound; }
+  bool Contains(char c) const { return find(c) != kNotFound; }
   bool Contains(
       const StringView& value,
       TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {

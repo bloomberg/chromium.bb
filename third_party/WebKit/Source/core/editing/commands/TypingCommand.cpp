@@ -554,7 +554,7 @@ void TypingCommand::InsertText(const String& text,
   // inserted text.
   unsigned offset = 0;
   size_t newline;
-  while ((newline = text.Find('\n', offset)) != kNotFound) {
+  while ((newline = text.find('\n', offset)) != kNotFound) {
     if (newline > offset) {
       const size_t insertion_length = newline - offset;
       InsertTextRunWithoutNewlines(text.Substring(offset, insertion_length),

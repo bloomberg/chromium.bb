@@ -949,10 +949,10 @@ Response InspectorDOMAgent::performSearch(
       optional_include_user_agent_shadow_dom.fromMaybe(false);
 
   unsigned query_length = whitespace_trimmed_query.length();
-  bool start_tag_found = !whitespace_trimmed_query.Find('<');
+  bool start_tag_found = !whitespace_trimmed_query.find('<');
   bool end_tag_found =
       whitespace_trimmed_query.ReverseFind('>') + 1 == query_length;
-  bool start_quote_found = !whitespace_trimmed_query.Find('"');
+  bool start_quote_found = !whitespace_trimmed_query.find('"');
   bool end_quote_found =
       whitespace_trimmed_query.ReverseFind('"') + 1 == query_length;
   bool exact_attribute_match = start_quote_found && end_quote_found;
