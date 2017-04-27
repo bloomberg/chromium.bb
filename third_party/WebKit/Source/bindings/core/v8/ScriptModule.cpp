@@ -10,9 +10,26 @@
 
 namespace blink {
 
+ScriptModule::ScriptModule() {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+}
+
+ScriptModule::ScriptModule(WTF::HashTableDeletedValueType)
+    : module_(WTF::kHashTableDeletedValue) {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+}
+
 ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
     : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
       identity_hash_(static_cast<unsigned>(module->GetIdentityHash())) {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+
   DCHECK(!module_->IsEmpty());
 }
 
@@ -22,6 +39,10 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
                                    const String& source,
                                    const String& file_name,
                                    AccessControlStatus access_control_status) {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
   v8::Local<v8::Module> module;
@@ -78,6 +99,10 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
 void ScriptModule::ReportException(ScriptState* script_state,
                                    v8::Local<v8::Value> exception,
                                    const String& file_name) {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+
   v8::Isolate* isolate = script_state->GetIsolate();
 
   v8::TryCatch try_catch(isolate);
@@ -107,6 +132,10 @@ v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,
     v8::Local<v8::Module> referrer) {
+  // We ensure module-related code is not executed without the flag.
+  // https://crbug.com/715376
+  CHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+
   v8::Isolate* isolate = context->GetIsolate();
   Modulator* modulator = Modulator::From(ScriptState::From(context));
   DCHECK(modulator);
