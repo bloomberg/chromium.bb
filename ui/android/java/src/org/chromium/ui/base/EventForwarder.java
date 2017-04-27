@@ -190,7 +190,10 @@ public class EventForwarder {
             // and ACTION_BUTTON_RELEASE respectively because they provide
             // info about the changed-button.
             if (eventAction == MotionEvent.ACTION_DOWN || eventAction == MotionEvent.ACTION_UP) {
-                return false;
+                // While we use the action buttons for the changed state it is important to still
+                // consume the down/up events to get the complete stream for a drag gesture, which
+                // is provided using ACTION_MOVE touch events.
+                return true;
             }
 
             nativeOnMouseEvent(mNativeEventForwarder, event.getEventTime(), eventAction,
