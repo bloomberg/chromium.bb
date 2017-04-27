@@ -5719,6 +5719,31 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
+#if CONFIG_REF_MV && !CONFIG_EXT_INTER
+static void update_mv_search_and_seg_mvs(
+    int *const run_mv_search, int_mv *const seg_mvs, int has_second_rf,
+    const MV_REFERENCE_FRAME *const ref_frame,
+    const SEG_RDSTAT *const ref_rdstat, int_mv *const bsi_ref_mv[2]) {
+  if (has_second_rf) {
+    if (seg_mvs[ref_frame[0]].as_int == ref_rdstat->mvs[0].as_int &&
+        ref_rdstat->mvs[0].as_int != INVALID_MV)
+      if (bsi_ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int)
+        --*run_mv_search;
+
+    if (seg_mvs[ref_frame[1]].as_int == ref_rdstat->mvs[1].as_int &&
+        ref_rdstat->mvs[1].as_int != INVALID_MV)
+      if (bsi_ref_mv[1]->as_int == ref_rdstat->pred_mv[1].as_int)
+        --*run_mv_search;
+  } else {
+    if (bsi_ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int &&
+        ref_rdstat->mvs[0].as_int != INVALID_MV) {
+      *run_mv_search = 0;
+      seg_mvs[ref_frame[0]].as_int = ref_rdstat->mvs[0].as_int;
+    }
+  }
+}
+#endif  // CONFIG_REF_MV && !CONFIG_EXT_INTER
+
 static int64_t rd_pick_inter_best_sub8x8_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, int_mv *best_ref_mv,
     int_mv *second_best_ref_mv, int64_t best_rd, int *returntotrate,
@@ -5928,55 +5953,20 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
         run_mv_search = 2;
 #if !CONFIG_EXT_INTER
         if (filter_idx > 0 && this_mode == NEWMV) {
-          BEST_SEG_INFO *ref_bsi = bsi_buf;
-          SEG_RDSTAT *ref_rdstat = &ref_bsi->rdstat[index][mode_idx];
+          const BEST_SEG_INFO *ref_bsi = bsi_buf;
+          const SEG_RDSTAT *ref_rdstat = &ref_bsi->rdstat[index][mode_idx];
 
-          if (has_second_rf) {
-            if (seg_mvs[index][mbmi->ref_frame[0]].as_int ==
-                    ref_rdstat->mvs[0].as_int &&
-                ref_rdstat->mvs[0].as_int != INVALID_MV)
-              if (bsi->ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int)
-                --run_mv_search;
-
-            if (seg_mvs[index][mbmi->ref_frame[1]].as_int ==
-                    ref_rdstat->mvs[1].as_int &&
-                ref_rdstat->mvs[1].as_int != INVALID_MV)
-              if (bsi->ref_mv[1]->as_int == ref_rdstat->pred_mv[1].as_int)
-                --run_mv_search;
-          } else {
-            if (bsi->ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int &&
-                ref_rdstat->mvs[0].as_int != INVALID_MV) {
-              run_mv_search = 0;
-              seg_mvs[index][mbmi->ref_frame[0]].as_int =
-                  ref_rdstat->mvs[0].as_int;
-            }
-          }
+          update_mv_search_and_seg_mvs(&run_mv_search, seg_mvs[index],
+                                       has_second_rf, mbmi->ref_frame,
+                                       ref_rdstat, bsi->ref_mv);
 
           if (run_mv_search != 0 && filter_idx > 1) {
             ref_bsi = bsi_buf + 1;
             ref_rdstat = &ref_bsi->rdstat[index][mode_idx];
             run_mv_search = 2;
-
-            if (has_second_rf) {
-              if (seg_mvs[index][mbmi->ref_frame[0]].as_int ==
-                      ref_rdstat->mvs[0].as_int &&
-                  ref_rdstat->mvs[0].as_int != INVALID_MV)
-                if (bsi->ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int)
-                  --run_mv_search;
-
-              if (seg_mvs[index][mbmi->ref_frame[1]].as_int ==
-                      ref_rdstat->mvs[1].as_int &&
-                  ref_rdstat->mvs[1].as_int != INVALID_MV)
-                if (bsi->ref_mv[1]->as_int == ref_rdstat->pred_mv[1].as_int)
-                  --run_mv_search;
-            } else {
-              if (bsi->ref_mv[0]->as_int == ref_rdstat->pred_mv[0].as_int &&
-                  ref_rdstat->mvs[0].as_int != INVALID_MV) {
-                run_mv_search = 0;
-                seg_mvs[index][mbmi->ref_frame[0]].as_int =
-                    ref_rdstat->mvs[0].as_int;
-              }
-            }
+            update_mv_search_and_seg_mvs(&run_mv_search, seg_mvs[index],
+                                         has_second_rf, mbmi->ref_frame,
+                                         ref_rdstat, bsi->ref_mv);
           }
         }
 #endif  // !CONFIG_EXT_INTER
