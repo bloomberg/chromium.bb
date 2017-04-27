@@ -47,7 +47,7 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
 
   // TODO(kochi): How to find focusable element inside Shadow DOM is not
   // currently specified.  This may change at any time.
-  // See crbug/383230 and https://github.com/whatwg/html/issue/2393 .
+  // See crbug/383230 and https://github.com/whatwg/html/issues/2393 .
   for (Node* node = FlatTreeTraversal::FirstChild(*dialog); node; node = next) {
     next = isHTMLDialogElement(*node)
                ? FlatTreeTraversal::NextSkippingChildren(*node, dialog)
