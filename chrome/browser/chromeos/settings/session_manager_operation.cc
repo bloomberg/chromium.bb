@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/net/nss_context.h"
@@ -86,9 +87,12 @@ void SessionManagerOperation::ReportResult(
 void SessionManagerOperation::EnsurePublicKey(const base::Closure& callback) {
   if (force_key_load_ || !public_key_ || !public_key_->is_loaded()) {
     scoped_refptr<base::TaskRunner> task_runner =
-        content::BrowserThread::GetBlockingPool()
-            ->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+        base::CreateTaskRunnerWithTraits(
+            base::TaskTraits()
+                .MayBlock()
+                .WithPriority(base::TaskPriority::BACKGROUND)
+                .WithShutdownBehavior(
+                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
     base::PostTaskAndReplyWithResult(
         task_runner.get(), FROM_HERE,
         base::Bind(&SessionManagerOperation::LoadPublicKey, owner_key_util_,
