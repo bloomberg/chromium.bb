@@ -12,6 +12,9 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
+#include "ash/mus/top_level_window_factory.h"
+#include "ash/mus/window_manager.h"
+#include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -26,11 +29,14 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm_window.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -84,6 +90,35 @@ class AshEventGeneratorDelegate
  private:
   DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
 };
+
+ui::mojom::WindowType MusWindowTypeFromWmWindowType(
+    ui::wm::WindowType wm_window_type) {
+  switch (wm_window_type) {
+    case ui::wm::WINDOW_TYPE_UNKNOWN:
+      break;
+
+    case ui::wm::WINDOW_TYPE_NORMAL:
+      return ui::mojom::WindowType::WINDOW;
+
+    case ui::wm::WINDOW_TYPE_POPUP:
+      return ui::mojom::WindowType::POPUP;
+
+    case ui::wm::WINDOW_TYPE_CONTROL:
+      return ui::mojom::WindowType::CONTROL;
+
+    case ui::wm::WINDOW_TYPE_PANEL:
+      return ui::mojom::WindowType::PANEL;
+
+    case ui::wm::WINDOW_TYPE_MENU:
+      return ui::mojom::WindowType::MENU;
+
+    case ui::wm::WINDOW_TYPE_TOOLTIP:
+      return ui::mojom::WindowType::TOOLTIP;
+  }
+
+  NOTREACHED();
+  return ui::mojom::WindowType::CONTROL;
+}
 
 }  // namespace
 
@@ -226,9 +261,35 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
     ui::wm::WindowType type,
     int shell_window_id) {
-  return base::WrapUnique<aura::Window>(
-      CreateTestWindowInShellWithDelegateAndType(nullptr, type, shell_window_id,
-                                                 bounds_in_screen));
+  if (AshTestHelper::config() != Config::MASH) {
+    return base::WrapUnique<aura::Window>(
+        CreateTestWindowInShellWithDelegateAndType(
+            nullptr, type, shell_window_id, bounds_in_screen));
+  }
+
+  // For mash route creation through the window manager. This better simulates
+  // what happens when a client creates a top level window.
+  std::map<std::string, std::vector<uint8_t>> properties;
+  if (!bounds_in_screen.IsEmpty()) {
+    properties[ui::mojom::WindowManager::kBounds_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(bounds_in_screen);
+  }
+
+  properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<aura::PropertyConverter::PrimitiveType>(
+              ui::mojom::kResizeBehaviorCanResize |
+              ui::mojom::kResizeBehaviorCanMaximize |
+              ui::mojom::kResizeBehaviorCanMinimize));
+
+  const ui::mojom::WindowType mus_window_type =
+      MusWindowTypeFromWmWindowType(type);
+  mus::WindowManager* window_manager =
+      ash_test_helper_->window_manager_app()->window_manager();
+  aura::Window* window = mus::CreateAndParentTopLevelWindow(
+      window_manager, mus_window_type, &properties);
+  window->Show();
+  return base::WrapUnique<aura::Window>(window);
 }
 
 aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
@@ -411,6 +472,11 @@ void AshTestBase::SwapPrimaryDisplay() {
     return;
   Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       display_manager()->GetSecondaryDisplay().id());
+}
+
+display::Display AshTestBase::GetPrimaryDisplay() {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(
+      Shell::GetPrimaryRootWindow());
 }
 
 display::Display AshTestBase::GetSecondaryDisplay() {

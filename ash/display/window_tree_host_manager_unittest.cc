@@ -180,11 +180,6 @@ class TestObserver : public WindowTreeHostManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-display::Display GetPrimaryDisplay() {
-  return display::Screen::GetScreen()->GetDisplayNearestWindow(
-      Shell::GetAllRootWindows()[0]);
-}
-
 class TestHelper {
  public:
   explicit TestHelper(test::AshTestBase* delegate);

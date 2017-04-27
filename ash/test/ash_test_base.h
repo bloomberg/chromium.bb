@@ -189,6 +189,7 @@ class AshTestBase : public testing::Test {
   // Swap the primary display with the secondary.
   void SwapPrimaryDisplay();
 
+  display::Display GetPrimaryDisplay();
   display::Display GetSecondaryDisplay();
 
  private:
