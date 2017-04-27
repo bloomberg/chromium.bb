@@ -5,13 +5,11 @@
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm_window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -64,45 +62,78 @@ class MultiWindowResizeController::ResizeView : public views::View {
  public:
   explicit ResizeView(MultiWindowResizeController* controller,
                       Direction direction)
-      : controller_(controller), direction_(direction), image_(NULL) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    int image_id = direction == TOP_BOTTOM ? IDR_AURA_MULTI_WINDOW_RESIZE_H
-                                           : IDR_AURA_MULTI_WINDOW_RESIZE_V;
-    image_ = rb.GetImageNamed(image_id).ToImageSkia();
-  }
+      : controller_(controller), direction_(direction) {}
 
   // views::View overrides:
   gfx::Size GetPreferredSize() const override {
-    return gfx::Size(image_->width(), image_->height());
+    const bool vert = direction_ == LEFT_RIGHT;
+    return gfx::Size(vert ? kShortSide : kLongSide,
+                     vert ? kLongSide : kShortSide);
   }
   void OnPaint(gfx::Canvas* canvas) override {
-    canvas->DrawImageInt(*image_, 0, 0);
+    cc::PaintFlags flags;
+    flags.setColor(SkColorSetA(SK_ColorBLACK, 0x7F));
+    flags.setAntiAlias(true);
+    canvas->DrawRoundRect(gfx::RectF(GetLocalBounds()), 2, flags);
+
+    // Craft the left arrow.
+    const SkRect kArrowBounds = SkRect::MakeXYWH(4, 28, 4, 8);
+    SkPath path;
+    path.moveTo(kArrowBounds.right(), kArrowBounds.y());
+    path.lineTo(kArrowBounds.x(), kArrowBounds.centerY());
+    path.lineTo(kArrowBounds.right(), kArrowBounds.bottom());
+    path.close();
+
+    // Do the same for the right arrow.
+    SkMatrix flip;
+    flip.setScale(-1, 1, kShortSide / 2, kLongSide / 2);
+    path.addPath(path, flip);
+
+    // The arrows are drawn for the vertical orientation; rotate if need be.
+    if (direction_ == TOP_BOTTOM) {
+      SkMatrix transform;
+      constexpr int kHalfShort = kShortSide / 2;
+      constexpr int kHalfLong = kLongSide / 2;
+      transform.setRotate(90, kHalfShort, kHalfLong);
+      transform.postTranslate(kHalfLong - kHalfShort, kHalfShort - kHalfLong);
+      path.transform(transform);
+    }
+
+    flags.setColor(SK_ColorWHITE);
+    canvas->DrawPath(path, flags);
   }
+
   bool OnMousePressed(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->StartResize(location);
     return true;
   }
+
   bool OnMouseDragged(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->Resize(location, event.flags());
     return true;
   }
+
   void OnMouseReleased(const ui::MouseEvent& event) override {
     controller_->CompleteResize();
   }
+
   void OnMouseCaptureLost() override { controller_->CancelResize(); }
+
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
     return ::wm::CompoundEventFilter::CursorForWindowComponent(component);
   }
 
  private:
+  static constexpr int kLongSide = 64;
+  static constexpr int kShortSide = 28;
+
   MultiWindowResizeController* controller_;
   const Direction direction_;
-  const gfx::ImageSkia* image_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeView);
 };
