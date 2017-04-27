@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import unittest
-
 from telemetry import decorators
 from telemetry.page import page as page_module
 from telemetry.testing import options_for_unittests
@@ -37,7 +35,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
   # Previously this test was disabled on chromeos, see crbug.com/483212.
-  @unittest.skip("flaky") # crbug.com/715962
+  @decorators.Disabled("all") # crbug.com/715962
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
     ps.AddStory(TestRepaintPage(ps, ps.base_dir))
