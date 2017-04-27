@@ -80,6 +80,8 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
   void CreatePointerWatcherAdapter() override;
   std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
       const AshWindowTreeHostInitParams& init_params) override;
+  void OnCreatedRootWindowContainers(
+      RootWindowController* root_window_controller) override;
   void CreatePrimaryHost() override;
   void InitHosts(const ShellInitParams& init_params) override;
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()

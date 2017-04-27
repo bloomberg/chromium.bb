@@ -23,6 +23,7 @@
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/session/session_state_delegate.h"
@@ -50,6 +51,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
@@ -428,6 +430,17 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
 std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
     const AshWindowTreeHostInitParams& init_params) {
   return nullptr;
+}
+
+void ShellPortMash::OnCreatedRootWindowContainers(
+    RootWindowController* root_window_controller) {
+  // TODO: To avoid lots of IPC AddActivationParent() should take an array.
+  // http://crbug.com/682048.
+  aura::Window* root_window = root_window_controller->GetRootWindow();
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
+    window_manager_->window_manager_client()->AddActivationParent(
+        root_window->GetChildById(kActivatableShellWindowIds[i]));
+  }
 }
 
 void ShellPortMash::CreatePrimaryHost() {}

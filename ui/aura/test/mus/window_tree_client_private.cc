@@ -99,6 +99,11 @@ void WindowTreeClientPrivate::SetTreeAndClientId(
   tree_client_impl_->client_id_ = client_id;
 }
 
+void WindowTreeClientPrivate::SetWindowManagerClient(
+    ui::mojom::WindowManagerClient* client) {
+  tree_client_impl_->window_manager_client_ = client;
+}
+
 bool WindowTreeClientPrivate::HasPointerWatcher() {
   return tree_client_impl_->has_pointer_watcher_;
 }

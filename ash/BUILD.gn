@@ -1156,6 +1156,7 @@ source_set("common_unittests") {
     "metrics/task_switch_metrics_recorder_unittest.cc",
     "metrics/task_switch_time_tracker_unittest.cc",
     "metrics/user_metrics_recorder_unittest.cc",
+    "mus/window_manager_common_unittests.cc",
     "mus_property_mirror_ash_unittest.cc",
     "root_window_controller_unittest.cc",
     "rotator/screen_rotation_animation_unittest.cc",
@@ -1257,6 +1258,7 @@ source_set("common_unittests") {
   ]
   deps = [
     "//ash",
+    "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/resources/vector_icons",

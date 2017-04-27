@@ -212,6 +212,11 @@ class ASH_EXPORT ShellPort {
   virtual std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
       const AshWindowTreeHostInitParams& init_params) = 0;
 
+  // Called after the containers of |root_window_controller| have been created.
+  // Allows ShellPort to install any additional state on the containers.
+  virtual void OnCreatedRootWindowContainers(
+      RootWindowController* root_window_controller) = 0;
+
  protected:
   ShellPort();
 

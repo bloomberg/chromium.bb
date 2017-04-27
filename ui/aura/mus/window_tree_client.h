@@ -581,6 +581,11 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<mojo::AssociatedBinding<ui::mojom::WindowManager>>
       window_manager_internal_;
   ui::mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
+  // Normally the same as |window_manager_internal_client_|. Tests typically
+  // run without a service_manager::Connector, which means this (and
+  // |window_manager_internal_client_|) are null. Tests that need to test
+  // WindowManagerClient set this, but not |window_manager_internal_client_|.
+  ui::mojom::WindowManagerClient* window_manager_client_ = nullptr;
 
   bool has_pointer_watcher_ = false;
 

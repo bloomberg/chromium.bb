@@ -753,6 +753,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   shell->InitRootWindow(root_window);
 
   CreateContainers();
+  ShellPort::Get()->OnCreatedRootWindowContainers(this);
 
   CreateSystemWallpaper(root_window_type);
 
