@@ -45,6 +45,8 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
  private:
   ~PaymentManifestWebDataService() override;
 
+  void RemoveExpiredData(WebDatabase* db);
+
   WebDatabase::State AddPaymentWebAppManifestImpl(
       const std::vector<mojom::WebAppManifestSectionPtr>& manifest,
       WebDatabase* db);
