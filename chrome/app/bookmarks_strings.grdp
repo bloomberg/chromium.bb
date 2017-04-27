@@ -410,6 +410,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
     No search results found
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED" desc="Label displayed in bookmark manager toolbar telling the user how many items they have selected.">
+    <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
     Bookmarks
   </message>

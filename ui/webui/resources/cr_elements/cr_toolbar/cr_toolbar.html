@@ -59,20 +59,20 @@
         -webkit-margin-end: 12px;
       }
 
-      :host([narrow_]) #centeredContent {
+      :host([narrow]) #centeredContent {
         justify-content: flex-end;
       }
 
-      :host([narrow_][showing-search_]) #leftContent {
+      :host([narrow][showing-search_]) #leftContent {
         position: absolute;
         opacity: 0;
       }
 
-      :host(:not([narrow_])) #leftContent {
+      :host(:not([narrow])) #leftContent {
         flex: 1 1 var(--cr-toolbar-field-margin, 0);
       }
 
-      :host(:not([narrow_])) #rightContent {
+      :host(:not([narrow])) #rightContent {
         flex: 1 1 0;
         text-align: end;
       }
@@ -148,12 +148,12 @@
     </div>
 
     <div id="centeredContent">
-      <cr-toolbar-search-field id="search" narrow="[[narrow_]]"
+      <cr-toolbar-search-field id="search" narrow="[[narrow]]"
           label="[[searchPrompt]]" clear-label="[[clearLabel]]"
           spinner-active="[[spinnerActive]]"
           showing-search="{{showingSearch_}}">
       </cr-toolbar-search-field>
-      <iron-media-query query="(max-width: 900px)" query-matches="{{narrow_}}">
+      <iron-media-query query="(max-width: 900px)" query-matches="{{narrow}}">
       </iron-media-query>
     </div>
 

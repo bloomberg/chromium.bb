@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://bookmarks/edit_dialog.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
@@ -10,6 +11,16 @@
 <dom-module id="bookmarks-toolbar">
   <template>
     <style include="shared-style">
+      :host {
+        background: var(--md-toolbar-color);
+        color: #fff;
+        transition: background-color 150ms;
+      }
+
+      :host([show-selection-overlay]) {
+        background: var(--interactive-color);
+      }
+
       button.more-actions {
         margin: 4px;
       }
@@ -18,10 +29,20 @@
         border-color: white;
       }
 
+      cr-toolbar,
+      cr-toolbar-selection-overlay {
+        flex: 1;
+      }
+
       cr-toolbar {
         --cr-toolbar-field-margin:
             calc(var(--sidebar-width) + var(--splitter-width));
-        background: var(--md-toolbar-color);
+      }
+
+      :host(:not([narrow_])) cr-toolbar-selection-overlay {
+        --selection-overlay-padding: var(--card-padding-side);
+        --cr-toolbar-field-margin: var(--sidebar-width);
+        --selection-overlay-max-width: var(--card-max-width);
       }
     </style>
     <dialog is="cr-action-menu" id="dropdown">
@@ -49,6 +70,8 @@
     <cr-toolbar page-name="$i18n{title}"
         clear-label="$i18n{clearSearch}"
         search-prompt="$i18n{searchPrompt}"
+        hidden$="[[showSelectionOverlay]]"
+        narrow="{{narrow_}}"
         on-search-changed="onSearchChanged_">
       <button is="paper-icon-button-light" class="more-actions more-vert-button"
           on-tap="onMenuButtonOpenTap_">
@@ -59,6 +82,13 @@
     </cr-toolbar>
     <template is="cr-lazy-render" id="addDialog">
       <bookmarks-edit-dialog></bookmarks-edit-dialog>
+    </template>
+    <template is="dom-if" if="[[showSelectionOverlay]]">
+      <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
+          cancel-label="$i18n{cancel}"
+          selection-label="[[getItemsSelectedString_(selectedCount_)]]"
+          on-clear-selected-items="onClearSelectionTap_">
+      </cr-toolbar-selection-overlay>
     </template>
   </template>
   <script src="chrome://bookmarks/toolbar.js"></script>

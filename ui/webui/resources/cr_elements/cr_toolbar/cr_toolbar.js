@@ -35,10 +35,15 @@ Polymer({
       value: false,
     },
 
-    closeMenuPromo: String,
+    // True when the toolbar is displaying in narrow mode.
+    narrow: {
+      type: Boolean,
+      reflectToAttribute: true,
+      readonly: true,
+      notify: true,
+    },
 
-    /** @private */
-    narrow_: {type: Boolean, reflectToAttribute: true},
+    closeMenuPromo: String,
 
     /** @private */
     showingSearch_: {
