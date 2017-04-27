@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
@@ -78,8 +79,8 @@ public class ChromeBackupAgent extends BackupAgent {
 
     // List of preferences that should be restored unchanged.
     static final String[] BACKUP_ANDROID_BOOL_PREFS = {
-            FirstRunGlueImpl.CACHED_TOS_ACCEPTED_PREF,
-            FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
+            DataReductionProxySettings.DATA_REDUCTION_ENABLED_PREF,
+            FirstRunGlueImpl.CACHED_TOS_ACCEPTED_PREF, FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
             FirstRunStatus.LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE,
             FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP,
             PrivacyPreferencesManager.PREF_METRICS_REPORTING,
