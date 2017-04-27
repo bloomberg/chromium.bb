@@ -417,32 +417,32 @@ LayoutRect LayoutTableCell::LocalVisualRect() const {
 
   bool rtl = !StyleForCellFlow().IsLeftToRightDirection();
   LayoutUnit outline_outset(Style()->OutlineOutsetExtent());
-  LayoutUnit left(std::max(BorderHalfLeft(true), outline_outset));
-  LayoutUnit right(std::max(BorderHalfRight(true), outline_outset));
-  LayoutUnit top(std::max(BorderHalfTop(true), outline_outset));
-  LayoutUnit bottom(std::max(BorderHalfBottom(true), outline_outset));
+  LayoutUnit left(std::max(CollapsedBorderHalfLeft(true), outline_outset));
+  LayoutUnit right(std::max(CollapsedBorderHalfRight(true), outline_outset));
+  LayoutUnit top(std::max(CollapsedBorderHalfTop(true), outline_outset));
+  LayoutUnit bottom(std::max(CollapsedBorderHalfBottom(true), outline_outset));
   if ((left && !rtl) || (right && rtl)) {
     if (LayoutTableCell* before = Table()->CellBefore(this)) {
-      top = std::max(top, before->BorderHalfTop(true));
-      bottom = std::max(bottom, before->BorderHalfBottom(true));
+      top = std::max(top, before->CollapsedBorderHalfTop(true));
+      bottom = std::max(bottom, before->CollapsedBorderHalfBottom(true));
     }
   }
   if ((left && rtl) || (right && !rtl)) {
     if (LayoutTableCell* after = Table()->CellAfter(this)) {
-      top = std::max(top, after->BorderHalfTop(true));
-      bottom = std::max(bottom, after->BorderHalfBottom(true));
+      top = std::max(top, after->CollapsedBorderHalfTop(true));
+      bottom = std::max(bottom, after->CollapsedBorderHalfBottom(true));
     }
   }
   if (top) {
     if (LayoutTableCell* above = Table()->CellAbove(this)) {
-      left = std::max(left, above->BorderHalfLeft(true));
-      right = std::max(right, above->BorderHalfRight(true));
+      left = std::max(left, above->CollapsedBorderHalfLeft(true));
+      right = std::max(right, above->CollapsedBorderHalfRight(true));
     }
   }
   if (bottom) {
     if (LayoutTableCell* below = Table()->CellBelow(this)) {
-      left = std::max(left, below->BorderHalfLeft(true));
-      right = std::max(right, below->BorderHalfRight(true));
+      left = std::max(left, below->CollapsedBorderHalfLeft(true));
+      right = std::max(right, below->CollapsedBorderHalfRight(true));
     }
   }
 
@@ -1159,22 +1159,22 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder(
 }
 
 LayoutUnit LayoutTableCell::BorderLeft() const {
-  return Table()->CollapseBorders() ? BorderHalfLeft(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfLeft(false)
                                     : LayoutBlockFlow::BorderLeft();
 }
 
 LayoutUnit LayoutTableCell::BorderRight() const {
-  return Table()->CollapseBorders() ? BorderHalfRight(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfRight(false)
                                     : LayoutBlockFlow::BorderRight();
 }
 
 LayoutUnit LayoutTableCell::BorderTop() const {
-  return Table()->CollapseBorders() ? BorderHalfTop(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfTop(false)
                                     : LayoutBlockFlow::BorderTop();
 }
 
 LayoutUnit LayoutTableCell::BorderBottom() const {
-  return Table()->CollapseBorders() ? BorderHalfBottom(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfBottom(false)
                                     : LayoutBlockFlow::BorderBottom();
 }
 
@@ -1182,67 +1182,74 @@ LayoutUnit LayoutTableCell::BorderBottom() const {
 // border drawing work with different block flow values instead of being
 // hard-coded to top-to-bottom.
 LayoutUnit LayoutTableCell::BorderStart() const {
-  return Table()->CollapseBorders() ? BorderHalfStart(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfStart(false)
                                     : LayoutBlockFlow::BorderStart();
 }
 
 LayoutUnit LayoutTableCell::BorderEnd() const {
-  return Table()->CollapseBorders() ? BorderHalfEnd(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfEnd(false)
                                     : LayoutBlockFlow::BorderEnd();
 }
 
 LayoutUnit LayoutTableCell::BorderBefore() const {
-  return Table()->CollapseBorders() ? BorderHalfBefore(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfBefore(false)
                                     : LayoutBlockFlow::BorderBefore();
 }
 
 LayoutUnit LayoutTableCell::BorderAfter() const {
-  return Table()->CollapseBorders() ? BorderHalfAfter(false)
+  return Table()->CollapseBorders() ? CollapsedBorderHalfAfter(false)
                                     : LayoutBlockFlow::BorderAfter();
 }
 
-LayoutUnit LayoutTableCell::BorderHalfLeft(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfLeft(bool outer) const {
   const ComputedStyle& style_for_cell_flow = this->StyleForCellFlow();
-  if (style_for_cell_flow.IsHorizontalWritingMode())
-    return style_for_cell_flow.IsLeftToRightDirection() ? BorderHalfStart(outer)
-                                                        : BorderHalfEnd(outer);
-  return style_for_cell_flow.IsFlippedBlocksWritingMode()
-             ? BorderHalfAfter(outer)
-             : BorderHalfBefore(outer);
-}
-
-LayoutUnit LayoutTableCell::BorderHalfRight(bool outer) const {
-  const ComputedStyle& style_for_cell_flow = this->StyleForCellFlow();
-  if (style_for_cell_flow.IsHorizontalWritingMode())
+  if (style_for_cell_flow.IsHorizontalWritingMode()) {
     return style_for_cell_flow.IsLeftToRightDirection()
-               ? BorderHalfEnd(outer)
-               : BorderHalfStart(outer);
+               ? CollapsedBorderHalfStart(outer)
+               : CollapsedBorderHalfEnd(outer);
+  }
   return style_for_cell_flow.IsFlippedBlocksWritingMode()
-             ? BorderHalfBefore(outer)
-             : BorderHalfAfter(outer);
+             ? CollapsedBorderHalfAfter(outer)
+             : CollapsedBorderHalfBefore(outer);
 }
 
-LayoutUnit LayoutTableCell::BorderHalfTop(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfRight(bool outer) const {
   const ComputedStyle& style_for_cell_flow = this->StyleForCellFlow();
-  if (style_for_cell_flow.IsHorizontalWritingMode())
-    return style_for_cell_flow.IsFlippedBlocksWritingMode()
-               ? BorderHalfAfter(outer)
-               : BorderHalfBefore(outer);
-  return style_for_cell_flow.IsLeftToRightDirection() ? BorderHalfStart(outer)
-                                                      : BorderHalfEnd(outer);
+  if (style_for_cell_flow.IsHorizontalWritingMode()) {
+    return style_for_cell_flow.IsLeftToRightDirection()
+               ? CollapsedBorderHalfEnd(outer)
+               : CollapsedBorderHalfStart(outer);
+  }
+  return style_for_cell_flow.IsFlippedBlocksWritingMode()
+             ? CollapsedBorderHalfBefore(outer)
+             : CollapsedBorderHalfAfter(outer);
 }
 
-LayoutUnit LayoutTableCell::BorderHalfBottom(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfTop(bool outer) const {
   const ComputedStyle& style_for_cell_flow = this->StyleForCellFlow();
-  if (style_for_cell_flow.IsHorizontalWritingMode())
+  if (style_for_cell_flow.IsHorizontalWritingMode()) {
     return style_for_cell_flow.IsFlippedBlocksWritingMode()
-               ? BorderHalfBefore(outer)
-               : BorderHalfAfter(outer);
-  return style_for_cell_flow.IsLeftToRightDirection() ? BorderHalfEnd(outer)
-                                                      : BorderHalfStart(outer);
+               ? CollapsedBorderHalfAfter(outer)
+               : CollapsedBorderHalfBefore(outer);
+  }
+  return style_for_cell_flow.IsLeftToRightDirection()
+             ? CollapsedBorderHalfStart(outer)
+             : CollapsedBorderHalfEnd(outer);
 }
 
-LayoutUnit LayoutTableCell::BorderHalfStart(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfBottom(bool outer) const {
+  const ComputedStyle& style_for_cell_flow = this->StyleForCellFlow();
+  if (style_for_cell_flow.IsHorizontalWritingMode()) {
+    return style_for_cell_flow.IsFlippedBlocksWritingMode()
+               ? CollapsedBorderHalfBefore(outer)
+               : CollapsedBorderHalfAfter(outer);
+  }
+  return style_for_cell_flow.IsLeftToRightDirection()
+             ? CollapsedBorderHalfEnd(outer)
+             : CollapsedBorderHalfStart(outer);
+}
+
+LayoutUnit LayoutTableCell::CollapsedBorderHalfStart(bool outer) const {
   CollapsedBorderValue border =
       ComputeCollapsedStartBorder(kDoNotIncludeBorderColor);
   if (border.Exists()) {
@@ -1254,7 +1261,7 @@ LayoutUnit LayoutTableCell::BorderHalfStart(bool outer) const {
   return LayoutUnit();
 }
 
-LayoutUnit LayoutTableCell::BorderHalfEnd(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfEnd(bool outer) const {
   CollapsedBorderValue border =
       ComputeCollapsedEndBorder(kDoNotIncludeBorderColor);
   if (border.Exists()) {
@@ -1266,7 +1273,7 @@ LayoutUnit LayoutTableCell::BorderHalfEnd(bool outer) const {
   return LayoutUnit();
 }
 
-LayoutUnit LayoutTableCell::BorderHalfBefore(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfBefore(bool outer) const {
   CollapsedBorderValue border =
       ComputeCollapsedBeforeBorder(kDoNotIncludeBorderColor);
   if (border.Exists()) {
@@ -1278,7 +1285,7 @@ LayoutUnit LayoutTableCell::BorderHalfBefore(bool outer) const {
   return LayoutUnit();
 }
 
-LayoutUnit LayoutTableCell::BorderHalfAfter(bool outer) const {
+LayoutUnit LayoutTableCell::CollapsedBorderHalfAfter(bool outer) const {
   CollapsedBorderValue border =
       ComputeCollapsedAfterBorder(kDoNotIncludeBorderColor);
   if (border.Exists()) {
@@ -1307,7 +1314,7 @@ static void AddBorderStyle(LayoutTable::CollapsedBorderValues& border_values,
   border_values.push_back(border_value);
 }
 
-void LayoutTableCell::CollectBorderValues(
+void LayoutTableCell::CollectCollapsedBorderValues(
     LayoutTable::CollapsedBorderValues& border_values) {
   CollapsedBorderValues new_values(
       *this, ComputeCollapsedStartBorder(), ComputeCollapsedEndBorder(),
@@ -1356,7 +1363,7 @@ void LayoutTableCell::CollectBorderValues(
   AddBorderStyle(border_values, new_values.AfterBorder());
 }
 
-void LayoutTableCell::SortBorderValues(
+void LayoutTableCell::SortCollapsedBorderValues(
     LayoutTable::CollapsedBorderValues& border_values) {
   std::sort(border_values.begin(), border_values.end(), CompareBorders);
 }
