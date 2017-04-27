@@ -327,4 +327,22 @@ TEST_F(DesktopWindowTreeHostMusTest, NoShadow) {
                 wm::kShadowElevationKey));
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
+  const Widget::InitParams::Type kWidgetTypes[] = {
+      Widget::InitParams::TYPE_WINDOW,
+      Widget::InitParams::TYPE_WINDOW_FRAMELESS,
+  };
+
+  for (auto widget_type : kWidgetTypes) {
+    Widget widget;
+    Widget::InitParams params(widget_type);
+    params.show_state = ui::SHOW_STATE_FULLSCREEN;
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget.Init(params);
+
+    EXPECT_TRUE(widget.IsFullscreen())
+        << "Fullscreen creation failed for type=" << widget_type;
+  }
+}
+
 }  // namespace views
