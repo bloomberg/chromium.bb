@@ -977,6 +977,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     if (frame->LocalFrameRoot() != frame->Tree().Top()) {
       document->ClearFocusedElement();
       document->SetSequentialFocusNavigationStartingPoint(nullptr);
+      SetFocusedFrame(nullptr);
       ToRemoteFrame(frame->LocalFrameRoot()->Tree().Parent())
           ->AdvanceFocus(type, frame->LocalFrameRoot());
       return true;
