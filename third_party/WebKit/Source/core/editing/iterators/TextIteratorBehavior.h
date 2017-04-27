@@ -42,11 +42,15 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool ForWindowFind() const { return for_window_find_; }
   bool IgnoresStyleVisibility() const { return ignores_style_visibility_; }
   bool StopsOnFormControls() const { return stops_on_form_controls_; }
+  bool DoesNotEmitSpaceBeyondRangeEnd() const {
+    return does_not_emit_space_beyond_range_end_;
+  }
 
   static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
   static TextIteratorBehavior IgnoresStyleVisibilityBehavior();
   static TextIteratorBehavior DefaultRangeLengthBehavior();
   static TextIteratorBehavior AllVisiblePositionsRangeLengthBehavior();
+  static TextIteratorBehavior NoTrailingSpaceRangeLengthBehavior();
 
  private:
   bool collapse_trailing_space_ : 1;
@@ -64,6 +68,7 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool for_window_find_ : 1;
   bool ignores_style_visibility_ : 1;
   bool stops_on_form_controls_ : 1;
+  bool does_not_emit_space_beyond_range_end_ : 1;
 };
 
 class CORE_EXPORT TextIteratorBehavior::Builder final {
@@ -89,6 +94,7 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder& SetForWindowFind(bool);
   Builder& SetIgnoresStyleVisibility(bool);
   Builder& SetStopsOnFormControls(bool);
+  Builder& SetDoesNotEmitSpaceBeyondRangeEnd(bool);
 
  private:
   TextIteratorBehavior behavior_;

@@ -784,6 +784,16 @@ void TextIteratorAlgorithm<Strategy>::HandleTextBox() {
             text_box_end)
           return;
 
+        if (behavior_.DoesNotEmitSpaceBeyondRangeEnd()) {
+          // If the subrun went to the text box end and this end is also the end
+          // of the range, do not advance to the next text box and do not
+          // generate a space, just stop.
+          if (text_box_end == end) {
+            text_box_ = nullptr;
+            return;
+          }
+        }
+
         // Advance and return
         unsigned next_run_start =
             next_text_box ? next_text_box->Start() : str.length();
