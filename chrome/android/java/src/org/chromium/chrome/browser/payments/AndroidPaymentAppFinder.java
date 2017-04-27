@@ -49,12 +49,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                           "org.chromium.intent.action.IS_READY_TO_PAY";
 
     /**
-     * The basic-card payment method name used by merchant and defined by W3C:
-     * https://w3c.github.io/webpayments-methods-card/#method-id
-     */
-    /* package */ static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
-
-    /**
      * Meta data name of an app's supported payment method names.
      */
     /* package */ static final String META_DATA_NAME_OF_PAYMENT_METHOD_NAMES =
@@ -124,7 +118,10 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         // For non-URI payment method names, only names published by W3C should be supported.
         Set<String> supportedNonUriPaymentMethods = new HashSet<>();
-        supportedNonUriPaymentMethods.add(BASIC_CARD_PAYMENT_METHOD);
+        // https://w3c.github.io/webpayments-methods-card/
+        supportedNonUriPaymentMethods.add("basic-card");
+        // https://w3c.github.io/webpayments/proposals/interledger-payment-method.html
+        supportedNonUriPaymentMethods.add("interledger");
 
         mNonUriPaymentMethods = new HashSet<>();
         mUriPaymentMethods = new HashSet<>();
