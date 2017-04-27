@@ -1341,10 +1341,11 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
 #if CONFIG_GLOBAL_MOTION
   if (is_nontrans_global_motion(xd)) {
 #if CONFIG_DUAL_FILTER
-    mbmi->interp_filter[0] =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
-    mbmi->interp_filter[1] =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
+    int dir;
+    for (dir = 0; dir < 4; ++dir)
+      mbmi->interp_filter[dir] = cm->interp_filter == SWITCHABLE
+                                     ? EIGHTTAP_REGULAR
+                                     : cm->interp_filter;
 #else
     mbmi->interp_filter =
         cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
@@ -2256,10 +2257,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
   } else {
 #if CONFIG_DUAL_FILTER
-    mbmi->interp_filter[0] =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
-    mbmi->interp_filter[1] =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
+    int dir;
+    for (dir = 0; dir < 4; ++dir)
+      mbmi->interp_filter[dir] = cm->interp_filter == SWITCHABLE
+                                     ? EIGHTTAP_REGULAR
+                                     : cm->interp_filter;
 #else
     mbmi->interp_filter =
         cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
