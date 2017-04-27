@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -49,6 +51,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class defines the bottom sheet that has multiple states and a persistently showing toolbar.
@@ -85,6 +89,9 @@ public class BottomSheet
      * design (this is the minimum time a user is guaranteed to pay attention to something).
      */
     private static final long BASE_ANIMATION_DURATION_MS = 218;
+
+    /** The amount of time it takes to transition sheet content in or out. */
+    private static final long TRANSITION_DURATION_MS = 150;
 
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
@@ -140,8 +147,8 @@ public class BottomSheet
     /** The animator used to move the sheet to a fixed state when released by the user. */
     private ValueAnimator mSettleAnimator;
 
-    /** The animator used for the toolbar fades. */
-    private ValueAnimator mToolbarFadeAnimator;
+    /** The animator set responsible for swapping the bottom sheet content. */
+    private AnimatorSet mContentSwapAnimatorSet;
 
     /** The height of the toolbar. */
     private float mToolbarHeight;
@@ -557,7 +564,7 @@ public class BottomSheet
         LayoutParams placeHolderParams =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         mPlaceholder.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), android.R.color.white));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
 
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
@@ -645,83 +652,89 @@ public class BottomSheet
      * Show content in the bottom sheet's content area.
      * @param content The {@link BottomSheetContent} to show.
      */
-    public void showContent(BottomSheetContent content) {
+    public void showContent(final BottomSheetContent content) {
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
-        View newToolbar = content.getToolbarView();
-        View oldToolbar = null;
-
-        if (mSheetContent != null) {
-            oldToolbar = mSheetContent.getToolbarView();
-            mBottomSheetContentContainer.removeView(mSheetContent.getContentView());
-            mSheetContent = null;
-        }
-
         mBottomSheetContentContainer.removeView(mPlaceholder);
-        mSheetContent = content;
-        mBottomSheetContentContainer.addView(mSheetContent.getContentView());
 
-        doToolbarSwap(newToolbar, oldToolbar);
+        View newToolbar =
+                content.getToolbarView() != null ? content.getToolbarView() : mDefaultToolbarView;
+        View oldToolbar = mSheetContent != null && mSheetContent.getToolbarView() != null
+                ? mSheetContent.getToolbarView()
+                : mDefaultToolbarView;
+        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
 
-        for (BottomSheetObserver o : mObservers) {
-            o.onSheetContentChanged(mSheetContent);
-        }
+        // If an animation is already running, end it.
+        if (mContentSwapAnimatorSet != null) mContentSwapAnimatorSet.end();
+
+        List<Animator> animators = new ArrayList<>();
+        mContentSwapAnimatorSet = new AnimatorSet();
+        mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mSheetContent = content;
+                for (BottomSheetObserver o : mObservers) {
+                    o.onSheetContentChanged(content);
+                }
+                updateHandleTint();
+                mContentSwapAnimatorSet = null;
+            }
+        });
+
+        // For the toolbar transition, make sure we don't detach the default toolbar view.
+        animators.add(getViewTransitionAnimator(
+                newToolbar, oldToolbar, mToolbarHolder, mDefaultToolbarView != oldToolbar));
+        animators.add(getViewTransitionAnimator(
+                content.getContentView(), oldContent, mBottomSheetContentContainer, true));
+
+        mContentSwapAnimatorSet.playTogether(animators);
+        mContentSwapAnimatorSet.start();
+
+        // If the existing content is null, end the animation immediately.
+        if (mSheetContent == null) mContentSwapAnimatorSet.end();
     }
 
     /**
-     * Fade between a new toolbar and the old toolbar to be shown. A null parameter can be used to
-     * refer to the default omnibox toolbar. Normally, the new toolbar is attached to the toolbar
-     * container and faded in. In the case of the default toolbar, the old toolbar is faded out.
-     * This is because the default toolbar is always attached to the view hierarchy and sits behind
-     * the attach point for the other toolbars.
-     * @param newToolbar The toolbar that will be shown.
-     * @param oldToolbar The toolbar being replaced.
+     * Creates a transition animation between two views. The old view is faded out completely
+     * before the new view is faded in. There is an option to detach the old view or not.
+     * @param newView The new view to transition to.
+     * @param oldView The old view to transition from.
+     * @param detachOldView Whether or not to detach the old view once faded out.
+     * @return An animator that runs the specified animation.
      */
-    private void doToolbarSwap(View newToolbar, View oldToolbar) {
-        if (mToolbarFadeAnimator != null) mToolbarFadeAnimator.end();
+    private Animator getViewTransitionAnimator(final View newView, final View oldView,
+            final ViewGroup parent, final boolean detachOldView) {
+        if (newView == oldView) return null;
 
-        final View targetToolbar = newToolbar != null ? newToolbar : mDefaultToolbarView;
-        final View currentToolbar = oldToolbar != null ? oldToolbar : mDefaultToolbarView;
+        AnimatorSet animatorSet = new AnimatorSet();
+        List<Animator> animators = new ArrayList<>();
 
-        if (targetToolbar == currentToolbar) return;
-
-        if (targetToolbar != mDefaultToolbarView) {
-            mToolbarHolder.addView(targetToolbar);
-            targetToolbar.setAlpha(0f);
-        } else {
-            targetToolbar.setVisibility(View.VISIBLE);
-            targetToolbar.setAlpha(1f);
+        // Fade out the old view.
+        if (oldView != null) {
+            ValueAnimator fadeOutAnimator = ObjectAnimator.ofFloat(oldView, View.ALPHA, 0);
+            fadeOutAnimator.setDuration(TRANSITION_DURATION_MS);
+            fadeOutAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (detachOldView && oldView.getParent() != null) {
+                        parent.removeView(oldView);
+                    }
+                }
+            });
+            animators.add(fadeOutAnimator);
         }
 
-        mToolbarFadeAnimator = ObjectAnimator.ofFloat(0, 1);
-        mToolbarFadeAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
-        mToolbarFadeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animator) {
-                if (targetToolbar == mDefaultToolbarView) {
-                    currentToolbar.setAlpha(1f - animator.getAnimatedFraction());
-                } else {
-                    targetToolbar.setAlpha(animator.getAnimatedFraction());
-                }
-            }
-        });
-        mToolbarFadeAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                targetToolbar.setAlpha(1f);
-                currentToolbar.setAlpha(0f);
-                if (currentToolbar != mDefaultToolbarView) {
-                    mToolbarHolder.removeView(currentToolbar);
-                } else {
-                    currentToolbar.setVisibility(View.GONE);
-                }
-                mToolbarFadeAnimator = null;
-                updateHandleTint();
-            }
-        });
+        // Fade in the new view.
+        if (parent != newView.getParent()) parent.addView(newView);
+        newView.setAlpha(0);
+        ValueAnimator fadeInAnimator = ObjectAnimator.ofFloat(newView, View.ALPHA, 1);
+        fadeInAnimator.setDuration(TRANSITION_DURATION_MS);
+        animators.add(fadeInAnimator);
 
-        mToolbarFadeAnimator.start();
+        animatorSet.playSequentially(animators);
+
+        return animatorSet;
     }
 
     /**
