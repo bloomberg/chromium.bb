@@ -155,6 +155,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
     private String mSearchQuery = EMPTY_QUERY;
+    private SpaceDisplay mSpaceDisplay;
 
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
@@ -328,6 +329,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         return new DownloadItemGroup(timeStamp);
     }
 
+    @Override
+    protected BasicViewHolder createHeader(ViewGroup parent) {
+        if (mSpaceDisplay == null) {
+            mSpaceDisplay = new SpaceDisplay(parent, this);
+            registerAdapterDataObserver(mSpaceDisplay);
+        }
+
+        mSpaceDisplay.onChanged();
+        return new BasicViewHolder(mSpaceDisplay.getView());
+    }
+
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
     public void onDownloadItemCreated(DownloadItem item) {
         boolean isOffTheRecord = item.getDownloadInfo().isOffTheRecord();
@@ -420,6 +432,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         getDownloadDelegate().removeDownloadHistoryAdapter(this);
         getOfflinePageBridge().removeObserver(mOfflinePageObserver);
         sDeletedFileTracker.decrementInstanceCount();
+        if (mSpaceDisplay != null) unregisterAdapterDataObserver(mSpaceDisplay);
     }
 
     @Override
@@ -510,6 +523,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         }
 
         clear(false);
+        if (!filteredTimedItems.isEmpty()) addHeader();
         loadItems(filteredTimedItems);
     }
 
@@ -695,5 +709,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         // if/when incognito downloads are persistently available in downloads home.
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Total",
                 mRegularDownloadItems.size() + mOfflinePageItems.size());
+    }
+
+    /** Returns the {@link SpaceDisplay}. */
+    public SpaceDisplay getSpaceDisplayForTests() {
+        return mSpaceDisplay;
     }
 }

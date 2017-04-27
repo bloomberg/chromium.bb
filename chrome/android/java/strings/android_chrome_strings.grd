@@ -2003,7 +2003,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB downloaded
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
-        All downloads
+        All
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_PAGES" desc="Indicates that clicking on this button shows only offline pages.">
         Pages

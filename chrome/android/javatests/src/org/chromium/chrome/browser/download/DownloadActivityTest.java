@@ -12,7 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
@@ -139,7 +139,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 (TextView) getActivity().findViewById(R.id.size_downloaded);
         mRecyclerView = ((RecyclerView) getActivity().findViewById(R.id.recycler_view));
 
-        mUi.getSpaceDisplayForTests().addObserverForTests(mAdapterObserver);
+        mAdapter.getSpaceDisplayForTests().addObserverForTests(mAdapterObserver);
     }
 
     @MediumTest
@@ -203,20 +203,18 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
             }
         });
 
-        // Change the filter. Only the Offline Page and its date header should stay.
+        // Change the filter to Pages. Only the space display, offline page and the date header
+        // should stay.
         int spaceDisplayCallCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         clickOnFilter(mUi, 1);
-        assertEquals(2, mAdapter.getItemCount());
-
-        // The title of the toolbar reflects the filter.
-        assertEquals("Pages", mUi.getDownloadManagerToolbarForTests().getTitle());
+        assertEquals(3, mAdapter.getItemCount());
 
         // Check that the number of items displayed is correct.
         // We need to poll because RecyclerView doesn't animate changes immediately.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mRecyclerView.getChildCount() == 2;
+                return mRecyclerView.getChildCount() == 3;
             }
         });
 
@@ -239,11 +237,11 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         });
 
         // Select the first two items.
-        toggleItemSelection(1);
         toggleItemSelection(2);
+        toggleItemSelection(3);
 
         // Click the delete button, which should delete the items and reset the toolbar.
-        assertEquals(11, mAdapter.getItemCount());
+        assertEquals(12, mAdapter.getItemCount());
         // checkForExternallyRemovedFiles() should have been called once already in onResume().
         assertEquals(1,
                 mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
@@ -263,7 +261,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
         mStubbedProvider.getOfflinePageBridge().deleteItemCallback.waitForCallback(0);
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
-        assertEquals(8, mAdapter.getItemCount());
+        assertEquals(9, mAdapter.getItemCount());
         assertEquals("0.65 KB downloaded", mSpaceUsedDisplay.getText());
     }
 
@@ -271,12 +269,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     @RetryOnFailure
     public void testUndoDelete() throws Exception {
         // Adapter positions:
-        // 0 = date
-        // 1 = download item #7
-        // 2 = download item #8
-        // 3 = date
-        // 4 = download item #6
-        // 5 = offline page #3
+        // 0 = space display
+        // 1 = date
+        // 2 = download item #7
+        // 3 = download item #8
+        // 4 = date
+        // 5 = download item #6
+        // 6 = offline page #3
 
         SnackbarManager.setDurationForTesting(5000);
 
@@ -303,10 +302,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         });
 
         // Select download item #7 and offline page #3.
-        toggleItemSelection(1);
-        toggleItemSelection(5);
+        toggleItemSelection(2);
+        toggleItemSelection(6);
 
-        assertEquals(14, mAdapter.getItemCount());
+        assertEquals(15, mAdapter.getItemCount());
 
         // Click the delete button.
         callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
@@ -321,7 +320,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
         // Assert that items are temporarily removed from the adapter. The two selected items,
         // one duplicate item, and one date bucket should be removed.
-        assertEquals(10, mAdapter.getItemCount());
+        assertEquals(11, mAdapter.getItemCount());
         assertEquals("1.00 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Click "Undo" on the snackbar.
@@ -343,7 +342,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertEquals(0,
                 mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
-        assertEquals(14, mAdapter.getItemCount());
+        assertEquals(15, mAdapter.getItemCount());
         assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
@@ -351,9 +350,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     @RetryOnFailure
     public void testUndoDeleteDuplicatesSelected() throws Exception {
         // Adapter positions:
-        // 0 = date
-        // 1 = download item #7
-        // 2 = download item #8
+        // 0 = space display
+        // 1 = date
+        // 2 = download item #7
+        // 3 = download item #8
         // ....
 
         SnackbarManager.setDurationForTesting(5000);
@@ -381,10 +381,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         });
 
         // Select download item #7 and download item #8.
-        toggleItemSelection(1);
         toggleItemSelection(2);
+        toggleItemSelection(3);
 
-        assertEquals(14, mAdapter.getItemCount());
+        assertEquals(15, mAdapter.getItemCount());
 
         // Click the delete button.
         callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
@@ -398,7 +398,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that the two items and their date bucket are temporarily removed from the adapter.
-        assertEquals(11, mAdapter.getItemCount());
+        assertEquals(12, mAdapter.getItemCount());
         assertEquals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Click "Undo" on the snackbar.
@@ -415,27 +415,28 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
 
         // Assert that items are restored.
-        assertEquals(14, mAdapter.getItemCount());
+        assertEquals(15, mAdapter.getItemCount());
         assertEquals("7.00 GB downloaded", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest
     public void testShareFiles() throws Exception {
         // Adapter positions:
-        // 0 = date
-        // 1 = download item #6
-        // 2 = offline page #3
-        // 3 = date
-        // 4 = download item #3
-        // 5 = download item #4
-        // 6 = download item #5
-        // 7 = date
-        // 8 = download item #0
-        // 9 = download item #1
-        // 10 = download item #2
+        // 0 = space display
+        // 1 = date
+        // 2 = download item #6
+        // 3 = offline page #3
+        // 4 = date
+        // 5 = download item #3
+        // 6 = download item #4
+        // 7 = download item #5
+        // 8 = date
+        // 9 = download item #0
+        // 10 = download item #1
+        // 11 = download item #2
 
         // Select an image, download item #6.
-        toggleItemSelection(1);
+        toggleItemSelection(2);
         Intent shareIntent = mUi.createShareIntent();
         assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
         assertEquals("Incorrect intent mime type", "image/png", shareIntent.getType());
@@ -448,13 +449,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mRecyclerView.scrollToPosition(8);
+                mRecyclerView.scrollToPosition(9);
             }
         });
         getInstrumentation().waitForIdleSync();
 
         // Select another image, download item #0.
-        toggleItemSelection(8);
+        toggleItemSelection(9);
         shareIntent = mUi.createShareIntent();
         assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
                 shareIntent.getAction());
@@ -466,13 +467,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mRecyclerView.scrollToPosition(5);
+                mRecyclerView.scrollToPosition(6);
             }
         });
         getInstrumentation().waitForIdleSync();
 
         // Select non-image item, download item #4.
-        toggleItemSelection(5);
+        toggleItemSelection(6);
         shareIntent = mUi.createShareIntent();
         assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
                 shareIntent.getAction());
@@ -484,13 +485,13 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mRecyclerView.scrollToPosition(2);
+                mRecyclerView.scrollToPosition(3);
             }
         });
         getInstrumentation().waitForIdleSync();
 
         // Select an offline page #3.
-        toggleItemSelection(2);
+        toggleItemSelection(3);
         shareIntent = mUi.createShareIntent();
         assertEquals("Incorrect intent action", Intent.ACTION_SEND_MULTIPLE,
                 shareIntent.getAction());
@@ -514,7 +515,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
 
         // Select an item.
-        toggleItemSelection(1);
+        toggleItemSelection(2);
 
         // The toolbar should flip states to allow doing things with the selected items.
         assertNull(getActivity().findViewById(R.id.close_menu_id));
@@ -527,7 +528,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
 
         // Deselect the same item.
-        toggleItemSelection(1);
+        toggleItemSelection(2);
 
         // The toolbar should flip back.
         assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
@@ -610,14 +611,12 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
     private void clickOnFilter(final DownloadManagerUi ui, final int position) throws Exception {
         int previousCount = mAdapterObserver.onChangedCallback.getCallCount();
+        final Spinner spinner = mUi.getDownloadManagerToolbarForTests().getSpinnerForTests();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ui.openDrawer();
-                ListView filterList = (ListView) ui.getView().findViewById(R.id.section_list);
-                filterList.performItemClick(
-                        filterList.getChildAt(filterList.getHeaderViewsCount() + position),
-                        position, filterList.getAdapter().getItemId(position));
+                spinner.performClick();
+                spinner.setSelection(position);
             }
         });
         mAdapterObserver.onChangedCallback.waitForCallback(previousCount);
