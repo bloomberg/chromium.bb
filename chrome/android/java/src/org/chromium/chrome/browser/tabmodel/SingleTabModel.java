@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class SingleTabModel implements TabModel {
     private final Activity mActivity;
-    private final ObserverList<TabModelObserver> mObservers = new ObserverList<TabModelObserver>();
+    private final ObserverList<TabModelObserver> mObservers = new ObserverList<>();
 
     private Tab mTab;
     private boolean mIsIncognito;
@@ -173,7 +173,8 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void removeTab(Tab tab) {
-        assert false;
+        mTab = null;
+        for (TabModelObserver obs : mObservers) obs.tabRemoved(tab);
     }
 
     @Override
