@@ -105,6 +105,9 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     uint32_t crtc_id,
     const gfx::Rect& src_rect,
     CrtcController* crtc) {
+  // Legacy modesetting rejects transforms.
+  if (overlay.plane_transform != gfx::OVERLAY_TRANSFORM_NONE)
+    return false;
   if ((hw_plane->type() == HardwareDisplayPlane::kDummy) ||
       plane_list->legacy_page_flips.empty() ||
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {

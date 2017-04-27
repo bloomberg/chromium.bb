@@ -12,7 +12,7 @@ namespace ui {
 
 OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer)
     : buffer(buffer),
-      plane_transform(gfx::OVERLAY_TRANSFORM_INVALID),
+      plane_transform(gfx::OVERLAY_TRANSFORM_NONE),
       display_bounds(gfx::Point(), buffer->GetSize()),
       crop_rect(0, 0, 1, 1) {}
 

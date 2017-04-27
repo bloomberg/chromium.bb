@@ -47,10 +47,6 @@ bool OverlayStrategyFullscreen::Attempt(
     return false;
   }
 
-  if (candidate.transform != gfx::OVERLAY_TRANSFORM_NONE) {
-    return false;
-  }
-
   if (!candidate.display_rect.origin().IsOrigin() ||
       gfx::ToRoundedSize(candidate.display_rect.size()) !=
           render_pass->output_rect.size() ||
