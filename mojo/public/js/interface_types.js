@@ -66,6 +66,10 @@ define("mojo/public/js/interface_types", [
     return this.interfaceEndpointHandle.isValid();
   };
 
+  AssociatedInterfaceRequest.prototype.resetWithReason = function(reason) {
+    this.interfaceEndpointHandle.reset(reason);
+  };
+
   function isMasterInterfaceId(interfaceId) {
     return interfaceId === kMasterInterfaceId;
   }

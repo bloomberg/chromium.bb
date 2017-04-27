@@ -229,6 +229,31 @@ define([
     });
   }, 'connection error with reason');
 
+  // Test that AssociatedInterfacePtr is notified with connection error when
+  // the interface hasn't associated with a message pipe and the peer is
+  // closed.
+  promise_test(async () => {
+    var integerSenderPtrInfo = new
+        associatedBindings.AssociatedInterfacePtrInfo();
+    var integerSenderRequest = associatedBindings.makeRequest(
+        integerSenderPtrInfo);
+
+    var integerSender = new
+        testAssociatedInterfaces.AssociatedIntegerSenderPtr(
+            integerSenderPtrInfo);
+
+    await new Promise((resolve, reject) => {
+      integerSender.ptr.setConnectionErrorHandler(function({custom_reason,
+          description}) {
+        assert_equals(custom_reason, 42);
+        assert_equals(description, 'hey');
+        resolve();
+      });
+      integerSenderRequest.resetWithReason({custom_reason: 42,
+          description: 'hey'})
+    });
+  }, 'pending AssociatedInterfacePtr connection error with reason');
+
   promise_test(async () => {
     var integerSenderConnection = new
         testAssociatedInterfaces.IntegerSenderConnectionPtr();
