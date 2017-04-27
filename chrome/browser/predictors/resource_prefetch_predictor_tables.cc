@@ -69,6 +69,41 @@ bool StepAndInitializeProtoData(sql::Statement* statement,
   return true;
 }
 
+predictors::ResourceData::ResourceType PrecacheResourceTypeToResourceType(
+    precache::PrecacheResource::Type resource_type) {
+  using precache::PrecacheResource;
+  using predictors::ResourceData;
+  switch (resource_type) {
+    case PrecacheResource::RESOURCE_TYPE_IMAGE:
+      return ResourceData::RESOURCE_TYPE_IMAGE;
+    case PrecacheResource::RESOURCE_TYPE_FONT:
+      return ResourceData::RESOURCE_TYPE_FONT_RESOURCE;
+    case PrecacheResource::RESOURCE_TYPE_STYLESHEET:
+      return ResourceData::RESOURCE_TYPE_STYLESHEET;
+    case PrecacheResource::RESOURCE_TYPE_SCRIPT:
+      return ResourceData::RESOURCE_TYPE_SCRIPT;
+    case PrecacheResource::RESOURCE_TYPE_OTHER:
+    case PrecacheResource::RESOURCE_TYPE_UNKNOWN:
+    default:
+      return ResourceData::RESOURCE_TYPE_SUB_RESOURCE;
+  }
+}
+
+int GetResourceTypeMultiplier(
+    predictors::ResourceData::ResourceType resource_type) {
+  switch (resource_type) {
+    case predictors::ResourceData::RESOURCE_TYPE_STYLESHEET:
+      return 4;
+    case predictors::ResourceData::RESOURCE_TYPE_SCRIPT:
+      return 3;
+    case predictors::ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
+      return 2;
+    case predictors::ResourceData::RESOURCE_TYPE_IMAGE:
+    default:
+      return 1;
+  }
+}
+
 }  // namespace
 
 namespace predictors {
@@ -310,13 +345,8 @@ void ResourcePrefetchPredictorTables::GetAllResourceDataHelper(
   PrefetchData data;
   std::string key;
   while (StepAndInitializeProtoData(&resource_reader, &key, &data)) {
-    data_map->insert(std::make_pair(key, data));
+    data_map->insert({key, data});
     DCHECK_EQ(data.primary_key(), key);
-  }
-
-  // Sort each of the resource vectors by score.
-  for (auto& kv : *data_map) {
-    SortResources(&(kv.second));
   }
 }
 
@@ -331,7 +361,7 @@ void ResourcePrefetchPredictorTables::GetAllRedirectDataHelper(
   RedirectData data;
   std::string key;
   while (StepAndInitializeProtoData(&redirect_reader, &key, &data)) {
-    data_map->insert(std::make_pair(key, data));
+    data_map->insert({key, data});
     DCHECK_EQ(data.primary_key(), key);
   }
 }
@@ -345,7 +375,7 @@ void ResourcePrefetchPredictorTables::GetAllManifestDataHelper(
   precache::PrecacheManifest data;
   std::string key;
   while (StepAndInitializeProtoData(&manifest_reader, &key, &data)) {
-    manifest_map->insert(std::make_pair(key, data));
+    manifest_map->insert({key, data});
   }
 }
 
@@ -427,19 +457,7 @@ float ResourcePrefetchPredictorTables::ComputeResourceScore(
       break;
   }
 
-  int type_multiplier;
-  switch (data.resource_type()) {
-    case ResourceData::RESOURCE_TYPE_STYLESHEET:
-    case ResourceData::RESOURCE_TYPE_SCRIPT:
-      type_multiplier = 3;
-      break;
-    case ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
-      type_multiplier = 2;
-      break;
-    case ResourceData::RESOURCE_TYPE_IMAGE:
-    default:
-      type_multiplier = 1;
-  }
+  int type_multiplier = GetResourceTypeMultiplier(data.resource_type());
 
   constexpr int kMaxResourcesPerType = 100;
   return kMaxResourcesPerType *
@@ -447,6 +465,16 @@ float ResourcePrefetchPredictorTables::ComputeResourceScore(
          data.average_position();
 }
 
+// static
+float ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
+    const precache::PrecacheResource& resource) {
+  int type_multiplier = GetResourceTypeMultiplier(
+      PrecacheResourceTypeToResourceType(resource.type()));
+  // This means a strict ordering, since the weight_ratio is in [0,1).
+  return type_multiplier * 10 + resource.weight_ratio();
+}
+
+// static
 float ResourcePrefetchPredictorTables::ComputeOriginScore(
     const OriginStat& origin) {
   // The ranking is done by considering, in this order:

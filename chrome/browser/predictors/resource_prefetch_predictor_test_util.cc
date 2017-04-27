@@ -54,9 +54,11 @@ void InitializeRedirectStat(RedirectStat* redirect,
 
 void InitializePrecacheResource(precache::PrecacheResource* resource,
                                 const std::string& url,
-                                double weight_ratio) {
+                                double weight_ratio,
+                                precache::PrecacheResource::Type type) {
   resource->set_url(url);
   resource->set_weight_ratio(weight_ratio);
+  resource->set_type(type);
 }
 
 void InitializeOriginStat(OriginStat* origin_stat,

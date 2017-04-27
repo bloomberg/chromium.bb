@@ -978,6 +978,8 @@ bool ResourcePrefetchPredictor::PopulateFromManifest(
   base::Optional<std::vector<bool>> not_no_store = precache::GetResourceBitset(
       manifest, internal::kNoStoreRemovedExperiment);
 
+  std::vector<const precache::PrecacheResource*> filtered_resources;
+
   bool has_prefetchable_resource = false;
   for (int i = 0; i < manifest.resource_size(); ++i) {
     const precache::PrecacheResource& resource = manifest.resource(i);
@@ -987,8 +989,22 @@ bool ResourcePrefetchPredictor::PopulateFromManifest(
         (!not_no_store.has_value() || not_no_store.value()[i])) {
       has_prefetchable_resource = true;
       if (urls)
-        urls->emplace_back(resource.url());
+        filtered_resources.push_back(&resource);
     }
+  }
+
+  if (urls) {
+    std::sort(
+        filtered_resources.begin(), filtered_resources.end(),
+        [](const precache::PrecacheResource* x,
+           const precache::PrecacheResource* y) {
+          return ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
+                     *x) >
+                 ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
+                     *y);
+        });
+    for (auto* resource : filtered_resources)
+      urls->emplace_back(resource->url());
   }
 
   return has_prefetchable_resource;
@@ -1722,18 +1738,18 @@ void ResourcePrefetchPredictor::OnManifestFetched(
   if (cache_entry == manifest_table_cache_->end()) {
     if (manifest_table_cache_->size() >= config_.max_hosts_to_track)
       RemoveOldestEntryInManifestDataMap(manifest_table_cache_.get());
-    cache_entry =
-        manifest_table_cache_->insert(std::make_pair(host, manifest)).first;
+    cache_entry = manifest_table_cache_->insert({host, manifest}).first;
   } else {
     cache_entry->second = manifest;
   }
 
-  precache::RemoveUnknownFields(&cache_entry->second);
+  auto& data = cache_entry->second;
+  precache::RemoveUnknownFields(&data);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::BindOnce(&ResourcePrefetchPredictorTables::UpdateManifestData,
-                     tables_, host, cache_entry->second));
+                     tables_, host, data));
 }
 
 void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(

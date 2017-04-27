@@ -24,9 +24,6 @@ class Statement;
 
 namespace predictors {
 
-// From resource_prefetch_predictor.proto.
-using RedirectStat = RedirectData_RedirectStat;
-
 // Interface for database tables used by the ResourcePrefetchPredictor.
 // All methods except the constructor and destructor need to be called on the DB
 // thread.
@@ -110,6 +107,10 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // misses from |data|.
   static void TrimRedirects(RedirectData* data, size_t max_consecutive_misses);
 
+  // Computes score of |data|.
+  static float ComputePrecacheResourceScore(
+      const precache::PrecacheResource& data);
+
   // Removes the origins with more than |max_consecutive_misses| consecutive
   // misses from |data|.
   static void TrimOrigins(OriginData* data, size_t max_consecutive_misses);
@@ -117,7 +118,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Sorts the origins by score, decreasing.
   static void SortOrigins(OriginData* data);
 
-  // Computes score of |data|.
+  // Computes score of |origin|.
   static float ComputeOriginScore(const OriginStat& origin);
 
   // The maximum length of the string that can be stored in the DB.
@@ -143,7 +144,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 7;
+  static constexpr int kDatabaseVersion = 8;
 
   // Helper functions below help perform functions on the Url and host table
   // using the same code.
