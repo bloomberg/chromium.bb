@@ -844,8 +844,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
 
-  // is_in_page must be computed before the entry gets committed.
-  details->is_in_page = is_navigation_within_page;
+  // is_same_document must be computed before the entry gets committed.
+  details->is_same_document = is_navigation_within_page;
 
   // Save reload type and timestamp for a reload navigation to detect
   // consecutive reloads when the next reload is requested.
@@ -863,20 +863,20 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
-      RendererDidNavigateToNewPage(rfh, params, details->is_in_page,
+      RendererDidNavigateToNewPage(rfh, params, details->is_same_document,
                                    details->did_replace_entry,
                                    navigation_handle);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
-      details->did_replace_entry = details->is_in_page;
-      RendererDidNavigateToExistingPage(rfh, params, details->is_in_page,
+      details->did_replace_entry = details->is_same_document;
+      RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
                                         was_restored, navigation_handle);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params, navigation_handle);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
-      RendererDidNavigateNewSubframe(rfh, params, details->is_in_page,
+      RendererDidNavigateNewSubframe(rfh, params, details->is_same_document,
                                      details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:

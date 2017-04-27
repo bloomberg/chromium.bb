@@ -43,9 +43,12 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // A non-user initiated redirect causes such replacement.
   bool did_replace_entry;
 
-  // True if the navigation was in-page. This means that the active entry's
-  // URL and the |previous_url| are the same except for reference fragments.
-  bool is_in_page;
+  // Whether the navigation happened without changing document. Examples of
+  // same document navigations are:
+  // * reference fragment navigations
+  // * pushState/replaceState
+  // * same page history navigation
+  bool is_same_document;
 
   // True when the main frame was navigated. False means the navigation was a
   // sub-frame.
@@ -55,7 +58,7 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // scrolling to a fragment inside the current page). We often need this logic
   // for showing or hiding something.
   bool is_navigation_to_different_page() const {
-    return is_main_frame && !is_in_page;
+    return is_main_frame && !is_same_document;
   }
 
   // The HTTP status code for this entry..

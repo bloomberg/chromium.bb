@@ -240,7 +240,7 @@ void ViewImpl::Observe(int type,
       details_ptr->type = static_cast<mojom::NavigationType>(lcd->type);
       details_ptr->previous_entry_index = lcd->previous_entry_index;
       details_ptr->previous_url = lcd->previous_url;
-      details_ptr->is_in_page = lcd->is_in_page;
+      details_ptr->is_in_page = lcd->is_same_document;
       details_ptr->is_main_frame = lcd->is_main_frame;
       details_ptr->http_status_code = lcd->http_status_code;
       client_->NavigationCommitted(

@@ -184,7 +184,7 @@ void RPHReferenceManager::RPHWebContentsObserver::WebContentsDestroyed() {
 
 void RPHReferenceManager::RPHWebContentsObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  if (load_details.is_in_page)
+  if (load_details.is_same_document)
     return;
 
   manager_->OnWebContentsDestroyedOrNavigated(web_contents());
