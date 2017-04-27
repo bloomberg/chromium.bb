@@ -62,11 +62,20 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
       WebURLRequest::kRequestContextAudio;
   const WebURLRequest::FetchRequestMode kMode =
       WebURLRequest::kFetchRequestModeNavigate;
+  const WebURLRequest::FetchCredentialsMode kCredentialsMode =
+      WebURLRequest::kFetchCredentialsModeInclude;
+  const WebURLRequest::FetchRequestCacheMode kCacheMode =
+      WebURLRequest::kFetchRequestCacheModeNoCache;
+  const WebURLRequest::FetchRedirectMode kRedirectMode =
+      WebURLRequest::kFetchRedirectModeError;
 
   web_request.SetURL(url);
   web_request.SetMethod(method);
-  web_request.SetRequestContext(kContext);
   web_request.SetMode(kMode);
+  web_request.SetCredentialsMode(kCredentialsMode);
+  web_request.SetCacheMode(kCacheMode);
+  web_request.SetRedirectMode(kRedirectMode);
+  web_request.SetRequestContext(kContext);
   for (int i = 0; headers[i].key; ++i)
     web_request.SetHeader(WebString::FromUTF8(headers[i].key),
                           WebString::FromUTF8(headers[i].value));
@@ -97,11 +106,14 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   request->PopulateWebServiceWorkerRequest(second_web_request);
   EXPECT_EQ(url, KURL(second_web_request.Url()));
   EXPECT_EQ(method, String(second_web_request.Method()));
+  EXPECT_EQ(kMode, second_web_request.Mode());
+  EXPECT_EQ(kCredentialsMode, second_web_request.CredentialsMode());
+  EXPECT_EQ(kCacheMode, second_web_request.CacheMode());
+  EXPECT_EQ(kRedirectMode, second_web_request.RedirectMode());
   EXPECT_EQ(kContext, second_web_request.GetRequestContext());
   EXPECT_EQ(referrer, KURL(second_web_request.ReferrerUrl()));
   EXPECT_EQ(kWebReferrerPolicyAlways, second_web_request.GetReferrerPolicy());
   EXPECT_EQ(web_request.Headers(), second_web_request.Headers());
-  EXPECT_EQ(WebURLRequest::kFetchRequestModeNoCORS, second_web_request.Mode());
 }
 
 TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment) {

@@ -722,6 +722,10 @@ bool Request::HasBody() const {
 void Request::PopulateWebServiceWorkerRequest(
     WebServiceWorkerRequest& web_request) const {
   web_request.SetMethod(method());
+  web_request.SetMode(request_->Mode());
+  web_request.SetCredentialsMode(request_->Credentials());
+  web_request.SetCacheMode(request_->CacheMode());
+  web_request.SetRedirectMode(request_->Redirect());
   web_request.SetRequestContext(request_->Context());
 
   // Strip off the fragment part of URL. So far, all users of
