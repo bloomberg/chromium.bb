@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS iframe f1 relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = false is enabled by container policy. 
+PASS iframe f2 relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = true is enabled by container policy. 
+PASS iframe f3 relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowfullscreen = true is enabled by container policy. 
+PASS iframe f4 relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowfullscreen = false is disabled by container policy. 
+PASS iframe f5 relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowfullscreen = true is disabled by container policy. 
+PASS iframe f6 relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowfullscreen = true is enabled by container policy. 
+Harness: the test ran to completion.
+

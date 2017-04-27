@@ -45,6 +45,8 @@ ParseFeaturePolicy(const String& policy,
 // whitelists, one for each feature specified.
 PLATFORM_EXPORT WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     const WebVector<WebFeaturePolicyFeature>& features,
+    bool allowfullscreen,
+    bool allowpayment,
     RefPtr<SecurityOrigin>);
 
 }  // namespace blink

@@ -80,35 +80,9 @@ bool AllowedToUseFullscreen(const Frame* frame) {
     return false;
   }
 
-  // If Feature Policy is enabled, then we need this hack to support it, until
-  // we have proper support for <iframe allowfullscreen> in FP:
-
-  // 1. If FP, by itself, enables fullscreen in this document, then fullscreen
-  // is allowed.
-  if (frame->IsFeatureEnabled(WebFeaturePolicyFeature::kFullscreen)) {
-    return true;
-  }
-
-  // 2. Otherwise, if the embedding frame's document is allowed to use
-  // fullscreen (either through FP or otherwise), and either:
-  //   a) this is a same-origin embedded document, or
-  //   b) this document's iframe has the allowfullscreen attribute set,
-  // then fullscreen is allowed.
-  if (!frame->IsMainFrame()) {
-    if (AllowedToUseFullscreen(frame->Tree().Parent())) {
-      return (frame->Owner() && frame->Owner()->AllowFullscreen()) ||
-             frame->Tree()
-                 .Parent()
-                 ->GetSecurityContext()
-                 ->GetSecurityOrigin()
-                 ->IsSameSchemeHostPortAndSuborigin(
-                     frame->GetSecurityContext()->GetSecurityOrigin());
-    }
-  }
-
-  // Otherwise, fullscreen is not allowed. (If we reach here and this is the
-  // main frame, then fullscreen must have been disabled by FP.)
-  return false;
+  // 2. If Feature Policy is enabled, return the policy for "fullscreen"
+  // feature.
+  return frame->IsFeatureEnabled(WebFeaturePolicyFeature::kFullscreen);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {
