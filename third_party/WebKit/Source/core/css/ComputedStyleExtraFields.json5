@@ -171,5 +171,19 @@
       field_group: "surround",
       default_value: "BorderData()",
     },
+    {
+      name: "Background",
+      field_template: "storage_only",
+      field_type_path: "core/style/FillLayer",
+      default_value: "FillLayer(kBackgroundFillLayer, true)",
+      field_group: "background",
+    },
+    {
+      name: "BackgroundColor",
+      field_template: "storage_only",
+      field_type_path: "core/css/StyleColor",
+      default_value: "Color::kTransparent",
+      field_group: "background",
+    },
   ],
 }
