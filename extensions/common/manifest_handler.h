@@ -29,11 +29,13 @@ class ManifestHandler {
   // Attempts to parse the extension's manifest.
   // Returns true on success or false on failure; if false, |error| will
   // be set to a failure message.
+  // This does not perform any IO operations.
   virtual bool Parse(Extension* extension, base::string16* error) = 0;
 
   // Validate that files associated with this manifest key exist.
   // Validation takes place after parsing. May also append a series of
   // warning messages to |warnings|.
+  // This may perform IO operations.
   //
   // Otherwise, returns false, and a description of the error is
   // returned in |error|.
@@ -89,7 +91,8 @@ class ManifestHandler {
   // this extension.
   static bool ParseExtension(Extension* extension, base::string16* error);
 
-  // Call Validate on all registered manifest handlers for this extension.
+  // Call Validate on all registered manifest handlers for this extension. This
+  // may perform IO operations.
   static bool ValidateExtension(const Extension* extension,
                                 std::string* error,
                                 std::vector<InstallWarning>* warnings);
