@@ -2676,14 +2676,6 @@ const char kMediaRemotingDescription[] =
     "optimization that forwards the content bitstream directly to the "
     "remote device when a video is fullscreened.";
 
-const char kMediaRemotingEncryptedName[] =
-    "Media Remoting during Cast Tab Mirroring: Encrypted content too";
-
-const char kMediaRemotingEncryptedDescription[] =
-    "When Media Remoting is enabled, this flag must be enabled to allow the "
-    "remoting of encrypted content. When disabled, only non-encrypted "
-    "content can be remoted.";
-
 //  Chrome OS component updates chrome://flags strings
 
 const char kCrosCompUpdatesName[] = "Chrome OS Flash Component Updates";

@@ -168,8 +168,6 @@ namespace {
 RemotingSinkCapabilities GetFeatureEnabledCapabilities() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (base::FeatureList::IsEnabled(features::kMediaRemoting)) {
-    if (base::FeatureList::IsEnabled(features::kMediaRemotingEncrypted))
-      return RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
     return RemotingSinkCapabilities::RENDERING_ONLY;
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)

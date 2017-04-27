@@ -203,12 +203,9 @@ const base::Feature kMaterialDesignSettings{"MaterialDesignSettings",
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables media content bitstream remoting, an optimization that can activate
-// during Cast Tab Mirroring. When kMediaRemotingEncrypted is disabled, the
-// feature will not activate for encrypted content.
+// during Cast Tab Mirroring.
 const base::Feature kMediaRemoting{"MediaRemoting",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kMediaRemotingEncrypted{"MediaRemotingEncrypted",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 // Enables or disables modal permission prompts.

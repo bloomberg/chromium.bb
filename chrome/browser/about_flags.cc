@@ -2505,9 +2505,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-remoting", flag_descriptions::kMediaRemotingName,
      flag_descriptions::kMediaRemotingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMediaRemoting)},
-    {"media-remoting-encrypted", flag_descriptions::kMediaRemotingEncryptedName,
-     flag_descriptions::kMediaRemotingEncryptedDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMediaRemotingEncrypted)},
 #endif
 #if defined(OS_ANDROID)
     {"video-fullscreen-orientation-lock",
