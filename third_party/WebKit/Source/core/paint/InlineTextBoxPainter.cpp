@@ -18,7 +18,10 @@
 #include "core/style/AppliedTextDecoration.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/wtf/Optional.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace blink {
 
@@ -1090,18 +1093,134 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
   }
 }
 
-static GraphicsContext::DocumentMarkerLineStyle LineStyleForMarkerType(
-    DocumentMarker::MarkerType marker_type) {
-  switch (marker_type) {
-    case DocumentMarker::kSpelling:
-      return GraphicsContext::kDocumentMarkerSpellingLineStyle;
-    case DocumentMarker::kGrammar:
-      return GraphicsContext::kDocumentMarkerGrammarLineStyle;
-    default:
-      ASSERT_NOT_REACHED();
-      return GraphicsContext::kDocumentMarkerSpellingLineStyle;
-  }
+namespace {
+
+#if !OS(MACOSX)
+
+sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
+  SkColor color = (marker_type == DocumentMarker::kGrammar)
+                      ? SkColorSetRGB(0xC0, 0xC0, 0xC0)
+                      : SK_ColorRED;
+
+  // Record the path equivalent to this legacy pattern:
+  //   X o   o X o   o X
+  //     o X o   o X o
+
+  static const float kW = 4;
+  static const float kH = 2;
+
+  // Adjust the phase such that f' == 0 is "pixel"-centered
+  // (for optimal rasterization at native rez).
+  SkPath path;
+  path.moveTo(kW * -3 / 8, kH * 3 / 4);
+  path.cubicTo(kW * -1 / 8, kH * 3 / 4,
+               kW * -1 / 8, kH * 1 / 4,
+               kW *  1 / 8, kH * 1 / 4);
+  path.cubicTo(kW * 3 / 8, kH * 1 / 4,
+               kW * 3 / 8, kH * 3 / 4,
+               kW * 5 / 8, kH * 3 / 4);
+  path.cubicTo(kW * 7 / 8, kH * 3 / 4,
+               kW * 7 / 8, kH * 1 / 4,
+               kW * 9 / 8, kH * 1 / 4);
+
+  PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(color);
+  flags.setStyle(PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kH * 1 / 2);
+
+  PaintRecorder recorder;
+  recorder.beginRecording(kW, kH);
+  recorder.getRecordingCanvas()->drawPath(path, flags);
+
+  return recorder.finishRecordingAsPicture();
 }
+
+#else  // OS(MACOSX)
+
+sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
+  SkColor color = (marker_type == DocumentMarker::kGrammar)
+                      ? SkColorSetRGB(0x6B, 0x6B, 0x6B)
+                      : SkColorSetRGB(0xFB, 0x2D, 0x1D);
+
+  // Match the artwork used by the Mac.
+  static const float kW = 4;
+  static const float kH = 3;
+  static const float kR = 1.5f;
+
+  // top->bottom translucent gradient.
+  const SkColor colors[2] = {
+      SkColorSetARGB(0x48,
+                     SkColorGetR(color),
+                     SkColorGetG(color),
+                     SkColorGetB(color)),
+      color
+  };
+  const SkPoint pts[2] = {
+      SkPoint::Make(0, 0),
+      SkPoint::Make(0, 2 * kR)
+  };
+
+  PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(color);
+  flags.setShader(SkGradientShader::MakeLinear(
+      pts, colors, nullptr, ARRAY_SIZE(colors), SkShader::kClamp_TileMode));
+  PaintRecorder recorder;
+  recorder.beginRecording(kW, kH);
+  recorder.getRecordingCanvas()->drawCircle(kR, kR, kR, flags);
+
+  return recorder.finishRecordingAsPicture();
+}
+
+#endif  // OS(MACOSX)
+
+void DrawDocumentMarker(GraphicsContext& context,
+                        const FloatPoint& pt,
+                        float width,
+                        DocumentMarker::MarkerType marker_type,
+                        float zoom) {
+  DCHECK(marker_type == DocumentMarker::kSpelling ||
+         marker_type == DocumentMarker::kGrammar);
+
+  DEFINE_STATIC_LOCAL(PaintRecord*, spelling_marker,
+                      (RecordMarker(DocumentMarker::kSpelling).release()));
+  DEFINE_STATIC_LOCAL(PaintRecord*, grammar_marker,
+                      (RecordMarker(DocumentMarker::kGrammar).release()));
+  const auto& marker = marker_type == DocumentMarker::kSpelling
+                           ? spelling_marker
+                           : grammar_marker;
+
+  // Position already includes zoom and device scale factor.
+  SkScalar origin_x = WebCoreFloatToSkScalar(pt.X());
+  SkScalar origin_y = WebCoreFloatToSkScalar(pt.Y());
+
+#if OS(MACOSX)
+  // Make sure to draw only complete dots, and finish inside the marked text.
+  width -= fmodf(width, marker->cullRect().width() * zoom);
+#else
+  // Offset it vertically by 1 so that there's some space under the text.
+  origin_y += 1;
+#endif
+
+  const auto rect = SkRect::MakeWH(width, marker->cullRect().height() * zoom);
+  const auto local_matrix = SkMatrix::MakeScale(zoom, zoom);
+
+  PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setShader(WrapSkShader(MakePaintShaderRecord(
+      sk_ref_sp(marker), SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode,
+      &local_matrix, nullptr)));
+
+  // Apply the origin translation as a global transform.  This ensures that the
+  // shader local matrix depends solely on zoom => Skia can reuse the same
+  // cached tile for all markers at a given zoom level.
+  GraphicsContextStateSaver saver(context);
+  context.Translate(origin_x, origin_y);
+  context.DrawRect(rect, flags);
+}
+
+}  // anonymous ns
 
 void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
                                                const LayoutPoint& box_origin,
@@ -1186,11 +1305,10 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
     // prevent a big gap.
     underline_offset = baseline + 2;
   }
-  context.DrawLineForDocumentMarker(
-      FloatPoint((box_origin.X() + start).ToFloat(),
-                 (box_origin.Y() + underline_offset).ToFloat()),
-      width.ToFloat(), LineStyleForMarkerType(marker.GetType()),
-      style.EffectiveZoom());
+  DrawDocumentMarker(context,
+                     FloatPoint((box_origin.X() + start).ToFloat(),
+                                (box_origin.Y() + underline_offset).ToFloat()),
+                     width.ToFloat(), marker.GetType(), style.EffectiveZoom());
 }
 
 template <InlineTextBoxPainter::PaintOptions options>

@@ -271,14 +271,6 @@ class PLATFORM_EXPORT GraphicsContext {
                             int to = -1);
 
   void DrawLineForText(const FloatPoint&, float width);
-  enum DocumentMarkerLineStyle {
-    kDocumentMarkerSpellingLineStyle,
-    kDocumentMarkerGrammarLineStyle
-  };
-  void DrawLineForDocumentMarker(const FloatPoint&,
-                                 float width,
-                                 DocumentMarkerLineStyle,
-                                 float zoom);
 
   // beginLayer()/endLayer() behave like save()/restore() for CTM and clip
   // states. Apply SkBlendMode when the layer is composited on the backdrop
