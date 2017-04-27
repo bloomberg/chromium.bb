@@ -128,7 +128,7 @@ ErrorReporter::~ErrorReporter() {}
 void ErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report,
     const base::Callback<void()>& success_callback,
-    const base::Callback<void(const GURL&, int)>& error_callback) {
+    const base::Callback<void(const GURL&, int, int)>& error_callback) {
   if (upload_url_.SchemeIsCryptographic()) {
     certificate_report_sender_->Send(upload_url_, "application/octet-stream",
                                      serialized_report, success_callback,

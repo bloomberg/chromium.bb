@@ -24,6 +24,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/report_sender.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -45,7 +46,7 @@ const char kDefaultMimeType[] = "image/png";
 
 // Passed to ReportSender::Send as an ErrorCallback, so must take a GURL, but it
 // is unused.
-void LogReportResult(const GURL& url, int net_error) {
+void LogReportResult(const GURL& url, int net_error, int http_response_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.NotificationImageReporter.NetError",
                               net_error);
 }
@@ -216,10 +217,11 @@ void NotificationImageReporter::SendReportOnIO(
 
   std::string serialized_report;
   report.SerializeToString(&serialized_report);
-  report_sender_->Send(
-      GURL(kReportingUploadUrl), "application/octet-stream", serialized_report,
-      base::Bind(&LogReportResult, GURL(kReportingUploadUrl), net::OK),
-      base::Bind(&LogReportResult));
+  report_sender_->Send(GURL(kReportingUploadUrl), "application/octet-stream",
+                       serialized_report,
+                       base::Bind(&LogReportResult, GURL(kReportingUploadUrl),
+                                  net::OK, net::HTTP_OK),
+                       base::Bind(&LogReportResult));
   // TODO(johnme): Consider logging bandwidth and/or duration to UMA.
 }
 

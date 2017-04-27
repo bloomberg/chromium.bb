@@ -60,10 +60,18 @@ class ErrorReporter {
   // an HTTP endpoint to send encrypted extended reporting reports. On
   // unsupported platforms, callers must send extended reporting reports
   // over SSL.
+  //
+  //
+  // Calls |success_callback| when the report is successfully sent and the
+  // server returns an HTTP 200 response.
+  // In all other cases, calls |error_callback| with the URL of the upload,
+  // net error and HTTP response code parameters.
   virtual void SendExtendedReportingReport(
       const std::string& serialized_report,
       const base::Callback<void()>& success_callback,
-      const base::Callback<void(const GURL&, int)>& error_callback);
+      const base::Callback<void(const GURL&,
+                                int /* net_error */,
+                                int /* http_response_code */)>& error_callback);
 
   // Used by tests.
   static bool DecryptErrorReport(

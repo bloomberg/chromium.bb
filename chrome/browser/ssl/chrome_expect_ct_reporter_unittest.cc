@@ -39,12 +39,12 @@ class TestCertificateReportSender : public net::ReportSender {
       : ReportSender(nullptr, net::ReportSender::DO_NOT_SEND_COOKIES) {}
   ~TestCertificateReportSender() override {}
 
-  void Send(
-      const GURL& report_uri,
-      base::StringPiece content_type,
-      base::StringPiece serialized_report,
-      const base::Callback<void()>& success_callback,
-      const base::Callback<void(const GURL&, int)>& error_callback) override {
+  void Send(const GURL& report_uri,
+            base::StringPiece content_type,
+            base::StringPiece serialized_report,
+            const base::Callback<void()>& success_callback,
+            const base::Callback<void(const GURL&, int, int)>& error_callback)
+      override {
     latest_report_uri_ = report_uri;
     serialized_report.CopyToString(&latest_serialized_report_);
     content_type.CopyToString(&latest_content_type_);

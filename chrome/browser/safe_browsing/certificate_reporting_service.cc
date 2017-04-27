@@ -152,11 +152,13 @@ void CertificateReportingService::Reporter::SendInternal(
                  weak_factory_.GetWeakPtr(), report.report_id));
 }
 
-void CertificateReportingService::Reporter::ErrorCallback(int report_id,
-                                                          const GURL& url,
-                                                          int error) {
+void CertificateReportingService::Reporter::ErrorCallback(
+    int report_id,
+    const GURL& url,
+    int net_error,
+    int http_response_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  RecordUMAOnFailure(error);
+  RecordUMAOnFailure(net_error);
   if (retries_enabled_) {
     auto it = inflight_reports_.find(report_id);
     DCHECK(it != inflight_reports_.end());

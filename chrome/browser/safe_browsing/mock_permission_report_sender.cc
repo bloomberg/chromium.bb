@@ -22,7 +22,7 @@ void MockPermissionReportSender::Send(
     base::StringPiece content_type,
     base::StringPiece report,
     const base::Callback<void()>& success_callback,
-    const base::Callback<void(const GURL&, int)>& error_callback) {
+    const base::Callback<void(const GURL&, int, int)>& error_callback) {
   latest_report_uri_ = report_uri;
   report.CopyToString(&latest_report_);
   content_type.CopyToString(&latest_content_type_);
