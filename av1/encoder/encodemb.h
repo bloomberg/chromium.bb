@@ -86,9 +86,10 @@ void av1_store_pvq_enc_info(PVQ_INFO *pvq_info, int *qg, int *theta, int *k,
 #endif
 
 #if CONFIG_CFL
-void av1_predict_intra_block_encoder_facade(MACROBLOCKD *xd, int plane,
+void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
                                             int block_idx, int blk_col,
-                                            int blk_row, TX_SIZE tx_size);
+                                            int blk_row, TX_SIZE tx_size,
+                                            BLOCK_SIZE plane_bsize);
 #endif
 
 #ifdef __cplusplus
