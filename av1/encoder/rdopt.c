@@ -1556,6 +1556,15 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                    tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
   }
+#if CONFIG_CFL
+  if (plane == AOM_PLANE_Y && x->cfl_store_y) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    const int dst_stride = pd->dst.stride;
+    uint8_t *dst =
+        &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+    cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size);
+  }
+#endif
   rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
   if (args->this_rd + rd > args->best_rd) {
     args->exit_early = 1;
