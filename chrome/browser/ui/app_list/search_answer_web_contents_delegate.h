@@ -46,9 +46,12 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   // content::WebContentsDelegate overrides:
   void UpdatePreferredSize(content::WebContents* web_contents,
                            const gfx::Size& pref_size) override;
+
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
+
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // content::WebContentsObserver overrides:
   void DidFinishNavigation(

@@ -112,6 +112,12 @@ content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
   return new_tab_params.target_contents;
 }
 
+bool SearchAnswerWebContentsDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Disable showing the menu.
+  return true;
+}
+
 void SearchAnswerWebContentsDelegate::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetURL() != current_request_url_)
