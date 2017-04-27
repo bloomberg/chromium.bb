@@ -68,34 +68,34 @@ EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
     ui::TextInputMode text_input_mode) {
   switch (text_input_mode) {
     case ui::TEXT_INPUT_MODE_DEFAULT:
-      return ui::mojom::TextInputMode::DEFAULT;
+      return ui::mojom::TextInputMode::kDefault;
     case ui::TEXT_INPUT_MODE_VERBATIM:
-      return ui::mojom::TextInputMode::VERBATIM;
+      return ui::mojom::TextInputMode::kVerbatim;
     case ui::TEXT_INPUT_MODE_LATIN:
-      return ui::mojom::TextInputMode::LATIN;
+      return ui::mojom::TextInputMode::kLatin;
     case ui::TEXT_INPUT_MODE_LATIN_NAME:
-      return ui::mojom::TextInputMode::LATIN_NAME;
+      return ui::mojom::TextInputMode::kLatinName;
     case ui::TEXT_INPUT_MODE_LATIN_PROSE:
-      return ui::mojom::TextInputMode::LATIN_PROSE;
+      return ui::mojom::TextInputMode::kLatinProse;
     case ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
-      return ui::mojom::TextInputMode::FULL_WIDTH_LATIN;
+      return ui::mojom::TextInputMode::kFullWidthLatin;
     case ui::TEXT_INPUT_MODE_KANA:
-      return ui::mojom::TextInputMode::KANA;
+      return ui::mojom::TextInputMode::kKana;
     case ui::TEXT_INPUT_MODE_KANA_NAME:
-      return ui::mojom::TextInputMode::KANA_NAME;
+      return ui::mojom::TextInputMode::kKanaName;
     case ui::TEXT_INPUT_MODE_KATAKANA:
-      return ui::mojom::TextInputMode::KATAKANA;
+      return ui::mojom::TextInputMode::kKatakana;
     case ui::TEXT_INPUT_MODE_NUMERIC:
-      return ui::mojom::TextInputMode::NUMERIC;
+      return ui::mojom::TextInputMode::kNumeric;
     case ui::TEXT_INPUT_MODE_TEL:
-      return ui::mojom::TextInputMode::TEL;
+      return ui::mojom::TextInputMode::kTel;
     case ui::TEXT_INPUT_MODE_EMAIL:
-      return ui::mojom::TextInputMode::EMAIL;
+      return ui::mojom::TextInputMode::kEmail;
     case ui::TEXT_INPUT_MODE_URL:
-      return ui::mojom::TextInputMode::URL;
+      return ui::mojom::TextInputMode::kUrl;
   }
   NOTREACHED();
-  return ui::mojom::TextInputMode::DEFAULT;
+  return ui::mojom::TextInputMode::kDefault;
 }
 
 // static
@@ -103,43 +103,43 @@ bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
     ui::mojom::TextInputMode input,
     ui::TextInputMode* out) {
   switch (input) {
-    case ui::mojom::TextInputMode::DEFAULT:
+    case ui::mojom::TextInputMode::kDefault:
       *out = ui::TEXT_INPUT_MODE_DEFAULT;
       return true;
-    case ui::mojom::TextInputMode::VERBATIM:
+    case ui::mojom::TextInputMode::kVerbatim:
       *out = ui::TEXT_INPUT_MODE_VERBATIM;
       return true;
-    case ui::mojom::TextInputMode::LATIN:
+    case ui::mojom::TextInputMode::kLatin:
       *out = ui::TEXT_INPUT_MODE_LATIN;
       return true;
-    case ui::mojom::TextInputMode::LATIN_NAME:
+    case ui::mojom::TextInputMode::kLatinName:
       *out = ui::TEXT_INPUT_MODE_LATIN_NAME;
       return true;
-    case ui::mojom::TextInputMode::LATIN_PROSE:
+    case ui::mojom::TextInputMode::kLatinProse:
       *out = ui::TEXT_INPUT_MODE_LATIN_PROSE;
       return true;
-    case ui::mojom::TextInputMode::FULL_WIDTH_LATIN:
+    case ui::mojom::TextInputMode::kFullWidthLatin:
       *out = ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN;
       return true;
-    case ui::mojom::TextInputMode::KANA:
+    case ui::mojom::TextInputMode::kKana:
       *out = ui::TEXT_INPUT_MODE_KANA;
       return true;
-    case ui::mojom::TextInputMode::KANA_NAME:
+    case ui::mojom::TextInputMode::kKanaName:
       *out = ui::TEXT_INPUT_MODE_KANA_NAME;
       return true;
-    case ui::mojom::TextInputMode::KATAKANA:
+    case ui::mojom::TextInputMode::kKatakana:
       *out = ui::TEXT_INPUT_MODE_KATAKANA;
       return true;
-    case ui::mojom::TextInputMode::NUMERIC:
+    case ui::mojom::TextInputMode::kNumeric:
       *out = ui::TEXT_INPUT_MODE_NUMERIC;
       return true;
-    case ui::mojom::TextInputMode::TEL:
+    case ui::mojom::TextInputMode::kTel:
       *out = ui::TEXT_INPUT_MODE_TEL;
       return true;
-    case ui::mojom::TextInputMode::EMAIL:
+    case ui::mojom::TextInputMode::kEmail:
       *out = ui::TEXT_INPUT_MODE_EMAIL;
       return true;
-    case ui::mojom::TextInputMode::URL:
+    case ui::mojom::TextInputMode::kUrl:
       *out = ui::TEXT_INPUT_MODE_URL;
       return true;
   }
@@ -152,42 +152,42 @@ EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::ToMojom(
     ui::TextInputType text_input_type) {
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:
-      return ui::mojom::TextInputType::NONE;
+      return ui::mojom::TextInputType::kNone;
     case ui::TEXT_INPUT_TYPE_TEXT:
-      return ui::mojom::TextInputType::TEXT;
+      return ui::mojom::TextInputType::kText;
     case ui::TEXT_INPUT_TYPE_PASSWORD:
-      return ui::mojom::TextInputType::PASSWORD;
+      return ui::mojom::TextInputType::kPassword;
     case ui::TEXT_INPUT_TYPE_SEARCH:
-      return ui::mojom::TextInputType::SEARCH;
+      return ui::mojom::TextInputType::kSearch;
     case ui::TEXT_INPUT_TYPE_EMAIL:
-      return ui::mojom::TextInputType::EMAIL;
+      return ui::mojom::TextInputType::kEmail;
     case ui::TEXT_INPUT_TYPE_NUMBER:
-      return ui::mojom::TextInputType::NUMBER;
+      return ui::mojom::TextInputType::kNumber;
     case ui::TEXT_INPUT_TYPE_TELEPHONE:
-      return ui::mojom::TextInputType::TELEPHONE;
+      return ui::mojom::TextInputType::kTelephone;
     case ui::TEXT_INPUT_TYPE_URL:
-      return ui::mojom::TextInputType::URL;
+      return ui::mojom::TextInputType::kUrl;
     case ui::TEXT_INPUT_TYPE_DATE:
-      return ui::mojom::TextInputType::DATE;
+      return ui::mojom::TextInputType::kDate;
     case ui::TEXT_INPUT_TYPE_DATE_TIME:
-      return ui::mojom::TextInputType::DATETIME;
+      return ui::mojom::TextInputType::kDateTime;
     case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
-      return ui::mojom::TextInputType::DATETIME_LOCAL;
+      return ui::mojom::TextInputType::kDateTimeLocal;
     case ui::TEXT_INPUT_TYPE_MONTH:
-      return ui::mojom::TextInputType::MONTH;
+      return ui::mojom::TextInputType::kMonth;
     case ui::TEXT_INPUT_TYPE_TIME:
-      return ui::mojom::TextInputType::TIME;
+      return ui::mojom::TextInputType::kTime;
     case ui::TEXT_INPUT_TYPE_WEEK:
-      return ui::mojom::TextInputType::WEEK;
+      return ui::mojom::TextInputType::kWeek;
     case ui::TEXT_INPUT_TYPE_TEXT_AREA:
-      return ui::mojom::TextInputType::TEXT_AREA;
+      return ui::mojom::TextInputType::kTextArea;
     case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
-      return ui::mojom::TextInputType::CONTENT_EDITABLE;
+      return ui::mojom::TextInputType::kContentEditable;
     case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
-      return ui::mojom::TextInputType::DATETIME_FIELD;
+      return ui::mojom::TextInputType::kDateTimeField;
   }
   NOTREACHED();
-  return ui::mojom::TextInputType::NONE;
+  return ui::mojom::TextInputType::kNone;
 }
 
 // static
@@ -195,55 +195,55 @@ bool EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::FromMojom(
     ui::mojom::TextInputType input,
     ui::TextInputType* out) {
   switch (input) {
-    case ui::mojom::TextInputType::NONE:
+    case ui::mojom::TextInputType::kNone:
       *out = ui::TEXT_INPUT_TYPE_NONE;
       return true;
-    case ui::mojom::TextInputType::TEXT:
+    case ui::mojom::TextInputType::kText:
       *out = ui::TEXT_INPUT_TYPE_TEXT;
       return true;
-    case ui::mojom::TextInputType::PASSWORD:
+    case ui::mojom::TextInputType::kPassword:
       *out = ui::TEXT_INPUT_TYPE_PASSWORD;
       return true;
-    case ui::mojom::TextInputType::SEARCH:
+    case ui::mojom::TextInputType::kSearch:
       *out = ui::TEXT_INPUT_TYPE_SEARCH;
       return true;
-    case ui::mojom::TextInputType::EMAIL:
+    case ui::mojom::TextInputType::kEmail:
       *out = ui::TEXT_INPUT_TYPE_EMAIL;
       return true;
-    case ui::mojom::TextInputType::NUMBER:
+    case ui::mojom::TextInputType::kNumber:
       *out = ui::TEXT_INPUT_TYPE_NUMBER;
       return true;
-    case ui::mojom::TextInputType::TELEPHONE:
+    case ui::mojom::TextInputType::kTelephone:
       *out = ui::TEXT_INPUT_TYPE_TELEPHONE;
       return true;
-    case ui::mojom::TextInputType::URL:
+    case ui::mojom::TextInputType::kUrl:
       *out = ui::TEXT_INPUT_TYPE_URL;
       return true;
-    case ui::mojom::TextInputType::DATE:
+    case ui::mojom::TextInputType::kDate:
       *out = ui::TEXT_INPUT_TYPE_DATE;
       return true;
-    case ui::mojom::TextInputType::DATETIME:
+    case ui::mojom::TextInputType::kDateTime:
       *out = ui::TEXT_INPUT_TYPE_DATE_TIME;
       return true;
-    case ui::mojom::TextInputType::DATETIME_LOCAL:
+    case ui::mojom::TextInputType::kDateTimeLocal:
       *out = ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
       return true;
-    case ui::mojom::TextInputType::MONTH:
+    case ui::mojom::TextInputType::kMonth:
       *out = ui::TEXT_INPUT_TYPE_MONTH;
       return true;
-    case ui::mojom::TextInputType::TIME:
+    case ui::mojom::TextInputType::kTime:
       *out = ui::TEXT_INPUT_TYPE_TIME;
       return true;
-    case ui::mojom::TextInputType::WEEK:
+    case ui::mojom::TextInputType::kWeek:
       *out = ui::TEXT_INPUT_TYPE_WEEK;
       return true;
-    case ui::mojom::TextInputType::TEXT_AREA:
+    case ui::mojom::TextInputType::kTextArea:
       *out = ui::TEXT_INPUT_TYPE_TEXT_AREA;
       return true;
-    case ui::mojom::TextInputType::CONTENT_EDITABLE:
+    case ui::mojom::TextInputType::kContentEditable:
       *out = ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE;
       return true;
-    case ui::mojom::TextInputType::DATETIME_FIELD:
+    case ui::mojom::TextInputType::kDateTimeField:
       *out = ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD;
       return true;
   }
