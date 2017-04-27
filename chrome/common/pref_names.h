@@ -912,6 +912,11 @@ extern const char kSettingsResetPromptPromptWave[];
 extern const char kSettingsResetPromptLastTriggeredForDefaultSearch[];
 extern const char kSettingsResetPromptLastTriggeredForStartupUrls[];
 extern const char kSettingsResetPromptLastTriggeredForHomepage[];
+
+#if defined(OS_ANDROID)
+extern const char kClipboardLastModifiedTime[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

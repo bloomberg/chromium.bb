@@ -2534,4 +2534,11 @@ const char kSettingsResetPromptLastTriggeredForStartupUrls[] =
 const char kSettingsResetPromptLastTriggeredForHomepage[] =
     "settings_reset_prompt.last_triggered_for_homepage";
 
+#if defined(OS_ANDROID)
+// Timestamp of the clipboard's last modified time, stored in base::Time's
+// internal format (int64) in local store.  (I.e., this is not a per-profile
+// pref.)
+const char kClipboardLastModifiedTime[] = "ui.clipboard.last_modified_time";
+#endif
+
 }  // namespace prefs
