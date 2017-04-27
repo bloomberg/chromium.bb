@@ -2016,7 +2016,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   }
 
   if (local_change == kReattach) {
-    GetDocument().AddNonAttachedStyle(*this, std::move(new_style));
+    SetNonAttachedStyle(std::move(new_style));
     SetNeedsReattachLayoutTree();
     return kReattach;
   }
@@ -2072,11 +2072,12 @@ void Element::RebuildLayoutTree(Text* next_text_sibling) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
-    reattach_context.resolved_style = GetDocument().GetNonAttachedStyle(*this);
+    reattach_context.resolved_style = GetNonAttachedStyle();
     bool layout_object_will_change = NeedsAttach() || GetLayoutObject();
     ReattachLayoutTree(reattach_context);
     if (layout_object_will_change || GetLayoutObject())
       ReattachWhitespaceSiblingsIfNeeded(next_text_sibling);
+    SetNonAttachedStyle(nullptr);
   } else if (ChildNeedsReattachLayoutTree()) {
     DCHECK(!NeedsReattachLayoutTree());
     SelectorFilterParentScope filter_scope(*this);

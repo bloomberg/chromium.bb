@@ -34,6 +34,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "public/platform/WebFocusType.h"
@@ -100,9 +101,13 @@ enum class SlotChangeType {
 };
 
 class NodeLayoutData {
+  WTF_MAKE_NONCOPYABLE(NodeLayoutData);
+
  public:
-  explicit NodeLayoutData(LayoutObject* layout_object)
-      : layout_object_(layout_object) {}
+  explicit NodeLayoutData(LayoutObject* layout_object,
+                          RefPtr<ComputedStyle> non_attached_style)
+      : layout_object_(layout_object),
+        non_attached_style_(non_attached_style) {}
   ~NodeLayoutData() { CHECK(!layout_object_); }
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
@@ -110,14 +115,24 @@ class NodeLayoutData {
     DCHECK_NE(&SharedEmptyData(), this);
     layout_object_ = layout_object;
   }
+
+  ComputedStyle* GetNonAttachedStyle() const {
+    return non_attached_style_.Get();
+  }
+  void SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style) {
+    DCHECK_NE(&SharedEmptyData(), this);
+    non_attached_style_ = non_attached_style;
+  }
+
   static NodeLayoutData& SharedEmptyData() {
-    DEFINE_STATIC_LOCAL(NodeLayoutData, shared_empty_data, (nullptr));
+    DEFINE_STATIC_LOCAL(NodeLayoutData, shared_empty_data, (nullptr, nullptr));
     return shared_empty_data;
   }
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
  private:
   LayoutObject* layout_object_;
+  RefPtr<ComputedStyle> non_attached_style_;
 };
 
 class NodeRareDataBase {
@@ -263,6 +278,14 @@ class CORE_EXPORT Node : public EventTarget {
   void setTextContent(const String&);
 
   bool SupportsAltText();
+
+  void SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style);
+
+  ComputedStyle* GetNonAttachedStyle() const {
+    return HasRareData()
+               ? data_.rare_data_->GetNodeLayoutData()->GetNonAttachedStyle()
+               : data_.node_layout_data_->GetNonAttachedStyle();
+  }
 
   // Other methods (not part of DOM)
 

@@ -1485,19 +1485,6 @@ Element* Document::ScrollingElementNoLayout() {
   return body();
 }
 
-// We use HashMap::set over HashMap::add here as we want to
-// replace the ComputedStyle but not the Node if the Node is
-// already present.
-void Document::AddNonAttachedStyle(const Node& node,
-                                   RefPtr<ComputedStyle> computed_style) {
-  DCHECK(node.IsElementNode() || node.IsTextNode());
-  non_attached_style_.Set(&node, computed_style);
-}
-
-ComputedStyle* Document::GetNonAttachedStyle(const Node& node) const {
-  return non_attached_style_.at(&node);
-}
-
 /*
  * Performs three operations:
  *  1. Convert control characters to spaces
@@ -2179,9 +2166,6 @@ void Document::UpdateStyle() {
 
   View()->RecalcOverflowAfterStyleChange();
 
-  // Only retain the HashMap for the duration of StyleRecalc and
-  // LayoutTreeConstruction.
-  non_attached_style_.clear();
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
 
@@ -2193,7 +2177,6 @@ void Document::UpdateStyle() {
   DCHECK(!ChildNeedsReattachLayoutTree());
   DCHECK(InStyleRecalc());
   DCHECK_EQ(GetStyleResolver(), &resolver);
-  DCHECK(non_attached_style_.IsEmpty());
   lifecycle_.AdvanceTo(DocumentLifecycle::kStyleClean);
   if (should_record_stats) {
     TRACE_EVENT_END2(
@@ -6701,7 +6684,6 @@ DEFINE_TRACE(Document) {
   visitor->Trace(snap_coordinator_);
   visitor->Trace(resize_observer_controller_);
   visitor->Trace(property_registry_);
-  visitor->Trace(non_attached_style_);
   visitor->Trace(network_state_observer_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);

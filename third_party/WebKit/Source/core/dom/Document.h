@@ -347,9 +347,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // just for the web IDL implementation.
   Element* ScrollingElementNoLayout();
 
-  void AddNonAttachedStyle(const Node&, RefPtr<ComputedStyle>);
-  ComputedStyle* GetNonAttachedStyle(const Node&) const;
-
   String readyState() const;
 
   AtomicString characterSet() const { return Document::EncodingName(); }
@@ -1465,10 +1462,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<ResourceFetcher> fetcher_;
   Member<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
-
-  // This HashMap is used to temporaily store the ComputedStyle generated in the
-  // Style Resolution phase which is used in the Layout Tree construction phase.
-  HeapHashMap<Member<const Node>, RefPtr<ComputedStyle>> non_attached_style_;
 
   bool well_formed_;
 
