@@ -10,9 +10,11 @@ namespace notifications {
     basic,
 
     // icon, title, message, expandedMessage, image, up to two buttons
+    [deprecated="The image is not visible for Mac OS X users."]
     image,
 
-    // icon, title, message, items, up to two buttons
+    // icon, title, message, items, up to two buttons. Users on Mac OS X only
+    // see the first item.
     list,
 
     // icon, title, message, progress, up to two buttons
@@ -44,6 +46,7 @@ namespace notifications {
 
   dictionary NotificationButton {
     DOMString title;
+    [deprecated="Button icons not visible for Mac OS X users."]
     DOMString? iconUrl;
     [nodoc] NotificationBitmap? iconBitmap;
   };
@@ -64,9 +67,10 @@ namespace notifications {
 
     // A URL to the app icon mask. URLs have the same restrictions as
     // $(ref:notifications.NotificationOptions.iconUrl iconUrl).
-    // 
+    //
     // The app icon mask should be in alpha channel, as only the alpha channel
     // of the image will be considered.
+    [deprecated="The app icon mask is not visible for Mac OS X users."]
     DOMString? appIconMaskUrl;
     [nodoc] NotificationBitmap? appIconMaskBitmap;
 
@@ -98,12 +102,14 @@ namespace notifications {
     [nodoc] DOMString? expandedMessage;
 
     // A URL to the image thumbnail for image-type notifications.
-    // URLs have the same restrictions as 
+    // URLs have the same restrictions as
     // $(ref:notifications.NotificationOptions.iconUrl iconUrl).
+    [deprecated="The image is not visible for Mac OS X users."]
     DOMString? imageUrl;
     [nodoc] NotificationBitmap? imageBitmap;
 
-    // Items for multi-item notifications.
+    // Items for multi-item notifications. Users on Mac OS X only see the first
+    // item.
     NotificationItem[]? items;
 
     // Current progress ranges from 0 to 100.
