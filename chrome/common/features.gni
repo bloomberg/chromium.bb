@@ -44,7 +44,7 @@ declare_args() {
 
   # Enables usage of the system-provided notification center.
   enable_native_notifications =
-      is_android || is_mac || (is_desktop_linux && use_glib && use_gio)
+      is_android || is_mac || (is_desktop_linux && use_dbus)
 
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)

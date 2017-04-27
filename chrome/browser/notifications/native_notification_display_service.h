@@ -7,10 +7,13 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 
@@ -18,6 +21,7 @@ namespace base {
 class NullableString16;
 }
 
+class MessageCenterDisplayService;
 class Notification;
 class NotificationHandler;
 class NotificationPlatformBridge;
@@ -60,10 +64,28 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   NotificationHandler* GetNotificationHandler(
       NotificationCommon::Type notification_type);
 
+  // Called by |notification_bridge_| when it is finished
+  // initializing.  |success| indicates it is ready to be used.
+  void OnNotificationPlatformBridgeReady(bool success);
+
   Profile* profile_;
+
   NotificationPlatformBridge* notification_bridge_;
+  // Indicates if |notification_bridge_| is ready to be used.
+  bool notification_bridge_ready_;
+
+  // MessageCenterDisplayService to fallback on if initialization of
+  // |notification_bridge_| failed.
+  std::unique_ptr<MessageCenterDisplayService> message_center_display_service_;
+
+  // Tasks that need to be run once we have the initialization status
+  // for |notification_bridge_|.
+  std::queue<base::OnceClosure> actions_;
+
   std::map<NotificationCommon::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
+
+  base::WeakPtrFactory<NativeNotificationDisplayService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeNotificationDisplayService);
 };

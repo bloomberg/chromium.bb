@@ -72,3 +72,8 @@ void StubNotificationPlatformBridge::GetDisplayed(
       base::BindOnce(callback, base::Passed(&displayed_notifications),
                      true /* supports_synchronization */));
 }
+
+void StubNotificationPlatformBridge::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  std::move(callback).Run(true);
+}

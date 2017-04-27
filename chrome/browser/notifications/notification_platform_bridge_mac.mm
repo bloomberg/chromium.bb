@@ -320,6 +320,11 @@ void NotificationPlatformBridgeMac::GetDisplayed(
                             callback:callback];
 }
 
+void NotificationPlatformBridgeMac::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  std::move(callback).Run(true);
+}
+
 // static
 void NotificationPlatformBridgeMac::ProcessNotificationResponse(
     NSDictionary* response) {
