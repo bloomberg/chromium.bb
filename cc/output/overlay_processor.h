@@ -83,6 +83,7 @@ class CC_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect);
   // Update |damage_rect| by removing damage casued by |candidates|.
   void UpdateDamageRect(OverlayCandidateList* candidates,
+                        const gfx::Rect& previous_frame_underlay_rect,
                         gfx::Rect* damage_rect);
 
   DCLayerOverlayProcessor dc_processor_;
