@@ -109,9 +109,10 @@ PaymentRequestSheetController::CreatePaymentView() {
   pane_ = new views::View;
   views::GridLayout* pane_layout = new views::GridLayout(pane_);
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
-  pane_columns->AddColumn(
-      views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
-      0, views::GridLayout::SizeType::FIXED, kDialogWidth, kDialogWidth);
+  pane_columns->AddColumn(views::GridLayout::Alignment::FILL,
+                          views::GridLayout::Alignment::LEADING, 0,
+                          views::GridLayout::SizeType::FIXED,
+                          GetActualDialogWidth(), GetActualDialogWidth());
   pane_->SetLayoutManager(pane_layout);
   pane_layout->StartRow(0, 0);
   // This is owned by its parent. It's the container passed to FillContentView.

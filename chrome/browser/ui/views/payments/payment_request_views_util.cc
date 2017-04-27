@@ -38,6 +38,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 
@@ -129,6 +130,13 @@ class PaymentRequestRowBorderPainter : public views::Painter {
 };
 
 }  // namespace
+
+int GetActualDialogWidth() {
+  constexpr int kDialogMinWidth = 512;
+  static int actual_width =
+      views::LayoutProvider::Get()->GetSnappedDialogWidth(kDialogMinWidth);
+  return actual_width;
+}
 
 std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,

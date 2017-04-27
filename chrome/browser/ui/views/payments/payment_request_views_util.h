@@ -37,7 +37,6 @@ constexpr int kPaymentRequestRowExtraRightInset = 8;
 constexpr int kPaymentRequestButtonSpacing = 10;
 
 // Dimensions of the dialog itself.
-constexpr int kDialogWidth = 450;
 constexpr int kDialogHeight = 450;
 
 enum class PaymentRequestCommonTags {
@@ -49,6 +48,8 @@ enum class PaymentRequestCommonTags {
   // specific events with tags can start their specific tags at this value.
   PAYMENT_REQUEST_COMMON_TAG_MAX
 };
+
+int GetActualDialogWidth();
 
 // Creates and returns a header for all the sheets in the PaymentRequest dialog.
 // The header contains an optional back arrow button (if |show_back_arrow| is

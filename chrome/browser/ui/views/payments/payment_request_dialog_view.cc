@@ -332,7 +332,7 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
 }
 
 gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
-  return gfx::Size(kDialogWidth, kDialogHeight);
+  return gfx::Size(GetActualDialogWidth(), kDialogHeight);
 }
 
 void PaymentRequestDialogView::ViewHierarchyChanged(
