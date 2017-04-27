@@ -76,6 +76,15 @@ void PaymentManager::SetPaymentInstrument(
       scope_, instrument_key, std::move(details), callback);
 }
 
+void PaymentManager::HasPaymentInstrument(
+    const std::string& instrument_key,
+    const HasPaymentInstrumentCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->HasPaymentInstrument(
+      scope_, instrument_key, callback);
+}
+
 void PaymentManager::GetPaymentInstrument(
     const std::string& instrument_key,
     const PaymentManager::GetPaymentInstrumentCallback& callback) {

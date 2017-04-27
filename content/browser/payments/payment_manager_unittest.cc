@@ -50,6 +50,11 @@ void SetPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
   *out_status = status;
 }
 
+void HasPaymentInstrumentCallback(PaymentHandlerStatus* out_status,
+                                  PaymentHandlerStatus status) {
+  *out_status = status;
+}
+
 void GetPaymentInstrumentCallback(PaymentInstrumentPtr* out_instrument,
                                   PaymentHandlerStatus* out_status,
                                   PaymentInstrumentPtr instrument,
@@ -84,6 +89,13 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
     manager_->SetPaymentInstrument(
         instrument_key, std::move(instrument),
         base::Bind(&SetPaymentInstrumentCallback, out_status));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void HasPaymentInstrument(const std::string& instrument_key,
+                            PaymentHandlerStatus* out_status) {
+    manager_->HasPaymentInstrument(
+        instrument_key, base::Bind(&HasPaymentInstrumentCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -175,13 +187,11 @@ TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {
   write_details->name = "Visa ending ****4756",
   write_details->enabled_methods.push_back("visa");
   write_details->stringified_capabilities = "{}";
-  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, write_status);
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
 
   PaymentHandlerStatus read_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr read_details;
-  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
   EXPECT_EQ("Visa ending ****4756", read_details->name);
@@ -193,7 +203,6 @@ TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {
 TEST_F(PaymentManagerTest, GetUnstoredPaymentInstrument) {
   PaymentHandlerStatus read_status = PaymentHandlerStatus::SUCCESS;
   PaymentInstrumentPtr read_details;
-  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
 }
@@ -204,13 +213,11 @@ TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
   write_details->name = "Visa ending ****4756",
   write_details->enabled_methods.push_back("visa");
   write_details->stringified_capabilities = "{}";
-  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, write_status);
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
 
   PaymentHandlerStatus read_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr read_details;
-  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
 
@@ -221,6 +228,23 @@ TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
   read_status = PaymentHandlerStatus::NOT_FOUND;
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, read_status);
+}
+
+TEST_F(PaymentManagerTest, HasPaymentInstrument) {
+  PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
+  PaymentInstrumentPtr write_details = PaymentInstrument::New();
+  write_details->name = "Visa ending ****4756",
+  write_details->enabled_methods.push_back("visa");
+  write_details->stringified_capabilities = "{}";
+  SetPaymentInstrument("test_key", std::move(write_details), &write_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+
+  PaymentHandlerStatus has_status = PaymentHandlerStatus::NOT_FOUND;
+  HasPaymentInstrument("test_key", &has_status);
+  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, has_status);
+
+  HasPaymentInstrument("unstored_test_key", &has_status);
+  ASSERT_EQ(PaymentHandlerStatus::NOT_FOUND, has_status);
 }
 
 }  // namespace content

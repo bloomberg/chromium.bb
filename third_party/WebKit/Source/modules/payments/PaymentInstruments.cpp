@@ -94,9 +94,22 @@ ScriptPromise PaymentInstruments::keys() {
   return ScriptPromise();
 }
 
-ScriptPromise PaymentInstruments::has(const String& instrument_key) {
-  NOTIMPLEMENTED();
-  return ScriptPromise();
+ScriptPromise PaymentInstruments::has(ScriptState* script_state,
+                                      const String& instrument_key) {
+  if (!manager_.is_bound()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  manager_->HasPaymentInstrument(
+      instrument_key, ConvertToBaseCallback(WTF::Bind(
+                          &PaymentInstruments::onHasPaymentInstrument,
+                          WrapPersistent(this), WrapPersistent(resolver))));
+  return promise;
 }
 
 ScriptPromise PaymentInstruments::set(ScriptState* script_state,
@@ -182,6 +195,14 @@ void PaymentInstruments::onGetPaymentInstrument(
     }
   }
   resolver->Resolve(instrument);
+}
+
+void PaymentInstruments::onHasPaymentInstrument(
+    ScriptPromiseResolver* resolver,
+    payments::mojom::blink::PaymentHandlerStatus status) {
+  DCHECK(resolver);
+  resolver->Resolve(status ==
+                    payments::mojom::blink::PaymentHandlerStatus::SUCCESS);
 }
 
 void PaymentInstruments::onSetPaymentInstrument(
