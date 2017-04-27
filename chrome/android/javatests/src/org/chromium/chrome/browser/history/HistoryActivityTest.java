@@ -561,5 +561,6 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
                 SigninManager.get(getActivity()).removeSignInStateObserver(mTestObserver);
             }
         });
+        SigninTestUtil.tearDownAuthForTest();
     }
 }

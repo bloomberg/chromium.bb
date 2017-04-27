@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -255,6 +256,8 @@ class AccountTrackerServiceTest : public testing::Test {
   ~AccountTrackerServiceTest() override {}
 
   void SetUp() override {
+    ChildAccountInfoFetcher::InitializeForTests();
+
     fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
 
     pref_service_.registry()->RegisterListPref(
