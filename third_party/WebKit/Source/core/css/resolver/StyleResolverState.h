@@ -36,7 +36,6 @@
 #include "core/dom/Element.h"
 #include "core/style/CachedUAStyle.h"
 #include "core/style/ComputedStyle.h"
-#include "core/style/StyleInheritedData.h"
 #include <memory>
 
 namespace blink {

@@ -45,7 +45,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TablePaintInvalidator.h"
 #include "core/paint/TablePainter.h"
-#include "core/style/StyleInheritedData.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

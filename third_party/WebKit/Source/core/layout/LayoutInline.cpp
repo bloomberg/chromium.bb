@@ -37,7 +37,6 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintLayer.h"
-#include "core/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"

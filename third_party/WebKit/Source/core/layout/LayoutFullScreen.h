@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutFlexibleBox.h"
-#include "core/style/StyleInheritedData.h"
 
 namespace blink {
 
