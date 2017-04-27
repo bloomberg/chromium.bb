@@ -84,13 +84,16 @@ def add_footer_change_id(message, change_id):
                     after_keys=['Bug', 'Issue', 'Test', 'Feature'])
 
 
-def add_footer(message, key, value, after_keys=None):
+def add_footer(message, key, value, after_keys=None, before_keys=None):
   """Returns a message with given footer appended.
 
-  If after_keys is None (default), appends footer last.
-  Otherwise, after_keys must be iterable of footer keys, then the new footer
-  would be inserted at the topmost position such there would be no footer lines
-  after it with key matching one of after_keys.
+  If after_keys and before_keys are both None (default), appends footer last.
+  If after_keys is provided and matches footers already present, inserts footer
+  as *early* as possible while still appearing after all provided keys, even
+  if doing so conflicts with before_keys.
+  If before_keys is provided, inserts footer as late as possible while still
+  appearing before all provided keys.
+
   For example, given
       message='Header.\n\nAdded: 2016\nBug: 123\nVerified-By: CQ'
       after_keys=['Bug', 'Issue']
@@ -99,22 +102,28 @@ def add_footer(message, key, value, after_keys=None):
   assert key == normalize_name(key), 'Use normalized key'
   new_footer = '%s: %s' % (key, value)
 
-  top_lines, footer_lines, parsed_footers = split_footers(message)
+  top_lines, footer_lines, _ = split_footers(message)
   if not footer_lines:
     if not top_lines or top_lines[-1] != '':
       top_lines.append('')
     footer_lines = [new_footer]
-  elif not after_keys:
-    footer_lines.append(new_footer)
   else:
-    after_keys = set(map(normalize_name, after_keys))
-    # Iterate from last to first footer till we find the footer keys above.
-    for i, (key, _) in reversed(list(enumerate(parsed_footers))):
-      if normalize_name(key) in after_keys:
-        footer_lines.insert(i + 1, new_footer)
-        break
+    after_keys = set(map(normalize_name, after_keys or []))
+    after_indices = [
+        footer_lines.index(x) for x in footer_lines for k in after_keys
+        if normalize_name(parse_footer(x)[0]) == k]
+    before_keys = set(map(normalize_name, before_keys or []))
+    before_indices = [
+        footer_lines.index(x) for x in footer_lines for k in before_keys
+        if normalize_name(parse_footer(x)[0]) == k]
+    if after_indices:
+      # after_keys takes precedence, even if there's a conflict.
+      insert_idx = max(after_indices) + 1
+    elif before_indices:
+      insert_idx = min(before_indices)
     else:
-      footer_lines.insert(0, new_footer)
+      insert_idx = len(footer_lines)
+    footer_lines.insert(insert_idx, new_footer)
   return '\n'.join(top_lines + footer_lines)
 
 
