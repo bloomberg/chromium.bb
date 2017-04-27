@@ -43,6 +43,9 @@ class CONTENT_EXPORT PaymentManager
       const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr details,
       const SetPaymentInstrumentCallback& callback) override;
+  void HasPaymentInstrument(
+      const std::string& instrument_key,
+      const HasPaymentInstrumentCallback& callback) override;
   void GetPaymentInstrument(
       const std::string& instrument_key,
       const GetPaymentInstrumentCallback& callback) override;

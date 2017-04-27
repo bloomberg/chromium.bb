@@ -37,6 +37,8 @@ class CONTENT_EXPORT PaymentAppDatabase {
   using ReadPaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentInstrumentPtr,
                               payments::mojom::PaymentHandlerStatus)>;
+  using HasPaymentInstrumentCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using WritePaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
 
@@ -55,6 +57,9 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void ReadPaymentInstrument(const GURL& scope,
                              const std::string& instrument_key,
                              ReadPaymentInstrumentCallback callback);
+  void HasPaymentInstrument(const GURL& scope,
+                            const std::string& instrument_key,
+                            HasPaymentInstrumentCallback callback);
   void WritePaymentInstrument(const GURL& scope,
                               const std::string& instrument_key,
                               payments::mojom::PaymentInstrumentPtr instrument,
@@ -108,6 +113,18 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidReadPaymentInstrument(ReadPaymentInstrumentCallback callback,
                                 const std::vector<std::string>& data,
                                 ServiceWorkerStatusCode status);
+
+  // HasPaymentInstrument callbacks
+  void DidFindRegistrationToHasPaymentInstrument(
+      const std::string& instrument_key,
+      HasPaymentInstrumentCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidHasPaymentInstrument(int64_t registration_id,
+                               const std::string& instrument_key,
+                               DeletePaymentInstrumentCallback callback,
+                               const std::vector<std::string>& data,
+                               ServiceWorkerStatusCode status);
 
   // WritePaymentInstrument callbacks
   void DidFindRegistrationToWritePaymentInstrument(

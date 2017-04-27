@@ -52,6 +52,8 @@ interface PaymentManager {
       => (PaymentHandlerStatus status);
   SetPaymentInstrument(string instrument_key, PaymentInstrument instrument)
       => (PaymentHandlerStatus status);
+  HasPaymentInstrument(string instrument_key)
+      => (PaymentHandlerStatus status);
   GetPaymentInstrument(string instrument_key)
       => (PaymentInstrument instrument, PaymentHandlerStatus status);
 };
