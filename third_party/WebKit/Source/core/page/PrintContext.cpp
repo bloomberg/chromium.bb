@@ -46,7 +46,7 @@ PrintContext::PrintContext(LocalFrame* frame)
 
 PrintContext::~PrintContext() {
   if (is_printing_)
-    end();
+    EndPrintMode();
 }
 
 void PrintContext::ComputePageRects(const FloatRect& print_rect,
@@ -163,7 +163,7 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
   }
 }
 
-void PrintContext::begin(float width, float height) {
+void PrintContext::BeginPrintMode(float width, float height) {
   ASSERT(width > 0);
   ASSERT(height > 0);
 
@@ -183,7 +183,7 @@ void PrintContext::begin(float width, float height) {
       kPrintingMaximumShrinkFactor / kPrintingMinimumShrinkFactor);
 }
 
-void PrintContext::end() {
+void PrintContext::EndPrintMode() {
   ASSERT(is_printing_);
   is_printing_ = false;
   frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
@@ -206,7 +206,7 @@ int PrintContext::PageNumberForElement(Element* element,
   LocalFrame* frame = element->GetDocument().GetFrame();
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
   PrintContext print_context(frame);
-  print_context.begin(page_rect.Width(), page_rect.Height());
+  print_context.BeginPrintMode(page_rect.Width(), page_rect.Height());
 
   LayoutBoxModelObject* box =
       EnclosingBoxModelObject(element->GetLayoutObject());
@@ -285,7 +285,7 @@ String PrintContext::PageProperty(LocalFrame* frame,
   // Any non-zero size is OK here. We don't care about actual layout. We just
   // want to collect @page rules and figure out what declarations apply on a
   // given page (that may or may not exist).
-  print_context.begin(800, 1000);
+  print_context.BeginPrintMode(800, 1000);
   RefPtr<ComputedStyle> style = document->StyleForPage(page_number);
 
   // Implement formatters for properties we care about.
@@ -336,7 +336,7 @@ int PrintContext::NumberOfPages(LocalFrame* frame,
 
   FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
   PrintContext print_context(frame);
-  print_context.begin(page_rect.Width(), page_rect.Height());
+  print_context.BeginPrintMode(page_rect.Width(), page_rect.Height());
   // Account for shrink-to-fit.
   FloatSize scaled_page_size = page_size_in_pixels;
   scaled_page_size.Scale(frame->View()->ContentsSize().Width() /

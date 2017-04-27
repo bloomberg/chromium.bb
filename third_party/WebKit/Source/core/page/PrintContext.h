@@ -48,8 +48,8 @@ class CORE_EXPORT PrintContext
 
   // Break up a page into rects without relayout.
   // FIXME: This means that CSS page breaks won't be on page boundary if the
-  // size is different than what was passed to begin(). That's probably not
-  // always desirable.
+  // size is different than what was passed to BeginPrintMode(). That's probably
+  // not always desirable.
   // FIXME: Header and footer height should be applied before layout, not after.
   // FIXME: The printRect argument is only used to determine page aspect ratio,
   // it would be better to pass a FloatSize with page dimensions instead.
@@ -76,10 +76,10 @@ class CORE_EXPORT PrintContext
   // Enter print mode, updating layout for new page size.
   // This function can be called multiple times to apply new print options
   // without going back to screen mode.
-  virtual void begin(float width, float height = 0);
+  virtual void BeginPrintMode(float width, float height = 0);
 
   // Return to screen mode.
-  virtual void end();
+  virtual void EndPrintMode();
 
   // Used by layout tests.
   static int PageNumberForElement(
@@ -112,8 +112,8 @@ class CORE_EXPORT PrintContext
       const FloatSize& page_size_in_pixels);
   void CollectLinkedDestinations(Node*);
 
-  // Used to prevent misuses of begin() and end() (e.g., call end without
-  // begin).
+  // Used to prevent misuses of BeginPrintMode() and EndPrintMode() (e.g., call
+  // EndPrintMode without BeginPrintMode).
   bool is_printing_;
 
   HeapHashMap<String, Member<Element>> linked_destinations_;

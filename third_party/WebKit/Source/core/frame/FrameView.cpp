@@ -3042,7 +3042,7 @@ void FrameView::SetupPrintContext() {
   int width = is_us ? kLetterPortraitPageWidth : kA4PortraitPageWidth;
   int height = is_us ? kLetterPortraitPageHeight : kA4PortraitPageHeight;
   FloatRect page_rect(0, 0, width, height);
-  print_context_->begin(page_rect.Width(), page_rect.Height());
+  print_context_->BeginPrintMode(page_rect.Width(), page_rect.Height());
   float dummy_height;
   print_context_->ComputePageRects(page_rect, 0, 0, 1.0, dummy_height);
   DispatchEventsForPrintingOnAllFrames();
@@ -3051,7 +3051,7 @@ void FrameView::SetupPrintContext() {
 void FrameView::ClearPrintContext() {
   if (!print_context_)
     return;
-  print_context_->end();
+  print_context_->EndPrintMode();
   print_context_.Clear();
 }
 
