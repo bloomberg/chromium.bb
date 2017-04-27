@@ -11,11 +11,26 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
+#include "core/dom/Node.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
 class Dictionary;
+class DOMWindow;
+class EventTarget;
+
+CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
+                                      v8::Local<v8::Object> creation_context,
+                                      v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
+                                      v8::Local<v8::Object> creation_context,
+                                      v8::Isolate*);
+inline v8::Local<v8::Value> ToV8(Node* node,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  return ToV8(static_cast<ScriptWrappable*>(node), creation_context, isolate);
+}
 
 inline v8::Local<v8::Value> ToV8(const Dictionary& value,
                                  v8::Local<v8::Object> creation_context,
