@@ -316,7 +316,8 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
 
   precache::PrecacheManifest theverge;
   InitializePrecacheResource(theverge.add_resource(),
-                             "https://www.theverge.com/main.js", 0.7);
+                             "https://www.theverge.com/main.js", 0.7,
+                             precache::PrecacheResource::RESOURCE_TYPE_SCRIPT);
 
   tables_->UpdateManifestData("theverge.com", theverge);
 
@@ -725,16 +726,20 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
 
   {  // Manifest data.
     precache::PrecacheManifest wikipedia;
+    InitializePrecacheResource(
+        wikipedia.add_resource(), "https://en.wikipedia.org/script.js", 0.7,
+        precache::PrecacheResource::RESOURCE_TYPE_SCRIPT);
     InitializePrecacheResource(wikipedia.add_resource(),
-                               "https://en.wikipedia.org/script.js", 0.7);
-    InitializePrecacheResource(wikipedia.add_resource(),
-                               "https://en.wikipedia.org/image.png", 0.3);
+                               "https://en.wikipedia.org/image.png", 0.3,
+                               precache::PrecacheResource::RESOURCE_TYPE_IMAGE);
 
     precache::PrecacheManifest youtube;
     InitializePrecacheResource(youtube.add_resource(),
-                               "https://youtube.com/photo.jpg", 0.5);
-    InitializePrecacheResource(youtube.add_resource(),
-                               "https://youtube.com/base.js", 0.2);
+                               "https://youtube.com/photo.jpg", 0.5,
+                               precache::PrecacheResource::RESOURCE_TYPE_IMAGE);
+    InitializePrecacheResource(
+        youtube.add_resource(), "https://youtube.com/base.js", 0.2,
+        precache::PrecacheResource::RESOURCE_TYPE_SCRIPT);
 
     test_manifest_data_.clear();
     test_manifest_data_.insert(std::make_pair("en.wikipedia.org", wikipedia));
@@ -797,13 +802,10 @@ TEST_F(ResourcePrefetchPredictorTablesTest, ComputeResourceScore) {
   EXPECT_GT(compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.),
             compute_score(net::IDLE, content::RESOURCE_TYPE_SCRIPT, 1.));
 
-  // Scripts and stylesheets are equivalent.
-  EXPECT_NEAR(
-      compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.),
-      compute_score(net::HIGHEST, content::RESOURCE_TYPE_STYLESHEET, 42.),
-      1e-4);
-
-  // Scripts are more important than fonts and images, and the rest.
+  // Stylesheets are are more important than scripts, fonts and images, and the
+  // rest.
+  EXPECT_GT(compute_score(net::HIGHEST, content::RESOURCE_TYPE_STYLESHEET, 42.),
+            compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.));
   EXPECT_GT(
       compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.),
       compute_score(net::HIGHEST, content::RESOURCE_TYPE_FONT_RESOURCE, 42.));
@@ -817,6 +819,33 @@ TEST_F(ResourcePrefetchPredictorTablesTest, ComputeResourceScore) {
   // All else being equal, position matters.
   EXPECT_GT(compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 12.),
             compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.));
+}
+
+TEST_F(ResourcePrefetchPredictorTablesTest, ComputePrecacheResourceScore) {
+  auto compute_score = [](precache::PrecacheResource::Type resource_type,
+                          float weight_ratio) {
+    precache::PrecacheResource resource;
+    InitializePrecacheResource(&resource, "", weight_ratio, resource_type);
+    return ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
+        resource);
+  };
+
+  // Stylesheets are the most impotant followed by scripts, fonts and images in
+  // this order.
+  EXPECT_GT(
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_STYLESHEET, 0.1),
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_SCRIPT, 0.9));
+  EXPECT_GT(
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_SCRIPT, 0.1),
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_FONT, 0.9));
+  EXPECT_GT(
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_FONT, 0.1),
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_IMAGE, 0.9));
+
+  // If resource types are equal, weight ratio matters.
+  EXPECT_GT(
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_SCRIPT, 0.7),
+      compute_score(precache::PrecacheResource::RESOURCE_TYPE_SCRIPT, 0.6));
 }
 
 TEST_F(ResourcePrefetchPredictorTablesTest, ComputeOriginScore) {
