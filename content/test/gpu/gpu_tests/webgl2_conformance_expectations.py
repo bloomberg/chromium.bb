@@ -828,6 +828,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'vector-dynamic-indexing-swizzled-lvalue.html',
         ['linux', 'intel'], bug=709874)
 
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_04.html',
+        ['linux', 'intel'], bug=715881)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_05.html',
+        ['linux', 'intel'], bug=715881)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_08.html',
+        ['linux', 'intel'], bug=715881)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_09.html',
+        ['linux', 'intel'], bug=715881)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
