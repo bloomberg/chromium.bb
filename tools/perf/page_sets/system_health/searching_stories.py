@@ -70,7 +70,6 @@ class SearchOmniboxStory(system_health_story.SystemHealthStory):
     action_runner.ScrollPage(use_touch=True, distance=500)
 
 
-@decorators.Disabled('android')  # crbug.com/712590
 class MobileNewTabPageStory(system_health_story.SystemHealthStory):
   """Story that loads new tab page and performs searches.
 
