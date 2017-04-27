@@ -2,55 +2,73 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('bookmarks', function() {
-  var TestStore = function(data) {
-    this.data = Object.assign(bookmarks.util.createEmptyState(), data);
-    this.lastAction_ = null;
-    this.observers_ = [];
-    this.acceptInit_ = false;
-  };
+suiteSetup(function() {
+  cr.define('bookmarks', function() {
+    var TestStore = function(data) {
+      bookmarks.Store.call(this);
+      this.data_ = Object.assign(bookmarks.util.createEmptyState(), data);
+      this.initialized_ = true;
 
-  TestStore.prototype = {
-    addObserver: function(client) {
-      this.observers_.push(client);
-    },
+      this.lastAction_ = null;
+      this.acceptInit_ = false;
+      this.enableReducers_ = false;
+    };
 
-    init: function(state) {
-      if (this.acceptInit_) {
-        this.data = state;
-        this.acceptInit_ = false;
-      }
-    },
+    TestStore.prototype = {
+      __proto__: bookmarks.Store.prototype,
 
-    removeObserver: function(client) {},
+      init: function(state) {
+        if (this.acceptInit_)
+          bookmarks.Store.prototype.init.call(this, state);
+      },
 
-    isInitialized: function() {
-      return true;
-    },
+      get lastAction() {
+        return this.lastAction_;
+      },
 
-    handleAction: function(action) {
-      this.lastAction_ = action;
-    },
+      get data() {
+        return this.data_;
+      },
 
-    get lastAction() {
-      return this.lastAction_;
-    },
+      set data(newData) {
+        this.data_ = newData;
+      },
 
-    notifyObservers: function() {
-      // TODO(tsergeant): Revisit how state modifications work in UI tests.
-      // We don't want tests to worry about modifying the whole state tree.
-      // Instead, we could perform a deep clone in here to ensure that every
-      // StoreClient is updated.
-      this.observers_.forEach((client) => client.onStateChanged(this.data));
-    },
+      /**
+       * Enable or disable calling bookmarks.reduceAction for each action.
+       * With reducers disabled (the default), TestStore is a stub which
+       * requires state be managed manually (suitable for unit tests). With
+       * reducers enabled, TestStore becomes a proxy for observing actions
+       * (suitable for integration tests).
+       * @param {boolean} enabled
+       */
+      setReducersEnabled: function(enabled) {
+        this.enableReducers_ = enabled;
+      },
 
-    // Call in order to accept data from an init call to the TestStore once.
-    acceptInitOnce: function() {
-      this.acceptInit_ = true;
-    },
-  };
+      reduce_: function(action) {
+        this.lastAction_ = action;
+        if (this.enableReducers_)
+          bookmarks.Store.prototype.reduce_.call(this, action);
+      },
 
-  return {
-    TestStore: TestStore,
-  };
+      notifyObservers: function() {
+        // TODO(tsergeant): Revisit how state modifications work in UI tests.
+        // We don't want tests to worry about modifying the whole state tree.
+        // Instead, we could perform a deep clone in here to ensure that every
+        // StoreClient is updated.
+        this.notifyObservers_(this.data);
+      },
+
+      // Call in order to accept data from an init call to the TestStore once.
+      acceptInitOnce: function() {
+        this.acceptInit_ = true;
+        this.initialized_ = false;
+      },
+    };
+
+    return {
+      TestStore: TestStore,
+    };
+  });
 });
