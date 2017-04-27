@@ -41,11 +41,13 @@ class SimNetwork final : public WebURLLoaderTestDelegate {
   void DidFail(WebURLLoaderClient*,
                const WebURLError&,
                int64_t total_encoded_data_length,
-               int64_t total_encoded_body_length) override;
+               int64_t total_encoded_body_length,
+               int64_t total_decoded_body_length) override;
   void DidFinishLoading(WebURLLoaderClient*,
                         double finish_time,
                         int64_t total_encoded_data_length,
-                        int64_t total_encoded_body_length) override;
+                        int64_t total_encoded_body_length,
+                        int64_t total_decoded_body_length) override;
 
   SimRequest* current_request_;
   HashMap<String, SimRequest*> requests_;

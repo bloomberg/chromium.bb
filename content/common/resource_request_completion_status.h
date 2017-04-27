@@ -36,6 +36,9 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
 
   // The length of the response body before removing any content encodings.
   int64_t encoded_body_length = 0;
+
+  // The length of the response body after decoding.
+  int64_t decoded_body_length = 0;
 };
 
 }  // namespace content

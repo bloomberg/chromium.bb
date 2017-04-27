@@ -95,14 +95,15 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
-    int64_t encoded_body_size) {
+    int64_t encoded_body_size,
+    int64_t decoded_body_size) {
   // Give sub-classes a chance at altering the data.
   if (error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
-                                       stale_copy_in_cache, completion_time,
-                                       total_transfer_size, encoded_body_size);
+    original_peer_->OnCompletedRequest(
+        net::ERR_ABORTED, false, stale_copy_in_cache, completion_time,
+        total_transfer_size, encoded_body_size, decoded_body_size);
     return;
   }
 
@@ -111,9 +112,9 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
     original_peer_->OnReceivedData(base::MakeUnique<StringData>(data_));
-  original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                     stale_copy_in_cache, completion_time,
-                                     total_transfer_size, encoded_body_size);
+  original_peer_->OnCompletedRequest(
+      error_code, was_ignored_by_handler, stale_copy_in_cache, completion_time,
+      total_transfer_size, encoded_body_size, decoded_body_size);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

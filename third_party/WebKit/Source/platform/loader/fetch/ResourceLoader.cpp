@@ -400,7 +400,6 @@ void ResourceLoader::DidReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
 
   Context().DispatchDidReceiveData(resource_->Identifier(), data, length);
-  resource_->AddToDecodedBodyLength(length);
   resource_->AppendData(data, length);
 }
 
@@ -421,9 +420,11 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
 
 void ResourceLoader::DidFinishLoading(double finish_time,
                                       int64_t encoded_data_length,
-                                      int64_t encoded_body_length) {
+                                      int64_t encoded_body_length,
+                                      int64_t decoded_body_length) {
   resource_->SetEncodedDataLength(encoded_data_length);
-  resource_->AddToEncodedBodyLength(encoded_body_length);
+  resource_->SetEncodedBodyLength(encoded_body_length);
+  resource_->SetDecodedBodyLength(decoded_body_length);
 
   loader_.reset();
 
@@ -437,9 +438,11 @@ void ResourceLoader::DidFinishLoading(double finish_time,
 
 void ResourceLoader::DidFail(const WebURLError& error,
                              int64_t encoded_data_length,
-                             int64_t encoded_body_length) {
+                             int64_t encoded_body_length,
+                             int64_t decoded_body_length) {
   resource_->SetEncodedDataLength(encoded_data_length);
-  resource_->AddToEncodedBodyLength(encoded_body_length);
+  resource_->SetEncodedBodyLength(encoded_body_length);
+  resource_->SetDecodedBodyLength(decoded_body_length);
   HandleError(error);
 }
 
@@ -479,8 +482,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   // can bring about the cancellation of this load.
   if (!loader_)
     return;
+  int64_t decoded_body_length = data_out.size();
   if (error_out.reason) {
-    DidFail(error_out, encoded_data_length, encoded_body_length);
+    DidFail(error_out, encoded_data_length, encoded_body_length,
+            decoded_body_length);
     return;
   }
   DidReceiveResponse(response_out);
@@ -498,7 +503,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     resource_->SetResourceBuffer(data_out);
   }
   DidFinishLoading(MonotonicallyIncreasingTime(), encoded_data_length,
-                   encoded_body_length);
+                   encoded_body_length, decoded_body_length);
 }
 
 void ResourceLoader::Dispose() {

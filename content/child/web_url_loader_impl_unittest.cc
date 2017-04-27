@@ -193,7 +193,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   void DidFinishLoading(double finishTime,
                         int64_t totalEncodedDataLength,
-                        int64_t totalEncodedBodyLength) override {
+                        int64_t totalEncodedBodyLength,
+                        int64_t totalDecodedBodyLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
@@ -205,7 +206,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   void DidFail(const blink::WebURLError& error,
                int64_t totalEncodedDataLength,
-               int64_t totalEncodedBodyLength) override {
+               int64_t totalEncodedBodyLength,
+               int64_t totalDecodedBodyLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_FALSE(did_finish_);
     error_ = error;
@@ -323,7 +325,8 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
     peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
-                               strlen(kTestData), strlen(kTestData));
+                               strlen(kTestData), strlen(kTestData),
+                               strlen(kTestData));
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
     EXPECT_EQ(net::OK, client()->error().reason);
@@ -333,7 +336,8 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
     peer()->OnCompletedRequest(net::ERR_FAILED, false, false, base::TimeTicks(),
-                               strlen(kTestData), strlen(kTestData));
+                               strlen(kTestData), strlen(kTestData),
+                               strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
     EXPECT_EQ(net::ERR_FAILED, client()->error().reason);
     EXPECT_EQ(net::kErrorDomain, client()->error().domain.Utf8());
@@ -573,7 +577,8 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
   // cancel in DoReceiveDataFtp, before the request finishes.
   client()->set_delete_on_receive_data();
   peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
-                             strlen(kTestData), strlen(kTestData));
+                             strlen(kTestData), strlen(kTestData),
+                             strlen(kTestData));
   EXPECT_FALSE(client()->did_finish());
 }
 

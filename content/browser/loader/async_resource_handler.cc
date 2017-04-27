@@ -381,6 +381,7 @@ void AsyncResourceHandler::OnResponseCompleted(
   request_complete_data.encoded_data_length =
       request()->GetTotalReceivedBytes();
   request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
+  request_complete_data.decoded_body_length = total_read_body_bytes_;
   filter->Send(
       new ResourceMsg_RequestComplete(GetRequestID(), request_complete_data));
 

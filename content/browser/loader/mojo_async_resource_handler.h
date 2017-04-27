@@ -139,6 +139,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool did_defer_on_redirect_ = false;
   base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
+  int64_t total_written_bytes_ = 0;
 
   // Pointer to parent's information about the read buffer. Only non-null while
   // OnWillRead is deferred.

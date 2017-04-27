@@ -418,15 +418,17 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             bool stale_copy_in_cache,
                             const base::TimeTicks& completion_time,
                             int64_t total_transfer_size,
-                            int64_t encoded_body_size) override {
+                            int64_t encoded_body_size,
+                            int64_t decoded_body_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
         original_peer_->OnReceivedData(
             base::MakeUnique<FixedReceivedData>(data_.data(), data_.size()));
       }
-      original_peer_->OnCompletedRequest(
-          error_code, was_ignored_by_handler, stale_copy_in_cache,
-          completion_time, total_transfer_size, encoded_body_size);
+      original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
+                                         stale_copy_in_cache, completion_time,
+                                         total_transfer_size, encoded_body_size,
+                                         decoded_body_size);
     }
 
    private:

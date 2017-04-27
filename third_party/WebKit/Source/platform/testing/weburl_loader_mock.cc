@@ -60,14 +60,14 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     return;
 
   if (error.reason) {
-    delegate->DidFail(client_, error, data.size(), 0);
+    delegate->DidFail(client_, error, data.size(), 0, 0);
     return;
   }
   delegate->DidReceiveData(client_, data.Data(), data.size());
   if (!self)
     return;
 
-  delegate->DidFinishLoading(client_, 0, data.size(), data.size());
+  delegate->DidFinishLoading(client_, 0, data.size(), data.size(), data.size());
 }
 
 WebURLRequest WebURLLoaderMock::ServeRedirect(

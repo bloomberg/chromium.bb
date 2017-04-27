@@ -333,7 +333,7 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
-    Loader()->DidFinishLoading(MonotonicallyIncreasingTime(), size, size);
+    Loader()->DidFinishLoading(MonotonicallyIncreasingTime(), size, size, size);
   } else {
     auto result = GetContent()->UpdateImage(
         nullptr, ImageResourceContent::kClearImageAndNotifyObservers,

@@ -272,12 +272,6 @@ class WebURLResponse {
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(long long);
 
-  // Original size of the response body before decompression.
-  BLINK_PLATFORM_EXPORT void AddToEncodedBodyLength(long long);
-
-  // Size of the response body after removing any content encoding.
-  BLINK_PLATFORM_EXPORT void AddToDecodedBodyLength(long long);
-
   // Extra data associated with the underlying resource response. Resource
   // responses can be copied. If non-null, each copy of a resource response
   // holds a pointer to the extra data, and the extra data pointer will be

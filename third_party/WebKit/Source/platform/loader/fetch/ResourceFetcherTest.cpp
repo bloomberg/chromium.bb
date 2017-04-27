@@ -195,7 +195,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
       fetcher->GetNavigationTimingInfo();
   ASSERT_TRUE(navigation_timing_info);
   long long encoded_data_length = 123;
-  resource->Loader()->DidFinishLoading(0.0, encoded_data_length, 0);
+  resource->Loader()->DidFinishLoading(0.0, encoded_data_length, 0, 0);
   EXPECT_EQ(navigation_timing_info->TransferSize(), encoded_data_length);
 
   // When there are redirects.

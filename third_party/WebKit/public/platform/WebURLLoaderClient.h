@@ -93,13 +93,15 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // |totalEncodedDataLength| may be equal to kUnknownEncodedDataLength.
   virtual void DidFinishLoading(double finish_time,
                                 int64_t total_encoded_data_length,
-                                int64_t total_encoded_body_length) {}
+                                int64_t total_encoded_body_length,
+                                int64_t total_decoded_body_length) {}
 
   // Called when the load completes with an error.
   // |totalEncodedDataLength| may be equal to kUnknownEncodedDataLength.
   virtual void DidFail(const WebURLError&,
                        int64_t total_encoded_data_length,
-                       int64_t total_encoded_body_length) {}
+                       int64_t total_encoded_body_length,
+                       int64_t total_decoded_body_length) {}
 
   // Value passed to didFinishLoading when total encoded data length isn't
   // known.
