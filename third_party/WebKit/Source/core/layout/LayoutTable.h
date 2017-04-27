@@ -392,6 +392,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     needs_section_recalc_ = true;
     SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kTableChanged);
+
+    // Grid structure affects cell adjacence relationships which affect
+    // conflict resolution of collapsed borders.
+    InvalidateCollapsedBorders();
   }
 
   LayoutTableSection* SectionAbove(
@@ -406,7 +410,11 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutTableCell* CellBefore(const LayoutTableCell*) const;
   LayoutTableCell* CellAfter(const LayoutTableCell*) const;
 
-  typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
+  using CollapsedBorderValues = Vector<CollapsedBorderValue>;
+  const CollapsedBorderValues& CollapsedBorders() const {
+    DCHECK(collapsed_borders_valid_);
+    return collapsed_borders_;
+  }
   void InvalidateCollapsedBorders();
 
   bool HasSections() const { return Header() || Footer() || FirstBody(); }
@@ -435,11 +443,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
                                     const LayoutPoint&) const final;
 
   void PaintMask(const PaintInfo&, const LayoutPoint&) const final;
-
-  const CollapsedBorderValues& CollapsedBorders() const {
-    DCHECK(collapsed_borders_valid_);
-    return collapsed_borders_;
-  }
 
   void SubtractCaptionRect(LayoutRect&) const;
 

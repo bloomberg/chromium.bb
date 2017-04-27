@@ -101,8 +101,12 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
   if (!old_style)
     return;
 
-  LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
-      *this, *this, diff, *old_style);
+  if (old_style->BorderCollapse() != StyleRef().BorderCollapse()) {
+    InvalidateCollapsedBorders();
+  } else {
+    LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
+        *this, *this, diff, *old_style);
+  }
 
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *this, diff,
                                                      *old_style))
@@ -755,9 +759,6 @@ void LayoutTable::UpdateLayout() {
 
     UpdateLayerTransformAfterLayout();
 
-    // Layout was changed, so probably borders too.
-    InvalidateCollapsedBorders();
-
     ComputeOverflow(ClientLogicalBottom());
     UpdateAfterLayout();
 
@@ -777,9 +778,6 @@ void LayoutTable::UpdateLayout() {
 
 void LayoutTable::InvalidateCollapsedBorders() {
   collapsed_borders_.clear();
-  if (!CollapseBorders())
-    return;
-
   collapsed_borders_valid_ = false;
   SetMayNeedPaintInvalidation();
 }
