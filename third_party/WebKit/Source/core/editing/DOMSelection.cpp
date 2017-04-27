@@ -671,6 +671,10 @@ void DOMSelection::deleteFromDocument() {
     return;
   }
 
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
   // The following code is necessary for
   // editing/selection/deleteFromDocument-crash.html, which assumes
   // deleteFromDocument() for text selection in a TEXTAREA deletes the TEXTAREA
@@ -678,16 +682,11 @@ void DOMSelection::deleteFromDocument() {
 
   FrameSelection& selection = GetFrame()->Selection();
 
-  if (selection.ComputeVisibleSelectionInDOMTreeDeprecated().IsNone())
+  if (selection.ComputeVisibleSelectionInDOMTree().IsNone())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
   Range* selected_range =
-      CreateRange(selection.ComputeVisibleSelectionInDOMTreeDeprecated()
+      CreateRange(selection.ComputeVisibleSelectionInDOMTree()
                       .ToNormalizedEphemeralRange());
   if (!selected_range)
     return;
