@@ -144,7 +144,9 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(
 void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
     const PageLoadTiming& timing,
     const PageLoadMetadata& metadata) {
-  observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata);
+  observer_->OnMessageReceived(PageLoadMetricsMsg_TimingUpdated(
+                                   observer_->routing_id(), timing, metadata),
+                               web_contents()->GetMainFrame());
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateStartedResource(
