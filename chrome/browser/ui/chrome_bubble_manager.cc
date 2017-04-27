@@ -160,7 +160,7 @@ void ChromeBubbleManager::DidToggleFullscreenModeForTab(
 
 void ChromeBubbleManager::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  if (!load_details.is_in_page)
+  if (!load_details.is_same_document)
     CloseAllBubbles(BUBBLE_CLOSE_NAVIGATED);
 }
 

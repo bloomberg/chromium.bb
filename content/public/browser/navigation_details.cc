@@ -11,10 +11,9 @@ LoadCommittedDetails::LoadCommittedDetails()
       type(content::NAVIGATION_TYPE_UNKNOWN),
       previous_entry_index(-1),
       did_replace_entry(false),
-      is_in_page(false),
+      is_same_document(false),
       is_main_frame(true),
-      http_status_code(0) {
-}
+      http_status_code(0) {}
 
 LoadCommittedDetails::LoadCommittedDetails(const LoadCommittedDetails& other) =
     default;
