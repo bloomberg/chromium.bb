@@ -24,18 +24,18 @@ projects for:
 build/android/gradle/generate_gradle.py --extra-target //chrome/android:chrome_public_apk
 ```
 
-For those upgrading from Android Studio 2.2 to 2.3:
-
-* Use `gn clean` and `gn gen`
-* Clean up in `//third_party/android_tools` with `git clean -ffd`.
-* Remove project from android studio and regenerate with `generate_gradle.py`.
-
 For first-time Android Studio users:
 
 * Avoid running the setup wizard.
     * The wizard will force you to download unwanted SDK components to
       `//third_party/android_tools`.
     * To skip it, select "Cancel" when it comes up.
+
+For those upgrading from Android Studio 2.2 to 2.3:
+
+* Use `gn clean` and `gn gen`
+* Clean up in `//third_party/android_tools` with `git clean -ffd`.
+* Remove project from android studio and regenerate with `generate_gradle.py`.
 
 To import the project:
 
@@ -52,9 +52,14 @@ You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
 ## How It Works
 
-Android Studio integration works by generating `build.gradle` files based on GN
-targets. Each valid target produces a separate Gradle sub-project.
-Instrumentation tests are combined with their `apk_under_test`.
+By default, only a single module is generated. If more than one apk target is
+specified, then an `_all` module is generated. Otherwise a single apk module is
+generated. Since instrumentation tests are combined with their `apk_under_test`
+target, they count as one module together.
+
+To see more detailed structure of gn targets, the `--split-projects` flag can
+be used. This will generate one module for every gn target in the dependency
+graph.
 
 ### Excluded Files
 
@@ -127,7 +132,7 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of April 19th, 2017)
+## Status (as of April 27th, 2017)
 
 ### What works
 
@@ -139,6 +144,7 @@ resources, native libraries, etc.
 * Java debugging (see
 [here](/docs/android_debugging_instructions.md#Android-Studio)).
 * Import resolution and refactoring across all modules.
+* Correct lint and AndroidManifest when only one target is specified.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
