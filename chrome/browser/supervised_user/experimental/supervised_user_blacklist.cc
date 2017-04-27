@@ -10,18 +10,13 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/task_scheduler/post_task.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace {
 
 std::unique_ptr<std::vector<SupervisedUserBlacklist::Hash>>
 ReadFromBinaryFileOnFileThread(const base::FilePath& path) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   std::unique_ptr<std::vector<SupervisedUserBlacklist::Hash>> host_hashes(
       new std::vector<SupervisedUserBlacklist::Hash>);
 
@@ -75,14 +70,16 @@ size_t SupervisedUserBlacklist::GetEntryCount() const {
 
 void SupervisedUserBlacklist::ReadFromFile(const base::FilePath& path,
                                            const base::Closure& done_callback) {
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::Bind(&ReadFromBinaryFileOnFileThread, path),
-      base::Bind(&SupervisedUserBlacklist::OnReadFromFileCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 done_callback));
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::BindOnce(&ReadFromBinaryFileOnFileThread, path),
+      base::BindOnce(&SupervisedUserBlacklist::OnReadFromFileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), done_callback));
 }
 
 void SupervisedUserBlacklist::OnReadFromFileCompleted(
