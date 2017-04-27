@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptState.h"
+#include "platform/bindings/ScriptState.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "core/dom/ExecutionContext.h"
+#include "platform/bindings/V8Binding.h"
 
 namespace blink {
 

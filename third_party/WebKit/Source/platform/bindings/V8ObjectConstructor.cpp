@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8ObjectConstructor.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ThrowException.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {

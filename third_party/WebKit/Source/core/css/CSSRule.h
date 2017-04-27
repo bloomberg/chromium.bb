@@ -24,6 +24,7 @@
 #define CSSRule_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

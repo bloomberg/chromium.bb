@@ -28,31 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementBinding_h
-#define V0CustomElementBinding_h
-
-#include <memory>
-
-#include "bindings/core/v8/ScopedPersistent.h"
-#include "platform/wtf/Allocator.h"
-#include "v8/include/v8.h"
-
-namespace blink {
-
-class V0CustomElementBinding {
-  USING_FAST_MALLOC(V0CustomElementBinding);
-
- public:
-  static std::unique_ptr<V0CustomElementBinding> Create(
-      v8::Isolate*,
-      v8::Local<v8::Object> prototype);
-  ~V0CustomElementBinding();
-
- private:
-  V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
-  ScopedPersistent<v8::Object> prototype_;
-};
-
-}  // namespace blink
-
-#endif  // V0CustomElementBinding_h
+// This file has been moved to platform/bindings/V0CustomElementBinding.h.
+// TODO(adithyas): Remove this file.
+#include "platform/bindings/V0CustomElementBinding.h"

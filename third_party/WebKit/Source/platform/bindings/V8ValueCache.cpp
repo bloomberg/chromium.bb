@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8ValueCache.h"
+#include "platform/bindings/V8ValueCache.h"
 
 #include <utility>
-#include "bindings/core/v8/V8Binding.h"
+#include "platform/bindings/V8Binding.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {

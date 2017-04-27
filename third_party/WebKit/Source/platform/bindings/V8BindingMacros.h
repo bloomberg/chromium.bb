@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,25 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V0CustomElementBinding.h"
+#ifndef V8BindingMacros_h
+#define V8BindingMacros_h
 
-#include <memory>
-#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Assertions.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
-std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::Create(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> prototype) {
-  return WTF::WrapUnique(new V0CustomElementBinding(isolate, prototype));
-}
+// type is an instance of class template V8StringResource<>,
+// but Mode argument varies; using type (not Mode) for consistency
+// with other macros and ease of code generation
+#define TOSTRING_VOID(type, var, value) \
+  type var(value);                      \
+  if (UNLIKELY(!var.Prepare()))         \
+    return;
 
-V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,
-                                               v8::Local<v8::Object> prototype)
-    : prototype_(isolate, prototype) {
-  DCHECK(!prototype_.IsEmpty());
-}
+#define TOSTRING_DEFAULT(type, var, value, retVal) \
+  type var(value);                                 \
+  if (UNLIKELY(!var.Prepare()))                    \
+    return retVal;
 
-V0CustomElementBinding::~V0CustomElementBinding() {}
+// Checks for a given v8::Value (value) whether it is an ArrayBufferView and
+// below a certain size limit. If below the limit, memory is allocated on the
+// stack to hold the actual payload. Keep the limit in sync with V8's
+// typed_array_max_size.
+#define allocateFlexibleArrayBufferViewStorage(value)            \
+  (value->IsArrayBufferView() &&                                 \
+           (value.As<v8::ArrayBufferView>()->ByteLength() <= 64) \
+       ? alloca(value.As<v8::ArrayBufferView>()->ByteLength())   \
+       : nullptr)
+
+// DEPRECATED
+inline bool V8CallBoolean(v8::Maybe<bool> maybe) {
+  bool result;
+  return maybe.To(&result) && result;
+}
 
 }  // namespace blink
+
+#endif  // V8BindingMacros_h

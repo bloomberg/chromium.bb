@@ -22,45 +22,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8ThrowException_h
-#define V8ThrowException_h
-
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "v8/include/v8.h"
-
-namespace blink {
-
-// Provides utility functions to create and/or throw JS built-in errors.
-class CORE_EXPORT V8ThrowException {
-  STATIC_ONLY(V8ThrowException);
-
- public:
-
-  static void ThrowException(v8::Isolate* isolate,
-                             v8::Local<v8::Value> exception) {
-    if (!isolate->IsExecutionTerminating())
-      isolate->ThrowException(exception);
-  }
-
-  static v8::Local<v8::Value> CreateError(v8::Isolate*, const String& message);
-  static v8::Local<v8::Value> CreateRangeError(v8::Isolate*,
-                                               const String& message);
-  static v8::Local<v8::Value> CreateReferenceError(v8::Isolate*,
-                                                   const String& message);
-  static v8::Local<v8::Value> CreateSyntaxError(v8::Isolate*,
-                                                const String& message);
-  static v8::Local<v8::Value> CreateTypeError(v8::Isolate*,
-                                              const String& message);
-
-  static void ThrowError(v8::Isolate*, const String& message);
-  static void ThrowRangeError(v8::Isolate*, const String& message);
-  static void ThrowReferenceError(v8::Isolate*, const String& message);
-  static void ThrowSyntaxError(v8::Isolate*, const String& message);
-  static void ThrowTypeError(v8::Isolate*, const String& message);
-};
-
-}  // namespace blink
-
-#endif  // V8ThrowException_h
+// This file has been moved to platform/bindings/V8ThrowException.h.
+// TODO(adithyas): Remove this file.
+#include "platform/bindings/V8ThrowException.h"

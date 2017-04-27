@@ -2,26 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/ScriptWrappableVisitorVerifier.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/WrapperTypeInfo.h"
-#include "core/dom/DocumentStyleSheetCollection.h"
-#include "core/dom/ElementRareData.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/StyleEngine.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/html/imports/HTMLImportsController.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappableVisitorVerifier.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
+#include "platform/bindings/V8PerIsolateData.h"
+#include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/heap/HeapCompact.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/AutoReset.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

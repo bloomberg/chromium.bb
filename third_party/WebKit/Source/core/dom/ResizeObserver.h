@@ -6,6 +6,7 @@
 #define ResizeObserver_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
