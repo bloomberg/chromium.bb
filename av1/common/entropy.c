@@ -5967,6 +5967,7 @@ static void build_head_cdfs(const aom_prob *pdf_model,
   const int is_dc = blockz_model != NULL;
   const int last_head_val = HEAD_TOKENS - 1 + is_dc;
 
+  assert(pdf_model != NULL);
   assert(pdf_model[2] != 0);
 
   /* FIXME: maintain true CDF counts. */
