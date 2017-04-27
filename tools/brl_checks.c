@@ -174,7 +174,7 @@ int check_full(const char *tableList, const char *str,
                                typeformbuf, NULL, NULL, NULL, cursorPosbuf, mode);
   } else {
     funcStatus = lou_backTranslate(tableList, inbuf, &inlen, outbuf, &outlen,
-                                   typeformbuf, NULL, NULL, NULL, cursorPos, mode);
+                                   typeformbuf, NULL, NULL, NULL, cursorPosbuf, mode);
   }
   if (!funcStatus) {
     fprintf(stderr, "Translation failed.\n");
