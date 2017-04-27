@@ -12,6 +12,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -66,6 +67,9 @@ public class UrlBar extends VerticallyFixedEditText {
     // of what is displayed to the user, see limitDisplayableLength().
     private static final int MAX_DISPLAYABLE_LENGTH = 4000;
     private static final int MAX_DISPLAYABLE_LENGTH_LOW_END = 1000;
+
+    // Unicode "Left-To-Right Mark" (LRM) character.
+    private static final char LRM = '\u200E';
 
     /** The contents of the URL that precede the path/query after being formatted. */
     private String mFormattedUrlLocation;
@@ -789,6 +793,13 @@ public class UrlBar extends VerticallyFixedEditText {
      */
     public boolean setUrl(String url, String formattedUrl) {
         if (!TextUtils.isEmpty(formattedUrl)) {
+            // Because Android versions 4.2 and before lack proper RTL support,
+            // force the formatted URL to render as LTR using an LRM character.
+            // See: https://www.ietf.org/rfc/rfc3987.txt and crbug.com/709417
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                formattedUrl = LRM + formattedUrl;
+            }
+
             try {
                 URL javaUrl = new URL(url);
                 mFormattedUrlLocation =
