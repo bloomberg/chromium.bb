@@ -267,8 +267,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableGestureRequirementForMediaPlayback);
+    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
     command_line->AppendSwitch(switches::kEnableVp9InMp4);
   }
 

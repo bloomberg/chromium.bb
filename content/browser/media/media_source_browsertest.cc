@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
-#include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
@@ -44,8 +44,7 @@ class MediaSourceTest : public content::MediaBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableGestureRequirementForMediaPlayback);
+    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
   }
 };
 
