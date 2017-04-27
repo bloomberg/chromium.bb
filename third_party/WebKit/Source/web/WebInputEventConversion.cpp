@@ -134,14 +134,6 @@ WebMouseEvent TransformWebMouseEvent(FrameView* frame_view,
                                      const WebMouseEvent& event) {
   WebMouseEvent result = event;
 
-  // TODO(dtapuska): Remove this translation. In the past blink has
-  // converted leaves into moves and not known about leaves. It should
-  // be educated about them. crbug.com/686196
-  if (event.GetType() == WebInputEvent::kMouseEnter ||
-      event.GetType() == WebInputEvent::kMouseLeave) {
-    result.SetType(WebInputEvent::kMouseMove);
-  }
-
   // TODO(dtapuska): Perhaps the event should be constructed correctly?
   // crbug.com/686200
   if (event.GetType() == WebInputEvent::kMouseUp) {
