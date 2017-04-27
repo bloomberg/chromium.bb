@@ -40,30 +40,12 @@ DOMWindow::DOMWindow(Frame& frame)
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
   DCHECK(!frame_);
-
-  // Because the wrapper object of a DOMWindow is the global proxy, which may
-  // live much longer than the DOMWindow, we need to dissociate all wrappers
-  // for this instance.
-  DOMWrapperWorld::DissociateDOMWindowWrappersInAllWorlds(this);
 }
 
 v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate* isolate,
                                       v8::Local<v8::Object> creation_context) {
-  // Notice that we explicitly ignore |creation_context| because the DOMWindow
-  // has its own creation context.
-
-  // TODO(yukishiino): Get understanding of why it's possible to initialize
-  // the context after the frame is detached.  And then, remove the following
-  // lines.  See also https://crbug.com/712638 .
-  if (!GetFrame())
-    return v8::Local<v8::Object>();
-
-  // TODO(yukishiino): Make this function always return the non-empty handle
-  // even if the frame is detached because the global proxy must always exist
-  // per spec.
-  return window_proxy_manager_
-      ->GetWindowProxy(DOMWrapperWorld::Current(isolate))
-      ->GlobalProxyIfNotDetached();
+  NOTREACHED();
+  return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
