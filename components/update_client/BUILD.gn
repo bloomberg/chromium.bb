@@ -6,16 +6,10 @@ import("//net/features.gni")
 
 static_library("update_client") {
   sources = [
-    "action.cc",
-    "action.h",
-    "action_update.cc",
-    "action_update.h",
-    "action_update_check.cc",
-    "action_update_check.h",
-    "action_wait.cc",
-    "action_wait.h",
     "background_downloader_win.cc",
     "background_downloader_win.h",
+    "component.cc",
+    "component.h",
     "component_patcher.cc",
     "component_patcher.h",
     "component_patcher_operation.cc",
@@ -33,6 +27,8 @@ static_library("update_client") {
     "request_sender.cc",
     "request_sender.h",
     "task.h",
+    "task_send_uninstall_ping.cc",
+    "task_send_uninstall_ping.h",
     "task_update.cc",
     "task_update.h",
     "update_checker.cc",

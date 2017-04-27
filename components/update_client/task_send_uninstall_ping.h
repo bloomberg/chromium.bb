@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_TASK_UPDATE_H_
-#define COMPONENTS_UPDATE_CLIENT_TASK_UPDATE_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_TASK_SEND_UNINSTALL_PING_H_
+#define COMPONENTS_UPDATE_CLIENT_TASK_SEND_UNINSTALL_PING_H_
 
 #include <string>
 #include <vector>
@@ -14,29 +14,30 @@
 #include "components/update_client/task.h"
 #include "components/update_client/update_client.h"
 
+namespace base {
+class Version;
+}
+
 namespace update_client {
 
 class UpdateEngine;
 enum class Error;
 
-// Defines a specialized task for updating a group of CRXs.
-class TaskUpdate : public Task {
+// Defines a specialized task for sending the uninstall ping.
+class TaskSendUninstallPing : public Task {
  public:
   using Callback = base::Callback<void(Task* task, Error error)>;
 
   // |update_engine| is injected here to handle the task.
-  // |is_foreground| is true when the update task is initiated by the user,
-  //    most likely as a result of an on-demand call.
-  // |ids| represents the CRXs to be updated by this task.
-  // |crx_data_callback| is called to get update data for the these CRXs.
+  // |id| represents the CRX to send the ping for.
   // |callback| is called to return the execution flow back to creator of
   //    this task when the task is done.
-  TaskUpdate(UpdateEngine* update_engine,
-             bool is_foreground,
-             const std::vector<std::string>& ids,
-             const UpdateClient::CrxDataCallback& crx_data_callback,
-             const Callback& callback);
-  ~TaskUpdate() override;
+  TaskSendUninstallPing(UpdateEngine* update_engine,
+                        const std::string& id,
+                        const base::Version& version,
+                        int reason,
+                        const Callback& callback);
+  ~TaskSendUninstallPing() override;
 
   void Run() override;
 
@@ -52,15 +53,14 @@ class TaskUpdate : public Task {
   base::ThreadChecker thread_checker_;
 
   UpdateEngine* update_engine_;  // Not owned by this class.
-
-  const bool is_foreground_;
-  const std::vector<std::string> ids_;
-  const UpdateClient::CrxDataCallback crx_data_callback_;
+  const std::string id_;
+  const base::Version version_;
+  int reason_;
   const Callback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskUpdate);
+  DISALLOW_COPY_AND_ASSIGN(TaskSendUninstallPing);
 };
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_TASK_UPDATE_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_TASK_SEND_UNINSTALL_PING_H_

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/update_client/crx_update_item.h"
+#include "components/update_client/update_client.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
@@ -38,7 +38,7 @@ class ComponentsUI : public content::WebUIController,
  private:
   static base::string16 ComponentEventToString(Events event);
   static base::string16 ServiceStatusToString(
-      update_client::CrxUpdateItem::State state);
+      update_client::ComponentState state);
   DISALLOW_COPY_AND_ASSIGN(ComponentsUI);
 };
 
