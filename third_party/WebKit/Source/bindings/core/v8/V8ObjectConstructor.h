@@ -28,56 +28,6 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef V8ObjectConstructor_h
-#define V8ObjectConstructor_h
-
-#include "bindings/core/v8/V8PerIsolateData.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "v8/include/v8.h"
-
-namespace blink {
-
-class ConstructorMode {
-  STACK_ALLOCATED();
-
- public:
-  enum Mode { kWrapExistingObject, kCreateNewObject };
-
-  ConstructorMode(v8::Isolate* isolate) : isolate_(isolate) {
-    V8PerIsolateData* data = V8PerIsolateData::From(isolate_);
-    previous_ = data->constructor_mode_;
-    data->constructor_mode_ = kWrapExistingObject;
-  }
-
-  ~ConstructorMode() {
-    V8PerIsolateData* data = V8PerIsolateData::From(isolate_);
-    data->constructor_mode_ = previous_;
-  }
-
-  static bool Current(v8::Isolate* isolate) {
-    return V8PerIsolateData::From(isolate)->constructor_mode_;
-  }
-
- private:
-  v8::Isolate* isolate_;
-  bool previous_;
-};
-
-class CORE_EXPORT V8ObjectConstructor {
-  STATIC_ONLY(V8ObjectConstructor);
-
- public:
-  static v8::MaybeLocal<v8::Object> NewInstance(
-      v8::Isolate*,
-      v8::Local<v8::Function>,
-      int argc = 0,
-      v8::Local<v8::Value> argv[] = nullptr);
-
-  static void IsValidConstructorMode(
-      const v8::FunctionCallbackInfo<v8::Value>&);
-};
-
-}  // namespace blink
-
-#endif  // V8ObjectConstructor_h
+// This file has been moved to platform/bindings/V8ObjectConstructor.h.
+// TODO(adithyas): Remove this file.
+#include "platform/bindings/V8ObjectConstructor.h"

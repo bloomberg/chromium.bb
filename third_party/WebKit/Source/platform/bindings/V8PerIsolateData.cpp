@@ -23,18 +23,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8PerIsolateData.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 #include <memory>
 
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8PrivateProperty.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/V8ValueCache.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/WebTaskRunner.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8ObjectConstructor.h"
+#include "platform/bindings/V8PrivateProperty.h"
+#include "platform/bindings/V8ValueCache.h"
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"

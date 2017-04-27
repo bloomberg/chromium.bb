@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8DOMWrapper.h"
+#include "platform/bindings/V8DOMWrapper.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/core/v8/V8PerContextData.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8ObjectConstructor.h"
+#include "platform/bindings/V8PerContextData.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 

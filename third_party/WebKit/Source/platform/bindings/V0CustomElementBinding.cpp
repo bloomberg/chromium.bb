@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2012 Ericsson AB. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,6 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This file has been moved to platform/bindings/V8Binding.h.
-// TODO(adithyas): Remove this file.
-#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V0CustomElementBinding.h"
+
+#include <memory>
+#include "platform/wtf/PtrUtil.h"
+
+namespace blink {
+
+std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::Create(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> prototype) {
+  return WTF::WrapUnique(new V0CustomElementBinding(isolate, prototype));
+}
+
+V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,
+                                               v8::Local<v8::Object> prototype)
+    : prototype_(isolate, prototype) {
+  DCHECK(!prototype_.IsEmpty());
+}
+
+V0CustomElementBinding::~V0CustomElementBinding() {}
+
+}  // namespace blink

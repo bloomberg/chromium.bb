@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8PerIsolateData.h"
-#include "core/dom/ExecutionContext.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 

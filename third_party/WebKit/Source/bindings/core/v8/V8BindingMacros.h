@@ -28,43 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8BindingMacros_h
-#define V8BindingMacros_h
-
-#include "platform/wtf/Assertions.h"
-#include "v8/include/v8.h"
-
-namespace blink {
-
-// type is an instance of class template V8StringResource<>,
-// but Mode argument varies; using type (not Mode) for consistency
-// with other macros and ease of code generation
-#define TOSTRING_VOID(type, var, value) \
-  type var(value);                      \
-  if (UNLIKELY(!var.Prepare()))         \
-    return;
-
-#define TOSTRING_DEFAULT(type, var, value, retVal) \
-  type var(value);                                 \
-  if (UNLIKELY(!var.Prepare()))                    \
-    return retVal;
-
-// Checks for a given v8::Value (value) whether it is an ArrayBufferView and
-// below a certain size limit. If below the limit, memory is allocated on the
-// stack to hold the actual payload. Keep the limit in sync with V8's
-// typed_array_max_size.
-#define allocateFlexibleArrayBufferViewStorage(value)            \
-  (value->IsArrayBufferView() &&                                 \
-           (value.As<v8::ArrayBufferView>()->ByteLength() <= 64) \
-       ? alloca(value.As<v8::ArrayBufferView>()->ByteLength())   \
-       : nullptr)
-
-// DEPRECATED
-inline bool V8CallBoolean(v8::Maybe<bool> maybe) {
-  bool result;
-  return maybe.To(&result) && result;
-}
-
-}  // namespace blink
-
-#endif  // V8BindingMacros_h
+// This file has been moved to platform/bindings/V8BindingMacros.h.
+// TODO(adithyas): Remove this file.
+#include "platform/bindings/V8BindingMacros.h"

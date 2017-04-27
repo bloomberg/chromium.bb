@@ -28,12 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 #include <memory>
 
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptFunction.h"
+#include "platform/bindings/DOMDataStore.h"
 #include "platform/wtf/HashTraits.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -196,7 +195,7 @@ static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
 }
 
 String DOMWrapperWorld::IsolatedWorldHumanReadableName() {
-  ASSERT(this->IsIsolatedWorld());
+  DCHECK(this->IsIsolatedWorld());
   return IsolatedWorldHumanReadableNames().at(GetWorldId());
 }
 

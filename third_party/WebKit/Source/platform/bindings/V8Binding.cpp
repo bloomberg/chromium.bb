@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8Binding.h"
+#include "platform/bindings/V8Binding.h"
 
-#include "bindings/core/v8/V8BindingMacros.h"
+#include "platform/bindings/V8BindingMacros.h"
 
 namespace blink {
 

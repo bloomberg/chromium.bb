@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2012 Ericsson AB. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,6 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This file has been moved to platform/bindings/V8Binding.h.
-// TODO(adithyas): Remove this file.
-#include "platform/bindings/V8Binding.h"
+#ifndef V0CustomElementBinding_h
+#define V0CustomElementBinding_h
+
+#include <memory>
+
+#include "platform/PlatformExport.h"
+#include "platform/bindings/ScopedPersistent.h"
+#include "platform/wtf/Allocator.h"
+#include "v8/include/v8.h"
+
+namespace blink {
+
+class PLATFORM_EXPORT V0CustomElementBinding {
+  USING_FAST_MALLOC(V0CustomElementBinding);
+
+ public:
+  static std::unique_ptr<V0CustomElementBinding> Create(
+      v8::Isolate*,
+      v8::Local<v8::Object> prototype);
+  ~V0CustomElementBinding();
+
+ private:
+  V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
+  ScopedPersistent<v8::Object> prototype_;
+};
+
+}  // namespace blink
+
+#endif  // V0CustomElementBinding_h

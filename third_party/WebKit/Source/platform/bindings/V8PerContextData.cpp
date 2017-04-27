@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8PerContextData.h"
+#include "platform/bindings/V8PerContextData.h"
 
 #include <stdlib.h>
 #include <memory>
-#include "bindings/core/v8/ConditionalFeatures.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "platform/InstanceCounters.h"
+#include "platform/bindings/ConditionalFeatures.h"
+#include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8Binding.h"
+#include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
 
@@ -63,15 +63,17 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
           .ToLocalChecked();
   error_prototype_.Set(isolate_, prototype_value);
 
-  if (IsMainThread())
+  if (IsMainThread()) {
     InstanceCounters::IncrementCounter(
         InstanceCounters::kV8PerContextDataCounter);
+  }
 }
 
 V8PerContextData::~V8PerContextData() {
-  if (IsMainThread())
+  if (IsMainThread()) {
     InstanceCounters::DecrementCounter(
         InstanceCounters::kV8PerContextDataCounter);
+  }
 }
 
 std::unique_ptr<V8PerContextData> V8PerContextData::Create(
@@ -137,17 +139,19 @@ v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
   if (prototype_object->InternalFieldCount() ==
           kV8PrototypeInternalFieldcount &&
       type->wrapper_type_prototype ==
-          WrapperTypeInfo::kWrapperTypeObjectPrototype)
+          WrapperTypeInfo::kWrapperTypeObjectPrototype) {
     prototype_object->SetAlignedPointerInInternalField(
         kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
+  }
   type->PreparePrototypeAndInterfaceObject(current_context, world,
                                            prototype_object, interface_object,
                                            interface_template);
   if (type->wrapper_type_prototype ==
       WrapperTypeInfo::kWrapperTypeExceptionPrototype) {
     if (!V8CallBoolean(prototype_object->SetPrototype(
-            current_context, error_prototype_.NewLocal(isolate_))))
+            current_context, error_prototype_.NewLocal(isolate_)))) {
       return v8::Local<v8::Function>();
+    }
   }
 
   // Origin Trials

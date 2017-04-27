@@ -6,6 +6,7 @@
 #define MojoHandle_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace blink {

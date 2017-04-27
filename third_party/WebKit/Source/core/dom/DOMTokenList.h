@@ -26,6 +26,7 @@
 #define DOMTokenList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/SpaceSplitString.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
