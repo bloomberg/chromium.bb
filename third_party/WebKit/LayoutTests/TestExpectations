@@ -1366,7 +1366,6 @@ crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure
 
 crbug.com/630695 virtual/gpu/fast/canvas/canvas-toDataURL-webp-alpha.html [ NeedsManualRebaseline ]
 
-crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 #crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 #crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 #crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes-3/bidi-embed-002.html [ Failure ]
