@@ -458,8 +458,10 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
   std::string profile;
   service_properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                    &profile);
-  const base::DictionaryValue* user_policy =
-      managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile);
+  ::onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* policy =
+      managed_configuration_handler_->FindPolicyByGuidAndProfile(guid, profile,
+                                                                 &onc_source);
 
   if (IsNetworkProhibitedByPolicy(type, guid, profile)) {
     ErrorCallbackForPendingRequest(service_path, kErrorUnmanagedNetwork);
@@ -467,8 +469,10 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
   }
 
   client_cert::ClientCertConfig cert_config_from_policy;
-  if (user_policy)
-    client_cert::OncToClientCertConfig(*user_policy, &cert_config_from_policy);
+  if (policy) {
+    client_cert::OncToClientCertConfig(onc_source, *policy,
+                                       &cert_config_from_policy);
+  }
 
   client_cert::ConfigType client_cert_type = client_cert::CONFIG_TYPE_NONE;
   if (type == shill::kTypeVPN) {
@@ -517,9 +521,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     if (cert_config_from_policy.client_cert_type ==
         onc::client_cert::kPattern) {
       if (!ClientCertResolver::ResolveCertificatePatternSync(
-              client_cert_type,
-              cert_config_from_policy.pattern,
-              &config_properties)) {
+              client_cert_type, cert_config_from_policy, &config_properties)) {
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
@@ -594,7 +596,7 @@ bool NetworkConnectionHandler::IsNetworkProhibitedByPolicy(
     return false;
   }
   return !managed_configuration_handler_->FindPolicyByGuidAndProfile(
-      guid, profile_path);
+      guid, profile_path, nullptr /* onc_source */);
 }
 
 void NetworkConnectionHandler::QueueConnectRequest(

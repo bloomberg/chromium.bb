@@ -187,7 +187,7 @@ void NetworkCertMigrator::NetworkListChanged() {
   // certificates.
   VLOG(2) << "Start certificate migration of network configurations.";
   scoped_refptr<MigrationTask> helper(new MigrationTask(
-      CertLoader::Get()->cert_list(), weak_ptr_factory_.GetWeakPtr()));
+      CertLoader::Get()->all_certs(), weak_ptr_factory_.GetWeakPtr()));
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
       NetworkTypePattern::Default(),

@@ -35,10 +35,10 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
  public:
   class Observer {
    public:
-    // Called when the certificates, passed for convenience as |cert_list|,
+    // Called when the certificates, passed for convenience as |all_certs|,
     // have completed loading. |initial_load| is true the first time this
     // is called.
-    virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
+    virtual void OnCertificatesLoaded(const net::CertificateList& all_certs,
                                       bool initial_load) = 0;
 
    protected:
@@ -83,8 +83,19 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
 
   bool certificates_loaded() const { return certificates_loaded_; }
 
-  // This will be empty until certificates_loaded() is true.
-  const net::CertificateList& cert_list() const { return *cert_list_; }
+  // Returns all certificates. This will be empty until certificates_loaded() is
+  // true.
+  const net::CertificateList& all_certs() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return *all_certs_;
+  }
+
+  // Returns certificates from the system token. This will be empty until
+  // certificates_loaded() is true.
+  const net::CertificateList& system_certs() const {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return *system_certs_;
+  }
 
   // Called in tests if |IsCertificateHardwareBacked()| should always return
   // true.
@@ -98,8 +109,12 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   // progress, will start a reload once the current task is finished.
   void LoadCertificates();
 
+  // Called when the underlying NSS database finished loading certificates.
+  void CertificatesLoaded(std::unique_ptr<net::CertificateList> all_certs);
+
   // Called if a certificate load task is finished.
-  void UpdateCertificates(std::unique_ptr<net::CertificateList> cert_list);
+  void UpdateCertificates(std::unique_ptr<net::CertificateList> all_certs,
+                          std::unique_ptr<net::CertificateList> system_certs);
 
   void NotifyCertificatesLoaded(bool initial_load);
 
@@ -117,8 +132,12 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   // should be loaded.
   net::NSSCertDatabase* database_;
 
-  // Cached Certificates loaded from the database.
-  std::unique_ptr<net::CertificateList> cert_list_;
+  // Cached certificates loaded from the database.
+  std::unique_ptr<net::CertificateList> all_certs_;
+
+  // Cached certificates from system token. Currently this is a sublist of
+  // |all_certs_|.
+  std::unique_ptr<net::CertificateList> system_certs_;
 
   base::ThreadChecker thread_checker_;
 

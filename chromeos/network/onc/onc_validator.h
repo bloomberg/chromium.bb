@@ -207,10 +207,6 @@ class CHROMEOS_EXPORT Validator : public Mapper {
                                     const std::string& kGUID,
                                     std::set<std::string> *guids);
 
-  // Prohibit certificate patterns for device policy ONC so that an unmanaged
-  // user won't have a certificate presented for them involuntarily.
-  bool IsCertPatternInDevicePolicy(const std::string& cert_type);
-
   // Prohibit global network configuration in user ONC imports.
   bool IsGlobalNetworkConfigInUserImport(
       const base::DictionaryValue& onc_object);

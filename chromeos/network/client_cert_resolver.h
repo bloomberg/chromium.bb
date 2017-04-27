@@ -79,7 +79,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   // expiration.
   static bool ResolveCertificatePatternSync(
       const client_cert::ConfigType client_cert_type,
-      const CertificatePattern& pattern,
+      const client_cert::ClientCertConfig& client_cert_config,
       base::DictionaryValue* shill_properties);
 
  private:
@@ -105,7 +105,8 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
 
   // |matches| contains networks for which a matching certificate was found.
   // Configures these networks.
-  void ConfigureCertificates(std::vector<NetworkAndMatchingCert>* matches);
+  void ConfigureCertificates(
+      std::unique_ptr<std::vector<NetworkAndMatchingCert>> matches);
 
   // Trigger a ResolveRequestCompleted event on all observers.
   void NotifyResolveRequestCompleted();

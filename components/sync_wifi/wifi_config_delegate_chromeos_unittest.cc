@@ -109,7 +109,8 @@ class FakeManagedNetworkConfigurationHandler
   }
   const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
-      const std::string& profile_path) const override {
+      const std::string& profile_path,
+      ::onc::ONCSource* onc_source) const override {
     NOTIMPLEMENTED();
     return nullptr;
   }

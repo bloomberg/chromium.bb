@@ -9,8 +9,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -20,7 +21,56 @@
 
 namespace chromeos {
 
-static CertLoader* g_cert_loader = NULL;
+namespace {
+
+// Checks if |certificate| is on the given |slot|.
+bool IsCertificateOnSlot(const net::X509Certificate* certificate,
+                         PK11SlotInfo* slot) {
+  crypto::ScopedPK11SlotList slots_for_cert(
+      PK11_GetAllSlotsForCert(certificate->os_cert_handle(), nullptr));
+  if (!slots_for_cert)
+    return false;
+
+  for (PK11SlotListElement* slot_element =
+           PK11_GetFirstSafe(slots_for_cert.get());
+       slot_element; slot_element = PK11_GetNextSafe(slots_for_cert.get(),
+                                                     slot_element, PR_FALSE)) {
+    if (slot_element->slot == slot) {
+      // All previously visited elements have been freed by PK11_GetNextSafe,
+      // but we're not calling that for the last one, so free it explicitly.
+      // The slots_for_cert list itself will be freed because ScopedPK11SlotList
+      // is a unique_ptr.
+      PK11_FreeSlotListElement(slots_for_cert.get(), slot_element);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Goes through all certificates in |all_certs| and copies those certificates
+// which are on |system_slot| to a new list.
+std::unique_ptr<net::CertificateList> FilterSystemTokenCertificates(
+    const net::CertificateList* all_certs,
+    crypto::ScopedPK11Slot system_slot) {
+  VLOG(1) << "FilterSystemTokenCertificates";
+  std::unique_ptr<net::CertificateList> system_certs =
+      base::MakeUnique<net::CertificateList>();
+  if (!system_slot)
+    return system_certs;
+
+  // Extract certificates which are in the system token into the
+  // |system_certs_| sublist.
+  for (const auto& cert : *all_certs) {
+    if (IsCertificateOnSlot(cert.get(), system_slot.get())) {
+      system_certs->push_back(cert);
+    }
+  }
+  return system_certs;
+}
+
+}  // namespace
+
+static CertLoader* g_cert_loader = nullptr;
 static bool g_force_hardware_backed_for_test = false;
 
 // static
@@ -33,7 +83,7 @@ void CertLoader::Initialize() {
 void CertLoader::Shutdown() {
   CHECK(g_cert_loader);
   delete g_cert_loader;
-  g_cert_loader = NULL;
+  g_cert_loader = nullptr;
 }
 
 // static
@@ -51,10 +101,9 @@ CertLoader::CertLoader()
     : certificates_loaded_(false),
       certificates_update_required_(false),
       certificates_update_running_(false),
-      database_(NULL),
-      cert_list_(new net::CertificateList),
-      weak_factory_(this) {
-}
+      database_(nullptr),
+      all_certs_(base::MakeUnique<net::CertificateList>()),
+      weak_factory_(this) {}
 
 CertLoader::~CertLoader() {
   net::CertDatabase::GetInstance()->RemoveObserver(this);
@@ -116,8 +165,8 @@ std::string CertLoader::GetPkcs11IdAndSlotForCert(
   DCHECK(slot_id);
 
   CERTCertificateStr* cert_handle = cert.os_cert_handle();
-  SECKEYPrivateKey *priv_key =
-      PK11_FindKeyByAnyCert(cert_handle, NULL /* wincx */);
+  SECKEYPrivateKey* priv_key =
+      PK11_FindKeyByAnyCert(cert_handle, nullptr /* wincx */);
   if (!priv_key)
     return std::string();
 
@@ -136,7 +185,7 @@ std::string CertLoader::GetPkcs11IdAndSlotForCert(
 }
 
 void CertLoader::LoadCertificates() {
-  CHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "LoadCertificates: " << certificates_update_running_;
 
   if (certificates_update_running_) {
@@ -148,17 +197,38 @@ void CertLoader::LoadCertificates() {
   certificates_update_required_ = false;
 
   database_->ListCerts(
-      base::Bind(&CertLoader::UpdateCertificates, weak_factory_.GetWeakPtr()));
+      base::Bind(&CertLoader::CertificatesLoaded, weak_factory_.GetWeakPtr()));
+}
+
+void CertLoader::CertificatesLoaded(
+    std::unique_ptr<net::CertificateList> all_certs) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "CertificatesLoaded: " << all_certs->size();
+
+  crypto::ScopedPK11Slot system_slot = database_->GetSystemSlot();
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+          .MayBlock(),
+      base::BindOnce(&FilterSystemTokenCertificates,
+                     base::Unretained(all_certs.get()), std::move(system_slot)),
+      base::BindOnce(&CertLoader::UpdateCertificates,
+                     weak_factory_.GetWeakPtr(), std::move(all_certs)));
 }
 
 void CertLoader::UpdateCertificates(
-    std::unique_ptr<net::CertificateList> cert_list) {
-  CHECK(thread_checker_.CalledOnValidThread());
+    std::unique_ptr<net::CertificateList> all_certs,
+    std::unique_ptr<net::CertificateList> system_certs) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(certificates_update_running_);
-  VLOG(1) << "UpdateCertificates: " << cert_list->size();
+  VLOG(1) << "UpdateCertificates: " << all_certs->size() << " ("
+          << system_certs->size() << " on system slot)";
 
   // Ignore any existing certificates.
-  cert_list_ = std::move(cert_list);
+  all_certs_ = std::move(all_certs);
+  system_certs_ = std::move(system_certs);
 
   bool initial_load = !certificates_loaded_;
   certificates_loaded_ = true;
@@ -171,7 +241,7 @@ void CertLoader::UpdateCertificates(
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
   for (auto& observer : observers_)
-    observer.OnCertificatesLoaded(*cert_list_, initial_load);
+    observer.OnCertificatesLoaded(*all_certs_, initial_load);
 }
 
 void CertLoader::OnCertDBChanged() {

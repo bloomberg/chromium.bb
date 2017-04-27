@@ -95,7 +95,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
   const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
-      const std::string& profile_path) const override;
+      const std::string& profile_path,
+      onc::ONCSource* onc_source) const override;
 
   // NetworkProfileObserver overrides
   void OnProfileAdded(const NetworkProfile& profile) override;
@@ -155,7 +156,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
                       const std::string& service_path,
                       std::unique_ptr<base::DictionaryValue> shill_properties);
 
+  // Returns the Policies for the given |userhash|, or the device policies if
+  // |userhash| is empty.
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
+  // Returns the Policies for the given network |profile|. These could be either
+  // user or device policies.
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
   void OnPolicyAppliedToNetwork(const std::string& service_path,

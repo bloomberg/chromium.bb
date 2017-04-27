@@ -241,7 +241,7 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
     const bool network_is_policy_managed =
         !network->profile_path().empty() && !network->guid().empty() &&
         managed_configuration_handler_->FindPolicyByGuidAndProfile(
-            network->guid(), network->profile_path());
+            network->guid(), network->profile_path(), nullptr /* onc_source */);
     if (network_is_policy_managed)
       continue;
 

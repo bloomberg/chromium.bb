@@ -70,7 +70,7 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!policy_prohibites_unmanaged)
     return false;
   return !managed_configuration_handler->FindPolicyByGuidAndProfile(
-      network->guid(), network->profile_path());
+      network->guid(), network->profile_path(), nullptr /* onc_source */);
 }
 
 }  // namespace

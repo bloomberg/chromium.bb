@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
@@ -116,7 +117,7 @@ class FakeTetherDelegate : public NetworkConnectionHandler::TetherDelegate {
 
 class NetworkConnectionHandlerTest : public NetworkStateTest {
  public:
-  NetworkConnectionHandlerTest() {}
+  NetworkConnectionHandlerTest() : scoped_task_scheduler_(&message_loop_) {}
 
   ~NetworkConnectionHandlerTest() override {}
 
@@ -297,6 +298,8 @@ class NetworkConnectionHandlerTest : public NetworkStateTest {
   std::unique_ptr<FakeTetherDelegate> fake_tether_delegate_;
 
  private:
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandlerTest);
 };
 

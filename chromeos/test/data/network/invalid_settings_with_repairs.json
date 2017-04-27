@@ -308,28 +308,6 @@
             "RoutingPrefix": 123
         } ],
     },
-    "network-with-client-cert-pattern": {
-        "GUID": "guid",
-        "Type": "WiFi",
-        "Name": "name",
-        "WiFi": {
-            "SSID": "ssid",
-            "Security": "WPA-EAP",
-            "EAP": {
-                "Outer": "EAP-TLS",
-                "Identity": "abc ${LOGIN_ID}@my.domain.com",
-                "ClientCertType": "Pattern",
-                "ClientCertPattern": {
-                    "IssuerCARef": [
-                        "{58ac1967-a0e7-49e9-be68-123abc}"
-                    ],
-                    "EnrollmentURI": [
-                        "chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html"
-                    ]
-                }
-            }
-        }
-    },
     "ipsec-with-psk-and-cacert": {
       "AuthenticationType": "PSK",
       "IKEVersion": 1,
