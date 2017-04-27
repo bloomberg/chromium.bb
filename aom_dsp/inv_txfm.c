@@ -1602,32 +1602,6 @@ void aom_highbd_iadst8_c(const tran_low_t *input, tran_low_t *output, int bd) {
   output[7] = HIGHBD_WRAPLOW(-x1, bd);
 }
 
-void aom_highbd_idct8x8_10_add_c(const tran_low_t *input, uint8_t *dest8,
-                                 int stride, int bd) {
-  tran_low_t out[8 * 8] = { 0 };
-  tran_low_t *outptr = out;
-  int i, j;
-  tran_low_t temp_in[8], temp_out[8];
-  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
-
-  // First transform rows.
-  // Only first 4 row has non-zero coefs.
-  for (i = 0; i < 4; ++i) {
-    aom_highbd_idct8_c(input, outptr, bd);
-    input += 8;
-    outptr += 8;
-  }
-  // Then transform columns.
-  for (i = 0; i < 8; ++i) {
-    for (j = 0; j < 8; ++j) temp_in[j] = out[j * 8 + i];
-    aom_highbd_idct8_c(temp_in, temp_out, bd);
-    for (j = 0; j < 8; ++j) {
-      dest[j * stride + i] = highbd_clip_pixel_add(
-          dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 5), bd);
-    }
-  }
-}
-
 void aom_highbd_idct16_c(const tran_low_t *input, tran_low_t *output, int bd) {
   tran_low_t step1[16], step2[16];
   tran_high_t temp1, temp2;
@@ -1792,32 +1766,6 @@ void aom_highbd_idct16_c(const tran_low_t *input, tran_low_t *output, int bd) {
   output[13] = HIGHBD_WRAPLOW(step2[2] - step2[13], bd);
   output[14] = HIGHBD_WRAPLOW(step2[1] - step2[14], bd);
   output[15] = HIGHBD_WRAPLOW(step2[0] - step2[15], bd);
-}
-
-void aom_highbd_idct16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
-                                    int stride, int bd) {
-  tran_low_t out[16 * 16];
-  tran_low_t *outptr = out;
-  int i, j;
-  tran_low_t temp_in[16], temp_out[16];
-  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
-
-  // First transform rows.
-  for (i = 0; i < 16; ++i) {
-    aom_highbd_idct16_c(input, outptr, bd);
-    input += 16;
-    outptr += 16;
-  }
-
-  // Then transform columns.
-  for (i = 0; i < 16; ++i) {
-    for (j = 0; j < 16; ++j) temp_in[j] = out[j * 16 + i];
-    aom_highbd_idct16_c(temp_in, temp_out, bd);
-    for (j = 0; j < 16; ++j) {
-      dest[j * stride + i] = highbd_clip_pixel_add(
-          dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 6), bd);
-    }
-  }
 }
 
 void aom_highbd_iadst16_c(const tran_low_t *input, tran_low_t *output, int bd) {
@@ -1988,33 +1936,6 @@ void aom_highbd_iadst16_c(const tran_low_t *input, tran_low_t *output, int bd) {
   output[13] = HIGHBD_WRAPLOW(-x13, bd);
   output[14] = HIGHBD_WRAPLOW(x9, bd);
   output[15] = HIGHBD_WRAPLOW(-x1, bd);
-}
-
-void aom_highbd_idct16x16_10_add_c(const tran_low_t *input, uint8_t *dest8,
-                                   int stride, int bd) {
-  tran_low_t out[16 * 16] = { 0 };
-  tran_low_t *outptr = out;
-  int i, j;
-  tran_low_t temp_in[16], temp_out[16];
-  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
-
-  // First transform rows. Since all non-zero dct coefficients are in
-  // upper-left 4x4 area, we only need to calculate first 4 rows here.
-  for (i = 0; i < 4; ++i) {
-    aom_highbd_idct16_c(input, outptr, bd);
-    input += 16;
-    outptr += 16;
-  }
-
-  // Then transform columns.
-  for (i = 0; i < 16; ++i) {
-    for (j = 0; j < 16; ++j) temp_in[j] = out[j * 16 + i];
-    aom_highbd_idct16_c(temp_in, temp_out, bd);
-    for (j = 0; j < 16; ++j) {
-      dest[j * stride + i] = highbd_clip_pixel_add(
-          dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 6), bd);
-    }
-  }
 }
 
 void aom_highbd_idct32_c(const tran_low_t *input, tran_low_t *output, int bd) {

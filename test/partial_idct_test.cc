@@ -286,15 +286,6 @@ using std::tr1::make_tuple;
 
 const PartialInvTxfmParam c_partial_idct_tests[] = {
 #if CONFIG_HIGHBITDEPTH
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_c>, TX_16X16, 10, 8, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_c>, TX_16X16, 10, 10, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_c>, TX_16X16, 10, 12, 2),
   make_tuple(&aom_highbd_fdct4x4_c,
              &highbd_wrapper<aom_highbd_idct4x4_16_add_c>,
              &highbd_wrapper<aom_highbd_idct4x4_16_add_c>, TX_4X4, 16, 8, 2),
@@ -368,24 +359,6 @@ INSTANTIATE_TEST_CASE_P(NEON, PartialIDctTest,
 #if HAVE_SSE2
 const PartialInvTxfmParam sse2_partial_idct_tests[] = {
 #if CONFIG_HIGHBITDEPTH
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_256_add_sse2>, TX_16X16, 256, 8, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_256_add_sse2>, TX_16X16, 256, 10, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_256_add_sse2>, TX_16X16, 256, 12, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_sse2>, TX_16X16, 10, 8, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_sse2>, TX_16X16, 10, 10, 2),
-  make_tuple(
-      &aom_highbd_fdct16x16_c, &highbd_wrapper<aom_highbd_idct16x16_256_add_c>,
-      &highbd_wrapper<aom_highbd_idct16x16_10_add_sse2>, TX_16X16, 10, 12, 2),
   make_tuple(&aom_highbd_fdct4x4_c,
              &highbd_wrapper<aom_highbd_idct4x4_16_add_c>,
              &highbd_wrapper<aom_highbd_idct4x4_16_add_sse2>, TX_4X4, 16, 8, 2),

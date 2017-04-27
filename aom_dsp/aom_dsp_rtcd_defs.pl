@@ -460,15 +460,6 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
     add_proto qw/void aom_highbd_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
     specialize qw/aom_highbd_idct4x4_16_add sse2/;
-
-    add_proto qw/void aom_highbd_idct8x8_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-    specialize qw/aom_highbd_idct8x8_10_add sse2/;
-
-    add_proto qw/void aom_highbd_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-    specialize qw/aom_highbd_idct16x16_256_add sse2/;
-
-    add_proto qw/void aom_highbd_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-    specialize qw/aom_highbd_idct16x16_10_add sse2/;
   }
 } else {
   {

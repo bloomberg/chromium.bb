@@ -95,23 +95,6 @@ void iht8x8_12(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
   av1_highbd_iht8x8_64_add_c(in, out, stride, tx_type, 12);
 }
 
-#if HAVE_SSE2
-void idct8x8_10_add_10_c(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_10_add_c(in, out, stride, 10);
-}
-
-void idct8x8_10_add_12_c(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_10_add_c(in, out, stride, 12);
-}
-
-void idct8x8_10_add_10_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_10_add_sse2(in, out, stride, 10);
-}
-
-void idct8x8_10_add_12_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct8x8_10_add_sse2(in, out, stride, 12);
-}
-#endif  // HAVE_SSE2
 #endif  // CONFIG_HIGHBITDEPTH
 
 class FwdTrans8x8TestBase {
@@ -689,14 +672,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c, 2, AOM_BITS_8),
         make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c, 3, AOM_BITS_8)));
 
-// Optimizations take effect at a threshold of 6201, so we use a value close to
-// that to test both branches.
-INSTANTIATE_TEST_CASE_P(
-    SSE2, InvTrans8x8DCT,
-    ::testing::Values(make_tuple(&idct8x8_10_add_10_c, &idct8x8_10_add_10_sse2,
-                                 6225, AOM_BITS_10),
-                      make_tuple(&idct8x8_10_add_12_c, &idct8x8_10_add_12_sse2,
-                                 6225, AOM_BITS_12)));
 #endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSSE3 && ARCH_X86_64
