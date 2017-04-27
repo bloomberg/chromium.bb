@@ -112,6 +112,14 @@ void UiElement::Render(VrShellRenderer* renderer,
 
 void UiElement::Initialize() {}
 
+void UiElement::OnHoverEnter() {}
+
+void UiElement::OnHoverLeave() {}
+
+void UiElement::OnButtonDown() {}
+
+void UiElement::OnButtonUp() {}
+
 void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations) {
     Animation& animation = *it;
