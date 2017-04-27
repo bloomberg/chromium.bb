@@ -699,6 +699,15 @@
 
       이 설정을 사용중지하면 사용자는 프록시를 사용할 수 없으며 컴퓨터는 <ph name="CLOUD_PRINT_NAME" />와(과)의 프린터 공유를 허용하지 않습니다.</translation>
 <translation id="3297010562646015826">작업 관리자의 종료 프로세스 사용 설정</translation>
+<translation id="3307746730474515290">설치할 수 있는 앱/확장 프로그램의 유형을 제어하고 런타임 액세스를 제한합니다.
+
+          이 설정을 사용하면 <ph name="PRODUCT_NAME" />에 설치할 수 있는 확장 프로그램/앱의 유형과 이러한 유형이 상호작용할 수 있는 호스트의 허용 목록을 만듭니다. 값은 문자열 목록으로 구성되며 각 문자열은 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app' 중 한 가지여야 합니다. 이러한 유형에 관해 자세히 알아보려면 <ph name="PRODUCT_NAME" /> 확장 프로그램 설명서를 참조하세요.
+
+          이 정책은 ExtensionInstallForcelist에 의해 강제 설치되는 확장 프로그램 및 앱에도 적용됩니다.
+
+          이 설정을 구성하면 목록에 없는 유형의 확장 프로그램/앱은 설치되지 않습니다.
+
+          이 설정을 구성하지 않으면 허용되는 확장 프로그램/앱 유형에 제한이 적용되지 않습니다.</translation>
 <translation id="3322771899429619102">키 생성 사용이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenBlockedForUrls'에 있는 경우 이 예외를 무시합니다.
 
           이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의 글로벌 기본값이, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -756,6 +765,7 @@
 <translation id="3660562134618097814">로그인 중 SAML IdP 쿠키 전송</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="3711895659073496551">일시중지</translation>
+<translation id="3736879847913515635">사용자 관리자에서 사용자 추가 허용</translation>
 <translation id="3750220015372671395">이 사이트에서 키 생성 차단</translation>
 <translation id="3756011779061588474">개발자 모드 차단</translation>
 <translation id="3758089716224084329"><ph name="PRODUCT_NAME" />에서사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
@@ -1100,6 +1110,9 @@
 <translation id="489803897780524242">기본 검색 공급자의 검색어 위치를 조정하는 매개변수</translation>
 <translation id="4899708173828500852">세이프 브라우징 사용</translation>
 <translation id="4906194810004762807">기기 정책 새로고침 빈도</translation>
+<translation id="4962262530309732070">이 정책을 true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />의 사용자 관리자에서 사용자를 추가할 수 있습니다.
+
+      이 정책을 false로 설정하면 <ph name="PRODUCT_NAME" />의 사용자 관리자에서 새 프로필을 만들 수 없습니다.</translation>
 <translation id="4971529314808359013">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME" />에서 클라이언트 인증서를 자동으로 선택할 사이트를 지정하는 URL 패턴 목록을 지정하도록 허용합니다.
 
           이 값은 문자열화된 JSON 사전의 배열이어야 합니다. 각 사전은 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 형태여야 하며, 여기에서 $URL_PATTERN은 콘텐츠 설정 패턴입니다. $FILTER는 브라우저에서 선택할 수 있는 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 또한 $FILTER가 { "ISSUER": { "CN": "$ISSUER_CN" } } 형태인 경우 CommonName $ISSUER_CN으로 된 인증서에 의해 발급된 클라이언트 인증서만이 선택됩니다. $FILTER가 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가 제한은 없습니다.

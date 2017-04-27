@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">Abbassa tono</translation>
 <translation id="2999945368667127852">Nessun widget multimediale successivo.</translation>
 <translation id="3012414509011670858">Nessuna sezione precedente.</translation>
+<translation id="3014130421870723208">@ed 8dot</translation>
 <translation id="3030432017085518523">Pulsante di opzione voce di menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrofo}other{# apostrofi}}</translation>
 <translation id="3040901448410802366">Indicatore avanzamento</translation>
@@ -661,6 +662,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">eco parole</translation>
 <translation id="713824876195128146">Citazione lunga successiva</translation>
+<translation id="7143034430156387447">Consente di passare tra braille a sei e otto punti</translation>
 <translation id="7161771961008409533">Pulsante popup</translation>
 <translation id="7165714724802225287">È attivo lo stile del display interfoliazione.</translation>
 <translation id="7167657087543110">eco caratteri</translation>
@@ -820,6 +822,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8856538297388979332">Premi su o giù per rivedere i comandi; premi Invio per attivarli</translation>
 <translation id="8864099967139188018">Nessuna intestazione livello 6 successiva.</translation>
 <translation id="8882002077197914455">Intestazione riga</translation>
+<translation id="8883850400338911892">urled 8dot</translation>
 <translation id="8896347895970027998">Attiva/disattiva ChromeVox.</translation>
 <translation id="8898516272131543774">Imposta eco punteggiatura a rotazione</translation>
 <translation id="8900148057318340779">Tasto prefisso</translation>

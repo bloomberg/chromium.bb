@@ -665,6 +665,15 @@
 
       如果您停用這項設定，使用者就無法啟用 Proxy，而且本機不得與 <ph name="CLOUD_PRINT_NAME" /> 共用自己的印表機。</translation>
 <translation id="3297010562646015826">允許在工作管理員中結束處理程序</translation>
+<translation id="3307746730474515290">控制要允許安裝的應用程式/擴充功能類型並限制執行階段存取權。
+
+          這項許可清單設定會列出允許安裝在 <ph name="PRODUCT_NAME" /> 的擴充功能/應用程式類型，以及能進行互動的主機。該值為字串清單，可用字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
+
+          請注意，這項政策也會影響透過 ExtensionInstallForcelist 強制安裝的擴充功能和應用程式。
+
+          如果設定了這項政策，系統就不會安裝未列於清單中的其他類型擴充功能/應用程式。
+
+          如未設定這項政策，系統便不會針對可接受的擴充功能/應用程式類型套用任何限制。</translation>
 <translation id="3322771899429619102">允許您設定網址模式清單，指定可以使用金鑰產生功能的網站。如果網址模式為「KeygenBlockedForUrls」，則會覆寫這類例外狀況。
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
@@ -722,6 +731,7 @@
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
+<translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
@@ -1050,6 +1060,9 @@
 <translation id="489803897780524242">可使用這個參數來決定是否要為預設搜尋服務商提供替代搜尋字詞。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
+<translation id="4962262530309732070">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
+
+      如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法讓使用者從使用者管理工具建立新設定檔。</translation>
 <translation id="4971529314808359013">允許您以清單列出網址模式，指定 <ph name="PRODUCT_NAME" /> 應自動選取用戶端憑證的網站 (如果網站要求憑證的話)。
 
           這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須是 { "pattern": "$URL_PATTERN", "filter" : $FILTER } (其中的 $URL_PATTERN 是內容設定模式，$FILTER 則限定瀏覽器自動選取的用戶端憑證)。無論是否設定篩選條件，瀏覽器只會選取符合伺服器憑證要求的憑證。如果 $FILTER 的格式為 { "ISSUER": { "CN": "$ISSUER_CN" } }，則瀏覽器只會選取 CommonName 為 $ISSUER_CN 的憑證所核發的用戶端憑證。如果 $FILTER 是空白的字典 {}，那麼瀏覽器在選擇客戶端憑證時就不會受到額外限制。

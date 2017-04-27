@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome уређај</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1698760176351776263">IPv6 адреса: <ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">Овим уређајем управља предузеће</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">Дугме за додатне опције</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
+<translation id="207439088875642105">Ово је налог за децу којим управљају <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2122028596993374965">Заустави пребацивање картице <ph name="TAB_NAME" /> на <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">Моно звук</translation>
 <translation id="3009178788565917040">Излаз</translation>
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING" /></translation>
+<translation id="3047477924825107454">Ово је налог за децу којим управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3050422059534974565">CAPS LOCK је укључен.
 Притисните тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@
 <translation id="523505283826916779">Подешавања приступачности</translation>
 <translation id="5313326810920013265">Подешавања Bluetooth-а</translation>
 <translation id="5331975486040154427">Уређај са USB прикључком типа C (леви задњи порт)</translation>
+<translation id="5397578532367286026">Менаџер (<ph name="MANAGER_EMAIL" />) може да прегледа коришћење и историју овог корисника на chrome.com.</translation>
 <translation id="5430931332414098647">Тренутно привезивање</translation>
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>

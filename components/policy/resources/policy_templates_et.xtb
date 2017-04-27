@@ -692,6 +692,15 @@
 
       Kui seade on keelatud, ei saa kasutajad puhverserverit lubada ja seadmel ei ole lubatud jagada printereid teenusega <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Lubab protsessid tegumihalduris lõpetada</translation>
+<translation id="3307746730474515290">Määrab, millist tüüpi rakendusi/laiendusi tohib installida, ja piirab käitusaja juurdepääsu.
+
+          Seade loob lubatute loendi kõikidest laiendustest/rakendustest, mille tohib teenusesse <ph name="PRODUCT_NAME" /> installida, ja määrab, milliste hostidega need saavad suhelda. Väärtus on stringide loend, millest igaüks peab olema üks järgmistest: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app” või „platform_app”. Nende tüüpide kohta lisateabe saamiseks vaadake teenuse <ph name="PRODUCT_NAME" /> laienduste dokumente.
+
+          Pange tähele, et reegel mõjutab ka atribuudi ExtensionInstallForcelist kaudu sundinstallitud laiendusi ja rakendusi.
+
+          Kui seade on seadistatud, siis ei installita laiendusi/rakendusi, mille tüüp loendist puudub.
+
+          Kui jätate seade seadistamata, ei rakendata kohaldatavatele laienduste/rakenduste tüüpidele piiranguid.</translation>
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
@@ -749,6 +758,7 @@
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="3711895659073496551">Peata</translation>
+<translation id="3736879847913515635">Kasutajahalduris inimese lisamise lubamine</translation>
 <translation id="3750220015372671395">Blokeeri võtmete loomine nendel saitidel</translation>
 <translation id="3756011779061588474">Arendaja režiimi blokeerimine</translation>
 <translation id="3758089716224084329">Võimaldab määrata rakenduse <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ega lase kasutajatel puhverserveri seadeid muuta.
@@ -1092,6 +1102,10 @@
 <translation id="489803897780524242">Parameeter, mis juhib otsingutermini paigutust vaikeotsingupakkuja puhul</translation>
 <translation id="4899708173828500852">Luba ohutu sirvimine</translation>
 <translation id="4906194810004762807">Seadme reeglite värskendussagedus</translation>
+<translation id="4962262530309732070">Kui selle reegli väärtuseks määratakse Tõene või seda ei seadistata, lubab teenus <ph name="PRODUCT_NAME" /> kasutajahalduris funktsiooni Inimese lisamine.
+
+
+      Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> kasutajahalduris uusi profiile luua.</translation>
 <translation id="4971529314808359013">Võimaldab määrata URL-i mustrite loendi, mis täpsustab saidid, millele teenus <ph name="PRODUCT_NAME" /> peaks automaatselt valima kliendi sertifikaadi, kui sait sertifikaati taotleb.
 
           Väärtus peab olema rida stringideks jaotatud JSON-i sõnastikke. Igas sõnastikus peab olema vorm { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kus $URL_PATTERN on sisuseadete muster. $FILTER piirab seda, milliste kliendisertifikaatide hulgast brauser automaatselt valib. Olenemata filtrist, valitakse ainult sertifikaadid, mis ühtivad serveri sertifikaadi taotlusega. Kui $FILTER on vormis { "ISSUER": { "CN": "$ISSUER_CN" } }, valitakse lisaks ainult kliendisertifikaadid, mille on väljastanud sertifikaat mustriga CommonName $ISSUER_CN. Kui $FILTER on tühi sõnastik {}, ei ole kliendisertifikaatide valik täiendavalt piiratud.

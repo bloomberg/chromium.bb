@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Baja el tono</translation>
 <translation id="2999945368667127852">No hay más widgets multimedia.</translation>
 <translation id="3012414509011670858">No hay secciones anteriores.</translation>
+<translation id="3014130421870723208">@ed 8pun</translation>
 <translation id="3030432017085518523">Botón de opción de elemento de menú</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apóstrofe}other{# apóstrofes}}</translation>
 <translation id="3040901448410802366">Indicador de progreso</translation>
@@ -662,6 +663,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">decir palabras</translation>
 <translation id="713824876195128146">Siguiente cita de bloque</translation>
+<translation id="7143034430156387447">Cambiar entre braille de 6 y 8 puntos</translation>
 <translation id="7161771961008409533">Botón con componente emergente</translation>
 <translation id="7165714724802225287">El estilo de presentación actual es intercalado.</translation>
 <translation id="7167657087543110">decir caracteres</translation>
@@ -821,6 +823,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="8856538297388979332">Pulsa las flechas hacia arriba o hacia abajo para revisar comandos. Pulsa la tecla Intro para activarlos.</translation>
 <translation id="8864099967139188018">No hay ningún título de nivel 6 posterior.</translation>
 <translation id="8882002077197914455">Encabezado de fila</translation>
+<translation id="8883850400338911892">edurl 8pun</translation>
 <translation id="8896347895970027998">Activar o desactivar ChromeVox.</translation>
 <translation id="8898516272131543774">Di ciclo de puntuación</translation>
 <translation id="8900148057318340779">Tecla de prefijo</translation>

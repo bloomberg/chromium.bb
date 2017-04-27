@@ -669,6 +669,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne indstilling er deaktiveret, kan brugerne ikke aktivere proxyen, og det vil ikke være tilladt for maskinen at dele sine printere med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Aktiverer mulighed for at afslutte processer i Jobliste</translation>
+<translation id="3307746730474515290">Kontrollerer, hvilke typer apps/udvidelser der må installeres, og begrænser adgangen til kørselstid.
+
+          Denne indstilling hvidlister de tilladte typer af udvidelser/apps, der kan installeres i <ph name="PRODUCT_NAME" />, og hvilke hosts de kan interagere med. Værdien er en liste over strenge, som skal være en af de følgende: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
+
+          Bemærk, at denne politik også påvirker udvidelser og apps, som skal installeres under tvang via ExtensionInstallForcelist.
+
+          Hvis denne indstilling er konfigureret, bliver udvidelser/apps af en type, som ikke er angivet på listen, ikke installeret.
+
+          Hvis denne indstilling ikke er konfigureret, håndhæves ingen begrænsninger af acceptable typer af udvidelser/apps.</translation>
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
@@ -726,6 +735,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
 <translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
 <translation id="3756011779061588474">Bloker udviklertilstand</translation>
 <translation id="3758089716224084329">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
@@ -1062,6 +1072,9 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="489803897780524242">Parameter, der styrer placeringen af søgeterm i standardsøgemaskinen</translation>
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="4906194810004762807">Opdateringsfrekvens for enhedspolitik</translation>
+<translation id="4962262530309732070">Hvis denne politik er indstillet til sand eller ikke konfigureret, tillader <ph name="PRODUCT_NAME" /> tilføjelse af personer fra brugeradministration.
+
+      Hvis denne politik er indstillet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke oprettelse af nye profiler fra brugeradministration.</translation>
 <translation id="4971529314808359013">Giver dig mulighed for at angive en række webadressemønstre, som angiver websites, hvor <ph name="PRODUCT_NAME" /> automatisk skal vælge et klientcertifikat, hvis websitet anmoder om et certifikat.
 
           Værdien skal være en matrix af JSON-ordbøger i strengformat. Alle ordbøgerne skal have formatet { "pattern": "$URL_PATTERN", "filter" : $FILTER }, hvor $URL_PATTERN er et mønster for indholdsangivelse. $FILTER begrænser, hvilke klientcertifikater browseren automatisk vælger fra. Uafhængigt af filteret vælges der kun certifikater, der stemmer overens med serverens certifikatanmodning. Hvis $FILTER har formatet { "ISSUER": { "CN": "$ISSUER_CN" } }, vælges der desuden kun klientcertifikater, der er udstedt af et certifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme ordbog {}, begrænses valget af klientcertifikater ikke yderligere.

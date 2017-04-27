@@ -26,6 +26,7 @@
 <translation id="164969095109328410">Chrome设备</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
+<translation id="1734367976349034509">此设备是受企业管理的设备</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
@@ -36,6 +37,8 @@
 <translation id="1942830294380034169">溢出按钮</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
+<translation id="207439088875642105">此帐号是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理的未成年人帐号</translation>
 <translation id="2122028596993374965">停止将<ph name="TAB_NAME" />投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
@@ -69,6 +72,7 @@
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING" />后充满</translation>
+<translation id="3047477924825107454">此帐号是由 <ph name="MANAGER_EMAIL" /> 管理的未成年人帐号</translation>
 <translation id="3050422059534974565">CAPS LOCK 已开启。
 按搜索键或 Shift 可取消。</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -139,6 +143,7 @@
 <translation id="523505283826916779">无障碍设置</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
+<translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
 <translation id="5430931332414098647">即时网络共享</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>

@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Skru ned for toneleje</translation>
 <translation id="2999945368667127852">Der er ikke flere mediewidgets.</translation>
 <translation id="3012414509011670858">Der er ingen forrige afsnit.</translation>
+<translation id="3014130421870723208">@red 8felt</translation>
 <translation id="3030432017085518523">Alternativknap til menupunkt</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}one{# apostroffer}other{# apostroffer}}</translation>
 <translation id="3040901448410802366">Statusindikator</translation>
@@ -662,6 +663,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="713824876195128146">Næste citatblok</translation>
+<translation id="7143034430156387447">Skift mellem 6- og 8-punkts braillealfabet.</translation>
 <translation id="7161771961008409533">Pop op-knap</translation>
 <translation id="7165714724802225287">Aktuelt visningsformat er sammenflet.</translation>
 <translation id="7167657087543110">tegnekko</translation>
@@ -821,6 +823,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8856538297388979332">Tryk op eller ned for at gennemse kommandoer, og tryk på Enter for at aktivere</translation>
 <translation id="8864099967139188018">Ikke flere niveau 6-overskrifter.</translation>
 <translation id="8882002077197914455">Rækkeoverskrift</translation>
+<translation id="8883850400338911892">urlred 8felt</translation>
 <translation id="8896347895970027998">Aktivér eller deaktiver ChromeVox.</translation>
 <translation id="8898516272131543774">Cyklus for ekko ved tegnsætning</translation>
 <translation id="8900148057318340779">Præfikstast</translation>

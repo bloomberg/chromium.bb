@@ -170,7 +170,7 @@
 <translation id="2800780099804980316">ಹಿಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="280499067616661124">ChromeVox ಪುಟದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="2808001342598757276">ಅನ್‌ಡಾರ್ಕನ್ ಸ್ಕ್ರೀನ್</translation>
-<translation id="2811019999044652585">ಪರಿಕರ ಪಟ್ಟಿ ಮತ್ತು ಸಿಸ್ಟಮ್ ಟ್ರೇನಂತಹ ಪರದೆಯ ಇತರೆ ಭಾಗಗಳಿಗೆ ಹೋಗಲು, Control+ಫಾರ್ವರ್ಡ್ ಒತ್ತಿ. Chromebook ನಲ್ಲಿ, ಸಂಖ್ಯೆ 2 ಕೀ ಮೇಲ್ಭಾಗದಲ್ಲಿಯೇ ಫಾರ್ವರ್ಡ್ ಕೀ ಇರುತ್ತದೆ.</translation>
+<translation id="2811019999044652585">ಪರಿಕರ ಪಟ್ಟಿ ಮತ್ತು ಸಿಸ್ಟಂ ಟ್ರೇನಂತಹ ಪರದೆಯ ಇತರೆ ಭಾಗಗಳಿಗೆ ಹೋಗಲು, Control+ಫಾರ್ವರ್ಡ್ ಒತ್ತಿ. Chromebook ನಲ್ಲಿ, ಸಂಖ್ಯೆ 2 ಕೀ ಮೇಲ್ಭಾಗದಲ್ಲಿಯೇ ಫಾರ್ವರ್ಡ್ ಕೀ ಇರುತ್ತದೆ.</translation>
 <translation id="2811204574343810641">ಸಾಲು</translation>
 <translation id="2816654101880605877">ಮುಂದಿನ ಸ್ಲೈಡರ್ ಇಲ್ಲ.</translation>
 <translation id="2841013758207633010">ಸಮಯ</translation>
@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">ಪಿಚ್ ಇಳಿಸಿ</translation>
 <translation id="2999945368667127852">ಯಾವುದೇ ಮುಂದಿನ ಮಾಧ್ಯಮ ವಿಜೆಟ್ ಇಲ್ಲ.</translation>
 <translation id="3012414509011670858">ಯಾವುದೇ ಹಿಂದಿನ ವಿಭಾಗವಿಲ್ಲ.</translation>
+<translation id="3014130421870723208">@ಎಡಿಟ್ 8ಚುಕ್ಕಿ</translation>
 <translation id="3030432017085518523">ಮೆನು ಐಟಂ ರೇಡಿಯೋ ಬಟನ್</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆ}one{# ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆಗಳು}other{# ಸಂಬೋಧನೆಯ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3040901448410802366">ಪ್ರಗತಿಯ ಸೂಚಕ</translation>
@@ -662,6 +663,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ಪದ ಎಕೋ</translation>
 <translation id="713824876195128146">ಮುಂದಿನ ನಿರ್ಬಂಧ ಖೋಟ್</translation>
+<translation id="7143034430156387447">6 ಮತ್ತು 8 ಚುಕ್ಕಿಗಳ ಬ್ರೈಲ್ ನಡುವೆ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="7161771961008409533">ಪಾಪ್-ಅಪ್ ಬಟನ್</translation>
 <translation id="7165714724802225287">ಪ್ರಸ್ತುತ ಪ್ರದರ್ಶನ ಶೈಲಿ ನಡುಪುಟ ಆಗಿದೆ.</translation>
 <translation id="7167657087543110">ಅಕ್ಷರ ಇಕೋ</translation>
@@ -821,6 +823,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8856538297388979332">ಆದೇಶಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಮೇಲೆ ಅಥವಾ ಕೆಳಗೆ ಒತ್ತಿರಿ, ಸಕ್ರಿಯಗೊಳಿಸಲು ಎಂಟರ್ ಒತ್ತಿರಿ</translation>
 <translation id="8864099967139188018">ಮುಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="8882002077197914455">ಸಾಲಿನ ಶಿರೋನಾಮೆ</translation>
+<translation id="8883850400338911892">urlಎಡಿಟ್ 8ಚುಕ್ಕಿ</translation>
 <translation id="8896347895970027998">ChromeVox ಅನ್ನು ಸಕ್ರಿಯ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಕ್ಕೆ ಟಾಗಲ್ ಮಾಡಿ.</translation>
 <translation id="8898516272131543774">ಸೈಕಲ್ ಪಂಚುಯೇಶನ್ ಎಕೋ</translation>
 <translation id="8900148057318340779">ಪೂರ್ವಪ್ರತ್ಯಯ ಕೀ</translation>

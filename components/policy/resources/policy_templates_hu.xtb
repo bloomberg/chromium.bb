@@ -664,6 +664,15 @@
 
       Ha a beállítás ki van kapcsolva, a felhasználók nem kapcsolhatják be a proxyt, és a számítógép számára nem lesz engedélyezett a nyomtatók megosztása a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatással.</translation>
 <translation id="3297010562646015826">Lehetővé teszi a folyamatok befejezését a Feladatkezelőben</translation>
+<translation id="3307746730474515290">Azt vezérli, hogy mely alkalmazás- és bővítménytípusok telepítése engedélyezett, valamint korlátozza a futási idő hozzáférését.
+
+          A beállítás engedélyezőlistára teszi a(z) <ph name="PRODUCT_NAME" /> termékben telepíthető bővítmény- és alkalmazástípusokat, illetve azokat a gazdagépeket, amelyekkel interakcióba léphetnek. Az érték karakterláncok sorozata, melyek mindegyikének a következők valamelyikének kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. A típusokkal kapcsolatos további információt a(z) <ph name="PRODUCT_NAME" /> bővítményeinek dokumentációjában talál.
+
+          Ne feledje, hogy ez a házirend hatással van az ExtensionInstallForcelist alapján kényszerítetten telepített bővítményekre és alkalmazásokra is.
+
+          Ha konfigurálva van a beállítás, akkor azon bővítmények és alkalmazások, melyek típusa nem szerepel a listán, nem lesznek telepítve.
+
+          Ha a beállítás nincs konfigurálva, akkor nem vonatkoznak korlátozások az elfogadható bővítmény- és alkalmazástípusokra.</translation>
 <translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
@@ -719,6 +728,7 @@
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="3711895659073496551">Felfüggesztés</translation>
+<translation id="3736879847913515635">Engedélyezi a személyek hozzáadását a felhasználókezelőben</translation>
 <translation id="3750220015372671395">Kulcslétrehozás letiltása a következő webhelyeken</translation>
 <translation id="3756011779061588474">Fejlesztői mód letiltása</translation>
 <translation id="3758089716224084329">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
@@ -1045,6 +1055,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="489803897780524242">A keresési kifejezések elhelyezését szabályozó paraméter az alapértelmezett keresési szolgáltató esetében</translation>
 <translation id="4899708173828500852">Biztonságos böngészés engedélyezése</translation>
 <translation id="4906194810004762807">Frissítési arány az eszköz irányelveihez</translation>
+<translation id="4962262530309732070">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a(z) <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
+
+      Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_NAME" /> nem teszi lehetővé új profilok létrehozását a felhasználókezelőből.</translation>
 <translation id="4971529314808359013">Olyan webhelyek URL-listájának megadását teszi lehetővé, amelyek esetében a <ph name="PRODUCT_NAME" /> automatikusan kiválaszt egy ügyféltanúsítványt, ha a webhely tanúsítványt kér.
 
           Az értéknek szöveges karakterláncként megadott JSON-könyvtárak tömbjének kell lennie. A könyvtárakat a { "pattern": "$URL_PATTERN", "filter" : $FILTER } formátumban kell megadni, ahol az $URL_PATTERN egy tartalombeállítási mintát jelöl. A $FILTER korlátozza azt, hogy a böngésző melyik ügyféltanúsítványok közül választhat automatikusan. A szűrőtől függetlenül csak olyan tanúsítványokat választhat, amelyek megfelelnek a szerver tanúsítványkérelmének. Ezenkívül ha a $FILTER formátuma { "ISSUER": { "CN": "$ISSUER_CN" } }, akkor a böngésző csak olyan ügyféltanúsítványokat választ, amelyeket az $ISSUER_CN nevű tanúsítványkibocsátó adott ki. Ha a $FILTER egy üres könyvtár („{}”), akkor az ügyféltanúsítványok kiválaszthatósága nem lesz tovább korlátozva.

@@ -193,6 +193,7 @@
 <translation id="2999559350546931576">Minska tonhöjden</translation>
 <translation id="2999945368667127852">Det finns ingen annan mediewidget.</translation>
 <translation id="3012414509011670858">Det finns inget föregående avsnitt.</translation>
+<translation id="3014130421870723208">@red 8punkt</translation>
 <translation id="3030432017085518523">Alternativknapp för menyalternativ</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}other{# apostrofer}}</translation>
 <translation id="3040901448410802366">Förloppsindikator</translation>
@@ -662,6 +663,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7116595520562830928">flerradigt</translation>
 <translation id="712735679809149106">eko för ord</translation>
 <translation id="713824876195128146">Nästa citatblock</translation>
+<translation id="7143034430156387447">Växla mellan punktskrift med sex och åtta punkter</translation>
 <translation id="7161771961008409533">Popup-knapp</translation>
 <translation id="7165714724802225287">Aktuellt visningsformat är omlott.</translation>
 <translation id="7167657087543110">eko för tecken</translation>
@@ -821,6 +823,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8856538297388979332">Bläddra bland kommandon genom att trycka på uppåtpil eller nedåtpil, aktivera genom att trycka på retur</translation>
 <translation id="8864099967139188018">Det finns inga fler rubriker på nivå 6.</translation>
 <translation id="8882002077197914455">Radrubrik</translation>
+<translation id="8883850400338911892">urlred 8punkt</translation>
 <translation id="8896347895970027998">Växla mellan att aktivera och inaktivera ChromeVox.</translation>
 <translation id="8898516272131543774">eko för skiljetecken</translation>
 <translation id="8900148057318340779">Prefixtangent</translation>

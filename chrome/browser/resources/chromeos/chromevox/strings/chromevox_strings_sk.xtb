@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">Znížiť výšku hlasu</translation>
 <translation id="2999945368667127852">Žiadna ďalšia miniaplikácia pre médiá</translation>
 <translation id="3012414509011670858">Žiadna predchádzajúca sekcia</translation>
+<translation id="3014130421870723208">@upr osembodové</translation>
 <translation id="3030432017085518523">Prepínač položky ponuky</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}few{# apostrofy}many{# apostrophes}other{# apostrofov}}</translation>
 <translation id="3040901448410802366">Indikátor priebehu</translation>
@@ -661,6 +662,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">zvuková odozva na slová</translation>
 <translation id="713824876195128146">Ďalší blok citácie</translation>
+<translation id="7143034430156387447">Prepínanie medzi 6 a 8 bodovým Braillovým písmom</translation>
 <translation id="7161771961008409533">Kontextové tlačidlo</translation>
 <translation id="7165714724802225287">Aktuálny štýl zobrazenia je prekladaný.</translation>
 <translation id="7167657087543110">zvuková odozva na znaky</translation>
@@ -820,6 +822,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8856538297388979332">Stlačením tlačidiel hore alebo dole si prehliadnete príkazy a tlačidlom Enter ich aktivujete</translation>
 <translation id="8864099967139188018">Žiadny ďalší nadpis 6. úrovne</translation>
 <translation id="8882002077197914455">Hlavička riadka</translation>
+<translation id="8883850400338911892">upravené URL – osembodové</translation>
 <translation id="8896347895970027998">Aktivácia a deaktivácia rozšírenia ChromeVox.</translation>
 <translation id="8898516272131543774">Cyklicky striedať zvukovú odozvu na interpunkciu</translation>
 <translation id="8900148057318340779">Kľúč predpony</translation>

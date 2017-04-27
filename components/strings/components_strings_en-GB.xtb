@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="1008557486741366299">Not Now</translation>
 <translation id="1015730422737071372">Provide additional details.</translation>
+<translation id="1021110881106174305">Accepted cards</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
 <translation id="1038842779957582377">unknown name</translation>
 <translation id="1050038467049342496">Close other apps</translation>
@@ -76,14 +77,18 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="1645368109819982629">Unsupported protocol</translation>
 <translation id="1656489000284462475">Pick up</translation>
+<translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normally uses encryption to protect your information. When Google Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Google Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="168328519870909584">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous apps on your device that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1721312023322545264">You need permission from <ph name="NAME" /> to visit this site</translation>
+<translation id="1721424275792716183">* Field is required</translation>
 <translation id="1728677426644403582">You're viewing the source of a web page</translation>
+<translation id="173080396488393970">This type of card isn’t supported</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Try contacting the system admin.</translation>
+<translation id="1740951997222943430">Enter a valid expiry month</translation>
 <translation id="1745358365027406341">Download page later</translation>
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1753706481035618306">Page number</translation>
@@ -91,6 +96,7 @@
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1787142507584202372">Your open tabs appear here</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
+<translation id="1803264062614276815">Cardholder Name</translation>
 <translation id="1803678881841855883">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST" />, a known malware distributor. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1806541873155184440">Added <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
@@ -131,6 +137,7 @@
 <translation id="2166378884831602661">This site can’t provide a secure connection</translation>
 <translation id="2181821976797666341">Policies</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 address}other{# addresses}}</translation>
+<translation id="2202020181578195191">Enter a valid expiry year</translation>
 <translation id="2212735316055980242">Policy not found</translation>
 <translation id="2213606439339815911">Fetching entries...</translation>
 <translation id="2230458221926704099">Fix your connection using the <ph name="BEGIN_LINK" />diagnostics app<ph name="END_LINK" /></translation>
@@ -154,6 +161,7 @@
 <translation id="2384307209577226199">Enterprise default</translation>
 <translation id="2386255080630008482">Server's certificate has been revoked</translation>
 <translation id="2392959068659972793">Show policies with no value set</translation>
+<translation id="239429038616798445">This delivery method isn’t available. Try a different method.</translation>
 <translation id="2396249848217231973">&amp;Undo delete</translation>
 <translation id="2460160116472764928">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2463739503403862330">Fill in</translation>
@@ -195,6 +203,7 @@
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Running Connectivity Diagnostics<ph name="END_LINK" /></translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Remove selected items</translation>
+<translation id="277133753123645258">Delivery method</translation>
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="2784949926578158345">The connection was reset.</translation>
 <translation id="2794233252405721443">Site blocked</translation>
@@ -215,6 +224,8 @@
 <translation id="2969319727213777354">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="2985306909656435243">If enabled, Chromium will store a copy of your card on this device for faster form filling.</translation>
+<translation id="2985398929374701810">Enter a valid address</translation>
+<translation id="2986368408720340940">This pickup method isn’t available. Try a different method.</translation>
 <translation id="2991174974383378012">Sharing with Websites</translation>
 <translation id="3005723025932146533">Show saved copy</translation>
 <translation id="3008447029300691911">Enter the CVC for <ph name="CREDIT_CARD" />. Once you confirm, your card details will be shared with this site.</translation>
@@ -267,6 +278,7 @@
 <translation id="3380365263193509176">Unknown error</translation>
 <translation id="3380864720620200369">Client ID:</translation>
 <translation id="3391030046425686457">Delivery address</translation>
+<translation id="3395827396354264108">Pickup method</translation>
 <translation id="340013220407300675">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards).</translation>
 <translation id="3422248202833853650">Try exiting other programmes to free up memory.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> is currently unreachable.</translation>
@@ -277,6 +289,7 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Fetch interval:</translation>
 <translation id="3462200631372590220">Hide advanced</translation>
+<translation id="3467763166455606212">Cardholder name required</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Not now</translation>
@@ -295,6 +308,7 @@
 <translation id="3586931643579894722">Hide details</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3615877443314183785">Enter a valid expiry date</translation>
 <translation id="36224234498066874">Clear Browsing Data...</translation>
 <translation id="362276910939193118">Show Full History</translation>
 <translation id="3623476034248543066">Show value</translation>
@@ -319,6 +333,7 @@
 <translation id="3739623965217189342">Link that you copied</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
 <translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
+<translation id="3787705759683870569">Expires <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">If you use a proxy server...</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
 <translation id="3845539888601087042">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
@@ -384,6 +399,7 @@
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacting the system admin</translation>
 <translation id="450710068430902550">Sharing with Administrator</translation>
+<translation id="4515275063822566619">Cards and addresses are from Chrome and your Google account (<ph name="ACCOUNT_EMAIL" />). You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4558551763791394412">Try disabling your extensions.</translation>
 <translation id="457875822857220463">Delivery</translation>
@@ -413,6 +429,7 @@
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="483020001682031208">No Physical Web pages to show</translation>
 <translation id="4850886885716139402">View</translation>
+<translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -484,8 +501,10 @@
 <translation id="5544037170328430102">An embedded page at <ph name="SITE" /> says:</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5565735124758917034">Active</translation>
+<translation id="5571083550517324815">Can’t pick up from this address. Select a different address.</translation>
 <translation id="5572851009514199876">Please start and sign in to Chrome so that Chrome can check whether you are allowed to access this site.</translation>
 <translation id="5580958916614886209">Check your expiry month and try again</translation>
+<translation id="5595485650161345191">Edit address</translation>
 <translation id="560412284261940334">Management not supported</translation>
 <translation id="5610142619324316209">Checking the connection</translation>
 <translation id="5610807607761827392">You can manage cards and addresses in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -501,6 +520,8 @@
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5720705177508910913">Current user</translation>
 <translation id="5732392974455271431">Your parents can unblock it for you</translation>
+<translation id="5763042198335101085">Enter a valid email address</translation>
+<translation id="5765072501007116331">To see delivery methods and requirements, select an address</translation>
 <translation id="5784606427469807560">There was a problem confirming your card. Check your Internet connection and try again.</translation>
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
 <translation id="5786044859038896871">Do you want to fill in your card info?</translation>
@@ -519,11 +540,13 @@
 <translation id="5966707198760109579">Week</translation>
 <translation id="5967867314010545767">Remove from history</translation>
 <translation id="5975083100439434680">Zoom out</translation>
+<translation id="598637245381783098">Can’t open payment app</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="5990559369517809815">Requests to the server have been blocked by an extension.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
 <translation id="6017514345406065928">Green</translation>
+<translation id="6027201098523975773">Enter a name</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
@@ -531,6 +554,7 @@
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
+<translation id="6157877588268064908">To see delivery methods and requirements, select an address</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6177128806592000436">Your connection to this site is not secure</translation>
 <translation id="6184817833369986695">(cohort: <ph name="UPDATE_COHORT_NAME" />)</translation>
@@ -543,6 +567,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
 <translation id="6264485186158353794">Back to safety</translation>
 <translation id="6276112860590028508">Pages from your reading list appear here</translation>
+<translation id="6280223929691119688">Can’t deliver to this address. Select a different address.</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6290238015253830360">Your suggested articles appear here</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is unreachable.</translation>
@@ -608,6 +633,7 @@
 <translation id="6895330447102777224">Your card is confirmed</translation>
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6915804003454593391">User:</translation>
+<translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Device</translation>
@@ -625,6 +651,8 @@
 <translation id="7088615885725309056">Older</translation>
 <translation id="7090678807593890770">Search Google for <ph name="LINK" /></translation>
 <translation id="7119414471315195487">Close other tabs or programmes</translation>
+<translation id="7129409597930077180">Can’t deliver to this address. Select a different address.</translation>
+<translation id="7138472120740807366">Delivery method</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7155487117670177674">Payment not secure</translation>
 <translation id="7179921470347911571">Relaunch Now</translation>
@@ -717,6 +745,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
+<translation id="79338296614623784">Enter a valid phone number</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Server's certificate is not yet valid.</translation>
 <translation id="7942349550061667556">Red</translation>
@@ -736,6 +765,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8088680233425245692">Failed to view article.</translation>
 <translation id="8089520772729574115">less than 1 MB</translation>
 <translation id="8091372947890762290">Activation is pending on the server</translation>
+<translation id="8118489163946903409">Payment method</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" />’s server <ph name="BEGIN_ABBR" />DNS address<ph name="END_ABBR" /> could not be found.</translation>
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
@@ -785,11 +815,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
+<translation id="8718314106902482036">Payment not completed</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Finished</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
+<translation id="8759274551635299824">This card has expired</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8800988563907321413">Your nearby suggestions appear here</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
@@ -800,6 +832,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8866959479196209191">This page says:</translation>
 <translation id="8870413625673593573">Recently Closed</translation>
+<translation id="8874824191258364635">Enter a valid card number</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8877192140621905067">Once you've confirm, your card details will be shared with this site</translation>
 <translation id="8889402386540077796">Hue</translation>

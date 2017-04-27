@@ -535,7 +535,6 @@
 <translation id="1731589410171062430">মোট: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">অনুরোধ পাঠানো হচ্ছে...</translation>
 <translation id="1732215134274276513">ট্যাবগুলি আনপিন করুন</translation>
-<translation id="1734367976349034509">এই ডিভাইসটি এন্টারপ্রাইজ পরিচালিত</translation>
 <translation id="1737968601308870607">ফাইল বাগ</translation>
 <translation id="1743570585616704562">শনাক্ত করা যায়নি</translation>
 <translation id="1744108098763830590">পৃষ্ঠভূমি পৃষ্ঠা</translation>
@@ -720,7 +719,6 @@
 <translation id="2048182445208425546">আপনার নেটওয়ার্ক ট্রাফিক অ্যাক্সেস করে</translation>
 <translation id="2049137146490122801">আপনার মেশিনে স্থানীয় ফাইলগুলিতে অ্যাক্সেস আপনার প্রশাসক অক্ষম করেছেন৷</translation>
 <translation id="204914487372604757">শর্টকাট তৈরি করুন</translation>
-<translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2053312383184521053">নিষ্ক্রিয় অবস্থার ডেটা</translation>
 <translation id="2058632120927660550">একটি ত্রুটি ঘটেছে৷ দয়া করে আপনার মুদ্রকটি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
@@ -728,7 +726,6 @@
 <translation id="2068054174185416762">ফ্রেম রেট</translation>
 <translation id="2070909990982335904">ডট দিয়ে শুরু নমাগুলি সিস্টেমের জন্য সংরক্ষিত৷ দয়া করে অন্য নাম চয়ন করুন৷</translation>
 <translation id="2071393345806050157">কোনো স্থানীয় লগ ফাইল নেই।</translation>
-<translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> দ্বারা পরিচালিত এটি একটি বাচ্চাদের অ্যাকাউন্ট</translation>
 <translation id="2074527029802029717">আনপিন ট্যাব</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% ব্যাটারি</translation>
 <translation id="2075594581020578008"><ph name="IDS_SHORT_PRODUCT_NAME" /> ব্রাউজার</translation>
@@ -984,7 +981,6 @@
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="2424091190911472304">সর্বদা <ph name="ORIGIN" /> এ চালু রাখুন</translation>
 <translation id="2425665904502185219">ফাইলের মোট আকার</translation>
-<translation id="2432876185343582491">একটি কার্ড যোগ করুন</translation>
 <translation id="2433452467737464329">এই পৃষ্ঠাটিকে স্বতঃরিফ্রেশ করতে URL একটি ক্যোয়ারী param যোগ করুন: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">উপস্থিতি</translation>
 <translation id="2435248616906486374">নেটওয়ার্ক সংযোগ বিচ্ছিন্ন হয়েছে</translation>
@@ -1453,7 +1449,6 @@
 <translation id="304009983491258911">সিম কার্ড পিন পরিবর্তন করুন</translation>
 <translation id="3046838483509668188">ChromeVox বিকল্প</translation>
 <translation id="3046910703532196514">ওয়েবপৃষ্ঠা, সম্পন্ন</translation>
-<translation id="3047477924825107454">এইটি বাচ্চাদের জন্য <ph name="MANAGER_EMAIL" /> দ্বারা পরিচালিত একটি অ্যাকাউন্ট</translation>
 <translation id="304826556400666995">ট্যাবগুলি সশব্দ করুন</translation>
 <translation id="3053013834507634016">শংসাপত্র কী ব্যবহার</translation>
 <translation id="3056670889236890135">আপনি বর্তমান ব্যবহারকারীদের জন্য আপনি কেবলমাত্র সেটিংস সম্পাদনা করতে পারেন৷ এর জন্য সেটিংস সম্পাদনা করতে এই ব্যবহারকারীর কাছে চলে যান৷</translation>
@@ -2184,7 +2179,6 @@
 <translation id="412730574613779332">স্প্যানডেক্স</translation>
 <translation id="4130199216115862831">ডিভাইস লগ</translation>
 <translation id="4130207949184424187">আপনি বহুউপযোগী ক্ষেত্র থেকে অনুসন্ধান করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশানটি পরিবর্তন করেছে।</translation>
-<translation id="4130750466177569591">আমি সম্মত</translation>
 <translation id="413121957363593859">উপাদানগুলি</translation>
 <translation id="4131410914670010031">সাদা ও কালো</translation>
 <translation id="4135054690906486073">নেটওয়ার্কটি অন্যান্য ব্যবহারকারীদের সাথে শেয়ার করা হয়েছে</translation>
@@ -2534,7 +2528,6 @@
 <translation id="4720113199587244118">ডিভাইসগুলি যোগ করুন</translation>
 <translation id="4722735886719213187">TV সারিবদ্ধকরণ:</translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> আপনার স্ক্রিন ভাগ করছে৷</translation>
-<translation id="472349245089439925">আপনার অর্থপ্রদান</translation>
 <translation id="4724450788351008910">অনুমতি পরিবর্তিত</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" />টি ফটোর ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="4726710629007580002">আপনি যখন এই এক্সটেনশনটি ইনস্টল করার চেষ্টা করছিলেন তখন সতর্কবার্তা ছিল:</translation>
@@ -2997,7 +2990,6 @@
 <translation id="5390284375844109566">সূচিবদ্ধ ডেটাবেস</translation>
 <translation id="5390743329570580756">এর জন্য পাঠান</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> এ <ph name="PEPPER_PLUGIN_NAME" /> আপনার কম্পিউটার্ অ্যাক্সেস করতে চায়৷</translation>
-<translation id="5397578532367286026">chrome.com এ পরিচালক (<ph name="MANAGER_EMAIL" />) এই ব্যবহারকারীর ব্যবহার এবং ইতিহাস পর্যালোচনা করতে পারেন৷</translation>
 <translation id="5397794290049113714">আপনি</translation>
 <translation id="5398572795982417028">পৃষ্ঠা সীমার বাইরের উল্লেখ, সীমা হলো <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5399158067281117682">PINগুলি মেলে না!</translation>
@@ -3416,7 +3408,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব শেয়ার করছে।</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব এবং অডিও শেয়ার করছে।</translation>
 <translation id="6049065490165456785">অভ্যন্তরীণ ক্যামেরা থেকে ফটো</translation>
-<translation id="6051028581720248124">FedEx Office মুদ্রণের দ্বারা, আপনি তাদের <ph name="START_LINK" />ব্যবহারের শর্তাদিতে <ph name="END_LINK" /> সম্মত হন৷</translation>
 <translation id="6051354611314852653">ওহো! সিস্টেমটি এই ডিভাইসের জন্য API অ্যাক্সেস অনুমোদন করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="6052976518993719690">SSL শংসাপত্র কর্তৃপক্ষ</translation>
 <translation id="6053401458108962351">&amp;ব্রাউজিং ডেটা সাফ করুন...</translation>
@@ -4551,7 +4542,7 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="7788383851298063850">কী ঘটছে তা আমাদের বলুন</translation>
-<translation id="7788444488075094252">ভাষাসমূহ এবং ইনপুট</translation>
+<translation id="7788444488075094252">ভাষা এবং ইনপুট</translation>
 <translation id="7788668840732459509">অবস্থান:</translation>
 <translation id="7791543448312431591">যুক্ত করুন</translation>
 <translation id="7792012425874949788">প্রবেশ করার সময় কিছু সমস্যা হয়েছে</translation>
@@ -4838,7 +4829,6 @@
 <translation id="8195027750202970175">ডিস্কের মাপ</translation>
 <translation id="8195739004487400241">আপনার হোমপেজ <ph name="URL" /> এ পরিবর্তন করা হয়েছে। যেসব অ্যাপ্লিকেশান আপনার হোমপেজের পরিবর্তন ঘটায় সেগুলিকে অক্ষম করতে ‘পুনরুদ্ধার করুন’ এ ক্লিক করুন।</translation>
 <translation id="8200772114523450471">পুনঃসূচনা</translation>
-<translation id="8202097416529803614">অর্ডারের সারসংক্ষেপ</translation>
 <translation id="8202160505685531999">অাপনার <ph name="DEVICE_TYPE" /> প্রোফাইল আপডেট করার জন্য দয়া করে পুনরায় আপনার পাসওয়ার্ড লিখুন।</translation>
 <translation id="8204484782770036444">• <ph name="PERMISSION" /></translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
@@ -5120,7 +5110,7 @@
 <translation id="8658645149275195032"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সঙ্গে আপনার স্ক্রীন এবং অডিও শেয়ার করছে।</translation>
 <translation id="8659716501582523573">IP ঠিকানা:</translation>
 <translation id="8661290697478713397">লিঙ্কটি ছ&amp;দ্মবেশী উইন্ডোতে খুলুন</translation>
-<translation id="8662795692588422978">জনসাধারণ</translation>
+<translation id="8662795692588422978">লোকজন</translation>
 <translation id="8662911384982557515">আপনার হোম পৃষ্ঠাকে এতে পরিবর্তিত করুন: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome ওয়ালপেপার সেট করতে পারে না৷</translation>
 <translation id="8663099077749055505"><ph name="HOST" /> এ সর্বদা একাধিক স্বয়ংক্রিয় ডাউনলোডগুলি অবরুদ্ধ করুন</translation>

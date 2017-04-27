@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">Намаляване на височината на звука</translation>
 <translation id="2999945368667127852">Няма следващо приспособление за мултимедия.</translation>
 <translation id="3012414509011670858">Няма предишна секция.</translation>
+<translation id="3014130421870723208">@ адрес, 8 т.</translation>
 <translation id="3030432017085518523">Бутон за избор на елемент от меню</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}other{# апострофа}}</translation>
 <translation id="3040901448410802366">Индикатор за напредъка</translation>
@@ -661,6 +662,7 @@
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ехо за думите</translation>
 <translation id="713824876195128146">Следващият блоков цитат</translation>
+<translation id="7143034430156387447">Превключване между 6- и 8-точково брайлово писмо</translation>
 <translation id="7161771961008409533">Бутон с изскачащ прозорец</translation>
 <translation id="7165714724802225287">Използва се изгледът с наслагване.</translation>
 <translation id="7167657087543110">ехо за знаците</translation>
@@ -820,6 +822,7 @@
 <translation id="8856538297388979332">Натиснете стрелките за нагоре или надолу, за да прегледате командите, натиснете „enter“ за активиране</translation>
 <translation id="8864099967139188018">Няма следващо заглавие от шесто ниво.</translation>
 <translation id="8882002077197914455">Заглавка на ред</translation>
+<translation id="8883850400338911892">URL адрес, 8 т.</translation>
 <translation id="8896347895970027998">Превключване на ChromeVox между активно или неактивно състояние.</translation>
 <translation id="8898516272131543774">Цикъл на ехото за препинателни знаци</translation>
 <translation id="8900148057318340779">Клавиш за префикс</translation>

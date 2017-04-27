@@ -535,7 +535,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1731589410171062430">Totale: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Invio richiesta in corso...</translation>
 <translation id="1732215134274276513">Sblocca le schede</translation>
-<translation id="1734367976349034509">Questo dispositivo è gestito dall'azienda</translation>
 <translation id="1737968601308870607">Segnala bug</translation>
 <translation id="1743570585616704562">Non riconosciuta</translation>
 <translation id="1744108098763830590">pagina di sfondo</translation>
@@ -721,7 +720,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2048182445208425546">Accesso al traffico di rete</translation>
 <translation id="2049137146490122801">L'accesso ai file locali sul tuo computer è stato disabilitato dal tuo amministratore.</translation>
 <translation id="204914487372604757">Crea scorciatoia</translation>
-<translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2053312383184521053">Dati sullo stato di inattività</translation>
 <translation id="2058632120927660550">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
@@ -729,7 +727,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2068054174185416762">Frequenza fotogrammi</translation>
 <translation id="2070909990982335904">I nomi che iniziano con il punto sono riservati al sistema. Scegli un altro nome.</translation>
 <translation id="2071393345806050157">Nessun file di log locale.</translation>
-<translation id="207439088875642105">Si tratta di un account di minori gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="2074527029802029717">Sblocca scheda</translation>
 <translation id="2075474481720804517">Batteria al <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075594581020578008">Browser <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -887,6 +884,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2260567344816042527">Google Chrome utilizzerà la rete dati quando non sarai connesso a un'altra rete.</translation>
 <translation id="2262477216570151239">Ritardo prima della ripetizione</translation>
 <translation id="226269835214688456">Se disattivi Smart Lock per Chromebook, non puoi sbloccare i tuoi dispositivi Chrome utilizzando il telefono. Dovrai digitare la password.</translation>
+<translation id="2263189956353037928">Esci e accedi nuovamente</translation>
 <translation id="2263497240924215535">(Disabilitata)</translation>
 <translation id="2266168284394154563">Reimposta zoom dello schermo</translation>
 <translation id="2266763207955011525">Configura o gestisci le stampanti locali.</translation>
@@ -923,6 +921,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="2317031807364506312">ANNULLA</translation>
 <translation id="2318143611928805047">Formato carta</translation>
+<translation id="2318817390901984578">Per utilizzare le app Android, metti sotto carica il tuo dispositivo <ph name="DEVICE_TYPE" /> e aggiornalo.</translation>
 <translation id="2318923050469484167">Sessione di navigazione in incognito corrente (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Intestazioni e piè di pagina</translation>
 <translation id="2325650632570794183">Questo tipo di file non è supportato. Visita il Chrome Web Store per trovare un'applicazione in grado di aprire questo tipo di file.</translation>
@@ -986,7 +985,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
 <translation id="2424091190911472304">Esegui sempre su <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Dimensioni totali file</translation>
-<translation id="2432876185343582491">Aggiungi una carta</translation>
 <translation id="2433452467737464329">Aggiungi un parametro di ricerca nell'URL per aggiornare automaticamente la pagina: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Aspetto</translation>
 <translation id="2435248616906486374">Rete scollegata</translation>
@@ -1211,6 +1209,7 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2733275712367076659">Hai certificati da queste organizzazioni che ti identificano:</translation>
 <translation id="2733364097704495499">Desideri registrare la stampante <ph name="PRINTER_NAME" /> su Google Cloud Print?</translation>
 <translation id="2735698359135166290">Tastiera Rumeno standard</translation>
+<translation id="2736434052592900364">Gestisci Sincronizzazione Chrome e la personalizzazione in Impostazioni</translation>
 <translation id="2737363922397526254">Comprimi...</translation>
 <translation id="2738771556149464852">Non dopo</translation>
 <translation id="2739191690716947896">Debug</translation>
@@ -1455,7 +1454,6 @@ Per ulteriori informazioni, visita il nostro <ph name="BEGIN_LINK" />Centro assi
 <translation id="304009983491258911">Modifica il PIN della scheda SIM</translation>
 <translation id="3046838483509668188">Opzioni ChromeVox</translation>
 <translation id="3046910703532196514">Pagina web, completa</translation>
-<translation id="3047477924825107454">Si tratta di un account di minori gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="304826556400666995">Riattiva audio schede</translation>
 <translation id="3053013834507634016">Uso della chiave del certificato</translation>
 <translation id="3056670889236890135">Puoi modificare soltanto le impostazioni dell'utente corrente. Passa a tale utente per modificare le relative impostazioni.</translation>
@@ -1609,6 +1607,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3274763671541996799">Sei passato a schermo intero.</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
 <translation id="3280237271814976245">Salva con &amp;nome...</translation>
+<translation id="3280243678470289153">Rimani in Chrome</translation>
 <translation id="3280431534455935878">Preparazione in corso</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3285322247471302225">Nuova &amp;scheda</translation>
@@ -2190,7 +2189,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="412730574613779332">Spandex</translation>
 <translation id="4130199216115862831">Log dispositivo</translation>
 <translation id="4130207949184424187">Questa estensione ha cambiato la pagina mostrata quando esegui ricerche dalla omnibox.</translation>
-<translation id="4130750466177569591">Accetto</translation>
 <translation id="413121957363593859">Componenti</translation>
 <translation id="4131410914670010031">In bianco e nero</translation>
 <translation id="4135054690906486073">Questa rete è condivisa con altri utenti</translation>
@@ -2541,7 +2539,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4720113199587244118">Aggiungi dispositivi</translation>
 <translation id="4722735886719213187">Allineamento TV:</translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> sta condividendo il tuo schermo.</translation>
-<translation id="472349245089439925">Il tuo pagamento</translation>
 <translation id="4724450788351008910">Affiliazione modificata</translation>
 <translation id="4724850507808590449">Backup di <ph name="FILE_COUNT" /> foto completato</translation>
 <translation id="4726710629007580002">Sono stati visualizzati degli avvisi durante il tentativo di installazione dell'estensione:</translation>
@@ -3004,7 +3001,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5390284375844109566">Database indicizzato</translation>
 <translation id="5390743329570580756">Invia per</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> su <ph name="PEPPER_PLUGIN_DOMAIN" /> chiede di accedere al tuo computer.</translation>
-<translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5397794290049113714">Tu</translation>
 <translation id="5398572795982417028">Riferimento pagina oltre i limiti. Il limite è <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5399158067281117682">I PIN non corrispondono.</translation>
@@ -3084,6 +3080,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5499313591153584299">Questo file potrebbe essere dannoso per il computer.</translation>
 <translation id="5500122897333236901">Islandese</translation>
 <translation id="5502500733115278303">Importati da Firefox</translation>
+<translation id="5506868365569362143">Cambio modalità HUD Touch</translation>
 <translation id="5507756662695126555">Non ripudio</translation>
 <translation id="5509693895992845810">S&amp;alva con nome...</translation>
 <translation id="5509914365760201064">Rilasciato da: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3110,6 +3107,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5534520101572674276">Calcolo dimensioni</translation>
 <translation id="5535941515421698170">Rimuovi anche i dati esistenti da questo dispositivo</translation>
 <translation id="5537725057119320332">Trasmetti</translation>
+<translation id="5541687815721799001">Utilizza l'app</translation>
 <translation id="5542132724887566711">Profilo</translation>
 <translation id="5543983818738093899">Verifica dello stato in corso...</translation>
 <translation id="5546477470896554111">Gestisci alimentazione...</translation>
@@ -3223,6 +3221,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5729996640881880439">Spiacenti. Non è possibile visualizzare il codice per questo errore.</translation>
 <translation id="5731247495086897348">Incolla e vi&amp;sita</translation>
 <translation id="5734362860645681824">Comunicazioni</translation>
+<translation id="5735973442555172575">Per utilizzare le app Android, accedi di nuovo e aggiorna.</translation>
 <translation id="5736796278325406685">Inserisci un nome utente valido</translation>
 <translation id="5739458112391494395">Molto grandi</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> e altre <ph name="NUM_ADDITIONAL_LANGUAGES" /></translation>
@@ -3357,6 +3356,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="59174027418879706">Attiva</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in uso}other{# in uso}}</translation>
 <translation id="5920543303088087579">La connessione a questa rete è stata disattivata dall'amministratore</translation>
+<translation id="5921745308587794300">Ruota finestra</translation>
 <translation id="5924047253200400718">Richiedi assistenza<ph name="SCANNING_STATUS" /></translation>
 <translation id="5925147183566400388">Puntatore Certification Practice Statement</translation>
 <translation id="5931146425219109062">Leggere e modificare tutti i dati sui siti web visitati</translation>
@@ -3427,7 +3427,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> condivide una scheda Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> condivide l'audio e una scheda Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6049065490165456785">Foto dalla fotocamera interna</translation>
-<translation id="6051028581720248124">Se stampi presso una sede FedEx Office, accetti i relativi <ph name="START_LINK" />termini e condizioni d'uso<ph name="END_LINK" />.</translation>
 <translation id="6051354611314852653">Spiacenti, il sistema non è riuscito ad autorizzare l'accesso API per questo dispositivo.</translation>
 <translation id="6052976518993719690">Autorità di certificazione SSL</translation>
 <translation id="6053401458108962351">&amp;Cancella dati di navigazione...</translation>
@@ -3670,6 +3669,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6412931879992742813">Nuova finestra di navigazione in incognito</translation>
 <translation id="6418160186546245112">Ripristino della versione precedente installata di <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Rimuovi definitivamente accesso per tutte le app</translation>
+<translation id="6418511932144861495">Installa aggiornamento critico</translation>
 <translation id="6419288379019356534">Questo dispositivo è gestito da <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
     <ph name="LINE_BREAK" />
     Fai clic su "Avanti" per continuare ad accedere al tuo account <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
@@ -3716,6 +3716,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="6468485451923838994">Caratteri</translation>
 <translation id="6472893788822429178">Mostra pulsante Pagina iniziale</translation>
+<translation id="6473842110411557830">Illustrazione Powerwash</translation>
 <translation id="6474706907372204693">Metodo di immissione precedente</translation>
 <translation id="6474884162850599008">Scollega account Google Drive</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> vuole condividere i contenuti del tuo schermo. Scegli i contenuti che desideri condividere.</translation>
@@ -3861,6 +3862,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Cambia persona</translation>
 <translation id="6690659332373509948">Impossibile analizzare il file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Scegli un utente controllato da aggiungere a questo dispositivo.</translation>
+<translation id="6691331417640343772">Gestisci dati sincronizzati sulla Dashboard di Google</translation>
 <translation id="6691936601825168937">&amp;Avanti</translation>
 <translation id="6698381487523150993">Data creazione:</translation>
 <translation id="6698810901424468597">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /></translation>
@@ -4013,6 +4015,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6949306908218145636">Aggiungi pagine aperte ai Preferiti...</translation>
 <translation id="6955446738988643816">Ispeziona popup</translation>
+<translation id="6957519909849772545">Hai un nuovo aggiornamento critico. Accedi per iniziare.</translation>
 <translation id="695755122858488207">Pulsante di opzione non selezionato</translation>
 <translation id="696203921837389374">Attiva sincronizzazione tramite dati mobili</translation>
 <translation id="6964390816189577014">Eroe</translation>
@@ -4510,6 +4513,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7719421816612904796">Preparazione scaduta</translation>
 <translation id="771953673318695590">QA</translation>
 <translation id="7720375555307821262"><ph name="BEGIN_LINK" />Accedi a Chrome<ph name="END_LINK" /> per supervisionare questo utente.</translation>
+<translation id="7721179060400456005">Consenti alle finestre di estendersi su più schermi</translation>
 <translation id="7724603315864178912">Taglia</translation>
 <translation id="7728668285692163452">La modifica al canale verrà applicata più tardi</translation>
 <translation id="7730449930968088409">Acquisizione dei contenuti dello schermo</translation>
@@ -4608,6 +4612,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7874357055309047713">Esegui sempre su tutti i siti</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
 <translation id="7877451762676714207">Errore del server sconosciuto. Riprova o contatta l'amministratore del server.</translation>
+<translation id="7877680364634660272">Tour</translation>
 <translation id="7881483672146086348">Visualizza account</translation>
 <translation id="7881969471599061635">Disattiva i sottotitoli</translation>
 <translation id="7882358943899516840">Tipo di provider</translation>
@@ -4840,7 +4845,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8195027750202970175">Dimensioni su disco</translation>
 <translation id="8195739004487400241">Home page sostituita con: <ph name="URL" />. Per disattivare le estensioni che cambiano l'home page, fai clic su Ripristina.</translation>
 <translation id="8200772114523450471">Riprendi</translation>
-<translation id="8202097416529803614">Riepilogo dell’ordine</translation>
 <translation id="8202160505685531999">Inserisci di nuovo la password per aggiornare il profilo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8204484782770036444">• <ph name="PERMISSION" /></translation>
 <translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
@@ -5316,6 +5320,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="8944964446326379280"><ph name="APP_NAME" /> condivide una finestra con <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Il tuo dispositivo <ph name="DEVICE_TYPE" /> può essere sbloccato con il tuo telefono Android.</translation>
 <translation id="8946359700442089734">Le funzioni di debug non sono state attivate completamente su questo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
+<translation id="8948677146203372548">Aggiornamento riuscito. Ora puoi utilizzare le app Android.</translation>
 <translation id="895347679606913382">Avvio download in corso...</translation>
 <translation id="8954952943849489823">Spostamento non riuscito, errore imprevisto: $1</translation>
 <translation id="895586998699996576">Immagine $1</translation>
@@ -5393,6 +5398,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="9046895021617826162">Connessione non riuscita</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">Hai registrato le stampanti con <ph name="CLOUD_PRINT_NAME" /> utilizzando l'account <ph name="EMAIL" /></translation>
+<translation id="9053893665344928494">Memorizza la mia scelta</translation>
 <translation id="9056034633062863292">Aggiornamento del Chromebox</translation>
 <translation id="9056810968620647706">Nessuna corrispondenza trovata.</translation>
 <translation id="9057119625587205566">Nessuna stampante nelle vicinanze</translation>

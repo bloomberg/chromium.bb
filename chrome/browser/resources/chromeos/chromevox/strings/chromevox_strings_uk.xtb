@@ -192,6 +192,7 @@
 <translation id="2999559350546931576">Зменшити висоту звуку</translation>
 <translation id="2999945368667127852">Немає наступного медіа-віджета.</translation>
 <translation id="3012414509011670858">Немає попереднього розділу.</translation>
+<translation id="3014130421870723208">8-крапкове поле @</translation>
 <translation id="3030432017085518523">Перемикач пунктів меню</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{апостроф}one{# апостроф}few{# апострофи}many{# апострофів}other{# apostrophes}}</translation>
 <translation id="3040901448410802366">Індикатор перебігу</translation>
@@ -661,6 +662,7 @@
 <translation id="7116595520562830928">багаторядковий</translation>
 <translation id="712735679809149106">озвучення слів</translation>
 <translation id="713824876195128146">Цитування наступного блока</translation>
+<translation id="7143034430156387447">Переключитися між 6- та 8-крапковим шрифтом Брайля</translation>
 <translation id="7161771961008409533">Кнопка зі спливаючою підказкою</translation>
 <translation id="7165714724802225287">Поточний стиль дисплея – чергування.</translation>
 <translation id="7167657087543110">озвучення символів</translation>
@@ -820,6 +822,7 @@
 <translation id="8856538297388979332">Натискайте стрілки вгору чи вниз, щоб переглядати команди; натискайте Enter, щоб їх активувати</translation>
 <translation id="8864099967139188018">Немає наступного заголовка рівня 6.</translation>
 <translation id="8882002077197914455">Заголовок рядка</translation>
+<translation id="8883850400338911892">8-крапкове посилання</translation>
 <translation id="8896347895970027998">Зробити розширення ChromeVox активним чи неактивним.</translation>
 <translation id="8898516272131543774">Ще раз озвучити розділові знаки</translation>
 <translation id="8900148057318340779">Клавіша-префікс</translation>
