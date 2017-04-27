@@ -47,8 +47,8 @@ Polymer({
   /** @override */
   created: function() {
     // Observe the light DOM so we know when it's ready.
-    this.lightDomObserver_ = Polymer.dom(this).observeNodes(
-        this.lightDomChanged_.bind(this));
+    this.lightDomObserver_ =
+        Polymer.dom(this).observeNodes(this.lightDomChanged_.bind(this));
   },
 
   /** @override */
@@ -71,13 +71,17 @@ Polymer({
 
     // Only handle iron-select events from neon-animatable elements and the
     // given whitelist of settings-subpage instances.
-    if (!e.detail.item.matches(
-        'neon-animatable, ' +
-        'settings-subpage#site-settings, ' +
+    var whitelist = 'settings-subpage#site-settings, ' +
         'settings-subpage[route-path=\"' +
-            settings.Route.SITE_SETTINGS_COOKIES.path + '\"]')) {
+        settings.Route.SITE_SETTINGS_COOKIES.path + '\"]';
+
+// <if expr="chromeos">
+    whitelist += ', settings-subpage[route-path=\"' +
+        settings.Route.INTERNET_NETWORKS.path + '\"]';
+// </if>
+
+    if (!e.detail.item.matches('neon-animatable, ' + whitelist))
       return;
-    }
 
     var selector = this.focusConfig.get(this.previousRoute_.path);
     if (selector) {
@@ -124,8 +128,7 @@ Polymer({
     if (!this.queuedRouteChange_)
       return;
     this.async(this.currentRouteChanged.bind(
-        this,
-        this.queuedRouteChange_.newRoute,
+        this, this.queuedRouteChange_.newRoute,
         this.queuedRouteChange_.oldRoute));
   },
 
@@ -203,8 +206,8 @@ Polymer({
       return;
 
     // Set the subpage's id for use by neon-animated-pages.
-    var subpage = /** @type {{_content: DocumentFragment}} */(template)._content
-        .querySelector('settings-subpage');
+    var subpage = /** @type {{_content: DocumentFragment}} */ (template)
+                      ._content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 
     // Carry over the 'no-search' attribute from the template to the stamped

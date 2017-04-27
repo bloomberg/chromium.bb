@@ -88,7 +88,18 @@ Polymer({
         return [];
       }
     },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        return new Map();
+      },
+    },
   },
+
+  /** @private {string} Type of last detail page visited. */
+  detailType_: '',
 
   // Element event listeners
   listeners: {
@@ -110,13 +121,13 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.onExtensionAddedListener_ = this.onExtensionAddedListener_ ||
-        this.onExtensionAdded_.bind(this);
+    this.onExtensionAddedListener_ =
+        this.onExtensionAddedListener_ || this.onExtensionAdded_.bind(this);
     chrome.management.onInstalled.addListener(this.onExtensionAddedListener_);
     chrome.management.onEnabled.addListener(this.onExtensionAddedListener_);
 
-    this.onExtensionRemovedListener_ = this.onExtensionRemovedListener_ ||
-        this.onExtensionRemoved_.bind(this);
+    this.onExtensionRemovedListener_ =
+        this.onExtensionRemovedListener_ || this.onExtensionRemoved_.bind(this);
     chrome.management.onUninstalled.addListener(
         this.onExtensionRemovedListener_);
 
@@ -146,9 +157,10 @@ Polymer({
   /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged: function(route, oldRoute) {
     if (route == settings.Route.INTERNET_NETWORKS) {
       // Handle direct navigation to the networks page,
       // e.g. chrome://settings/internet/networks?type=WiFi
@@ -163,7 +175,29 @@ Polymer({
       var type = queryParams.get('type');
       if (type)
         this.knownNetworksType_ = type;
+    } else if (
+        route != settings.Route.INTERNET && route != settings.Route.BASIC) {
+      // If we are navigating to a non internet section, do not set focus.
+      return;
     }
+
+    if (!settings.Route.INTERNET.contains(oldRoute))
+      return;
+
+    // Focus the subpage arrow where appropriate.
+    var selector;
+    if (route == settings.Route.INTERNET_NETWORKS) {
+      // iron-list makes the correct timing to focus an item in the list
+      // very complicated, and the item may not exist, so just focus the
+      // entire list for now.
+      selector = '* /deep/ #networkList';
+    } else if (this.detailType_) {
+      selector = '* /deep/ #' + this.detailType_ + ' /deep/ .subpage-arrow';
+    }
+    if (selector && this.querySelector(selector))
+      this.focusConfig_.set(oldRoute.path, selector);
+    else
+      this.focusConfig_.delete(oldRoute.path);
   },
 
   /**
@@ -184,6 +218,7 @@ Polymer({
    * @private
    */
   onShowDetail_: function(event) {
+    this.detailType_ = event.detail.Type;
     var params = new URLSearchParams;
     params.append('guid', event.detail.GUID);
     params.append('type', event.detail.Type);
@@ -197,6 +232,7 @@ Polymer({
    * @private
    */
   onShowNetworks_: function(event) {
+    this.detailType_ = event.detail.Type;
     var params = new URLSearchParams;
     params.append('type', event.detail.Type);
     this.subpageType_ = event.detail.Type;
@@ -216,6 +252,7 @@ Polymer({
    * @private
    */
   onShowKnownNetworks_: function(event) {
+    this.detailType_ = event.detail.Type;
     var params = new URLSearchParams;
     params.append('type', event.detail.Type);
     this.knownNetworksType_ = event.detail.type;
@@ -329,8 +366,8 @@ Polymer({
    * @private
    */
   deviceIsEnabled_: function(deviceState) {
-    return !!deviceState && deviceState.State ==
-        chrome.networkingPrivate.DeviceStateType.ENABLED;
+    return !!deviceState &&
+        deviceState.State == chrome.networkingPrivate.DeviceStateType.ENABLED;
   },
 
   /**

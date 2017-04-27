@@ -144,6 +144,9 @@ Polymer({
    */
   networksChangedListener_: null,
 
+  /** @private {boolean} */
+  didSetFocus_: false,
+
   /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
@@ -180,6 +183,7 @@ Polymer({
       ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
       Name: {Active: name},
     };
+    this.didSetFocus_ = false;
     this.getNetworkDetails_();
   },
 
@@ -216,6 +220,16 @@ Polymer({
 
     // Update the detail page title.
     this.parentNode.pageTitle = CrOnc.getNetworkName(this.networkProperties);
+
+    // Focus a button once the initial state is set.
+    if (!this.didSetFocus_) {
+      this.didSetFocus_ = true;
+      var button = this.$$('#buttonDiv .primary-button:not([hidden])');
+      if (!button)
+        button = this.$$('#buttonDiv .secondary-button:not([hidden])');
+      assert(button);  // At least one button will always be visible.
+      button.focus();
+    }
   },
 
   /** @private */
@@ -549,7 +563,8 @@ Polymer({
     this.networkingPrivate.startActivate(this.guid);
   },
 
-  /** @const {string} */ CR_EXPAND_BUTTON_TAG: 'CR-EXPAND-BUTTON',
+  /** @const {string} */
+  CR_EXPAND_BUTTON_TAG: 'CR-EXPAND-BUTTON',
 
   /**
    * @param {Event} event

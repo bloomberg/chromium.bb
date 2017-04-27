@@ -101,7 +101,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATED_PAGES_JS"
                  file="settings_page/settings_animated_pages.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_APPEARANCE_BROWSER_PROXY_HTML"
                  file="appearance_page/appearance_browser_proxy.html"
                  type="chrome_html" />
