@@ -51,8 +51,7 @@ void ScriptStreamerThread::TaskDone() {
 
 WebThread& ScriptStreamerThread::PlatformThread() {
   if (!IsRunning()) {
-    thread_ = WTF::WrapUnique(
-        Platform::Current()->CreateThread("ScriptStreamerThread"));
+    thread_ = Platform::Current()->CreateThread("ScriptStreamerThread");
   }
   return *thread_;
 }

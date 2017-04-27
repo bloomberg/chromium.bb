@@ -21,8 +21,8 @@ std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::Create(
 
 SharedContextRateLimiter::SharedContextRateLimiter(unsigned max_pending_ticks)
     : max_pending_ticks_(max_pending_ticks), can_use_sync_queries_(false) {
-  context_provider_ = WTF::WrapUnique(
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
+  context_provider_ =
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
   if (!context_provider_)
     return;
 
