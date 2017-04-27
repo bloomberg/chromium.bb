@@ -153,6 +153,22 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
                                           ui::PageTransition page_transition,
                                           bool* allowed) {
   if (is_guest) {
+    // Exceptionally, the resource at path "/success.html" that belongs to the
+    // sign-in extension (loaded by chrome://chrome-signin) is accessible to
+    // WebViews that are not owned by that extension.
+    // This exception is required as in order to mark the end of the the sign-in
+    // flow, Gaia redirects to the following continue URL:
+    // "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html".
+    //
+    // TODO(http://crbug.com/688565) Remove this check once the sign-in
+    // extension is deprecated and removed.
+    bool is_signin_extension =
+        extension && extension->id() == "mfffpogegjflfpflabcdkioaeobkgjik";
+    if (is_signin_extension && resource_path == "/success.html") {
+      *allowed = true;
+      return true;
+    }
+
     // An extension's resources should only be accessible to WebViews owned by
     // that extension.
     if (owner_extension != extension) {
