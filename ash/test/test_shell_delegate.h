@@ -12,6 +12,8 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
 
+class TestingPrefServiceSimple;
+
 namespace keyboard {
 class KeyboardUI;
 }
@@ -54,7 +56,7 @@ class TestShellDelegate : public ShellDelegate {
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
-
+  PrefService* GetActiveUserPrefService() const override;
   bool IsTouchscreenEnabledInPrefs(bool use_local_state) const override;
   void SetTouchscreenEnabledInPrefs(bool enabled,
                                     bool use_local_state) override;
@@ -72,6 +74,7 @@ class TestShellDelegate : public ShellDelegate {
   bool force_maximize_on_first_run_;
   bool touchscreen_enabled_in_local_pref_;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

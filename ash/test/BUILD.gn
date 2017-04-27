@@ -158,6 +158,7 @@ static_library("test_support_common") {
     "//base:i18n",
     "//base/test:test_support",
     "//chromeos",
+    "//components/prefs:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager:user_manager",
     "//device/bluetooth",

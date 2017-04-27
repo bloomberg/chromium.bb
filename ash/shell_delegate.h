@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 
 class GURL;
+class PrefService;
 
 namespace gfx {
 class Image;
@@ -120,6 +121,8 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenKeyboardShortcutHelpPage() const {}
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
+
+  virtual PrefService* GetActiveUserPrefService() const = 0;
 
   // If |use_local_state| is true, returns the touchscreen status from local
   // state, otherwise from user prefs.
