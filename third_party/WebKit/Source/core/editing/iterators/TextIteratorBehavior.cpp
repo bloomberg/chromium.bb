@@ -107,6 +107,12 @@ TextIteratorBehavior::Builder::SetStopsOnFormControls(bool value) {
   return *this;
 }
 
+TextIteratorBehavior::Builder&
+TextIteratorBehavior::Builder::SetDoesNotEmitSpaceBeyondRangeEnd(bool value) {
+  behavior_.does_not_emit_space_beyond_range_end_ = value;
+  return *this;
+}
+
 // -
 TextIteratorBehavior::TextIteratorBehavior(const TextIteratorBehavior& other) =
     default;
@@ -126,7 +132,8 @@ TextIteratorBehavior::TextIteratorBehavior()
       for_selection_to_string_(false),
       for_window_find_(false),
       ignores_style_visibility_(false),
-      stops_on_form_controls_(false) {}
+      stops_on_form_controls_(false),
+      does_not_emit_space_beyond_range_end_(false) {}
 
 TextIteratorBehavior::~TextIteratorBehavior() = default;
 
@@ -148,7 +155,9 @@ bool TextIteratorBehavior::operator==(const TextIteratorBehavior& other) const {
          for_selection_to_string_ == other.for_selection_to_string_ ||
          for_window_find_ == other.for_window_find_ ||
          ignores_style_visibility_ == other.ignores_style_visibility_ ||
-         stops_on_form_controls_ == other.stops_on_form_controls_;
+         stops_on_form_controls_ == other.stops_on_form_controls_ ||
+         does_not_emit_space_beyond_range_end_ ==
+             other.does_not_emit_space_beyond_range_end_;
 }
 
 bool TextIteratorBehavior::operator!=(const TextIteratorBehavior& other) const {
@@ -183,6 +192,15 @@ TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior() {
   return TextIteratorBehavior::Builder()
       .SetEmitsObjectReplacementCharacter(true)
       .SetEmitsCharactersBetweenAllVisiblePositions(true)
+      .Build();
+}
+
+// static
+TextIteratorBehavior
+TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior() {
+  return TextIteratorBehavior::Builder()
+      .SetEmitsObjectReplacementCharacter(true)
+      .SetDoesNotEmitSpaceBeyondRangeEnd(true)
       .Build();
 }
 

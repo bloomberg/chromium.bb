@@ -93,14 +93,12 @@ void SurroundingText::Initialize(const Position& start_position,
   if (!backwards_iterator.AtEnd())
     backwards_iterator.Advance(half_max_length);
 
-  start_offset_in_content_ =
-      Range::Create(*document, backwards_iterator.EndPosition(), start_position)
-          ->GetText()
-          .length();
-  end_offset_in_content_ =
-      Range::Create(*document, backwards_iterator.EndPosition(), end_position)
-          ->GetText()
-          .length();
+  const TextIteratorBehavior behavior =
+      TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior();
+  start_offset_in_content_ = TextIterator::RangeLength(
+      backwards_iterator.EndPosition(), start_position, behavior);
+  end_offset_in_content_ = TextIterator::RangeLength(
+      backwards_iterator.EndPosition(), end_position, behavior);
   content_range_ = Range::Create(*document, backwards_iterator.EndPosition(),
                                  forward_range.StartPosition());
   DCHECK(content_range_);
