@@ -83,6 +83,7 @@
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
@@ -975,11 +976,17 @@ FloatSize LocalDOMWindow::GetViewportSize(
   if (!page)
     return FloatSize();
 
-  // The main frame's viewport size depends on the page scale. Since the
-  // initial page scale depends on the content width and is set after a
-  // layout, perform one now so queries during page load will use the up to
-  // date viewport.
-  if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame())
+  // The main frame's viewport size depends on the page scale. If viewport is
+  // enabled, the initial page scale depends on the content width and is set
+  // after a layout, perform one now so queries during page load will use the
+  // up to date viewport.
+  bool affectedByScale =
+      page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame();
+  bool affectedByScrollbars =
+      scrollbar_inclusion == kExcludeScrollbars &&
+      !ScrollbarTheme::GetTheme().UsesOverlayScrollbars();
+
+  if (affectedByScale || affectedByScrollbars)
     document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: This is potentially too much work. We really only need to know the
