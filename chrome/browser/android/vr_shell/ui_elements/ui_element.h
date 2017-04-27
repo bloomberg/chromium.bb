@@ -104,6 +104,12 @@ struct UiElement : public WorldRectangle {
 
   virtual void Initialize();
 
+  // Controller interaction methods.
+  virtual void OnHoverEnter();
+  virtual void OnHoverLeave();
+  virtual void OnButtonDown();
+  virtual void OnButtonUp();
+
   // Valid IDs are non-negative.
   int id = -1;
 

@@ -530,7 +530,7 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
       gesture->source_device = blink::kWebGestureDeviceTouchpad;
       gesture->x = 0;
       gesture->y = 0;
-      SendGesture(InputTarget::CONTENT, std::move(gesture));
+      SendGestureToContent(std::move(gesture));
       DVLOG(1) << __FUNCTION__ << ": sent CLICK gesture";
     }
   }
@@ -580,11 +580,12 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
   float closest_element_distance = (target_point_ - kOrigin).Length();
+  previous_target_element_ = target_element_;
   target_element_ = nullptr;
   float target_x;
   float target_y;
 
-  for (const auto& plane : scene_->GetUiElements()) {
+  for (auto& plane : scene_->GetUiElements()) {
     if (!plane->IsHitTestable())
       continue;
 
@@ -612,12 +613,11 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
     target_y = y;
   }
 
-  // Treat UI elements, which do not show web content, as NONE input
-  // targets since they cannot make use of the input anyway.
+  // Handle input targeting on the content quad, ignoring any other elements.
+  // Content is treated specially to accomodate scrolling, flings, etc.
   InputTarget input_target = InputTarget::NONE;
   int pixel_x = 0;
   int pixel_y = 0;
-
   if (target_element_ != nullptr && target_element_->fill == Fill::CONTENT) {
     input_target = InputTarget::CONTENT;
     gfx::RectF pixel_rect(0, 0, content_tex_css_width_,
@@ -625,7 +625,10 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
     pixel_x = pixel_rect.x() + pixel_rect.width() * target_x;
     pixel_y = pixel_rect.y() + pixel_rect.height() * target_y;
   }
-  SendEventsToTarget(input_target, pixel_x, pixel_y);
+  SendInputToContent(input_target, pixel_x, pixel_y);
+
+  // Handle input targeting on all non-content elements.
+  SendInputToUiElements(target_element_);
 }
 
 void VrShellGl::HandleControllerAppButtonActivity(
@@ -662,7 +665,7 @@ void VrShellGl::HandleControllerAppButtonActivity(
   }
 }
 
-void VrShellGl::SendEventsToTarget(InputTarget input_target,
+void VrShellGl::SendInputToContent(InputTarget input_target,
                                    int pixel_x,
                                    int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
@@ -691,37 +694,37 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
       case WebInputEvent::kGestureScrollBegin:
         current_scroll_target_ = input_target;
         if (current_scroll_target_ != InputTarget::NONE) {
-          SendGesture(current_scroll_target_, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         break;
       case WebInputEvent::kGestureScrollEnd:
         if (current_scroll_target_ != InputTarget::NONE) {
-          SendGesture(current_scroll_target_, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         current_fling_target_ = current_scroll_target_;
         current_scroll_target_ = InputTarget::NONE;
         break;
       case WebInputEvent::kGestureScrollUpdate:
         if (current_scroll_target_ != InputTarget::NONE) {
-          SendGesture(current_scroll_target_, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         break;
       case WebInputEvent::kGestureFlingStart:
         if (current_fling_target_ != InputTarget::NONE) {
-          SendGesture(current_fling_target_, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         current_fling_target_ = InputTarget::NONE;
         break;
       case WebInputEvent::kGestureFlingCancel:
         current_fling_target_ = InputTarget::NONE;
         if (input_target != InputTarget::NONE) {
-          SendGesture(input_target, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         break;
       case WebInputEvent::kGestureTapDown:
         current_fling_target_ = InputTarget::NONE;
         if (input_target != InputTarget::NONE) {
-          SendGesture(input_target, std::move(movableGesture));
+          SendGestureToContent(std::move(movableGesture));
         }
         break;
       case WebInputEvent::kUndefined:
@@ -735,21 +738,54 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
   bool new_target = input_target != current_input_target_;
   if (new_target && current_input_target_ != InputTarget::NONE) {
     // Send a move event indicating that the pointer moved off of an element.
-    SendGesture(current_input_target_,
-                MakeMouseEvent(WebInputEvent::kMouseLeave, timestamp, 0, 0));
+    SendGestureToContent(
+        MakeMouseEvent(WebInputEvent::kMouseLeave, timestamp, 0, 0));
   }
   current_input_target_ = input_target;
   if (current_input_target_ != InputTarget::NONE) {
     WebInputEvent::Type type =
         new_target ? WebInputEvent::kMouseEnter : WebInputEvent::kMouseMove;
-    SendGesture(input_target,
-                MakeMouseEvent(type, timestamp, pixel_x, pixel_y));
+    SendGestureToContent(MakeMouseEvent(type, timestamp, pixel_x, pixel_y));
   }
 }
 
-void VrShellGl::SendGesture(InputTarget input_target,
-                            std::unique_ptr<blink::WebInputEvent> event) {
-  DCHECK(input_target != InputTarget::NONE);
+void VrShellGl::SendInputToUiElements(UiElement* target_element) {
+  if (target_element != previous_target_element_) {
+    if (previous_target_element_ &&
+        previous_target_element_->fill != Fill::CONTENT) {
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&UiElement::OnHoverLeave,
+                                base::Unretained(previous_target_element_)));
+    }
+    if (target_element && target_element->fill != Fill::CONTENT) {
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&UiElement::OnHoverEnter,
+                                        base::Unretained(target_element)));
+    }
+    click_target_element_ = nullptr;
+  }
+  if (target_element && target_element->fill != Fill::CONTENT) {
+    if (controller_->ButtonDownHappened(
+            gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&UiElement::OnButtonDown,
+                                        base::Unretained(target_element)));
+      click_target_element_ = target_element;
+    }
+    if (controller_->ButtonUpHappened(
+            gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
+      if (click_target_element_ == target_element) {
+        task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&UiElement::OnButtonUp,
+                                          base::Unretained(target_element)));
+      }
+      click_target_element_ = nullptr;
+    }
+  }
+}
+
+void VrShellGl::SendGestureToContent(
+    std::unique_ptr<blink::WebInputEvent> event) {
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ProcessContentGesture, weak_vr_shell_,
                             base::Passed(std::move(event))));
