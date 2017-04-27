@@ -92,14 +92,15 @@ class Sensor : public EventTargetWithInlineData,
                      const String& sanitized_message,
                      const String& unsanitized_message) override;
 
-  void OnStartRequestCompleted(bool);
-  void OnStopRequestCompleted(bool);
+  void OnAddConfigurationRequestCompleted(bool);
 
   void StartListening();
   void StopListening();
 
+  void RequestAddConfiguration();
+
   void UpdateState(SensorState new_state);
-  void ReportError(ExceptionCode = kUnknownError,
+  void HandleError(ExceptionCode = kUnknownError,
                    const String& sanitized_message = String(),
                    const String& unsanitized_message = String());
 
