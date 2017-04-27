@@ -1394,59 +1394,64 @@ void TransportSecurityState::ProcessExpectCTHeader(
     const SSLInfo& ssl_info) {
   DCHECK(CalledOnValidThread());
 
-  // Records the result of processing an Expect-CT header. This enum is
-  // histogrammed, so do not reorder or remove values.
-  enum ExpectCTHeaderResult {
-    // An Expect-CT header was received, but it had the wrong value.
-    EXPECT_CT_HEADER_BAD_VALUE = 0,
-    // The Expect-CT header was ignored because the build was old.
-    EXPECT_CT_HEADER_BUILD_NOT_TIMELY = 1,
-    // The Expect-CT header was ignored because the certificate did not chain to
-    // a public root.
-    EXPECT_CT_HEADER_PRIVATE_ROOT = 2,
-    // The Expect-CT header was ignored because CT compliance details were
-    // unavailable.
-    EXPECT_CT_HEADER_COMPLIANCE_DETAILS_UNAVAILABLE = 3,
-    // The request satisified the Expect-CT compliance policy, so no action was
-    // taken.
-    EXPECT_CT_HEADER_COMPLIED = 4,
-    // The Expect-CT header was ignored because there was no corresponding
-    // preload list entry.
-    EXPECT_CT_HEADER_NOT_PRELOADED = 5,
-    // The Expect-CT header was processed successfully and passed on to the
-    // delegate to send a report.
-    EXPECT_CT_HEADER_PROCESSED = 6,
-    EXPECT_CT_HEADER_LAST = EXPECT_CT_HEADER_PROCESSED
-  };
-
-  ExpectCTHeaderResult result = EXPECT_CT_HEADER_PROCESSED;
-
-  if (!expect_ct_reporter_)
+  // If a site sends `Expect-CT: preload` and appears on the preload list, they
+  // are in the experimental preload-list-only, report-only version of
+  // Expect-CT.
+  if (value == "preload") {
+    if (!expect_ct_reporter_)
+      return;
+    if (!IsBuildTimely())
+      return;
+    if (!ssl_info.is_issued_by_known_root)
+      return;
+    if (!ssl_info.ct_compliance_details_available)
+      return;
+    if (ssl_info.ct_cert_policy_compliance ==
+        ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS)
+      return;
+    ExpectCTState state;
+    if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
+      expect_ct_reporter_->OnExpectCTFailed(host_port_pair, state.report_uri,
+                                            ssl_info);
+    }
     return;
-
-  ExpectCTState state;
-  if (value != "preload") {
-    result = EXPECT_CT_HEADER_BAD_VALUE;
-  } else if (!IsBuildTimely()) {
-    result = EXPECT_CT_HEADER_BUILD_NOT_TIMELY;
-  } else if (!ssl_info.is_issued_by_known_root) {
-    result = EXPECT_CT_HEADER_PRIVATE_ROOT;
-  } else if (!ssl_info.ct_compliance_details_available) {
-    result = EXPECT_CT_HEADER_COMPLIANCE_DETAILS_UNAVAILABLE;
-  } else if (ssl_info.ct_cert_policy_compliance ==
-             ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
-    result = EXPECT_CT_HEADER_COMPLIED;
-  } else if (!GetStaticExpectCTState(host_port_pair.host(), &state)) {
-    result = EXPECT_CT_HEADER_NOT_PRELOADED;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Net.ExpectCTHeaderResult", result,
-                            EXPECT_CT_HEADER_LAST + 1);
-  if (result != EXPECT_CT_HEADER_PROCESSED)
+  // Otherwise, see if the site has sent a valid Expect-CT header to dynamically
+  // turn on reporting and/or enforcement.
+  if (!IsDynamicExpectCTEnabled())
     return;
-
-  expect_ct_reporter_->OnExpectCTFailed(host_port_pair, state.report_uri,
-                                        ssl_info);
+  base::Time now = base::Time::Now();
+  base::TimeDelta max_age;
+  bool enforce;
+  GURL report_uri;
+  if (!ParseExpectCTHeader(value, &max_age, &enforce, &report_uri))
+    return;
+  // Do not persist Expect-CT headers if the connection was not chained to a
+  // public root or did not comply with CT policy.
+  if (!ssl_info.is_issued_by_known_root)
+    return;
+  if (!ssl_info.ct_compliance_details_available)
+    return;
+  if (ssl_info.ct_cert_policy_compliance !=
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
+    ExpectCTState state;
+    // If an Expect-CT header is observed over a non-compliant connection, the
+    // site owner should be notified about the misconfiguration. If the site was
+    // already opted in to Expect-CT, this report would have been sent at
+    // connection setup time. If the host is not already a noted Expect-CT host,
+    // however, the lack of CT compliance would not have been evaluated/reported
+    // at connection setup time, so it needs to be reported here while
+    // processing the header.
+    if (expect_ct_reporter_ && !report_uri.is_empty() &&
+        !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
+      expect_ct_reporter_->OnExpectCTFailed(host_port_pair, report_uri,
+                                            ssl_info);
+    }
+    return;
+  }
+  AddExpectCTInternal(host_port_pair.host(), now, now + max_age, enforce,
+                      report_uri);
 }
 
 // static
