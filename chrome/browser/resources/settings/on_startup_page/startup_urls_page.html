@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
@@ -13,7 +13,7 @@
 
 <dom-module id="settings-startup-urls-page">
   <template>
-    <style include="settings-shared action-link">
+    <style include="settings-shared action-link iron-flex">
       #outer {
         @apply(--settings-list-frame-padding);
         max-height: 395px;  /** Enough height to show six entries. */
@@ -28,7 +28,7 @@
       }
     </style>
     <div id="outer" class="layout vertical flex vertical-list">
-      <div id="container" class="scroll-container flex" scrollable>
+      <div id="container" class="scroll-container" scrollable>
         <iron-list items="[[startupPages_]]" scroll-target="container">
           <template>
             <settings-startup-url-entry model="[[item]]"

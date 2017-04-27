@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
 <link rel="import" href="../controls/settings_idle_load.html">
 <link rel="import" href="../on_startup_page/on_startup_page.html">
@@ -26,7 +27,7 @@
      includes both the basic and advanced settings. -->
 <dom-module id="settings-basic-page">
   <template>
-    <style include="settings-page-styles">
+    <style include="settings-page-styles cr-hidden-style">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
