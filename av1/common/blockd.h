@@ -260,9 +260,7 @@ static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
 typedef struct {
   PREDICTION_MODE as_mode;
   int_mv as_mv[2];  // first, second inter predictor motion vectors
-#if CONFIG_REF_MV
   int_mv pred_mv[2];
-#endif
 #if CONFIG_EXT_INTER
   int_mv ref_mv[2];
 #endif  // CONFIG_EXT_INTER
@@ -413,9 +411,7 @@ typedef struct {
 #endif  // CONFIG_MOTION_VAR
   int_mv mv[2];
   int_mv pred_mv[2];
-#if CONFIG_REF_MV
   uint8_t ref_mv_idx;
-#endif
 #if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
 #endif
@@ -631,11 +627,9 @@ typedef struct macroblockd {
   // block dimension in the unit of mode_info.
   uint8_t n8_w, n8_h;
 
-#if CONFIG_REF_MV
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint8_t is_sec_rect;
-#endif
 
 #if CONFIG_PVQ
   daala_dec_ctx daala_dec;

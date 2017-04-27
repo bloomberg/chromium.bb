@@ -475,7 +475,6 @@ post_process_cmdline() {
     done
 
     # Enable adopted experiments by default
-    soft_enable ref_mv
     soft_enable cb4x4
     soft_enable filter_7bit
     soft_enable reference_buffer

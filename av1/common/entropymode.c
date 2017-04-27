@@ -732,7 +732,6 @@ static const aom_prob
     };
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_REF_MV
 static const aom_prob default_newmv_prob[NEWMV_MODE_CONTEXTS] = {
   200, 180, 150, 150, 110, 70, 60,
 };
@@ -747,7 +746,6 @@ static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS] = {
 
 static const aom_prob default_drl_prob[DRL_MODE_CONTEXTS] = { 128, 160, 180,
                                                               128, 160 };
-#endif  // CONFIG_REF_MV
 
 static const aom_prob
     default_inter_mode_probs[INTER_MODE_CONTEXTS][INTER_MODES - 1] = {
@@ -3268,12 +3266,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
 #endif
   av1_copy(fc->skip_probs, default_skip_probs);
-#if CONFIG_REF_MV
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
   av1_copy(fc->drl_prob, default_drl_prob);
-#endif  // CONFIG_REF_MV
   av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
@@ -3494,7 +3490,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
 
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_REF_MV
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
     fc->newmv_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->newmv_prob[i], counts->newmv_mode[i]);
@@ -3508,11 +3503,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
     fc->drl_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->drl_prob[i], counts->drl_mode[i]);
-#else
-  for (i = 0; i < INTER_MODE_CONTEXTS; i++)
-    aom_tree_merge_probs(av1_inter_mode_tree, pre_fc->inter_mode_probs[i],
-                         counts->inter_mode[i], fc->inter_mode_probs[i]);
-#endif
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i)

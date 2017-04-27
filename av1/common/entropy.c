@@ -6260,7 +6260,6 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
   aom_cdf_prob *fc_cdf_ptr;
 
-#if CONFIG_REF_MV
   int j;
   for (j = 0; j < NMV_CONTEXTS; ++j) {
     AVERAGE_TILE_CDFS(nmvc[j].joint_cdf)
@@ -6271,15 +6270,6 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].fp_cdf);
     }
   }
-#else
-  AVERAGE_TILE_CDFS(nmvc.joint_cdf)
-
-  for (k = 0; k < 2; ++k) {
-    AVERAGE_TILE_CDFS(nmvc.comps[k].class_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].class0_fp_cdf)
-    AVERAGE_TILE_CDFS(nmvc.comps[k].fp_cdf)
-  }
-#endif
 }
 
 void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
@@ -6324,17 +6314,13 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
   aom_cdf_prob *fc_cdf_ptr;
 
-// FIXME: comp_inter_cdf not defined
+  // FIXME: comp_inter_cdf not defined
 
-// FIXME: comp_ref_cdf and comp_bwd_ref not defined
+  // FIXME: comp_ref_cdf and comp_bwd_ref not defined
 
-// FIXME: single_ref_cdf not defined
+  // FIXME: single_ref_cdf not defined
 
-#if CONFIG_REF_MV
-// FIXME: cdfs not defined for newmv_mode, zeromv_mode, drl_mode, new2mv_mode
-#else
-  AVERAGE_TILE_CDFS(inter_mode_cdf)
-#endif
+  // FIXME: cdfs not defined for newmv_mode, zeromv_mode, drl_mode, new2mv_mode
 
   // FIXME: cdfs not defined for motion_mode_prob, obmc_prob
 
