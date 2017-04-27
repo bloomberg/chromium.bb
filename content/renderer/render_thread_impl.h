@@ -240,7 +240,6 @@ class CONTENT_EXPORT RenderThreadImpl
   GetCompositorImplThreadTaskRunner() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsScrollAnimatorEnabled() override;
   bool IsSurfaceSynchronizationEnabled() override;
@@ -735,7 +734,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
   cc::BufferToTextureTargetMap buffer_to_texture_target_map_;
-  bool are_image_decode_tasks_enabled_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
   bool is_surface_synchronization_enabled_;

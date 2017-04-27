@@ -35,7 +35,6 @@ class FakeCompositorDependencies : public CompositorDependencies {
   GetCompositorImplThreadTaskRunner() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsScrollAnimatorEnabled() override;
   bool IsSurfaceSynchronizationEnabled() override;

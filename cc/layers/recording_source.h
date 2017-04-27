@@ -46,7 +46,6 @@ class CC_EXPORT RecordingSource {
   gfx::Size GetSize() const;
   void SetEmptyBounds();
   void SetSlowdownRasterScaleFactor(int factor);
-  void SetGenerateDiscardableImagesMetadata(bool generate_metadata);
   void SetBackgroundColor(SkColor background_color);
   void SetRequiresClear(bool requires_clear);
 
@@ -63,7 +62,6 @@ class CC_EXPORT RecordingSource {
   gfx::Rect recorded_viewport_;
   gfx::Size size_;
   int slow_down_raster_scale_factor_for_debug_;
-  bool generate_discardable_images_metadata_;
   bool requires_clear_;
   bool is_solid_color_;
   bool clear_canvas_with_debug_color_;

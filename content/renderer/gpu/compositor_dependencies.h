@@ -47,7 +47,6 @@ class CompositorDependencies {
   GetCompositorImplThreadTaskRunner() = 0;
   virtual blink::scheduler::RendererScheduler* GetRendererScheduler() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
-  virtual bool AreImageDecodeTasksEnabled() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;
   virtual bool IsSurfaceSynchronizationEnabled() = 0;

@@ -21,7 +21,6 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
   void AfterTest() override {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->image_decode_tasks_enabled = true;
     settings->enable_checker_imaging = true;
   }
 

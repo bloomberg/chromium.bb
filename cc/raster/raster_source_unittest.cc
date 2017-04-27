@@ -207,7 +207,6 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   recording_source->add_draw_image(discardable_image[0][1], gfx::Point(260, 0));
   recording_source->add_draw_image(discardable_image[1][1],
                                    gfx::Point(260, 260));
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
@@ -593,7 +592,6 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   recording_source->add_draw_rect_with_flags(
       gfx::Rect(size.width() - 4, size.height() - 4, 4, 4), flags);
 
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   bool can_use_lcd = true;
