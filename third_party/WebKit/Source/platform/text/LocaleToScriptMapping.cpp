@@ -499,9 +499,9 @@ UScriptCode ScriptCodeForHanFromSubtags(const String& locale, char delimiter) {
   // Some sites emit lang="en-JP" when English is set as the preferred
   // language. Use script/region subtags of the content locale to pick the
   // fallback font for unified Han ideographs.
-  for (size_t end = locale.Find(delimiter); end != kNotFound;) {
+  for (size_t end = locale.find(delimiter); end != kNotFound;) {
     size_t begin = end + 1;
-    end = locale.Find(delimiter, begin);
+    end = locale.find(delimiter, begin);
     size_t len = (end == kNotFound ? locale.length() : end) - begin;
     UScriptCode script;
     switch (len) {

@@ -80,7 +80,7 @@ static bool ParseAccessControlAllowList(const String& string,
                                         HashSet<String, HashType>& set) {
   unsigned start = 0;
   size_t end;
-  while ((end = string.Find(',', start)) != kNotFound) {
+  while ((end = string.find(',', start)) != kNotFound) {
     if (start != end)
       AddToAccessControlAllowList(string, start, end - 1, set);
     start = end + 1;

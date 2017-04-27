@@ -47,7 +47,7 @@
 namespace blink {
 
 static String ExtractLanguageCode(const String& locale) {
-  size_t dash_position = locale.Find('-');
+  size_t dash_position = locale.find('-');
   if (dash_position == kNotFound)
     return locale;
   return locale.Left(dash_position);

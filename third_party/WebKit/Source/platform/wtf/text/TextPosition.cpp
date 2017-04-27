@@ -37,7 +37,7 @@ std::unique_ptr<Vector<unsigned>> GetLineEndings(const String& text) {
 
   unsigned start = 0;
   while (start < text.length()) {
-    size_t line_end = text.Find('\n', start);
+    size_t line_end = text.find('\n', start);
     if (line_end == kNotFound)
       break;
 

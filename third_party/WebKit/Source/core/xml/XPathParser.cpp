@@ -454,7 +454,7 @@ int Parser::Lex(void* data) {
 bool Parser::ExpandQName(const String& q_name,
                          AtomicString& local_name,
                          AtomicString& namespace_uri) {
-  size_t colon = q_name.Find(':');
+  size_t colon = q_name.find(':');
   if (colon != kNotFound) {
     if (!resolver_)
       return false;

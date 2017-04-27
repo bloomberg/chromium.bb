@@ -99,10 +99,10 @@ class WTF_EXPORT AtomicString {
 
   // Find characters.
   size_t Find(UChar c, unsigned start = 0) const {
-    return string_.Find(c, start);
+    return string_.find(c, start);
   }
   size_t Find(LChar c, unsigned start = 0) const {
-    return string_.Find(c, start);
+    return string_.find(c, start);
   }
   size_t Find(char c, unsigned start = 0) const {
     return Find(static_cast<LChar>(c), start);

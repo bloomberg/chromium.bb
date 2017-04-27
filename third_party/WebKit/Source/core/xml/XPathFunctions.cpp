@@ -599,7 +599,7 @@ Value FunTranslate::Evaluate(EvaluationContext& context) const {
 
   for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
     UChar ch = s1[i1];
-    size_t i2 = s2.Find(ch);
+    size_t i2 = s2.find(ch);
 
     if (i2 == kNotFound)
       result.Append(ch);

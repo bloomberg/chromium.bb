@@ -34,9 +34,9 @@ namespace blink {
 
 String MimeTypeFromDataURL(const String& url) {
   DCHECK(ProtocolIs(url, "data"));
-  size_t index = url.Find(';');
+  size_t index = url.find(';');
   if (index == kNotFound)
-    index = url.Find(',');
+    index = url.find(',');
   if (index != kNotFound) {
     if (index > 5)
       return url.Substring(5, index - 5).DeprecatedLower();

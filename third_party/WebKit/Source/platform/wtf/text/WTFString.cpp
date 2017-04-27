@@ -543,7 +543,7 @@ void String::Split(UChar separator,
 
   unsigned start_pos = 0;
   size_t end_pos;
-  while ((end_pos = Find(separator, start_pos)) != kNotFound) {
+  while ((end_pos = find(separator, start_pos)) != kNotFound) {
     if (allow_empty_entries || start_pos != end_pos)
       result.push_back(Substring(start_pos, end_pos - start_pos));
     start_pos = end_pos + 1;

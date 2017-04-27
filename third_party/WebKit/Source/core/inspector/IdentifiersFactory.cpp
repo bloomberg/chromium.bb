@@ -104,7 +104,7 @@ String IdentifiersFactory::AddProcessIdPrefixTo(int id) {
 
 // static
 int IdentifiersFactory::RemoveProcessIdPrefixFrom(const String& id, bool* ok) {
-  size_t dot_index = id.Find('.');
+  size_t dot_index = id.find('.');
 
   if (dot_index == kNotFound) {
     *ok = false;

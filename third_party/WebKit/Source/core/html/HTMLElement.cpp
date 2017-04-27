@@ -194,14 +194,14 @@ void HTMLElement::MapLanguageAttributeToLocale(const AtomicString& value,
     else if (isHTMLBodyElement(*this))
       UseCounter::Count(GetDocument(), UseCounter::kLangAttributeOnBody);
     String html_language = value.GetString();
-    size_t first_separator = html_language.Find('-');
+    size_t first_separator = html_language.find('-');
     if (first_separator != kNotFound)
       html_language = html_language.Left(first_separator);
     String ui_language = DefaultLanguage();
-    first_separator = ui_language.Find('-');
+    first_separator = ui_language.find('-');
     if (first_separator != kNotFound)
       ui_language = ui_language.Left(first_separator);
-    first_separator = ui_language.Find('_');
+    first_separator = ui_language.find('_');
     if (first_separator != kNotFound)
       ui_language = ui_language.Left(first_separator);
     if (!DeprecatedEqualIgnoringCase(html_language, ui_language))

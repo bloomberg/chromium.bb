@@ -470,7 +470,7 @@ bool SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
   DCHECK_NE(protocol_end, WTF::kNotFound);
   new_protocol = old_protocol.Substring(0, protocol_end);
 
-  size_t suborigin_end = old_host.Find('.');
+  size_t suborigin_end = old_host.find('.');
   // Suborigins cannot be empty.
   if (suborigin_end == 0 || suborigin_end == WTF::kNotFound) {
     new_protocol = original_protocol;

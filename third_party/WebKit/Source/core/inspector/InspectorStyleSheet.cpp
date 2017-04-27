@@ -122,7 +122,7 @@ String FindMagicComment(const String& content, const String& name) {
 
   String disallowed_chars("\"' \t");
   for (unsigned i = 0; i < match.length(); ++i) {
-    if (disallowed_chars.Find(match[i]) != kNotFound)
+    if (disallowed_chars.find(match[i]) != kNotFound)
       return g_empty_string;
   }
 
@@ -274,7 +274,7 @@ void StyleSheetHandler::ObserveProperty(unsigned start_offset,
           .StripWhiteSpace();
   if (property_string.EndsWith(';'))
     property_string = property_string.Left(property_string.length() - 1);
-  size_t colon_index = property_string.Find(':');
+  size_t colon_index = property_string.find(':');
   ASSERT(colon_index != kNotFound);
 
   String name = property_string.Left(colon_index).StripWhiteSpace();

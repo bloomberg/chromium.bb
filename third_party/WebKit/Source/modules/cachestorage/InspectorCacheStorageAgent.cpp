@@ -57,7 +57,7 @@ String BuildCacheId(const String& security_origin, const String& cache_name) {
 Response ParseCacheId(const String& id,
                       String* security_origin,
                       String* cache_name) {
-  size_t pipe = id.Find('|');
+  size_t pipe = id.find('|');
   if (pipe == WTF::kNotFound)
     return Response::Error("Invalid cache id.");
   *security_origin = id.Substring(0, pipe);
