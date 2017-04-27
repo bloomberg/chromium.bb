@@ -4,17 +4,19 @@
 
 #include "modules/bluetooth/BluetoothDevice.h"
 
+#include <memory>
+#include <utility>
+
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothAttributeInstanceMap.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 
@@ -94,6 +96,17 @@ DEFINE_TRACE(BluetoothDevice) {
   visitor->Trace(bluetooth_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+void BluetoothDevice::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  if (event_type == EventTypeNames::gattserverdisconnected) {
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kGATTServerDisconnectedEvent);
+  }
 }
 
 }  // namespace blink

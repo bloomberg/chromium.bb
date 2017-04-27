@@ -1578,6 +1578,7 @@ class CORE_EXPORT UseCounter {
     kDispatchMouseEventOnDisabledFormControl = 1967,
     kElementNameDOMInvalidHTMLParserValid = 1968,
     kElementNameDOMValidHTMLParserInvalid = 1969,
+    kGATTServerDisconnectedEvent = 1970,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
