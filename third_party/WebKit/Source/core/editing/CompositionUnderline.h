@@ -32,6 +32,8 @@
 
 namespace blink {
 
+struct WebCompositionUnderline;
+
 class CORE_EXPORT CompositionUnderline {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -41,6 +43,8 @@ class CORE_EXPORT CompositionUnderline {
                        const Color&,
                        bool thick,
                        const Color& background_color);
+
+  CompositionUnderline(const WebCompositionUnderline&);
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }

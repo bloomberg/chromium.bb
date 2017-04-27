@@ -4,6 +4,8 @@
 
 #include "core/editing/CompositionUnderline.h"
 
+#include "public/web/WebCompositionUnderline.h"
+
 namespace blink {
 
 CompositionUnderline::CompositionUnderline(unsigned start_offset,
@@ -20,4 +22,11 @@ CompositionUnderline::CompositionUnderline(unsigned start_offset,
   end_offset_ = std::max(start_offset_ + 1u, end_offset);
 }
 
+CompositionUnderline::CompositionUnderline(
+    const WebCompositionUnderline& underline)
+    : CompositionUnderline(underline.start_offset,
+                           underline.end_offset,
+                           Color(underline.color),
+                           underline.thick,
+                           Color(underline.background_color)) {}
 }  // namespace blink

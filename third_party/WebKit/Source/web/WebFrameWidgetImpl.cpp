@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "core/dom/DocumentUserGestureToken.h"
+#include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -63,7 +64,6 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/AnimationWorkletProxyClientImpl.h"
-#include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"

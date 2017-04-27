@@ -109,6 +109,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FindInPageCoordinates.h"
@@ -221,7 +222,6 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
-#include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/TextCheckerClientImpl.h"
@@ -1308,7 +1308,7 @@ bool WebLocalFrameImpl::SetCompositionFromExistingText(
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   input_method_controller.SetCompositionFromExistingText(
-      CompositionUnderlineVectorBuilder(underlines), composition_start,
+      CompositionUnderlineVectorBuilder::Build(underlines), composition_start,
       composition_end);
 
   return true;

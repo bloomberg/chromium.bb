@@ -28,18 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/CompositionUnderlineVectorBuilder.h"
+#ifndef CompositionUnderlineVectorBuilder_h
+#define CompositionUnderlineVectorBuilder_h
 
-#include "web/CompositionUnderlineBuilder.h"
+#include "core/CoreExport.h"
+#include "core/editing/CompositionUnderline.h"
+#include "platform/wtf/Vector.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebCompositionUnderline.h"
 
 namespace blink {
 
-CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
-    const WebVector<WebCompositionUnderline>& underlines) {
-  size_t size = underlines.size();
-  ReserveCapacity(size);
-  for (size_t i = 0; i < size; ++i)
-    push_back(CompositionUnderlineBuilder(underlines[i]));
-}
+// This class is used for converting from WebVector<WebCompositionUnderline>
+// to Vector<CompositionUnderline>.
+
+class CompositionUnderlineVectorBuilder {
+  STATIC_ONLY(CompositionUnderlineVectorBuilder);
+
+ public:
+  CORE_EXPORT static Vector<CompositionUnderline> Build(
+      const WebVector<WebCompositionUnderline>&);
+};
 
 }  // namespace blink
+
+#endif

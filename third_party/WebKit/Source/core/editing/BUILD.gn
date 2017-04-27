@@ -11,6 +11,8 @@ blink_core_sources("editing") {
     "CaretDisplayItemClient.h",
     "CompositionUnderline.cpp",
     "CompositionUnderline.h",
+    "CompositionUnderlineVectorBuilder.cpp",
+    "CompositionUnderlineVectorBuilder.h",
     "DOMSelection.cpp",
     "DOMSelection.h",
     "DragCaret.cpp",

@@ -6,6 +6,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/dom/DocumentUserGestureToken.h"
+#include "core/editing/CompositionUnderlineVectorBuilder.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -19,7 +20,6 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
-#include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
@@ -85,7 +85,7 @@ bool WebInputMethodControllerImpl::SetComposition(
   // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).
   // But the selection range actually takes effect.
   GetInputMethodController().SetComposition(
-      String(text), CompositionUnderlineVectorBuilder(underlines),
+      String(text), CompositionUnderlineVectorBuilder::Build(underlines),
       selection_start, selection_end);
 
   return text.IsEmpty() || GetInputMethodController().HasComposition();
@@ -135,7 +135,7 @@ bool WebInputMethodControllerImpl::CommitText(
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return GetInputMethodController().CommitText(
-      text, CompositionUnderlineVectorBuilder(underlines),
+      text, CompositionUnderlineVectorBuilder::Build(underlines),
       relative_caret_position);
 }
 
