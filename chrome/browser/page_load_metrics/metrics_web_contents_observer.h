@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
@@ -43,6 +44,27 @@ class MetricsWebContentsObserver
       public content::WebContentsUserData<MetricsWebContentsObserver>,
       public content::RenderWidgetHost::InputEventObserver {
  public:
+  // TestingObserver allows tests to observe MetricsWebContentsObserver state
+  // changes. Tests may use TestingObserver to wait until certain state changes,
+  // such as the arrivial of PageLoadTiming messages from the render process,
+  // have been observed.
+  class TestingObserver {
+   public:
+    explicit TestingObserver(content::WebContents* web_contents);
+    virtual ~TestingObserver();
+
+    void OnGoingAway();
+
+    // Invoked when a new PageLoadTiming update has been received and processed.
+    virtual void OnTimingUpdated(const PageLoadTiming& timing,
+                                 const PageLoadMetadata& metadata) {}
+
+   private:
+    page_load_metrics::MetricsWebContentsObserver* observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestingObserver);
+  };
+
   // Note that the returned metrics is owned by the web contents.
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
@@ -109,6 +131,15 @@ class MetricsWebContentsObserver
   // This getter function is required for testing.
   const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
 
+  // Register / unregister TestingObservers. Should only be called from tests.
+  void AddTestingObserver(TestingObserver* observer);
+  void RemoveTestingObserver(TestingObserver* observer);
+
+  // public only for testing
+  void OnTimingUpdated(content::RenderFrameHost* render_frame_host,
+                       const PageLoadTiming& timing,
+                       const PageLoadMetadata& metadata);
+
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
@@ -149,10 +180,6 @@ class MetricsWebContentsObserver
       content::NavigationHandle* new_navigation,
       UserInitiatedInfo user_initiated_info);
 
-  void OnTimingUpdated(content::RenderFrameHost*,
-                       const PageLoadTiming& timing,
-                       const PageLoadMetadata& metadata);
-
   bool ShouldTrackNavigation(
       content::NavigationHandle* navigation_handle) const;
 
@@ -181,6 +208,8 @@ class MetricsWebContentsObserver
 
   // Has the MWCO observed at least one navigation?
   bool has_navigated_;
+
+  base::ObserverList<TestingObserver> testing_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };

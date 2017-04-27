@@ -167,10 +167,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   void SimulateTimingUpdate(const PageLoadTiming& timing,
                             content::RenderFrameHost* render_frame_host) {
-    ASSERT_TRUE(observer_->OnMessageReceived(
-        PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                         PageLoadMetadata()),
-        render_frame_host));
+    observer_->OnTimingUpdated(render_frame_host, timing, PageLoadMetadata());
   }
 
   void AttachObserver() {
