@@ -9,21 +9,19 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
-using content::BrowserThread;
 using extensions::Extension;
 
 // Maps scale factors (enum values) to file path.
@@ -36,10 +34,7 @@ typedef std::map<int, TestScaleFactorToFileMap> TestFilePathMap;
 
 class BrowserThemePackTest : public ::testing::Test {
  public:
-  BrowserThemePackTest()
-      : message_loop(),
-        fake_ui_thread(BrowserThread::UI, &message_loop),
-        fake_file_thread(BrowserThread::FILE, &message_loop) {
+  BrowserThemePackTest() {
     std::vector<ui::ScaleFactor> scale_factors;
     scale_factors.push_back(ui::SCALE_FACTOR_100P);
     scale_factors.push_back(ui::SCALE_FACTOR_200P);
@@ -352,9 +347,7 @@ class BrowserThemePackTest : public ::testing::Test {
     }
   }
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread fake_ui_thread;
-  content::TestBrowserThread fake_file_thread;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   typedef std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       ScopedSetSupportedScaleFactors;

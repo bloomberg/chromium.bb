@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,7 +19,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -61,9 +60,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
 class DownloadItemNotificationTest : public testing::Test {
  public:
-  DownloadItemNotificationTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        profile_(nullptr) {}
+  DownloadItemNotificationTest() : profile_(nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -168,8 +165,7 @@ class DownloadItemNotificationTest : public testing::Test {
         download_item_notification_->notification_.get());
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;

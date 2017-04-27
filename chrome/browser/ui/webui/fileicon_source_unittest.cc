@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/fileicon_source.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -33,18 +30,14 @@ class TestFileIconSource : public FileIconSource {
 
 class FileIconSourceTest : public testing::Test {
  public:
-  FileIconSourceTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
+  FileIconSourceTest() = default;
 
   static TestFileIconSource* CreateFileIconSource() {
     return new TestFileIconSource();
   }
 
  private:
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 const struct FetchFileIconExpectation {

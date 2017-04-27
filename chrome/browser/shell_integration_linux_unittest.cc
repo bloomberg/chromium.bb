@@ -18,18 +18,16 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
 using ::testing::ElementsAre;
 
 namespace shell_integration_linux {
@@ -96,8 +94,7 @@ bool WriteString(const base::FilePath& path, const base::StringPiece& str) {
 }  // namespace
 
 TEST(ShellIntegrationTest, GetDataWriteLocation) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Test that it returns $XDG_DATA_HOME.
   {
@@ -124,8 +121,7 @@ TEST(ShellIntegrationTest, GetDataWriteLocation) {
 }
 
 TEST(ShellIntegrationTest, GetDataSearchLocations) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Test that it returns $XDG_DATA_HOME + $XDG_DATA_DIRS.
   {
@@ -194,8 +190,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   base::FilePath kTemplateFilepath(kTemplateFilename);
   const char kNoDisplayDesktopFile[] = "[Desktop Entry]\nNoDisplay=true";
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // No existing shortcuts.
   {
@@ -297,8 +292,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
   const char kTestData1[] = "a magical testing string";
   const char kTestData2[] = "a different testing string";
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   // Test that it searches $XDG_DATA_HOME/applications.
   {
@@ -399,8 +393,7 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
   const char kApp2Filename[] = "chrome-extension2-Profile_Name_.desktop";
   const char kUnrelatedAppFilename[] = "chrome-extension-Other_Profile.desktop";
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

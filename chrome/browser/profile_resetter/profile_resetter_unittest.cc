@@ -239,19 +239,17 @@ class ConfigParserTest : public testing::Test {
 
   MOCK_METHOD0(Callback, void(void));
 
-  base::MessageLoopForIO loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   URLFetcherRequestListener request_listener_;
   net::FakeURLFetcherFactory factory_;
 };
 
 ConfigParserTest::ConfigParserTest()
-    : ui_thread_(content::BrowserThread::UI, &loop_),
-      io_thread_(content::BrowserThread::IO, &loop_),
-      factory_(NULL, base::Bind(&ConfigParserTest::CreateFakeURLFetcher,
-                                base::Unretained(this))) {
-}
+    : test_browser_thread_bundle_(
+          content::TestBrowserThreadBundle::IO_MAINLOOP),
+      factory_(NULL,
+               base::Bind(&ConfigParserTest::CreateFakeURLFetcher,
+                          base::Unretained(this))) {}
 
 ConfigParserTest::~ConfigParserTest() {}
 

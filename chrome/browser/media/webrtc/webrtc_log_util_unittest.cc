@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/webrtc/webrtc_log_util.h"
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/webrtc/webrtc_log_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const int kExpectedDaysToKeepLogFiles = 5;
 
 class WebRtcLogUtilTest : public testing::Test {
  public:
-  WebRtcLogUtilTest()
-      : file_thread_(content::BrowserThread::FILE, &message_loop_) {}
+  WebRtcLogUtilTest() = default;
 
   void SetUp() override {
     // Create three files. One with modified date as of now, one with date one
@@ -52,8 +51,7 @@ class WebRtcLogUtilTest : public testing::Test {
     EXPECT_EQ(expected_files, file_counter);
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::ScopedTempDir dir_;
 };
 

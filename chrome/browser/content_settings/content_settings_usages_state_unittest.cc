@@ -6,15 +6,12 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -27,9 +24,7 @@ ContentSettingsUsagesState::CommittedDetails CreateDetailsWithURL(
 
 class ContentSettingsUsagesStateTests : public testing::Test {
  public:
-  ContentSettingsUsagesStateTests()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
+  ContentSettingsUsagesStateTests() = default;
 
  protected:
   void ClearOnNewOrigin(ContentSettingsType type) {
@@ -194,8 +189,7 @@ class ContentSettingsUsagesStateTests : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 TEST_F(ContentSettingsUsagesStateTests, ClearOnNewOriginForGeolocation) {

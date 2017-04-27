@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -22,7 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/url_info.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/transport_security_state.h"
@@ -33,20 +32,14 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
-
 namespace chrome_browser_net {
 
 class PredictorTest : public testing::Test {
  public:
-  PredictorTest()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {}
+  PredictorTest() = default;
 
  private:
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 //------------------------------------------------------------------------------

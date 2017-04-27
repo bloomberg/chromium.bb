@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,7 +24,7 @@
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -137,8 +136,7 @@ class CustomFakeCryptohomeClient : public FakeCryptohomeClient {
 class PlatformVerificationFlowTest : public ::testing::Test {
  public:
   PlatformVerificationFlowTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        certificate_success_(true),
+      : certificate_success_(true),
         fake_certificate_index_(0),
         sign_challenge_success_(true),
         result_(PlatformVerificationFlow::INTERNAL_ERROR) {}
@@ -219,8 +217,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   StrictMock<MockAttestationFlow> mock_attestation_flow_;
   cryptohome::MockAsyncMethodCaller mock_async_caller_;
   CustomFakeCryptohomeClient fake_cryptohome_client_;

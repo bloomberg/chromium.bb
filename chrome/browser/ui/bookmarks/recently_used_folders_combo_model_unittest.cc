@@ -7,20 +7,17 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/combobox_model_observer.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks::TestBookmarkClient;
-using content::BrowserThread;
-
 // Implementation of ComboboxModelObserver that records when
 // OnComboboxModelChanged() is invoked.
 class TestComboboxModelObserver : public ui::ComboboxModelObserver {
@@ -48,20 +45,13 @@ class TestComboboxModelObserver : public ui::ComboboxModelObserver {
 
 class RecentlyUsedFoldersComboModelTest : public testing::Test {
  public:
-  RecentlyUsedFoldersComboModelTest();
+  RecentlyUsedFoldersComboModelTest() = default;
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModelTest);
 };
-
-RecentlyUsedFoldersComboModelTest::RecentlyUsedFoldersComboModelTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
-}
 
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {

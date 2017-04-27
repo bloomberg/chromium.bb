@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
@@ -18,7 +17,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 struct TestCase {
@@ -84,8 +83,7 @@ std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
 
 class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
  public:
-  SpellcheckServiceUnitTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  SpellcheckServiceUnitTest() {
     user_prefs::UserPrefs::Set(&context_, &prefs_);
   }
   ~SpellcheckServiceUnitTest() override {}
@@ -104,8 +102,7 @@ class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
   struct : public base::SupportsUserData {
   } context_;
   TestingPrefServiceSimple prefs_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceUnitTest);
 };

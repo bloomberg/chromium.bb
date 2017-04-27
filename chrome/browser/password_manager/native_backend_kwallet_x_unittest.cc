@@ -20,14 +20,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -287,30 +287,16 @@ void NativeBackendKWalletTestBase::CheckPasswordChangesWithResult(
 class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
  protected:
   NativeBackendKWalletTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB), klauncher_ret_(0),
-        klauncher_contacted_(false), kwallet_runnable_(true),
-        kwallet_running_(true), kwallet_enabled_(true),
-        desktop_env_(GetParam()) {
-  }
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_DB_THREAD),
+        klauncher_ret_(0),
+        klauncher_contacted_(false),
+        kwallet_runnable_(true),
+        kwallet_running_(true),
+        kwallet_enabled_(true),
+        desktop_env_(GetParam()) {}
 
   void SetUp() override;
-  void TearDown() override;
-
-  // Let the DB thread run to completion of all current tasks.
-  void RunDBThread() {
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::BindOnce(ThreadDone, &event));
-    event.Wait();
-    // Some of the tests may post messages to the UI thread, but we don't need
-    // to run those until after the DB thread is finished. So run it here.
-    base::RunLoop().RunUntilIdle();
-  }
-  static void ThreadDone(base::WaitableEvent* event) {
-    event->Signal();
-  }
 
   // Utilities to help verify sets of expectations.
   typedef std::vector<
@@ -327,9 +313,7 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   // Tests RemoveLoginsCreatedBetween or RemoveLoginsSyncedBetween.
   void TestRemoveLoginsBetween(RemoveBetweenMethod date_to_test);
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   scoped_refptr<dbus::MockBus> mock_session_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_klauncher_proxy_;
@@ -361,8 +345,6 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
 };
 
 void NativeBackendKWalletTest::SetUp() {
-  ASSERT_TRUE(db_thread_.Start());
-
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
   mock_session_bus_ = new dbus::MockBus(options);
@@ -412,13 +394,6 @@ void NativeBackendKWalletTest::SetUp() {
       .WillRepeatedly(Return());
 }
 
-void NativeBackendKWalletTest::TearDown() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  base::RunLoop().Run();
-  db_thread_.Stop();
-}
-
 void NativeBackendKWalletTest::TestRemoveLoginsBetween(
     RemoveBetweenMethod date_to_test) {
   NativeBackendKWalletStub backend(42, desktop_env_);
@@ -462,7 +437,7 @@ void NativeBackendKWalletTest::TestRemoveLoginsBetween(
       base::Bind(
           method, base::Unretained(&backend), base::Time(), next_day, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   std::vector<const PasswordForm*> forms;
   forms.push_back(&form_isc_);
@@ -480,7 +455,7 @@ void NativeBackendKWalletTest::TestRemoveLoginsBetween(
       base::Bind(
           method, base::Unretained(&backend), next_day, base::Time(), &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
@@ -716,7 +691,7 @@ TEST_P(NativeBackendKWalletTest, BasicAddLogin) {
                  PasswordStoreChangeList(1, PasswordStoreChange(
                      PasswordStoreChange::ADD, form_google_))));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -736,7 +711,7 @@ TEST_P(NativeBackendKWalletTest, BasicUpdateLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   PasswordForm new_form_google(form_google_);
   new_form_google.times_used = 10;
@@ -753,7 +728,7 @@ TEST_P(NativeBackendKWalletTest, BasicUpdateLogin) {
                  new_form_google,
                  &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   ASSERT_EQ(1u, changes.size());
   EXPECT_EQ(PasswordStoreChange::UPDATE, changes.front().type());
@@ -782,7 +757,7 @@ TEST_P(NativeBackendKWalletTest, BasicListLogins) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -805,7 +780,7 @@ TEST_P(NativeBackendKWalletTest, BasicRemoveLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -824,7 +799,7 @@ TEST_P(NativeBackendKWalletTest, BasicRemoveLogin) {
                  base::Unretained(&backend), form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   expected.clear();
   CheckPasswordForms("Chrome Form Data (42)", expected);
@@ -840,7 +815,7 @@ TEST_P(NativeBackendKWalletTest, UpdateNonexistentLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   std::vector<const PasswordForm*> forms;
   forms.push_back(&form_google_);
@@ -859,7 +834,7 @@ TEST_P(NativeBackendKWalletTest, UpdateNonexistentLogin) {
       base::Bind(&CheckPasswordChangesWithResult,
                  base::Owned(new PasswordStoreChangeList), &changes));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_EQ(PasswordStoreChangeList(), changes);
   CheckPasswordForms("Chrome Form Data (42)", expected);
@@ -875,7 +850,7 @@ TEST_P(NativeBackendKWalletTest, RemoveNonexistentLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -902,7 +877,7 @@ TEST_P(NativeBackendKWalletTest, RemoveNonexistentLogin) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -939,7 +914,7 @@ TEST_P(NativeBackendKWalletTest, AddDuplicateLogin) {
       base::Bind(&NativeBackendKWalletTest::CheckPasswordChanges,
                  changes));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_FALSE(wallet_.hasFolder("Chrome Form Data"));
 
@@ -978,7 +953,7 @@ TEST_P(NativeBackendKWalletTest, AndroidCredentials) {
                  base::Unretained(&backend), observed_android_form, &form_list),
       base::Bind(&CheckTrue));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_EQ(1u, form_list.size());
 
@@ -1014,7 +989,7 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {
       base::BindOnce(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   // Set the canonical forms to the updated value for the following comparison.
   form_google_.skip_zero_click = true;
@@ -1033,7 +1008,7 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {
               form_google_.origin),
           &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   std::vector<const PasswordForm*> forms;
   forms.push_back(&form_google_);
@@ -1064,7 +1039,7 @@ TEST_P(NativeBackendKWalletTest, ReadDuplicateForms) {
       BrowserThread::DB, FROM_HERE,
       base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
                      base::Unretained(&backend), form_google_));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   // Read the raw value back. Change the |unique_string| to
   // |unique_string_replacement| so the forms become unique.
@@ -1085,7 +1060,7 @@ TEST_P(NativeBackendKWalletTest, ReadDuplicateForms) {
       base::Bind(&NativeBackendKWalletStub::GetAutofillableLogins,
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(form_google_, *form_list[0]);
@@ -1119,7 +1094,7 @@ TEST_P(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
       BrowserThread::DB, FROM_HERE,
       base::BindOnce(&CheckGetAutofillableLoginsFails,
                      base::Unretained(&backend), &form_list));
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
   EXPECT_EQ(0u, form_list.size());
 }
 
@@ -1143,7 +1118,7 @@ TEST_P(NativeBackendKWalletTest, GetAllLogins) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  RunDBThread();
+  content::RunAllPendingInMessageLoop(BrowserThread::DB);
 
   EXPECT_EQ(2u, form_list.size());
   EXPECT_THAT(form_list,

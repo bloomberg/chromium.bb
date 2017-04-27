@@ -15,14 +15,13 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/url_matcher/url_matcher_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
@@ -88,8 +87,8 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
   WebRequestRulesRegistryTest()
-      : ui_(content::BrowserThread::UI, &message_loop_),
-        io_(content::BrowserThread::IO, &message_loop_) {}
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   ~WebRequestRulesRegistryTest() override {}
 
@@ -225,9 +224,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
-  content::TestBrowserThread ui_;
-  content::TestBrowserThread io_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   // Two extensions with host permissions for all URLs and the DWR permission.
   // Installation times will be so that |extension_| is older than
   // |extension2_|.

@@ -8,12 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,9 +48,7 @@ class TestDownloadStatusUpdater : public DownloadStatusUpdater {
 
 class DownloadStatusUpdaterTest : public testing::Test {
  public:
-  DownloadStatusUpdaterTest()
-      : updater_(new TestDownloadStatusUpdater()),
-        ui_thread_(content::BrowserThread::UI, &loop_) {}
+  DownloadStatusUpdaterTest() : updater_(new TestDownloadStatusUpdater()) {}
 
   ~DownloadStatusUpdaterTest() override {
     for (size_t mgr_idx = 0; mgr_idx < managers_.size(); ++mgr_idx) {
@@ -186,8 +183,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // object) can be deleted.
   // TODO(rdsmith): This can be removed when the DownloadManager
   // is no longer required to be deleted on the UI thread.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 // Test null updater.

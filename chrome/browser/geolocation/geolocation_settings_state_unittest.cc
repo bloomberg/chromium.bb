@@ -4,30 +4,25 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::NavigationEntry;
 
 namespace {
 
 class GeolocationSettingsStateTests : public testing::Test {
  public:
-  GeolocationSettingsStateTests()
-    : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
+  GeolocationSettingsStateTests() = default;
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {

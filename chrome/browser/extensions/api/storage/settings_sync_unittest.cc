@@ -12,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -25,7 +24,7 @@
 #include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/event_router.h"
@@ -40,8 +39,6 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
-using content::BrowserThread;
-
 namespace extensions {
 
 namespace util = settings_test_util;
@@ -182,9 +179,7 @@ std::unique_ptr<KeyedService> BuildEventRouter(
 class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
-        storage_factory_(new TestValueStoreFactory()),
+      : storage_factory_(new TestValueStoreFactory()),
         sync_processor_(new MockSyncChangeProcessor),
         sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
             sync_processor_.get())) {}
@@ -255,10 +250,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
         storage_factory_->GetExisting(extension_id));
   }
 
-  // Need these so that the DCHECKs for running on FILE or UI threads pass.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  // Needed so that the DCHECKs for running on FILE or UI threads pass.
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;

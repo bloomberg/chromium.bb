@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/common/extension.h"
@@ -44,9 +44,7 @@ namespace extensions {
 
 class RulesRegistryServiceTest : public testing::Test {
  public:
-  RulesRegistryServiceTest()
-      : ui_(content::BrowserThread::UI, &message_loop_),
-        io_(content::BrowserThread::IO, &message_loop_) {}
+  RulesRegistryServiceTest() = default;
 
   ~RulesRegistryServiceTest() override {}
 
@@ -56,9 +54,7 @@ class RulesRegistryServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_;
-  content::TestBrowserThread io_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {

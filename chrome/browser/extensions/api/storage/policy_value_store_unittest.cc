@@ -12,12 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store_unittest.h"
@@ -93,8 +92,7 @@ INSTANTIATE_TEST_CASE_P(
 
 class PolicyValueStoreTest : public testing::Test {
  public:
-  PolicyValueStoreTest()
-      : file_thread_(content::BrowserThread::FILE, &loop_) {}
+  PolicyValueStoreTest() = default;
   ~PolicyValueStoreTest() override {}
 
   void SetUp() override {
@@ -114,8 +112,7 @@ class PolicyValueStoreTest : public testing::Test {
 
  protected:
   base::ScopedTempDir scoped_temp_dir_;
-  base::MessageLoop loop_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<PolicyValueStore> store_;
   MockSettingsObserver observer_;
   scoped_refptr<SettingsObserverList> observers_;

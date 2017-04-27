@@ -32,7 +32,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,14 +69,13 @@ class ProcessSingletonPosixTest : public testing::Test {
 
   ProcessSingletonPosixTest()
       : kill_callbacks_(0),
-        io_thread_(BrowserThread::IO),
+        test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD),
         wait_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         signal_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-        process_singleton_on_thread_(NULL) {
-    io_thread_.StartIOThread();
-  }
+        process_singleton_on_thread_(NULL) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -113,7 +113,6 @@ class ProcessSingletonPosixTest : public testing::Test {
       ASSERT_TRUE(helper->Run());
     }
 
-    io_thread_.Stop();
     testing::Test::TearDown();
   }
 
@@ -258,8 +257,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     kill_callbacks_++;
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::ScopedTempDir temp_dir_;
   base::WaitableEvent wait_event_;
   base::WaitableEvent signal_event_;

@@ -6,12 +6,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -20,9 +19,7 @@ namespace extensions {
 // when using the --pack-extension switch.
 class PackExtensionTest : public testing::Test {
  public:
-  PackExtensionTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
+  PackExtensionTest() {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("extensions");
   }
@@ -38,9 +35,7 @@ class PackExtensionTest : public testing::Test {
     return startup_helper_.PackExtension(command_line);
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   base::FilePath test_data_dir_;
   StartupHelper startup_helper_;
