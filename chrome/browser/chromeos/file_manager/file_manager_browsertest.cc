@@ -672,19 +672,20 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
   StartTest();
 }
 
-// Fails on official build. http://crbug.com/429294
-#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
-#define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
-#define MAYBE_BasicDrive DISABLED_BasicDrive
-#else
-#define MAYBE_PRE_BasicDrive PRE_BasicDrive
-#define MAYBE_BasicDrive BasicDrive
-#endif
+// Flaky: crbug.com/715961.
+// Previously it was disabled via DISABLE_SLOW_FILESAPP_TESTS and in
+// OFFICIAL_BUILD, see http://crbug.com/429294.
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_PRE_BasicDrive) {
+                       DISABLED_PRE_BasicDrive) {
   AddAllUsers();
 }
 
+// Fails on official build. http://crbug.com/429294
+#if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
+#define MAYBE_BasicDrive DISABLED_BasicDrive
+#else
+#define MAYBE_BasicDrive BasicDrive
+#endif
 IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
   AddAllUsers();
 
