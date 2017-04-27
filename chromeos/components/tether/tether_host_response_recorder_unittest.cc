@@ -1,0 +1,125 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/components/tether/tether_host_response_recorder.h"
+
+#include "components/cryptauth/remote_device_test_util.h"
+#include "components/prefs/testing_pref_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
+
+namespace tether {
+
+class TetherHostResponseRecorderTest : public testing::Test {
+ protected:
+  TetherHostResponseRecorderTest()
+      : test_devices_(cryptauth::GenerateTestRemoteDevices(10)) {}
+
+  void SetUp() override {
+    pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
+
+    recorder_ =
+        base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
+  }
+
+  const std::vector<cryptauth::RemoteDevice> test_devices_;
+
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TetherHostResponseRecorder> recorder_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TetherHostResponseRecorderTest);
+};
+
+TEST_F(TetherHostResponseRecorderTest, TestTetherAvailabilityResponses) {
+  // Receive TetherAvailabilityResponses from devices in the following order:
+  // 0, 2, 4, 6, 8, 1, 3, 5, 7, 9
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[6]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[8]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[5]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[7]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[9]);
+
+  // The order, from most recent to least recent, should be:
+  // 9, 7, 5, 3, 1, 8, 6, 4, 2, 0
+  EXPECT_EQ(
+      (std::vector<std::string>{
+          test_devices_[9].GetDeviceId(), test_devices_[7].GetDeviceId(),
+          test_devices_[5].GetDeviceId(), test_devices_[3].GetDeviceId(),
+          test_devices_[1].GetDeviceId(), test_devices_[8].GetDeviceId(),
+          test_devices_[6].GetDeviceId(), test_devices_[4].GetDeviceId(),
+          test_devices_[2].GetDeviceId(), test_devices_[0].GetDeviceId()}),
+      recorder_->GetPreviouslyAvailableHostIds());
+}
+
+TEST_F(TetherHostResponseRecorderTest, TestConnectTetheringResponses) {
+  // Receive TetherAvailabilityResponses from devices in the following order:
+  // 0, 2, 4, 6, 8, 1, 3, 5, 7, 9
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[2]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[4]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[6]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[8]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[3]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[5]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[7]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[9]);
+
+  // The order, from most recent to least recent, should be:
+  // 9, 7, 5, 3, 1, 8, 6, 4, 2, 0
+  EXPECT_EQ(
+      (std::vector<std::string>{
+          test_devices_[9].GetDeviceId(), test_devices_[7].GetDeviceId(),
+          test_devices_[5].GetDeviceId(), test_devices_[3].GetDeviceId(),
+          test_devices_[1].GetDeviceId(), test_devices_[8].GetDeviceId(),
+          test_devices_[6].GetDeviceId(), test_devices_[4].GetDeviceId(),
+          test_devices_[2].GetDeviceId(), test_devices_[0].GetDeviceId()}),
+      recorder_->GetPreviouslyConnectedHostIds());
+}
+
+TEST_F(TetherHostResponseRecorderTest, TestBothResponseTypes) {
+  // Receive TetherAvailabilityResponses from devices 0, 1, and 2.
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
+
+  // Receive a ConnectTetheringResponse from device 2.
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[2]);
+
+  // Receive TetherAvailabilityResponses from devices 0, 1, and 3.
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
+
+  // Receive a ConnectTetheringResponse from device 0.
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+
+  // The order for TetherAvailabilityResponses, from most recent to least
+  // recent, should be:
+  // 3, 1, 0, 2
+  EXPECT_EQ(
+      (std::vector<std::string>{
+          test_devices_[3].GetDeviceId(), test_devices_[1].GetDeviceId(),
+          test_devices_[0].GetDeviceId(), test_devices_[2].GetDeviceId()}),
+      recorder_->GetPreviouslyAvailableHostIds());
+
+  // The order for ConnectTetheringResponses, from most recent to least
+  // recent, should be:
+  // 0, 2
+  EXPECT_EQ((std::vector<std::string>{test_devices_[0].GetDeviceId(),
+                                      test_devices_[2].GetDeviceId()}),
+            recorder_->GetPreviouslyConnectedHostIds());
+}
+
+}  // namespace tether
+
+}  // namespace cryptauth

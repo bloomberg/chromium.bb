@@ -12,7 +12,7 @@
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/fake_wifi_hotspot_connector.h"
-#include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
+#include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -67,10 +67,10 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
   FakeConnectTetheringOperation(
       const cryptauth::RemoteDevice& device_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer)
+      TetherHostResponseRecorder* tether_host_response_recorder)
       : ConnectTetheringOperation(device_to_connect,
                                   connection_manager,
-                                  host_scan_device_prioritizer) {}
+                                  tether_host_response_recorder) {}
 
   ~FakeConnectTetheringOperation() override {}
 
@@ -104,10 +104,10 @@ class FakeConnectTetheringOperationFactory
   std::unique_ptr<ConnectTetheringOperation> BuildInstance(
       const cryptauth::RemoteDevice& device_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer) override {
+      TetherHostResponseRecorder* tether_host_response_recorder) override {
     FakeConnectTetheringOperation* operation =
         new FakeConnectTetheringOperation(device_to_connect, connection_manager,
-                                          host_scan_device_prioritizer);
+                                          tether_host_response_recorder);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -143,8 +143,8 @@ class TetherConnectorTest : public NetworkStateTest {
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
         test_devices_, false /* synchronously_reply_with_results */);
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
-    mock_host_scan_device_prioritizer_ =
-        base::MakeUnique<MockHostScanDevicePrioritizer>();
+    mock_tether_host_response_recorder_ =
+        base::MakeUnique<MockTetherHostResponseRecorder>();
     device_id_tether_network_guid_map_ =
         base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
 
@@ -154,7 +154,7 @@ class TetherConnectorTest : public NetworkStateTest {
         test_network_connection_handler_.get(), network_state_handler(),
         fake_wifi_hotspot_connector_.get(), fake_active_host_.get(),
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
-        mock_host_scan_device_prioritizer_.get(),
+        mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get()));
 
     SetUpTetherNetworks();
@@ -240,8 +240,8 @@ class TetherConnectorTest : public NetworkStateTest {
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
-  std::unique_ptr<MockHostScanDevicePrioritizer>
-      mock_host_scan_device_prioritizer_;
+  std::unique_ptr<MockTetherHostResponseRecorder>
+      mock_tether_host_response_recorder_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;

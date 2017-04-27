@@ -18,6 +18,7 @@
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/components/tether/tether_device_state_manager.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
+#include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -90,7 +91,7 @@ void Initializer::Shutdown() {
 // static
 void Initializer::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ActiveHost::RegisterPrefs(registry);
-  HostScanDevicePrioritizer::RegisterPrefs(registry);
+  TetherHostResponseRecorder::RegisterPrefs(registry);
 }
 
 Initializer::Initializer(
@@ -179,8 +180,10 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       cryptauth_service_, adapter, local_device_data_provider_.get(),
       remote_beacon_seed_fetcher_.get(),
       cryptauth::BluetoothThrottlerImpl::GetInstance());
-  host_scan_device_prioritizer_ =
-      base::MakeUnique<HostScanDevicePrioritizer>(pref_service_);
+  tether_host_response_recorder_ =
+      base::MakeUnique<TetherHostResponseRecorder>(pref_service_);
+  host_scan_device_prioritizer_ = base::MakeUnique<HostScanDevicePrioritizer>(
+      tether_host_response_recorder_.get());
   wifi_hotspot_connector_ = base::MakeUnique<WifiHotspotConnector>(
       network_state_handler_, network_connect_);
   active_host_ =
@@ -194,7 +197,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
       network_connection_handler_, network_state_handler_,
       wifi_hotspot_connector_.get(), active_host_.get(),
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
-      host_scan_device_prioritizer_.get(),
+      tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get());
   network_configuration_remover_ =
       base::MakeUnique<NetworkConfigurationRemover>(
@@ -205,8 +208,9 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
           network_configuration_remover_.get());
   host_scanner_ = base::MakeUnique<HostScanner>(
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
-      host_scan_device_prioritizer_.get(), network_state_handler_,
-      notification_presenter_.get(), device_id_tether_network_guid_map_.get());
+      host_scan_device_prioritizer_.get(), tether_host_response_recorder_.get(),
+      network_state_handler_, notification_presenter_.get(),
+      device_id_tether_network_guid_map_.get());
 
   // TODO(khorimoto): Hook up HostScanScheduler. Currently, we simply start a
   // new scan once the user logs in.

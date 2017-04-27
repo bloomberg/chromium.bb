@@ -44,6 +44,7 @@ class NotificationPresenter;
 class TetherConnector;
 class TetherDeviceStateManager;
 class TetherHostFetcher;
+class TetherHostResponseRecorder;
 class TetherNetworkDisconnectionHandler;
 class WifiHotspotConnector;
 
@@ -112,6 +113,7 @@ class Initializer : public OAuth2TokenService::Observer {
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>
       remote_beacon_seed_fetcher_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;
+  std::unique_ptr<TetherHostResponseRecorder> tether_host_response_recorder_;
   std::unique_ptr<HostScanDevicePrioritizer> host_scan_device_prioritizer_;
   std::unique_ptr<WifiHotspotConnector> wifi_hotspot_connector_;
   std::unique_ptr<ActiveHost> active_host_;

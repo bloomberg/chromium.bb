@@ -4,9 +4,9 @@
 
 #include "chromeos/components/tether/connect_tethering_operation.h"
 
-#include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -22,12 +22,12 @@ std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
+    TetherHostResponseRecorder* tether_host_response_recorder) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(device_to_connect, connection_manager,
-                                          host_scan_device_prioritizer);
+                                          tether_host_response_recorder);
 }
 
 // static
@@ -40,20 +40,20 @@ std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
+    TetherHostResponseRecorder* tether_host_response_recorder) {
   return base::MakeUnique<ConnectTetheringOperation>(
-      device_to_connect, connection_manager, host_scan_device_prioritizer);
+      device_to_connect, connection_manager, tether_host_response_recorder);
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
     const cryptauth::RemoteDevice& device_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer)
+    TetherHostResponseRecorder* tether_host_response_recorder)
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
-      host_scan_device_prioritizer_(host_scan_device_prioritizer),
+      tether_host_response_recorder_(tether_host_response_recorder),
       error_code_to_return_(
           ConnectTetheringResponse_ResponseCode::
               ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR) {}
@@ -101,7 +101,7 @@ void ConnectTetheringOperation::OnMessageReceived(
                    << response->ssid() << "\", password: \""
                    << response->password() << "\"}";
 
-      host_scan_device_prioritizer_->RecordSuccessfulConnectTetheringResponse(
+      tether_host_response_recorder_->RecordSuccessfulConnectTetheringResponse(
           remote_device);
 
       ssid_to_return_ = response->ssid();

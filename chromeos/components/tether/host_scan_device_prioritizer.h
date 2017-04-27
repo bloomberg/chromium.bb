@@ -8,12 +8,11 @@
 #include "base/macros.h"
 #include "components/cryptauth/remote_device.h"
 
-class PrefService;
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 namespace tether {
+
+class TetherHostResponseRecorder;
 
 // Prioritizes the order of devices when performing a host scan. To optimize for
 // the most common tethering operations, this class uses the following rules:
@@ -25,32 +24,16 @@ namespace tether {
 //   * All other devices are left in the order they are passed.
 class HostScanDevicePrioritizer {
  public:
-  // Note: The PrefService* passed here must be created using the same registry
-  // passed to RegisterPrefs().
-  HostScanDevicePrioritizer(PrefService* pref_service);
+  HostScanDevicePrioritizer(
+      TetherHostResponseRecorder* tether_host_response_recorder);
   virtual ~HostScanDevicePrioritizer();
-
-  // Registers the prefs used by this class to |registry|. Must be called before
-  // this class is utilized.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Records a TetherAvailabilityResponse. This function should be called each
-  // time that a response is received from a potential host, even if a
-  // connection is not started.
-  virtual void RecordSuccessfulTetherAvailabilityResponse(
-      const cryptauth::RemoteDevice& remote_device);
-
-  // Records a ConnectTetheringResponse. This function should be called each
-  // time that a response is received from a host.
-  virtual void RecordSuccessfulConnectTetheringResponse(
-      const cryptauth::RemoteDevice& remote_device);
 
   // Prioritizes |remote_devices| using the rules described above.
   virtual void SortByHostScanOrder(
       std::vector<cryptauth::RemoteDevice>* remote_devices) const;
 
  private:
-  PrefService* pref_service_;
+  TetherHostResponseRecorder* tether_host_response_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanDevicePrioritizer);
 };

@@ -21,6 +21,7 @@ class BleConnectionManager;
 class DeviceIdTetherNetworkGuidMap;
 class HostScanDevicePrioritizer;
 class TetherHostFetcher;
+class TetherHostResponseRecorder;
 
 // Scans for nearby tether hosts.
 // TODO(khorimoto): Add some sort of "staleness" timeout which removes scan
@@ -31,6 +32,7 @@ class HostScanner : public HostScannerOperation::Observer {
   HostScanner(TetherHostFetcher* tether_host_fetcher,
               BleConnectionManager* connection_manager,
               HostScanDevicePrioritizer* host_scan_device_prioritizer,
+              TetherHostResponseRecorder* tether_host_response_recorder,
               NetworkStateHandler* network_state_handler,
               NotificationPresenter* notification_presenter,
               DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
@@ -62,6 +64,7 @@ class HostScanner : public HostScannerOperation::Observer {
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+  TetherHostResponseRecorder* tether_host_response_recorder_;
   NetworkStateHandler* network_state_handler_;
   NotificationPresenter* notification_presenter_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;

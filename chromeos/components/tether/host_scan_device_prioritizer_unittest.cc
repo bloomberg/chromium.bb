@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 
+#include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,15 +20,19 @@ class HostScanDevicePrioritizerTest : public testing::Test {
 
   void SetUp() override {
     pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    HostScanDevicePrioritizer::RegisterPrefs(pref_service_->registry());
+    TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
 
-    prioritizer_ =
-        base::MakeUnique<HostScanDevicePrioritizer>(pref_service_.get());
+    recorder_ =
+        base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
+
+    prioritizer_ = base::MakeUnique<HostScanDevicePrioritizer>(recorder_.get());
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TetherHostResponseRecorder> recorder_;
+
   std::unique_ptr<HostScanDevicePrioritizer> prioritizer_;
 
  private:
@@ -36,11 +41,11 @@ class HostScanDevicePrioritizerTest : public testing::Test {
 
 TEST_F(HostScanDevicePrioritizerTest, TestOnlyTetherAvailabilityResponses) {
   // Receive TetherAvailabilityResponses from devices 0-4.
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
 
   // Do not receive a ConnectTetheringResponse.
 
@@ -60,14 +65,14 @@ TEST_F(HostScanDevicePrioritizerTest, TestOnlyTetherAvailabilityResponses) {
 
 TEST_F(HostScanDevicePrioritizerTest, TestBothTypesOfResponses) {
   // Receive TetherAvailabilityResponses from devices 0-4.
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
 
   // Receive ConnectTetheringResponse from device 0.
-  prioritizer_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
 
   std::vector<cryptauth::RemoteDevice> test_vector =
       std::vector<cryptauth::RemoteDevice>{test_devices_[6], test_devices_[5],
@@ -85,14 +90,14 @@ TEST_F(HostScanDevicePrioritizerTest, TestBothTypesOfResponses) {
 
 TEST_F(HostScanDevicePrioritizerTest, TestBothTypesOfResponses_DifferentOrder) {
   // Receive different order.
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
-  prioritizer_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]);
+  recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]);
 
   // Receive ConnectTetheringResponse from device 1.
-  prioritizer_->RecordSuccessfulConnectTetheringResponse(test_devices_[1]);
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[1]);
 
   std::vector<cryptauth::RemoteDevice> test_vector =
       std::vector<cryptauth::RemoteDevice>{test_devices_[9], test_devices_[8],

@@ -18,8 +18,8 @@ namespace chromeos {
 
 namespace tether {
 
-class HostScanDevicePrioritizer;
 class MessageWrapper;
+class TetherHostResponseRecorder;
 
 // Operation used to request that a tether host share its Internet connection.
 // Attempts a connection to the RemoteDevice passed to its constructor and
@@ -33,7 +33,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
     static std::unique_ptr<ConnectTetheringOperation> NewInstance(
         const cryptauth::RemoteDevice& device_to_connect,
         BleConnectionManager* connection_manager,
-        HostScanDevicePrioritizer* host_scan_device_prioritizer);
+        TetherHostResponseRecorder* tether_host_response_recorder);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -41,7 +41,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
     virtual std::unique_ptr<ConnectTetheringOperation> BuildInstance(
         const cryptauth::RemoteDevice& devices_to_connect,
         BleConnectionManager* connection_manager,
-        HostScanDevicePrioritizer* host_scan_device_prioritizer);
+        TetherHostResponseRecorder* tether_host_response_recorder);
 
    private:
     static Factory* factory_instance_;
@@ -61,7 +61,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   ConnectTetheringOperation(
       const cryptauth::RemoteDevice& device_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer);
+      TetherHostResponseRecorder* tether_host_response_recorder);
   ~ConnectTetheringOperation() override;
 
   void AddObserver(Observer* observer);
@@ -84,7 +84,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   friend class ConnectTetheringOperationTest;
 
   cryptauth::RemoteDevice remote_device_;
-  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+  TetherHostResponseRecorder* tether_host_response_recorder_;
 
   // These values are saved in OnMessageReceived() and returned in
   // OnOperationFinished().
