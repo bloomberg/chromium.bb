@@ -32,8 +32,8 @@ const base::FilePath::CharType kInstallAttributesFileName[] =
 const base::FilePath::CharType kMachineHardwareInfoFileName[] =
     FILE_PATH_LITERAL("/tmp/machine-info");
 
-const base::FilePath::CharType kVpdFileName[] =
-    FILE_PATH_LITERAL("/var/log/vpd_2.0.txt");
+const base::FilePath::CharType kVpdFileName[] = FILE_PATH_LITERAL(
+    "/mnt/stateful_partition/unencrypted/cache/vpd/filtered.txt");
 
 const base::FilePath::CharType kUptimeFileName[] =
     FILE_PATH_LITERAL("/proc/uptime");
