@@ -5,10 +5,10 @@
 #ifndef CC_PAINT_DISCARDABLE_IMAGE_MAP_H_
 #define CC_PAINT_DISCARDABLE_IMAGE_MAP_H_
 
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "cc/base/rtree.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_id.h"
@@ -59,7 +59,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   void EndGeneratingMetadata();
 
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
-  std::unordered_map<ImageId, gfx::Rect> image_id_to_rect_;
+  base::flat_map<ImageId, gfx::Rect> image_id_to_rect_;
 
   RTree images_rtree_;
 };

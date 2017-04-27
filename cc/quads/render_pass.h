@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <unordered_map>
 #include <utility>
 #include <vector>
 

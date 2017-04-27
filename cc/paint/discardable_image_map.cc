@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "base/containers/adapters.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/display_item_list.h"
@@ -63,7 +64,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
       int width,
       int height,
       std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
-      std::unordered_map<ImageId, gfx::Rect>* image_id_to_rect)
+      base::flat_map<ImageId, gfx::Rect>* image_id_to_rect)
       : SkNWayCanvas(width, height),
         image_set_(image_set),
         image_id_to_rect_(image_id_to_rect),
@@ -247,7 +248,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
-  std::unordered_map<ImageId, gfx::Rect>* image_id_to_rect_;
+  base::flat_map<ImageId, gfx::Rect>* image_id_to_rect_;
   const SkRect canvas_bounds_;
   const gfx::Size canvas_size_;
   std::vector<SkPaint> saved_paints_;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -93,7 +94,7 @@ class CC_EXPORT ImageController {
   std::vector<DrawImage> predecode_locked_images_;
 
   static ImageDecodeRequestId s_next_image_decode_queue_id_;
-  std::unordered_map<ImageDecodeRequestId, DrawImage> requested_locked_images_;
+  base::flat_map<ImageDecodeRequestId, DrawImage> requested_locked_images_;
 
   base::SequencedTaskRunner* origin_task_runner_ = nullptr;
 
