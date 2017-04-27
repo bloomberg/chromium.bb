@@ -5717,9 +5717,10 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                             const MODE_INFO *mi, const MODE_INFO *above_mi,
                             const MODE_INFO *left_mi, const int intraonly,
                             const int mi_row, const int mi_col) {
-  const PREDICTION_MODE y_mode = mi->mbmi.mode;
-  const PREDICTION_MODE uv_mode = mi->mbmi.uv_mode;
-  const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const PREDICTION_MODE y_mode = mbmi->mode;
+  const PREDICTION_MODE uv_mode = mbmi->uv_mode;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
   const int unify_bsize = CONFIG_CB4X4;
 
   if (bsize < BLOCK_8X8 && !unify_bsize) {
@@ -5746,6 +5747,35 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     } else {
       ++counts->y_mode[size_group_lookup[bsize]][y_mode];
     }
+#if CONFIG_FILTER_INTRA
+    if (mbmi->mode == DC_PRED
+#if CONFIG_PALETTE
+        && mbmi->palette_mode_info.palette_size[0] == 0
+#endif  // CONFIG_PALETTE
+        ) {
+      const int use_filter_intra_mode =
+          mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
+      ++counts->filter_intra[0][use_filter_intra_mode];
+    }
+    if (mbmi->uv_mode == DC_PRED
+#if CONFIG_PALETTE
+        && mbmi->palette_mode_info.palette_size[1] == 0
+#endif  // CONFIG_PALETTE
+        ) {
+      const int use_filter_intra_mode =
+          mbmi->filter_intra_mode_info.use_filter_intra_mode[1];
+      ++counts->filter_intra[1][use_filter_intra_mode];
+    }
+#endif  // CONFIG_FILTER_INTRA
+#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+    if (av1_is_directional_mode(mbmi->mode, bsize)) {
+      const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
+      const int p_angle =
+          mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
+      if (av1_is_intra_filter_switchable(p_angle))
+        ++counts->intra_filter[intra_filter_ctx][mbmi->intra_filter];
+    }
+#endif  // CONFIG_INTRA_INTERP && CONFIG_INTRA_INTERP
   }
 
 #if CONFIG_CB4X4
@@ -5949,10 +5979,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_CB4X4
-  const int unify_bsize = 1;
   const BLOCK_SIZE block_size = bsize;
 #else
-  const int unify_bsize = 0;
   const BLOCK_SIZE block_size = AOMMAX(bsize, BLOCK_8X8);
 #endif
 
@@ -5967,50 +5995,14 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   if (!is_inter) {
     int plane;
     mbmi->skip = 1;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
                                    mi_row, mi_col);
-    if (!dry_run)
+    }
+    if (!dry_run) {
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
-
-    // TODO(huisu): move this into sum_intra_stats().
-    if (!dry_run && (bsize >= BLOCK_8X8 || unify_bsize)) {
-      FRAME_COUNTS *counts = td->counts;
-      (void)counts;
-#if CONFIG_FILTER_INTRA
-      if (mbmi->mode == DC_PRED
-#if CONFIG_PALETTE
-          && mbmi->palette_mode_info.palette_size[0] == 0
-#endif  // CONFIG_PALETTE
-          ) {
-        const int use_filter_intra_mode =
-            mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
-        ++counts->filter_intra[0][use_filter_intra_mode];
-      }
-      if (mbmi->uv_mode == DC_PRED
-#if CONFIG_PALETTE
-          && mbmi->palette_mode_info.palette_size[1] == 0
-#endif  // CONFIG_PALETTE
-          ) {
-        const int use_filter_intra_mode =
-            mbmi->filter_intra_mode_info.use_filter_intra_mode[1];
-        ++counts->filter_intra[1][use_filter_intra_mode];
-      }
-#endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-      if (av1_is_directional_mode(mbmi->mode, bsize)) {
-        const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-        const int p_angle =
-            mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-        if (av1_is_intra_filter_switchable(p_angle))
-          ++counts->intra_filter[intra_filter_ctx][mbmi->intra_filter];
-      }
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
     }
-
 #if CONFIG_PALETTE
     if (bsize >= BLOCK_8X8 && !dry_run) {
       for (plane = 0; plane <= 1; ++plane) {
