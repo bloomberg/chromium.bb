@@ -9,6 +9,37 @@
 namespace mojo {
 
 // static
+bool StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
+                  ui::CandidateWindow::CandidateWindowProperty>::
+    Read(ui::mojom::CandidateWindowPropertiesDataView data,
+         ui::CandidateWindow::CandidateWindowProperty* out) {
+  if (data.is_null())
+    return false;
+  if (!data.ReadAuxiliaryText(&out->auxiliary_text))
+    return false;
+  out->page_size = data.page_size();
+  out->is_vertical = data.vertical();
+  out->is_auxiliary_text_visible = data.auxiliary_text_visible();
+  out->cursor_position = data.cursor_position();
+  out->is_cursor_visible = data.cursor_visible();
+  out->show_window_at_composition =
+      data.window_position() ==
+      ui::mojom::CandidateWindowPosition::kComposition;
+  return true;
+}
+
+// static
+bool StructTraits<ui::mojom::CandidateWindowEntryDataView,
+                  ui::CandidateWindow::Entry>::
+    Read(ui::mojom::CandidateWindowEntryDataView data,
+         ui::CandidateWindow::Entry* out) {
+  return !data.is_null() && data.ReadValue(&out->value) &&
+         data.ReadLabel(&out->label) && data.ReadAnnotation(&out->annotation) &&
+         data.ReadDescriptionTitle(&out->description_title) &&
+         data.ReadDescriptionBody(&out->description_body);
+}
+
+// static
 bool StructTraits<ui::mojom::CompositionUnderlineDataView,
                   ui::CompositionUnderline>::
     Read(ui::mojom::CompositionUnderlineDataView data,
