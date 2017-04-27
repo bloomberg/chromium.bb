@@ -21,9 +21,13 @@ fi
 
 echo "[liblouis-js] Assigned this build the version number ${BUILD_VERSION}" &&
 
-# --- obtain the latest version of liblouis-js
-#     contains tests and js snippets appended to builds
-git clone --depth 1 https://github.com/liblouis/liblouis-js.git &&
+# --- obtain liblouis-js. Contains tests and js snippets appended to builds.
+#     liblouis-js version should be incremented by hand, to keep the repositories
+#     in sync.
+git clone https://github.com/liblouis/liblouis-js.git &&
+cd liblouis-js &&
+git checkout 73032f867192de1c4a19b03ef5030926e0ba6d85 &&
+cd .. &&
 # --- obtain the latest version of liblouis/js-build
 #     we publish/deploy to this repository. Contains package
 #     descriptions (package.json and bower.json) and documentation
