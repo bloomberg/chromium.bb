@@ -52,7 +52,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     : WebDOMMessageEvent(MessageEvent::Create()) {
   DOMWindow* window = nullptr;
   if (source_frame)
-    window = source_frame->ToImplBase()->GetFrame()->DomWindow();
+    window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;

@@ -128,6 +128,7 @@ class WebView : protected WebWidget {
   // You can optionally modify the settings before calling this method.
   // This WebFrame will receive events for the main frame and must not
   // be null.
+  // TODO(mustaq): The non-null param should be a reference.
   virtual void SetMainFrame(WebFrame*) = 0;
 
   // Initializes the various client interfaces.

@@ -8765,7 +8765,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame) {
       FrameTestHelpers::CreateLocalChild(view->MainFrame()->ToWebRemoteFrame());
 
   // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
-  Persistent<Frame> child_core_frame = child_frame->ToImplBase()->GetFrame();
+  Persistent<Frame> child_core_frame = WebFrame::ToCoreFrame(*child_frame);
   view->Close();
   child_core_frame.Clear();
 }
@@ -9458,7 +9458,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   DOMWindow* result =
       main_window->open("", "frame1", "", main_window, main_window);
   EXPECT_EQ(remote_client.LastRequest().Url(), WebURL(destination));
-  EXPECT_EQ(result, remote_frame->ToImplBase()->GetFrame()->DomWindow());
+  EXPECT_EQ(result, WebFrame::ToCoreFrame(*remote_frame)->DomWindow());
 
   Reset();
 }
@@ -9491,7 +9491,7 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose) {
       WebSecurityOrigin::CreateFromString("http://127.0.0.1"));
 
   LocalFrame* local_frame = ToLocalFrame(
-      main_web_view.WebView()->MainFrame()->ToImplBase()->GetFrame());
+      WebFrame::ToCoreFrame(*main_web_view.WebView()->MainFrame()));
   RemoteFrame* remote_frame = web_remote_frame->GetFrame();
 
   // Attempt to close the window, which should fail as it isn't opened
@@ -9988,7 +9988,7 @@ TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
 
   // Check that ScopedPageSuspender properly triggers deferred loading for
   // the current Page.
-  Page* page = remote_root->ToImplBase()->GetFrame()->GetPage();
+  Page* page = WebFrame::ToCoreFrame(*remote_root)->GetPage();
   EXPECT_FALSE(page->Suspended());
   {
     ScopedPageSuspender suspender;

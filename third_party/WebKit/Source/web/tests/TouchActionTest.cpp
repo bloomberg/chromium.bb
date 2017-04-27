@@ -54,7 +54,6 @@
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebFrameImplBase.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
@@ -300,8 +299,8 @@ void TouchActionTest::RunTestOnTree(
                      << ").";
       std::string failure_context_pos = context_stream.str();
 
-      LocalFrame* main_frame = static_cast<LocalFrame*>(
-          web_view->MainFrame()->ToImplBase()->GetFrame());
+      LocalFrame* main_frame =
+          ToLocalFrame(WebFrame::ToCoreFrame(*web_view->MainFrame()));
       FrameView* main_frame_view = main_frame->View();
       IntRect visible_rect = WindowClipRect(*main_frame_view);
       ASSERT_TRUE(visible_rect.Contains(window_point))

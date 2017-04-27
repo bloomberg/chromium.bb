@@ -33,7 +33,7 @@ namespace {
 // TODO(dcheng): Remove duplication between LocalFrameClientImpl and
 // RemoteFrameClientImpl somehow...
 Frame* ToCoreFrame(WebFrame* frame) {
-  return frame ? frame->ToImplBase()->GetFrame() : nullptr;
+  return frame ? WebFrame::ToCoreFrame(*frame) : nullptr;
 }
 
 }  // namespace
