@@ -911,7 +911,17 @@ class EBuild(object):
 
 
   def _ShouldRevEBuild(self, commit_ids, srcdirs, subdirs_to_rev):
-    """Determine whether we should attempt to rev |ebuild|."""
+    """Determine whether we should attempt to rev |ebuild|.
+
+    Args:
+      commit_ids: Commit ID of the tip of tree for the source dir.
+      srcdirs: Source direutory where the git repo is located.
+      subdirs_to_rev: Test subdirectories which have to be checked for
+      modifications since the last stable commit hash.
+
+    Returns:
+      True is an Uprev is needed, False otherwise.
+    """
     if not self.cros_workon_vars:
       return True
     if not self.cros_workon_vars.commit:
@@ -927,7 +937,6 @@ class EBuild(object):
     stable_commit_hash = self.cros_workon_vars.commit
     srcdir = srcdirs[0]
     logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
-    paths = self.cros_workon_vars.rev_subdirs
     git_args = ['log', '--oneline', logrange, '--']
     git_args.extend(subdirs_to_rev)
 
@@ -939,11 +948,11 @@ class EBuild(object):
 
     if output:
       logging.info('Determined that one of the rev_subdirs %s of ebuild %s was '
-                   'touched.', paths, self.pkgname)
+                   'touched.', list(subdirs_to_rev), self.pkgname)
       return True
     else:
       logging.info('Determined that none of the rev_subdirs %s of ebuild %s '
-                   'was touched.', paths, self.pkgname)
+                   'was touched.', list(subdirs_to_rev), self.pkgname)
       return False
 
   @classmethod
