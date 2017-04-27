@@ -678,6 +678,7 @@ public class BottomSheet
                     o.onSheetContentChanged(content);
                 }
                 updateHandleTint();
+                mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
                 mContentSwapAnimatorSet = null;
             }
         });
@@ -688,6 +689,10 @@ public class BottomSheet
         animators.add(getViewTransitionAnimator(
                 content.getContentView(), oldContent, mBottomSheetContentContainer, true));
 
+        // Temporarily make the background of the toolbar holder a solid color so the transition
+        // doesn't appear to show a hole in the toolbar.
+        mToolbarHolder.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
         mContentSwapAnimatorSet.playTogether(animators);
         mContentSwapAnimatorSet.start();
 

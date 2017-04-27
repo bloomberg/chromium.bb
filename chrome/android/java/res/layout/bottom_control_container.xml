@@ -34,8 +34,7 @@
                 android:id="@+id/toolbar_holder"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_control_container_height"
-                android:layout_marginTop="@dimen/toolbar_shadow_height"
-                android:background="@color/default_primary_color" >
+                android:layout_marginTop="@dimen/toolbar_shadow_height" >
 
                 <ViewStub
                     android:id="@+id/toolbar_stub"
