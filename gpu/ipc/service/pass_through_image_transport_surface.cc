@@ -170,7 +170,7 @@ void PassThroughImageTransportSurface::UpdateSwapInterval() {
     g_num_swaps_in_current_swap_generation_++;
 
     bool should_override_vsync =
-        (g_num_swaps_in_current_swap_generation_ > 1) &&
+        (g_num_swaps_in_current_swap_generation_ > 1) ||
         (g_current_swap_generation_ - g_last_multi_window_swap_generation_ <
          kMultiWindowSwapEnableVSyncDelay);
     gl::GLContext::GetCurrent()->ForceSwapIntervalZero(should_override_vsync);
