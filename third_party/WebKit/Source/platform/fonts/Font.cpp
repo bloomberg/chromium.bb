@@ -307,7 +307,7 @@ void Font::GetTextIntercepts(const TextRunPaintInfo& run_info,
   if (!num_intervals)
     return;
   DCHECK_EQ(num_intervals % 2, 0);
-  intercepts.Resize(num_intervals / 2);
+  intercepts.resize(num_intervals / 2);
 
   GetInterceptsFromBlobs(blobs, paint, bounds,
                          reinterpret_cast<SkScalar*>(intercepts.data()));

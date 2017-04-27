@@ -32,14 +32,14 @@ Gamepad::Gamepad() : index_(0), timestamp_(0), display_id_(0) {}
 Gamepad::~Gamepad() {}
 
 void Gamepad::SetAxes(unsigned count, const double* data) {
-  axes_.Resize(count);
+  axes_.resize(count);
   if (count)
     std::copy(data, data + count, axes_.begin());
 }
 
 void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
   if (buttons_.size() != count) {
-    buttons_.Resize(count);
+    buttons_.resize(count);
     for (unsigned i = 0; i < count; ++i)
       buttons_[i] = GamepadButton::Create();
   }

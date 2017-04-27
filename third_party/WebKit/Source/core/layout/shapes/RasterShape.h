@@ -44,7 +44,7 @@ class RasterShapeIntervals {
 
  public:
   RasterShapeIntervals(unsigned size, int offset = 0) : offset_(offset) {
-    intervals_.Resize(clampTo<int>(size));
+    intervals_.resize(clampTo<int>(size));
   }
 
   void InitializeBounds();

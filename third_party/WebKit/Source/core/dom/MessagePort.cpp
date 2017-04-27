@@ -167,7 +167,7 @@ static bool TryGetMessageFrom(WebMessagePortChannel& web_channel,
     return false;
 
   if (web_channels.size()) {
-    channels.Resize(web_channels.size());
+    channels.resize(web_channels.size());
     for (size_t i = 0; i < web_channels.size(); ++i)
       channels[i] = std::move(web_channels[i]);
   }

@@ -105,7 +105,7 @@ class PromiseAllHandler final
   PromiseAllHandler(ScriptState* script_state, Vector<ScriptPromise> promises)
       : number_of_pending_promises_(promises.size()), resolver_(script_state) {
     DCHECK(!promises.IsEmpty());
-    values_.Resize(promises.size());
+    values_.resize(promises.size());
     for (size_t i = 0; i < promises.size(); ++i)
       promises[i].Then(CreateFulfillFunction(script_state, i),
                        CreateRejectFunction(script_state));

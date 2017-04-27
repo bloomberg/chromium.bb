@@ -579,7 +579,7 @@ bool BMPImageReader::ProcessColorTable() {
   if ((decoded_offset_ > data_->size()) ||
       ((data_->size() - decoded_offset_) < table_size_in_bytes))
     return false;
-  color_table_.Resize(info_header_.bi_clr_used);
+  color_table_.resize(info_header_.bi_clr_used);
 
   // On non-OS/2 1.x, an extra padding byte is present, which we need to skip.
   const size_t bytes_per_color = is_os21x_ ? 3 : 4;

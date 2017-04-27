@@ -150,7 +150,7 @@ void OpenTypeVerticalData::LoadMetrics(const FontPlatformData& platform_data) {
     DLOG(ERROR) << "hhea exists but hmtx does not (or broken)";
     return;
   }
-  advance_widths_.Resize(count_hmtx_entries);
+  advance_widths_.resize(count_hmtx_entries);
   for (uint16_t i = 0; i < count_hmtx_entries; ++i)
     advance_widths_[i] = hmtx->entries[i].advance_width;
 
@@ -195,7 +195,7 @@ void OpenTypeVerticalData::LoadMetrics(const FontPlatformData& platform_data) {
     DLOG(ERROR) << "vhea exists but vmtx does not (or broken)";
     return;
   }
-  advance_heights_.Resize(count_vmtx_entries);
+  advance_heights_.resize(count_vmtx_entries);
   for (uint16_t i = 0; i < count_vmtx_entries; ++i)
     advance_heights_[i] = vmtx->entries[i].advance_height;
 
@@ -212,7 +212,7 @@ void OpenTypeVerticalData::LoadMetrics(const FontPlatformData& platform_data) {
   }
   size_t count_top_side_bearings =
       count_vmtx_entries + size_extra / sizeof(OpenType::Int16);
-  top_side_bearings_.Resize(count_top_side_bearings);
+  top_side_bearings_.resize(count_top_side_bearings);
   size_t i;
   for (i = 0; i < count_vmtx_entries; ++i)
     top_side_bearings_[i] = vmtx->entries[i].top_side_bearing;

@@ -50,7 +50,7 @@ class MarginIntervalGenerator {
 
 MarginIntervalGenerator::MarginIntervalGenerator(unsigned radius)
     : y_(0), x1_(0), x2_(0) {
-  x_intercepts_.Resize(radius + 1);
+  x_intercepts_.resize(radius + 1);
   unsigned radius_squared = radius * radius;
   for (unsigned y = 0; y <= radius; y++)
     x_intercepts_[y] = sqrt(static_cast<double>(radius_squared - y * y));

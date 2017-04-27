@@ -1054,7 +1054,7 @@ void LayoutGrid::DirtyGrid() {
     return;
 
   grid_.SetNeedsItemsPlacement(true);
-  grid_items_overflowing_grid_area_.Resize(0);
+  grid_items_overflowing_grid_area_.resize(0);
 }
 
 Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
@@ -1150,7 +1150,7 @@ void LayoutGrid::ApplyStretchAlignmentToTracksIfNeeded(
 void LayoutGrid::LayoutGridItems() {
   PopulateGridPositionsForDirection(kForColumns);
   PopulateGridPositionsForDirection(kForRows);
-  grid_items_overflowing_grid_area_.Resize(0);
+  grid_items_overflowing_grid_area_.resize(0);
 
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
@@ -1425,7 +1425,7 @@ void LayoutGrid::PopulateGridPositionsForDirection(
       direction, track_sizing_algorithm_.FreeSpace(direction).value(),
       number_of_tracks);
   auto& positions = is_row_axis ? column_positions_ : row_positions_;
-  positions.Resize(number_of_lines);
+  positions.resize(number_of_lines);
   auto border_and_padding =
       is_row_axis ? BorderAndPaddingLogicalLeft() : BorderAndPaddingBefore();
   positions[0] = border_and_padding + offset.position_offset;

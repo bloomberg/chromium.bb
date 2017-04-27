@@ -76,7 +76,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
       nodes_.push_back(child);
     }
   }
-  distributed_.Resize(nodes_.size());
+  distributed_.resize(nodes_.size());
   distributed_.Fill(false);
 }
 

@@ -267,7 +267,7 @@ void HTMLLinkElement::ValueWasSet() {
   SetSynchronizedLazyAttribute(HTMLNames::sizesAttr, sizes_->value());
   WebVector<WebSize> web_icon_sizes =
       WebIconSizesParser::ParseIconSizes(sizes_->value());
-  icon_sizes_.Resize(web_icon_sizes.size());
+  icon_sizes_.resize(web_icon_sizes.size());
   for (size_t i = 0; i < web_icon_sizes.size(); ++i)
     icon_sizes_[i] = web_icon_sizes[i];
   Process();

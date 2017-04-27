@@ -77,7 +77,7 @@ class TrailingObjects {
     // Using resize(0) rather than clear() here saves 2% on
     // PerformanceTests/Layout/line-layout.html because we avoid freeing and
     // re-allocating the underlying buffer repeatedly.
-    objects_.Resize(0);
+    objects_.resize(0);
   }
 
   void AppendObjectIfNeeded(LineLayoutItem object) {

@@ -45,7 +45,7 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
   // origins is used to represent the "*" case though.
   Vector<RefPtr<SecurityOrigin>> parsed_origins;
   if (origin_list.size() != 1 || origin_list[0] != "*") {
-    parsed_origins.Resize(origin_list.size());
+    parsed_origins.resize(origin_list.size());
     for (size_t i = 0; i < origin_list.size(); ++i) {
       parsed_origins[i] = SecurityOrigin::CreateFromString(origin_list[i]);
       // Invalid URLs will result in a unique origin. And in general

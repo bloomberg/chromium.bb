@@ -207,7 +207,7 @@ ScriptPromise Permissions::requestAll(
                                  "requestAll");
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;
-  caller_index_to_internal_index.Resize(raw_permissions.size());
+  caller_index_to_internal_index.resize(raw_permissions.size());
   for (size_t i = 0; i < raw_permissions.size(); ++i) {
     const Dictionary& raw_permission = raw_permissions[i];
 

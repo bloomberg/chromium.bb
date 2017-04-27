@@ -152,7 +152,7 @@ size_t ImageDecoder::FrameCount() {
   const size_t old_size = frame_buffer_cache_.size();
   const size_t new_size = DecodeFrameCount();
   if (old_size != new_size) {
-    frame_buffer_cache_.Resize(new_size);
+    frame_buffer_cache_.resize(new_size);
     for (size_t i = old_size; i < new_size; ++i) {
       frame_buffer_cache_[i].SetPremultiplyAlpha(premultiply_alpha_);
       InitializeNewFrame(i);

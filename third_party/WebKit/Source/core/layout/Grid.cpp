@@ -139,7 +139,7 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
     return;
   }
 
-  grid_.Resize(0);
+  grid_.resize(0);
   grid_item_area_.clear();
   grid_items_indexes_map_.clear();
   has_any_orthogonal_grid_item_ = false;

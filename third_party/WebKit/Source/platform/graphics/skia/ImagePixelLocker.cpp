@@ -51,7 +51,7 @@ ImagePixelLocker::ImagePixelLocker(sk_sp<const SkImage> image,
   if (0 == size)
     return;
 
-  pixel_storage_.Resize(size);  // this will throw on failure
+  pixel_storage_.resize(size);  // this will throw on failure
   pixmap.reset(info, pixel_storage_.data(), row_bytes);
 
   if (!image_->readPixels(pixmap, 0, 0))

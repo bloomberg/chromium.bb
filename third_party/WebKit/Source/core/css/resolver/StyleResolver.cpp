@@ -205,7 +205,7 @@ void StyleResolver::AddToStyleSharingList(Element& element) {
 }
 
 StyleSharingList& StyleResolver::GetStyleSharingList() {
-  style_sharing_lists_.Resize(kStyleSharingMaxDepth);
+  style_sharing_lists_.resize(kStyleSharingMaxDepth);
 
   // We never put things at depth 0 into the list since that's only the <html>
   // element and it has no siblings or cousins to share with.
@@ -218,7 +218,7 @@ StyleSharingList& StyleResolver::GetStyleSharingList() {
 }
 
 void StyleResolver::ClearStyleSharingList() {
-  style_sharing_lists_.Resize(0);
+  style_sharing_lists_.resize(0);
 }
 
 static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {

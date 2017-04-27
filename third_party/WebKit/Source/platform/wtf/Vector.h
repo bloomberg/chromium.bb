@@ -1065,7 +1065,7 @@ class Vector
   // will be default-initialized. A reallocation may happen in this case.
   void Shrink(size_t);
   void Grow(size_t);
-  void Resize(size_t);
+  void resize(size_t);
 
   // Increase the capacity of the vector to at least |newCapacity|. The
   // elements in the vector are not affected. This function does not shrink
@@ -1540,7 +1540,7 @@ inline U* Vector<T, inlineCapacity, Allocator>::ExpandCapacity(
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Vector<T, inlineCapacity, Allocator>::Resize(size_t size) {
+inline void Vector<T, inlineCapacity, Allocator>::resize(size_t size) {
   if (size <= size_) {
     TypeOperations::Destruct(begin() + size, end());
     ClearUnusedSlots(begin() + size, end());

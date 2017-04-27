@@ -317,7 +317,7 @@ void GIFColorMap::buildTable(blink::FastSharedBufferReader* reader) {
   const unsigned char* srcColormap =
       reinterpret_cast<const unsigned char*>(reader->GetConsecutiveData(
           m_position, m_colors * BYTES_PER_COLORMAP_ENTRY, buffer));
-  m_table.Resize(m_colors);
+  m_table.resize(m_colors);
   for (Table::iterator iter = m_table.begin(); iter != m_table.end(); ++iter) {
     *iter = SkPackARGB32NoCheck(255, srcColormap[0], srcColormap[1],
                                 srcColormap[2]);
@@ -877,7 +877,7 @@ bool GIFLZWContext::prepareToDecode() {
   // until we have at least one row worth of data, then call outputRow().
   // This means worst case we may have (row width - 1) bytes in the buffer
   // and then decode a sequence |maxBytes| long to append.
-  rowBuffer.Resize(m_frameContext->width() - 1 + maxBytes);
+  rowBuffer.resize(m_frameContext->width() - 1 + maxBytes);
   rowIter = rowBuffer.begin();
   rowsRemaining = m_frameContext->height();
 

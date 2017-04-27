@@ -1426,7 +1426,7 @@ void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
   flexible_sized_tracks_index_.Shrink(0);
 
   SetFreeSpace(direction, free_space);
-  Tracks(direction).Resize(num_tracks);
+  Tracks(direction).resize(num_tracks);
 
   needs_setup_ = false;
 }

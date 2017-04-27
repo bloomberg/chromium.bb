@@ -1149,7 +1149,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   ContextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                            &num_combined_texture_image_units);
   texture_units_.clear();
-  texture_units_.Resize(num_combined_texture_image_units);
+  texture_units_.resize(num_combined_texture_image_units);
 
   GLint num_vertex_attribs = 0;
   ContextGL()->GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &num_vertex_attribs);
@@ -1190,7 +1190,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
 
   bound_vertex_array_object_ = default_vertex_array_object_;
 
-  vertex_attrib_type_.Resize(max_vertex_attribs_);
+  vertex_attrib_type_.resize(max_vertex_attribs_);
 
   ContextGL()->Viewport(0, 0, drawingBufferWidth(), drawingBufferHeight());
   scissor_box_[0] = scissor_box_[1] = 0;

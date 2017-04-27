@@ -77,7 +77,7 @@ void Storage::NamedPropertyEnumerator(Vector<String>& names,
   unsigned length = this->length(exception_state);
   if (exception_state.HadException())
     return;
-  names.Resize(length);
+  names.resize(length);
   for (unsigned i = 0; i < length; ++i) {
     String key = this->key(i, exception_state);
     if (exception_state.HadException())

@@ -379,7 +379,7 @@ AudioParamTimeline::ParamEvent::ParamEvent(ParamEvent::Type type,
       has_default_cancelled_value_(false) {
   DCHECK_EQ(type, ParamEvent::kSetValueCurve);
   unsigned curve_length = curve.size();
-  curve_.Resize(curve_length);
+  curve_.resize(curve_length);
   memcpy(curve_.data(), curve.data(), curve_length * sizeof(float));
 }
 

@@ -41,7 +41,7 @@ void CustomElementReactionQueue::InvokeReactions(Element* element) {
 
 void CustomElementReactionQueue::Clear() {
   index_ = 0;
-  reactions_.Resize(0);
+  reactions_.resize(0);
 }
 
 }  // namespace blink

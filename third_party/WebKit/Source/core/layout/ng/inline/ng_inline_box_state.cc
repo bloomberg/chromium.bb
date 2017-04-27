@@ -41,7 +41,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     FontBaseline baseline_type) {
   if (stack_.IsEmpty()) {
     // For the first line, push a box state for the line itself.
-    stack_.Resize(1);
+    stack_.resize(1);
     NGInlineBoxState* box = &stack_.back();
     box->fragment_start = 0;
   } else {
@@ -69,7 +69,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGTextFragmentBuilder* text_builder) {
-  stack_.Resize(stack_.size() + 1);
+  stack_.resize(stack_.size() + 1);
   NGInlineBoxState* box = &stack_.back();
   box->fragment_start = line_box->Children().size();
   box->style = item.Style();

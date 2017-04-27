@@ -235,7 +235,7 @@ void LayoutTable::RemoveCaption(const LayoutTableCaption* old_caption) {
 
 void LayoutTable::InvalidateCachedColumns() {
   column_layout_objects_valid_ = false;
-  column_layout_objects_.Resize(0);
+  column_layout_objects_.resize(0);
 }
 
 void LayoutTable::AddColumn(const LayoutTableCol*) {
@@ -1149,8 +1149,8 @@ void LayoutTable::RecalcSections() const {
     }
   }
 
-  effective_columns_.Resize(max_cols);
-  effective_column_positions_.Resize(max_cols + 1);
+  effective_columns_.resize(max_cols);
+  effective_column_positions_.resize(max_cols + 1);
   no_cell_colspan_at_least_ = CalcNoCellColspanAtLeast();
 
   DCHECK(SelfNeedsLayout());

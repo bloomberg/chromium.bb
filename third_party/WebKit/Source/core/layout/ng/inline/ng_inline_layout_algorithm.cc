@@ -216,7 +216,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::LayoutItem(
   // Returns the cached NGLayoutResult if available.
   const Vector<NGInlineItem>& items = Node()->Items();
   if (layout_results_.IsEmpty())
-    layout_results_.Resize(items.size());
+    layout_results_.resize(items.size());
   unsigned index = std::distance(items.begin(), &item);
   RefPtr<NGLayoutResult>* layout_result = &layout_results_[index];
   if (*layout_result)

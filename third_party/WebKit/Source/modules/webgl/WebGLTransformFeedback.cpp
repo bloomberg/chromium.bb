@@ -25,7 +25,7 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx,
       program_(nullptr) {
   GLint max_attribs = ctx->GetMaxTransformFeedbackSeparateAttribs();
   DCHECK_GE(max_attribs, 0);
-  bound_indexed_transform_feedback_buffers_.Resize(max_attribs);
+  bound_indexed_transform_feedback_buffers_.resize(max_attribs);
 
   switch (type_) {
     case TFTypeDefault:

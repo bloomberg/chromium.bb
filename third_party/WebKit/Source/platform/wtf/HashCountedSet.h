@@ -165,7 +165,7 @@ inline void CopyToVector(
   {
     // Disallow GC across resize allocation, see crbug.com/568173
     typename VectorType::GCForbiddenScope scope;
-    vector.Resize(collection.size());
+    vector.resize(collection.size());
   }
 
   auto it = collection.begin();

@@ -37,7 +37,7 @@ struct ArrayTraits<WTF::Vector<U>> {
   }
 
   static bool Resize(WTF::Vector<U>& input, size_t size) {
-    input.Resize(size);
+    input.resize(size);
     return true;
   }
 };

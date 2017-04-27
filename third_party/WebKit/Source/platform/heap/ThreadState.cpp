@@ -1212,7 +1212,7 @@ void ThreadState::CopyStackUntilSafePointScope() {
 #endif
 
   DCHECK(!safe_point_stack_copy_.size());
-  safe_point_stack_copy_.Resize(slot_count);
+  safe_point_stack_copy_.resize(slot_count);
   for (size_t i = 0; i < slot_count; ++i) {
     safe_point_stack_copy_[i] = from[i];
   }

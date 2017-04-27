@@ -259,9 +259,9 @@ bool ICOImageDecoder::ProcessDirectoryEntries() {
     return false;
 
   // Enlarge member vectors to hold all the entries.
-  dir_entries_.Resize(dir_entries_count_);
-  bmp_readers_.Resize(dir_entries_count_);
-  png_decoders_.Resize(dir_entries_count_);
+  dir_entries_.resize(dir_entries_count_);
+  bmp_readers_.resize(dir_entries_count_);
+  png_decoders_.resize(dir_entries_count_);
 
   for (IconDirectoryEntries::iterator i(dir_entries_.begin());
        i != dir_entries_.end(); ++i)

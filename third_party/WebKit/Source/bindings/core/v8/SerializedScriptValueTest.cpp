@@ -103,7 +103,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
   data.push_back(0x23FF);
   data.push_back(0x001);
   data.push_back(0xFC03);
-  data.Resize(257);  // (508 pixel data + 6 header bytes) / 2
+  data.resize(257);  // (508 pixel data + 6 header bytes) / 2
 
   RefPtr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(reinterpret_cast<const char*>(data.data()),

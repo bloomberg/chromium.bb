@@ -77,7 +77,7 @@ class SuffixTree {
 
    public:
     Node(bool is_leaf = false) {
-      children_.Resize(Codebook::kCodeSize);
+      children_.resize(Codebook::kCodeSize);
       children_.Fill(0);
       is_leaf_ = is_leaf;
     }

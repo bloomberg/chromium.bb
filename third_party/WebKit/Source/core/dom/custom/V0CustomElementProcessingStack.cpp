@@ -71,7 +71,7 @@ void V0CustomElementProcessingStack::ProcessElementQueueAndPop(size_t start,
   }
 
   // Pop the element queue from the processing stack
-  flattened_processing_stack_.Resize(start);
+  flattened_processing_stack_.resize(start);
   element_queue_end_ = start;
 
   if (element_queue_start_ == kNumSentinels)
