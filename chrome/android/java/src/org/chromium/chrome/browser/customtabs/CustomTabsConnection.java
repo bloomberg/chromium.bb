@@ -503,8 +503,17 @@ public class CustomTabsConnection {
                 // If the API is not enabled, we don't set the post message origin, which will
                 // avoid PostMessageHandler initialization and disallow postMessage calls.
                 if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) return;
-                mClientManager.initializeWithPostMessageOriginForSession(
-                        session, verifyOriginForSession(session, uid, postMessageOrigin));
+
+                // Attempt to verify origin synchronously. If successful directly initialize
+                // postMessage channel for session.
+                Uri verifiedOrigin = verifyOriginForSession(session, uid, postMessageOrigin);
+                if (verifiedOrigin == null) {
+                    mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
+                            session, postMessageOrigin);
+                } else {
+                    mClientManager.initializeWithPostMessageOriginForSession(
+                            session, verifiedOrigin);
+                }
             }
         });
         return true;

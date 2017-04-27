@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Process;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
@@ -16,11 +17,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)
@@ -150,6 +155,36 @@ public class ClientManagerTest {
         mClientManager.setIgnoreFragmentsForSession(mSession, true);
         Assert.assertEquals(ClientManager.GOOD_PREDICTION,
                 mClientManager.getPredictionOutcome(mSession, URL + "#fragment"));
+    }
+
+    @Test
+    @SmallTest
+    public void testPostMessageOriginVerification() {
+        Assert.assertTrue(
+                mClientManager.newSession(mSession, mUid, null, new PostMessageHandler(mSession)));
+        // Should always start with no origin.
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
+
+        // With no prepopulated origins, this verification should fail.
+        mClientManager.verifyAndInitializeWithPostMessageOriginForSession(mSession, Uri.parse(URL));
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
+
+        // If there is a prepopulated origin, we should get a synchronous verification.
+        OriginVerifier.prePopulateVerifiedOriginForTesting(
+                ContextUtils.getApplicationContext().getPackageName(), Uri.parse(URL));
+        mClientManager.verifyAndInitializeWithPostMessageOriginForSession(mSession, Uri.parse(URL));
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mClientManager.getPostMessageOriginForSessionForTesting(mSession) != null;
+            }
+        });
+        Uri verifiedOrigin = mClientManager.getPostMessageOriginForSessionForTesting(mSession);
+        Assert.assertEquals(IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+
+        // initializeWithPostMessageOriginForSession should override without checking origin.
+        mClientManager.initializeWithPostMessageOriginForSession(mSession, null);
+        Assert.assertNull(mClientManager.getPostMessageOriginForSessionForTesting(mSession));
     }
 
     @Test
