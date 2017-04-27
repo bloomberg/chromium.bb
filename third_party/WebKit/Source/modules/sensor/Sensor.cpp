@@ -58,24 +58,10 @@ Sensor::Sensor(ExecutionContext* execution_context,
 Sensor::~Sensor() = default;
 
 void Sensor::start() {
-  if (state_ != Sensor::SensorState::kIdle)
-    return;
-
-  InitSensorProxyIfNeeded();
-  if (!sensor_proxy_) {
-    ReportError(kInvalidStateError,
-                "The Sensor is no longer associated to a frame.");
-    return;
-  }
-
-  last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
   StartListening();
 }
 
 void Sensor::stop() {
-  if (state_ == Sensor::SensorState::kIdle)
-    return;
-
   StopListening();
 }
 
@@ -166,16 +152,14 @@ void Sensor::InitSensorProxyIfNeeded() {
 }
 
 void Sensor::ContextDestroyed(ExecutionContext*) {
-  if (state_ == Sensor::SensorState::kActivated ||
-      state_ == Sensor::SensorState::kActivating)
-    StopListening();
+  StopListening();
 }
 
 void Sensor::OnSensorInitialized() {
   if (state_ != Sensor::SensorState::kActivating)
     return;
 
-  StartListening();
+  RequestAddConfiguration();
 }
 
 void Sensor::NotifySensorChanged(double timestamp) {
@@ -194,31 +178,67 @@ void Sensor::NotifySensorChanged(double timestamp) {
 void Sensor::OnSensorError(ExceptionCode code,
                            const String& sanitized_message,
                            const String& unsanitized_message) {
-  ReportError(code, sanitized_message, unsanitized_message);
+  HandleError(code, sanitized_message, unsanitized_message);
 }
 
-void Sensor::OnStartRequestCompleted(bool result) {
+void Sensor::OnAddConfigurationRequestCompleted(bool result) {
   if (state_ != SensorState::kActivating)
     return;
 
   if (!result) {
-    ReportError(kNotReadableError, "start() call has failed.");
+    HandleError(kNotReadableError, "start() call has failed.");
     return;
   }
 
+  // The initial value for m_lastUpdateTimestamp is set to current time,
+  // so that the first reading update will be notified considering the given
+  // frequency hint.
+  last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
+
   UpdateState(Sensor::SensorState::kActivated);
+
+  if (GetExecutionContext()) {
+    TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Sensor::NotifyOnActivate,
+                                              WrapWeakPersistent(this)));
+  }
 }
 
 void Sensor::StartListening() {
-  DCHECK(sensor_proxy_);
-  UpdateState(Sensor::SensorState::kActivating);
+  if (state_ != SensorState::kIdle)
+    return;
 
-  sensor_proxy_->AddObserver(this);
-  if (!sensor_proxy_->IsInitialized()) {
-    sensor_proxy_->Initialize();
+  InitSensorProxyIfNeeded();
+  if (!sensor_proxy_) {
+    HandleError(kInvalidStateError,
+                "The Sensor is no longer associated to a frame.");
     return;
   }
 
+  if (sensor_proxy_->IsInitialized())
+    RequestAddConfiguration();
+  else
+    sensor_proxy_->Initialize();
+
+  sensor_proxy_->AddObserver(this);
+  UpdateState(SensorState::kActivating);
+}
+
+void Sensor::StopListening() {
+  if (state_ == SensorState::kIdle)
+    return;
+
+  DCHECK(sensor_proxy_);
+  if (sensor_proxy_->IsInitialized()) {
+    DCHECK(configuration_);
+    sensor_proxy_->RemoveConfiguration(configuration_->Clone());
+  }
+
+  sensor_proxy_->RemoveObserver(this);
+  UpdateState(Sensor::SensorState::kIdle);
+}
+
+void Sensor::RequestAddConfiguration() {
   if (!configuration_) {
     configuration_ = CreateSensorConfig();
     DCHECK(configuration_);
@@ -227,45 +247,22 @@ void Sensor::StartListening() {
                SensorConfiguration::kMaxAllowedFrequency);
   }
 
-  auto start_callback =
-      WTF::Bind(&Sensor::OnStartRequestCompleted, WrapWeakPersistent(this));
-  sensor_proxy_->AddConfiguration(configuration_->Clone(),
-                                  std::move(start_callback));
-}
-
-void Sensor::StopListening() {
   DCHECK(sensor_proxy_);
-  UpdateState(Sensor::SensorState::kIdle);
-
-  if (sensor_proxy_->IsInitialized()) {
-    DCHECK(configuration_);
-    sensor_proxy_->RemoveConfiguration(configuration_->Clone());
-  }
-  sensor_proxy_->RemoveObserver(this);
+  sensor_proxy_->AddConfiguration(
+      configuration_->Clone(),
+      WTF::Bind(&Sensor::OnAddConfigurationRequestCompleted,
+                WrapWeakPersistent(this)));
 }
 
 void Sensor::UpdateState(Sensor::SensorState new_state) {
-  if (new_state == state_)
-    return;
-
-  if (new_state == SensorState::kActivated && GetExecutionContext()) {
-    DCHECK_EQ(SensorState::kActivating, state_);
-    // The initial value for m_lastUpdateTimestamp is set to current time,
-    // so that the first reading update will be notified considering the given
-    // frequency hint.
-    last_update_timestamp_ = WTF::MonotonicallyIncreasingTime();
-    TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Sensor::NotifyOnActivate,
-                                              WrapWeakPersistent(this)));
-  }
-
   state_ = new_state;
 }
 
-void Sensor::ReportError(ExceptionCode code,
+void Sensor::HandleError(ExceptionCode code,
                          const String& sanitized_message,
                          const String& unsanitized_message) {
-  UpdateState(SensorState::kIdle);
+  StopListening();
+
   if (GetExecutionContext()) {
     auto error =
         DOMException::Create(code, sanitized_message, unsanitized_message);

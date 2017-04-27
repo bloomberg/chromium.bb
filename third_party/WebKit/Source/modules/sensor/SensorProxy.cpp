@@ -178,7 +178,8 @@ void SensorProxy::HandleSensorError() {
   default_config_.reset();
   client_binding_.Close();
 
-  for (Observer* observer : observers_) {
+  auto copy = observers_;
+  for (Observer* observer : copy) {
     observer->OnSensorError(kNotReadableError, "Could not connect to a sensor",
                             String());
   }

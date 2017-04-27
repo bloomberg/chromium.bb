@@ -68,6 +68,30 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
   }, 'Test that frequency is capped to 60.0 Hz.');
 
   sensor_test(sensor => {
+    let sensorObject = new sensorType();
+    sensorObject.start();
+    return sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => mockSensor.addConfigurationCalled())
+        .then(mockSensor => {
+          return new Promise((resolve, reject) => {
+            sensorObject.onactivate = () => {
+              // Now sensor proxy is initialized.
+              let anotherSensor = new sensorType({frequency: 21});
+              anotherSensor.start();
+              anotherSensor.stop();
+              resolve(mockSensor);
+            }
+          });
+        })
+        .then(mockSensor => mockSensor.removeConfigurationCalled())
+        .then(mockSensor => {
+          sensorObject.stop();
+          return mockSensor;
+        })
+        .then(mockSensor => mockSensor.removeConfigurationCalled());
+  }, 'Test that configuration is removed for a stopped sensor.');
+
+  sensor_test(sensor => {
     let maxSupportedFrequency = 15;
     sensor.mockSensorProvider.setMaximumSupportedFrequency(maxSupportedFrequency);
     let sensorObject = new sensorType({frequency: 50});
