@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
-#include "core/dom/NodeFilterCondition.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
 
@@ -48,8 +47,9 @@ class ScriptState;
 // is referenced by a NodeIterator/TreeWalker.
 //
 // Binding generator should generate this code.  See crbug.com/630986.
-class V8NodeFilterCondition final : public NodeFilterCondition,
-                                    public TraceWrapperBase {
+class V8NodeFilterCondition final
+    : public GarbageCollectedFinalized<V8NodeFilterCondition>,
+      public TraceWrapperBase {
  public:
   static V8NodeFilterCondition* CreateOrNull(v8::Local<v8::Value> filter,
                                              ScriptState* script_state) {
@@ -57,10 +57,11 @@ class V8NodeFilterCondition final : public NodeFilterCondition,
                             : new V8NodeFilterCondition(filter, script_state);
   }
 
-  ~V8NodeFilterCondition() override;
+  ~V8NodeFilterCondition();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
-  unsigned acceptNode(Node*, ExceptionState&) const override;
+  unsigned acceptNode(Node*, ExceptionState&) const;
   v8::Local<v8::Value> Callback(v8::Isolate* isolate) const {
     return filter_.NewLocal(isolate);
   }
