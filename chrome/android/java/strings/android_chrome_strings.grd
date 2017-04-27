@@ -296,6 +296,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH_ENGINE_RECENTLY_VISITED" desc="Header for the list of recently visited search engines.">
         Recently visited
       </message>
+      <message name="IDS_SEARCH_ENGINE_DIALOG_TITLE" desc="Title shown in the dialog to change search engines">
+        Choose your search engine
+      </message>
+      <message name="IDS_SEARCH_ENGINE_DIALOG_FOOTER" desc="Title shown in the dialog to change search engines">
+        You can change this later in Settings
+      </message>
 
       <!-- Autofill and Payments preferences -->
       <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">

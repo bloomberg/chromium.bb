@@ -28,6 +28,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -122,6 +123,9 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "searchwidget";
     private static final Object DELEGATE_LOCK = new Object();
     private static final Object OBSERVER_LOCK = new Object();
+
+    /** The default search engine's root URL. */
+    private static String sDefaultSearchEngineUrl;
 
     private static SearchWidgetTemplateUrlServiceObserver sObserver;
     private static SearchWidgetProviderDelegate sDelegate;
@@ -291,6 +295,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         TemplateUrlService service = TemplateUrlService.getInstance();
         if (!service.isLoaded()) return;
 
+        // Update the URL that we show for zero-suggest.
+        String searchEngineUrl = service.getSearchEngineUrlFromTemplateUrl(
+                service.getDefaultSearchEngineTemplateUrl().getKeyword());
+        sDefaultSearchEngineUrl =
+                LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;
+
         updateCachedEngineName(service.getDefaultSearchEngineTemplateUrl().getShortName());
     }
 
@@ -382,5 +392,11 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     static void setDelegateForTest(SearchWidgetProviderDelegate delegate) {
         assert sDelegate == null;
         sDelegate = delegate;
+    }
+
+    /** See {@link #sDefaultSearchEngineUrl}. */
+    static String getDefaultSearchEngineUrl() {
+        // TODO(yusufo): Get rid of this.
+        return sDefaultSearchEngineUrl;
     }
 }

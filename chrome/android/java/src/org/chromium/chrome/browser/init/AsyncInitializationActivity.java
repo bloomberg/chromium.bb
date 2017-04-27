@@ -207,13 +207,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         mNativeInitializationController.onNativeInitializationComplete();
     }
 
-    /**
-     * Actions that may be run at some point after startup. Place tasks that are not critical to the
-     * startup path here.  This method will be called automatically and should not be called
-     * directly by subclasses.
-     */
-    protected void onDeferredStartup() { }
-
     @Override
     public void onStartupFailure() {
         ProcessInitException e =

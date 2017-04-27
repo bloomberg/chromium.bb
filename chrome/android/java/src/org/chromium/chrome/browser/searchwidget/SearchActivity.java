@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -19,6 +21,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -34,14 +37,16 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 /** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate {
+    private static final String TAG = "searchwidget";
+
     /** Setting this field causes the Activity to finish itself immediately for tests. */
     private static boolean sIsDisabledForTest;
 
     /** Main content view. */
     private ViewGroup mContentView;
 
-    /** Whether the native library has been loaded. */
-    private boolean mIsNativeReady;
+    /** Whether the user is now allowed to perform searches. */
+    private boolean mIsActivityUsable;
 
     /** Input submitted before before the native library was loaded. */
     private String mQueuedUrl;
@@ -89,6 +94,10 @@ public class SearchActivity extends AsyncInitializationActivity
         setContentView(mContentView);
 
         // Kick off everything needed for the user to type into the box.
+        // TODO(dfalcantara): We should prevent the user from doing anything while we're running the
+        //                    logic to determine if they need to see a search engine promo.  Given
+        //                    that the logic requires native to be loaded, we'll have to make some
+        //                    easy Java-only first-pass checks.
         beginQuery();
         mSearchBox.showCachedZeroSuggestResultsIfAvailable();
 
@@ -104,7 +113,6 @@ public class SearchActivity extends AsyncInitializationActivity
     @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
-        mIsNativeReady = true;
 
         mTab = new Tab(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID),
                 Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
@@ -116,19 +124,32 @@ public class SearchActivity extends AsyncInitializationActivity
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);
         mSearchBox.onNativeLibraryReady();
 
-        if (mQueuedUrl != null) loadUrl(mQueuedUrl);
-
-        mHandler.post(new Runnable() {
+        // Force the user to choose a search engine if they have to.
+        final Callback<Boolean> deferredCallback = new Callback<Boolean>() {
             @Override
-            public void run() {
-                onDeferredStartup();
+            public void onResult(Boolean result) {
+                finishDeferredInitialization(result);
             }
-        });
+        };
+        if (!LocaleManager.getInstance().showSearchEnginePromoIfNeeded(this, deferredCallback)) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    deferredCallback.onResult(true);
+                }
+            });
+        }
     }
 
-    @Override
-    public void onDeferredStartup() {
-        super.onDeferredStartup();
+    private void finishDeferredInitialization(Boolean result) {
+        if (result == null || !result.booleanValue()) {
+            Log.e(TAG, "User failed to select a default search engine.");
+            finish();
+            return;
+        }
+
+        mIsActivityUsable = true;
+        if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
         AutocompleteController.nativePrefetchZeroSuggestResults();
         CustomTabsConnection.getInstance(getApplication()).warmup(0);
@@ -175,7 +196,7 @@ public class SearchActivity extends AsyncInitializationActivity
     @Override
     public void loadUrl(String url) {
         // Wait until native has loaded.
-        if (!mIsNativeReady) {
+        if (!mIsActivityUsable) {
             mQueuedUrl = url;
             return;
         }
