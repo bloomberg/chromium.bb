@@ -17,7 +17,7 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.common.ContentSwitches;
+import org.chromium.media.MediaSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for checking whether the media are paused when unplugging the headset
  */
-@CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK)
+@CommandLineFlags.Add(MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS)
 public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PATH =
             "/content/test/data/media/session/media-session.html";

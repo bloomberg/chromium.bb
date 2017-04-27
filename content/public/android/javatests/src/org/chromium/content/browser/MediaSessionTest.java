@@ -19,10 +19,10 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.media.MediaSwitches;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -31,7 +31,7 @@ import java.util.concurrent.Callable;
  * Tests for MediaSession.
  */
 @RetryOnFailure
-@CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK)
+@CommandLineFlags.Add(MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS)
 public class MediaSessionTest extends ContentShellTestBase {
     private static final String MEDIA_SESSION_TEST_URL =
             "content/test/data/media/session/media-session.html";

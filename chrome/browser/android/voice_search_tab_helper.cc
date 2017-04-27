@@ -8,16 +8,20 @@
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
+#include "media/base/media_switches.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(VoiceSearchTabHelper);
 
+// TODO(715588): this class shouldn't be playing with the user gesture
+// requirements like this.
 VoiceSearchTabHelper::VoiceSearchTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   gesture_requirement_for_playback_disabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGestureRequirementForMediaPlayback);
+      command_line->HasSwitch(switches::kIgnoreAutoplayRestrictionsForTests) ||
+      command_line->GetSwitchValueASCII(switches::kAutoplayPolicy) !=
+          switches::autoplay::kNoUserGestureRequiredPolicy;
 }
 
 VoiceSearchTabHelper::~VoiceSearchTabHelper() {
