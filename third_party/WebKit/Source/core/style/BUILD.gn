@@ -21,7 +21,6 @@ blink_core_sources("rendering") {
     "CachedUAStyle.h",
     "ClipPathOperation.cpp",
     "ClipPathOperation.h",
-    "CollapsedBorderValue.h",
     "ComputedStyle.cpp",
     "ComputedStyle.h",
     "ComputedStyleConstants.h",
