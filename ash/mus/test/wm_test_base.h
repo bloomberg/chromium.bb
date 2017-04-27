@@ -62,11 +62,6 @@ class WmTestBase : public testing::Test {
   aura::Window* CreateTestWindow(const gfx::Rect& bounds,
                                  ui::wm::WindowType window_type);
 
-  // Creates a visibile fullscreen top level window on the display corresponding
-  // to the display_id provided.
-  aura::Window* CreateFullscreenTestWindow(
-      int64_t display_id = display::kInvalidDisplayId);
-
   // Creates a window parented to |parent|. The returned window is visible.
   aura::Window* CreateChildTestWindow(aura::Window* parent,
                                       const gfx::Rect& bounds);

@@ -128,24 +128,6 @@ aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
   return window;
 }
 
-aura::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
-  std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kShowState_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<aura::PropertyConverter::PrimitiveType>(
-              ui::mojom::ShowState::FULLSCREEN));
-  if (display_id != display::kInvalidDisplayId) {
-    properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(display_id);
-  }
-  WindowManager* window_manager =
-      test_helper_->window_manager_app()->window_manager();
-  aura::Window* window = CreateAndParentTopLevelWindow(
-      window_manager, ui::mojom::WindowType::WINDOW, &properties);
-  window->Show();
-  return window;
-}
-
 aura::Window* WmTestBase::CreateChildTestWindow(aura::Window* parent,
                                                 const gfx::Rect& bounds) {
   std::map<std::string, std::vector<uint8_t>> properties;
