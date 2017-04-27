@@ -26,32 +26,32 @@
 namespace blink {
 
 StyleInheritedData::StyleInheritedData()
-    : horizontal_border_spacing(
+    : horizontal_border_spacing_(
           ComputedStyle::InitialHorizontalBorderSpacing()),
-      vertical_border_spacing(ComputedStyle::InitialVerticalBorderSpacing()),
-      line_height(ComputedStyle::InitialLineHeight()),
-      color(ComputedStyle::InitialColor()),
-      visited_link_color(ComputedStyle::InitialColor()),
-      text_autosizing_multiplier(1) {}
+      vertical_border_spacing_(ComputedStyle::InitialVerticalBorderSpacing()),
+      line_height_(ComputedStyle::InitialLineHeight()),
+      color_(ComputedStyle::InitialColor()),
+      visited_link_color_(ComputedStyle::InitialColor()),
+      text_autosizing_multiplier_(1) {}
 
 StyleInheritedData::~StyleInheritedData() {}
 
 StyleInheritedData::StyleInheritedData(const StyleInheritedData& o)
     : RefCounted<StyleInheritedData>(),
-      horizontal_border_spacing(o.horizontal_border_spacing),
-      vertical_border_spacing(o.vertical_border_spacing),
-      line_height(o.line_height),
-      font(o.font),
-      color(o.color),
-      visited_link_color(o.visited_link_color),
-      text_autosizing_multiplier(o.text_autosizing_multiplier) {}
+      horizontal_border_spacing_(o.horizontal_border_spacing_),
+      vertical_border_spacing_(o.vertical_border_spacing_),
+      line_height_(o.line_height_),
+      font_(o.font_),
+      color_(o.color_),
+      visited_link_color_(o.visited_link_color_),
+      text_autosizing_multiplier_(o.text_autosizing_multiplier_) {}
 
 bool StyleInheritedData::operator==(const StyleInheritedData& o) const {
-  return line_height == o.line_height && font == o.font && color == o.color &&
-         visited_link_color == o.visited_link_color &&
-         horizontal_border_spacing == o.horizontal_border_spacing &&
-         text_autosizing_multiplier == o.text_autosizing_multiplier &&
-         vertical_border_spacing == o.vertical_border_spacing;
+  return line_height_ == o.line_height_ && font_ == o.font_ &&
+         color_ == o.color_ && visited_link_color_ == o.visited_link_color_ &&
+         horizontal_border_spacing_ == o.horizontal_border_spacing_ &&
+         text_autosizing_multiplier_ == o.text_autosizing_multiplier_ &&
+         vertical_border_spacing_ == o.vertical_border_spacing_;
 }
 
 }  // namespace blink

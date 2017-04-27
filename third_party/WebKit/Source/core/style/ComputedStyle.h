@@ -189,7 +189,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // inherited attributes
   DataRef<StyleRareInheritedData> rare_inherited_data_;
-  DataRef<StyleInheritedData> style_inherited_data_;
+  DataRef<StyleInheritedData> inherited_data_;
 
   // list of associated pseudo styles
   std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
@@ -2293,7 +2293,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   float TextAutosizingMultiplier() const {
-    return style_inherited_data_->text_autosizing_multiplier;
+    return inherited_data_->text_autosizing_multiplier_;
   }
   void SetTextAutosizingMultiplier(float);
 
