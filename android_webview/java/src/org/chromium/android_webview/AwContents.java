@@ -3047,10 +3047,9 @@ public class AwContents implements SmartClipProvider {
 
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
-        float dpi = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
         if (!isDestroyedOrNoOperation(WARN)) {
             mWebContents.requestSmartClipExtract(
-                    (int) (x / dpi), (int) (y / dpi), (int) (width / dpi), (int) (height / dpi));
+                    x, y, width, height, mContentViewCore.getRenderCoordinates());
         }
     }
 
