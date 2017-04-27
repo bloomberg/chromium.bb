@@ -1440,7 +1440,15 @@ Node* Range::PastLastNode() const {
   return EndPosition().NodeAsRangePastLastNode();
 }
 
-static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
+static void CollectAbsoluteBoundsForRange(unsigned start,
+                                          unsigned end,
+                                          const LayoutText& layout_text,
+                                          Vector<IntRect>& rects) {
+  layout_text.AbsoluteRectsForRange(rects, start, end);
+}
+
+template <typename RectType>
+static Vector<RectType> ComputeTextBounds(const EphemeralRange& range) {
   const Position& start_position = range.StartPosition();
   const Position& end_position = range.EndPosition();
   Node* const start_container = start_position.ComputeContainerNode();
@@ -1448,20 +1456,25 @@ static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
   Node* const end_container = end_position.ComputeContainerNode();
   DCHECK(end_container);
 
-  Vector<IntRect> rects;
+  Vector<RectType> result;
   for (const Node& node : range.Nodes()) {
     LayoutObject* const layoutObject = node.GetLayoutObject();
     if (!layoutObject || !layoutObject->IsText())
       continue;
-    LayoutText* layout_text = ToLayoutText(layoutObject);
+    const LayoutText* layout_text = ToLayoutText(layoutObject);
     unsigned start_offset =
         node == start_container ? start_position.OffsetInContainerNode() : 0;
     unsigned end_offset = node == end_container
                               ? end_position.OffsetInContainerNode()
                               : std::numeric_limits<unsigned>::max();
-    layout_text->AbsoluteRectsForRange(rects, start_offset, end_offset);
+    CollectAbsoluteBoundsForRange(start_offset, end_offset, *layout_text,
+                                  result);
   }
-  return rects;
+  return result;
+}
+
+static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
+  return ComputeTextBounds<IntRect>(range);
 }
 
 IntRect Range::BoundingBox() const {
