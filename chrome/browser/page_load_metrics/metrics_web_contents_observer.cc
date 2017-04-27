@@ -64,7 +64,6 @@ UserInitiatedInfo CreateUserInitiatedInfo(
 
 }  // namespace
 
-// static
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
@@ -75,6 +74,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
   RegisterInputEventObserver(web_contents->GetRenderViewHost());
 }
 
+// static
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface) {
@@ -92,6 +92,9 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {
   // TODO(csharrison): Use a more user-initiated signal for CLOSE.
   NotifyPageEndAllLoads(END_CLOSE, UserInitiatedInfo::NotUserInitiated());
+
+  for (auto& observer : testing_observers_)
+    observer.OnGoingAway();
 }
 
 void MetricsWebContentsObserver::RegisterInputEventObserver(
@@ -597,6 +600,9 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   }
 
   committed_load_->UpdateTiming(timing, metadata);
+
+  for (auto& observer : testing_observers_)
+    observer.OnTimingUpdated(timing, metadata);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(
@@ -607,6 +613,34 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
 
   return BrowserPageTrackDecider(embedder_interface_.get(), web_contents(),
                                  navigation_handle).ShouldTrack();
+}
+
+void MetricsWebContentsObserver::AddTestingObserver(TestingObserver* observer) {
+  if (!testing_observers_.HasObserver(observer))
+    testing_observers_.AddObserver(observer);
+}
+
+void MetricsWebContentsObserver::RemoveTestingObserver(
+    TestingObserver* observer) {
+  testing_observers_.RemoveObserver(observer);
+}
+
+MetricsWebContentsObserver::TestingObserver::TestingObserver(
+    content::WebContents* web_contents)
+    : observer_(page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+          web_contents)) {
+  observer_->AddTestingObserver(this);
+}
+
+MetricsWebContentsObserver::TestingObserver::~TestingObserver() {
+  if (observer_) {
+    observer_->RemoveTestingObserver(this);
+    observer_ = nullptr;
+  }
+}
+
+void MetricsWebContentsObserver::TestingObserver::OnGoingAway() {
+  observer_ = nullptr;
 }
 
 }  // namespace page_load_metrics
