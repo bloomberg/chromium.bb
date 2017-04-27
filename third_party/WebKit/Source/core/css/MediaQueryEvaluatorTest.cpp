@@ -66,6 +66,8 @@ TestCase g_screen_test_cases[] = {
     {"(display-mode: @junk browser)", 0},
     {"(shape: rect)", 1},
     {"(shape: round)", 0},
+    {"(max-device-aspect-ratio: 4294967295/1)", 1},
+    {"(min-device-aspect-ratio: 1/4294967296)", 1},
     {0, 0}  // Do not remove the terminator line.
 };
 
@@ -91,6 +93,8 @@ TestCase g_viewport_test_cases[] = {
     {"(width)", 1},
     {"(width: whatisthis)", 0},
     {"screen and (min-width: 400px) and (max-width: 700px)", 1},
+    {"(max-aspect-ratio: 4294967296/1)", 1},
+    {"(min-aspect-ratio: 1/4294967295)", 1},
     {0, 0}  // Do not remove the terminator line.
 };
 

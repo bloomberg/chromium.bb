@@ -192,10 +192,10 @@ static bool CompareAspectRatioValue(const MediaQueryExpValue& value,
                                     int width,
                                     int height,
                                     MediaFeaturePrefix op) {
-  if (value.is_ratio)
-    return CompareValue(width * static_cast<int>(value.denominator),
-                        height * static_cast<int>(value.numerator), op);
-
+  if (value.is_ratio) {
+    return CompareValue(static_cast<double>(width) * value.denominator,
+                        static_cast<double>(height) * value.numerator, op);
+  }
   return false;
 }
 

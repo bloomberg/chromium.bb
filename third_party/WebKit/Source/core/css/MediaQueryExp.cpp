@@ -284,8 +284,8 @@ MediaQueryExp MediaQueryExp::Create(
         denominator.GetNumericValueType() != kIntegerValueType)
       return Invalid();
 
-    exp_value.numerator = (unsigned)numerator.NumericValue();
-    exp_value.denominator = (unsigned)denominator.NumericValue();
+    exp_value.numerator = clampTo<unsigned>(numerator.NumericValue());
+    exp_value.denominator = clampTo<unsigned>(denominator.NumericValue());
     exp_value.is_ratio = true;
   } else {
     return Invalid();
