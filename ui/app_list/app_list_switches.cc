@@ -5,6 +5,7 @@
 #include "ui/app_list/app_list_switches.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 
 namespace app_list {
@@ -82,12 +83,19 @@ bool IsDriveSearchInChromeLauncherEnabled() {
 }
 
 std::string AnswerServerUrl() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-      kAnswerServerUrl);
+  // If the answer server URL is passed in the command line, use it, otherwise
+  // get it from the variations server.
+  const std::string variations_url = base::GetFieldTrialParamValue(
+      "SearchAnswerCard", switches::kAnswerServerUrl);
+  const std::string url =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          kAnswerServerUrl);
+  return !url.empty() ? url : variations_url;
 }
 
 bool IsAnswerCardEnabled() {
-  return !AnswerServerUrl().empty();
+  static const bool enabled = !AnswerServerUrl().empty();
+  return enabled;
 }
 
 bool IsFullscreenAppListEnabled() {
