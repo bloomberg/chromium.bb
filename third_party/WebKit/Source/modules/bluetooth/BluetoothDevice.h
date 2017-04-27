@@ -91,6 +91,11 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 
+ protected:
+  // EventTarget overrides:
+  void AddedEventListener(const AtomicString& eventType,
+                          RegisteredEventListener&) override;
+
  private:
   // Holds all GATT Attributes associated with this BluetoothDevice.
   Member<BluetoothAttributeInstanceMap> attribute_instance_map_;
