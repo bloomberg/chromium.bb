@@ -657,7 +657,9 @@ class TestCoreLogic(MoxBase):
     failures[0].patch.approval_timestamp = time.time()
     failures[-1].patch.approval_timestamp = time.time()
     self.mox.ReplayAll()
-    result = validation_pool.ValidationPool._FilterDependencyErrors(failures)
+    pool = self.MakePool()
+    pool.filtered_set = set(self.GetPatches(4))
+    result = pool._FilterDependencyErrors(failures)
     self.assertEquals(set(failures[:-1]), set(result))
     self.mox.VerifyAll()
 
@@ -668,9 +670,26 @@ class TestCoreLogic(MoxBase):
                  zip(self.GetPatches(2), failures)]
     self.PatchObject(failures[-1].patch, 'HasReadyFlag', return_value=False)
     self.mox.ReplayAll()
-    result = validation_pool.ValidationPool._FilterDependencyErrors(failures)
+    pool = self.MakePool()
+    pool.filtered_set = set(self.GetPatches(2))
+    result = pool._FilterDependencyErrors(failures)
     self.assertEquals(set(failures[:-1]), set(result))
     self.mox.VerifyAll()
+
+  def testFilterDependencyErrorsOnFilteredChanges(self):
+    """Test FilterDependencyErrors on filtered changes."""
+    p_1, p_2, p_3, p_4 = self.GetPatches(4)
+    e_1 = patch_series.PatchNotEligible(p_1)
+    e_2 = cros_patch.DependencyError(p_2, e_1)
+    e_3 = cros_patch.DependencyError(p_3, e_2)
+    e_4 = cros_patch.ApplyPatchException(p_4)
+    errors = [e_2, e_3, e_4]
+
+    pool = self.MakePool()
+    pool.filtered_set = set([p_1])
+
+    result = pool._FilterDependencyErrors(errors)
+    self.assertItemsEqual(result, [e_4])
 
   def testFilterNonCrosProjects(self):
     """Runs through a filter of own manifest and fake changes.
@@ -862,6 +881,7 @@ class TestCoreLogic(MoxBase):
 
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 4)
+    self.assertIsNone(slave_pool.filtered_set)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -879,6 +899,7 @@ class TestCoreLogic(MoxBase):
 
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 2)
+    self.assertEqual(len(slave_pool.filtered_set), 2)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -896,6 +917,7 @@ class TestCoreLogic(MoxBase):
 
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 1)
+    self.assertEqual(len(slave_pool.filtered_set), 3)
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
@@ -913,6 +935,7 @@ class TestCoreLogic(MoxBase):
 
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 1)
+    self.assertEqual(len(slave_pool.filtered_set), 3)
     self.mox.VerifyAll()
 
   def _UpdatedDependencyMap(self, dependency_map):

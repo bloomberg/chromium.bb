@@ -1324,3 +1324,26 @@ class MockPatchBase(cros_test_lib.MockTestCase):
     if how_many == 1 and not always_use_list:
       return patches[0]
     return patches
+
+
+class DependencyErrorTests(MockPatchBase):
+  """Tests for DependencyError."""
+
+  def testGetRootError(self):
+    """Test GetRootError on nested DependencyError."""
+    p_1, p_2, p_3 = self.GetPatches(how_many=3)
+    ex_1 = cros_patch.ApplyPatchException(p_1)
+    ex_2 = cros_patch.DependencyError(p_2, ex_1)
+    ex_3 = cros_patch.DependencyError(p_3, ex_2)
+
+    self.assertEqual(ex_3.GetRootError(), ex_1)
+
+  def testGetRootErrorOnCircurlarError(self):
+    """Test GetRootError on circular"""
+    p_1, p_2, p_3 = self.GetPatches(how_many=3)
+    ex_1 = cros_patch.DependencyError(p_2, cros_patch.ApplyPatchException(p_1))
+    ex_2 = cros_patch.DependencyError(p_2, ex_1)
+    ex_3 = cros_patch.DependencyError(p_3, ex_2)
+    ex_1.error = ex_3
+
+    self.assertIsNone(ex_3.GetRootError())

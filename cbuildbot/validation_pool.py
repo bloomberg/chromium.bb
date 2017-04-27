@@ -302,6 +302,9 @@ class ValidationPool(object):
     # Set to False if the tree was not open when we acquired changes.
     self.tree_was_open = tree_was_open
 
+    # A set of changes filtered by throttling, default to None.
+    self.filtered_set = None
+
   def GetAppliedPatches(self):
     """Get the applied_patches instance.
 
@@ -627,18 +630,19 @@ class ValidationPool(object):
 
     return changes_in_manifest, changes_not_in_manifest
 
-  @classmethod
-  def _FilterDependencyErrors(cls, errors):
+  def _FilterDependencyErrors(self, errors):
     """Filter out ignorable DependencyError exceptions.
 
     If a dependency isn't marked as ready, or a dependency fails to apply,
     we only complain after REJECTION_GRACE_PERIOD has passed since the patch
     was uploaded.
 
-    This helps in two situations:
-      1) If the developer is in the middle of marking a stack of changes as
+    This helps in three situations:
+      1) crbug.com/705023: if the error is a DependencyError, and the dependent
+         CL was filtered by a throttled tree, do not reject the CL set.
+      2) If the developer is in the middle of marking a stack of changes as
          ready, we won't reject their work until the grace period has passed.
-      2) If the developer marks a big circular stack of changes as ready, and
+      3) If the developer marks a big circular stack of changes as ready, and
          some change in the middle of the stack doesn't apply, the user will
          get a chance to rebase their change before we mark all the changes as
          'not ready'.
@@ -652,10 +656,21 @@ class ValidationPool(object):
     Returns:
       List of unfiltered exceptions.
     """
-    reject_timestamp = time.time() - cls.REJECTION_GRACE_PERIOD
+    reject_timestamp = time.time() - self.REJECTION_GRACE_PERIOD
     results = []
     for error in errors:
       results.append(error)
+
+      if self.filtered_set and isinstance(error, cros_patch.DependencyError):
+        root_error = error.GetRootError()
+        if (isinstance(root_error, patch_series.PatchNotEligible) and
+            root_error.patch in self.filtered_set):
+          logging.info('Ignoring dependency errors for %s as its dependency '
+                       'change %s was filtered out by throttling.', error.patch,
+                       root_error.patch)
+          results.pop()
+          continue
+
       is_ready = error.patch.HasReadyFlag()
       if not is_ready or reject_timestamp < error.patch.approval_timestamp:
         while error is not None:
@@ -735,6 +750,7 @@ class ValidationPool(object):
 
     removed = self.candidates[test_pool_size:]
     if removed:
+      self.filtered_set = set(removed)
       logging.info('As the tree is throttled, it only picks a random subset of '
                    'candidate changes. Changes not picked up in this run: %s ',
                    cros_patch.GetChangesAsString(removed))

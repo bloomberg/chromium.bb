@@ -35,6 +35,8 @@ _GERRIT_CHANGE_ID_TOTAL_LENGTH = (_GERRIT_CHANGE_ID_LENGTH +
 REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
 BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
 
+DEFAULT_GET_ROOT_ERROR_LIMIT = 100
+
 # Constants for attributes names.
 ATTR_REMOTE = 'remote'
 ATTR_GERRIT_NUMBER = 'gerrit_number'
@@ -284,6 +286,34 @@ class DependencyError(PatchException):
     link = self.error.patch.PatchLink()
     return 'depends on %s, which %s' % (link, self.error.ShortExplanation())
 
+  def GetRootError(self, limit=DEFAULT_GET_ROOT_ERROR_LIMIT):
+    """Get the root error of nested dependency errors.
+
+    DependencyError can be nested dependency errors on a root error, this
+    method returns the exception of the root change. For example, for the error
+    'CL:A depends on CL:B, which depends on CL:C, which was not eligible
+    (wrong manifest branch, wrong labels, or otherwise filtered from eligible
+    set).', this method will return the not_eligible_error of CL:C.
+    DependencyErrors won't be formed by circular dependency errors, add the
+    depth check just in case dependency errors are malformed.
+
+    Args:
+      limit: The limit (int) of depth to get the root error.
+
+    Returns:
+      The root error of the nested dependency errors; None if the depth exceeds
+      the given limit.
+    """
+    depth = 1
+    key_error = self.error
+    while isinstance(key_error, DependencyError) and depth < limit:
+      key_error = key_error.error
+
+      depth += 1
+      if depth == limit:
+        return None
+
+    return key_error
 
 class BrokenCQDepends(PatchException):
   """Raised if a patch has a CQ-DEPEND line that is ill formated."""
