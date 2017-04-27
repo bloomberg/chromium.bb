@@ -196,16 +196,18 @@ enum class ColorSpaceConversion : uint8_t {
   DEFAULT_COLOR_CORRECTED = 2,
   SRGB = 3,
   LINEAR_RGB = 4,
+  P3 = 5,
+  REC2020 = 6,
 
-  LAST = LINEAR_RGB
+  LAST = REC2020
 };
 
 static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
     const ColorSpaceConversion& color_space_conversion) {
   // Set the color space conversion in ImageBitmapOptions
   ImageBitmapOptions options;
-  static const Vector<String> kConversions = {"none", "default", "default",
-                                              "srgb", "linear-rgb"};
+  static const Vector<String> kConversions = {
+      "none", "default", "default", "srgb", "linear-rgb", "p3", "rec2020"};
   options.setColorSpaceConversion(
       kConversions[static_cast<uint8_t>(color_space_conversion)]);
 
@@ -285,6 +287,20 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
         break;
       case ColorSpaceConversion::LINEAR_RGB:
         color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::P3:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kDCIP3_D65_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::REC2020:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kRec2020_Gamut);
         color_type = SkColorType::kRGBA_F16_SkColorType;
         color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
@@ -382,6 +398,20 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
         color_type = SkColorType::kRGBA_F16_SkColorType;
         color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
+      case ColorSpaceConversion::P3:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kDCIP3_D65_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::REC2020:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kRec2020_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
       default:
         NOTREACHED();
     }
@@ -467,6 +497,20 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
         color_type = SkColorType::kRGBA_F16_SkColorType;
         color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
+      case ColorSpaceConversion::P3:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kDCIP3_D65_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::REC2020:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kRec2020_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
       default:
         NOTREACHED();
     }
@@ -514,7 +558,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
 
   for (uint8_t i =
            static_cast<uint8_t>(ColorSpaceConversion::DEFAULT_COLOR_CORRECTED);
-       i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
+       i <= static_cast<uint8_t>(ColorSpaceConversion::LINEAR_RGB); i++) {
     ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
     ImageBitmapOptions options =

@@ -14,6 +14,14 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
                                      CanvasPixelFormat pixel_format)
     : color_space_(color_space), pixel_format_(pixel_format) {}
 
+void CanvasColorParams::SetCanvasColorSpace(CanvasColorSpace color_space) {
+  color_space_ = color_space;
+}
+
+void CanvasColorParams::SetCanvasPixelFormat(CanvasPixelFormat pixel_format) {
+  pixel_format_ = pixel_format;
+}
+
 bool CanvasColorParams::UsesOutputSpaceBlending() const {
   return color_space_ == kLegacyCanvasColorSpace;
 }
