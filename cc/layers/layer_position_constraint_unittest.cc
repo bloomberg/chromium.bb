@@ -207,18 +207,6 @@ class LayerPositionConstraintTest : public testing::Test {
   }
 };
 
-namespace {
-
-void SetFixedContainerSizeDelta(LayerImpl* scroll_layer,
-                                const gfx::Vector2d& delta) {
-  DCHECK(scroll_layer);
-  DCHECK(scroll_layer->scrollable());
-
-  LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
-  container_layer->SetViewportBoundsDelta(delta);
-}
-}  // namespace
-
 TEST_F(LayerPositionConstraintTest,
      ScrollCompensationForFixedPositionLayerWithDirectContainer) {
   // This test checks for correct scroll compensation when the fixed-position
@@ -256,7 +244,8 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -270,7 +259,8 @@ TEST_F(LayerPositionConstraintTest,
   CommitAndUpdateImplPointers();
 
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 10));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Bottom-right fixed-position layer moves as container resizes.
@@ -331,7 +321,8 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -346,7 +337,8 @@ TEST_F(LayerPositionConstraintTest,
   great_grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
   CommitAndUpdateImplPointers();
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 10));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Bottom-right fixed-position layer moves as container resizes.
@@ -508,7 +500,8 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -524,7 +517,8 @@ TEST_F(LayerPositionConstraintTest,
 
   CommitAndUpdateImplPointers();
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 30));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
 
   ExecuteCalculateDrawProperties(root_impl_);
 
@@ -661,7 +655,8 @@ TEST_F(LayerPositionConstraintTest,
                                   fixed_position_child_impl->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -680,7 +675,8 @@ TEST_F(LayerPositionConstraintTest,
   fixed_position_child_impl =
       layer_tree_impl_->LayerById(fixed_position_child->id());
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 30));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Bottom-right fixed-position layer moves as container resizes.
@@ -879,7 +875,8 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -892,7 +889,8 @@ TEST_F(LayerPositionConstraintTest,
   grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
   CommitAndUpdateImplPointers();
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 10));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Bottom-right fixed-position layer moves as container resizes.
@@ -950,7 +948,8 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child_impl_->DrawTransform());
 
   // Case 3: fixed-container size delta of 20, 20
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -963,7 +962,8 @@ TEST_F(LayerPositionConstraintTest,
   grand_child_->SetPositionConstraint(fixed_to_bottom_right_);
   CommitAndUpdateImplPointers();
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(10, 10));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
 
   ExecuteCalculateDrawProperties(root_impl_);
 
@@ -1017,7 +1017,8 @@ TEST_F(LayerPositionConstraintTest,
 
   // Case 2: sizeDelta
   SetScrollOffsetDelta(child_impl_, gfx::Vector2d(0, 0));
-  SetFixedContainerSizeDelta(child_impl_, gfx::Vector2d(20, 20));
+  outer_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   expected_child_transform.MakeIdentity();
@@ -1112,7 +1113,8 @@ TEST_F(LayerPositionConstraintTest,
   // Case 1: fixed-container size delta of 20, 20
   SetScrollOffsetDelta(scroll_layer_impl_, gfx::Vector2d(10, 10));
   scroll_layer_impl_->SetDrawsContent(true);
-  SetFixedContainerSizeDelta(scroll_layer_impl_, gfx::Vector2d(20, 20));
+  inner_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   gfx::Transform expected_scroll_layer_transform;
   expected_scroll_layer_transform.Translate(-10.0, -10.0);
   gfx::Transform expected_fixed_child_transform;
@@ -1132,7 +1134,8 @@ TEST_F(LayerPositionConstraintTest,
       root_impl_->layer_tree_impl()->FindActiveTreeLayerById(fixed_child->id());
 
   SetScrollOffsetDelta(scroll_layer_impl_, gfx::Vector2d(10, 10));
-  SetFixedContainerSizeDelta(scroll_layer_impl_, gfx::Vector2d(20, 20));
+  inner_viewport_container_layer_impl_->SetViewportBoundsDelta(
+      gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_impl_);
 
   // Bottom-right fixed-position layer moves as container resizes.
