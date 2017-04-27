@@ -81,7 +81,8 @@
     </style>
 
     <div id="container" class="v-centered" on-tap="selectFolder_"
-        draggable="[[!isRootFolder_(depth)]]">
+        draggable="[[!isTopLevelFolder_(depth)]]"
+        hidden="[[isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
         <paper-icon-button id="arrow" icon="cr:arrow-drop-down"
             is-open$="[[!isClosed_]]" on-tap="toggleFolder_">

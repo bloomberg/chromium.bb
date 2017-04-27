@@ -139,17 +139,17 @@ TEST_F('MaterialBookmarksRouterTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksSidebarTest() {}
+function MaterialBookmarksFolderNodeTest() {}
 
-MaterialBookmarksSidebarTest.prototype = {
+MaterialBookmarksFolderNodeTest.prototype = {
   __proto__: MaterialBookmarksBrowserTest.prototype,
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
-    'sidebar_test.js',
+    'folder_node_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksSidebarTest', 'All', function() {
+TEST_F('MaterialBookmarksFolderNodeTest', 'All', function() {
   mocha.run();
 });
 

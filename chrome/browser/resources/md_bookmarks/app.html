@@ -6,9 +6,9 @@
 <link rel="import" href="chrome://bookmarks/list.html">
 <link rel="import" href="chrome://bookmarks/router.html">
 <link rel="import" href="chrome://bookmarks/shared_vars.html">
-<link rel="import" href="chrome://bookmarks/sidebar.html">
 <link rel="import" href="chrome://bookmarks/store.html">
 <link rel="import" href="chrome://bookmarks/toolbar.html">
+<link rel="import" href="chrome://bookmarks/folder_node.html">
 <link rel="import" href="chrome://bookmarks/util.html">
 
 <dom-module id="bookmarks-app">
@@ -42,6 +42,15 @@
         width: var(--min-sidebar-width);
       }
 
+      #sidebar {
+        -webkit-padding-start: 3px;
+        display: block;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-top: 8px;
+        user-select: none;
+      }
+
       bookmarks-list {
         flex: 1;
         min-width: 550px;
@@ -49,7 +58,9 @@
     </style>
     <bookmarks-toolbar sidebar-width="[[sidebarWidth_]]"></bookmarks-toolbar>
     <div id="main-container">
-      <bookmarks-sidebar id="sidebar"></bookmarks-sidebar>
+       <div id="sidebar">
+        <bookmarks-folder-node item-id="0" depth="-1"></bookmarks-folder-node>
+      </div>
       <div id="splitter"></div>
       <bookmarks-list></bookmarks-list>
     </div>

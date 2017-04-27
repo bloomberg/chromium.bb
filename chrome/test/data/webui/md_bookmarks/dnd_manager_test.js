@@ -5,7 +5,7 @@
 suite('drag and drop', function() {
   var app;
   var list;
-  var sidebar;
+  var rootFolderNode;
   var store;
   var dndManager;
   var draggedIds;
@@ -18,7 +18,7 @@ suite('drag and drop', function() {
   };
 
   function getFolderNode(id) {
-    var nodes = [sidebar];
+    var nodes = [rootFolderNode];
     var node;
     while (nodes.length) {
       node = nodes.pop();
@@ -107,7 +107,7 @@ suite('drag and drop', function() {
     app = document.createElement('bookmarks-app');
     replaceBody(app);
     list = app.$$('bookmarks-list');
-    sidebar = app.$$('bookmarks-sidebar');
+    rootFolderNode = app.$$('bookmarks-folder-node');
     dndManager = app.dndManager_;
     dndManager.dropIndicator_.disableTimeoutForTesting();
     Polymer.dom.flush();
