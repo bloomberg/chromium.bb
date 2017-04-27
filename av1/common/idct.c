@@ -2792,9 +2792,10 @@ static void init_inv_txfm_param(const MACROBLOCKD *xd, TX_SIZE tx_size,
 #endif
 }
 
-void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
-                                 const TX_TYPE tx_type, const TX_SIZE tx_size,
-                                 uint8_t *dst, int stride, int eob) {
+void av1_inverse_transform_block(const MACROBLOCKD *xd,
+                                 const tran_low_t *dqcoeff, TX_TYPE tx_type,
+                                 TX_SIZE tx_size, uint8_t *dst, int stride,
+                                 int eob) {
   if (!eob) return;
 #if CONFIG_PVQ
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];

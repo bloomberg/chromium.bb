@@ -719,8 +719,9 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   }
 }
 
-static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize, uint8_t *src,
-                            int src_stride, uint8_t *dst, int dst_stride) {
+static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize,
+                            const uint8_t *src, int src_stride,
+                            const uint8_t *dst, int dst_stride) {
   int prune_bitmask = 0;
   double svm_proj_h = 0, svm_proj_v = 0;
   double hdist[3] = { 0, 0, 0 }, vdist[3] = { 0, 0, 0 };
@@ -840,7 +841,7 @@ static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 }
 
 static int prune_tx_types(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
-                          MACROBLOCKD *xd, int tx_set) {
+                          const MACROBLOCKD *const xd, int tx_set) {
 #if CONFIG_EXT_TX
   const int *tx_set_1D = ext_tx_used_inter_1D[tx_set];
 #else
@@ -1515,7 +1516,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   struct rdcost_block_args *args = arg;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const AV1_COMP *cpi = args->cpi;
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
@@ -1538,7 +1539,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
 #if !CONFIG_TXK_SEL
   // full forward transform and quantization
-  int coeff_ctx = combine_entropy_contexts(*a, *l);
+  const int coeff_ctx = combine_entropy_contexts(*a, *l);
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
   if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
@@ -1571,8 +1572,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #if !CONFIG_PVQ
-  PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
   this_rd_stats.rate =
@@ -1795,11 +1796,11 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
 }
 #endif  // CONFIG_SUPERTX
 
-static int tx_size_cost(const AV1_COMP *const cpi, MACROBLOCK *x,
+static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
                         BLOCK_SIZE bsize, TX_SIZE tx_size) {
   const AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
   const int tx_select =
       cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8;
@@ -1913,8 +1914,8 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
                             TX_TYPE tx_type, TX_SIZE tx_size) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const TX_SIZE max_tx_size = max_txsize_lookup[bs];
   const int is_inter = is_inter_block(mbmi);
   int prune = 0;
