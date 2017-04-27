@@ -190,8 +190,6 @@ class CC_EXPORT LayerImpl {
 
   bool IsAffectedByPageScale() const;
 
-  gfx::Vector2dF FixedContainerSizeDelta() const;
-
   bool Is3dSorted() const { return GetSortingContextId() != 0; }
 
   void SetUseParentBackfaceVisibility(bool use) {
