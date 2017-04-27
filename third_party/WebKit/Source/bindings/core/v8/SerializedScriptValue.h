@@ -80,6 +80,14 @@ class CORE_EXPORT SerializedScriptValue
   // The following versions cannot be used, in order to be able to
   // deserialize version 0 SSVs. The class implementation has details.
   // DO NOT USE: 35, 64, 68, 73, 78, 82, 83, 85, 91, 98, 102, 108, 123.
+  //
+  // WARNING: Increasing this value is a change which cannot safely be rolled
+  // back without breaking compatibility with data stored on disk. It is
+  // strongly recommended that you do not make such changes near a release
+  // milestone branch point.
+  //
+  // Recent changes are routinely reverted in preparation for branch, and this
+  // has been the cause of at least one bug in the past.
   static constexpr uint32_t kWireFormatVersion = 17;
 
   struct SerializeOptions {
