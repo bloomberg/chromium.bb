@@ -65,6 +65,12 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
   return DocumentMarker::kSpellingMarkerIndex;
 }
 
+DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
+  // All MarkerTypes use GenericDocumentMarkerListImpl for now. Eventually we
+  // will use different marker list classes for different MarkerTypes.
+  return new GenericDocumentMarkerListImpl();
+}
+
 }  // namespace
 
 Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
@@ -206,11 +212,8 @@ void DocumentMarkerController::AddMarker(Node* node,
   }
 
   const DocumentMarker::MarkerType new_marker_type = new_marker->GetType();
-  if (!ListForType(markers, new_marker_type)) {
-    // TODO(rlanday): add method for deciding what type of list to create based
-    // on the MarkerType
-    ListForType(markers, new_marker_type) = new GenericDocumentMarkerListImpl;
-  }
+  if (!ListForType(markers, new_marker_type))
+    ListForType(markers, new_marker_type) = CreateListForType(new_marker_type);
 
   DocumentMarkerList* const list = ListForType(markers, new_marker_type);
   list->Add(new_marker);
@@ -250,11 +253,8 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
     if (!src_list)
       continue;
 
-    if (!ListForType(dst_markers, type)) {
-      // TODO(rlanday): add method for deciding what type of list to create
-      // based on the MarkerType
-      ListForType(dst_markers, type) = new GenericDocumentMarkerListImpl;
-    }
+    if (!ListForType(dst_markers, type))
+      ListForType(dst_markers, type) = CreateListForType(type);
 
     DocumentMarkerList* const dst_list = ListForType(dst_markers, type);
     if (src_list->MoveMarkers(length, dst_list))
