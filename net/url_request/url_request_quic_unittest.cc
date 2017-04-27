@@ -27,6 +27,7 @@
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -96,7 +97,8 @@ class URLRequestQuicTest : public ::testing::Test {
   std::unique_ptr<URLRequest> CreateRequest(const GURL& url,
                                             RequestPriority priority,
                                             URLRequest::Delegate* delegate) {
-    return context_->CreateRequest(url, priority, delegate);
+    return context_->CreateRequest(url, priority, delegate,
+                                   TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   void ExtractNetLog(NetLogEventType type,
