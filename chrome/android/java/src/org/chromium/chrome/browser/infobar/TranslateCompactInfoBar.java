@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Java version of the compcat translate infobar
@@ -92,11 +93,15 @@ class TranslateCompactInfoBar extends InfoBar
     @CalledByNative
     private void onPageTranslated(int errorType) {
         if (mTabLayout != null) {
-            // Success
-            if (errorType == 0) {
-                mTabLayout.hideProgressBar();
-            } else {
-                mTabLayout.stopProgressBarAndRevertBack();
+            mTabLayout.hideProgressBar();
+            if (errorType != 0) {
+                Toast.makeText(getContext(), R.string.translate_infobar_error, Toast.LENGTH_SHORT)
+                        .show();
+                // Disable OnTabSelectedListener then revert selection.
+                mTabLayout.removeOnTabSelectedListener(this);
+                mTabLayout.getTabAt(SOURCE_TAB_INDEX).select();
+                // Add OnTabSelectedListener back.
+                mTabLayout.addOnTabSelectedListener(this);
             }
         }
     }
