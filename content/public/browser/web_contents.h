@@ -27,6 +27,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -277,6 +278,12 @@ class WebContents : public PageNavigator,
   // RenderWidgetHostViewChildFrame), which can be used to create context
   // menus.
   virtual RenderWidgetHostView* GetTopLevelRenderWidgetHostView() = 0;
+
+  // Request a one-time snapshot of the accessibility tree without changing
+  // the accessibility mode.
+  using AXTreeSnapshotCallback = base::Callback<void(const ui::AXTreeUpdate&)>;
+  virtual void RequestAXTreeSnapshot(
+      const AXTreeSnapshotCallback& callback) = 0;
 
   // Causes the current page to be closed, including running its onunload event
   // handler.

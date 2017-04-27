@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -146,6 +147,9 @@ void ArcServiceLauncher::Initialize() {
   if (ArcVoiceInteractionFrameworkService::IsVoiceInteractionEnabled()) {
     arc_service_manager_->AddService(
         base::MakeUnique<ArcVoiceInteractionFrameworkService>(
+            arc_bridge_service));
+    arc_service_manager_->AddService(
+        base::MakeUnique<ArcVoiceInteractionArcHomeService>(
             arc_bridge_service));
   }
   arc_service_manager_->AddService(

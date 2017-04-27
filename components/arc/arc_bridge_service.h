@@ -39,6 +39,7 @@ class StorageManagerInstance;
 class TracingInstance;
 class TtsInstance;
 class VideoInstance;
+class VoiceInteractionArcHomeInstance;
 class VoiceInteractionFrameworkInstance;
 class WallpaperInstance;
 
@@ -94,6 +95,10 @@ class ArcBridgeService {
   InstanceHolder<mojom::TracingInstance>* tracing() { return &tracing_; }
   InstanceHolder<mojom::TtsInstance>* tts() { return &tts_; }
   InstanceHolder<mojom::VideoInstance>* video() { return &video_; }
+  InstanceHolder<mojom::VoiceInteractionArcHomeInstance>*
+  voice_interaction_arc_home() {
+    return &voice_interaction_arc_home_;
+  }
   InstanceHolder<mojom::VoiceInteractionFrameworkInstance>*
   voice_interaction_framework() {
     return &voice_interaction_framework_;
@@ -126,6 +131,8 @@ class ArcBridgeService {
   InstanceHolder<mojom::TracingInstance> tracing_;
   InstanceHolder<mojom::TtsInstance> tts_;
   InstanceHolder<mojom::VideoInstance> video_;
+  InstanceHolder<mojom::VoiceInteractionArcHomeInstance>
+      voice_interaction_arc_home_;
   InstanceHolder<mojom::VoiceInteractionFrameworkInstance>
       voice_interaction_framework_;
   InstanceHolder<mojom::WallpaperInstance> wallpaper_;

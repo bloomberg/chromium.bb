@@ -1025,7 +1025,8 @@ void WebContentsImpl::AddAccessibilityMode(AccessibilityMode mode) {
   SetAccessibilityMode(new_mode);
 }
 
-void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
+void WebContentsImpl::RequestAXTreeSnapshot(
+    const AXTreeSnapshotCallback& callback) {
   // Send a request to each of the frames in parallel. Each one will return
   // an accessibility tree snapshot, and AXTreeSnapshotCombiner will combine
   // them into a single tree and call |callback| with that result, then

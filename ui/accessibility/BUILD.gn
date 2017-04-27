@@ -52,6 +52,8 @@ component("accessibility") {
     "platform/ax_android_constants.h",
     "platform/ax_platform_unique_id.cc",
     "platform/ax_platform_unique_id.h",
+    "platform/ax_snapshot_node_android_platform.cc",
+    "platform/ax_snapshot_node_android_platform.h",
   ]
 
   if (has_native_accessibility) {
