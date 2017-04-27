@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Feature-Policy Vibrate Relocated</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+function loaded() {
+  document.location = "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate-disabled.html";
+  parent.postMessage("Relocate completed", '*');
+}
+</script>
+</head>
+<body onload="loaded()"></body>
+</html>

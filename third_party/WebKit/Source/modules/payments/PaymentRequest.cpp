@@ -638,37 +638,8 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
     return false;
   }
 
-  // If Feature Policy is enabled. then we need this hack to support it, until
-  // we have proper support for <iframe allowfullscreen> in FP:
-  // TODO(lunalu): clean up the code once FP iframe is supported
-  // crbug.com/682280
-
-  // 1. If FP, by itself, enables paymentrequest in this document, then
-  // paymentrequest is allowed.
-  if (frame->IsFeatureEnabled(WebFeaturePolicyFeature::kPayment)) {
-    return true;
-  }
-
-  // 2. Otherwise, if the embedding frame's document is allowed to use
-  // paymentrequest (either through FP or otherwise), and either:
-  //   a) this is a same-origin embedded document, or
-  //   b) this document's iframe has the allowpayment attribute set,
-  // then paymentrequest is allowed.
-  if (!frame->IsMainFrame()) {
-    if (AllowedToUsePaymentRequest(frame->Tree().Parent())) {
-      return (frame->Owner() && frame->Owner()->AllowPaymentRequest()) ||
-             frame->Tree()
-                 .Parent()
-                 ->GetSecurityContext()
-                 ->GetSecurityOrigin()
-                 ->IsSameSchemeHostPortAndSuborigin(
-                     frame->GetSecurityContext()->GetSecurityOrigin());
-    }
-  }
-
-  // Otherwise, paymentrequest is not allowed. (If we reach here and this is
-  // the main frame, then paymentrequest must have been disabled by FP.)
-  return false;
+  // 2. If Feature Policy is enabled, return the policy for "payment" feature.
+  return frame->IsFeatureEnabled(WebFeaturePolicyFeature::kPayment);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(

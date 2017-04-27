@@ -430,6 +430,8 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
     if (GetFrame() && GetFrame()->Owner()) {
       container_policy = GetContainerPolicyFromAllowedFeatures(
           GetFrame()->Owner()->AllowedFeatures(),
+          GetFrame()->Owner()->AllowFullscreen(),
+          GetFrame()->Owner()->AllowPaymentRequest(),
           GetFrame()->GetSecurityContext()->GetSecurityOrigin());
     }
     GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(

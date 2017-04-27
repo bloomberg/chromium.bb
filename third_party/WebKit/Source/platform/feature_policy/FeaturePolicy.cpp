@@ -12,6 +12,19 @@
 
 namespace blink {
 
+namespace {
+
+void AddAllowFeatureToList(
+    WebFeaturePolicyFeature feature,
+    Vector<WebParsedFeaturePolicyDeclaration>& whitelists) {
+  WebParsedFeaturePolicyDeclaration whitelist;
+  whitelist.feature = feature;
+  whitelist.matches_all_origins = true;
+  whitelists.push_back(whitelist);
+}
+
+}  // namespace
+
 WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
                                           RefPtr<SecurityOrigin> origin,
                                           Vector<String>* messages) {
@@ -61,7 +74,7 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
       String target_string;
       for (size_t j = 0; j < targets->size(); ++j) {
         if (targets->at(j)->AsString(&target_string)) {
-          if (DeprecatedEqualIgnoringCase(target_string, "self")) {
+          if (EqualIgnoringASCIICase(target_string, "self")) {
             if (!origin->IsUnique())
               origins.push_back(origin);
           } else if (target_string == "*") {
@@ -84,18 +97,34 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
   return whitelists;
 }
 
-// TODO(lunalu): also take information of allowfullscreen and
-// allowpaymentrequest into account when constructing the whitelist.
 WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     const WebVector<WebFeaturePolicyFeature>& features,
+    bool allowfullscreen,
+    bool allowpayment,
     RefPtr<SecurityOrigin> origin) {
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
+  bool override_payment = false;
+  bool override_fullscreen = false;
   for (const WebFeaturePolicyFeature feature : features) {
+    // Container policy should override "allowfullscreen" and
+    // "allowpaymentrequest" policies.
+    if (feature == WebFeaturePolicyFeature::kPayment)
+      override_payment = true;
+    if (feature == WebFeaturePolicyFeature::kFullscreen)
+      override_fullscreen = true;
+
     WebParsedFeaturePolicyDeclaration whitelist;
     whitelist.feature = feature;
     whitelist.origins = Vector<WebSecurityOrigin>(1UL, {origin});
     whitelists.push_back(whitelist);
   }
+  // If allowfullscreen attribute is present and no fullscreen policy is set,
+  // enable the feature for all origins; similarly for allowpaymentrequest.
+  if (allowpayment && !override_payment)
+    AddAllowFeatureToList(WebFeaturePolicyFeature::kPayment, whitelists);
+  if (allowfullscreen && !override_fullscreen)
+    AddAllowFeatureToList(WebFeaturePolicyFeature::kFullscreen, whitelists);
+
   return whitelists;
 }
 
@@ -109,7 +138,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("vibrate",
                                    WebFeaturePolicyFeature::kVibrate);
       default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);
-      default_feature_name_map.Set("eme", WebFeaturePolicyFeature::kEme);
+      default_feature_name_map.Set("encrypted-media",
+                                   WebFeaturePolicyFeature::kEme);
       default_feature_name_map.Set("microphone",
                                    WebFeaturePolicyFeature::kMicrophone);
       default_feature_name_map.Set("speaker",
@@ -118,7 +148,7 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    WebFeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set("domain",
                                    WebFeaturePolicyFeature::kDocumentDomain);
-      default_feature_name_map.Set("docwrit",
+      default_feature_name_map.Set("docwrite",
                                    WebFeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set("geolocation",
                                    WebFeaturePolicyFeature::kGeolocation);

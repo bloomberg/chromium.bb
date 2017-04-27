@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpChildFramesAsText();
+  }
+</script>
+<iframe id="f1" src="about:blank" allow="payment"></iframe>
+<iframe id="f2" src="about:blank" allowpaymentrequest allow="payment"></iframe>
+<iframe id="f3" src="about:blank" allowpaymentrequest></iframe>
+<iframe id="f4" src="resources/feature-policy-payment-relocate-disabled.html" allow="payment"></iframe>
+<iframe id="f5" src="resources/feature-policy-payment-relocate-disabled.html" allowpaymentrequest allow="payment"></iframe>
+<iframe id="f6" src="resources/feature-policy-payment-relocate-enabled.html" allowpaymentrequest></iframe>
+<script>
+document.getElementById("f1").src = "http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html";
+document.getElementById("f2").src = "http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html";
+document.getElementById("f3").src = "http://localhost:8000/feature-policy/resources/feature-policy-payment-enabled.html";
+</script>

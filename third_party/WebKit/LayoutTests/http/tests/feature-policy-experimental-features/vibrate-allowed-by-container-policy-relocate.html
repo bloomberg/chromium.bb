@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.dumpChildFramesAsText();
+}
+
+function loaded() {
+  var iframe = document.getElementById("f1");
+  // Relocate iframe f1. Changing iframe.src will reload the document and update
+  // the policy.
+  iframe.src = "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate-enabled.html";
+  iframe.addEventListener("load", function() {
+    // The iframe uses eventSender to emulate a user navigatation, which
+    // requires absolute coordinates.
+    iframe.contentWindow.postMessage({x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
+  });
+}
+
+// After updating document.location in iframe f2 (note that this does not cause
+// document to reload therefore does not update the policy), use eventSender to
+// triger navigator.vibrate.
+function testVibrate() {
+  this.contentWindow.postMessage({x: iframe.offsetLeft, y: iframe.offsetTop}, "*");
+}
+
+</script>
+</head>
+<body onload="loaded()">
+<iframe id="f1" src="about:blank" allow="vibrate"></iframe>
+<iframe id="f2" src="resources/feature-policy-vibrate-relocate.html" onMessage="testVibrate(this)" allow="vibrate"></iframe>
+</body>
+</html>
