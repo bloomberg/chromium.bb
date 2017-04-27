@@ -16,8 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -754,13 +753,16 @@ void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
   DCHECK(blacklist_state_ == BlacklistLoadState::NOT_LOADED);
   blacklist_state_ = BlacklistLoadState::LOAD_STARTED;
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::Bind(&base::PathExists, path),
-      base::Bind(&SupervisedUserService::OnBlacklistFileChecked,
-                 weak_ptr_factory_.GetWeakPtr(), path, url));
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::BindOnce(&base::PathExists, path),
+      base::BindOnce(&SupervisedUserService::OnBlacklistFileChecked,
+                     weak_ptr_factory_.GetWeakPtr(), path, url));
 }
 
 void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
