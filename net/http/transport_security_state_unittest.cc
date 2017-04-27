@@ -2692,4 +2692,116 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTStateDisabled) {
   EXPECT_FALSE(state.GetDynamicExpectCTState(host, &expect_ct_state));
 }
 
+// Tests that dynamic Expect-CT opt-ins are processed correctly (when the
+// feature is enabled).
+TEST_F(TransportSecurityStateTest, DynamicExpectCT) {
+  const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = true;
+  ssl.ct_compliance_details_available = true;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+
+  // First test that the header is not processed when the feature is disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        TransportSecurityState::kDynamicExpectCTFeature);
+    TransportSecurityState state;
+    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443),
+                                ssl);
+    TransportSecurityState::ExpectCTState expect_ct_state;
+    EXPECT_FALSE(
+        state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  }
+
+  // Now test that the header is processed when the feature is enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        TransportSecurityState::kDynamicExpectCTFeature);
+    base::Time now = base::Time::Now();
+    TransportSecurityState state;
+    MockExpectCTReporter reporter;
+    state.SetExpectCTReporter(&reporter);
+    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443),
+                                ssl);
+    TransportSecurityState::ExpectCTState expect_ct_state;
+    EXPECT_TRUE(
+        state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+    EXPECT_EQ(GURL("http://foo.test"), expect_ct_state.report_uri);
+    EXPECT_TRUE(expect_ct_state.enforce);
+    EXPECT_LT(now, expect_ct_state.expiry);
+    // No report should be sent when the header was processed over a connection
+    // that complied with CT policy.
+    EXPECT_EQ(0u, reporter.num_failures());
+  }
+}
+
+// Tests that dynamic Expect-CT is not processed for private roots.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTPrivateRoot) {
+  const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = false;
+  ssl.ct_compliance_details_available = true;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl);
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_EQ(0u, reporter.num_failures());
+}
+
+// Tests that dynamic Expect-CT is not processed when CT compliance status
+// wasn't computed.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTNoComplianceDetails) {
+  const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = true;
+  ssl.ct_compliance_details_available = false;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl);
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_EQ(0u, reporter.num_failures());
+}
+
+// Tests that Expect-CT reports are sent when an Expect-CT header is received
+// over a non-compliant connection.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTNonCompliant) {
+  const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = true;
+  ssl.ct_compliance_details_available = true;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl);
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_EQ(1u, reporter.num_failures());
+  EXPECT_EQ("example.test", reporter.host_port_pair().host());
+}
+
 }  // namespace net

@@ -508,14 +508,16 @@ class NET_EXPORT TransportSecurityState
                                    const HostPortPair& host_port_pair,
                                    const SSLInfo& ssl_info);
 
-  // Parses |value| as a Expect CT header value and sends an Expect CT
-  // report for |host_port_pair| if the following conditions are true:
-  // 1. The header value is "preload", indicating that the site wants to
-  // be opted in to Expect CT.
-  // 2. The given host is present on the Expect CT preload list with a
-  // valid report-uri, and the build is timely (i.e. preload list is fresh).
-  // 3. |ssl_info| indicates that the connection violated the Expect CT policy.
-  // 4. An Expect CT reporter has been provided with SetExpectCTReporter().
+  // Parses |value| as a Expect CT header value. If valid and served on a
+  // CT-compliant connection, adds an entry to the dynamic state. If valid but
+  // not served on a CT-compliant connection, a report is sent to alert the site
+  // owner of the misconfiguration (provided that a reporter has been set via
+  // SetExpectCTReporter).
+  //
+  // The header can also have the value "preload", indicating that the site
+  // wants to opt-in to the static report-only version of Expect-CT. If the
+  // given host is present on the preload list and the build is timely and the
+  // connection is not CT-compliant, then a report will be sent.
   void ProcessExpectCTHeader(const std::string& value,
                              const HostPortPair& host_port_pair,
                              const SSLInfo& ssl_info);
