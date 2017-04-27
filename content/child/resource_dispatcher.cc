@@ -375,7 +375,8 @@ void ResourceDispatcher::OnRequestComplete(
                            request_complete_data.exists_in_cache,
                            renderer_completion_time,
                            request_complete_data.encoded_data_length,
-                           request_complete_data.encoded_body_length);
+                           request_complete_data.encoded_body_length,
+                           request_complete_data.decoded_body_length);
 }
 
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {
@@ -781,6 +782,7 @@ void ResourceDispatcher::ContinueForNavigation(
   completion_status.completion_time = base::TimeTicks::Now();
   completion_status.encoded_data_length = -1;
   completion_status.encoded_body_length = -1;
+  completion_status.decoded_body_length = -1;
   client_ptr->OnComplete(completion_status);
 }
 

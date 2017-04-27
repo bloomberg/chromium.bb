@@ -43,7 +43,8 @@ class TestRequestPeer : public RequestPeer {
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size,
-                          int64_t encoded_body_size) override;
+                          int64_t encoded_body_size,
+                          int64_t decoded_body_size) override;
 
   struct Context final {
     Context();

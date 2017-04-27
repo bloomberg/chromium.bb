@@ -101,10 +101,12 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidDownloadData(int, int) override;
   void DidFinishLoading(double finish_time,
                         int64_t encoded_data_length,
-                        int64_t encoded_body_length) override;
+                        int64_t encoded_body_length,
+                        int64_t decoded_body_length) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
-               int64_t encoded_body_length) override;
+               int64_t encoded_body_length,
+               int64_t decoded_body_length) override;
   void HandleError(const ResourceError&);
 
   void DidFinishLoadingFirstPartInMultipart();

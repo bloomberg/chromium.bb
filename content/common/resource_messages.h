@@ -304,6 +304,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequestCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(completion_time)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
   IPC_STRUCT_TRAITS_MEMBER(encoded_body_length)
+  IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
 IPC_STRUCT_TRAITS_END()
 
 // Resource messages sent from the browser to the renderer.

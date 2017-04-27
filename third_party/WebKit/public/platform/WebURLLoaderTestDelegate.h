@@ -30,11 +30,13 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
   virtual void DidFail(WebURLLoaderClient* original_client,
                        const WebURLError&,
                        int64_t total_encoded_data_length,
-                       int64_t total_encoded_body_length);
+                       int64_t total_encoded_body_length,
+                       int64_t total_decoded_body_length);
   virtual void DidFinishLoading(WebURLLoaderClient* original_client,
                                 double finish_time,
                                 int64_t total_encoded_data_length,
-                                int64_t total_encoded_body_length);
+                                int64_t total_encoded_body_length,
+                                int64_t total_decoded_body_length);
 };
 
 }  // namespace blink

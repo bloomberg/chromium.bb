@@ -356,14 +356,6 @@ void WebURLResponse::SetEncodedDataLength(long long length) {
   resource_response_->SetEncodedDataLength(length);
 }
 
-void WebURLResponse::AddToEncodedBodyLength(long long length) {
-  resource_response_->AddToEncodedBodyLength(length);
-}
-
-void WebURLResponse::AddToDecodedBodyLength(long long bytes) {
-  resource_response_->AddToDecodedBodyLength(bytes);
-}
-
 WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
   RefPtr<ResourceResponse::ExtraData> data = resource_response_->GetExtraData();
   if (!data)

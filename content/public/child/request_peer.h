@@ -98,7 +98,8 @@ class CONTENT_EXPORT RequestPeer {
                                   bool stale_copy_in_cache,
                                   const base::TimeTicks& completion_time,
                                   int64_t total_transfer_size,
-                                  int64_t encoded_body_size) = 0;
+                                  int64_t encoded_body_size,
+                                  int64_t decoded_body_size) = 0;
 
   virtual ~RequestPeer() {}
 };

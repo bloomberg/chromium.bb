@@ -208,7 +208,8 @@ void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
   image_resource->Loader()->DidReceiveResponse(WrappedResourceResponse(
       ResourceResponse(test_url, "image/jpeg", kDataLength, g_null_atom)));
   image_resource->Loader()->DidReceiveData(data, kDataLength);
-  image_resource->Loader()->DidFinishLoading(0.0, kDataLength, kDataLength);
+  image_resource->Loader()->DidFinishLoading(0.0, kDataLength, kDataLength,
+                                             kDataLength);
 
   // Checks |imageResource|'s status after reloading.
   EXPECT_EQ(ResourceStatus::kCached, image_resource->GetStatus());
@@ -263,6 +264,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
       kJpegImageSubrangeWithDimensionsLength);
   image_resource->Loader()->DidFinishLoading(
       0.0, kJpegImageSubrangeWithDimensionsLength,
+      kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength);
 
   // Checks that |imageResource| is successfully loaded, showing a placeholder.
@@ -300,8 +302,8 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
       ResourceResponse(url, "image/jpeg", sizeof(kJpegImage), g_null_atom)));
   image_resource->Loader()->DidReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-  image_resource->Loader()->DidFinishLoading(0.0, sizeof(kJpegImage),
-                                             sizeof(kJpegImage));
+  image_resource->Loader()->DidFinishLoading(
+      0.0, sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage));
 
   // Checks that |imageResource| is successfully loaded,
   // showing a non-placeholder image.
@@ -396,7 +398,7 @@ TEST(ImageResourceTest, MultipartImage) {
 
   // This part finishes. The image is created, callbacks are sent, and the data
   // buffer is cleared.
-  image_resource->Loader()->DidFinishLoading(0.0, 0, 0);
+  image_resource->Loader()->DidFinishLoading(0.0, 0, 0, 0);
   EXPECT_TRUE(image_resource->ResourceBuffer());
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -660,8 +662,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
       WrappedResourceResponse(resource_response));
   image_resource->Loader()->DidReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-  image_resource->Loader()->DidFinishLoading(0.0, sizeof(kJpegImage),
-                                             sizeof(kJpegImage));
+  image_resource->Loader()->DidFinishLoading(
+      0.0, sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage));
 
   EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
   EXPECT_EQ(image_resource, fetcher->CachedResource(test_url));
@@ -1059,7 +1061,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
   EXPECT_EQ(0, observer->ImageChangedCount());
 
-  image_resource->Loader()->DidFinishLoading(0.0, 0, 0);
+  image_resource->Loader()->DidFinishLoading(0.0, 0, 0, 0);
 
   EXPECT_EQ(ResourceStatus::kDecodeError, image_resource->GetStatus());
   EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
@@ -1104,6 +1106,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
 
   image_resource->Loader()->DidFinishLoading(
       0.0, kJpegImageSubrangeWithoutDimensionsLength,
+      kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength);
 
   EXPECT_EQ(ResourceStatus::kDecodeError, image_resource->GetStatus());
@@ -1270,6 +1273,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
 
   image_resource->Loader()->DidFinishLoading(
       0.0, kJpegImageSubrangeWithoutDimensionsLength,
+      kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength);
 
   EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
@@ -1408,8 +1412,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
         WrappedResourceResponse(response));
     image_resource->Loader()->DidReceiveData(
         reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-    image_resource->Loader()->DidFinishLoading(0.0, sizeof(kJpegImage),
-                                               sizeof(kJpegImage));
+    image_resource->Loader()->DidFinishLoading(
+        0.0, sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage));
 
     EXPECT_EQ(ResourceStatus::kCached, image_resource->GetStatus());
     EXPECT_EQ(sizeof(kJpegImage), image_resource->EncodedSize());

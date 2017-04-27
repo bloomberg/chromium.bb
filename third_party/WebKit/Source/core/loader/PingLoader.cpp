@@ -210,8 +210,14 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   bool WillFollowRedirect(WebURLRequest&, const WebURLResponse&) override;
   void DidReceiveResponse(const WebURLResponse&) final;
   void DidReceiveData(const char*, int) final;
-  void DidFinishLoading(double, int64_t, int64_t encoded_data_length) final;
-  void DidFail(const WebURLError&, int64_t, int64_t encoded_data_length) final;
+  void DidFinishLoading(double,
+                        int64_t encoded_data_length,
+                        int64_t encoded_body_length,
+                        int64_t decoded_body_length) final;
+  void DidFail(const WebURLError&,
+               int64_t encoded_data_length,
+               int64_t encoded_body_length,
+               int64_t decoded_body_length) final;
 
   void Timeout(TimerBase*);
 
@@ -361,16 +367,18 @@ void PingLoaderImpl::DidReceiveData(const char*, int data_length) {
 }
 
 void PingLoaderImpl::DidFinishLoading(double,
-                                      int64_t,
-                                      int64_t encoded_data_length) {
+                                      int64_t encoded_data_length,
+                                      int64_t encoded_body_length,
+                                      int64_t decoded_body_length) {
   if (GetFrame())
     DidFailLoading(GetFrame());
   Dispose();
 }
 
 void PingLoaderImpl::DidFail(const WebURLError& resource_error,
-                             int64_t,
-                             int64_t encoded_data_length) {
+                             int64_t encoded_data_length,
+                             int64_t encoded_body_length,
+                             int64_t decoded_body_length) {
   if (GetFrame())
     DidFailLoading(GetFrame());
   Dispose();

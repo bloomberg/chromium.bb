@@ -577,12 +577,12 @@ void ResourceResponse::SetEncodedDataLength(long long value) {
   encoded_data_length_ = value;
 }
 
-void ResourceResponse::AddToEncodedBodyLength(long long value) {
-  encoded_body_length_ += value;
+void ResourceResponse::SetEncodedBodyLength(long long value) {
+  encoded_body_length_ = value;
 }
 
-void ResourceResponse::AddToDecodedBodyLength(long long value) {
-  decoded_body_length_ += value;
+void ResourceResponse::SetDecodedBodyLength(long long value) {
+  decoded_body_length_ = value;
 }
 
 void ResourceResponse::SetDownloadedFilePath(

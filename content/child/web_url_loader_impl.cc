@@ -386,7 +386,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size,
-                          int64_t encoded_body_size);
+                          int64_t encoded_body_size,
+                          int64_t decoded_body_size);
 
  private:
   friend class base::RefCounted<Context>;
@@ -435,7 +436,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size,
-                          int64_t encoded_body_size) override;
+                          int64_t encoded_body_size,
+                          int64_t decoded_body_size) override;
 
  private:
   scoped_refptr<Context> context_;
@@ -864,7 +866,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
-    int64_t encoded_body_size) {
+    int64_t encoded_body_size,
+    int64_t decoded_body_size) {
   if (stream_override_ && stream_override_->stream_url.is_empty()) {
     // TODO(kinuko|scottmg|jam): This is wrong. https://crbug.com/705744.
     total_transfer_size = stream_override_->total_transferred;
@@ -888,7 +891,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     if (error_code != net::OK) {
       client_->DidFail(CreateWebURLError(request_.Url(), stale_copy_in_cache,
                                          error_code, was_ignored_by_handler),
-                       total_transfer_size, encoded_body_size);
+                       total_transfer_size, encoded_body_size,
+                       decoded_body_size);
     } else {
       // PlzNavigate: compute the accurate transfer size for navigations.
       if (stream_override_) {
@@ -897,7 +901,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       }
 
       client_->DidFinishLoading((completion_time - TimeTicks()).InSecondsF(),
-                                total_transfer_size, encoded_body_size);
+                                total_transfer_size, encoded_body_size,
+                                decoded_body_size);
     }
   }
 }
@@ -923,7 +928,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
     client_->DidFail(CreateWebURLError(request_.Url(), false, net::ERR_ABORTED),
-                     WebURLLoaderClient::kUnknownEncodedDataLength, 0);
+                     WebURLLoaderClient::kUnknownEncodedDataLength, 0, 0);
   }
 
   // Notify the browser process that the request is canceled.
@@ -995,7 +1000,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   }
 
   OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0,
-                     data.size());
+                     data.size(), data.size());
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1047,10 +1052,11 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
-    int64_t encoded_body_size) {
-  context_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                               stale_copy_in_cache, completion_time,
-                               total_transfer_size, encoded_body_size);
+    int64_t encoded_body_size,
+    int64_t decoded_body_size) {
+  context_->OnCompletedRequest(
+      error_code, was_ignored_by_handler, stale_copy_in_cache, completion_time,
+      total_transfer_size, encoded_body_size, decoded_body_size);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------
@@ -1249,7 +1255,6 @@ void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
 
   PopulateURLResponse(final_url, sync_load_response, &response,
                       request.ReportRawHeaders());
-  response.AddToDecodedBodyLength(sync_load_response.data.size());
   encoded_data_length = sync_load_response.encoded_data_length;
   encoded_body_length = sync_load_response.encoded_body_length;
 
