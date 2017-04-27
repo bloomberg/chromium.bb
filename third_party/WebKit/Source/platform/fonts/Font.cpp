@@ -246,6 +246,27 @@ void Font::DrawEmphasisMarks(PaintCanvas* canvas,
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 
+void Font::DrawEmphasisMarks(PaintCanvas* canvas,
+                             const TextFragmentPaintInfo& text_info,
+                             const AtomicString& mark,
+                             const FloatPoint& point,
+                             float device_scale_factor,
+                             const PaintFlags& flags) const {
+  if (ShouldSkipDrawing())
+    return;
+
+  FontCachePurgePreventer purge_preventer;
+  const auto emphasis_glyph_data = GetEmphasisMarkGlyphData(mark);
+  if (!emphasis_glyph_data.font_data)
+    return;
+
+  ShapeResultBloberizer bloberizer(*this, device_scale_factor);
+  bloberizer.FillTextEmphasisGlyphs(
+      text_info.text, text_info.direction, text_info.from, text_info.to,
+      emphasis_glyph_data, text_info.shape_result);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+}
+
 float Font::Width(const TextRun& run,
                   HashSet<const SimpleFontData*>* fallback_fonts,
                   FloatRect* glyph_bounds) const {

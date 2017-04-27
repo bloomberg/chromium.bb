@@ -60,6 +60,7 @@ struct TextRunPaintInfo;
 // TODO(eae): Move to a separate file?
 struct PLATFORM_EXPORT TextFragmentPaintInfo {
   const StringView text;
+  TextDirection direction;
   unsigned from;
   unsigned to;
   const ShapeResult* shape_result;
@@ -107,6 +108,12 @@ class PLATFORM_EXPORT Font {
                     const PaintFlags&) const;
   void DrawEmphasisMarks(PaintCanvas*,
                          const TextRunPaintInfo&,
+                         const AtomicString& mark,
+                         const FloatPoint&,
+                         float device_scale_factor,
+                         const PaintFlags&) const;
+  void DrawEmphasisMarks(PaintCanvas*,
+                         const TextFragmentPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
                          float device_scale_factor,
