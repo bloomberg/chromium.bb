@@ -47,6 +47,22 @@ static_library("core") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_address_normalizer.cc",
+    "test_address_normalizer.h",
+    "test_payment_request_delegate.cc",
+    "test_payment_request_delegate.h",
+  ]
+
+  deps = [
+    ":core",
+    "//base",
+    "//components/autofill/core/browser",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -63,6 +79,7 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",

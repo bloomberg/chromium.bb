@@ -68,36 +68,36 @@ PaymentResponseHelper::~PaymentResponseHelper(){};
 // static
 mojom::PaymentAddressPtr
 PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
-    const autofill::AutofillProfile* const profile,
+    const autofill::AutofillProfile& profile,
     const std::string& app_locale) {
   mojom::PaymentAddressPtr payment_address = mojom::PaymentAddress::New();
 
   payment_address->country =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   payment_address->address_line = base::SplitString(
-      base::UTF16ToUTF8(profile->GetInfo(
+      base::UTF16ToUTF8(profile.GetInfo(
           autofill::AutofillType(autofill::ADDRESS_HOME_STREET_ADDRESS),
           app_locale)),
       "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   payment_address->region =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_STATE));
   payment_address->city =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_CITY));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_CITY));
   payment_address->dependent_locality = base::UTF16ToUTF8(
-      profile->GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY));
+      profile.GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY));
   payment_address->postal_code =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_ZIP));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP));
   payment_address->sorting_code = base::UTF16ToUTF8(
-      profile->GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE));
-  payment_address->language_code = profile->language_code();
+      profile.GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE));
+  payment_address->language_code = profile.language_code();
   payment_address->organization =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::COMPANY_NAME));
-  payment_address->recipient = base::UTF16ToUTF8(profile->GetInfo(
-      autofill::AutofillType(autofill::NAME_FULL), app_locale));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::COMPANY_NAME));
+  payment_address->recipient = base::UTF16ToUTF8(
+      profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), app_locale));
 
   // TODO(crbug.com/705945): Format phone number according to spec.
   payment_address->phone =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
 
   return payment_address;
 }
@@ -149,7 +149,7 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
   // Shipping Address section
   if (spec_->request_shipping()) {
     payment_response->shipping_address =
-        GetMojomPaymentAddressFromAutofillProfile(&shipping_address_,
+        GetMojomPaymentAddressFromAutofillProfile(shipping_address_,
                                                   app_locale_);
     payment_response->shipping_option = spec_->selected_shipping_option()->id;
   }

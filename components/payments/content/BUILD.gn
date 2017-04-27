@@ -82,6 +82,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/payments/core:test_support",
     "//components/payments/mojom",
     "//content/test:test_support",
     "//net:test_support",

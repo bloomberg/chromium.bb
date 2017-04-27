@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/test_payment_request_delegate.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +25,7 @@ class PaymentRequestStateTest : public testing::Test,
  protected:
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
+        test_payment_request_delegate_(/*personal_data_manager=*/nullptr),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.AddTestingProfile(&address_);
@@ -43,7 +45,9 @@ class PaymentRequestStateTest : public testing::Test,
     payment_response_ = std::move(response);
   };
   void OnShippingOptionIdSelected(std::string shipping_option_id) override {}
-  void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override {}
+  void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override {
+    selected_shipping_address_ = std::move(address);
+  }
 
   void RecreateStateWithOptionsAndDetails(
       mojom::PaymentOptionsPtr options,
@@ -54,14 +58,21 @@ class PaymentRequestStateTest : public testing::Test,
         std::move(options), std::move(details), std::move(method_data), nullptr,
         "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
-        spec_.get(), this, "en-US", &test_personal_data_manager_, nullptr);
+        spec_.get(), this, "en-US", &test_personal_data_manager_,
+        &test_payment_request_delegate_);
     state_->AddObserver(this);
   }
 
   // Convenience method to create a PaymentRequestState with default details
   // (one shipping option) and method data (only supports visa).
   void RecreateStateWithOptions(mojom::PaymentOptionsPtr options) {
-    // Create dummy PaymentDetails with a single shipping option.
+    RecreateStateWithOptionsAndDetails(
+        std::move(options), CreateDefaultDetails(), GetMethodDataForVisa());
+  }
+
+  // Convenience method that returns a dummy PaymentDetails with a single
+  // shipping option.
+  mojom::PaymentDetailsPtr CreateDefaultDetails() {
     std::vector<mojom::PaymentShippingOptionPtr> shipping_options;
     mojom::PaymentShippingOptionPtr option =
         mojom::PaymentShippingOption::New();
@@ -69,9 +80,7 @@ class PaymentRequestStateTest : public testing::Test,
     shipping_options.push_back(std::move(option));
     mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
     details->shipping_options = std::move(shipping_options);
-
-    RecreateStateWithOptionsAndDetails(std::move(options), std::move(details),
-                                       GetMethodDataForVisa());
+    return details;
   }
 
   // Convenience method that returns MethodData that supports Visa.
@@ -84,19 +93,28 @@ class PaymentRequestStateTest : public testing::Test,
   }
 
   PaymentRequestState* state() { return state_.get(); }
+  PaymentRequestSpec* spec() { return spec_.get(); }
   const mojom::PaymentResponsePtr& response() { return payment_response_; }
+  const mojom::PaymentAddressPtr& selected_shipping_address() {
+    return selected_shipping_address_;
+  }
   int num_on_selected_information_changed_called() {
     return num_on_selected_information_changed_called_;
   }
 
   autofill::AutofillProfile* test_address() { return &address_; }
+  TestPaymentRequestDelegate* test_payment_request_delegate() {
+    return &test_payment_request_delegate_;
+  }
 
  private:
   std::unique_ptr<PaymentRequestState> state_;
   std::unique_ptr<PaymentRequestSpec> spec_;
   int num_on_selected_information_changed_called_;
   mojom::PaymentResponsePtr payment_response_;
+  mojom::PaymentAddressPtr selected_shipping_address_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
+  TestPaymentRequestDelegate test_payment_request_delegate_;
 
   // Test data.
   autofill::AutofillProfile address_;
@@ -206,6 +224,9 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   state()->SetSelectedShippingProfile(test_address());
   EXPECT_EQ(1, num_on_selected_information_changed_called());
 
+  // Simulate that the merchant has validated the shipping address change.
+  spec()->UpdateWith(CreateDefaultDetails());
+  EXPECT_EQ(2, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
 }
 
@@ -245,6 +266,51 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_ContactInfo) {
 
   // Ready to pay!
   EXPECT_TRUE(state()->is_ready_to_pay());
+}
+
+TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateStateWithOptions(std::move(options));
+
+  // Make the normalization not be instantaneous.
+  test_payment_request_delegate()
+      ->GetTestAddressNormalizer()
+      ->DelayNormalization();
+
+  EXPECT_EQ(0, num_on_selected_information_changed_called());
+
+  // Select an address, nothing should happen until the normalization is
+  // completed and the merchant has validated the address.
+  state()->SetSelectedShippingProfile(test_address());
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Complete the normalization.
+  test_payment_request_delegate()
+      ->GetTestAddressNormalizer()
+      ->CompleteAddressNormalization();
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Simulate that the merchant has validated the shipping address change.
+  spec()->UpdateWith(CreateDefaultDetails());
+  EXPECT_EQ(2, num_on_selected_information_changed_called());
+  EXPECT_TRUE(state()->is_ready_to_pay());
+
+  // Check that all the expected values were set for the shipping address.
+  EXPECT_EQ("US", selected_shipping_address()->country);
+  EXPECT_EQ("666 Erebus St.", selected_shipping_address()->address_line[0]);
+  EXPECT_EQ("Apt 8", selected_shipping_address()->address_line[1]);
+  EXPECT_EQ("CA", selected_shipping_address()->region);
+  EXPECT_EQ("Elysium", selected_shipping_address()->city);
+  EXPECT_EQ("", selected_shipping_address()->dependent_locality);
+  EXPECT_EQ("91111", selected_shipping_address()->postal_code);
+  EXPECT_EQ("", selected_shipping_address()->sorting_code);
+  EXPECT_EQ("", selected_shipping_address()->language_code);
+  EXPECT_EQ("Underworld", selected_shipping_address()->organization);
+  EXPECT_EQ("John H. Doe", selected_shipping_address()->recipient);
+  EXPECT_EQ("16502111111", selected_shipping_address()->phone);
 }
 
 }  // namespace payments
