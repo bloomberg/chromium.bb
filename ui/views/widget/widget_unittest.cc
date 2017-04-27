@@ -810,7 +810,14 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   Widget* widget_to_close_on_hide_;
 };
 
-TEST_F(WidgetObserverTest, ActivationChange) {
+// This test appears to be flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_ActivationChange DISABLED_ActivationChange
+#else
+#define MAYBE_ActivationChange ActivationChange
+#endif
+
+TEST_F(WidgetObserverTest, MAYBE_ActivationChange) {
   WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   WidgetAutoclosePtr toplevel1(NewWidget());
   WidgetAutoclosePtr toplevel2(NewWidget());
