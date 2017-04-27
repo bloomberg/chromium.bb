@@ -110,6 +110,9 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     /** The initial Y position of the current gesture. */
     private float mInitialEventY;
 
+    /** Whether or not the superclass has seen a down event. */
+    private boolean mFilterHadDownEvent;
+
     private class SwipeRecognizerImpl extends SwipeRecognizer {
         public SwipeRecognizerImpl(Context context) {
             super(context);
@@ -328,6 +331,14 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      */
     private void propagateEvent(MotionEvent e, EventTarget target) {
         if (target == EventTarget.PANEL) {
+            // Make sure the internal gesture detector has seen at least on down event.
+            if (e.getActionMasked() == MotionEvent.ACTION_DOWN) mFilterHadDownEvent = true;
+            if (!mFilterHadDownEvent) {
+                MotionEvent down = MotionEvent.obtain(e);
+                down.setAction(MotionEvent.ACTION_DOWN);
+                super.onTouchEventInternal(down);
+                mFilterHadDownEvent = true;
+            }
             super.onTouchEventInternal(e);
         } else if (target == EventTarget.CONTENT_VIEW) {
             propagateEventToContentViewCore(e);
