@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/time/time.h"
-#include "components/offline_pages/client_namespace_constants.h"
-#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_model_query.h"
-#include "components/offline_pages/offline_page_client_policy.h"
-#include "components/offline_pages/offline_page_item.h"
 
+#include "base/time/time.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
+#include "components/offline_pages/core/offline_page_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
