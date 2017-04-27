@@ -5,10 +5,12 @@
 #include "ui/base/clipboard/clipboard_android.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,6 +54,7 @@ const char kBookmarkFormat[] = "bookmark";
 class ClipboardMap {
  public:
   ClipboardMap();
+  void SetModifiedCallback(ClipboardAndroid::ModifiedCallback cb);
   std::string Get(const std::string& format);
   uint64_t GetSequenceNumber() const;
   base::Time GetLastModifiedTime() const;
@@ -62,6 +65,9 @@ class ClipboardMap {
   void CommitToAndroidClipboard();
   void Clear();
 
+  // Unlike the functions above, does not call |modified_cb_|.
+  void SetLastModifiedTimeWithoutRunningCallback(base::Time time);
+
  private:
   enum class MapState {
     kOutOfDate,
@@ -69,13 +75,20 @@ class ClipboardMap {
     kPreparingCommit,
   };
 
+  // Updates |last_modified_time_| to |time| and writes it to |local_state_|.
+  void UpdateLastModifiedTime(base::Time time);
+
+  // Updates |map_| and |map_state_| if necessary by fetching data from Java.
   void UpdateFromAndroidClipboard();
+
   std::map<std::string, std::string> map_;
   MapState map_state_;
   base::Lock lock_;
 
   uint64_t sequence_number_;
   base::Time last_modified_time_;
+
+  ClipboardAndroid::ModifiedCallback modified_cb_;
 
   // Java class and methods for the Android ClipboardManager.
   ScopedJavaGlobalRef<jobject> clipboard_manager_;
@@ -85,6 +98,10 @@ base::LazyInstance<ClipboardMap>::Leaky g_map = LAZY_INSTANCE_INITIALIZER;
 ClipboardMap::ClipboardMap() : map_state_(MapState::kOutOfDate) {
   clipboard_manager_.Reset(Java_Clipboard_getInstance(AttachCurrentThread()));
   DCHECK(clipboard_manager_.obj());
+}
+
+void ClipboardMap::SetModifiedCallback(ClipboardAndroid::ModifiedCallback cb) {
+  modified_cb_ = std::move(cb);
 }
 
 std::string ClipboardMap::Get(const std::string& format) {
@@ -103,7 +120,7 @@ base::Time ClipboardMap::GetLastModifiedTime() const {
 }
 
 void ClipboardMap::ClearLastModifiedTime() {
-  last_modified_time_ = base::Time();
+  UpdateLastModifiedTime(base::Time());
 }
 
 bool ClipboardMap::HasFormat(const std::string& format) {
@@ -114,7 +131,7 @@ bool ClipboardMap::HasFormat(const std::string& format) {
 
 void ClipboardMap::OnPrimaryClipboardChanged() {
   sequence_number_++;
-  last_modified_time_ = base::Time::Now();
+  UpdateLastModifiedTime(base::Time::Now());
   map_state_ = MapState::kOutOfDate;
 }
 
@@ -151,7 +168,7 @@ void ClipboardMap::CommitToAndroidClipboard() {
   }
   map_state_ = MapState::kUpToDate;
   sequence_number_++;
-  last_modified_time_ = base::Time::Now();
+  UpdateLastModifiedTime(base::Time::Now());
 }
 
 void ClipboardMap::Clear() {
@@ -161,7 +178,11 @@ void ClipboardMap::Clear() {
   Java_Clipboard_clear(env, clipboard_manager_);
   map_state_ = MapState::kUpToDate;
   sequence_number_++;
-  last_modified_time_ = base::Time::Now();
+  UpdateLastModifiedTime(base::Time::Now());
+}
+
+void ClipboardMap::SetLastModifiedTimeWithoutRunningCallback(base::Time time) {
+  last_modified_time_ = time;
 }
 
 // Add a key:jstr pair to map, but only if jstr is not null, and also
@@ -175,6 +196,13 @@ void AddMapEntry(JNIEnv* env,
     if (!str.empty())
       (*map)[key] = str;
   }
+}
+
+void ClipboardMap::UpdateLastModifiedTime(base::Time time) {
+  last_modified_time_ = time;
+  // |modified_callback_| may be null in tests.
+  if (modified_cb_)
+    modified_cb_.Run(time);
 }
 
 void ClipboardMap::UpdateFromAndroidClipboard() {
@@ -301,6 +329,15 @@ void ClipboardAndroid::OnPrimaryClipChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   g_map.Get().OnPrimaryClipboardChanged();
+}
+
+void ClipboardAndroid::SetModifiedCallback(ModifiedCallback cb) {
+  g_map.Get().SetModifiedCallback(std::move(cb));
+}
+
+void ClipboardAndroid::SetLastModifiedTimeWithoutRunningCallback(
+    base::Time time) {
+  g_map.Get().SetLastModifiedTimeWithoutRunningCallback(time);
 }
 
 ClipboardAndroid::ClipboardAndroid() {

@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -19,10 +20,21 @@ namespace ui {
 
 class ClipboardAndroid : public Clipboard {
  public:
+  // Callback called whenever the clipboard is modified.  The parameter
+  // represents the time of the modification.
+  using ModifiedCallback = base::Callback<void(base::Time)>;
+
   // Called by Java when the Java Clipboard is notified that the clipboard has
   // changed.
   void OnPrimaryClipChanged(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
+
+  // Sets the callback called whenever the clipboard is modified.
+  UI_BASE_EXPORT void SetModifiedCallback(ModifiedCallback cb);
+
+  // Sets the last modified time without calling the above callback.
+  UI_BASE_EXPORT void SetLastModifiedTimeWithoutRunningCallback(
+      base::Time time);
 
  private:
   friend class Clipboard;

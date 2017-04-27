@@ -377,6 +377,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   PluginsResourceService::RegisterPrefs(registry);
 #endif
 
+#if defined(OS_ANDROID)
+  ::android::RegisterPrefs(registry);
+#endif
+
 #if !defined(OS_ANDROID)
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
 #endif  // !defined(OS_ANDROID)
