@@ -137,7 +137,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif
   }
 
-  dq_shift = get_tx_scale(tx_size);
+  dq_shift = av1_get_tx_scale(tx_size);
 
 #if CONFIG_NEW_TOKENSET
   band = *band_translate++;

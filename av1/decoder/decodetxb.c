@@ -55,7 +55,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int c = 0;
   int update_eob = -1;
   const int16_t *const dequant = xd->plane[plane].seg_dequant[mbmi->segment_id];
-  const int shift = get_tx_scale(tx_size);
+  const int shift = av1_get_tx_scale(tx_size);
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   int cul_level = 0;
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];

@@ -168,7 +168,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
   int dqv;
-  const int shift = get_tx_scale(tx_size);
+  const int shift = av1_get_tx_scale(tx_size);
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!ref][tx_size];
@@ -528,7 +528,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
   int dqv;
-  const int shift = get_tx_scale(tx_size);
+  const int shift = av1_get_tx_scale(tx_size);
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!ref][tx_size];
@@ -959,7 +959,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  qparam.log_scale = get_tx_scale(tx_size);
+  qparam.log_scale = av1_get_tx_scale(tx_size);
 #if CONFIG_NEW_QUANT
   qparam.tx_size = tx_size;
   qparam.dq = get_dq_profile_from_ctx(x->qindex, ctx, is_inter, plane_type);
@@ -1527,7 +1527,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
   const int tx_blk_size = tx_size_wide[tx_size];
   daala_enc_ctx *daala_enc = &x->daala_enc;
   PVQ_SKIP_TYPE ac_dc_coded;
-  int coeff_shift = 3 - get_tx_scale(tx_size);
+  int coeff_shift = 3 - av1_get_tx_scale(tx_size);
   int hbd_downshift = 0;
   int rounding_mask;
   int pvq_dc_quant;

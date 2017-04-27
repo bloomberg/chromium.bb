@@ -206,7 +206,7 @@ void quantize_dc_32x32_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int rc = 0;
     if (quantize_coeff_bigtx_nuq(coeff_ptr[rc], quant, quant_shift, dequant,
                                  cuml_bins_ptr, dequant_val, qcoeff_ptr,
-                                 dqcoeff_ptr, get_tx_scale(TX_32X32)))
+                                 dqcoeff_ptr, av1_get_tx_scale(TX_32X32)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -226,7 +226,7 @@ void quantize_dc_32x32_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int rc = 0;
     if (quantize_coeff_bigtx_fp_nuq(coeff_ptr[rc], quant, dequant,
                                     cuml_bins_ptr, dequant_val, qcoeff_ptr,
-                                    dqcoeff_ptr, get_tx_scale(TX_32X32)))
+                                    dqcoeff_ptr, av1_get_tx_scale(TX_32X32)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -247,7 +247,7 @@ void quantize_dc_64x64_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int rc = 0;
     if (quantize_coeff_bigtx_nuq(coeff_ptr[rc], quant, quant_shift, dequant,
                                  cuml_bins_ptr, dequant_val, qcoeff_ptr,
-                                 dqcoeff_ptr, get_tx_scale(TX_64X64)))
+                                 dqcoeff_ptr, av1_get_tx_scale(TX_64X64)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -267,7 +267,7 @@ void quantize_dc_64x64_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int rc = 0;
     if (quantize_coeff_bigtx_fp_nuq(coeff_ptr[rc], quant, dequant,
                                     cuml_bins_ptr, dequant_val, qcoeff_ptr,
-                                    dqcoeff_ptr, get_tx_scale(TX_64X64)))
+                                    dqcoeff_ptr, av1_get_tx_scale(TX_64X64)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -340,11 +340,11 @@ void quantize_32x32_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     int i;
     for (i = 0; i < n_coeffs; i++) {
       const int rc = scan[i];
-      if (quantize_coeff_bigtx_nuq(coeff_ptr[rc], quant_ptr[rc != 0],
-                                   quant_shift_ptr[rc != 0],
-                                   dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
-                                   dequant_val[band[i]], &qcoeff_ptr[rc],
-                                   &dqcoeff_ptr[rc], get_tx_scale(TX_32X32)))
+      if (quantize_coeff_bigtx_nuq(
+              coeff_ptr[rc], quant_ptr[rc != 0], quant_shift_ptr[rc != 0],
+              dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
+              dequant_val[band[i]], &qcoeff_ptr[rc], &dqcoeff_ptr[rc],
+              av1_get_tx_scale(TX_32X32)))
         eob = i;
     }
   }
@@ -369,7 +369,7 @@ void quantize_32x32_fp_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       if (quantize_coeff_bigtx_fp_nuq(
               coeff_ptr[rc], quant_ptr[rc != 0], dequant_ptr[rc != 0],
               cuml_bins_ptr[band[i]], dequant_val[band[i]], &qcoeff_ptr[rc],
-              &dqcoeff_ptr[rc], get_tx_scale(TX_32X32)))
+              &dqcoeff_ptr[rc], av1_get_tx_scale(TX_32X32)))
         eob = i;
     }
   }
@@ -393,11 +393,11 @@ void quantize_64x64_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     int i;
     for (i = 0; i < n_coeffs; i++) {
       const int rc = scan[i];
-      if (quantize_coeff_bigtx_nuq(coeff_ptr[rc], quant_ptr[rc != 0],
-                                   quant_shift_ptr[rc != 0],
-                                   dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
-                                   dequant_val[band[i]], &qcoeff_ptr[rc],
-                                   &dqcoeff_ptr[rc], get_tx_scale(TX_64X64)))
+      if (quantize_coeff_bigtx_nuq(
+              coeff_ptr[rc], quant_ptr[rc != 0], quant_shift_ptr[rc != 0],
+              dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
+              dequant_val[band[i]], &qcoeff_ptr[rc], &dqcoeff_ptr[rc],
+              av1_get_tx_scale(TX_64X64)))
         eob = i;
     }
   }
@@ -422,7 +422,7 @@ void quantize_64x64_fp_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
       if (quantize_coeff_bigtx_fp_nuq(
               coeff_ptr[rc], quant_ptr[rc != 0], dequant_ptr[rc != 0],
               cuml_bins_ptr[band[i]], dequant_val[band[i]], &qcoeff_ptr[rc],
-              &dqcoeff_ptr[rc], get_tx_scale(TX_64X64)))
+              &dqcoeff_ptr[rc], av1_get_tx_scale(TX_64X64)))
         eob = i;
     }
   }
@@ -1206,7 +1206,7 @@ void highbd_quantize_32x32_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
               coeff_ptr[rc], quant_ptr[rc != 0], quant_shift_ptr[rc != 0],
               dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
               dequant_val[band[i]], &qcoeff_ptr[rc], &dqcoeff_ptr[rc],
-              get_tx_scale(TX_32X32)))
+              av1_get_tx_scale(TX_32X32)))
         eob = i;
     }
   }
@@ -1232,7 +1232,7 @@ void highbd_quantize_32x32_fp_nuq_c(const tran_low_t *coeff_ptr,
       if (highbd_quantize_coeff_bigtx_fp_nuq(
               coeff_ptr[rc], quant_ptr[rc != 0], dequant_ptr[rc != 0],
               cuml_bins_ptr[band[i]], dequant_val[band[i]], &qcoeff_ptr[rc],
-              &dqcoeff_ptr[rc], get_tx_scale(TX_32X32)))
+              &dqcoeff_ptr[rc], av1_get_tx_scale(TX_32X32)))
         eob = i;
     }
   }
@@ -1260,7 +1260,7 @@ void highbd_quantize_64x64_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
               coeff_ptr[rc], quant_ptr[rc != 0], quant_shift_ptr[rc != 0],
               dequant_ptr[rc != 0], cuml_bins_ptr[band[i]],
               dequant_val[band[i]], &qcoeff_ptr[rc], &dqcoeff_ptr[rc],
-              get_tx_scale(TX_64X64)))
+              av1_get_tx_scale(TX_64X64)))
         eob = i;
     }
   }
@@ -1286,7 +1286,7 @@ void highbd_quantize_64x64_fp_nuq_c(const tran_low_t *coeff_ptr,
       if (highbd_quantize_coeff_bigtx_fp_nuq(
               coeff_ptr[rc], quant_ptr[rc != 0], dequant_ptr[rc != 0],
               cuml_bins_ptr[band[i]], dequant_val[band[i]], &qcoeff_ptr[rc],
-              &dqcoeff_ptr[rc], get_tx_scale(TX_64X64)))
+              &dqcoeff_ptr[rc], av1_get_tx_scale(TX_64X64)))
         eob = i;
     }
   }
@@ -1331,7 +1331,7 @@ void highbd_quantize_dc_32x32_nuq(
     const int rc = 0;
     if (highbd_quantize_coeff_bigtx_nuq(
             coeff_ptr[rc], quant, quant_shift, dequant, cuml_bins_ptr,
-            dequant_val, qcoeff_ptr, dqcoeff_ptr, get_tx_scale(TX_32X32)))
+            dequant_val, qcoeff_ptr, dqcoeff_ptr, av1_get_tx_scale(TX_32X32)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -1349,7 +1349,7 @@ void highbd_quantize_dc_32x32_fp_nuq(
     const int rc = 0;
     if (highbd_quantize_coeff_bigtx_fp_nuq(
             coeff_ptr[rc], quant, dequant, cuml_bins_ptr, dequant_val,
-            qcoeff_ptr, dqcoeff_ptr, get_tx_scale(TX_32X32)))
+            qcoeff_ptr, dqcoeff_ptr, av1_get_tx_scale(TX_32X32)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -1368,7 +1368,7 @@ void highbd_quantize_dc_64x64_nuq(
     const int rc = 0;
     if (highbd_quantize_coeff_bigtx_nuq(
             coeff_ptr[rc], quant, quant_shift, dequant, cuml_bins_ptr,
-            dequant_val, qcoeff_ptr, dqcoeff_ptr, get_tx_scale(TX_64X64)))
+            dequant_val, qcoeff_ptr, dqcoeff_ptr, av1_get_tx_scale(TX_64X64)))
       eob = 0;
   }
   *eob_ptr = eob + 1;
@@ -1386,7 +1386,7 @@ void highbd_quantize_dc_64x64_fp_nuq(
     const int rc = 0;
     if (highbd_quantize_coeff_bigtx_fp_nuq(
             coeff_ptr[rc], quant, dequant, cuml_bins_ptr, dequant_val,
-            qcoeff_ptr, dqcoeff_ptr, get_tx_scale(TX_64X64)))
+            qcoeff_ptr, dqcoeff_ptr, av1_get_tx_scale(TX_64X64)))
       eob = 0;
   }
   *eob_ptr = eob + 1;

@@ -1348,7 +1348,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = tx_size_2d[tx_size];
     int64_t this_sse;
-    int shift = (MAX_TX_SCALE - get_tx_scale(tx_size)) * 2;
+    int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
     tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
     tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 #if CONFIG_PVQ
