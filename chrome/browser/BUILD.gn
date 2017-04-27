@@ -3782,6 +3782,13 @@ split_static_library("browser") {
       "web_applications/web_app_linux.cc",
     ]
 
+    if (enable_native_notifications) {
+      sources += [
+        "notifications/notification_platform_bridge_linux.cc",
+        "notifications/notification_platform_bridge_linux.h",
+      ]
+    }
+
     if (use_x11) {
       sources += [
         "fullscreen_aurax11.cc",
@@ -3805,14 +3812,6 @@ split_static_library("browser") {
       ]
       defines += [ "USE_LIBSECRET" ]
       deps += [ "//third_party/libsecret" ]
-    }
-
-    if (enable_native_notifications) {
-      sources += [
-        "notifications/notification_platform_bridge_linux.cc",
-        "notifications/notification_platform_bridge_linux.h",
-      ]
-      deps += [ "//build/linux/libgio" ]
     }
 
     if (use_ozone) {

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/notifications/native_notification_display_service.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -38,9 +41,16 @@ std::string GetProfileId(Profile* profile) {
 NativeNotificationDisplayService::NativeNotificationDisplayService(
     Profile* profile,
     NotificationPlatformBridge* notification_bridge)
-    : profile_(profile), notification_bridge_(notification_bridge) {
+    : profile_(profile),
+      notification_bridge_(notification_bridge),
+      notification_bridge_ready_(false),
+      weak_factory_(this) {
   DCHECK(profile_);
   DCHECK(notification_bridge_);
+
+  notification_bridge->SetReadyCallback(base::BindOnce(
+      &NativeNotificationDisplayService::OnNotificationPlatformBridgeReady,
+      weak_factory_.GetWeakPtr()));
 
   AddNotificationHandler(NotificationCommon::NON_PERSISTENT,
                          base::MakeUnique<NonPersistentNotificationHandler>());
@@ -52,37 +62,78 @@ NativeNotificationDisplayService::NativeNotificationDisplayService(
 #endif
 }
 
-NativeNotificationDisplayService::~NativeNotificationDisplayService() {}
+NativeNotificationDisplayService::~NativeNotificationDisplayService() = default;
+
+void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
+    bool success) {
+  if (success) {
+    notification_bridge_ready_ = true;
+  } else {
+    message_center_display_service_ =
+        base::MakeUnique<MessageCenterDisplayService>(
+            profile_, g_browser_process->notification_ui_manager());
+  }
+
+  while (!actions_.empty()) {
+    std::move(actions_.front()).Run();
+    actions_.pop();
+  }
+}
 
 void NativeNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
     const Notification& notification) {
-  notification_bridge_->Display(notification_type, notification_id,
-                                GetProfileId(profile_),
-                                profile_->IsOffTheRecord(), notification);
-  notification.delegate()->Display();
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  handler->RegisterNotification(notification_id, notification.delegate());
+  if (notification_bridge_ready_) {
+    notification_bridge_->Display(notification_type, notification_id,
+                                  GetProfileId(profile_),
+                                  profile_->IsOffTheRecord(), notification);
+    notification.delegate()->Display();
+    NotificationHandler* handler = GetNotificationHandler(notification_type);
+    handler->RegisterNotification(notification_id, notification.delegate());
+  } else if (message_center_display_service_) {
+    message_center_display_service_->Display(notification_type, notification_id,
+                                             notification);
+  } else {
+    actions_.push(base::BindOnce(&NativeNotificationDisplayService::Display,
+                                 weak_factory_.GetWeakPtr(), notification_type,
+                                 notification_id, notification));
+  }
 }
 
 void NativeNotificationDisplayService::Close(
     NotificationCommon::Type notification_type,
     const std::string& notification_id) {
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  notification_bridge_->Close(GetProfileId(profile_), notification_id);
+  if (notification_bridge_ready_) {
+    NotificationHandler* handler = GetNotificationHandler(notification_type);
+    notification_bridge_->Close(GetProfileId(profile_), notification_id);
 
-  // TODO(miguelg): Figure out something better here, passing an empty
-  // origin works because only non persistent notifications care about
-  // this method for JS generated close calls and they don't require
-  // the origin.
-  handler->OnClose(profile_, "", notification_id, false /* by user */);
+    // TODO(miguelg): Figure out something better here, passing an empty
+    // origin works because only non persistent notifications care about
+    // this method for JS generated close calls and they don't require
+    // the origin.
+    handler->OnClose(profile_, "", notification_id, false /* by user */);
+  } else if (message_center_display_service_) {
+    message_center_display_service_->Close(notification_type, notification_id);
+  } else {
+    actions_.push(base::BindOnce(&NativeNotificationDisplayService::Close,
+                                 weak_factory_.GetWeakPtr(), notification_type,
+                                 notification_id));
+  }
 }
 
 void NativeNotificationDisplayService::GetDisplayed(
     const DisplayedNotificationsCallback& callback) {
-  return notification_bridge_->GetDisplayed(
-      GetProfileId(profile_), profile_->IsOffTheRecord(), callback);
+  if (notification_bridge_ready_) {
+    return notification_bridge_->GetDisplayed(
+        GetProfileId(profile_), profile_->IsOffTheRecord(), callback);
+  } else if (message_center_display_service_) {
+    message_center_display_service_->GetDisplayed(callback);
+  } else {
+    actions_.push(
+        base::BindOnce(&NativeNotificationDisplayService::GetDisplayed,
+                       weak_factory_.GetWeakPtr(), callback));
+  }
 }
 
 void NativeNotificationDisplayService::ProcessNotificationOperation(

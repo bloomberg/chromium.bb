@@ -323,6 +323,11 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
                  false /* supports_synchronization */));
 }
 
+void NotificationPlatformBridgeAndroid::SetReadyCallback(
+    NotificationBridgeReadyCallback callback) {
+  std::move(callback).Run(true);
+}
+
 // static
 bool NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge(
     JNIEnv* env) {
