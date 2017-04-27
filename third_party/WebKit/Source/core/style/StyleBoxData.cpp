@@ -48,8 +48,8 @@ bool StyleBoxData::operator==(const StyleBoxData& o) const {
   return width_ == o.width_ && height_ == o.height_ &&
          min_width_ == o.min_width_ && max_width_ == o.max_width_ &&
          min_height_ == o.min_height_ && max_height_ == o.max_height_ &&
-         vertical_align_ == o.vertical_align_ && z_index_ == o.z_index_ &&
-         has_auto_z_index_ == o.has_auto_z_index_ &&
+         vertical_align_length_ == o.vertical_align_length_ &&
+         z_index_ == o.z_index_ && has_auto_z_index_ == o.has_auto_z_index_ &&
          box_sizing_ == o.box_sizing_ &&
          box_decoration_break_ == o.box_decoration_break_;
 }
