@@ -17,6 +17,9 @@ window.addEventListener('load', function() {
     }
     tree.parentElement.removeChild(tree);
     var shadowRoot = host.createShadowRoot();
+    var style = document.createElement('style');
+    style.innerText = ' .ta-none { -ms-touch-action: none; touch-action: none; }';
+    shadowRoot.appendChild(style);
     shadowRoot.appendChild(tree);
   }
 });
