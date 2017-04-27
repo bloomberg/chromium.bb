@@ -58,7 +58,7 @@ class EventDispatchHandlingState;
 class NodeList;
 class NodeListsNodeData;
 class NodeOrString;
-class NodeLayoutData;
+class NodeRenderingData;
 class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
@@ -100,15 +100,15 @@ enum class SlotChangeType {
   kChained,
 };
 
-class NodeLayoutData {
-  WTF_MAKE_NONCOPYABLE(NodeLayoutData);
+class NodeRenderingData {
+  WTF_MAKE_NONCOPYABLE(NodeRenderingData);
 
  public:
-  explicit NodeLayoutData(LayoutObject* layout_object,
-                          RefPtr<ComputedStyle> non_attached_style)
+  explicit NodeRenderingData(LayoutObject* layout_object,
+                             RefPtr<ComputedStyle> non_attached_style)
       : layout_object_(layout_object),
         non_attached_style_(non_attached_style) {}
-  ~NodeLayoutData() { CHECK(!layout_object_); }
+  ~NodeRenderingData() { CHECK(!layout_object_); }
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
   void SetLayoutObject(LayoutObject* layout_object) {
@@ -124,8 +124,9 @@ class NodeLayoutData {
     non_attached_style_ = non_attached_style;
   }
 
-  static NodeLayoutData& SharedEmptyData() {
-    DEFINE_STATIC_LOCAL(NodeLayoutData, shared_empty_data, (nullptr, nullptr));
+  static NodeRenderingData& SharedEmptyData() {
+    DEFINE_STATIC_LOCAL(NodeRenderingData, shared_empty_data,
+                        (nullptr, nullptr));
     return shared_empty_data;
   }
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
@@ -137,14 +138,14 @@ class NodeLayoutData {
 
 class NodeRareDataBase {
  public:
-  NodeLayoutData* GetNodeLayoutData() const { return node_layout_data_; }
-  void SetNodeLayoutData(NodeLayoutData* node_layout_data) {
+  NodeRenderingData* GetNodeRenderingData() const { return node_layout_data_; }
+  void SetNodeRenderingData(NodeRenderingData* node_layout_data) {
     DCHECK(node_layout_data);
     node_layout_data_ = node_layout_data;
   }
 
  protected:
-  NodeRareDataBase(NodeLayoutData* node_layout_data)
+  NodeRareDataBase(NodeRenderingData* node_layout_data)
       : node_layout_data_(node_layout_data) {}
   ~NodeRareDataBase() {
     if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())
@@ -152,7 +153,7 @@ class NodeRareDataBase {
   }
 
  protected:
-  NodeLayoutData* node_layout_data_;
+  NodeRenderingData* node_layout_data_;
 };
 
 class Node;
@@ -283,7 +284,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   ComputedStyle* GetNonAttachedStyle() const {
     return HasRareData()
-               ? data_.rare_data_->GetNodeLayoutData()->GetNonAttachedStyle()
+               ? data_.rare_data_->GetNodeRenderingData()->GetNonAttachedStyle()
                : data_.node_layout_data_->GetNonAttachedStyle();
   }
 
@@ -618,7 +619,7 @@ class CORE_EXPORT Node : public EventTarget {
   // have one as well.
   LayoutObject* GetLayoutObject() const {
     return HasRareData()
-               ? data_.rare_data_->GetNodeLayoutData()->GetLayoutObject()
+               ? data_.rare_data_->GetNodeRenderingData()->GetLayoutObject()
                : data_.node_layout_data_->GetLayoutObject();
   }
   void SetLayoutObject(LayoutObject*);
@@ -974,10 +975,10 @@ class CORE_EXPORT Node : public EventTarget {
   Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
-    DataUnion() : node_layout_data_(&NodeLayoutData::SharedEmptyData()) {}
+    DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}
     // LayoutObjects are fully owned by their DOM node. See LayoutObject's
     // LIFETIME documentation section.
-    NodeLayoutData* node_layout_data_;
+    NodeRenderingData* node_layout_data_;
     NodeRareDataBase* rare_data_;
   } data_;
 };
