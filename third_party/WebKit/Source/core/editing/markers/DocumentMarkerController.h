@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class DocumentMarkerList;
 class Node;
 class RenderedDocumentMarker;
 
@@ -111,12 +112,11 @@ class CORE_EXPORT DocumentMarkerController final
  private:
   void AddMarker(Node*, DocumentMarker*);
 
-  using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
-  using MarkerLists =
-      HeapVector<Member<MarkerList>, DocumentMarker::kMarkerTypeIndexesCount>;
+  using MarkerLists = HeapVector<Member<DocumentMarkerList>,
+                                 DocumentMarker::kMarkerTypeIndexesCount>;
   using MarkerMap = HeapHashMap<WeakMember<const Node>, Member<MarkerLists>>;
-  static Member<MarkerList>& ListForType(MarkerLists*,
-                                         DocumentMarker::MarkerType);
+  static Member<DocumentMarkerList>& ListForType(MarkerLists*,
+                                                 DocumentMarker::MarkerType);
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
