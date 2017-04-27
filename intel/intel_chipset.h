@@ -505,7 +505,8 @@
 				 IS_GEN6(dev) || \
 				 IS_GEN7(dev) || \
 				 IS_GEN8(dev) || \
-				 IS_GEN9(dev))
+				 IS_GEN9(dev) || \
+				 IS_GEN10(dev))
 
 #define IS_CNL_Y(devid)		((devid) == PCI_CHIP_CANNONLAKE_Y_GT2_0 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_1 || \
