@@ -47,6 +47,11 @@ class PLATFORM_EXPORT FetchParameters {
 
  public:
   enum DeferOption { kNoDefer, kLazyLoad, kIdleLoad };
+  enum class SpeculativePreloadType {
+    kNotSpeculative,
+    kInDocument,  // The request was discovered in the main document
+    kInserted     // The request was discovered in a document.write()
+  };
   enum OriginRestriction {
     kUseDefaultOriginRestrictionForType,
     kRestrictToSameOrigin,
@@ -103,9 +108,14 @@ class PLATFORM_EXPORT FetchParameters {
     return client_hint_preferences_;
   }
 
-  bool IsSpeculativePreload() const { return speculative_preload_; }
-  void SetSpeculativePreload(bool speculative_preload,
-                             double discovery_time = 0);
+  bool IsSpeculativePreload() const {
+    return speculative_preload_type_ != SpeculativePreloadType::kNotSpeculative;
+  }
+  SpeculativePreloadType GetSpeculativePreloadType() const {
+    return speculative_preload_type_;
+  }
+  void SetSpeculativePreloadType(SpeculativePreloadType,
+                                 double discovery_time = 0);
 
   double PreloadDiscoveryTime() { return preload_discovery_time_; }
 
@@ -162,7 +172,7 @@ class PLATFORM_EXPORT FetchParameters {
   ResourceRequest resource_request_;
   String charset_;
   ResourceLoaderOptions options_;
-  bool speculative_preload_;
+  SpeculativePreloadType speculative_preload_type_;
   double preload_discovery_time_;
   DeferOption defer_;
   OriginRestriction origin_restriction_;

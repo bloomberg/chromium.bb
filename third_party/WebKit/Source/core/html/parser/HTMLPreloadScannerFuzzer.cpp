@@ -64,7 +64,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   MockResourcePreloader preloader;
 
   std::unique_ptr<HTMLPreloadScanner> scanner = HTMLPreloadScanner::Create(
-      options, document_url, std::move(document_parameters), media_data);
+      options, document_url, std::move(document_parameters), media_data,
+      TokenPreloadScanner::ScannerType::kMainDocument);
 
   TextResourceDecoderForFuzzing decoder(fuzzed_data);
   CString bytes = fuzzed_data.ConsumeRemainingBytes();

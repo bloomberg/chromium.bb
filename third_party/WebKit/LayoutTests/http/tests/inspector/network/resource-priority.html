@@ -33,7 +33,7 @@ function sendXHRAsync()
 function sendImageRequest()
 {
     var img = document.createElement("img");
-    img.src = "resources/abe.png";
+    img.src = "resources/abe.png?image";
     document.body.appendChild(img);
 }
 
@@ -41,7 +41,7 @@ function sendStyleRequest()
 {
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "resources/style.css";
+    link.href = "resources/style.css?style";
     document.head.appendChild(link);
 }
 
@@ -49,8 +49,8 @@ function sendScriptRequestPrecededByImage()
 {
     var iframe = document.createElement("iframe");
     document.body.appendChild(iframe);
-    iframe.srcdoc = '<html><body><img src="resources/abe.png?preceding">'
-        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?preceded"></s'
+    iframe.srcdoc = '<html><body><img src="resources/abe.png?precedingScript">'
+        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?precededByImage"></s'
         + 'cript>;</body></html>';
 }
 
@@ -58,9 +58,18 @@ function sendScriptRequestPrecededByPreloadedImage()
 {
     var iframe = document.createElement("iframe");
     document.body.appendChild(iframe);
-    iframe.srcdoc = '<html><body><link href="resources/abe.png?precedingPreload" rel=preload as=image>'
-        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?precededByPreload"></s'
-        + 'cript><img src="resources/abe.png?precedingPreload"></body></html>';
+    iframe.srcdoc = '<html><body><link href="resources/abe.png?preloaded" rel=preload as=image>'
+        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?precededByPreloadedImage"></s'
+        + 'cript><img src="resources/abe.png?preloaded"></body></html>';
+}
+
+function sendScriptsFromDocumentWriteAfterImage()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.srcdoc = '<html><body><img src="resources/abe.png?precedingDocWrite">'
+        + '<script src="resources/docwrite.js"></s'
+        + 'cript></body></html>';
 }
 
 function createIFrame()
@@ -73,36 +82,41 @@ function createIFrame()
 function test()
 {
     var actions = [
-        "sendSyncScriptRequest",
-        "sendAsyncScriptRequest",
-        "sendScriptRequestPrecededByImage",
-        "sendScriptRequestPrecededByPreloadedImage",
-        "sendXHRSync",
-        "sendXHRAsync",
-        "sendImageRequest",
-        "sendStyleRequest",
-        "createIFrame"
+        {"fn": "sendSyncScriptRequest", "requests": 1},
+        {"fn": "sendAsyncScriptRequest", "requests": 1},
+        {"fn": "sendScriptRequestPrecededByImage", "requests": 2},
+        {"fn": "sendScriptRequestPrecededByPreloadedImage", "requests": 2},
+        {"fn": "sendXHRSync", "requests": 1},
+        {"fn": "sendXHRAsync", "requests": 1},
+        {"fn": "sendImageRequest", "requests": 1},
+        {"fn": "sendStyleRequest", "requests": 1},
+        {"fn": "createIFrame", "requests": 1},
+        {"fn": "sendScriptsFromDocumentWriteAfterImage", "requests": 5},
     ];
     InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
 
     var nextAction = 0;
-    performNextRequest();
+    var expectedRequestCount = 0;
+    performNextAction();
 
-    function performNextRequest()
+    function performNextAction()
     {
         if (nextAction >= actions.length) {
             InspectorTest.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.evaluateInPage(actions[nextAction++] + "()");
+        InspectorTest.addResult(actions[nextAction].fn);
+        expectedRequestCount = actions[nextAction].requests;
+        InspectorTest.evaluateInPage(actions[nextAction++].fn + "()");
     }
     function onRequestStarted(event)
     {
         var request = event.data;
         InspectorTest.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
-        if (request.name().indexOf("preceded") == -1)
-            performNextRequest();
+        expectedRequestCount--;
+        if (expectedRequestCount < 1)
+            performNextAction();
     }
 }
 </script>
