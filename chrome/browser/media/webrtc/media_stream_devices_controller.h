@@ -91,6 +91,7 @@ class MediaStreamDevicesController {
         bool user_gesture,
         content::WebContents* web_contents,
         std::unique_ptr<MediaStreamDevicesController::Request> request) = 0;
+    virtual ~PermissionPromptDelegate() {}
   };
 
   static void RequestPermissions(
