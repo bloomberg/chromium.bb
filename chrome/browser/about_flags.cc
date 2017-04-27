@@ -2732,6 +2732,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCopylessPaste)},
 #endif
 
+    {"omnibox-display-title-for-current-url",
+     flag_descriptions::kOmniboxDisplayTitleForCurrentUrlName,
+     flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kDisplayTitleForCurrentUrl)},
+
     {"enable-color-correct-rendering",
      flag_descriptions::kColorCorrectRenderingName,
      flag_descriptions::kColorCorrectRenderingDescription, kOsAll,

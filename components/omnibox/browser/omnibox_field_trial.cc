@@ -76,6 +76,10 @@ const base::Feature kZeroSuggestRedirectToChrome{
 const base::Feature kZeroSuggestSwapTitleAndUrl{
     "ZeroSuggestSwapTitleAndUrl", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to display the title of the current URL match.
+const base::Feature kDisplayTitleForCurrentUrl{
+    "OmniboxDisplayTitleForCurrentUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {

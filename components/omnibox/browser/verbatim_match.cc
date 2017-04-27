@@ -15,6 +15,7 @@ AutocompleteMatch VerbatimMatchForURL(
     AutocompleteProviderClient* client,
     const AutocompleteInput& input,
     const GURL& destination_url,
+    const base::string16& destination_description,
     HistoryURLProvider* history_url_provider,
     int verbatim_relevance) {
   DCHECK(!input.text().empty());
@@ -29,6 +30,10 @@ AutocompleteMatch VerbatimMatchForURL(
         input,
         destination_url,
         !AutocompleteInput::HasHTTPScheme(input.text()));
+    match.description = destination_description;
+    AutocompleteMatch::ClassifyLocationInString(
+        base::string16::npos, 0, match.description.length(),
+        ACMatchClassification::NONE, &match.description_class);
   } else {
     client->Classify(input.text(), false, true,
                      input.current_page_classification(), &match, nullptr);

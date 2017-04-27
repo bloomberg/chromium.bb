@@ -3041,4 +3041,12 @@ const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
 const char kAutoplayPolicyCrossOriginUserGestureRequired[] =
     "User gesture is required for cross-origin iframes.";
 
+const char kOmniboxDisplayTitleForCurrentUrlName[] =
+    "Include title for the current URL in the omnibox";
+
+const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
+    "In the event that the omnibox provides suggestions on-focus, the URL of "
+    "the current page is provided as the first suggestion without a title. "
+    "Enabling this flag causes the title to be displayed.";
+
 }  // namespace flag_descriptions

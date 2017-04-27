@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
@@ -115,6 +116,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   results_from_cache_ = false;
   permanent_text_ = input.text();
   current_query_ = input.current_url().spec();
+  current_title_ = input.current_title();
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
 
@@ -193,6 +195,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     results_.suggest_results.clear();
     results_.navigation_results.clear();
     current_query_.clear();
+    current_title_.clear();
     most_visited_urls_.clear();
   }
 }
@@ -264,7 +267,7 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
   // The callers of this method won't look at the AutocompleteInput's
   // |from_omnibox_focus| member, so we can set its value to false.
   return AutocompleteInput(base::string16(), base::string16::npos,
-                           std::string(), GURL(current_query_),
+                           std::string(), GURL(current_query_), current_title_,
                            current_page_classification_, true, false, false,
                            true, false, client()->GetSchemeClassifier());
 }
@@ -512,7 +515,11 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
   // gets dropped as soon as the user types something.
   AutocompleteInput tmp(GetInput(false));
   tmp.UpdateText(permanent_text_, base::string16::npos, tmp.parts());
-  return VerbatimMatchForURL(client(), tmp, GURL(current_query_),
+  const base::string16 description =
+      (base::FeatureList::IsEnabled(omnibox::kDisplayTitleForCurrentUrl))
+          ? current_title_
+          : base::string16();
+  return VerbatimMatchForURL(client(), tmp, GURL(current_query_), description,
                              history_url_provider_,
                              results_.verbatim_relevance);
 }

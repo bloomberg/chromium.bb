@@ -443,7 +443,7 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
   }
 
   controller_->input_ = AutocompleteInput(
-      input, base::string16::npos, std::string(), GURL(),
+      input, base::string16::npos, std::string(), GURL(), base::string16(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       false, true, true, true, false, TestingSchemeClassifier());
   AutocompleteResult result;
@@ -490,7 +490,7 @@ void AutocompleteProviderTest::RunQuery(const std::string& query,
   result_.Reset();
   controller_->Start(AutocompleteInput(
       base::ASCIIToUTF16(query), base::string16::npos, std::string(), GURL(),
-      metrics::OmniboxEventProto::INVALID_SPEC, true, false,
+      base::string16(), metrics::OmniboxEventProto::INVALID_SPEC, true, false,
       allow_exact_keyword_match, true, false, TestingSchemeClassifier()));
 
   if (!controller_->done())

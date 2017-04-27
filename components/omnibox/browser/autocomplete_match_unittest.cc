@@ -187,8 +187,8 @@ TEST(AutocompleteMatchTest, Duplicates) {
                  " url1=" + cases[i].url1 + " url2=" + cases[i].url2);
     AutocompleteInput input(
         base::WideToUTF16(cases[i].input), base::string16::npos, std::string(),
-        GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false, true,
-        true, false, TestSchemeClassifier());
+        GURL(), base::string16(), metrics::OmniboxEventProto::INVALID_SPEC,
+        false, false, true, true, false, TestSchemeClassifier());
     AutocompleteMatch m1(nullptr, 100, false,
                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     m1.destination_url = GURL(cases[i].url1);

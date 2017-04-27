@@ -255,7 +255,7 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
   CHECK(args->GetString(0, &input));
 
   autocomplete_controller_->Start(AutocompleteInput(
-      input, base::string16::npos, std::string(), GURL(),
+      input, base::string16::npos, std::string(), GURL(), base::string16(),
       metrics::OmniboxEventProto::INVALID_SPEC, true, false, false, true, false,
       ChromeAutocompleteSchemeClassifier(Profile::FromWebUI(web_ui()))));
 }

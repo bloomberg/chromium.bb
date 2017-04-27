@@ -98,8 +98,9 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
       "http://www.foobarbazblah.com"));
   controller_->Start(AutocompleteInput(
       fake_request_source, base::string16::npos, std::string(),
-      GURL(fake_request_source), OmniboxEventProto::INVALID_SPEC, false, false,
-      true, true, true, ChromeAutocompleteSchemeClassifier(profile)));
+      GURL(fake_request_source), base::string16(),
+      OmniboxEventProto::INVALID_SPEC, false, false, true, true, true,
+      ChromeAutocompleteSchemeClassifier(profile)));
   // Delete ourselves after 10s. This is enough time to cache results or
   // give up if the results haven't been received.
   expire_timer_.Start(FROM_HERE,
@@ -154,11 +155,11 @@ void AutocompleteControllerAndroid::Start(
   OmniboxEventProto::PageClassification page_classification =
       OmniboxEventProto::OTHER;
   size_t cursor_pos = j_cursor_pos == -1 ? base::string16::npos : j_cursor_pos;
-  input_ = AutocompleteInput(text, cursor_pos, desired_tld, current_url,
-                             page_classification, prevent_inline_autocomplete,
-                             prefer_keyword, allow_exact_keyword_match,
-                             want_asynchronous_matches, false,
-                             ChromeAutocompleteSchemeClassifier(profile_));
+  input_ = AutocompleteInput(
+      text, cursor_pos, desired_tld, current_url, base::string16(),
+      page_classification, prevent_inline_autocomplete, prefer_keyword,
+      allow_exact_keyword_match, want_asynchronous_matches, false,
+      ChromeAutocompleteSchemeClassifier(profile_));
   autocomplete_controller_->Start(input_);
 }
 
@@ -191,9 +192,8 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 
   input_ = AutocompleteInput(
       omnibox_text, base::string16::npos, std::string(), current_url,
-      ClassifyPage(current_url, focused_from_fakebox),
-      false, false, true, true, true,
-      ChromeAutocompleteSchemeClassifier(profile_));
+      base::string16(), ClassifyPage(current_url, focused_from_fakebox), false,
+      false, true, true, true, ChromeAutocompleteSchemeClassifier(profile_));
   autocomplete_controller_->Start(input_);
 }
 

@@ -140,6 +140,9 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;
 
+  // The title of the page for which a suggestion fetch is pending.
+  base::string16 current_title_;
+
   // The type of page the user is viewing (a search results page doing search
   // term replacement, an arbitrary URL, etc.).
   metrics::OmniboxEventProto::PageClassification current_page_classification_;
