@@ -138,12 +138,6 @@ const char kForceVideoOverlays[] = "force-video-overlays";
 const char kMSEAudioBufferSizeLimit[] = "mse-audio-buffer-size-limit";
 const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 
-// Ignores all autoplay restrictions. It will ignore the current autoplay policy
-// and all restrictions such as playback in a background tab. It should only be
-// enabled for testing.
-const char kIgnoreAutoplayRestrictionsForTests[] =
-    "ignore-autoplay-restrictions";
-
 namespace autoplay {
 
 // Autoplay policy to require a user gesture in ordor to play for cross origin

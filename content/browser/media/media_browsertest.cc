@@ -35,7 +35,8 @@ const char MediaBrowserTest::kErrorEvent[] = "ERROR";
 const char MediaBrowserTest::kError[] = "error";
 
 void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+  command_line->AppendSwitch(
+      switches::kDisableGestureRequirementForMediaPlayback);
   command_line->AppendSwitch(switches::kEnableVp9InMp4);
 }
 

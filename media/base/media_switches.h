@@ -77,8 +77,6 @@ MEDIA_EXPORT extern const char kForceVideoOverlays[];
 MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimit[];
 MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
-MEDIA_EXPORT extern const char kIgnoreAutoplayRestrictionsForTests[];
-
 namespace autoplay {
 
 MEDIA_EXPORT extern const char kCrossOriginUserGestureRequiredPolicy[];

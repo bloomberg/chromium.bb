@@ -25,7 +25,6 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
-import org.chromium.media.MediaSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.Callable;
@@ -37,7 +36,8 @@ import java.util.concurrent.TimeoutException;
 ContentSwitches.ENABLE_TEST_INTENTS */
 @RunWith(ContentJUnit4ClassRunner.class)
 @CommandLineFlags.Add({"enable-features=VideoFullscreenOrientationLock",
-        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS, ContentSwitches.ENABLE_TEST_INTENTS})
+        ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK,
+        ContentSwitches.ENABLE_TEST_INTENTS})
 public class VideoFullscreenOrientationLockTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();

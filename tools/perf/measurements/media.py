@@ -31,7 +31,8 @@ class Media(legacy_page_test.LegacyPageTest):
 
   def CustomizeBrowserOptions(self, options):
     # Needed to run media actions in JS on touch-based devices as on Android.
-    options.AppendExtraBrowserArgs('--ignore-autoplay-restrictions')
+    options.AppendExtraBrowserArgs(
+        '--disable-gesture-requirement-for-media-playback')
     power.PowerMetric.CustomizeBrowserOptions(options)
 
   def DidNavigateToPage(self, page, tab):
