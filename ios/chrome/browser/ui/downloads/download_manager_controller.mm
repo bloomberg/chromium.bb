@@ -9,11 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -49,6 +47,10 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/uikit_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 using net::HttpResponseHeaders;
@@ -331,7 +333,7 @@ class DownloadHeadDelegate : public URLFetcherDelegate {
   };
 
  private:
-  DownloadManagerController* owner_;  // weak.
+  __weak DownloadManagerController* owner_;
   DISALLOW_COPY_AND_ASSIGN(DownloadHeadDelegate);
 };
 
@@ -352,7 +354,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   };
 
  private:
-  DownloadManagerController* owner_;  // weak.
+  __weak DownloadManagerController* owner_;
   DISALLOW_COPY_AND_ASSIGN(DownloadContentDelegate);
 };
 
@@ -363,7 +365,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
   // Coordinator for displaying the alert informing the user that no application
   // on the device can open the file.
-  base::scoped_nsobject<AlertCoordinator> _alertCoordinator;
+  AlertCoordinator* _alertCoordinator;
 
   // The size of the file to be downloaded, as determined by the Content-Length
   // header field in the initial HEAD request. This is set to |kNoFileSizeGiven|
@@ -382,103 +384,102 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   std::unique_ptr<DownloadHeadDelegate> _headFetcherDelegate;
   std::unique_ptr<DownloadContentDelegate> _contentFetcherDelegate;
   base::FilePath _downloadFilePath;
-  base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
+  MDCActivityIndicator* _activityIndicator;
   // Set to YES when a download begins and is used to determine if the
   // DownloadFileResult histogram needs to be recorded on -dealloc.
   BOOL _recordDownloadResultHistogram;
   // Set to YES when a file is downloaded and is used to determine if the
   // DownloadedFileAction histogram needs to be recorded on -dealloc.
   BOOL _recordFileActionHistogram;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_DownloadManagerController;
 }
 
 // The container that holds the |documentIcon|, the |progressBar|, the
 // |foldIcon|, the |fileTypeLabel|, and the |timeLeftLabel|.
-@property(nonatomic, retain) IBOutlet UIView* documentContainer;
+@property(nonatomic, strong) IBOutlet UIView* documentContainer;
 
 // The progress bar that displays download progress.
-@property(nonatomic, retain) IBOutlet UIView* progressBar;
+@property(nonatomic, strong) IBOutlet UIView* progressBar;
 
 // The image of the document.
-@property(nonatomic, retain) IBOutlet UIImageView* documentIcon;
+@property(nonatomic, strong) IBOutlet UIImageView* documentIcon;
 
 // The image of the document fold.
-@property(nonatomic, retain) IBOutlet UIImageView* foldIcon;
+@property(nonatomic, strong) IBOutlet UIImageView* foldIcon;
 
 // The error image displayed inside the document.
-@property(nonatomic, retain) IBOutlet UIImageView* errorIcon;
+@property(nonatomic, strong) IBOutlet UIImageView* errorIcon;
 
 // The label that displays the file type of the file to be downloaded.
-@property(nonatomic, retain) IBOutlet UILabel* fileTypeLabel;
+@property(nonatomic, strong) IBOutlet UILabel* fileTypeLabel;
 
 // The label that displays the estimate of how much time is still needed to
 // finish the file download.
-@property(nonatomic, retain) IBOutlet UILabel* timeLeftLabel;
+@property(nonatomic, strong) IBOutlet UILabel* timeLeftLabel;
 
 // The label that displays the name of the file to be downloaded, as it will
 // be saved on the user's device.
-@property(nonatomic, retain) IBOutlet UILabel* fileNameLabel;
+@property(nonatomic, strong) IBOutlet UILabel* fileNameLabel;
 
 // The label that displays the size of the file to be downloaded or the error
 // message.
-@property(nonatomic, retain) IBOutlet UILabel* errorOrSizeLabel;
+@property(nonatomic, strong) IBOutlet UILabel* errorOrSizeLabel;
 
 // The label that displays error messages when errors occur.
-@property(nonatomic, retain) IBOutlet UILabel* errorLabel;
+@property(nonatomic, strong) IBOutlet UILabel* errorLabel;
 
 // The container that holds the |downloadButton|, |cancelButton|,
 // |openInButton|, and |googleDriveButton|.
-@property(nonatomic, retain) IBOutlet UIView* actionBar;
+@property(nonatomic, strong) IBOutlet UIView* actionBar;
 
 // View that appears at the top of the action bar and acts as a border.
-@property(nonatomic, retain) IBOutlet UIView* actionBarBorder;
+@property(nonatomic, strong) IBOutlet UIView* actionBarBorder;
 
 // The button which starts the file download.
-@property(nonatomic, retain) IBOutlet MDCButton* downloadButton;
+@property(nonatomic, strong) IBOutlet MDCButton* downloadButton;
 
 // The button which switches with the |downloadButton| during a download.
 // Pressing it cancels the download.
-@property(nonatomic, retain) IBOutlet MDCButton* cancelButton;
+@property(nonatomic, strong) IBOutlet MDCButton* cancelButton;
 
 // The button that switches with the |cancelButton| when a file download
 // completes. Pressing it opens the UIDocumentInteractionController, letting
 // the user select another app in which to open the downloaded file.
-@property(nonatomic, retain) IBOutlet MDCButton* openInButton;
+@property(nonatomic, strong) IBOutlet MDCButton* openInButton;
 
 // The button that opens a view controller to allow the user to install
 // Google Drive.
-@property(nonatomic, retain) IBOutlet MDCButton* googleDriveButton;
+@property(nonatomic, strong) IBOutlet MDCButton* googleDriveButton;
 
 // The controller that displays the list of other apps that the downloaded file
 // can be opened in.
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     UIDocumentInteractionController* docInteractionController;
 
 // Contains all the constraints that should be applied only in portrait mode.
-@property(nonatomic, retain) NSArray* portraitConstraintsArray;
+@property(nonatomic, strong) NSArray* portraitConstraintsArray;
 
 // Contains all the constraints that should be applied only in landscape mode.
-@property(nonatomic, retain) NSArray* landscapeConstraintsArray;
+@property(nonatomic, strong) NSArray* landscapeConstraintsArray;
 
 // Contains all the constraints that should be applied only in portrait mode
 // when there is only one button showing in the action bar (i.e. the Google
 // Drive button is NOT showing).
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     NSArray* portraitActionBarOneButtonConstraintsArray;
 
 // Contains all the constraints that should be applied only in portrait mode
 // when there are two buttons showing in the action bar (i.e. the Google Drive
 // button IS showing).
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     NSArray* portraitActionBarTwoButtonConstraintsArray;
 
 // Constraint that positions the file type label vertically in the center of the
 // document with an additional offset.
-@property(nonatomic, retain) NSLayoutConstraint* fileTypeLabelCentered;
+@property(nonatomic, strong) NSLayoutConstraint* fileTypeLabelCentered;
 
 // Records the time the download started, to display an estimate of how much
 // time is required to finish the download.
-@property(nonatomic, retain) NSDate* downloadStartedTime;
+@property(nonatomic, strong) NSDate* downloadStartedTime;
 
 // Records the fraction (from 0.0 to 1.0) of the file that has been
 // downloaded.
@@ -486,7 +487,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
 // Used to get a URL scheme that Drive responds to, to register with the
 // InstallationNotifier.
-@property(nonatomic, retain) id<NativeAppMetadata> googleDriveMetadata;
+@property(nonatomic, strong) id<NativeAppMetadata> googleDriveMetadata;
 
 @end
 
@@ -525,8 +526,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   self = [super initWithNibName:@"DownloadManagerController" url:url];
   if (self) {
     _downloadManagerId = g_download_manager_id++;
-    _propertyReleaser_DownloadManagerController.Init(
-        self, [DownloadManagerController class]);
 
     DCHECK(webState);
     _webState = webState;
@@ -617,7 +616,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     // will be cleaned up during dealloc, but a local copy will be retained by
     // the block and won't be deleted until the block completes.
     base::FilePath downloadPathCopy = _downloadFilePath;
-    web::WebThread::PostBlockingPoolTask(FROM_HERE, base::BindBlock(^{
+    web::WebThread::PostBlockingPoolTask(FROM_HERE, base::BindBlockArc(^{
                                            DeleteFile(downloadPathCopy, false);
                                          }));
   }
@@ -629,7 +628,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     UMA_HISTOGRAM_ENUMERATION(kUMADownloadedFileAction, NO_ACTION,
                               DOWNLOADED_FILE_ACTION_COUNT);
   }
-  [super dealloc];
 }
 
 #pragma mark - Layout constraints
@@ -1029,16 +1027,16 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 }
 
 - (void)initializeActivityIndicator {
-  _activityIndicator.reset([[MDCActivityIndicator alloc]
+  _activityIndicator = [[MDCActivityIndicator alloc]
       initWithFrame:CGRectMake(0, 0, kActivityIndicatorWidth,
-                               kActivityIndicatorWidth)]);
+                               kActivityIndicatorWidth)];
   [_activityIndicator setRadius:AlignValueToPixel(kActivityIndicatorWidth / 2)];
   [_activityIndicator setStrokeWidth:4];
   [_activityIndicator
       setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
   [_activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_documentContainer addSubview:_activityIndicator];
-  _activityIndicator.get().center = _documentContainer.center;
+  _activityIndicator.center = _documentContainer.center;
   [NSLayoutConstraint activateConstraints:@[
     [[_activityIndicator centerYAnchor]
         constraintEqualToAnchor:_documentContainer.centerYAnchor],
@@ -1063,10 +1061,10 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_NO_APP_MESSAGE);
 
-  _alertCoordinator.reset([[AlertCoordinator alloc]
-      initWithBaseViewController:topViewController
-                           title:title
-                         message:message]);
+  _alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:topViewController
+                                                     title:title
+                                                   message:message];
 
   // |googleDriveMetadata| contains the information necessary to either launch
   // the Google Drive app or navigate to its StoreKit page.  If the metadata is
@@ -1075,7 +1073,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   if (self.googleDriveMetadata && tabHelper) {
     NSString* googleDriveButtonTitle =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
-    base::WeakNSObject<DownloadManagerController> weakSelf(self);
+    __weak DownloadManagerController* weakSelf = self;
     [_alertCoordinator addItemWithTitle:googleDriveButtonTitle
                                  action:^{
                                    [weakSelf openGoogleDriveInAppStore];
@@ -1238,16 +1236,16 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     [self displayError];
     return;
   }
-  base::WeakNSObject<DownloadManagerController> weakSelf(self);
+  __weak DownloadManagerController* weakSelf = self;
   base::PostTaskAndReplyWithResult(
       web::WebThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)
           .get(),
-      FROM_HERE, base::BindBlock(^{
+      FROM_HERE, base::BindBlockArc(^{
         return CreateDirectory(downloadsDirectoryPath);
       }),
-      base::BindBlock(^(bool directoryCreated) {
+      base::BindBlockArc(^(bool directoryCreated) {
         [weakSelf finishStartingContentDownload:directoryCreated];
       }));
 }
@@ -1299,9 +1297,9 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       CGRectGetMaxY(documentIconFrame) - newProgressFrame.size.height;
   if (animated &&
       newProgressFrame.size.height - oldProgressFrame.size.height > 1) {
-    base::WeakNSObject<UIView> weakProgressBar(_progressBar);
+    __weak UIView* weakProgressBar = _progressBar;
     if (completionAnimation) {
-      base::WeakNSObject<DownloadManagerController> weakSelf(self);
+      __weak DownloadManagerController* weakSelf = self;
       [UIView animateWithDuration:kProgressBarAnimationDuration
           animations:^{
             [weakProgressBar setFrame:newProgressFrame];
@@ -1361,7 +1359,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
   [_documentContainer.layer addAnimation:animation
                                   forKey:kDocumentPopAnimationKey];
 
-  base::WeakNSObject<UIImageView> weakFoldIcon(_foldIcon);
+  __weak UIImageView* weakFoldIcon = _foldIcon;
   [UIView transitionWithView:_foldIcon
       duration:kDownloadCompleteAnimationDuration
       options:UIViewAnimationOptionTransitionCrossDissolve
@@ -1488,7 +1486,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
   if (_totalFileSize == kNoFileSizeGiven) {
     [_activityIndicator stopAnimating];
-    _activityIndicator.reset();
+    _activityIndicator = nil;
 
     // Display the file size.
     NSError* error = nil;
@@ -1607,7 +1605,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 
 + (void)clearDownloadsDirectory {
   web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::BindBlock(^{
+      FROM_HERE, base::BindBlockArc(^{
         base::FilePath downloadsDirectory;
         if (![DownloadManagerController
                 fetchDownloadsDirectoryFilePath:&downloadsDirectory]) {
