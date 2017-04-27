@@ -225,7 +225,6 @@ blink_core_sources("dom") {
     "NodeChildRemovalTracker.h",
     "NodeComputedStyle.h",
     "NodeFilter.h",
-    "NodeFilterCondition.h",
     "NodeIterator.cpp",
     "NodeIterator.h",
     "NodeIteratorBase.cpp",
