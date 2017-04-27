@@ -57,7 +57,8 @@ const char kMachineHardwareInfoDelim[] = " \n";
 
 // File to get ECHO coupon info from, and key/value delimiters of
 // the file.
-const char kEchoCouponFile[] = "/var/cache/echo/vpd_echo.txt";
+const char kEchoCouponFile[] =
+    "/mnt/stateful_partition/unencrypted/cache/vpd/echo/vpd_echo.txt";
 const char kEchoCouponEq[] = "=";
 const char kEchoCouponDelim[] = "\n";
 
