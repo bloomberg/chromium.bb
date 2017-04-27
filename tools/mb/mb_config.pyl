@@ -1729,10 +1729,7 @@
     'goma': {
       # The MB code will properly escape goma_dir if necessary in the GYP
       # code path; the GN code path needs no escaping.
-      # We also set strip_absolute_paths to ensure that we can get deterministic
-      # builds. This isn't just on by default when goma is on so that devs
-      # can do goma builds but still be able to debug by default.
-      'gn_args': 'use_goma=true strip_absolute_paths_from_debug_symbols=true',
+      'gn_args': 'use_goma=true',
     },
 
     'gpu_fyi_tests': {
@@ -1783,7 +1780,7 @@
     },
 
     'minimal_symbols': {
-      'gn_args': 'symbol_level=1',
+      'gn_args': 'symbol_level=1 strip_absolute_paths_from_debug_symbols=true',
     },
 
     'mipsel': {
