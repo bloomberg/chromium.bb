@@ -420,10 +420,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      */
     private boolean enterVrAfterDon() {
         if (mNativeVrShellDelegate == 0) return false;
-        if (mListeningForWebVrActivateBeforePause && !mRequestedWebVr) {
-            nativeDisplayActivate(mNativeVrShellDelegate);
-            return true;
-        }
 
         // Normally, if the active page doesn't have a vrdisplayactivate listener, and WebVR was not
         // presenting and VrShell was not enabled, the Daydream Homescreen should show after the DON
@@ -432,6 +428,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (!mListeningForWebVrActivateBeforePause && !mRequestedWebVr
                 && !canEnterVr(mActivity.getActivityTab())) {
             return false;
+        }
+
+        if (mListeningForWebVrActivateBeforePause && !mRequestedWebVr) {
+            nativeDisplayActivate(mNativeVrShellDelegate);
         }
 
         enterVr();
