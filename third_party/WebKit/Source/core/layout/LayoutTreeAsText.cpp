@@ -820,7 +820,7 @@ String ExternalRepresentation(LocalFrame* frame,
   PrintContext print_context(frame);
   if (behavior & kLayoutAsTextPrintingMode) {
     FloatSize size(ToLayoutBox(layout_object)->Size());
-    print_context.begin(size.Width(), size.Height());
+    print_context.BeginPrintMode(size.Width(), size.Height());
   }
 
   return ExternalRepresentation(ToLayoutBox(layout_object), behavior,

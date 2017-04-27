@@ -280,11 +280,11 @@ class ChromePrintContext : public PrintContext {
 
   ~ChromePrintContext() override {}
 
-  virtual void begin(float width, float height) {
+  virtual void BeginPrintMode(float width, float height) {
     DCHECK(!printed_page_width_);
     printed_page_width_ = width;
     printed_page_height_ = height;
-    PrintContext::begin(printed_page_width_, height);
+    PrintContext::BeginPrintMode(printed_page_width_, height);
   }
 
   virtual float GetPageShrink(int page_number) const {
@@ -455,9 +455,9 @@ class ChromePluginPrintContext final : public ChromePrintContext {
     ChromePrintContext::Trace(visitor);
   }
 
-  void begin(float width, float height) override {}
+  void BeginPrintMode(float width, float height) override {}
 
-  void end() override { plugin_->PrintEnd(); }
+  void EndPrintMode() override { plugin_->PrintEnd(); }
 
   float GetPageShrink(int page_number) const override {
     // We don't shrink the page (maybe we should ask the widget ??)
@@ -1401,7 +1401,7 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   FloatRect rect(0, 0,
                  static_cast<float>(print_params.print_content_area.width),
                  static_cast<float>(print_params.print_content_area.height));
-  print_context_->begin(rect.Width(), rect.Height());
+  print_context_->BeginPrintMode(rect.Width(), rect.Height());
   float page_height;
   // We ignore the overlays calculation for now since they are generated in the
   // browser. pageHeight is actually an output parameter.
@@ -1427,7 +1427,7 @@ float WebLocalFrameImpl::PrintPage(int page, WebCanvas* canvas) {
 
 void WebLocalFrameImpl::PrintEnd() {
   DCHECK(print_context_);
-  print_context_->end();
+  print_context_->EndPrintMode();
   print_context_.Clear();
 }
 
