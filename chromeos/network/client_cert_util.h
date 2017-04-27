@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/certificate_pattern.h"
+#include "components/onc/onc_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -50,6 +51,9 @@ struct CHROMEOS_EXPORT ClientCertConfig {
 
   // The value of kIdentity, to enable substitutions.
   std::string policy_identity;
+
+  // source of this ClientCertConfig.
+  ::onc::ONCSource onc_source;
 };
 
 // Returns true only if any fields set in this pattern match exactly with
@@ -99,6 +103,7 @@ bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
 // Determines the type of the CertificatePattern configuration, i.e. is it a
 // pattern within an EAP, IPsec or OpenVPN configuration.
 CHROMEOS_EXPORT void OncToClientCertConfig(
+    ::onc::ONCSource onc_source,
     const base::DictionaryValue& network_config,
     ClientCertConfig* cert_config);
 

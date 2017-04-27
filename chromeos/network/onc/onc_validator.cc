@@ -301,9 +301,6 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
 
-  if (IsCertPatternInDevicePolicy(cert_type))
-    return false;
-
   bool all_required_exist = true;
 
   if (cert_type == kPattern)
@@ -506,17 +503,6 @@ bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
     guids->insert(guid);
   }
   return true;
-}
-
-bool Validator::IsCertPatternInDevicePolicy(const std::string& cert_type) {
-  if (cert_type == ::onc::client_cert::kPattern &&
-      onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY) {
-    error_or_warning_found_ = true;
-    LOG(ERROR) << MessageHeader() << "Client certificate patterns are "
-               << "prohibited in ONC device policies.";
-    return true;
-  }
-  return false;
 }
 
 bool Validator::IsGlobalNetworkConfigInUserImport(

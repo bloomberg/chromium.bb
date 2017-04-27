@@ -156,10 +156,12 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const std::string& userhash) const = 0;
 
   // Returns the policy with |guid| for profile |profile_path|. If such
-  // doesn't exist, returns NULL.
+  // doesn't exist, returns nullptr. Sets |onc_source| accordingly if it is not
+  // nullptr.
   virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
-      const std::string& profile_path) const = 0;
+      const std::string& profile_path,
+      ::onc::ONCSource* onc_source) const = 0;
 
  private:
   DISALLOW_ASSIGN(ManagedNetworkConfigurationHandler);

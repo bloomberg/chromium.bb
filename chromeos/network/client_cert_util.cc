@@ -39,8 +39,11 @@ std::string GetStringFromDictionary(const base::DictionaryValue& dict,
 }
 
 void GetClientCertTypeAndPattern(
+    onc::ONCSource onc_source,
     const base::DictionaryValue& dict_with_client_cert,
     ClientCertConfig* cert_config) {
+  cert_config->onc_source = onc_source;
+
   dict_with_client_cert.GetStringWithoutPathExpansion(
       ::onc::eap::kIdentity, &cert_config->policy_identity);
 
@@ -266,7 +269,8 @@ ClientCertConfig::ClientCertConfig()
 
 ClientCertConfig::ClientCertConfig(const ClientCertConfig& other) = default;
 
-void OncToClientCertConfig(const base::DictionaryValue& network_config,
+void OncToClientCertConfig(::onc::ONCSource onc_source,
+                           const base::DictionaryValue& network_config,
                            ClientCertConfig* cert_config) {
   using namespace ::onc;
 
@@ -317,8 +321,10 @@ void OncToClientCertConfig(const base::DictionaryValue& network_config,
     cert_config->location = CONFIG_TYPE_EAP;
   }
 
-  if (dict_with_client_cert)
-    GetClientCertTypeAndPattern(*dict_with_client_cert, cert_config);
+  if (dict_with_client_cert) {
+    GetClientCertTypeAndPattern(onc_source, *dict_with_client_cert,
+                                cert_config);
+  }
 }
 
 bool IsCertificateConfigured(const ConfigType cert_config_type,

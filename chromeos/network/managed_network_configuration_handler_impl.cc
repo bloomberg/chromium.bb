@@ -730,7 +730,8 @@ ManagedNetworkConfigurationHandlerImpl::GetGlobalConfigFromPolicy(
 const base::DictionaryValue*
 ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
     const std::string& guid,
-    const std::string& profile_path) const {
+    const std::string& profile_path,
+    ::onc::ONCSource* onc_source) const {
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
@@ -742,7 +743,13 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
   if (!policies)
     return NULL;
 
-  return GetByGUID(policies->per_network_config, guid);
+  const base::DictionaryValue* policy =
+      GetByGUID(policies->per_network_config, guid);
+  if (policy && onc_source) {
+    *onc_source = (profile->userhash.empty() ? ::onc::ONC_SOURCE_DEVICE_POLICY
+                                             : ::onc::ONC_SOURCE_USER_POLICY);
+  }
+  return policy;
 }
 
 const ManagedNetworkConfigurationHandlerImpl::Policies*

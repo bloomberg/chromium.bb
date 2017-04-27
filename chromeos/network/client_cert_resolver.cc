@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -191,25 +192,35 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
 // Searches for matches between |networks| and |certs| and writes matches to
 // |matches|. Because this calls NSS functions and is potentially slow, it must
 // be run on a worker thread.
-void FindCertificateMatches(const net::CertificateList& certs,
-                            std::vector<NetworkAndCertPattern>* networks,
-                            base::Time now,
-                            NetworkCertMatches* matches) {
-  std::vector<CertAndIssuer> client_certs(
-      CreateSortedCertAndIssuerList(certs, now));
+std::unique_ptr<NetworkCertMatches> FindCertificateMatches(
+    const net::CertificateList& all_certs,
+    const net::CertificateList& system_certs,
+    std::vector<NetworkAndCertPattern>* networks,
+    base::Time now) {
+  std::unique_ptr<NetworkCertMatches> matches =
+      base::MakeUnique<NetworkCertMatches>();
+
+  std::vector<CertAndIssuer> all_client_certs(
+      CreateSortedCertAndIssuerList(all_certs, now));
+  std::vector<CertAndIssuer> system_client_certs(
+      CreateSortedCertAndIssuerList(system_certs, now));
 
   for (std::vector<NetworkAndCertPattern>::const_iterator it =
            networks->begin();
        it != networks->end(); ++it) {
-    std::vector<CertAndIssuer>::iterator cert_it =
-        std::find_if(client_certs.begin(),
-                     client_certs.end(),
-                     MatchCertWithPattern(it->cert_config.pattern));
+    // Use only certs from the system token if the source of the client cert
+    // pattern is device policy.
+    std::vector<CertAndIssuer>* client_certs =
+        it->cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY
+            ? &system_client_certs
+            : &all_client_certs;
+    auto cert_it = std::find_if(client_certs->begin(), client_certs->end(),
+                                MatchCertWithPattern(it->cert_config.pattern));
     std::string pkcs11_id;
     int slot_id = -1;
     std::string identity;
 
-    if (cert_it == client_certs.end()) {
+    if (cert_it == client_certs->end()) {
       VLOG(1) << "Couldn't find a matching client cert for network "
               << it->service_path;
       // Leave |pkcs11_id| empty to indicate that no cert was found for this
@@ -256,6 +267,7 @@ void FindCertificateMatches(const net::CertificateList& certs,
         it->service_path, it->cert_config.location, pkcs11_id, slot_id,
         identity));
   }
+  return matches;
 }
 
 void LogError(const std::string& service_path,
@@ -325,15 +337,23 @@ bool ClientCertResolver::IsAnyResolveTaskRunning() const {
 // static
 bool ClientCertResolver::ResolveCertificatePatternSync(
     const client_cert::ConfigType client_cert_type,
-    const CertificatePattern& pattern,
+    const client_cert::ClientCertConfig& client_cert_config,
     base::DictionaryValue* shill_properties) {
-  // Prepare and sort the list of known client certs.
-  std::vector<CertAndIssuer> client_certs(CreateSortedCertAndIssuerList(
-      CertLoader::Get()->cert_list(), base::Time::Now()));
+  // Prepare and sort the list of known client certs. Use only certs from the
+  // system token if the source of the client cert pattern is device policy.
+  std::vector<CertAndIssuer> client_certs;
+  if (client_cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
+    client_certs = CreateSortedCertAndIssuerList(
+        CertLoader::Get()->system_certs(), base::Time::Now());
+  } else {
+    client_certs = CreateSortedCertAndIssuerList(CertLoader::Get()->all_certs(),
+                                                 base::Time::Now());
+  }
 
   // Search for a certificate matching the pattern.
-  std::vector<CertAndIssuer>::iterator cert_it = std::find_if(
-      client_certs.begin(), client_certs.end(), MatchCertWithPattern(pattern));
+  std::vector<CertAndIssuer>::iterator cert_it =
+      std::find_if(client_certs.begin(), client_certs.end(),
+                   MatchCertWithPattern(client_cert_config.pattern));
 
   if (cert_it == client_certs.end()) {
     VLOG(1) << "Couldn't find a matching client cert";
@@ -452,9 +472,10 @@ void ClientCertResolver::ResolveNetworks(
     if (network->profile_path().empty())
       continue;
 
+    onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
     const base::DictionaryValue* policy =
         managed_network_config_handler_->FindPolicyByGuidAndProfile(
-            network->guid(), network->profile_path());
+            network->guid(), network->profile_path(), &onc_source);
 
     if (!policy) {
       VLOG(1) << "The policy for network " << network->path() << " with GUID "
@@ -466,7 +487,7 @@ void ClientCertResolver::ResolveNetworks(
 
     VLOG(2) << "Inspecting network " << network->path();
     client_cert::ClientCertConfig cert_config;
-    OncToClientCertConfig(*policy, &cert_config);
+    OncToClientCertConfig(onc_source, *policy, &cert_config);
 
     // Skip networks that don't have a ClientCertPattern.
     if (cert_config.client_cert_type != ::onc::client_cert::kPattern)
@@ -493,16 +514,17 @@ void ClientCertResolver::ResolveNetworks(
 
   VLOG(2) << "Start task for resolving client cert patterns.";
   resolve_task_running_ = true;
-  NetworkCertMatches* matches = new NetworkCertMatches;
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
-      base::Bind(&FindCertificateMatches, CertLoader::Get()->cert_list(),
-                 base::Owned(networks_to_resolve.release()), Now(), matches),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+          .MayBlock(),
+      base::Bind(&FindCertificateMatches, CertLoader::Get()->all_certs(),
+                 CertLoader::Get()->system_certs(),
+                 base::Owned(networks_to_resolve.release()), Now()),
       base::Bind(&ClientCertResolver::ConfigureCertificates,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(matches)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientCertResolver::ResolvePendingNetworks() {
@@ -523,7 +545,8 @@ void ClientCertResolver::ResolvePendingNetworks() {
   ResolveNetworks(networks_to_resolve);
 }
 
-void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
+void ClientCertResolver::ConfigureCertificates(
+    std::unique_ptr<NetworkCertMatches> matches) {
   for (NetworkCertMatches::const_iterator it = matches->begin();
        it != matches->end(); ++it) {
     VLOG(1) << "Configuring certificate of network " << it->service_path;

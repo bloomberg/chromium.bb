@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -39,7 +40,8 @@ const char* kProfile = "/profile/profile1";
 
 class NetworkCertMigratorTest : public testing::Test {
  public:
-  NetworkCertMigratorTest() : service_test_(nullptr) {}
+  NetworkCertMigratorTest()
+      : service_test_(nullptr), scoped_task_scheduler_(&message_loop_) {}
   ~NetworkCertMigratorTest() override {}
 
   void SetUp() override {
@@ -190,6 +192,7 @@ class NetworkCertMigratorTest : public testing::Test {
   base::MessageLoop message_loop_;
 
  private:
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkCertMigrator> network_cert_migrator_;
   crypto::ScopedTestNSSDB test_nssdb_;
