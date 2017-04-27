@@ -283,6 +283,8 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   content_window->SetTransparent(transparent);
   window()->SetTransparent(transparent);
 
+  window()->SetProperty(aura::client::kShowStateKey, params.show_state);
+
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
 
