@@ -32,11 +32,12 @@ void PermissionsUpdaterDelegateChromeOS::InitializePermissions(
   // clipboard read functionality). This forceful removal of permission is safe
   // since the clipboard pasting code checks for this permission before doing
   // the paste (the end result is just an empty paste).
-  APIPermissionSet api_permission_set((*granted_permissions)->apis());
-  api_permission_set.erase(APIPermission::kClipboardRead);
-  granted_permissions->reset(
-      new PermissionSet(api_permission_set, ManifestPermissionSet(),
-                        URLPatternSet(), URLPatternSet()));
+  APIPermissionSet api_permission_set;
+  api_permission_set.insert(APIPermission::kClipboardRead);
+  *granted_permissions = PermissionSet::CreateDifference(
+      **granted_permissions,
+      PermissionSet(api_permission_set, ManifestPermissionSet(),
+                    URLPatternSet(), URLPatternSet()));
 }
 
 }  // namespace extensions
