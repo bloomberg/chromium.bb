@@ -127,6 +127,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Disabled('linux')  # crbug.com/715716
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
@@ -152,6 +153,7 @@ class V8InfiniteScrollTurbo(V8InfiniteScroll):
     return 'v8.infinite_scroll-turbo_tbmv2'
 
 
+@benchmark.Disabled('linux')  # crbug.com/715716
 @benchmark.Owner(emails=['hablich@chromium.org'])
 class V8InfiniteScrollClassic(V8InfiniteScroll):
   """Measures V8 GC metrics using the Classic pipeline."""
