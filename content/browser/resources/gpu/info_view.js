@@ -38,10 +38,6 @@ cr.define('gpu', function() {
       if (browserBridge.clientInfo) {
         var clientInfo = browserBridge.clientInfo;
 
-        var commandLineParts = clientInfo.command_line.split(' ');
-        commandLineParts.shift(); // Pop off the exe path
-        var commandLineString = commandLineParts.join(' ')
-
         this.setTable_('client-info', [
           {
             description: 'Data exported',
@@ -72,8 +68,8 @@ cr.define('gpu', function() {
             value: clientInfo.graphics_backend
           },
           {
-            description: 'Command Line Args',
-            value: commandLineString
+            description: 'Command Line',
+            value: clientInfo.command_line
           }]);
       } else {
         this.setText_('client-info', '... loading...');
