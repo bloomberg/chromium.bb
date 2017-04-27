@@ -32,6 +32,7 @@
 #include "net/spdy/core/spdy_frame_reader.h"
 #include "net/spdy/core/spdy_framer_decoder_adapter.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
 
 using std::vector;
@@ -1450,7 +1451,7 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
 
   if (altsvc_scratch_ == nullptr) {
     size_t capacity = current_frame_length_ - GetFrameHeaderSize();
-    altsvc_scratch_.reset(new CharBuffer(capacity));
+    altsvc_scratch_ = SpdyMakeUnique<CharBuffer>(capacity);
   }
   altsvc_scratch_->CopyFrom(data, len);
   remaining_data_length_ -= len;
@@ -1688,7 +1689,7 @@ bool SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
   size_t size_without_block = is_first_frame_
                                   ? GetFrameSizeSansBlock()
                                   : framer_->GetContinuationMinimumSize();
-  auto encoding = base::MakeUnique<SpdyString>();
+  auto encoding = SpdyMakeUnique<SpdyString>();
   encoder_->Next(kMaxControlFrameSize - size_without_block, encoding.get());
   has_next_frame_ = encoder_->HasNext();
 
@@ -2884,7 +2885,7 @@ bool SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
 
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
   if (hpack_encoder_.get() == nullptr) {
-    hpack_encoder_.reset(new HpackEncoder(ObtainHpackHuffmanTable()));
+    hpack_encoder_ = SpdyMakeUnique<HpackEncoder>(ObtainHpackHuffmanTable());
     if (!compression_enabled()) {
       hpack_encoder_->DisableCompression();
     }
@@ -2895,9 +2896,9 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
 HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
   if (hpack_decoder_.get() == nullptr) {
     if (FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3) {
-      hpack_decoder_.reset(new HpackDecoder3());
+      hpack_decoder_ = SpdyMakeUnique<HpackDecoder3>();
     } else {
-      hpack_decoder_.reset(new HpackDecoder());
+      hpack_decoder_ = SpdyMakeUnique<HpackDecoder>();
     }
   }
   return hpack_decoder_.get();

@@ -230,7 +230,7 @@ SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const char* data)
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyString data)
     : SpdyFrameWithFinIR(stream_id),
-      data_store_(base::MakeUnique<SpdyString>(std::move(data))),
+      data_store_(SpdyMakeUnique<SpdyString>(std::move(data))),
       data_(data_store_->data()),
       data_len_(data_store_->size()),
       padded_(false),
@@ -325,7 +325,7 @@ SpdyFrameType SpdyGoAwayIR::frame_type() const {
 
 SpdyContinuationIR::SpdyContinuationIR(SpdyStreamId stream_id)
     : SpdyFrameWithStreamIdIR(stream_id), end_headers_(false) {
-  encoding_ = base::MakeUnique<SpdyString>();
+  encoding_ = SpdyMakeUnique<SpdyString>();
 }
 
 SpdyContinuationIR::~SpdyContinuationIR() {}

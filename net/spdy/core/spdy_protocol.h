@@ -16,6 +16,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <new>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -27,6 +28,7 @@
 #include "net/spdy/core/spdy_bitmasks.h"
 #include "net/spdy/core/spdy_bug_tracker.h"
 #include "net/spdy/core/spdy_header_block.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 
@@ -491,7 +493,7 @@ class NET_EXPORT_PRIVATE SpdyDataIR
 
   // Deep-copy of data (keep private copy).
   void SetDataDeep(SpdyStringPiece data) {
-    data_store_.reset(new SpdyString(data.data(), data.size()));
+    data_store_ = SpdyMakeUnique<SpdyString>(data.data(), data.size());
     data_ = data_store_->data();
     data_len_ = data.size();
   }
