@@ -234,7 +234,7 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
           base::CreateTaskRunnerWithTraits(
               base::TaskTraits()
                   .MayBlock()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithPriority(base::TaskPriority::USER_VISIBLE)
                   .WithShutdownBehavior(
                       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
 
@@ -1137,7 +1137,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
           base::CreateTaskRunnerWithTraits(
               base::TaskTraits()
                   .MayBlock()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithPriority(base::TaskPriority::USER_VISIBLE)
                   .WithShutdownBehavior(
                       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
   DCHECK(set_protocol);
@@ -1170,7 +1170,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
       content::ContentProtocolHandler::Create(base::CreateTaskRunnerWithTraits(
           base::TaskTraits()
               .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithPriority(base::TaskPriority::USER_VISIBLE)
               .WithShutdownBehavior(
                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
 #endif
