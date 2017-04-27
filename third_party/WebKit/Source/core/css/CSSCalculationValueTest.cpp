@@ -35,7 +35,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
-#include "core/style/StyleInheritedData.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
