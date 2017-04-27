@@ -87,6 +87,10 @@ component("freetype") {
     sources += [ "src/src/base/ftsynth.c" ]
   }
 
+  if (is_mac && !is_component_build) {
+    defines += [ "MAC_RESTRICT_VISIBILITY" ]
+  }
+
   defines += [
     "FT2_BUILD_LIBRARY",
     "DARWIN_NO_CARBON",
