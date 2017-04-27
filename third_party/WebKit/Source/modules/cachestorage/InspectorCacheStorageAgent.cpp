@@ -75,8 +75,8 @@ Response AssertCacheStorage(
   if (!sec_origin->IsPotentiallyTrustworthy())
     return Response::Error(sec_origin->IsPotentiallyTrustworthyErrorMessage());
 
-  std::unique_ptr<WebServiceWorkerCacheStorage> cache = WTF::WrapUnique(
-      Platform::Current()->CacheStorage(WebSecurityOrigin(sec_origin)));
+  std::unique_ptr<WebServiceWorkerCacheStorage> cache =
+      Platform::Current()->CreateCacheStorage(WebSecurityOrigin(sec_origin));
   if (!cache)
     return Response::Error("Could not find cache storage.");
   result = std::move(cache);

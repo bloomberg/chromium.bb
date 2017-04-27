@@ -48,9 +48,8 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(
     : speech_synthesizer_client_(client) {
   web_speech_synthesizer_client_ =
       new WebSpeechSynthesizerClientImpl(this, client);
-  web_speech_synthesizer_ =
-      WTF::WrapUnique(Platform::Current()->CreateSpeechSynthesizer(
-          web_speech_synthesizer_client_));
+  web_speech_synthesizer_ = Platform::Current()->CreateSpeechSynthesizer(
+      web_speech_synthesizer_client_);
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer() {}

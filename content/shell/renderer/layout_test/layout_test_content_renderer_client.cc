@@ -34,6 +34,8 @@
 #include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
+#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -163,7 +165,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
       ->InitializeWebViewWithMocks(render_view->GetWebView());
 }
 
-WebMediaStreamCenter*
+std::unique_ptr<WebMediaStreamCenter>
 LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -171,11 +173,11 @@ LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMediaStreamCenter(client);
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
-WebRTCPeerConnectionHandler*
+std::unique_ptr<WebRTCPeerConnectionHandler>
 LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -183,11 +185,11 @@ LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateWebRTCPeerConnectionHandler(client);
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
-WebMIDIAccessor*
+std::unique_ptr<WebMIDIAccessor>
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   test_runner::WebTestInterfaces* interfaces =
@@ -195,7 +197,8 @@ LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
   return interfaces->CreateMIDIAccessor(client);
 }
 
-WebAudioDevice* LayoutTestContentRendererClient::OverrideCreateAudioDevice(
+std::unique_ptr<WebAudioDevice>
+LayoutTestContentRendererClient::OverrideCreateAudioDevice(
     const blink::WebAudioLatencyHint& latency_hint) {
   const double hw_buffer_size = 128;
   const double hw_sample_rate = 44100;

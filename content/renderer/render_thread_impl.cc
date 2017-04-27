@@ -648,8 +648,6 @@ void RenderThreadImpl::Init(
       kMaxResourceRequestsPerFlushWhenThrottled));
   resource_dispatcher()->set_message_sender(resource_dispatch_throttler_.get());
 
-  media_stream_center_ = nullptr;
-
   blob_message_filter_ = new BlobMessageFilter(GetFileThreadTaskRunner());
   AddFilter(blob_message_filter_.get());
   db_message_filter_ = new DBMessageFilter();
@@ -1984,20 +1982,22 @@ RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
   return layout_test_deps_->RequestCopyOfOutput(routing_id, std::move(request));
 }
 
-blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
+std::unique_ptr<blink::WebMediaStreamCenter>
+RenderThreadImpl::CreateMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
+  std::unique_ptr<blink::WebMediaStreamCenter> media_stream_center;
 #if BUILDFLAG(ENABLE_WEBRTC)
-  if (!media_stream_center_) {
-    media_stream_center_ = GetContentClient()->renderer()
-        ->OverrideCreateWebMediaStreamCenter(client);
-    if (!media_stream_center_) {
-      std::unique_ptr<MediaStreamCenter> media_stream_center(
-          new MediaStreamCenter(client, GetPeerConnectionDependencyFactory()));
-      media_stream_center_ = media_stream_center.release();
+  if (!media_stream_center) {
+    media_stream_center =
+        GetContentClient()->renderer()->OverrideCreateWebMediaStreamCenter(
+            client);
+    if (!media_stream_center) {
+      media_stream_center = base::MakeUnique<MediaStreamCenter>(
+          client, GetPeerConnectionDependencyFactory());
     }
   }
 #endif
-  return media_stream_center_;
+  return media_stream_center;
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)

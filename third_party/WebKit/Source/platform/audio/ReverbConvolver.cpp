@@ -137,9 +137,10 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulse_response,
   // Start up background thread
   // FIXME: would be better to up the thread priority here.  It doesn't need to
   // be real-time, but higher than the default...
-  if (use_background_threads && background_stages_.size() > 0)
-    background_thread_ = WTF::WrapUnique(Platform::Current()->CreateThread(
-        "Reverb convolution background thread"));
+  if (use_background_threads && background_stages_.size() > 0) {
+    background_thread_ = Platform::Current()->CreateThread(
+        "Reverb convolution background thread");
+  }
 }
 
 ReverbConvolver::~ReverbConvolver() {
