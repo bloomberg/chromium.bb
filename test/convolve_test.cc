@@ -106,6 +106,8 @@ void filter_block2d_8_c(const uint8_t *src_ptr, unsigned int src_stride,
       (kInterp_Extend - 1) + output_height + kInterp_Extend;
   unsigned int i, j;
 
+  assert(intermediate_height > 7);
+
   // Size of intermediate_buffer is max_intermediate_height * filter_max_width,
   // where max_intermediate_height = (kInterp_Extend - 1) + filter_max_height
   //                                 + kInterp_Extend
