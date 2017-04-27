@@ -156,8 +156,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     @Override
     public void onShown(Tab shownTab) {
-        if (mTabModelSelector == null) return;
-
         int shownTabId = shownTab.getId();
         Tab previousTab = mTabModelSelector.getTabById(mTabId);
         mTabId = shownTabId;

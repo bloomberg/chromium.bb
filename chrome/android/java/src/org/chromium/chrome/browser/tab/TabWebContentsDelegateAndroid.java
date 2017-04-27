@@ -24,8 +24,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.FullscreenWebContentsActivity;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
@@ -217,14 +215,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void toggleFullscreenModeForTab(boolean enableFullscreen) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FULLSCREEN_ACTIVITY)
-                && mTab.getActivity().supportsFullscreenActivity()) {
-            FullscreenWebContentsActivity.toggleFullscreenMode(enableFullscreen, mTab);
-        } else {
-            if (!VideoPersister.getInstance().shouldDelayFullscreenModeChange(
-                        mTab, enableFullscreen)) {
-                mTab.toggleFullscreenMode(enableFullscreen);
-            }
+        if (!VideoPersister.getInstance().shouldDelayFullscreenModeChange(mTab, enableFullscreen)) {
+            mTab.toggleFullscreenMode(enableFullscreen);
         }
     }
 
