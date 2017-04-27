@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
+#include "chrome/browser/metrics/thread_watcher_android.h"
 #include "base/android/application_status_listener.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/metrics/thread_watcher_android.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace {
 void OnThreadWatcherTask(base::WaitableEvent* event) {
@@ -44,8 +41,7 @@ TEST(ThreadWatcherAndroidTest, ApplicationStatusNotification) {
   // Do not delay the ThreadWatcherList initialization for this test.
   ThreadWatcherList::g_initialize_delay_seconds = 0;
 
-  base::MessageLoopForUI message_loop_for_ui;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop_for_ui);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   std::unique_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
   watchdog_thread_->StartAndWaitForTesting();

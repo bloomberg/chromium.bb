@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
-#include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -20,11 +20,7 @@ namespace attestation {
 
 class AttestationCAClientTest : public ::testing::Test {
  public:
-  AttestationCAClientTest()
-      : io_thread_(content::BrowserThread::IO, &message_loop_),
-        num_invocations_(0),
-        result_(false) {
-  }
+  AttestationCAClientTest() : num_invocations_(0), result_(false) {}
 
   ~AttestationCAClientTest() override {}
 
@@ -66,8 +62,7 @@ class AttestationCAClientTest : public ::testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
 
   // For use with DataCallback.

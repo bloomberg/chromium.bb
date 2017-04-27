@@ -7,7 +7,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/pref_names.h"
@@ -29,16 +29,16 @@ namespace extensions {
 
 class ExternalPolicyLoaderTest : public testing::Test {
  public:
-  ExternalPolicyLoaderTest() : ui_thread_(BrowserThread::UI, &loop_) {
-  }
+  ExternalPolicyLoaderTest()
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   ~ExternalPolicyLoaderTest() override {}
 
  private:
-  // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
-  // checks in ExternalProviderImpl.
-  base::MessageLoopForIO loop_;
-  content::TestBrowserThread ui_thread_;
+  // Needed to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI) checks in
+  // ExternalProviderImpl.
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 class MockExternalPolicyProviderVisitor

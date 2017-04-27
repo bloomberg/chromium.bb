@@ -6,13 +6,13 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,9 +22,7 @@ namespace extensions {
 class StandardManagementPolicyProviderTest : public testing::Test {
  public:
   StandardManagementPolicyProviderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
-        prefs_(message_loop_.task_runner().get()),
+      : prefs_(base::ThreadTaskRunnerHandle::Get()),
         settings_(new ExtensionManagement(prefs()->pref_service(), false)),
         provider_(settings_.get()) {}
 
@@ -45,9 +43,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
     return extension;
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   TestExtensionPrefs prefs_;
   std::unique_ptr<ExtensionManagement> settings_;

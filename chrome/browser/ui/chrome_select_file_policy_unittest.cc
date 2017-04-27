@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -15,7 +14,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -25,8 +24,6 @@
 #else
 #define MAYBE_ExpectAsynchronousListenerCall ExpectAsynchronousListenerCall
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -88,8 +85,7 @@ typedef testing::Test ChromeSelectFilePolicyTest;
 // Tests if SelectFileDialog::SelectFile returns asynchronously with
 // file-selection dialogs disabled by policy.
 TEST_F(ChromeSelectFilePolicyTest, MAYBE_ExpectAsynchronousListenerCall) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThreadBundle test_browser_thread_bundle;
 
   ScopedTestingLocalState local_state(
       TestingBrowserProcess::GetGlobal());

@@ -11,10 +11,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 class FakeExternalProtocolHandlerWorker
     : public shell_integration::DefaultProtocolClientWorker {
@@ -113,11 +111,10 @@ class FakeExternalProtocolHandlerDelegate
 class ExternalProtocolHandlerTest : public testing::Test {
  protected:
   ExternalProtocolHandlerTest()
-      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
-        file_thread_(BrowserThread::FILE) {}
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_FILE_THREAD) {}
 
   void SetUp() override {
-    file_thread_.Start();
     local_state_.reset(new TestingPrefServiceSimple);
     profile_.reset(new TestingProfile());
     chrome::RegisterLocalState(local_state_->registry());
@@ -153,9 +150,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     ASSERT_EQ(should_block, delegate_.has_blocked());
   }
 
-  base::MessageLoopForUI ui_message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   FakeExternalProtocolHandlerDelegate delegate_;
 

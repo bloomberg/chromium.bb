@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -34,6 +33,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -237,9 +237,7 @@ const char kUserProfilePath[] = "user_profile";
 
 class ProxyConfigServiceImplTest : public testing::Test {
  protected:
-  ProxyConfigServiceImplTest()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {}
+  ProxyConfigServiceImplTest() = default;
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -371,7 +369,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID, availability);
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<ProxyConfigServiceImpl> config_service_impl_;
   TestingPrefServiceSimple pref_service_;
@@ -380,8 +378,6 @@ class ProxyConfigServiceImplTest : public testing::Test {
  private:
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {

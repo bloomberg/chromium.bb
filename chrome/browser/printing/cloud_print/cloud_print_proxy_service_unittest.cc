@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,7 +28,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -206,9 +205,7 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
 
 class CloudPrintProxyPolicyTest : public ::testing::Test {
  public:
-  CloudPrintProxyPolicyTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
+  CloudPrintProxyPolicyTest() = default;
 
   bool LaunchBrowser(const base::CommandLine& command_line, Profile* profile) {
     StartupBrowserCreator browser_creator;
@@ -218,8 +215,7 @@ class CloudPrintProxyPolicyTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   TestingProfile profile_;
 };
 

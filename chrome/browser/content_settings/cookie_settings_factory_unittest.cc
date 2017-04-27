@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -17,16 +16,14 @@ namespace {
 class CookieSettingsFactoryTest : public testing::Test {
  public:
   CookieSettingsFactoryTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        cookie_settings_(CookieSettingsFactory::GetForProfile(&profile_).get()),
+      : cookie_settings_(CookieSettingsFactory::GetForProfile(&profile_).get()),
         kBlockedSite("http://ads.thirdparty.com"),
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
         kHttpsSite("https://example.com") {}
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   TestingProfile profile_;
   content_settings::CookieSettings* cookie_settings_;
   const GURL kBlockedSite;

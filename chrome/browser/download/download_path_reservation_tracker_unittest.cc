@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -20,12 +19,11 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "content/public/test/mock_download_item.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using content::DownloadItem;
 using content::MockDownloadItem;
 using testing::AnyNumber;
@@ -69,9 +67,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
  protected:
   base::ScopedTempDir test_download_dir_;
   base::FilePath default_download_path_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
  private:
   void TestReservedPathCallback(base::FilePath* return_path,
@@ -81,10 +77,8 @@ class DownloadPathReservationTrackerTest : public testing::Test {
                                 const base::FilePath& path);
 };
 
-DownloadPathReservationTrackerTest::DownloadPathReservationTrackerTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
-}
+DownloadPathReservationTrackerTest::DownloadPathReservationTrackerTest() =
+    default;
 
 void DownloadPathReservationTrackerTest::SetUp() {
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());

@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -27,13 +26,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/static_cookie_policy.h"
 #include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 using ::testing::_;
 
@@ -49,8 +46,7 @@ bool MatchPrimaryPattern(const ContentSettingsPattern& expected_primary,
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
-  HostContentSettingsMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
-  }
+  HostContentSettingsMapTest() = default;
 
  protected:
   const std::string& GetPrefName(ContentSettingsType type) {
@@ -59,8 +55,7 @@ class HostContentSettingsMapTest : public testing::Test {
         ->pref_name();
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 // Wrapper to TestingProfile to reduce test boilerplates, by keeping a fixed
@@ -1757,4 +1752,3 @@ TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
       invalid_url, invalid_url,
       CONTENT_SETTINGS_TYPE_POPUPS));
 }
-

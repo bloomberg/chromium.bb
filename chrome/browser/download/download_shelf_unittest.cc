@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -16,7 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,17 +53,14 @@ class DownloadShelfTest : public testing::Test {
  private:
   std::unique_ptr<content::MockDownloadItem> GetInProgressMockDownload();
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<content::MockDownloadItem> download_item_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   TestDownloadShelf shelf_;
   std::unique_ptr<TestingProfile> profile_;
 };
 
-DownloadShelfTest::DownloadShelfTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_),
-      profile_(new TestingProfile()) {
+DownloadShelfTest::DownloadShelfTest() : profile_(new TestingProfile()) {
   download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>());
   ON_CALL(*download_item_, GetAutoOpened()).WillByDefault(Return(false));
   ON_CALL(*download_item_, GetMimeType()).WillByDefault(Return("text/plain"));

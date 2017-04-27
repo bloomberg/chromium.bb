@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -15,7 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_params_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,15 +77,12 @@ class ResourcePrefetchCommonTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 };
 
 ResourcePrefetchCommonTest::ResourcePrefetchCommonTest()
-    : loop_(base::MessageLoop::TYPE_DEFAULT),
-      ui_thread_(content::BrowserThread::UI, &loop_),
-      profile_(new TestingProfile()) { }
+    : profile_(new TestingProfile()) {}
 
 TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
   ResourcePrefetchPredictorConfig config;

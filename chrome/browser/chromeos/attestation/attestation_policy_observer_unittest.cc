@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,7 +19,7 @@
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -80,8 +79,7 @@ class FakeDBusData {
 
 class AttestationPolicyObserverTest : public ::testing::Test {
  public:
-  AttestationPolicyObserverTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  AttestationPolicyObserverTest() {
     settings_helper_.ReplaceProvider(kDeviceAttestationEnabled);
     settings_helper_.SetBoolean(kDeviceAttestationEnabled, true);
     policy_client_.SetDMToken("fake_dm_token");
@@ -156,8 +154,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     return serialized;
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedCrosSettingsTestHelper settings_helper_;
   StrictMock<MockCryptohomeClient> cryptohome_client_;
   StrictMock<MockAttestationFlow> attestation_flow_;

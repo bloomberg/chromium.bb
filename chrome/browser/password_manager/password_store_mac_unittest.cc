@@ -27,7 +27,8 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_origin_unittest.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1251,7 +1252,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordGetAll) {
 
 class PasswordStoreMacTest : public testing::Test {
  public:
-  PasswordStoreMacTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+  PasswordStoreMacTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
@@ -1382,8 +1383,7 @@ class PasswordStoreMacTest : public testing::Test {
   PasswordStoreMac* store() { return store_.get(); }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   // Thread that the synchronous methods are run on.
   std::unique_ptr<base::Thread> thread_;
 

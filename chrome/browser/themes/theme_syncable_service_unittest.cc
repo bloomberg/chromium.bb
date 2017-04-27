@@ -28,7 +28,7 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -157,10 +157,7 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
 
 class ThemeSyncableServiceTest : public testing::Test {
  protected:
-  ThemeSyncableServiceTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        fake_theme_service_(NULL) {}
+  ThemeSyncableServiceTest() : fake_theme_service_(NULL) {}
 
   ~ThemeSyncableServiceTest() override {}
 
@@ -233,9 +230,7 @@ class ThemeSyncableServiceTest : public testing::Test {
   }
 
   // Needed for setting up extension service.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

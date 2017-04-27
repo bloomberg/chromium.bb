@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -38,7 +37,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +48,6 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using content::BrowserThread;
 using content::Referrer;
 
 namespace prerender {
@@ -329,8 +327,7 @@ class PrerenderTest : public testing::Test {
   static const int kDefaultRenderViewRouteId = -1;
 
   PrerenderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        prerender_manager_(new UnitTestPrerenderManager(&profile_)),
+      : prerender_manager_(new UnitTestPrerenderManager(&profile_)),
         prerender_link_manager_(
             new PrerenderLinkManager(prerender_manager_.get())),
         last_prerender_id_(0),
@@ -450,8 +447,7 @@ class PrerenderTest : public testing::Test {
 
  private:
   // Needed to pass PrerenderManager's DCHECKs.
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   TestingProfile profile_;
   std::unique_ptr<UnitTestPrerenderManager> prerender_manager_;

@@ -6,14 +6,13 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,12 +32,13 @@ class MockExternalLoader : public ExternalLoader {
 
 class DefaultAppsTest : public testing::Test {
  public:
-  DefaultAppsTest() : ui_thread_(content::BrowserThread::UI, &loop_) {}
+  DefaultAppsTest()
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~DefaultAppsTest() override {}
 
  private:
-  base::MessageLoopForIO loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 #if !defined(OS_CHROMEOS)

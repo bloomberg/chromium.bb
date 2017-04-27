@@ -13,16 +13,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 class WebUISourcesTest : public testing::Test {
  public:
-  WebUISourcesTest()
-      : result_data_size_(0),
-        ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
+  WebUISourcesTest() : result_data_size_(0) {}
 
   TestingProfile* profile() const { return profile_.get(); }
   ThemeSource* theme_source() const { return theme_source_.get(); }
@@ -56,8 +52,7 @@ class WebUISourcesTest : public testing::Test {
 
   content::URLDataSource::GotDataCallback callback_;
 
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ThemeSource> theme_source_;
@@ -82,8 +77,6 @@ TEST_F(WebUISourcesTest, ThemeSourceImages) {
 }
 
 TEST_F(WebUISourcesTest, ThemeSourceCSS) {
-  content::TestBrowserThread io_thread(BrowserThread::IO,
-                                       base::MessageLoop::current());
   // Generating the test data for the NTP CSS would just involve copying the
   // method, or being super brittle and hard-coding the result (requiring
   // an update to the unittest every time the CSS template changes), so we

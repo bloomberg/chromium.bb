@@ -20,7 +20,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +28,6 @@ namespace {
 
 using base::Bind;
 using base::Time;
-using content::BrowserThread;
 using history::AndroidStatement;
 using history::HistoryAndBookmarkRow;
 using history::SearchRow;
@@ -41,11 +40,7 @@ using history::SearchRow;
 class AndroidHistoryProviderServiceTest : public testing::Test {
  public:
   AndroidHistoryProviderServiceTest()
-      : profile_manager_(
-          TestingBrowserProcess::GetGlobal()),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
-  }
+      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~AndroidHistoryProviderServiceTest() override {}
 
  protected:
@@ -73,9 +68,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
 
  protected:
   TestingProfileManager profile_manager_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<AndroidHistoryProviderService> service_;
   base::CancelableTaskTracker cancelable_tracker_;
   TestingProfile* testing_profile_;

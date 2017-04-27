@@ -6,14 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -39,8 +38,7 @@ std::unique_ptr<KeyedService> BuildOverrideRegistrar(
 
 class ExtensionWebUITest : public testing::Test {
  public:
-  ExtensionWebUITest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+  ExtensionWebUITest() = default;
 
  protected:
   void SetUp() override {
@@ -61,8 +59,7 @@ class ExtensionWebUITest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

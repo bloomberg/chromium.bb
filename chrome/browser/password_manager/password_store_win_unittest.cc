@@ -31,7 +31,8 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/webdata/common/web_database_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/wincrypt_shim.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,8 +80,8 @@ class MockWebDataServiceConsumer : public WebDataServiceConsumer {
 class PasswordStoreWinTest : public testing::Test {
  protected:
   PasswordStoreWinTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {}
+      : test_browser_thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_DB_THREAD) {}
 
   bool CreateIE7PasswordInfo(const std::wstring& url,
                              const base::Time& created,
@@ -128,7 +129,6 @@ class PasswordStoreWinTest : public testing::Test {
   }
 
   void SetUp() override {
-    ASSERT_TRUE(db_thread_.Start());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     profile_.reset(new TestingProfile());
@@ -163,10 +163,6 @@ class PasswordStoreWinTest : public testing::Test {
         BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::RunLoop().Run();
-    db_thread_.Stop();
   }
 
   base::FilePath test_login_db_file_path() const {
@@ -180,10 +176,7 @@ class PasswordStoreWinTest : public testing::Test {
         base::MakeUnique<LoginDatabase>(test_login_db_file_path()), wds_.get());
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  // PasswordStore, WDS schedule work on this thread.
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;

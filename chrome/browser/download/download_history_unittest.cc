@@ -21,7 +21,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,8 +196,7 @@ class DownloadHistoryTest : public testing::Test {
   typedef base::Callback<void(content::MockDownloadItem*)> DownloadItemCallback;
 
   DownloadHistoryTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        manager_(new content::MockDownloadManager()),
+      : manager_(new content::MockDownloadManager()),
         history_(NULL),
         manager_observer_(NULL),
         download_created_index_(0) {}
@@ -484,8 +483,7 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_EQ(expected_value, download_history_->WasRestoredFromHistory(item));
   }
 
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
   FakeHistoryAdapter* history_;
