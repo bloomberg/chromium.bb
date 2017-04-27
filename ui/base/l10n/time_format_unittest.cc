@@ -20,57 +20,62 @@ using base::TimeDelta;
 
 class TimeFormatTest : public ::testing::Test {
  public:
-  TimeFormatTest() :
-      delta_0s_(TimeDelta::FromSeconds(0)),
-      delta_1ms_(TimeDelta::FromMilliseconds(1)),
-      delta_499ms_(TimeDelta::FromMilliseconds(499)),
-      delta_500ms_(TimeDelta::FromMilliseconds(500)),
-      delta_999ms_(TimeDelta::FromMilliseconds(999)),
-      delta_1s_(TimeDelta::FromSeconds(1)),
-      delta_1s499ms_(delta_1s_ + delta_499ms_),
-      delta_1s500ms_(delta_1s_ + delta_500ms_),
-      delta_2s_(TimeDelta::FromSeconds(2)),
-      delta_29s_(TimeDelta::FromSeconds(29)),
-      delta_30s_(TimeDelta::FromSeconds(30)),
-      delta_59s_(TimeDelta::FromSeconds(59)),
-      delta_59s499ms_(delta_59s_ + delta_499ms_),
-      delta_59s500ms_(delta_59s_ + delta_500ms_),
-      delta_1m_(TimeDelta::FromMinutes(1)),
-      delta_1m2s_(delta_1m_ + delta_2s_),
-      delta_1m29s999ms_(delta_1m_ + delta_29s_ + delta_999ms_),
-      delta_1m30s_(delta_1m_ + delta_30s_),
-      delta_2m_(TimeDelta::FromMinutes(2)),
-      delta_2m1s_(delta_2m_ + delta_1s_),
-      delta_29m_(TimeDelta::FromMinutes(29)),
-      delta_30m_(TimeDelta::FromMinutes(30)),
-      delta_59m_(TimeDelta::FromMinutes(59)),
-      delta_59m29s999ms_(delta_59m_ + delta_29s_ + delta_999ms_),
-      delta_59m30s_(delta_59m_ + delta_30s_),
-      delta_59m59s499ms_(delta_59m_ + delta_59s_ + delta_499ms_),
-      delta_59m59s500ms_(delta_59m_ + delta_59s_ + delta_500ms_),
-      delta_1h_(TimeDelta::FromHours(1)),
-      delta_1h2m_(delta_1h_ + delta_2m_),
-      delta_1h29m59s999ms_(delta_1h_ + delta_29m_ + delta_59s_ + delta_999ms_),
-      delta_1h30m_(delta_1h_ + delta_30m_),
-      delta_2h_(TimeDelta::FromHours(2)),
-      delta_2h1m_(delta_2h_ + delta_1m_),
-      delta_11h_(TimeDelta::FromHours(11)),
-      delta_12h_(TimeDelta::FromHours(12)),
-      delta_23h_(TimeDelta::FromHours(23)),
-      delta_23h29m59s999ms_(delta_23h_ + delta_29m_ + delta_59s_ +
-                            delta_999ms_),
-      delta_23h30m_(delta_23h_ + delta_30m_),
-      delta_23h59m29s999ms_(delta_23h_ + delta_59m_ + delta_29s_ +
-                            delta_999ms_),
-      delta_23h59m30s_(delta_23h_ + delta_59m_ + delta_30s_),
-      delta_1d_(TimeDelta::FromDays(1)),
-      delta_1d2h_(delta_1d_ + delta_2h_),
-      delta_1d11h59m59s999ms_(delta_1d_ + delta_11h_ + delta_59m_ + delta_29s_ +
-                                  delta_999ms_),
-      delta_1d12h_(delta_1d_ + delta_12h_),
-      delta_2d_(TimeDelta::FromDays(2)),
-      delta_2d1h_(delta_2d_ + delta_1h_)
-  {}
+  TimeFormatTest()
+      : delta_0s_(TimeDelta::FromSeconds(0)),
+        delta_1ms_(TimeDelta::FromMilliseconds(1)),
+        delta_499ms_(TimeDelta::FromMilliseconds(499)),
+        delta_500ms_(TimeDelta::FromMilliseconds(500)),
+        delta_999ms_(TimeDelta::FromMilliseconds(999)),
+        delta_1s_(TimeDelta::FromSeconds(1)),
+        delta_1s499ms_(delta_1s_ + delta_499ms_),
+        delta_1s500ms_(delta_1s_ + delta_500ms_),
+        delta_2s_(TimeDelta::FromSeconds(2)),
+        delta_29s_(TimeDelta::FromSeconds(29)),
+        delta_30s_(TimeDelta::FromSeconds(30)),
+        delta_59s_(TimeDelta::FromSeconds(59)),
+        delta_59s499ms_(delta_59s_ + delta_499ms_),
+        delta_59s500ms_(delta_59s_ + delta_500ms_),
+        delta_1m_(TimeDelta::FromMinutes(1)),
+        delta_1m2s_(delta_1m_ + delta_2s_),
+        delta_1m29s999ms_(delta_1m_ + delta_29s_ + delta_999ms_),
+        delta_1m30s_(delta_1m_ + delta_30s_),
+        delta_2m_(TimeDelta::FromMinutes(2)),
+        delta_2m1s_(delta_2m_ + delta_1s_),
+        delta_29m_(TimeDelta::FromMinutes(29)),
+        delta_30m_(TimeDelta::FromMinutes(30)),
+        delta_59m_(TimeDelta::FromMinutes(59)),
+        delta_59m29s999ms_(delta_59m_ + delta_29s_ + delta_999ms_),
+        delta_59m30s_(delta_59m_ + delta_30s_),
+        delta_59m59s499ms_(delta_59m_ + delta_59s_ + delta_499ms_),
+        delta_59m59s500ms_(delta_59m_ + delta_59s_ + delta_500ms_),
+        delta_1h_(TimeDelta::FromHours(1)),
+        delta_1h2m_(delta_1h_ + delta_2m_),
+        delta_1h29m59s999ms_(delta_1h_ + delta_29m_ + delta_59s_ +
+                             delta_999ms_),
+        delta_1h30m_(delta_1h_ + delta_30m_),
+        delta_2h_(TimeDelta::FromHours(2)),
+        delta_2h1m_(delta_2h_ + delta_1m_),
+        delta_11h_(TimeDelta::FromHours(11)),
+        delta_12h_(TimeDelta::FromHours(12)),
+        delta_23h_(TimeDelta::FromHours(23)),
+        delta_23h29m59s999ms_(delta_23h_ + delta_29m_ + delta_59s_ +
+                              delta_999ms_),
+        delta_23h30m_(delta_23h_ + delta_30m_),
+        delta_23h59m29s999ms_(delta_23h_ + delta_59m_ + delta_29s_ +
+                              delta_999ms_),
+        delta_23h59m30s_(delta_23h_ + delta_59m_ + delta_30s_),
+        delta_1d_(TimeDelta::FromDays(1)),
+        delta_1d2h_(delta_1d_ + delta_2h_),
+        delta_1d11h59m59s999ms_(
+            delta_1d_ + delta_11h_ + delta_59m_ + delta_29s_ + delta_999ms_),
+        delta_1d12h_(delta_1d_ + delta_12h_),
+        delta_2d_(TimeDelta::FromDays(2)),
+        delta_2d1h_(delta_2d_ + delta_1h_),
+        delta_1y_(delta_1d_ * 365),
+        delta_2y_(delta_1y_ * 2),
+        delta_1mo_(delta_1y_ / 12),
+        delta_2mo_(delta_1mo_ * 2),
+        delta_1mo10d_(delta_1mo_ + delta_1d_ * 10) {}
 
  protected:
   void TestStrings() {
@@ -91,6 +96,18 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, delta_1h_));
     EXPECT_EQ(ASCIIToUTF16("1 day"), TimeFormat::Simple(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, delta_1d_));
+    EXPECT_EQ(ASCIIToUTF16("1 month"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_DURATION,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 month"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_DURATION,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo10d_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 year"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_DURATION,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1y_, true));
     EXPECT_EQ(ASCIIToUTF16("1 sec left"), TimeFormat::Simple(
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_SHORT, delta_1s_));
     EXPECT_EQ(ASCIIToUTF16("1 min left"), TimeFormat::Simple(
@@ -107,6 +124,18 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_LONG, delta_1h_));
     EXPECT_EQ(ASCIIToUTF16("1 day left"), TimeFormat::Simple(
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_LONG, delta_1d_));
+    EXPECT_EQ(ASCIIToUTF16("1 month left"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_REMAINING,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 month left"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_REMAINING,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo10d_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 year left"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_REMAINING,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1y_, true));
     EXPECT_EQ(ASCIIToUTF16("1 sec ago"), TimeFormat::Simple(
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_1s_));
     EXPECT_EQ(ASCIIToUTF16("1 min ago"), TimeFormat::Simple(
@@ -115,6 +144,18 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_1h_));
     EXPECT_EQ(ASCIIToUTF16("1 day ago"), TimeFormat::Simple(
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_1d_));
+    EXPECT_EQ(ASCIIToUTF16("1 month ago"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_ELAPSED,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 month ago"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_ELAPSED,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1mo10d_, true));
+    EXPECT_EQ(ASCIIToUTF16("1 year ago"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_ELAPSED,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_1y_, true));
     EXPECT_EQ(ASCIIToUTF16("1 second ago"),
               TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
                                  TimeFormat::LENGTH_LONG, delta_1s_));
@@ -145,6 +186,20 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, delta_2h_));
     EXPECT_EQ(ASCIIToUTF16("2 days"), TimeFormat::Simple(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, delta_2d_));
+    EXPECT_EQ(ASCIIToUTF16("30 days"),
+              TimeFormat::Simple(TimeFormat::FORMAT_DURATION,
+                                 TimeFormat::LENGTH_LONG, delta_1mo_));
+    EXPECT_EQ(ASCIIToUTF16("365 days"),
+              TimeFormat::Simple(TimeFormat::FORMAT_DURATION,
+                                 TimeFormat::LENGTH_LONG, delta_1y_));
+    EXPECT_EQ(ASCIIToUTF16("2 months"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_DURATION,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("2 years"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_DURATION,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2y_, true));
     EXPECT_EQ(ASCIIToUTF16("2 secs left"), TimeFormat::Simple(
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_SHORT, delta_2s_));
     EXPECT_EQ(ASCIIToUTF16("2 mins left"), TimeFormat::Simple(
@@ -161,6 +216,20 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_LONG, delta_2h_));
     EXPECT_EQ(ASCIIToUTF16("2 days left"), TimeFormat::Simple(
         TimeFormat::FORMAT_REMAINING, TimeFormat::LENGTH_LONG, delta_2d_));
+    EXPECT_EQ(ASCIIToUTF16("30 days left"),
+              TimeFormat::Simple(TimeFormat::FORMAT_REMAINING,
+                                 TimeFormat::LENGTH_LONG, delta_1mo_));
+    EXPECT_EQ(ASCIIToUTF16("365 days left"),
+              TimeFormat::Simple(TimeFormat::FORMAT_REMAINING,
+                                 TimeFormat::LENGTH_LONG, delta_1y_));
+    EXPECT_EQ(ASCIIToUTF16("2 months left"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_REMAINING,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("2 years left"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_REMAINING,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2y_, true));
     EXPECT_EQ(ASCIIToUTF16("2 secs ago"), TimeFormat::Simple(
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_2s_));
     EXPECT_EQ(ASCIIToUTF16("2 mins ago"), TimeFormat::Simple(
@@ -181,6 +250,20 @@ class TimeFormatTest : public ::testing::Test {
     EXPECT_EQ(ASCIIToUTF16("2 days ago"),
               TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
                                  TimeFormat::LENGTH_SHORT, delta_2d_));
+    EXPECT_EQ(ASCIIToUTF16("30 days ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1mo_));
+    EXPECT_EQ(ASCIIToUTF16("365 days ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1y_));
+    EXPECT_EQ(ASCIIToUTF16("2 months ago"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_ELAPSED,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2mo_, true));
+    EXPECT_EQ(ASCIIToUTF16("2 years ago"),
+              TimeFormat::SimpleWithMonthAndYear(TimeFormat::FORMAT_ELAPSED,
+                                                 TimeFormat::LENGTH_LONG,
+                                                 delta_2y_, true));
 
     // Test English strings (detailed, singular and plural).
     EXPECT_EQ(ASCIIToUTF16("1 minute and 2 seconds"), TimeFormat::Detailed(
@@ -243,6 +326,11 @@ class TimeFormatTest : public ::testing::Test {
   TimeDelta delta_1d12h_;
   TimeDelta delta_2d_;
   TimeDelta delta_2d1h_;
+  TimeDelta delta_1y_;
+  TimeDelta delta_2y_;
+  TimeDelta delta_1mo_;
+  TimeDelta delta_2mo_;
+  TimeDelta delta_1mo10d_;
 };
 
 TEST_F(TimeFormatTest, SimpleAndDetailedRounding) {

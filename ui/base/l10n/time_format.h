@@ -32,12 +32,26 @@ class UI_BASE_EXPORT TimeFormat {
     LENGTH_COUNT   // Enum size counter, not a length.  Must be last.
   };
 
-  // Return a localized string of approximate time duration, formatted as a
-  // single number, e.g. in English "2 hours ago".  Currently, all combinations
-  // of format and length are implemented.
+  // Equivalent to SimpleWithMonthAndYear(format, length, delta, false);
   static base::string16 Simple(Format format,
                                Length length,
                                const base::TimeDelta& delta);
+  // Return a localized string of approximate time duration, formatted as a
+  // single number, e.g. in English "2 hours ago".  Currently, all combinations
+  // of format and length are implemented.
+  // If |use_month_and_year| is false. biggest unit is the day. If it is true,
+  // "month" and "year" are also used.
+  static base::string16 SimpleWithMonthAndYear(Format format,
+                                               Length length,
+                                               const base::TimeDelta& delta,
+                                               bool use_month_and_year);
+
+  // Equivalent to
+  // DetailedWithMonthAndYear(format, length, cutoff, delta, false);
+  static base::string16 Detailed(Format format,
+                                 Length length,
+                                 int cutoff,
+                                 const base::TimeDelta& delta);
 
   // Return a localized string of more precise time duration, either formatted
   // as a single value or as two values: for a time delta of e.g. 2h19m either
@@ -58,6 +72,13 @@ class UI_BASE_EXPORT TimeFormat {
   // |cutoff| (e.g. 5% for a |cutoff| of 10) and a second unit is only used when
   // necessary to achieve the precision guarantee.
   //
+  // If |use_month_and_year| is true, also display longer time in number of
+  // month and year. A year is defined as 365 days. A month is defined as a
+  // twelfth of the year. Due to the length of these time, and the approximate
+  // definition, no cutoff is allowed with these values and showing two values
+  // is not supported (1 month 2 days is ambiguous due to the definition of a
+  // month).
+  //
   // Currently, the only combination of format and length that is implemented is
   // (FORMAT_DURATION, LENGTH_LONG), but it's easy to add others if required.
   //
@@ -67,10 +88,11 @@ class UI_BASE_EXPORT TimeFormat {
   // units] and are concatenated after having been formatted individually.  The
   // separator between first unit and second unit (a blank in English) is
   // included in IDS_TIME_*_1ST.
-  static base::string16 Detailed(Format format,
-                                 Length length,
-                                 int cutoff,
-                                 const base::TimeDelta& delta);
+  static base::string16 DetailedWithMonthAndYear(Format format,
+                                                 Length length,
+                                                 int cutoff,
+                                                 const base::TimeDelta& delta,
+                                                 bool use_month_and_year);
 
   // For displaying a relative time in the past.  This method returns either
   // "Today", "Yesterday", or an empty string if it's older than that.  Returns
