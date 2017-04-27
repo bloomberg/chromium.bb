@@ -128,7 +128,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
   rare_non_inherited_data_.Access()->grid_item_.Init();
   rare_non_inherited_data_.Access()->scroll_snap_.Init();
   rare_inherited_data_.Init();
-  style_inherited_data_.Init();
+  inherited_data_.Init();
   svg_style_.Init();
 }
 
@@ -139,7 +139,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       visual_data_(o.visual_data_),
       rare_non_inherited_data_(o.rare_non_inherited_data_),
       rare_inherited_data_(o.rare_inherited_data_),
-      style_inherited_data_(o.style_inherited_data_),
+      inherited_data_(o.inherited_data_),
       svg_style_(o.svg_style_) {}
 
 static StyleRecalcChange DiffPseudoStyles(const ComputedStyle& old_style,
@@ -322,7 +322,7 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
   } else {
     rare_inherited_data_ = inherit_parent.rare_inherited_data_;
   }
-  style_inherited_data_ = inherit_parent.style_inherited_data_;
+  inherited_data_ = inherit_parent.inherited_data_;
   if (svg_style_ != inherit_parent.svg_style_)
     svg_style_.Access()->InheritFrom(inherit_parent.svg_style_.Get());
 }
@@ -460,7 +460,7 @@ bool ComputedStyle::IndependentInheritedEqual(
 bool ComputedStyle::NonIndependentInheritedEqual(
     const ComputedStyle& other) const {
   return ComputedStyleBase::NonIndependentInheritedEqual(other) &&
-         style_inherited_data_ == other.style_inherited_data_ &&
+         inherited_data_ == other.inherited_data_ &&
          svg_style_->InheritedEqual(*other.svg_style_) &&
          rare_inherited_data_ == other.rare_inherited_data_;
 }
@@ -486,7 +486,7 @@ bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
   // This is a fast check that only looks if the data structures are shared.
   // TODO(sashab): Should ComputedStyleBase have an inheritedDataShared method?
   return ComputedStyleBase::InheritedEqual(other) &&
-         style_inherited_data_.Get() == other.style_inherited_data_.Get() &&
+         inherited_data_.Get() == other.inherited_data_.Get() &&
          svg_style_.Get() == other.svg_style_.Get() &&
          rare_inherited_data_.Get() == other.rare_inherited_data_.Get();
 }
@@ -751,22 +751,21 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
       return true;
   }
 
-  if (style_inherited_data_->text_autosizing_multiplier !=
-      other.style_inherited_data_->text_autosizing_multiplier)
+  if (inherited_data_->text_autosizing_multiplier_ !=
+      other.inherited_data_->text_autosizing_multiplier_)
     return true;
 
-  if (style_inherited_data_->font.LoadingCustomFonts() !=
-      other.style_inherited_data_->font.LoadingCustomFonts())
+  if (inherited_data_->font_.LoadingCustomFonts() !=
+      other.inherited_data_->font_.LoadingCustomFonts())
     return true;
 
-  if (style_inherited_data_.Get() != other.style_inherited_data_.Get()) {
-    if (style_inherited_data_->line_height !=
-            other.style_inherited_data_->line_height ||
-        style_inherited_data_->font != other.style_inherited_data_->font ||
-        style_inherited_data_->horizontal_border_spacing !=
-            other.style_inherited_data_->horizontal_border_spacing ||
-        style_inherited_data_->vertical_border_spacing !=
-            other.style_inherited_data_->vertical_border_spacing)
+  if (inherited_data_.Get() != other.inherited_data_.Get()) {
+    if (inherited_data_->line_height_ != other.inherited_data_->line_height_ ||
+        inherited_data_->font_ != other.inherited_data_->font_ ||
+        inherited_data_->horizontal_border_spacing_ !=
+            other.inherited_data_->horizontal_border_spacing_ ||
+        inherited_data_->vertical_border_spacing_ !=
+            other.inherited_data_->vertical_border_spacing_)
       return true;
   }
 
@@ -1049,9 +1048,9 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetNeedsRecomputeOverflow();
 
   if (!diff.NeedsFullPaintInvalidation()) {
-    if (style_inherited_data_->color != other.style_inherited_data_->color ||
-        style_inherited_data_->visited_link_color !=
-            other.style_inherited_data_->visited_link_color ||
+    if (inherited_data_->color_ != other.inherited_data_->color_ ||
+        inherited_data_->visited_link_color_ !=
+            other.inherited_data_->visited_link_color_ ||
         HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
         visual_data_->text_decoration != other.visual_data_->text_decoration) {
       diff.SetTextDecorationOrColorChanged();
@@ -1427,29 +1426,29 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
 }
 
 Color ComputedStyle::GetColor() const {
-  return style_inherited_data_->color;
+  return inherited_data_->color_;
 }
 Color ComputedStyle::VisitedLinkColor() const {
-  return style_inherited_data_->visited_link_color;
+  return inherited_data_->visited_link_color_;
 }
 void ComputedStyle::SetColor(const Color& v) {
-  SET_VAR(style_inherited_data_, color, v);
+  SET_VAR(inherited_data_, color_, v);
 }
 void ComputedStyle::SetVisitedLinkColor(const Color& v) {
-  SET_VAR(style_inherited_data_, visited_link_color, v);
+  SET_VAR(inherited_data_, visited_link_color_, v);
 }
 
 short ComputedStyle::HorizontalBorderSpacing() const {
-  return style_inherited_data_->horizontal_border_spacing;
+  return inherited_data_->horizontal_border_spacing_;
 }
 short ComputedStyle::VerticalBorderSpacing() const {
-  return style_inherited_data_->vertical_border_spacing;
+  return inherited_data_->vertical_border_spacing_;
 }
 void ComputedStyle::SetHorizontalBorderSpacing(short v) {
-  SET_VAR(style_inherited_data_, horizontal_border_spacing, v);
+  SET_VAR(inherited_data_, horizontal_border_spacing_, v);
 }
 void ComputedStyle::SetVerticalBorderSpacing(short v) {
-  SET_VAR(style_inherited_data_, vertical_border_spacing, v);
+  SET_VAR(inherited_data_, vertical_border_spacing_, v);
 }
 
 FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
@@ -1673,10 +1672,10 @@ CSSTransitionData& ComputedStyle::AccessTransitions() {
 }
 
 const Font& ComputedStyle::GetFont() const {
-  return style_inherited_data_->font;
+  return inherited_data_->font_;
 }
 const FontDescription& ComputedStyle::GetFontDescription() const {
-  return style_inherited_data_->font.GetFontDescription();
+  return inherited_data_->font_.GetFontDescription();
 }
 float ComputedStyle::SpecifiedFontSize() const {
   return GetFontDescription().SpecifiedSize();
@@ -1870,15 +1869,15 @@ float ComputedStyle::LetterSpacing() const {
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
-  if (style_inherited_data_->font.GetFontDescription() != v) {
-    style_inherited_data_.Access()->font = Font(v);
+  if (inherited_data_->font_.GetFontDescription() != v) {
+    inherited_data_.Access()->font_ = Font(v);
     return true;
   }
   return false;
 }
 
 void ComputedStyle::SetFont(const Font& font) {
-  style_inherited_data_.Access()->font = font;
+  inherited_data_.Access()->font_ = font;
 }
 
 bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
@@ -1891,10 +1890,10 @@ bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
 }
 
 const Length& ComputedStyle::SpecifiedLineHeight() const {
-  return style_inherited_data_->line_height;
+  return inherited_data_->line_height_;
 }
 Length ComputedStyle::LineHeight() const {
-  const Length& lh = style_inherited_data_->line_height;
+  const Length& lh = inherited_data_->line_height_;
   // Unlike getFontDescription().computedSize() and hence fontSize(), this is
   // recalculated on demand as we only store the specified line height.
   // FIXME: Should consider scaling the fixed part of any calc expressions
@@ -1910,7 +1909,7 @@ Length ComputedStyle::LineHeight() const {
 }
 
 void ComputedStyle::SetLineHeight(const Length& specified_line_height) {
-  SET_VAR(style_inherited_data_, line_height, specified_line_height);
+  SET_VAR(inherited_data_, line_height_, specified_line_height);
 }
 
 int ComputedStyle::ComputedLineHeight() const {
@@ -1958,7 +1957,7 @@ void ComputedStyle::SetLetterSpacing(float letter_spacing) {
 }
 
 void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
-  SET_VAR(style_inherited_data_, text_autosizing_multiplier, multiplier);
+  SET_VAR(inherited_data_, text_autosizing_multiplier_, multiplier);
 
   float size = SpecifiedFontSize();
 

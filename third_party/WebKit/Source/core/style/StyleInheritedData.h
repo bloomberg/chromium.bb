@@ -50,17 +50,17 @@ class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
   bool operator==(const StyleInheritedData&) const;
   bool operator!=(const StyleInheritedData& o) const { return !(*this == o); }
 
-  short horizontal_border_spacing;
-  short vertical_border_spacing;
+  short horizontal_border_spacing_;
+  short vertical_border_spacing_;
 
   // could be packed in a short but doesn't
   // make a difference currently because of padding
-  Length line_height;
+  Length line_height_;
 
-  Font font;
-  Color color;
-  Color visited_link_color;
-  float text_autosizing_multiplier;
+  Font font_;
+  Color color_;
+  Color visited_link_color_;
+  float text_autosizing_multiplier_;
 
  private:
   StyleInheritedData();
