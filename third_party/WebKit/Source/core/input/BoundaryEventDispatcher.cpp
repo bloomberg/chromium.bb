@@ -6,18 +6,15 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
+#include "core/input/EventHandlingUtil.h"
 
 namespace blink {
 
 namespace {
 
-bool IsInDocument(EventTarget* target) {
-  return target && target->ToNode() && target->ToNode()->isConnected();
-}
-
 void BuildAncestorChain(EventTarget* target,
                         HeapVector<Member<Node>, 20>* ancestors) {
-  if (!IsInDocument(target))
+  if (!EventHandlingUtil::IsInDocument(target))
     return;
   Node* target_node = target->ToNode();
   DCHECK(target_node);
@@ -65,7 +62,7 @@ void BoundaryEventDispatcher::SendBoundaryEvents(EventTarget* exited_target,
     return;
 
   // Dispatch out event
-  if (IsInDocument(exited_target))
+  if (EventHandlingUtil::IsInDocument(exited_target))
     DispatchOut(exited_target, entered_target);
 
   // Create lists of all exited/entered ancestors, locate the common ancestor
@@ -115,7 +112,7 @@ void BoundaryEventDispatcher::SendBoundaryEvents(EventTarget* exited_target,
                   !exited_node_has_capturing_ancestor);
 
   // Dispatch over event
-  if (IsInDocument(entered_target))
+  if (EventHandlingUtil::IsInDocument(entered_target))
     DispatchOver(entered_target, exited_target);
 
   // Defer locating capturing enter listener until /after/ dispatching the leave

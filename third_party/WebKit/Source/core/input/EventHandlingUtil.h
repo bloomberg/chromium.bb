@@ -31,6 +31,8 @@ WebInputEventResult ToWebInputEventResult(DispatchEventResult);
 PaintLayer* LayerForNode(Node*);
 ScrollableArea* AssociatedScrollableArea(const PaintLayer*);
 
+bool IsInDocument(EventTarget*);
+
 ContainerNode* ParentForClickEvent(const Node&);
 
 LayoutPoint ContentPointFromRootFrame(LocalFrame*,
