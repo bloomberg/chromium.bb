@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -97,9 +97,13 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
   }
 
  protected:
+  GeolocationWifiDataProviderLinuxTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   // WifiDataProvider requires a task runner to be present. The |message_loop_|
   // is defined here, as it should outlive |wifi_provider_linux_|.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_network_manager_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_access_point_proxy_;

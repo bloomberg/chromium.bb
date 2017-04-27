@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/base/mock_device_client.h"
 #include "device/hid/mock_hid_service.h"
@@ -65,10 +66,13 @@ class TestResponseCallback {
 
 class U2fRequestTest : public testing::Test {
  public:
-  U2fRequestTest() : io_thread_(base::TestIOThread::kAutoStart) {}
+  U2fRequestTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        io_thread_(base::TestIOThread::kAutoStart) {}
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::TestIOThread io_thread_;
   device::MockDeviceClient device_client_;
 };
