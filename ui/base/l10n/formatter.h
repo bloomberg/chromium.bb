@@ -23,7 +23,7 @@ namespace ui {
 struct Pluralities;
 
 // Formatter for a (format, length) combination.  May either be instantiated
-// with four parameters for use in TimeFormat::Simple() or with ten parameters
+// with six parameters for use in TimeFormat::Simple() or with twelve parameters
 // for use in TimeFormat::Detailed().
 class Formatter {
  public:
@@ -32,6 +32,8 @@ class Formatter {
     UNIT_MIN,
     UNIT_HOUR,
     UNIT_DAY,
+    UNIT_MONTH,
+    UNIT_YEAR,
     UNIT_COUNT  // Enum size counter, not a unit.  Must be last.
   };
   enum TwoUnits {
@@ -44,12 +46,16 @@ class Formatter {
   Formatter(const Pluralities& sec_pluralities,
             const Pluralities& min_pluralities,
             const Pluralities& hour_pluralities,
-            const Pluralities& day_pluralities);
+            const Pluralities& day_pluralities,
+            const Pluralities& month_pluralities,
+            const Pluralities& year_pluralities);
 
   Formatter(const Pluralities& sec_pluralities,
             const Pluralities& min_pluralities,
             const Pluralities& hour_pluralities,
             const Pluralities& day_pluralities,
+            const Pluralities& month_pluralities,
+            const Pluralities& year_pluralities,
             const Pluralities& min_sec_pluralities1,
             const Pluralities& min_sec_pluralities2,
             const Pluralities& hour_min_pluralities1,

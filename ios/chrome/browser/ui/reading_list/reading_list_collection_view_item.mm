@@ -437,9 +437,9 @@ const CGFloat kInfoTextTransparency = 0.38;
     // "just now" string.
     text = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
   } else {
-    text = base::SysUTF16ToNSString(ui::TimeFormat::Simple(
+    text = base::SysUTF16ToNSString(ui::TimeFormat::SimpleWithMonthAndYear(
         ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
-        base::TimeDelta::FromMicroseconds(elapsed)));
+        base::TimeDelta::FromMicroseconds(elapsed), true));
   }
 
   [_distillationDateLabel setText:text];
