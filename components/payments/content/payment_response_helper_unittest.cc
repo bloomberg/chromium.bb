@@ -16,95 +16,18 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
-#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/autofill_payment_instrument.h"
-#include "components/payments/core/payment_request_delegate.h"
+#include "components/payments/core/test_payment_request_delegate.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
 
-namespace {
-
-class FakeAddressNormalizer : public AddressNormalizer {
- public:
-  FakeAddressNormalizer() {}
-
-  void LoadRulesForRegion(const std::string& region_code) override {}
-
-  bool AreRulesLoadedForRegion(const std::string& region_code) override {
-    return true;
-  }
-
-  void StartAddressNormalization(
-      const autofill::AutofillProfile& profile,
-      const std::string& region_code,
-      int timeout_seconds,
-      AddressNormalizer::Delegate* requester) override {
-    requester->OnAddressNormalized(profile);
-  }
-
-  void OnAddressValidationRulesLoaded(const std::string& region_code,
-                                      bool success) override {}
-};
-
-class FakePaymentRequestDelegate : public PaymentRequestDelegate {
- public:
-  FakePaymentRequestDelegate(
-      autofill::PersonalDataManager* personal_data_manager)
-      : personal_data_manager_(personal_data_manager),
-        locale_("en-US"),
-        last_committed_url_("https://shop.com") {}
-
-  void ShowDialog(PaymentRequest* request) override {}
-
-  void CloseDialog() override {}
-
-  void ShowErrorMessage() override {}
-
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return personal_data_manager_;
-  }
-
-  const std::string& GetApplicationLocale() const override { return locale_; }
-
-  bool IsIncognito() const override { return false; }
-
-  bool IsSslCertificateValid() override { return true; }
-
-  const GURL& GetLastCommittedURL() const override {
-    return last_committed_url_;
-  }
-
-  void DoFullCardRequest(
-      const autofill::CreditCard& credit_card,
-      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
-          result_delegate) override {
-    result_delegate->OnFullCardRequestSucceeded(credit_card,
-                                                base::ASCIIToUTF16("123"));
-  }
-
-  AddressNormalizer* GetAddressNormalizer() override {
-    return &address_normalizer_;
-  }
-
-  autofill::RegionDataLoader* GetRegionDataLoader() override { return nullptr; }
-
- private:
-  autofill::PersonalDataManager* personal_data_manager_;
-  std::string locale_;
-  const GURL last_committed_url_;
-  FakeAddressNormalizer address_normalizer_;
-  DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
-};
-
-}  // namespace
-
 class PaymentResponseHelperTest : public testing::Test,
                                   public PaymentResponseHelper::Delegate {
  protected:
   PaymentResponseHelperTest()
-      : payment_request_delegate_(&test_personal_data_manager_),
+      : test_payment_request_delegate_(&test_personal_data_manager_),
         address_(autofill::test::GetFullProfile()),
         billing_addresses_({&address_}) {
     test_personal_data_manager_.AddTestingProfile(&address_);
@@ -115,7 +38,7 @@ class PaymentResponseHelperTest : public testing::Test,
     visa_card.set_use_count(5u);
     autofill_instrument_ = base::MakeUnique<AutofillPaymentInstrument>(
         "visa", visa_card, billing_addresses_, "en-US",
-        &payment_request_delegate_);
+        &test_payment_request_delegate_);
   }
   ~PaymentResponseHelperTest() override {}
 
@@ -166,14 +89,14 @@ class PaymentResponseHelperTest : public testing::Test,
   autofill::AutofillProfile* test_address() { return &address_; }
   PaymentInstrument* test_instrument() { return autofill_instrument_.get(); }
   PaymentRequestDelegate* test_payment_request_delegate() {
-    return &payment_request_delegate_;
+    return &test_payment_request_delegate_;
   }
 
  private:
   std::unique_ptr<PaymentRequestSpec> spec_;
   mojom::PaymentResponsePtr payment_response_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
-  FakePaymentRequestDelegate payment_request_delegate_;
+  TestPaymentRequestDelegate test_payment_request_delegate_;
 
   // Test data.
   autofill::AutofillProfile address_;

@@ -43,7 +43,7 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate,
   // Returns a new mojo PaymentAddress based on the specified
   // |profile| and |app_locale|.
   static mojom::PaymentAddressPtr GetMojomPaymentAddressFromAutofillProfile(
-      const autofill::AutofillProfile* const profile,
+      const autofill::AutofillProfile& profile,
       const std::string& app_locale);
 
   // PaymentInstrument::Delegate
@@ -74,6 +74,8 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate,
   // Not owned, can be null (dependent on the spec).
   autofill::AutofillProfile* selected_contact_profile_;
 
+  // A normalized copy of the shipping address, which will be included in the
+  // PaymentResponse.
   autofill::AutofillProfile shipping_address_;
 
   // Instrument Details.

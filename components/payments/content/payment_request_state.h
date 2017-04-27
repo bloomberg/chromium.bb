@@ -11,7 +11,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
+#include "components/payments/core/address_normalizer.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 
 namespace autofill {
@@ -25,13 +27,14 @@ namespace payments {
 
 class PaymentInstrument;
 class PaymentRequestDelegate;
-class PaymentRequestSpec;
 
 // Keeps track of the information currently selected by the user and whether the
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
 // what the merchant has specified, as input into the "is ready to pay"
 // computation.
-class PaymentRequestState : public PaymentResponseHelper::Delegate {
+class PaymentRequestState : public PaymentResponseHelper::Delegate,
+                            public AddressNormalizer::Delegate,
+                            public PaymentRequestSpec::Observer {
  public:
   // Any class call add itself as Observer via AddObserver() and receive
   // notification about the state changing.
@@ -72,6 +75,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
       mojom::PaymentResponsePtr payment_response) override;
+
+  // AddressNormalizer::Delegate
+  void OnAddressNormalized(
+      const autofill::AutofillProfile& normalized_profile) override;
+  void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override;
+
+  // PaymentRequestSpec::Observer
+  void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override {}
+  void OnSpecUpdated() override;
 
   // Returns whether the user has at least one instrument that satisfies the
   // specified supported payment methods.
@@ -171,6 +183,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
   bool ArePaymentOptionsSatisfied();
 
   bool is_ready_to_pay_;
+
+  // Whether the data is currently being validated by the merchant.
+  bool is_waiting_for_merchant_validation_;
 
   const std::string app_locale_;
 
