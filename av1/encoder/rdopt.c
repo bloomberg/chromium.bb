@@ -8240,12 +8240,10 @@ static int64_t motion_mode_rd(
 #endif  // CONFIG_EXT_INTER
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
 #if CONFIG_DUAL_FILTER
-      mbmi->interp_filter[0] = cm->interp_filter == SWITCHABLE
-                                   ? EIGHTTAP_REGULAR
-                                   : cm->interp_filter;
-      mbmi->interp_filter[1] = cm->interp_filter == SWITCHABLE
-                                   ? EIGHTTAP_REGULAR
-                                   : cm->interp_filter;
+      for (int dir = 0; dir < 4; ++dir)
+        mbmi->interp_filter[dir] = cm->interp_filter == SWITCHABLE
+                                       ? EIGHTTAP_REGULAR
+                                       : cm->interp_filter;
 #else
       mbmi->interp_filter = cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR
                                                             : cm->interp_filter;
