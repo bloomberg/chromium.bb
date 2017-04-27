@@ -75,6 +75,9 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}}_Data =
 {#--- Interface parameter definitions #}
 {%- for interface in interfaces %}
 {%-   for method in interface.methods %}
+{%-     if method.ordinal_comment %}
+// {{method.ordinal_comment}}
+{%-     endif %}
 {%-     set method_name = "k%s_%s_Name"|format(interface.name, method.name) %}
 constexpr uint32_t {{method_name}} = {{method.ordinal}};
 {%-     set struct = method.param_struct %}

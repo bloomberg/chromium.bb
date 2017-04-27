@@ -7,11 +7,13 @@
 
 
 import argparse
+import hashlib
 import imp
 import json
 import os
 import pprint
 import re
+import struct
 import sys
 
 # Disable lint check for finding modules:
@@ -100,6 +102,38 @@ def FindImportFile(rel_dir, file_name, search_rel_dirs):
                       rel_dir.source_root)
 
 
+def ScrambleMethodOrdinals(interfaces, salt):
+  already_generated = set()
+  for interface in interfaces:
+    i = 0
+    already_generated.clear()
+    for method in interface.methods:
+      while True:
+        i = i + 1
+        if i == 1000000:
+          raise Exception("Could not generate %d method ordinals for %s" %
+              (len(interface.methods), interface.name))
+        # Generate a scrambled method.ordinal value. The algorithm doesn't have
+        # to be very strong, cryptographically. It just needs to be non-trivial
+        # to guess the results without the secret salt, in order to make it
+        # harder for a compromised process to send fake Mojo messages.
+        sha256 = hashlib.sha256(salt)
+        sha256.update(interface.name)
+        sha256.update(str(i))
+        # Take the first 4 bytes as a little-endian uint32.
+        ordinal = struct.unpack('<L', sha256.digest()[:4])[0]
+        # Trim to 31 bits, so it always fits into a Java (signed) int.
+        ordinal = ordinal & 0x7fffffff
+        if ordinal in already_generated:
+          continue
+        already_generated.add(ordinal)
+        method.ordinal = ordinal
+        method.ordinal_comment = (
+            'The %s value is based on sha256(salt + "%s%d").' %
+            (ordinal, interface.name, i))
+        break
+
+
 class MojomProcessor(object):
   """Parses mojom files and creates ASTs for them.
 
@@ -153,6 +187,9 @@ class MojomProcessor(object):
           args, remaining_args, generator_modules, rel_import_file)
 
     module = translate.OrderedModule(tree, name, imports)
+
+    if args.scrambled_message_id_salt:
+      ScrambleMethodOrdinals(module.interfaces, args.scrambled_message_id_salt)
 
     # Set the path as relative to the source root.
     module.path = rel_filename.relative_path()
@@ -319,6 +356,9 @@ def main():
   generate_parser.add_argument(
       "--depfile_target",
       help="The target name to use in the depfile.")
+  generate_parser.add_argument(
+      "--scrambled_message_id_salt",
+      help="If non-empty, the salt for generating scrambled message IDs.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",
