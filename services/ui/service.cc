@@ -19,7 +19,6 @@
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/clipboard/clipboard_impl.h"

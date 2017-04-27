@@ -26,7 +26,6 @@
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"

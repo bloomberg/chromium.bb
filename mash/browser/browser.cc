@@ -22,7 +22,6 @@
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"

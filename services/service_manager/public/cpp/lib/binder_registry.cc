@@ -8,7 +8,7 @@
 
 namespace service_manager {
 
-BinderRegistry::BinderRegistry() {}
+BinderRegistry::BinderRegistry() : weak_factory_(this) {}
 BinderRegistry::~BinderRegistry() {}
 
 void BinderRegistry::AddInterface(
@@ -42,6 +42,10 @@ void BinderRegistry::BindInterface(
   } else {
     LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name;
   }
+}
+
+base::WeakPtr<BinderRegistry> BinderRegistry::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void BinderRegistry::SetInterfaceBinder(

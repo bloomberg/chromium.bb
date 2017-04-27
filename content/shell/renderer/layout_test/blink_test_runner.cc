@@ -61,8 +61,8 @@
 #include "media/media_features.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -733,11 +733,13 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const base::Callback<void(bool)>& callback) {
   app_banner_service_.reset(new test_runner::AppBannerService());
 
-  service_manager::InterfaceRegistry::TestApi test_api(
-      render_view()->GetMainRenderFrame()->GetInterfaceRegistry());
-  test_api.GetLocalInterface(
-      mojo::MakeRequest(&app_banner_service_->controller()));
-
+  service_manager::BinderRegistry* registry =
+      render_view()->GetMainRenderFrame()->GetInterfaceRegistry();
+  blink::mojom::AppBannerControllerRequest request =
+      mojo::MakeRequest(&app_banner_service_->controller());
+  registry->BindInterface(service_manager::Identity(),
+                          blink::mojom::AppBannerController::Name_,
+                          request.PassMessagePipe());
   app_banner_service_->SendBannerPromptRequest(event_platforms, callback);
 }
 

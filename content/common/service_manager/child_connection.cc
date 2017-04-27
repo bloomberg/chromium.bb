@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace content {

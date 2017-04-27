@@ -49,7 +49,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"

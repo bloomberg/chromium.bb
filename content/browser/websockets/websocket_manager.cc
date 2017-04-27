@@ -16,7 +16,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/storage_partition.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace content {
 

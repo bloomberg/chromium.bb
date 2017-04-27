@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/lib/callback_binder.h"
@@ -72,6 +73,8 @@ class BinderRegistry {
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
 
+  base::WeakPtr<BinderRegistry> GetWeakPtr();
+
  private:
   using InterfaceNameToBinderMap =
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;
@@ -81,6 +84,8 @@ class BinderRegistry {
                           std::unique_ptr<InterfaceBinder> binder);
 
   InterfaceNameToBinderMap binders_;
+
+  base::WeakPtrFactory<BinderRegistry> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BinderRegistry);
 };

@@ -55,6 +55,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -124,7 +125,7 @@ class SinkAvailabilityObserver;
 }  // namespace media
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 class InterfaceProvider;
 }
 
@@ -440,7 +441,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsMainFrame() override;
   bool IsHidden() override;
-  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
+  service_manager::BinderRegistry* GetInterfaceRegistry() override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
@@ -1303,7 +1304,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // The PushMessagingClient attached to this frame, lazily initialized.
   PushMessagingClient* push_messaging_client_;
 
-  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::BinderRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
