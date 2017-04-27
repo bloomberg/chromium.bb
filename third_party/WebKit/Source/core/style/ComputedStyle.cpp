@@ -116,7 +116,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   box_data_.Init();
   visual_data_.Init();
-  background_data_.Init();
   rare_non_inherited_data_.Init();
   rare_non_inherited_data_.Access()->deprecated_flexible_box_.Init();
   rare_non_inherited_data_.Access()->flexible_box_.Init();
@@ -138,7 +137,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       RefCounted<ComputedStyle>(),
       box_data_(o.box_data_),
       visual_data_(o.visual_data_),
-      background_data_(o.background_data_),
       rare_non_inherited_data_(o.rare_non_inherited_data_),
       rare_inherited_data_(o.rare_inherited_data_),
       style_inherited_data_(o.style_inherited_data_),
@@ -333,7 +331,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   ComputedStyleBase::CopyNonInheritedFromCached(other);
   box_data_ = other.box_data_;
   visual_data_ = other.visual_data_;
-  background_data_ = other.background_data_;
   rare_non_inherited_data_ = other.rare_non_inherited_data_;
 
   // The flags are copied one-by-one because they contain
@@ -481,7 +478,6 @@ bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
                                                       // ComputedStyleBase
          box_data_ == other.box_data_ &&
          visual_data_ == other.visual_data_ &&
-         background_data_ == other.background_data_ &&
          rare_non_inherited_data_ == other.rare_non_inherited_data_ &&
          svg_style_->NonInheritedEqual(*other.svg_style_);
 }
