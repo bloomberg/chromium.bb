@@ -138,6 +138,9 @@ deps = {
   'src/testing/gmock':
     Var('chromium_git') + '/external/googlemock.git' + '@' + '0421b6f358139f02e102c9c332ce19a33faf75be', # from svn revision 566
 
+  'src/third_party/freetype/src':
+    Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
+
   'src/third_party/glslang/src':
     Var('chromium_git') + '/external/github.com/google/glslang.git' + '@' + '210c6bf4d8119dc5f8ac21da2d4c87184f7015e0',
 
@@ -315,9 +318,6 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/third_party/freetype/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
-
     'src/third_party/cygwin':
       Var('chromium_git') + '/chromium/deps/cygwin.git' + '@' + 'c89e446b273697fadf3a10ff1007a97c0b7de6df',
 
@@ -390,9 +390,6 @@ deps_os = {
     'src/chrome/installer/mac/third_party/xz/xz':
       Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
 
-    'src/third_party/freetype/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
-
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
@@ -410,9 +407,6 @@ deps_os = {
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
       Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + 'c6eab9e4d0b4f56176df23d30b815dc94b774a3d',
-
-    'src/third_party/freetype/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
     # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
     'src/third_party/chromite':
@@ -476,9 +470,6 @@ deps_os = {
 
     'src/third_party/findbugs':
       Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '57f05238d3ac77ea0a194813d3065dd780c6e566',
-
-    'src/third_party/freetype/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
     'src/third_party/elfutils/src':
       Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
