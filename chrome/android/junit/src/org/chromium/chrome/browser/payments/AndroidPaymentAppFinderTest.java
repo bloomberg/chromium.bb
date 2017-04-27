@@ -91,7 +91,7 @@ public class AndroidPaymentAppFinderTest {
                              ArgumentMatchers.argThat(sPayIntentArgumentMatcher)))
                 .thenReturn(new ArrayList<ResolveInfo>());
         Set<String> methodNames = new HashSet<>();
-        methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
+        methodNames.add("basic-card");
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
         AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
@@ -121,7 +121,7 @@ public class AndroidPaymentAppFinderTest {
                 .thenReturn(activities);
 
         Set<String> methodNames = new HashSet<>();
-        methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
+        methodNames.add("basic-card");
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
         AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
@@ -156,7 +156,7 @@ public class AndroidPaymentAppFinderTest {
                 .thenReturn(activities);
 
         Set<String> methodNames = new HashSet<>();
-        methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
+        methodNames.add("basic-card");
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
         AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
@@ -213,11 +213,9 @@ public class AndroidPaymentAppFinderTest {
 
         Resources resouces = Mockito.mock(Resources.class);
         Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(1)))
-                .thenReturn(new String[] {
-                        "https://alicepay.com", AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD});
+                .thenReturn(new String[] {"https://alicepay.com", "basic-card"});
         Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(2)))
-                .thenReturn(new String[] {
-                        "https://bobpay.com", AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD});
+                .thenReturn(new String[] {"https://bobpay.com", "basic-card"});
 
         Mockito.when(packageManagerDelegate.getResourcesForApplication(
                              ArgumentMatchers.eq(alicePay.activityInfo.applicationInfo)))
@@ -227,7 +225,7 @@ public class AndroidPaymentAppFinderTest {
                 .thenReturn(resouces);
 
         Set<String> methodNames = new HashSet<>();
-        methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
+        methodNames.add("basic-card");
         PaymentAppCreatedCallback callback = Mockito.mock(PaymentAppCreatedCallback.class);
 
         AndroidPaymentAppFinder.find(Mockito.mock(WebContents.class), methodNames,
@@ -267,8 +265,7 @@ public class AndroidPaymentAppFinderTest {
 
         Resources resouces = Mockito.mock(Resources.class);
         Mockito.when(resouces.getStringArray(ArgumentMatchers.eq(1)))
-                .thenReturn(new String[] {
-                        "https://bobpay.com", AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD});
+                .thenReturn(new String[] {"https://bobpay.com", "basic-card"});
 
         Mockito.when(packageManagerDelegate.getResourcesForApplication(
                              ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo)))
