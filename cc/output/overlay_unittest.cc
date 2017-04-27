@@ -1400,6 +1400,38 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
   }
 }
 
+// Underlay damage can only be subtracted if the previous frame's underlay
+// exists.
+TEST_F(UnderlayTest, DamageNotSubtractedForNonConsecutiveIdenticalUnderlays) {
+  bool has_fullscreen_candidate[] = {true, false, true};
+
+  for (int i = 0; i < 3; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+    if (has_fullscreen_candidate[i]) {
+      CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                    pass->shared_quad_state_list.back(),
+                                    pass.get());
+    }
+
+    damage_rect_ = kOverlayRect;
+
+    // Add something behind it.
+    CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                               pass->shared_quad_state_list.back(), pass.get());
+
+    OverlayCandidateList candidate_list;
+    base::flat_map<int, FilterOperations*> render_pass_filters;
+    base::flat_map<int, FilterOperations*> render_pass_background_filters;
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), pass.get(), render_pass_filters,
+        render_pass_background_filters, &candidate_list, nullptr, nullptr,
+        &damage_rect_, &content_bounds_);
+  }
+
+  EXPECT_EQ(kOverlayRect, damage_rect_);
+}
+
 TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
   for (int i = 0; i < 2; ++i) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
