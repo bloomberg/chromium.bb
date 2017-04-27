@@ -30,15 +30,23 @@ using testing::Property;
 
 namespace predictors {
 
+constexpr size_t kMaxConcurrentRequests = 5;
+constexpr size_t kMaxConcurrentRequestsPerHost = 2;
+
 // Wrapper over the ResourcePrefetcher that stubs out the StartURLRequest call
 // since we do not want to do network fetches in this unittest.
 class TestResourcePrefetcher : public ResourcePrefetcher {
  public:
   TestResourcePrefetcher(ResourcePrefetcher::Delegate* delegate,
-                         const ResourcePrefetchPredictorConfig& config,
+                         size_t max_concurrent_requests,
+                         size_t max_concurrent_requests_per_host,
                          const GURL& main_frame_url,
                          const std::vector<GURL>& urls)
-      : ResourcePrefetcher(delegate, config, main_frame_url, urls) {}
+      : ResourcePrefetcher(delegate,
+                           max_concurrent_requests,
+                           max_concurrent_requests_per_host,
+                           main_frame_url,
+                           urls) {}
 
   ~TestResourcePrefetcher() override {}
 
@@ -144,7 +152,6 @@ class ResourcePrefetcherTest : public testing::Test {
 
   base::MessageLoop loop_;
   content::TestBrowserThread io_thread_;
-  ResourcePrefetchPredictorConfig config_;
   TestResourcePrefetcherDelegate prefetcher_delegate_;
   std::unique_ptr<TestResourcePrefetcher> prefetcher_;
 
@@ -155,9 +162,7 @@ class ResourcePrefetcherTest : public testing::Test {
 ResourcePrefetcherTest::ResourcePrefetcherTest()
     : loop_(base::MessageLoop::TYPE_IO),
       io_thread_(content::BrowserThread::IO, &loop_),
-      prefetcher_delegate_(&loop_) {
-  config_.max_prefetches_inflight_per_host_per_navigation = 2;
-}
+      prefetcher_delegate_(&loop_) {}
 
 ResourcePrefetcherTest::~ResourcePrefetcherTest() {
 }
@@ -177,8 +182,9 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
                             GURL("http://yahoo.com/resource4.png"),
                             GURL("http://yahoo.com/resource5.png")};
 
-  prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
-                                               main_frame_url, urls));
+  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+      &prefetcher_delegate_, kMaxConcurrentRequests,
+      kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");
@@ -247,8 +253,9 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
                             GURL("http://yahoo.com/resource3.png"),
                             GURL("http://m.google.com/resource1.jpg")};
 
-  prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
-                                               main_frame_url, urls));
+  prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
+      &prefetcher_delegate_, kMaxConcurrentRequests,
+      kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");
@@ -293,7 +300,8 @@ TEST_F(ResourcePrefetcherTest, TestHistogramsCollected) {
                             GURL("http://www.google.com/resource6.png")};
 
   prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
-      &prefetcher_delegate_, config_, main_frame_url, urls);
+      &prefetcher_delegate_, kMaxConcurrentRequests,
+      kMaxConcurrentRequestsPerHost, main_frame_url, urls);
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.png");
@@ -341,7 +349,8 @@ TEST_F(ResourcePrefetcherTest, TestReferrer) {
   std::vector<GURL> urls = {GURL(https_resource), GURL(http_resource)};
 
   prefetcher_ = base::MakeUnique<TestResourcePrefetcher>(
-      &prefetcher_delegate_, config_, GURL(url), urls);
+      &prefetcher_delegate_, kMaxConcurrentRequests,
+      kMaxConcurrentRequestsPerHost, GURL(url), urls);
 
   AddStartUrlRequestExpectation(https_resource);
   AddStartUrlRequestExpectation(http_resource);

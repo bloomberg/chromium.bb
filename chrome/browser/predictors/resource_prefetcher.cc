@@ -48,14 +48,15 @@ ResourcePrefetcher::PrefetcherStats::PrefetcherStats(
       start_time(other.start_time),
       requests_stats(other.requests_stats) {}
 
-ResourcePrefetcher::ResourcePrefetcher(
-    Delegate* delegate,
-    const ResourcePrefetchPredictorConfig& config,
-    const GURL& main_frame_url,
-    const std::vector<GURL>& urls)
+ResourcePrefetcher::ResourcePrefetcher(Delegate* delegate,
+                                       size_t max_concurrent_requests,
+                                       size_t max_concurrent_requests_per_host,
+                                       const GURL& main_frame_url,
+                                       const std::vector<GURL>& urls)
     : state_(INITIALIZED),
       delegate_(delegate),
-      config_(config),
+      max_concurrent_requests_(max_concurrent_requests),
+      max_concurrent_requests_per_host_(max_concurrent_requests_per_host),
       main_frame_url_(main_frame_url),
       prefetched_count_(0),
       prefetched_bytes_(0),
@@ -99,8 +100,7 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
     // max_prefetches_inflight_per_host_per_navigation limit, looking for a URL
     // for which the max_prefetches_inflight_per_host_per_navigation limit has
     // not been reached. Try to launch as many requests as possible.
-    while ((inflight_requests_.size() <
-                config_.max_prefetches_inflight_per_navigation) &&
+    while ((inflight_requests_.size() < max_concurrent_requests_) &&
            request_available) {
       auto request_it = request_queue_.begin();
       for (; request_it != request_queue_.end(); ++request_it) {
@@ -109,8 +109,7 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
         std::map<std::string, size_t>::iterator host_it =
             host_inflight_counts_.find(host);
         if (host_it == host_inflight_counts_.end() ||
-            host_it->second <
-                config_.max_prefetches_inflight_per_host_per_navigation)
+            host_it->second < max_concurrent_requests_per_host_)
           break;
       }
       request_available = request_it != request_queue_.end();

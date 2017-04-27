@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -83,7 +82,8 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
 
   // |delegate| has to outlive the ResourcePrefetcher.
   ResourcePrefetcher(Delegate* delegate,
-                     const ResourcePrefetchPredictorConfig& config,
+                     size_t max_concurrent_requests,
+                     size_t max_concurrent_requests_per_host,
                      const GURL& main_frame_url,
                      const std::vector<GURL>& urls);
   ~ResourcePrefetcher() override;
@@ -142,7 +142,8 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   base::ThreadChecker thread_checker_;
   PrefetcherState state_;
   Delegate* const delegate_;
-  ResourcePrefetchPredictorConfig const config_;
+  size_t max_concurrent_requests_;
+  size_t max_concurrent_requests_per_host_;
   GURL main_frame_url_;
 
   // For histogram reports.

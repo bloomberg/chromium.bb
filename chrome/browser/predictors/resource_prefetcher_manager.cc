@@ -60,8 +60,10 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
   if (base::ContainsKey(prefetcher_map_, key))
     return;
 
-  auto prefetcher =
-      base::MakeUnique<ResourcePrefetcher>(this, config_, main_frame_url, urls);
+  auto prefetcher = base::MakeUnique<ResourcePrefetcher>(
+      this, config_.max_prefetches_inflight_per_navigation,
+      config_.max_prefetches_inflight_per_host_per_navigation, main_frame_url,
+      urls);
   prefetcher->Start();
   prefetcher_map_[key] = std::move(prefetcher);
 }
