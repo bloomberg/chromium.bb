@@ -1267,10 +1267,10 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
 }
 #endif
 
-std::unique_ptr<blink::WebSpeechSynthesizer>
+blink::WebSpeechSynthesizer*
 ChromeContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
-  return base::MakeUnique<TtsDispatcher>(client);
+  return new TtsDispatcher(client);
 }
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(

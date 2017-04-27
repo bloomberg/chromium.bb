@@ -141,8 +141,7 @@ CanvasCaptureHandler::~CanvasCaptureHandler() {
 }
 
 // static
-std::unique_ptr<CanvasCaptureHandler>
-CanvasCaptureHandler::CreateCanvasCaptureHandler(
+CanvasCaptureHandler* CanvasCaptureHandler::CreateCanvasCaptureHandler(
     const blink::WebSize& size,
     double frame_rate,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -151,8 +150,7 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
   // The histogram counts the number of calls to the JS API.
   UpdateWebRTCMethodCount(WEBKIT_CANVAS_CAPTURE_STREAM);
 
-  return std::unique_ptr<CanvasCaptureHandler>(
-      new CanvasCaptureHandler(size, frame_rate, io_task_runner, track));
+  return new CanvasCaptureHandler(size, frame_rate, io_task_runner, track);
 }
 
 void CanvasCaptureHandler::SendNewFrame(const SkImage* image) {

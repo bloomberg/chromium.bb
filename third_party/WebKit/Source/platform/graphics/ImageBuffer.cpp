@@ -242,8 +242,8 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   if (!texture_info || !texture_info->fID)
     return false;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::WrapUnique(
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
   if (!provider || !provider->GetGrContext())
     return false;
   gpu::gles2::GLES2Interface* shared_gl = provider->ContextGL();
@@ -305,8 +305,8 @@ bool ImageBuffer::CopyRenderingResultsFromDrawingBuffer(
     SourceDrawingBuffer source_buffer) {
   if (!drawing_buffer || !surface_->IsAccelerated())
     return false;
-  std::unique_ptr<WebGraphicsContext3DProvider> provider =
-      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::WrapUnique(
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
   if (!provider)
     return false;
   gpu::gles2::GLES2Interface* gl = provider->ContextGL();

@@ -334,7 +334,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
+  blink::WebMediaStreamCenter* CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client);
 
   BrowserPluginManager* browser_plugin_manager() const {
@@ -606,6 +606,9 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
+
+  // Used on the render thread and deleted by WebKit at shutdown.
+  blink::WebMediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<BlobMessageFilter> blob_message_filter_;

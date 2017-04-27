@@ -268,12 +268,12 @@ blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::CompositorSupport() {
   return &compositor_support_;
 }
 
-std::unique_ptr<blink::WebGestureCurve>
-TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
+blink::WebGestureCurve* TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  return base::MakeUnique<WebGestureCurveMock>(velocity, cumulative_scroll);
+  // Caller will retain and release.
+  return new WebGestureCurveMock(velocity, cumulative_scroll);
 }
 
 blink::WebURLLoaderMockFactory*
@@ -329,10 +329,10 @@ class TestWebRTCCertificateGenerator
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-std::unique_ptr<blink::WebRTCCertificateGenerator>
+blink::WebRTCCertificateGenerator*
 TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<TestWebRTCCertificateGenerator>();
+  return new TestWebRTCCertificateGenerator();
 #else
   return nullptr;
 #endif

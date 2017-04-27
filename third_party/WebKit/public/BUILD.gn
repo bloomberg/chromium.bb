@@ -183,6 +183,7 @@ source_set("blink_headers") {
     "platform/WebFileUtilities.h",
     "platform/WebFileWriter.h",
     "platform/WebFileWriterClient.h",
+    "platform/WebFlingAnimator.h",
     "platform/WebFloatPoint.h",
     "platform/WebFloatPoint3D.h",
     "platform/WebFloatRect.h",

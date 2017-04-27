@@ -94,14 +94,12 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
-#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
-#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
@@ -153,6 +151,7 @@ using blink::WebFileInfo;
 using blink::WebFileSystem;
 using blink::WebIDBFactory;
 using blink::WebImageCaptureFrameGrabber;
+using blink::WebMIDIAccessor;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
 using blink::WebMediaStream;
@@ -467,19 +466,17 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
     thread->Send(new RenderProcessHostMsg_SuddenTerminationChanged(enabled));
 }
 
-std::unique_ptr<WebStorageNamespace>
-RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
+WebStorageNamespace* RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {
     if (!local_storage_cached_areas_) {
       local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
           RenderThreadImpl::current()->GetStoragePartitionService()));
     }
-    return base::MakeUnique<LocalStorageNamespace>(
-        local_storage_cached_areas_.get());
+    return new LocalStorageNamespace(local_storage_cached_areas_.get());
   }
 
-  return base::MakeUnique<WebStorageNamespaceImpl>();
+  return new WebStorageNamespaceImpl();
 }
 
 
@@ -491,11 +488,10 @@ WebIDBFactory* RendererBlinkPlatformImpl::IdbFactory() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebServiceWorkerCacheStorage>
-RendererBlinkPlatformImpl::CreateCacheStorage(
+blink::WebServiceWorkerCacheStorage* RendererBlinkPlatformImpl::CacheStorage(
     const blink::WebSecurityOrigin& security_origin) {
-  return base::MakeUnique<WebServiceWorkerCacheStorageImpl>(
-      thread_safe_sender_.get(), security_origin);
+  return new WebServiceWorkerCacheStorageImpl(thread_safe_sender_.get(),
+                                              security_origin);
 }
 
 //------------------------------------------------------------------------------
@@ -688,7 +684,7 @@ WebDatabaseObserver* RendererBlinkPlatformImpl::DatabaseObserver() {
   return web_database_observer_impl_.get();
 }
 
-std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
+WebAudioDevice* RendererBlinkPlatformImpl::CreateAudioDevice(
     unsigned input_channels,
     unsigned channels,
     const blink::WebAudioLatencyHint& latency_hint,
@@ -696,7 +692,7 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
     const blink::WebString& input_device_id,
     const blink::WebSecurityOrigin& security_origin) {
   // Use a mock for testing.
-  std::unique_ptr<blink::WebAudioDevice> mock_device =
+  blink::WebAudioDevice* mock_device =
       GetContentClient()->renderer()->OverrideCreateAudioDevice(latency_hint);
   if (mock_device)
     return mock_device;
@@ -729,15 +725,14 @@ bool RendererBlinkPlatformImpl::LoadAudioResource(
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebMIDIAccessor>
-RendererBlinkPlatformImpl::CreateMIDIAccessor(
+blink::WebMIDIAccessor* RendererBlinkPlatformImpl::CreateMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {
-  std::unique_ptr<blink::WebMIDIAccessor> accessor =
+  blink::WebMIDIAccessor* accessor =
       GetContentClient()->renderer()->OverrideCreateMIDIAccessor(client);
   if (accessor)
     return accessor;
 
-  return base::MakeUnique<RendererWebMIDIAccessorImpl>(client);
+  return new RendererWebMIDIAccessorImpl(client);
 }
 
 void RendererBlinkPlatformImpl::GetPluginList(
@@ -800,10 +795,10 @@ void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebMediaRecorderHandler>
+WebMediaRecorderHandler*
 RendererBlinkPlatformImpl::CreateMediaRecorderHandler() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<content::MediaRecorderHandler>();
+  return new content::MediaRecorderHandler();
 #else
   return nullptr;
 #endif
@@ -811,16 +806,16 @@ RendererBlinkPlatformImpl::CreateMediaRecorderHandler() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebRTCPeerConnectionHandler>
+WebRTCPeerConnectionHandler*
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
-    return nullptr;
+    return NULL;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  std::unique_ptr<WebRTCPeerConnectionHandler> peer_connection_handler =
+  WebRTCPeerConnectionHandler* peer_connection_handler =
       GetContentClient()->renderer()->OverrideCreateWebRTCPeerConnectionHandler(
           client);
   if (peer_connection_handler)
@@ -830,16 +825,16 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
       render_thread->GetPeerConnectionDependencyFactory();
   return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);
 #else
-  return nullptr;
+  return NULL;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebRTCCertificateGenerator>
+blink::WebRTCCertificateGenerator*
 RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<RTCCertificateGenerator>();
+  return new RTCCertificateGenerator();
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -847,13 +842,12 @@ RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebMediaStreamCenter>
-RendererBlinkPlatformImpl::CreateMediaStreamCenter(
+WebMediaStreamCenter* RendererBlinkPlatformImpl::CreateMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
-    return nullptr;
+    return NULL;
   return render_thread->CreateMediaStreamCenter(client);
 }
 
@@ -866,8 +860,7 @@ bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebCanvasCaptureHandler>
-RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
+WebCanvasCaptureHandler* RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
     const WebSize& size,
     double frame_rate,
     WebMediaStreamTrack* track) {
@@ -925,10 +918,10 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebImageCaptureFrameGrabber>
+WebImageCaptureFrameGrabber*
 RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  return base::MakeUnique<ImageCaptureFrameGrabber>();
+  return new ImageCaptureFrameGrabber();
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -936,8 +929,7 @@ RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebSpeechSynthesizer>
-RendererBlinkPlatformImpl::CreateSpeechSynthesizer(
+blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::CreateSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
   return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
 }
@@ -972,7 +964,7 @@ static void Collect3DContextInformation(
   }
 }
 
-std::unique_ptr<blink::WebGraphicsContext3DProvider>
+blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
     const blink::Platform::ContextAttributes& web_attributes,
     const blink::WebURL& top_document_web_url,
@@ -1050,13 +1042,13 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           GURL(top_document_web_url), automatic_flushes, support_locking,
           gpu::SharedMemoryLimits(), attributes, share_context,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
-  return base::MakeUnique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider), is_software_rendering);
+  return new WebGraphicsContext3DProviderImpl(std::move(provider),
+                                              is_software_rendering);
 }
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebGraphicsContext3DProvider>
+blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
   auto* thread = RenderThreadImpl::current();
 
@@ -1077,8 +1069,8 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
 
   bool is_software_rendering = host->gpu_info().software_rendering;
 
-  return base::MakeUnique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider), is_software_rendering);
+  return new WebGraphicsContext3DProviderImpl(std::move(provider),
+                                              is_software_rendering);
 }
 
 //------------------------------------------------------------------------------
