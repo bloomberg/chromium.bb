@@ -39,7 +39,6 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     story_set.AddStory(page)
     return story_set
 
-  @decorators.Disabled('win')  # crbug.com/715822
   def testBlinkPerfTracingMetricsForMeasureTime(self):
     results = self.RunMeasurement(measurement=self._measurement,
         ps=self._CreateStorySetForTestFile('append-child-measure-time.html'),
