@@ -1,6 +1,24 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/716085: Started failing after r466634 landed.
+crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
+crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
+crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
+crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Crash Failure ]
+crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
+crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
+crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Crash Failure ]
+crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
+
+# https://crbug.com/710098: Tests failing because of r462933.
+crbug.com/710098 http/tests/security/document-all.html [ Failure ]
+crbug.com/710098 http/tests/security/window-named-proto.html [ Failure ]
+crbug.com/710098 http/tests/security/window-named-valueOf.html [ Failure ]
+crbug.com/710098 virtual/mojo-loading/http/tests/security/document-all.html [ Failure ]
+crbug.com/710098 virtual/mojo-loading/http/tests/security/window-named-proto.html [ Failure ]
+crbug.com/710098 virtual/mojo-loading/http/tests/security/window-named-valueOf.html [ Failure ]
+
 # https://crbug.com/700535: Times out after r454488 landed.
 crbug.com/700535 fast/dnd/dropEffect-for-effectAllowed.html [ Timeout ]
 
