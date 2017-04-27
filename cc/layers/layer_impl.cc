@@ -376,15 +376,6 @@ bool LayerImpl::IsAffectedByPageScale() const {
       ->in_subtree_of_page_scale_layer;
 }
 
-gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
-  LayerImpl* scroll_clip_layer =
-      layer_tree_impl()->LayerById(scroll_clip_layer_id_);
-  if (!scroll_clip_layer)
-    return gfx::Vector2dF();
-
-  return scroll_clip_layer->ViewportBoundsDelta();
-}
-
 std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetInteger("LayerId", id());

@@ -4444,12 +4444,10 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   host_impl_->browser_controls_manager()->ScrollBy(top_controls_scroll_delta);
   host_impl_->browser_controls_manager()->ScrollEnd();
 
-  LayerImpl* inner_viewport_scroll_layer =
-      host_impl_->active_tree()->InnerViewportScrollLayer();
-  DCHECK(inner_viewport_scroll_layer);
   host_impl_->ScrollEnd(EndState().get());
+  auto* property_trees = host_impl_->active_tree()->property_trees();
   EXPECT_FLOAT_EQ(top_controls_scroll_delta.y(),
-                  inner_viewport_scroll_layer->FixedContainerSizeDelta().y());
+                  property_trees->inner_viewport_container_bounds_delta().y());
 }
 
 // In this test, the outer viewport is initially unscrollable. We test that a
@@ -4550,9 +4548,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, FixedContainerDelta) {
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 2.f);
 
   float page_scale = 1.5f;
-  LayerImpl* outer_viewport_scroll_layer =
-      host_impl_->active_tree()->OuterViewportScrollLayer();
-
   // Zoom in, since the fixed container is the outer viewport, the delta should
   // not be scaled.
   host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, 1.f, 2.f);
@@ -4570,8 +4565,10 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, FixedContainerDelta) {
   host_impl_->browser_controls_manager()->ScrollBy(top_controls_scroll_delta);
   EXPECT_FLOAT_EQ(top_controls_height_ - top_controls_scroll_delta.y(),
                   host_impl_->browser_controls_manager()->ContentTopOffset());
+
+  auto* property_trees = host_impl_->active_tree()->property_trees();
   EXPECT_FLOAT_EQ(top_controls_scroll_delta.y(),
-                  outer_viewport_scroll_layer->FixedContainerSizeDelta().y());
+                  property_trees->outer_viewport_container_bounds_delta().y());
   host_impl_->ScrollEnd(EndState().get());
 
   // Scroll past the maximum extent. The delta shouldn't be greater than the
@@ -4582,7 +4579,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, FixedContainerDelta) {
   host_impl_->browser_controls_manager()->ScrollBy(top_controls_scroll_delta);
   EXPECT_EQ(0.f, host_impl_->browser_controls_manager()->ContentTopOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, top_controls_height_),
-                   outer_viewport_scroll_layer->FixedContainerSizeDelta());
+                   property_trees->outer_viewport_container_bounds_delta());
   host_impl_->ScrollEnd(EndState().get());
 
   // Scroll in the direction to make the browser controls show.
@@ -4592,7 +4589,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, FixedContainerDelta) {
             host_impl_->browser_controls_manager()->ContentTopOffset());
   EXPECT_VECTOR_EQ(
       gfx::Vector2dF(0, top_controls_height_ - top_controls_scroll_delta.y()),
-      outer_viewport_scroll_layer->FixedContainerSizeDelta());
+      property_trees->outer_viewport_container_bounds_delta());
   host_impl_->browser_controls_manager()->ScrollEnd();
 }
 

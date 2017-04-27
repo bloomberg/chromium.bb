@@ -166,10 +166,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetIsContainerForFixedPositionLayers(bool container);
   bool IsContainerForFixedPositionLayers() const;
 
-  gfx::Vector2dF FixedContainerSizeDelta() const {
-    return gfx::Vector2dF();
-  }
-
   void SetPositionConstraint(const LayerPositionConstraint& constraint);
   const LayerPositionConstraint& position_constraint() const {
     return inputs_.position_constraint;
