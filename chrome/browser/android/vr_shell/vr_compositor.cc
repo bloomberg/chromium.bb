@@ -15,10 +15,8 @@
 
 namespace vr_shell {
 
-VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
-    : background_color_(SK_ColorWHITE), transparent_(transparent) {
+VrCompositor::VrCompositor(ui::WindowAndroid* window) {
   compositor_.reset(content::Compositor::Create(this, window));
-  compositor_->SetHasTransparentBackground(transparent);
 }
 
 VrCompositor::~VrCompositor() {
@@ -39,24 +37,15 @@ void VrCompositor::SetLayer(content::WebContents* web_contents) {
   // removing it from its previous parent, so we remember that and restore it to
   // its previous parent on teardown.
   layer_ = view_android->GetLayer();
-
-  // Remember the old background color to be restored later.
-  background_color_ = layer_->background_color();
-  if (transparent_) {
-    layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
   layer_parent_ = layer_->parent();
   compositor_->SetRootLayer(layer_);
 }
 
 void VrCompositor::RestoreLayer() {
-  if (!layer_)
-    return;
-  layer_->SetBackgroundColor(background_color_);
-  if (layer_parent_) {
+  if (layer_ && layer_parent_)
     layer_parent_->AddChild(layer_);
-  }
   layer_ = nullptr;
+  layer_parent_ = nullptr;
 }
 
 void VrCompositor::SurfaceDestroyed() {
