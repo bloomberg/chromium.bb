@@ -466,7 +466,7 @@ public class NfcImpl implements Nfc {
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot write data to NFC tag. Tag is lost.");
             pendingPushOperationCompleted(createError(NfcErrorType.IO_ERROR));
-        } catch (FormatException | IOException e) {
+        } catch (FormatException | IllegalStateException | IOException e) {
             Log.w(TAG, "Cannot write data to NFC tag. IO_ERROR.");
             pendingPushOperationCompleted(createError(NfcErrorType.IO_ERROR));
         }
@@ -499,7 +499,7 @@ public class NfcImpl implements Nfc {
             }
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
-        } catch (FormatException | IOException e) {
+        } catch (FormatException | IllegalStateException | IOException e) {
             Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR.");
         }
 
