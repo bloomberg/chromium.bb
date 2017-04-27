@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
@@ -47,6 +48,7 @@ class CC_EXPORT SchedulerStateMachine {
  public:
   // settings must be valid for the lifetime of this class.
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
+  ~SchedulerStateMachine();
 
   enum CompositorFrameSinkState {
     COMPOSITOR_FRAME_SINK_NONE,
@@ -329,72 +331,76 @@ class CC_EXPORT SchedulerStateMachine {
 
   const SchedulerSettings settings_;
 
-  CompositorFrameSinkState compositor_frame_sink_state_;
-  BeginImplFrameState begin_impl_frame_state_;
-  BeginMainFrameState begin_main_frame_state_;
-  ForcedRedrawOnTimeoutState forced_redraw_state_;
+  CompositorFrameSinkState compositor_frame_sink_state_ =
+      COMPOSITOR_FRAME_SINK_NONE;
+  BeginImplFrameState begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
+  BeginMainFrameState begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+  ForcedRedrawOnTimeoutState forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
 
   // These fields are used to track the freshness of pending updates in the
   // commit/activate/draw pipeline. The Scheduler uses the CompositorFrame's
   // freshness to fill the |latest_confirmed_sequence_number| field in
   // BeginFrameAcks.
-  uint32_t begin_frame_source_id_;
-  uint64_t begin_frame_sequence_number_;
-  uint64_t last_begin_frame_sequence_number_begin_main_frame_sent_;
-  uint64_t last_begin_frame_sequence_number_pending_tree_was_fresh_;
-  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh_;
-  uint64_t last_begin_frame_sequence_number_compositor_frame_was_fresh_;
+  uint32_t begin_frame_source_id_ = 0;
+  uint64_t begin_frame_sequence_number_ = BeginFrameArgs::kInvalidFrameNumber;
+  uint64_t last_begin_frame_sequence_number_begin_main_frame_sent_ =
+      BeginFrameArgs::kInvalidFrameNumber;
+  uint64_t last_begin_frame_sequence_number_pending_tree_was_fresh_ =
+      BeginFrameArgs::kInvalidFrameNumber;
+  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh_ =
+      BeginFrameArgs::kInvalidFrameNumber;
+  uint64_t last_begin_frame_sequence_number_compositor_frame_was_fresh_ =
+      BeginFrameArgs::kInvalidFrameNumber;
 
   // These are used for tracing only.
-  int commit_count_;
-  int current_frame_number_;
-  int last_frame_number_submit_performed_;
-  int last_frame_number_draw_performed_;
-  int last_frame_number_begin_main_frame_sent_;
-  int last_frame_number_invalidate_compositor_frame_sink_performed_;
+  int commit_count_ = 0;
+  int current_frame_number_ = 0;
+  int last_frame_number_submit_performed_ = -1;
+  int last_frame_number_draw_performed_ = -1;
+  int last_frame_number_begin_main_frame_sent_ = -1;
+  int last_frame_number_invalidate_compositor_frame_sink_performed_ = -1;
 
   // These are used to ensure that an action only happens once per frame,
   // deadline, etc.
-  bool draw_funnel_;
-  bool send_begin_main_frame_funnel_;
-  bool invalidate_compositor_frame_sink_funnel_;
-  bool impl_side_invalidation_funnel_;
-  // prepare_tiles_funnel_ is "filled" each time PrepareTiles is called
-  // and "drained" on each BeginImplFrame. If the funnel gets too full,
-  // we start throttling ACTION_PREPARE_TILES such that we average one
-  // PrepareTiles per BeginImplFrame.
-  int prepare_tiles_funnel_;
+  bool did_draw_ = false;
+  // Initialized to true to prevent begin main frame before begin frames have
+  // started. Reset to true when we stop asking for begin frames.
+  bool did_send_begin_main_frame_ = true;
+  bool did_invalidate_compositor_frame_sink_ = false;
+  bool did_perform_impl_side_invalidation_ = false;
+  bool did_prepare_tiles_ = false;
 
-  int consecutive_checkerboard_animations_;
-  int pending_submit_frames_;
-  int submit_frames_with_current_compositor_frame_sink_;
-  bool needs_redraw_;
-  bool needs_prepare_tiles_;
-  bool needs_begin_main_frame_;
-  bool needs_one_begin_impl_frame_;
-  bool visible_;
-  bool begin_frame_source_paused_;
-  bool resourceless_draw_;
-  bool can_draw_;
-  bool has_pending_tree_;
-  bool pending_tree_is_ready_for_activation_;
-  bool active_tree_needs_first_draw_;
-  bool did_create_and_initialize_first_compositor_frame_sink_;
-  TreePriority tree_priority_;
-  ScrollHandlerState scroll_handler_state_;
-  bool critical_begin_main_frame_to_activate_is_fast_;
-  bool main_thread_missed_last_deadline_;
-  bool skip_next_begin_main_frame_to_reduce_latency_;
-  bool defer_commits_;
-  bool video_needs_begin_frames_;
-  bool last_commit_had_no_updates_;
-  bool wait_for_ready_to_draw_;
-  bool did_draw_in_last_frame_;
-  bool did_submit_in_last_frame_;
-  bool needs_impl_side_invalidation_;
+  int consecutive_checkerboard_animations_ = 0;
+  int pending_submit_frames_ = 0;
+  int submit_frames_with_current_compositor_frame_sink_ = 0;
+  bool needs_redraw_ = false;
+  bool needs_prepare_tiles_ = false;
+  bool needs_begin_main_frame_ = false;
+  bool needs_one_begin_impl_frame_ = false;
+  bool visible_ = false;
+  bool begin_frame_source_paused_ = false;
+  bool resourceless_draw_ = false;
+  bool can_draw_ = false;
+  bool has_pending_tree_ = false;
+  bool pending_tree_is_ready_for_activation_ = false;
+  bool active_tree_needs_first_draw_ = false;
+  bool did_create_and_initialize_first_compositor_frame_sink_ = false;
+  TreePriority tree_priority_ = NEW_CONTENT_TAKES_PRIORITY;
+  ScrollHandlerState scroll_handler_state_ =
+      ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER;
+  bool critical_begin_main_frame_to_activate_is_fast_ = true;
+  bool main_thread_missed_last_deadline_ = false;
+  bool skip_next_begin_main_frame_to_reduce_latency_ = false;
+  bool defer_commits_ = false;
+  bool video_needs_begin_frames_ = false;
+  bool last_commit_had_no_updates_ = false;
+  bool wait_for_ready_to_draw_ = false;
+  bool did_draw_in_last_frame_ = false;
+  bool did_submit_in_last_frame_ = false;
+  bool needs_impl_side_invalidation_ = false;
 
-  bool previous_pending_tree_was_impl_side_;
-  bool current_pending_tree_is_impl_side_;
+  bool previous_pending_tree_was_impl_side_ = false;
+  bool current_pending_tree_is_impl_side_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

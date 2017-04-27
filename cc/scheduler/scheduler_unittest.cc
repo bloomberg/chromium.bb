@@ -1166,33 +1166,55 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 }
 
-TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
+TEST_F(SchedulerTest, DidPrepareTilesPreventsPrepareTilesForOneFrame) {
   std::unique_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
       base::WrapUnique(new SchedulerClientNeedsPrepareTilesInDraw);
   SetUpScheduler(EXTERNAL_BFS, std::move(client));
-
-  // Simulate a few visibility changes and associated PrepareTiles.
-  for (int i = 0; i < 10; i++) {
-    scheduler_->SetVisible(false);
-    scheduler_->WillPrepareTiles();
-    scheduler_->DidPrepareTiles();
-
-    scheduler_->SetVisible(true);
-    scheduler_->WillPrepareTiles();
-    scheduler_->DidPrepareTiles();
-  }
 
   client_->Reset();
   scheduler_->SetNeedsRedraw();
   EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
 
   client_->Reset();
-  AdvanceFrame();
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 1);
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 
   client_->Reset();
-  task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
+
+  // We don't want to hinder scheduled prepare tiles for more than one frame
+  // even if we call unscheduled prepare tiles many times.
+  for (int i = 0; i < 10; i++) {
+    scheduler_->WillPrepareTiles();
+    scheduler_->DidPrepareTiles();
+  }
+
+  client_->Reset();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+
+  // No scheduled prepare tiles because we've already counted a prepare tiles in
+  // between frames.
+  client_->Reset();
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
+
+  client_->Reset();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+
+  // Resume scheduled prepare tiles.
+  client_->Reset();
+  task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
