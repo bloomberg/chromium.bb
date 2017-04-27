@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_responder.h"
@@ -232,6 +233,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost("9999"));
   ASSERT_TRUE(LaunchColliderOnLocalHost("http://localhost:9999", "8089"));
