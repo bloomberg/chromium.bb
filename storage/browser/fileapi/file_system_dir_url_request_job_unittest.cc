@@ -22,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -179,8 +180,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         url.GetOrigin().host(), file_system_context));
     empty_context_.set_job_factory(job_factory_.get());
 
-    request_ = empty_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate_.get());
+    request_ = empty_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
+                                            delegate_.get(),
+                                            TRAFFIC_ANNOTATION_FOR_TESTS);
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
     if (run_to_completion)

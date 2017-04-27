@@ -20,6 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -148,8 +149,9 @@ class FileWriterDelegateTest : public PlatformTest {
                        int64_t allowed_growth) {
     file_writer_delegate_.reset(
         CreateWriterDelegate(test_file_path, offset, allowed_growth));
-    request_ = empty_context_.CreateRequest(
-        blob_url, net::DEFAULT_PRIORITY, file_writer_delegate_.get());
+    request_ = empty_context_.CreateRequest(blob_url, net::DEFAULT_PRIORITY,
+                                            file_writer_delegate_.get(),
+                                            TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   // This should be alive until the very end of this instance.
@@ -379,8 +381,9 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   // Credate another FileWriterDelegate for concurrent write.
   file_writer_delegate2.reset(
       CreateWriterDelegate("test2", 0, std::numeric_limits<int64_t>::max()));
-  request2 = empty_context_.CreateRequest(
-      kBlobURL2, net::DEFAULT_PRIORITY, file_writer_delegate2.get());
+  request2 = empty_context_.CreateRequest(kBlobURL2, net::DEFAULT_PRIORITY,
+                                          file_writer_delegate2.get(),
+                                          TRAFFIC_ANNOTATION_FOR_TESTS);
 
   Result result, result2;
   ASSERT_EQ(0, usage());
