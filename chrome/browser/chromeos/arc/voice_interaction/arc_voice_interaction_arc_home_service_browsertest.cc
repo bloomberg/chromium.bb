@@ -1,0 +1,155 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
+
+#include <string>
+#include <vector>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
+#include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
+
+namespace arc {
+
+namespace {
+
+class AXTreeSnapshotWaiter {
+ public:
+  AXTreeSnapshotWaiter() = default;
+
+  void Wait() { loop_.Run(); }
+
+  const ui::AXTreeUpdate& snapshot() const { return snapshot_; }
+
+  void ReceiveSnapshot(const ui::AXTreeUpdate& snapshot) {
+    snapshot_ = snapshot;
+    loop_.Quit();
+  }
+
+ private:
+  ui::AXTreeUpdate snapshot_;
+  base::RunLoop loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXTreeSnapshotWaiter);
+};
+
+}  // namespace
+
+class ArcVoiceInteractionArcHomeServiceTest : public InProcessBrowserTest {
+ public:
+  ArcVoiceInteractionArcHomeServiceTest() = default;
+  ~ArcVoiceInteractionArcHomeServiceTest() override = default;
+
+ protected:
+  mojom::VoiceInteractionStructurePtr GetVoiceInteractionStructure(
+      const std::string& html) {
+    GURL url("data:text/html," + html);
+    ui_test_utils::NavigateToURL(browser(), url);
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    AXTreeSnapshotWaiter waiter;
+    web_contents->RequestAXTreeSnapshot(base::Bind(
+        &AXTreeSnapshotWaiter::ReceiveSnapshot, base::Unretained(&waiter)));
+    waiter.Wait();
+    auto node = ui::AXSnapshotNodeAndroid::Create(waiter.snapshot(), false);
+    return ArcVoiceInteractionArcHomeService::
+        CreateVoiceInteractionStructureForTesting(*node);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcVoiceInteractionArcHomeServiceTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
+                       VoiceInteractionStructurePositionTest) {
+  auto result = GetVoiceInteractionStructure(
+      "<div style='position:absolute;width:200px;height:200px'>"
+      "<p style='position:absolute;top:20px;left:20px;margin:0'>Hello</p>"
+      "</div>");
+  ASSERT_FALSE(result.is_null());
+  ASSERT_EQ(result->children.size(), 1ul);
+  ASSERT_EQ(result->children[0]->children.size(), 1ul);
+
+  auto& child = result->children[0]->children[0];
+  ASSERT_EQ(base::UTF16ToUTF8(child->text), "Hello");
+  ASSERT_EQ(child->rect.x(), 20);
+  ASSERT_EQ(child->rect.y(), 20);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
+                       VoiceInteractionStructureInputSelectionTest) {
+  auto result = GetVoiceInteractionStructure(
+      "<html>"
+      "  <body>"
+      "    <input id='input' value='Hello, world'/>"
+      "    <script type='text/javascript'>"
+      "      var input = document.getElementById('input');"
+      "      input.select();"
+      "      input.selectionStart = 0;"
+      "      input.selectionEnd = 5;"
+      "    </script>"
+      "  </body>"
+      "</html>");
+  auto& content_root = result->children[0];
+  ASSERT_EQ(content_root->children.size(), 1ul);
+  auto& child = content_root->children[0];
+  ASSERT_FALSE(child.is_null());
+  ASSERT_EQ(base::UTF16ToUTF8(child->text), "Hello, world");
+  ASSERT_FALSE(child->selection.is_null());
+  ASSERT_EQ(0, child->selection->start_selection);
+  ASSERT_EQ(5, child->selection->end_selection);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
+                       VoiceInteractionStructureMultipleSelectionTest) {
+  auto result = GetVoiceInteractionStructure(
+      "<html>"
+      "  <body>"
+      "    <b id='node1'>foo</b>"
+      "    <b>middle</b>"
+      "    <b id='node2'>bar</b>"
+      "    <script type='text/javascript'>"
+      "      var element1 = document.getElementById('node1');"
+      "      var node1 = element1.childNodes.item(0);"
+      "      var range=document.createRange();"
+      "      range.setStart(node1, 1);"
+      "      var element2 = document.getElementById('node2');"
+      "      var node2 = element2.childNodes.item(0);"
+      "      range.setEnd(node2, 1);"
+      "      var selection=window.getSelection();"
+      "      selection.removeAllRanges();"
+      "      selection.addRange(range);"
+      "    </script>"
+      "  </body>"
+      "</html>");
+  ASSERT_EQ(result->children.size(), 1ul);
+  auto& content_root = result->children[0];
+  ASSERT_EQ(content_root->children.size(), 3ul);
+
+  auto& grand_child1 = content_root->children[0];
+  ASSERT_FALSE(grand_child1->selection.is_null());
+  ASSERT_EQ(grand_child1->selection->start_selection, 1);
+  ASSERT_EQ(grand_child1->selection->end_selection, 3);
+
+  auto& grand_child2 = content_root->children[1];
+  ASSERT_FALSE(grand_child2->selection.is_null());
+  ASSERT_EQ(grand_child2->selection->start_selection, 0);
+  ASSERT_EQ(grand_child2->selection->end_selection, 6);
+
+  auto& grand_child3 = content_root->children[2];
+  ASSERT_FALSE(grand_child3->selection.is_null());
+  ASSERT_EQ(grand_child3->selection->start_selection, 0);
+  ASSERT_EQ(grand_child3->selection->end_selection, 1);
+}
+
+}  // namespace arc
