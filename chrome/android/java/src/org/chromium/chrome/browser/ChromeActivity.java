@@ -748,7 +748,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
-            mContextualSearchManager = new ContextualSearchManager(this, getWindowAndroid(), this);
+            mContextualSearchManager = new ContextualSearchManager(this, this);
         }
 
         if (ReaderModeManager.isEnabled(this)) {

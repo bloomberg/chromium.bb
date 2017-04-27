@@ -18,6 +18,11 @@ interface ContextualSearchSelectionHandler {
     public void handleScroll();
 
     /**
+     * Handle the selection being cleared on the base page.
+     */
+    public void handleSelectionCleared();
+
+    /**
      * Handle a valid tap gesture on the base page.
      */
     public void handleValidTap();
@@ -59,6 +64,11 @@ interface ContextualSearchSelectionHandler {
      * Handle suppression of a Tap gesture.
      */
     public void handleSuppressedTap();
+
+    /**
+     * Handle a Tap gesture that has not been suppressed by showing the Tap Search UI.
+     */
+    public void handleNonSuppressedTap();
 
     /**
      * Handle updating metrics to reflect that a Tap gesture <i>would</i> be suppressed

@@ -18,8 +18,7 @@ struct ContextualSearchContext {
  public:
   ContextualSearchContext(JNIEnv* env, jobject obj);
   // Constructor for tests.
-  ContextualSearchContext(const std::string& selected_text,
-                          const std::string& home_country,
+  ContextualSearchContext(const std::string& home_country,
                           const GURL& page_url,
                           const std::string& encoding);
   ~ContextualSearchContext();
@@ -44,9 +43,14 @@ struct ContextualSearchContext {
   void SetResolveProperties(
       JNIEnv* env,
       jobject obj,
-      const base::android::JavaParamRef<jstring>& j_selection,
       const base::android::JavaParamRef<jstring>& j_home_country,
       jboolean j_may_send_base_page_url);
+
+  // Adjust the current selection offsets by the given signed amounts.
+  void AdjustSelection(JNIEnv* env,
+                       jobject obj,
+                       jint j_start_adjust,
+                       jint j_end_adjust);
 
   // Gets the URL of the base page.
   const GURL GetBasePageUrl() const;
@@ -67,9 +71,6 @@ struct ContextualSearchContext {
                                 int end_offset,
                                 const base::string16& surrounding_text);
 
-  // Gets the original selection.
-  const std::string GetOriginalSelectedText() const;
-
   // Gets the text surrounding the selection (including the selection).
   const base::string16 GetSurroundingText() const;
 
@@ -87,7 +88,6 @@ struct ContextualSearchContext {
   bool can_resolve;
   bool can_send_base_page_url;
 
-  std::string selected_text;
   std::string home_country;
   GURL base_page_url;
   std::string base_page_encoding;

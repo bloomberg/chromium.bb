@@ -297,24 +297,20 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   if (context_ == nullptr)
     return;
 
-  // Sometimes the surroundings are 0, 0, '', so fall back on the selection.
-  // See crbug.com/393100.
-  bool use_selection = false;
+  // Sometimes the surroundings are 0, 0, '', so run the callback with empty
+  // data in that case. See crbug.com/393100.
   if (start_offset == 0 && end_offset == 0 && surrounding_text.length() == 0) {
-    use_selection = true;
-    end_offset = context_->GetOriginalSelectedText().length();
+    surrounding_text_callback_.Run(std::string(), base::string16(), 0, 0);
+    return;
   }
-  const base::string16& surrounding_text_or_selection(
-      use_selection ? base::UTF8ToUTF16(context_->GetOriginalSelectedText())
-                    : surrounding_text);
 
   // Pin the start and end offsets to ensure they point within the string.
-  int surrounding_length = surrounding_text_or_selection.length();
+  int surrounding_length = surrounding_text.length();
   start_offset = std::min(surrounding_length, std::max(0, start_offset));
   end_offset = std::min(surrounding_length, std::max(0, end_offset));
 
   context_->SetSelectionSurroundings(start_offset, end_offset,
-                                     surrounding_text_or_selection);
+                                     surrounding_text);
 
   // Call the Java surrounding callback with a shortened copy of the
   // surroundings to use as a sample of the surrounding text.
@@ -324,9 +320,9 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   size_t selection_start = start_offset;
   size_t selection_end = end_offset;
   int sample_padding_each_side = sample_surrounding_size / 2;
-  base::string16 sample_surrounding_text = SampleSurroundingText(
-      surrounding_text_or_selection, sample_padding_each_side, &selection_start,
-      &selection_end);
+  base::string16 sample_surrounding_text =
+      SampleSurroundingText(surrounding_text, sample_padding_each_side,
+                            &selection_start, &selection_end);
   DCHECK(selection_start <= selection_end);
   surrounding_text_callback_.Run(context_->GetBasePageEncoding(),
                                  sample_surrounding_text, selection_start,

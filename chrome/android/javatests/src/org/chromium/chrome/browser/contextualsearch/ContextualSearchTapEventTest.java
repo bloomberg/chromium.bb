@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import android.content.Context;
 import android.net.Uri;
@@ -20,12 +22,13 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SelectionClient;
 import org.chromium.content.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
@@ -42,7 +45,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
     private SelectionClient mContextualSearchClient;
 
     /**
-     * A ContextualSearchRequest that forgoes URI template lookup.
+     * A ContextualSearchRequest that foregoes URI template lookup.
      */
     private static class MockContextualSearchRequest extends ContextualSearchRequest {
         public MockContextualSearchRequest(String term, String altTerm, boolean prefetch) {
@@ -83,9 +86,8 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
      * ContextualSearchManager wrapper that prevents network requests and most native calls.
      */
     private static class ContextualSearchManagerWrapper extends ContextualSearchManager {
-        public ContextualSearchManagerWrapper(ChromeActivity activity,
-                WindowAndroid windowAndroid) {
-            super(activity, windowAndroid, null);
+        public ContextualSearchManagerWrapper(ChromeActivity activity) {
+            super(activity, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             ContentViewCore contentView = getSelectionController().getBaseContentView();
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
@@ -113,7 +115,10 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
 
         @Override
         protected void nativeGatherSurroundingText(long nativeContextualSearchManager,
-                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {}
+                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {
+            getContextualSearchInternalStateController().notifyFinishedWorkOn(
+                    InternalState.GATHERING_SURROUNDINGS);
+        }
 
         /**
          * @return A stubbed ContentViewCore for mocking text selection.
@@ -195,13 +200,26 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
     /**
      * Trigger text selection on the contextual search manager.
      */
-    private void mockTapText(String text) {
+    private void mockLongpressText(String text) {
         mContextualSearchManager.getBaseContentView().setSelectedText(text);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mContextualSearchClient.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_SHOWN,
                         0, 0);
+            }
+        });
+    }
+
+    /**
+     * Trigger text selection on the contextual search manager.
+     */
+    private void mockTapText(String text) {
+        mContextualSearchManager.getBaseContentView().setSelectedText(text);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContextualSearchClient.showUnhandledTapUIIfNeeded(0, 0);
             }
         });
     }
@@ -216,6 +234,15 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
                 mContextualSearchClient.showUnhandledTapUIIfNeeded(0, 0);
                 mContextualSearchClient.onSelectionEvent(
                         SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
+            }
+        });
+    }
+
+    private void mockSelectWordAroundCaretAck(final String text) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContextualSearchManager.handleSelection(text, true, SelectionType.TAP, 0, 0);
             }
         });
     }
@@ -239,8 +266,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
                 mPanelManager.setContainerView(new LinearLayout(activity));
                 mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
-                mContextualSearchManager =
-                        new ContextualSearchManagerWrapper(activity, activity.getWindowAndroid());
+                mContextualSearchManager = new ContextualSearchManagerWrapper(activity);
                 mPanel = new ContextualSearchPanelWrapper(activity, null, mPanelManager);
                 mPanel.setManagementDelegate(mContextualSearchManager);
                 mContextualSearchManager.setContextualSearchPanel(mPanel);
@@ -260,23 +286,41 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testTextTapFollowedByNonTextTap() {
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testLongpressFollowedByNonTextTap() {
         assertTrue(mPanelManager.getRequestPanelShowCount() == 0);
 
         // Fake a selection event.
-        mockTapText("text");
+        mockLongpressText("text");
 
-        assertTrue(mPanelManager.getRequestPanelShowCount() == 1);
-        assertTrue(mPanelManager.getPanelHideCount() == 0);
-        assertTrue(mContextualSearchManager.getSelectionController().getSelectedText()
-                .equals("text"));
+        assertThat(mPanelManager.getRequestPanelShowCount(), is(1));
+        assertThat(mPanelManager.getPanelHideCount(), is(0));
+        assertThat(mContextualSearchManager.getSelectionController().getSelectedText(),
+                equalTo("text"));
 
         // Fake tap on non-text.
         mockTapEmptySpace();
 
-        assertTrue(mPanelManager.getRequestPanelShowCount() == 1);
-        assertTrue(mPanelManager.getPanelHideCount() == 1);
-        assertTrue(mContextualSearchManager.getSelectionController().getSelectedText() == null);
+        assertThat(mPanelManager.getRequestPanelShowCount(), is(1));
+        assertThat(mPanelManager.getPanelHideCount(), is(1));
+        assertNull(mContextualSearchManager.getSelectionController().getSelectedText());
+    }
+
+    /**
+     * Tests that a Tap gesture followed by tapping empty space closes the panel.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testTextTapFollowedByNonTextTap() {
+        assertTrue(mPanelManager.getRequestPanelShowCount() == 0);
+
+        // Fake a Tap event.
+        mockTapText("text");
+        // Right now the tap-processing sequence will stall at selectWordAroundCaret, so we need
+        // to prod it forward with a manual hack:
+        mockSelectWordAroundCaretAck("text");
+        assertThat(mPanelManager.getRequestPanelShowCount(), is(1));
+        assertThat(mPanelManager.getPanelHideCount(), is(0));
     }
 }
