@@ -33,9 +33,8 @@ class CORE_EXPORT ScriptModule final {
                               AccessControlStatus);
 
   // TODO(kouhei): Remove copy ctor
-  ScriptModule() {}
-  ScriptModule(WTF::HashTableDeletedValueType)
-      : module_(WTF::kHashTableDeletedValue) {}
+  ScriptModule();
+  ScriptModule(WTF::HashTableDeletedValueType);
   ~ScriptModule();
 
   // Returns exception, if any.
