@@ -64,7 +64,7 @@ struct OverlayCheck_Params {
   bool operator<(const OverlayCheck_Params& plane) const;
 
   gfx::Size buffer_size;
-  gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_INVALID;
+  gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
   gfx::Rect display_rect;
   gfx::RectF crop_rect;
@@ -76,4 +76,3 @@ struct OverlayCheck_Params {
 }  // namespace ui
 
 #endif  // UI_OZONE_COMMON_GPU_OZONE_GPU_MESSAGE_PARAMS_H_
-

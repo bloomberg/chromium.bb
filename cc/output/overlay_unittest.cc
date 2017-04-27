@@ -1006,14 +1006,14 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
   EXPECT_EQ(1U, candidate_list.size());
 }
 
-TEST_F(SingleOverlayOnTopTest, RejectTransform) {
+TEST_F(SingleOverlayOnTopTest, AcceptMirrorYTransform) {
   gfx::Rect rect = kOverlayRect;
   rect.Offset(0, -rect.height());
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
-  pass->shared_quad_state_list.back()
-      ->quad_to_target_transform.RotateAboutZAxis(90.f);
+  pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(1.f,
+                                                                      -1.f);
 
   OverlayCandidateList candidate_list;
   base::flat_map<int, FilterOperations*> render_pass_filters;
@@ -1022,7 +1022,7 @@ TEST_F(SingleOverlayOnTopTest, RejectTransform) {
       resource_provider_.get(), pass.get(), render_pass_filters,
       render_pass_background_filters, &candidate_list, nullptr, nullptr,
       &damage_rect_, &content_bounds_);
-  ASSERT_EQ(0U, candidate_list.size());
+  ASSERT_EQ(1U, candidate_list.size());
 }
 
 TEST_F(UnderlayTest, Allow90DegreeRotation) {

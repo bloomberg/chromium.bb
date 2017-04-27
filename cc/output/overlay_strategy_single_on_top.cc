@@ -37,8 +37,6 @@ bool OverlayStrategySingleOnTop::Attempt(
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
-        // TODO(dcastagna): Remove this once drm platform supports transforms.
-        candidate.transform == gfx::OVERLAY_TRANSFORM_NONE &&
         !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
       // We currently reject quads with alpha that do not request alpha blending
       // since the alpha channel might not be set to 1 and we're not disabling
