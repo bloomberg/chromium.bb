@@ -544,6 +544,18 @@ PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
 
   if (anchor->IsShadowRoot())
     return PositionInFlatTree(anchor->OwnerShadowHost(), pos.AnchorType());
+  if (pos.IsBeforeAnchor() || pos.IsAfterAnchor()) {
+    if (anchor->CanParticipateInFlatTree() &&
+        !FlatTreeTraversal::Parent(*anchor)) {
+      // For Before/AfterAnchor, if |anchor| doesn't have parent in the flat
+      // tree, there is no valid corresponding PositionInFlatTree.
+      // Since this function is a primitive function, we do not adjust |pos|
+      // to somewhere else in flat tree.
+      // Reached by unit test
+      // FrameSelectionTest.SelectInvalidPositionInFlatTreeDoesntCrash.
+      return PositionInFlatTree();
+    }
+  }
   // TODO(yosin): Once we have a test case for SLOT or active insertion point,
   // this function should handle it.
   return PositionInFlatTree(anchor, pos.AnchorType());

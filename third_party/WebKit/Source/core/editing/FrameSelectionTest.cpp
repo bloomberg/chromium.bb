@@ -328,4 +328,25 @@ TEST_F(FrameSelectionTest, SetSelectedRangePreservesHandle) {
          "selectSetSelectedRange they should be present after it.";
 }
 
+// Regression test for crbug.com/702756
+// Test case excerpted from editing/undo/redo_correct_selection.html
+TEST_F(FrameSelectionTest, SelectInvalidPositionInFlatTreeDoesntCrash) {
+  SetBodyContent("foo<option><select></select></option>");
+  Element* body = GetDocument().body();
+  Element* select = GetDocument().QuerySelector("select");
+  Node* foo = body->firstChild();
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(body, 0))
+                               // SELECT@AfterAnchor is invalid in flat tree.
+                               .Extend(Position::AfterNode(select))
+                               .Build());
+  // Should not crash inside.
+  const VisibleSelectionInFlatTree& selection =
+      Selection().ComputeVisibleSelectionInFlatTree();
+
+  // This only records the current behavior. It might be changed in the future.
+  EXPECT_EQ(PositionInFlatTree(foo, 0), selection.Base());
+  EXPECT_EQ(PositionInFlatTree(foo, 0), selection.Extent());
+}
+
 }  // namespace blink
