@@ -20,6 +20,9 @@ namespace payments {
 //                         supported web app in this payment method manifest.
 //                         Note that a payment method manifest might contain
 //                         multiple supported web apps ids.
+//
+//  expire_date            The expire date in seconds from 1601-01-01 00:00:00
+//                         UTC.
 //  method_name            The method name.
 //  web_app_id             The supported web app id.
 //                         (WebAppManifestSection.id).
@@ -37,6 +40,9 @@ class PaymentMethodManifestTable : public WebDatabaseTable {
   bool CreateTablesIfNecessary() override;
   bool IsSyncable() override;
   bool MigrateToVersion(int version, bool* update_compatible_version) override;
+
+  // Remove expired data.
+  void RemoveExpiredData();
 
   // Adds |payment_method|'s manifest. |web_app_ids| contains supported web apps
   // ids.

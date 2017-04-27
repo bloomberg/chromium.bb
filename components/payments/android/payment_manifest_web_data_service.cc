@@ -72,6 +72,7 @@ std::unique_ptr<WDTypedResult>
 PaymentManifestWebDataService::GetPaymentWebAppManifestImpl(
     const std::string& web_app,
     WebDatabase* db) {
+  RemoveExpiredData(db);
   return base::MakeUnique<
       WDResult<std::vector<mojom::WebAppManifestSectionPtr>>>(
       PAYMENT_WEB_APP_MANIFEST,
@@ -94,10 +95,16 @@ std::unique_ptr<WDTypedResult>
 PaymentManifestWebDataService::GetPaymentMethodManifestImpl(
     const std::string& payment_method,
     WebDatabase* db) {
+  RemoveExpiredData(db);
   return base::MakeUnique<WDResult<std::vector<std::string>>>(
       PAYMENT_METHOD_MANIFEST,
       PaymentMethodManifestTable::FromWebDatabase(db)->GetManifest(
           payment_method));
+}
+
+void PaymentManifestWebDataService::RemoveExpiredData(WebDatabase* db) {
+  PaymentMethodManifestTable::FromWebDatabase(db)->RemoveExpiredData();
+  WebAppManifestSectionTable::FromWebDatabase(db)->RemoveExpiredData();
 }
 
 }  // namespace payments
