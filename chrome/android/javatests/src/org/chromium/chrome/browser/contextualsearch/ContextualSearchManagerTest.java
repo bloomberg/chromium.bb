@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
@@ -1363,7 +1364,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForPanelToPeek();
         assertLoadedLowPriorityUrl();
         clickNode("question-mark");
-        waitForGestureProcessing();
+        waitForPanelToClose();
         assertNull(getSelectedText());
     }
 
@@ -1408,8 +1409,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("question-mark");
-        waitForGestureProcessing();
-        assertPanelClosedOrUndefined();
+        waitForPanelToClose();
         assertNull(mSelectionController.getSelectedText());
     }
 
@@ -1438,9 +1438,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals("States", getSelectedText());
         waitForPanelToPeek();
         clickNode("states-far");
-        waitForGestureProcessing();
+        waitForPanelToClose();
         assertNull(getSelectedText());
-        assertPanelClosedOrUndefined();
         clickNode("states-far");
         waitForGestureProcessing();
         waitForPanelToPeek();
@@ -2866,5 +2865,69 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         // Assert that the URL was loaded.
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), testUrl);
+    }
+
+    /**
+     * Tests accessibility mode: Tap and Long-press don't activate CS.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testAccesibilityMode() throws InterruptedException, TimeoutException {
+        mManager.onAccessibilityModeChanged(true);
+
+        // Simulate a tap that resolves to show the Bar.
+        clickNode("intelligence");
+        assertNoContentViewCore();
+        assertNoSearchesLoaded();
+
+        // Simulate a Long-press.
+        longPressNodeWithoutWaiting("states");
+        assertNoContentViewCore();
+        assertNoSearchesLoaded();
+    }
+
+    /**
+     * Tests that the Manager cycles through all the expected Internal States on Tap that Resolves.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testAllInternalStatesVisitedResolvingTap()
+            throws InterruptedException, TimeoutException {
+        // Set up a tracking version of the Internal State Controller.
+        ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
+                ContextualSearchInternalStateControllerWrapper
+                        .makeNewInternalStateControllerWrapper(mManager);
+        mManager.setContextualSearchInternalStateController(internalStateControllerWrapper);
+
+        // Simulate a tap that resolves to show the Bar.
+        simulateTapSearch("search");
+        assertEquals(InternalState.SHOWING_TAP_SEARCH, internalStateControllerWrapper.getState());
+
+        assertEquals(internalStateControllerWrapper.getStartedStates(),
+                internalStateControllerWrapper.getFinishedStates());
+        assertEquals(ContextualSearchInternalStateControllerWrapper.EXPECTED_TAP_RESOLVE_SEQUENCE,
+                internalStateControllerWrapper.getFinishedStates());
+    }
+
+    /**
+     * Tests that the Manager cycles through all the expected Internal States on a Long-press.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testAllInternalStatesVisitedLongpress()
+            throws InterruptedException, TimeoutException {
+        // Set up a tracking version of the Internal State Controller.
+        ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
+                ContextualSearchInternalStateControllerWrapper
+                        .makeNewInternalStateControllerWrapper(mManager);
+        mManager.setContextualSearchInternalStateController(internalStateControllerWrapper);
+
+        // Simulate a Long-press to show the Bar.
+        simulateLongPressSearch("search");
+
+        assertEquals(internalStateControllerWrapper.getStartedStates(),
+                internalStateControllerWrapper.getFinishedStates());
+        assertEquals(ContextualSearchInternalStateControllerWrapper.EXPECTED_LONGPRESS_SEQUENCE,
+                internalStateControllerWrapper.getFinishedStates());
     }
 }

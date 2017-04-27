@@ -90,7 +90,7 @@ class ContextualSearchDelegateTest : public testing::Test {
       int start_offset,
       int end_offset) {
     test_context_ = new ContextualSearchContext(
-        selected_text, std::string(), GURL(kSomeSpecificBasePage), "utf-8");
+        std::string(), GURL(kSomeSpecificBasePage), "utf-8");
     // ContextualSearchDelegate class takes ownership of the context.
     delegate_->SetContextForTesting(test_context_->GetWeakPtr());
 
@@ -131,9 +131,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   // from tests, but can be called here because this is a friend class.
   //-------------------------------------------------------------------
   void CreateTestContext() {
-    test_context_ =
-        new ContextualSearchContext(std::string("word"), std::string(),
-                                    GURL(kSomeSpecificBasePage), "utf-8");
+    test_context_ = new ContextualSearchContext(
+        std::string(), GURL(kSomeSpecificBasePage), "utf-8");
     delegate_->SetContextForTesting(test_context_->GetWeakPtr());
   }
 
@@ -176,7 +175,7 @@ class ContextualSearchDelegateTest : public testing::Test {
                              int start_offset,
                              int end_offset) {
     test_context_ = new ContextualSearchContext(
-        "Bogus", std::string(), GURL(kSomeSpecificBasePage), "utf-8");
+        std::string(), GURL(kSomeSpecificBasePage), "utf-8");
     test_context_->SetSelectionSurroundings(start_offset, end_offset,
                                             surrounding_text);
     // ContextualSearchDelegate class takes ownership of the context.

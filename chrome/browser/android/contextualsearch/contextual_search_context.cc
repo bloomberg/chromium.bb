@@ -12,7 +12,6 @@
 ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
     : can_resolve(false),
       can_send_base_page_url(false),
-      selected_text(std::string()),
       home_country(std::string()),
       base_page_url(GURL()),
       surrounding_text(base::string16()),
@@ -23,12 +22,10 @@ ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
 }
 
 ContextualSearchContext::ContextualSearchContext(
-    const std::string& selected_text,
     const std::string& home_country,
     const GURL& page_url,
     const std::string& encoding)
-    : selected_text(selected_text),
-      home_country(home_country),
+    : home_country(home_country),
       base_page_url(page_url),
       base_page_encoding(encoding),
       weak_factory_(this) {
@@ -57,13 +54,23 @@ ContextualSearchContext::FromJavaContextualSearchContext(
 void ContextualSearchContext::SetResolveProperties(
     JNIEnv* env,
     jobject obj,
-    const base::android::JavaParamRef<jstring>& j_selection,
     const base::android::JavaParamRef<jstring>& j_home_country,
     jboolean j_may_send_base_page_url) {
   can_resolve = true;
-  selected_text = base::android::ConvertJavaStringToUTF8(env, j_selection);
   home_country = base::android::ConvertJavaStringToUTF8(env, j_home_country);
   can_send_base_page_url = j_may_send_base_page_url;
+}
+
+void ContextualSearchContext::AdjustSelection(JNIEnv* env,
+                                              jobject obj,
+                                              jint j_start_adjust,
+                                              jint j_end_adjust) {
+  DCHECK(start_offset + j_start_adjust >= 0);
+  DCHECK(start_offset + j_start_adjust <= (int)surrounding_text.length());
+  DCHECK(end_offset + j_end_adjust >= 0);
+  DCHECK(end_offset + j_end_adjust <= (int)surrounding_text.length());
+  start_offset += j_start_adjust;
+  end_offset += j_end_adjust;
 }
 
 // Accessors
@@ -104,10 +111,6 @@ void ContextualSearchContext::SetSelectionSurroundings(
   this->start_offset = start_offset;
   this->end_offset = end_offset;
   this->surrounding_text = surrounding_text;
-}
-
-const std::string ContextualSearchContext::GetOriginalSelectedText() const {
-  return selected_text;
 }
 
 const base::string16 ContextualSearchContext::GetSurroundingText() const {
