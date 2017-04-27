@@ -2438,7 +2438,7 @@ public class Tab
     /**
      * @return An instance of a {@link FullscreenManager}.
      */
-    protected FullscreenManager getFullscreenManager() {
+    public FullscreenManager getFullscreenManager() {
         return mFullscreenManager;
     }
 
