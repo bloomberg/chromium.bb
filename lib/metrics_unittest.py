@@ -174,10 +174,11 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     metric_mock = self.PatchObject(metrics, 'SecondsDistribution',
                                    autospec=True)
     self._mockSecondsDistribution = metric_mock.return_value
-
     metric_mock = self.PatchObject(metrics, 'PercentageDistribution',
                                    autospec=True)
     self._mockPercentageDistribution = metric_mock.return_value
+    metric_mock = self.PatchObject(metrics, 'Float', autospec=True)
+    self._mockFloat = metric_mock.return_value
 
     metric_mock = self.PatchObject(metrics, 'CumulativeMetric', autospec=True)
     self._mockCumulativeMetric = metric_mock.return_value
@@ -210,6 +211,16 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     self.assertEqual(metrics.CumulativeMetric.call_count, 1)
     self.assertEqual(metrics.CumulativeMetric.call_args[0][0],
                      'fubar/bucketing_loss')
+
+    self.assertEqual(metrics.Float.call_count, 2)
+    for call_args in metrics.Float.call_args_list:
+      self.assertEqual(call_args[0][0], 'fubar/duration_breakdown')
+    self.assertEqual(self._mockFloat.set.call_count, 2)
+    step_names = [x[1]['fields']['step_name']
+                  for x  in self._mockFloat.set.call_args_list]
+    step_ratios = [x[0][0] for x  in self._mockFloat.set.call_args_list]
+    self.assertEqual(set(step_names), {'step1', 'step2'})
+    self.assertEqual(set(step_ratios), {0.4, 0.1})
 
   def testBucketingLossApproximately(self):
     """Tests that we report the bucketing loss correctly."""
@@ -251,6 +262,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     self.assertEqual(set(breakdown_names),
                      {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
 
+    self.assertEqual(metrics.Float.call_count, 1)
+    self.assertEqual(metrics.Float.call_args[0][0], 'fubar/duration_breakdown')
+    self.assertEqual(self._mockFloat.set.call_count, 1)
+    self.assertEqual(self._mockFloat.set.call_args[1]['fields']['step_name'],
+                     'step1')
+
   def testNestedStepIgnored(self):
     """Tests that trying to enter nested .Step contexts raises."""
     with metrics.RuntimeBreakdownTimer('fubar') as runtime:
@@ -263,6 +280,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
                        metrics.PercentageDistribution.call_args_list]
     self.assertEqual(set(breakdown_names),
                      {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
+
+    self.assertEqual(metrics.Float.call_count, 1)
+    self.assertEqual(metrics.Float.call_args[0][0], 'fubar/duration_breakdown')
+    self.assertEqual(self._mockFloat.set.call_count, 1)
+    self.assertEqual(self._mockFloat.set.call_args[1]['fields']['step_name'],
+                     'step1')
 
   def testNestedStepsWithClientCodeException(self):
     """Test that breakdown is reported correctly when client code raises."""
@@ -278,6 +301,12 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
                        metrics.PercentageDistribution.call_args_list]
     self.assertEqual(set(breakdown_names),
                      {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
+
+    self.assertEqual(metrics.Float.call_count, 1)
+    self.assertEqual(metrics.Float.call_args[0][0], 'fubar/duration_breakdown')
+    self.assertEqual(self._mockFloat.set.call_count, 1)
+    self.assertEqual(self._mockFloat.set.call_args[1]['fields']['step_name'],
+                     'step1')
 
   def _GetFakeTime(self):
     return self._fake_time

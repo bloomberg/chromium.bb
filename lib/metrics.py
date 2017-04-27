@@ -305,6 +305,11 @@ class RuntimeBreakdownTimer(object):
         accrued in reporting all the percentages. The worst case bucketing loss
         for x steps is (x+1)/10. So, if you time across 9 steps, you should
         expect no more than 1% rounding error.
+  [experimental]
+  - .../timer/name/duration_breakdown - A Float metric, with one stream per Step
+        indicating the ratio of time spent in that step. The different steps are
+        differentiated via a field with key 'step_name'. Since some of the time
+        can be spent outside any steps, these ratios will sum to <= 1.
 
   NB: This helper can only be used if the field values are known at the
   beginning of the outer context and do not change as a result of any of the
@@ -338,6 +343,13 @@ class RuntimeBreakdownTimer(object):
           '%s/breakdown/%s' % (self._name, name),
           num_buckets=self.PERCENT_BUCKET_COUNT)
       step_metric.add(percent, fields=self._fields)
+
+      fields = dict(self._fields) if self._fields is not None else dict()
+      fields['step_name'] = name
+      # TODO(pprabhu): Convert _GetStepBreakdowns() to return ratios instead of
+      # percentage when the old PercentageDistribution reporting is deleted.
+      Float('%s/duration_breakdown' % self._name).set(percent / 100.0,
+                                                      fields=fields)
 
     unaccounted_metric = PercentageDistribution(
         '%s/breakdown_unaccounted' % self._name,
