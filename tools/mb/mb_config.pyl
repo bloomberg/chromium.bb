@@ -427,7 +427,6 @@
       'linux64': 'official',
       'mac64': 'official',
       'mac64-recipes': 'official',
-      'precise64': 'official_six_concurrent_links',
 
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
@@ -444,18 +443,19 @@
         '1': 'official_chrome_pgo_phase_1',
         '2': 'official_chrome_pgo_phase_2',
       },
-      # TODO(mmoss): Remove this once official recipes are working and this
-      # just becomes the regular "win64-pgo" builder.
-      'win64-pgo-recipes': {
-        '1': 'official_chrome_pgo_phase_1',
-        '2': 'official_chrome_pgo_phase_2',
-      },
+      # TODO(mmoss): Remove this once all official Windows recipes are working.
+      'win-recipes': 'official',
     },
 
     'official.desktop.continuous': {
       'mac beta': 'official',
       'mac stable': 'official',
       'mac trunk': 'official',
+      'linux64 beta': 'official_six_concurrent_links',
+      'linux64 stable': 'official_six_concurrent_links',
+      'linux64 trunk': 'official_six_concurrent_links',
+      # TODO(mmoss): These precise64 entries can go away once the newly renamed
+      # builders are fully deployed.
       'precise64 beta': 'official_six_concurrent_links',
       'precise64 stable': 'official_six_concurrent_links',
       'precise64 trunk': 'official_six_concurrent_links',
