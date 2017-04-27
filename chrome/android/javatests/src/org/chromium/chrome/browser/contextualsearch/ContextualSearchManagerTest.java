@@ -825,7 +825,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForGestureProcessing();
         waitForPanelToClose();
         assertPanelClosedOrUndefined();
-        assertNull(getSelectedText());
+        assertTrue(TextUtils.isEmpty(getSelectedText()));
     }
 
     /**
@@ -1347,7 +1347,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         clickNode("question-mark");
         waitForGestureProcessing();
         waitForPanelToCloseAndSelectionEmpty();
-        assertNull(getSelectedText());
+        assertTrue(TextUtils.isEmpty(getSelectedText()));
         assertLoadedNoUrl();
     }
 
