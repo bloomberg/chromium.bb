@@ -46,6 +46,8 @@ public abstract class FullScreenActivity extends ChromeActivity {
     protected static final String BUNDLE_TAB_URL = "tabUrl";
     private static final String TAG = "FullScreenActivity";
 
+    private Tab mTab;
+
     private WebContents mWebContents;
     @SuppressWarnings("unused") // Reference needed to prevent GC.
     private WebContentsObserver mWebContentsObserver;
@@ -82,10 +84,10 @@ public abstract class FullScreenActivity extends ChromeActivity {
     public void initializeState() {
         super.initializeState();
 
-        Tab tab = createTab();
-        getTabModelSelector().setTab(tab);
+        mTab = createTab();
         handleTabContentChanged();
-        tab.show(TabSelectionType.FROM_NEW);
+        getTabModelSelector().setTab(mTab);
+        mTab.show(TabSelectionType.FROM_NEW);
     }
 
     @Override
@@ -107,13 +109,18 @@ public abstract class FullScreenActivity extends ChromeActivity {
         return (SingleTabModelSelector) super.getTabModelSelector();
     }
 
+    @Override
+    public final Tab getActivityTab() {
+        return mTab;
+    }
+
     /**
      * Creates the {@link Tab} used by the FullScreenActivity.
      * If the {@code savedInstanceState} exists, then the user did not intentionally close the app
      * by swiping it away in the recent tasks list.  In that case, we try to restore the tab from
      * disk.
      */
-    protected Tab createTab() {
+    private Tab createTab() {
         Tab tab = null;
         boolean unfreeze = false;
 
@@ -142,7 +149,7 @@ public abstract class FullScreenActivity extends ChromeActivity {
         tab.addObserver(new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
-                assert tab == getActivityTab();
+                assert tab == mTab;
                 handleTabContentChanged();
             }
         });
@@ -150,10 +157,9 @@ public abstract class FullScreenActivity extends ChromeActivity {
     }
 
     private void handleTabContentChanged() {
-        final Tab tab = getActivityTab();
-        assert tab != null;
+        assert mTab != null;
 
-        WebContents webContents = tab.getWebContents();
+        WebContents webContents = mTab.getWebContents();
         if (mWebContents == webContents) return;
 
         // Clean up any old references to the previous WebContents.
@@ -175,7 +181,8 @@ public abstract class FullScreenActivity extends ChromeActivity {
                 if (hasCommitted && isInMainFrame) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
-                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
+                    mTab.updateBrowserControlsState(
+                            mTab.getBrowserControlsStateConstraints(), true);
                 }
             }
         };
@@ -197,13 +204,12 @@ public abstract class FullScreenActivity extends ChromeActivity {
 
     @Override
     protected boolean handleBackPressed() {
-        Tab tab = getActivityTab();
-        if (tab == null) return false;
+        if (mTab == null) return false;
 
         if (exitFullscreenIfShowing()) return true;
 
-        if (tab.canGoBack()) {
-            tab.goBack();
+        if (mTab.canGoBack()) {
+            mTab.goBack();
             return true;
         }
         return false;

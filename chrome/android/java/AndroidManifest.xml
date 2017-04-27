@@ -370,12 +370,6 @@ by a child template that "extends" this file.
             android:exported="false"
             {{ self.chrome_activity_common() }}>
         </activity>
-        <activity android:name="org.chromium.chrome.browser.FullscreenWebContentsActivity"
-            android:theme="@style/MainTheme"
-            android:exported="false"
-            {{ self.chrome_activity_common() }}
-            {{ self.supports_video_persistence() }} >
-        </activity>
 
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/MainTheme"
