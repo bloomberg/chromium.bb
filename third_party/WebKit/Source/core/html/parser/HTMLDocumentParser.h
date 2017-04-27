@@ -223,7 +223,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
            IsExecutingScript();
   }
 
-  std::unique_ptr<HTMLPreloadScanner> CreatePreloadScanner();
+  std::unique_ptr<HTMLPreloadScanner> CreatePreloadScanner(
+      TokenPreloadScanner::ScannerType);
 
   // Let the given HTMLPreloadScanner scan the input it has, and then preloads
   // resources using the resulting PreloadRequests and |m_preloader|.

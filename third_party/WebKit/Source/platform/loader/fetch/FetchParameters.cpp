@@ -39,7 +39,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
     : resource_request_(resource_request),
       charset_(charset),
       options_(ResourceFetcher::DefaultResourceOptions()),
-      speculative_preload_(false),
+      speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
@@ -52,7 +52,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
       options_(options),
-      speculative_preload_(false),
+      speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
@@ -65,7 +65,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const FetchInitiatorInfo& initiator)
     : resource_request_(resource_request),
       options_(ResourceFetcher::DefaultResourceOptions()),
-      speculative_preload_(false),
+      speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
@@ -129,9 +129,10 @@ void FetchParameters::SetResourceWidth(ResourceWidth resource_width) {
   }
 }
 
-void FetchParameters::SetSpeculativePreload(bool speculative_preload,
-                                            double discovery_time) {
-  speculative_preload_ = speculative_preload;
+void FetchParameters::SetSpeculativePreloadType(
+    SpeculativePreloadType speculative_preload_type,
+    double discovery_time) {
+  speculative_preload_type_ = speculative_preload_type;
   preload_discovery_time_ = discovery_time;
 }
 

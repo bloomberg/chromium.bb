@@ -189,7 +189,8 @@ class HTMLPreloadScannerTest : public testing::Test {
     scanner_ = HTMLPreloadScanner::Create(
         options, document_url,
         CachedDocumentParameters::Create(&dummy_page_holder_->GetDocument()),
-        CreateMediaValuesData());
+        CreateMediaValuesData(),
+        TokenPreloadScanner::ScannerType::kMainDocument);
   }
 
   void SetUp() override { RunSetUp(kViewportEnabled); }

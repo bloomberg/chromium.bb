@@ -81,7 +81,13 @@ Resource* PreloadRequest::Start(Document* document) {
     params.SetCharset(charset_.IsEmpty() ? document->characterSet().GetString()
                                          : charset_);
   }
-  params.SetSpeculativePreload(true, discovery_time_);
+  FetchParameters::SpeculativePreloadType speculative_preload_type =
+      FetchParameters::SpeculativePreloadType::kInDocument;
+  if (from_insertion_scanner_) {
+    speculative_preload_type =
+        FetchParameters::SpeculativePreloadType::kInserted;
+  }
+  params.SetSpeculativePreloadType(speculative_preload_type, discovery_time_);
 
   return document->Loader()->StartPreload(resource_type_, params);
 }
