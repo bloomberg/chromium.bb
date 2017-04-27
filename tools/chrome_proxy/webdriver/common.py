@@ -586,10 +586,11 @@ class IntegrationTest(unittest.TestCase):
 
   def checkLoFiResponse(self, http_response, expected_lo_fi):
     """Asserts that if expected the response headers contain the Lo-Fi directive
-    then the request headers do too. Also checks that the content size is less
-    than 100 if |expected_lo_fi|. Otherwise, checks that the response and
-    request headers don't contain the Lo-Fi directive and the content size is
-    greater than 100.
+    then the request headers do too. If the CPAT header contains if-heavy, the
+    request should not be LoFi. If-heavy will be deprecated in the future. Also
+    checks that the content size is less than 100 if |expected_lo_fi|.
+    Otherwise, checks that the response and request headers don't contain the
+    Lo-Fi directive and the content size is greater than 100.
 
     Args:
       http_response: The HTTPResponse object to check.
@@ -612,8 +613,11 @@ class IntegrationTest(unittest.TestCase):
         return True;
       return False;
     else:
-      self.assertNotIn('chrome-proxy-accept-transform',
-        http_response.request_headers)
+      if ('chrome-proxy-accept-transform' in http_response.request_headers):
+        cpat_request = http_response.request_headers[
+                       'chrome-proxy-accept-transform']
+        if ('empty-image' in cpat_request):
+          self.assertIn('if-heavy', cpat_request)
       self.assertNotIn('chrome-proxy-content-transform',
         http_response.response_headers)
       content_length = http_response.response_headers['content-length']
