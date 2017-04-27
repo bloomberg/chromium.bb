@@ -36,12 +36,14 @@ HostScanner::HostScanner(
     TetherHostFetcher* tether_host_fetcher,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
+    TetherHostResponseRecorder* tether_host_response_recorder,
     NetworkStateHandler* network_state_handler,
     NotificationPresenter* notification_presenter,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map)
     : tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
+      tether_host_response_recorder_(tether_host_response_recorder),
       network_state_handler_(network_state_handler),
       notification_presenter_(notification_presenter),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
@@ -75,7 +77,8 @@ void HostScanner::OnTetherHostsFetched(
   is_fetching_hosts_ = false;
 
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
-      tether_hosts, connection_manager_, host_scan_device_prioritizer_);
+      tether_hosts, connection_manager_, host_scan_device_prioritizer_,
+      tether_host_response_recorder_);
   host_scanner_operation_->AddObserver(this);
   host_scanner_operation_->Initialize();
 }
@@ -115,6 +118,7 @@ void HostScanner::OnTetherAvailabilityResponse(
                     status.connection_strength())
               : 100;
 
+      // TODO(khorimoto): Pass a HasConnectedToHost parameter to this function.
       network_state_handler_->AddTetherNetworkState(
           device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
               remote_device.GetDeviceId()),

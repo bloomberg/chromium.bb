@@ -22,10 +22,6 @@ class MockHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
   MockHostScanDevicePrioritizer();
   ~MockHostScanDevicePrioritizer() override;
 
-  MOCK_METHOD1(RecordSuccessfulTetherAvailabilityResponse,
-               void(const cryptauth::RemoteDevice&));
-  MOCK_METHOD1(RecordSuccessfulConnectTetheringResponse,
-               void(const cryptauth::RemoteDevice&));
   MOCK_CONST_METHOD1(SortByHostScanOrder,
                      void(std::vector<cryptauth::RemoteDevice>*));
 

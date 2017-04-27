@@ -7,6 +7,7 @@
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -64,12 +65,14 @@ std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::NewInstance(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
+    HostScanDevicePrioritizer* host_scan_device_prioritizer,
+    TetherHostResponseRecorder* tether_host_response_recorder) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(
-      devices_to_connect, connection_manager, host_scan_device_prioritizer);
+      devices_to_connect, connection_manager, host_scan_device_prioritizer,
+      tether_host_response_recorder);
 }
 
 // static
@@ -81,9 +84,11 @@ std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::BuildInstance(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
+    HostScanDevicePrioritizer* host_scan_device_prioritizer,
+    TetherHostResponseRecorder* tether_host_response_recorder) {
   return base::MakeUnique<HostScannerOperation>(
-      devices_to_connect, connection_manager, host_scan_device_prioritizer);
+      devices_to_connect, connection_manager, host_scan_device_prioritizer,
+      tether_host_response_recorder);
 }
 
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
@@ -107,11 +112,12 @@ bool operator==(const HostScannerOperation::ScannedDeviceInfo& first,
 HostScannerOperation::HostScannerOperation(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer)
+    HostScanDevicePrioritizer* host_scan_device_prioritizer,
+    TetherHostResponseRecorder* tether_host_response_recorder)
     : MessageTransferOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
           connection_manager),
-      host_scan_device_prioritizer_(host_scan_device_prioritizer) {}
+      tether_host_response_recorder_(tether_host_response_recorder) {}
 
 HostScannerOperation::~HostScannerOperation() {}
 
@@ -166,7 +172,7 @@ void HostScannerOperation::OnMessageReceived(
                  << "indicates that tethering is available. set_up_required = "
                  << set_up_required;
 
-    host_scan_device_prioritizer_->RecordSuccessfulTetherAvailabilityResponse(
+    tether_host_response_recorder_->RecordSuccessfulTetherAvailabilityResponse(
         remote_device);
 
     scanned_device_list_so_far_.push_back(ScannedDeviceInfo(

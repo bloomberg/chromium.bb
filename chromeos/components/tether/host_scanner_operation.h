@@ -20,6 +20,7 @@ namespace tether {
 
 class HostScanDevicePrioritizer;
 class MessageWrapper;
+class TetherHostResponseRecorder;
 
 // Operation used to perform a host scan. Attempts to connect to each of the
 // devices passed and sends a TetherAvailabilityRequest to each connected device
@@ -35,7 +36,8 @@ class HostScannerOperation : public MessageTransferOperation {
     static std::unique_ptr<HostScannerOperation> NewInstance(
         const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
         BleConnectionManager* connection_manager,
-        HostScanDevicePrioritizer* host_scan_device_prioritizer);
+        HostScanDevicePrioritizer* host_scan_device_prioritizer,
+        TetherHostResponseRecorder* tether_host_response_recorder);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -43,7 +45,8 @@ class HostScannerOperation : public MessageTransferOperation {
     virtual std::unique_ptr<HostScannerOperation> BuildInstance(
         const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
         BleConnectionManager* connection_manager,
-        HostScanDevicePrioritizer* host_scan_device_prioritizer);
+        HostScanDevicePrioritizer* host_scan_device_prioritizer,
+        TetherHostResponseRecorder* tether_host_response_recorder);
 
    private:
     static Factory* factory_instance_;
@@ -77,7 +80,8 @@ class HostScannerOperation : public MessageTransferOperation {
   HostScannerOperation(
       const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer);
+      HostScanDevicePrioritizer* host_scan_device_prioritizer,
+      TetherHostResponseRecorder* tether_host_response_recorder);
   ~HostScannerOperation() override;
 
   void AddObserver(Observer* observer);
@@ -100,7 +104,7 @@ class HostScannerOperation : public MessageTransferOperation {
  private:
   friend class HostScannerOperationTest;
 
-  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+  TetherHostResponseRecorder* tether_host_response_recorder_;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScannerOperation);

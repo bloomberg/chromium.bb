@@ -13,6 +13,7 @@
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
+#include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,6 +118,8 @@ class HostScannerOperationTest : public testing::Test {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     test_host_scan_device_prioritizer_ =
         base::MakeUnique<StrictMock<TestHostScanDevicePrioritizer>>();
+    mock_tether_host_response_recorder_ =
+        base::MakeUnique<StrictMock<MockTetherHostResponseRecorder>>();
     test_observer_ = base::WrapUnique(new TestObserver());
   }
 
@@ -124,7 +127,8 @@ class HostScannerOperationTest : public testing::Test {
       const std::vector<cryptauth::RemoteDevice>& remote_devices) {
     operation_ = base::WrapUnique(new HostScannerOperation(
         remote_devices, fake_ble_connection_manager_.get(),
-        test_host_scan_device_prioritizer_.get()));
+        test_host_scan_device_prioritizer_.get(),
+        mock_tether_host_response_recorder_.get()));
     operation_->AddObserver(test_observer_.get());
 
     // Verify that the devices have been correctly prioritized.
@@ -210,6 +214,8 @@ class HostScannerOperationTest : public testing::Test {
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<StrictMock<TestHostScanDevicePrioritizer>>
       test_host_scan_device_prioritizer_;
+  std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>
+      mock_tether_host_response_recorder_;
   std::unique_ptr<TestObserver> test_observer_;
   std::unique_ptr<HostScannerOperation> operation_;
 
@@ -223,7 +229,7 @@ TEST_F(HostScannerOperationTest, TestDevicesArePrioritizedDuringConstruction) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_UnknownError) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
 
@@ -233,7 +239,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_UnknownError) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
 
   TestOperationWithOneDevice(
@@ -242,7 +248,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupNeeded) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
 
   TestOperationWithOneDevice(
@@ -251,7 +257,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupNeeded) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoReception) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
 
@@ -261,7 +267,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoReception) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
 
@@ -272,7 +278,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
 
 TEST_F(HostScannerOperationTest,
        TestOperation_OneDevice_NotificationsDisabled) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
 
@@ -282,17 +288,17 @@ TEST_F(HostScannerOperationTest,
 }
 
 TEST_F(HostScannerOperationTest, TestMultipleDevices) {
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]))
       .Times(0);
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]));
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]))
       .Times(0);
-  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+  EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]))
       .Times(0);
 

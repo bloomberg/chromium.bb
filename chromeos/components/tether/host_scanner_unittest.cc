@@ -17,6 +17,7 @@
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/host_scanner.h"
+#include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -46,10 +47,12 @@ class FakeHostScannerOperation : public HostScannerOperation {
   FakeHostScannerOperation(
       const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer)
+      HostScanDevicePrioritizer* host_scan_device_prioritizer,
+      TetherHostResponseRecorder* tether_host_response_recorder)
       : HostScannerOperation(devices_to_connect,
                              connection_manager,
-                             host_scan_device_prioritizer) {}
+                             host_scan_device_prioritizer,
+                             tether_host_response_recorder) {}
 
   ~FakeHostScannerOperation() override {}
 
@@ -78,10 +81,12 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
   std::unique_ptr<HostScannerOperation> BuildInstance(
       const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer) override {
+      HostScanDevicePrioritizer* host_scan_device_prioritizer,
+      TetherHostResponseRecorder* tether_host_response_recorder) override {
     EXPECT_EQ(expected_devices_, devices_to_connect);
     FakeHostScannerOperation* operation = new FakeHostScannerOperation(
-        devices_to_connect, connection_manager, host_scan_device_prioritizer);
+        devices_to_connect, connection_manager, host_scan_device_prioritizer,
+        tether_host_response_recorder);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -149,6 +154,8 @@ class HostScannerTest : public NetworkStateTest {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     fake_host_scan_device_prioritizer_ =
         base::MakeUnique<FakeHostScanDevicePrioritizer>();
+    mock_tether_host_response_recorder_ =
+        base::MakeUnique<MockTetherHostResponseRecorder>();
     fake_notification_presenter_ =
         base::MakeUnique<FakeNotificationPresenter>();
     device_id_tether_network_guid_map_ =
@@ -161,7 +168,8 @@ class HostScannerTest : public NetworkStateTest {
 
     host_scanner_ = base::WrapUnique(new HostScanner(
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
-        fake_host_scan_device_prioritizer_.get(), network_state_handler(),
+        fake_host_scan_device_prioritizer_.get(),
+        mock_tether_host_response_recorder_.get(), network_state_handler(),
         fake_notification_presenter_.get(),
         device_id_tether_network_guid_map_.get()));
   }
@@ -221,6 +229,8 @@ class HostScannerTest : public NetworkStateTest {
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<HostScanDevicePrioritizer> fake_host_scan_device_prioritizer_;
+  std::unique_ptr<MockTetherHostResponseRecorder>
+      mock_tether_host_response_recorder_;
   std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>

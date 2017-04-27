@@ -19,8 +19,8 @@ namespace tether {
 class ActiveHost;
 class BleConnectionManager;
 class DeviceIdTetherNetworkGuidMap;
-class HostScanDevicePrioritizer;
 class TetherHostFetcher;
+class TetherHostResponseRecorder;
 class WifiHotspotConnector;
 
 // Connects to a tether network. When the user initiates a connection via the
@@ -38,7 +38,7 @@ class TetherConnector : public NetworkConnectionHandler::TetherDelegate,
       ActiveHost* active_host,
       TetherHostFetcher* tether_host_fetcher,
       BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer,
+      TetherHostResponseRecorder* tether_host_response_recorder,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
   ~TetherConnector() override;
 
@@ -76,7 +76,7 @@ class TetherConnector : public NetworkConnectionHandler::TetherDelegate,
   ActiveHost* active_host_;
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
-  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
+  TetherHostResponseRecorder* tether_host_response_recorder_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
   std::string device_id_pending_connection_;

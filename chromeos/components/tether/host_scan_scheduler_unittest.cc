@@ -82,7 +82,13 @@ class HostScanSchedulerTest : public testing::Test {
   class FakeHostScanner : public HostScanner {
    public:
     FakeHostScanner()
-        : HostScanner(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr),
+        : HostScanner(nullptr,
+                      nullptr,
+                      nullptr,
+                      nullptr,
+                      nullptr,
+                      nullptr,
+                      nullptr),
           num_scans_started_(0) {}
     ~FakeHostScanner() override {}
 

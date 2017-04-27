@@ -17,10 +17,11 @@ namespace prefs {
 // ListValue, with the most recent response residing at the start of the list.
 extern const char kMostRecentTetherAvailablilityResponderIds[];
 
-// Preference name for the preference which stores the ID corresponding to
-// the device which has most recently replied to a ConnectTetheringRequest with
-// a response code indicating that its hotspot has started up successfully.
-extern const char kMostRecentConnectTetheringResponderId[];
+// Preference name for the preference which stores IDs corresponding to devices
+// which have most recently replied to a ConnectTetheringResponse with a
+// response code indicating that tethering is available. The value stored is a
+// ListValue, with the most recent response residing at the start of the list.
+extern const char kMostRecentConnectTetheringResponderIds[];
 
 // The status of the active host. The value stored for this key is the integer
 // version of an ActiveHost::ActiveHostStatus enumeration value.

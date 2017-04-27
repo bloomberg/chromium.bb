@@ -24,7 +24,7 @@ TetherConnector::TetherConnector(
     ActiveHost* active_host,
     TetherHostFetcher* tether_host_fetcher,
     BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer,
+    TetherHostResponseRecorder* tether_host_response_recorder,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map)
     : network_connection_handler_(network_connection_handler),
       network_state_handler_(network_state_handler),
@@ -32,7 +32,7 @@ TetherConnector::TetherConnector(
       active_host_(active_host),
       tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
-      host_scan_device_prioritizer_(host_scan_device_prioritizer),
+      tether_host_response_recorder_(tether_host_response_recorder),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       weak_ptr_factory_(this) {
   network_connection_handler_->SetTetherDelegate(this);
@@ -175,7 +175,7 @@ void TetherConnector::OnTetherHostToConnectFetched(
   connect_tethering_operation_ =
       ConnectTetheringOperation::Factory::NewInstance(
           *tether_host_to_connect, connection_manager_,
-          host_scan_device_prioritizer_);
+          tether_host_response_recorder_);
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();
 }
