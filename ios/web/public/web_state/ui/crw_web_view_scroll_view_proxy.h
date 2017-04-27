@@ -24,6 +24,7 @@
 @interface CRWWebViewScrollViewProxy : NSObject<UIScrollViewDelegate>
 @property(nonatomic, assign) CGPoint contentOffset;
 @property(nonatomic, assign) UIEdgeInsets contentInset;
+@property(nonatomic, readonly, getter=isDragging) BOOL dragging;
 @property(nonatomic, readonly) BOOL isZooming;
 @property(nonatomic, readonly) CGFloat zoomScale;
 @property(nonatomic, assign) UIEdgeInsets scrollIndicatorInsets;
