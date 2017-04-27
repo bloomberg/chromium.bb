@@ -440,8 +440,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   // is disabled with a command-line switch or the equivalent field trial is
   // is set to "Enabled".
   prefs.user_gesture_required_for_media_playback =
-      !command_line.HasSwitch(
-          switches::kDisableGestureRequirementForMediaPlayback) &&
+      !command_line.HasSwitch(switches::kIgnoreAutoplayRestrictionsForTests) &&
       command_line.GetSwitchValueASCII(switches::kAutoplayPolicy) !=
           switches::autoplay::kNoUserGestureRequiredPolicy;
 

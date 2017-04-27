@@ -1447,11 +1447,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"default-tile-height", flag_descriptions::kDefaultTileHeightName,
      flag_descriptions::kDefaultTileHeightDescription, kOsAll,
      MULTI_VALUE_TYPE(kDefaultTileHeightChoices)},
-    {"disable-gesture-requirement-for-media-playback",
-     flag_descriptions::kGestureRequirementForMediaPlaybackName,
-     flag_descriptions::kGestureRequirementForMediaPlaybackDescription, kOsAll,
-     SINGLE_DISABLE_VALUE_TYPE(
-         switches::kDisableGestureRequirementForMediaPlayback)},
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,

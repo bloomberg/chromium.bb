@@ -51,7 +51,6 @@ CONTENT_EXPORT extern const char kDisableFeatures[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
 CONTENT_EXPORT extern const char kDisableFlash3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];
-CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForPresentation[];
 CONTENT_EXPORT extern const char kDisableGpu[];
 CONTENT_EXPORT extern const char kDisableGpuAsyncWorkerContext[];
