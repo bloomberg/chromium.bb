@@ -80,18 +80,21 @@ std::unique_ptr<views::View> GetThreeLineLabel(AddressStyleType type,
       label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
     }
     label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_1));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
   if (!s2.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s2);
     label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_2));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
   if (!s3.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s3);
     label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_3));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
@@ -289,12 +292,14 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     std::unique_ptr<views::Label> shipping_label =
         base::MakeUnique<views::Label>(
             base::UTF8ToUTF16(shipping_option->label));
+    shipping_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     shipping_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
     container->AddChildView(shipping_label.release());
 
     std::unique_ptr<views::Label> amount_label =
         base::MakeUnique<views::Label>(formatted_amount);
+    amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     amount_label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
     container->AddChildView(amount_label.release());

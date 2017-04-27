@@ -539,8 +539,10 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   constexpr int kMaxNumberOfItemsShown = 2;
   for (size_t i = 0; i < items.size() && i < kMaxNumberOfItemsShown; ++i) {
     item_summaries_layout->StartRow(0, 0);
-    item_summaries_layout->AddView(
-        new views::Label(base::UTF8ToUTF16(items[i]->label)));
+    std::unique_ptr<views::Label> summary =
+        base::MakeUnique<views::Label>(base::UTF8ToUTF16(items[i]->label));
+    summary->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    item_summaries_layout->AddView(summary.release());
 
     item_amounts_layout->StartRow(0, 0);
     item_amounts_layout->AddView(new views::Label(
@@ -689,9 +691,16 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
                        1, views::GridLayout::USE_PREF, 0, 0);
 
     layout->StartRow(0, 0);
-    layout->AddView(new views::Label(selected_instrument->label()));
+    std::unique_ptr<views::Label> selected_instrument_label =
+        base::MakeUnique<views::Label>(selected_instrument->label());
+    selected_instrument_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->AddView(selected_instrument_label.release());
+
     layout->StartRow(0, 0);
-    layout->AddView(new views::Label(selected_instrument->sublabel()));
+    std::unique_ptr<views::Label> selected_instrument_sublabel =
+        base::MakeUnique<views::Label>(selected_instrument->sublabel());
+    selected_instrument_sublabel->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->AddView(selected_instrument_sublabel.release());
 
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
         selected_instrument->icon_resource_id(), selected_instrument->label());
