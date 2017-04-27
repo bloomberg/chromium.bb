@@ -16,6 +16,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "device/geolocation/access_token_store.h"
 #include "device/geolocation/fake_location_provider.h"
@@ -98,7 +100,10 @@ void DummyFunction(const LocationProvider* provider,
 
 class GeolocationProviderTest : public testing::Test {
  protected:
-  GeolocationProviderTest() : arbitrator_(new FakeLocationProvider) {
+  GeolocationProviderTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        arbitrator_(new FakeLocationProvider) {
     provider()->SetArbitratorForTesting(base::WrapUnique(arbitrator_));
   }
 
@@ -123,7 +128,9 @@ class GeolocationProviderTest : public testing::Test {
   // test completes.
   base::ShadowingAtExitManager at_exit_;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  base::ThreadChecker thread_checker_;
 
   // Owned by the GeolocationProviderImpl class.
   FakeLocationProvider* arbitrator_;
@@ -136,7 +143,7 @@ class GeolocationProviderTest : public testing::Test {
 
 bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(provider()->IsRunning());
-  DCHECK(base::MessageLoop::current() == &message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   provider()->task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
@@ -153,7 +160,7 @@ void GeolocationProviderTest::GetProvidersStarted() {
 
 void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
   DCHECK(provider()->IsRunning());
-  DCHECK(base::MessageLoop::current() == &message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   provider()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&GeolocationProviderImpl::OnLocationUpdate,

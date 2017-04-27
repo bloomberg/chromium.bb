@@ -5,6 +5,7 @@
 #include <list>
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/base/mock_device_client.h"
 #include "device/hid/mock_hid_service.h"
@@ -16,7 +17,10 @@
 namespace device {
 class U2fSignTest : public testing::Test {
  public:
-  U2fSignTest() : io_thread_(base::TestIOThread::kAutoStart) {}
+  U2fSignTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        io_thread_(base::TestIOThread::kAutoStart) {}
 
   void SetUp() override {
     MockHidService* hid_service = device_client_.hid_service();
@@ -24,7 +28,7 @@ class U2fSignTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::TestIOThread io_thread_;
   device::MockDeviceClient device_client_;
 };

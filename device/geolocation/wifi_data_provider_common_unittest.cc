@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
@@ -82,7 +83,9 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
 class GeolocationWifiDataProviderCommonTest : public testing::Test {
  public:
   GeolocationWifiDataProviderCommonTest()
-      : wifi_data_callback_(base::Bind(&base::DoNothing)),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        wifi_data_callback_(base::Bind(&base::DoNothing)),
         provider_(new WifiDataProviderCommonWithMock),
         wlan_api_(provider_->wlan_api_.get()),
         polling_policy_(provider_->polling_policy_.get()) {}
@@ -97,7 +100,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   }
 
  protected:
-  const base::MessageLoopForUI message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_callback_;
   const scoped_refptr<WifiDataProviderCommonWithMock> provider_;
 
