@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -94,7 +95,7 @@ public class AndroidSyncSettings {
         mContractAuthority = getContractAuthority();
 
         mAccount = ChromeSigninController.get().getSignedInUser();
-        updateSyncability();
+        updateSyncability(null);
         updateCachedSettings();
 
         mSyncContentResolverDelegate.addStatusChangeListener(
@@ -157,10 +158,21 @@ public class AndroidSyncSettings {
      * Must be called when a new account is signed in.
      */
     public static void updateAccount(Context context, Account account) {
+        updateAccount(context, account, null);
+    }
+
+    /**
+     * Must be called when a new account is signed in.
+     * @param callback Callback that will be called after updating account is finished. Boolean
+     *                 passed to the callback indicates whether syncability was changed.
+     */
+    @VisibleForTesting
+    public static void updateAccount(
+            Context context, Account account, @Nullable Callback<Boolean> callback) {
         ensureInitialized(context);
         synchronized (sInstance.mLock) {
             sInstance.mAccount = account;
-            sInstance.updateSyncability();
+            sInstance.updateSyncability(callback);
         }
         if (sInstance.updateCachedSettings()) {
             sInstance.notifyObservers();
@@ -197,7 +209,7 @@ public class AndroidSyncSettings {
 
     private void setChromeSyncEnabled(boolean value) {
         synchronized (mLock) {
-            updateSyncability();
+            updateSyncability(null);
             if (value == mChromeSyncEnabled || mAccount == null) return;
             mChromeSyncEnabled = value;
 
@@ -214,9 +226,12 @@ public class AndroidSyncSettings {
      * This is what causes the "Chrome" option to appear in Settings -> Accounts -> Sync .
      * This function must be called within a synchronized block.
      */
-    private void updateSyncability() {
+    private void updateSyncability(@Nullable final Callback<Boolean> callback) {
         boolean shouldBeSyncable = mAccount != null;
-        if (mIsSyncable == shouldBeSyncable) return;
+        if (mIsSyncable == shouldBeSyncable) {
+            if (callback != null) callback.onResult(false);
+            return;
+        }
 
         mIsSyncable = shouldBeSyncable;
 
@@ -244,6 +259,8 @@ public class AndroidSyncSettings {
                     }
                 }
                 StrictMode.setThreadPolicy(oldPolicy);
+
+                if (callback != null) callback.onResult(true);
             }
         });
     }
