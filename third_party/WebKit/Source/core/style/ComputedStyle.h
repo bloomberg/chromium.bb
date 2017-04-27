@@ -604,7 +604,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // box-sizing (aka -webkit-box-sizing)
   static EBoxSizing InitialBoxSizing() { return EBoxSizing::kContentBox; }
-  EBoxSizing BoxSizing() const { return box_data_->BoxSizing(); }
+  EBoxSizing BoxSizing() const {
+    return static_cast<EBoxSizing>(box_data_->box_sizing_);
+  }
   void SetBoxSizing(EBoxSizing s) {
     SET_VAR(box_data_, box_sizing_, static_cast<unsigned>(s));
   }
@@ -816,10 +818,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return kBoxDecorationBreakSlice;
   }
   EBoxDecorationBreak BoxDecorationBreak() const {
-    return box_data_->BoxDecorationBreak();
+    return static_cast<EBoxDecorationBreak>(box_data_->box_decoration_break_);
   }
   void SetBoxDecorationBreak(EBoxDecorationBreak b) {
-    SET_VAR(box_data_, box_decoration_break_, b);
+    SET_VAR(box_data_, box_decoration_break_, static_cast<unsigned>(b));
   }
 
   // -webkit-box-lines
@@ -1014,32 +1016,32 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // width
   static Length InitialWidth() { return Length(); }
-  const Length& Width() const { return box_data_->Width(); }
+  const Length& Width() const { return box_data_->width_; }
   void SetWidth(const Length& v) { SET_VAR(box_data_, width_, v); }
 
   // height
   static Length InitialHeight() { return Length(); }
-  const Length& Height() const { return box_data_->Height(); }
+  const Length& Height() const { return box_data_->height_; }
   void SetHeight(const Length& v) { SET_VAR(box_data_, height_, v); }
 
   // max-width
   static Length InitialMaxWidth() { return Length(kMaxSizeNone); }
-  const Length& MaxWidth() const { return box_data_->MaxWidth(); }
+  const Length& MaxWidth() const { return box_data_->max_width_; }
   void SetMaxWidth(const Length& v) { SET_VAR(box_data_, max_width_, v); }
 
   // max-height
   static Length InitialMaxHeight() { return Length(kMaxSizeNone); }
-  const Length& MaxHeight() const { return box_data_->MaxHeight(); }
+  const Length& MaxHeight() const { return box_data_->max_height_; }
   void SetMaxHeight(const Length& v) { SET_VAR(box_data_, max_height_, v); }
 
   // min-width
   static Length InitialMinWidth() { return Length(); }
-  const Length& MinWidth() const { return box_data_->MinWidth(); }
+  const Length& MinWidth() const { return box_data_->min_width_; }
   void SetMinWidth(const Length& v) { SET_VAR(box_data_, min_width_, v); }
 
   // min-height
   static Length InitialMinHeight() { return Length(); }
-  const Length& MinHeight() const { return box_data_->MinHeight(); }
+  const Length& MinHeight() const { return box_data_->min_height_; }
   void SetMinHeight(const Length& v) { SET_VAR(box_data_, min_height_, v); }
 
   // image-orientation
@@ -1569,12 +1571,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   EVerticalAlign VerticalAlign() const { return VerticalAlignInternal(); }
   const Length& GetVerticalAlignLength() const {
-    return box_data_->VerticalAlign();
+    return box_data_->vertical_align_length_;
   }
   void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(v); }
   void SetVerticalAlignLength(const Length& length) {
     SetVerticalAlignInternal(EVerticalAlign::kLength);
-    SET_VAR(box_data_, vertical_align_, length);
+    SET_VAR(box_data_, vertical_align_length_, length);
   }
 
   // will-change
@@ -1605,8 +1607,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // z-index
-  int ZIndex() const { return box_data_->ZIndex(); }
-  bool HasAutoZIndex() const { return box_data_->HasAutoZIndex(); }
+  int ZIndex() const { return box_data_->z_index_; }
+  bool HasAutoZIndex() const { return box_data_->has_auto_z_index_; }
   void SetZIndex(int v) {
     SET_VAR(box_data_, has_auto_z_index_, false);
     SET_VAR(box_data_, z_index_, v);

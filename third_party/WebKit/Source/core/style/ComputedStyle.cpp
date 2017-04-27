@@ -572,12 +572,12 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
     return true;
 
   if (box_data_.Get() != other.box_data_.Get()) {
-    if (box_data_->Width() != other.box_data_->Width() ||
-        box_data_->MinWidth() != other.box_data_->MinWidth() ||
-        box_data_->MaxWidth() != other.box_data_->MaxWidth() ||
-        box_data_->Height() != other.box_data_->Height() ||
-        box_data_->MinHeight() != other.box_data_->MinHeight() ||
-        box_data_->MaxHeight() != other.box_data_->MaxHeight())
+    if (box_data_->width_ != other.box_data_->width_ ||
+        box_data_->min_width_ != other.box_data_->min_width_ ||
+        box_data_->max_width_ != other.box_data_->max_width_ ||
+        box_data_->height_ != other.box_data_->height_ ||
+        box_data_->min_height_ != other.box_data_->min_height_ ||
+        box_data_->max_height_ != other.box_data_->max_height_)
       return true;
   }
 
@@ -832,18 +832,19 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 
 bool ComputedStyle::DiffNeedsFullLayout(const ComputedStyle& other) const {
   if (box_data_.Get() != other.box_data_.Get()) {
-    if (box_data_->Width() != other.box_data_->Width() ||
-        box_data_->MinWidth() != other.box_data_->MinWidth() ||
-        box_data_->MaxWidth() != other.box_data_->MaxWidth() ||
-        box_data_->Height() != other.box_data_->Height() ||
-        box_data_->MinHeight() != other.box_data_->MinHeight() ||
-        box_data_->MaxHeight() != other.box_data_->MaxHeight())
+    if (box_data_->width_ != other.box_data_->width_ ||
+        box_data_->min_width_ != other.box_data_->min_width_ ||
+        box_data_->max_width_ != other.box_data_->max_width_ ||
+        box_data_->height_ != other.box_data_->height_ ||
+        box_data_->min_height_ != other.box_data_->min_height_ ||
+        box_data_->max_height_ != other.box_data_->max_height_)
       return true;
 
-    if (box_data_->VerticalAlign() != other.box_data_->VerticalAlign())
+    if (box_data_->vertical_align_length_ !=
+        other.box_data_->vertical_align_length_)
       return true;
 
-    if (box_data_->BoxSizing() != other.box_data_->BoxSizing())
+    if (box_data_->box_sizing_ != other.box_data_->box_sizing_)
       return true;
   }
 
@@ -1003,7 +1004,7 @@ bool ComputedStyle::DiffNeedsVisualRectUpdate(
 void ComputedStyle::UpdatePropertySpecificDifferences(
     const ComputedStyle& other,
     StyleDifference& diff) const {
-  if (box_data_->ZIndex() != other.box_data_->ZIndex() ||
+  if (box_data_->z_index_ != other.box_data_->z_index_ ||
       IsStackingContext() != other.IsStackingContext())
     diff.SetZIndexChanged();
 

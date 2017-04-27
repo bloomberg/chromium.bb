@@ -48,25 +48,6 @@ class CORE_EXPORT StyleBoxData : public RefCountedCopyable<StyleBoxData> {
   bool operator==(const StyleBoxData&) const;
   bool operator!=(const StyleBoxData& o) const { return !(*this == o); }
 
-  const Length& Width() const { return width_; }
-  const Length& Height() const { return height_; }
-
-  const Length& MinWidth() const { return min_width_; }
-  const Length& MinHeight() const { return min_height_; }
-
-  const Length& MaxWidth() const { return max_width_; }
-  const Length& MaxHeight() const { return max_height_; }
-
-  const Length& VerticalAlign() const { return vertical_align_; }
-
-  int ZIndex() const { return z_index_; }
-  bool HasAutoZIndex() const { return has_auto_z_index_; }
-
-  EBoxSizing BoxSizing() const { return static_cast<EBoxSizing>(box_sizing_); }
-  EBoxDecorationBreak BoxDecorationBreak() const {
-    return static_cast<EBoxDecorationBreak>(box_decoration_break_);
-  }
-
  private:
   friend class ComputedStyle;
 
@@ -82,7 +63,7 @@ class CORE_EXPORT StyleBoxData : public RefCountedCopyable<StyleBoxData> {
   Length min_height_;
   Length max_height_;
 
-  Length vertical_align_;
+  Length vertical_align_length_;
 
   int z_index_;
   unsigned has_auto_z_index_ : 1;
