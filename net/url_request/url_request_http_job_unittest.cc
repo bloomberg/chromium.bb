@@ -1210,7 +1210,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
   EXPECT_CALL(*create_helper, CreateBasicStreamMock())
       .WillOnce(Return(fake_handshake_stream));
   req_->SetUserData(WebSocketHandshakeStreamBase::CreateHelper::DataKey(),
-                    create_helper.release());
+                    std::move(create_helper));
   req_->SetLoadFlags(LOAD_DISABLE_CACHE);
   req_->Start();
   base::RunLoop().RunUntilIdle();
