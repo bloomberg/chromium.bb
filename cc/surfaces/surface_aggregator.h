@@ -6,6 +6,7 @@
 #define CC_SURFACES_SURFACE_AGGREGATOR_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"

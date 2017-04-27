@@ -6,7 +6,6 @@
 #define CC_OUTPUT_DIRECT_RENDERER_H_
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"

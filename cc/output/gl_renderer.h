@@ -6,6 +6,7 @@
 #define CC_OUTPUT_GL_RENDERER_H_
 
 #include <deque>
+#include <unordered_map>
 #include <vector>
 
 #include "base/cancelable_callback.h"
