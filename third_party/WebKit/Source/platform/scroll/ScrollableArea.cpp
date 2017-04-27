@@ -283,9 +283,10 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
   if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar())
     vertical_scrollbar->OffsetDidChange();
 
-  if (GetScrollOffset() != old_offset)
-    GetScrollAnimator().NotifyContentAreaScrolled(GetScrollOffset() -
-                                                  old_offset);
+  if (GetScrollOffset() != old_offset) {
+    GetScrollAnimator().NotifyContentAreaScrolled(
+        GetScrollOffset() - old_offset, scroll_type);
+  }
 
   GetScrollAnimator().SetCurrentOffset(offset);
 }

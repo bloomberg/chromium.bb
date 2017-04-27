@@ -116,7 +116,8 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   void DidAddHorizontalScrollbar(Scrollbar&) override;
   void WillRemoveHorizontalScrollbar(Scrollbar&) override;
 
-  void NotifyContentAreaScrolled(const ScrollOffset& delta) override;
+  void NotifyContentAreaScrolled(const ScrollOffset& delta,
+                                 ScrollType) override;
 
   bool SetScrollbarsVisibleForTesting(bool) override;
 
