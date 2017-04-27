@@ -7,7 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -124,11 +126,12 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
 
   // Dumps heap memory usage. |allocatorName| is used as an absolute name for
   // base::trace_event::ProcessMemoryDump::DumpHeapUsage().
-  void DumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext,
-                                          base::trace_event::AllocationMetrics>&
-                         metrics_by_context,
-                     base::trace_event::TraceEventMemoryOverhead& overhead,
-                     const char* allocator_name);
+  void DumpHeapUsage(
+      const std::unordered_map<base::trace_event::AllocationContext,
+                               base::trace_event::AllocationMetrics>&
+          metrics_by_context,
+      base::trace_event::TraceEventMemoryOverhead& overhead,
+      const char* allocator_name);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpTest, IntegrationTest);

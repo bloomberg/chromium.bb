@@ -175,8 +175,8 @@ WebProcessMemoryDump::CreateDiscardableMemoryAllocatorDump(
 }
 
 void WebProcessMemoryDump::DumpHeapUsage(
-    const base::hash_map<base::trace_event::AllocationContext,
-                         base::trace_event::AllocationMetrics>&
+    const std::unordered_map<base::trace_event::AllocationContext,
+                             base::trace_event::AllocationMetrics>&
         metrics_by_context,
     base::trace_event::TraceEventMemoryOverhead& overhead,
     const char* allocator_name) {

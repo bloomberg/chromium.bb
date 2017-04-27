@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 
+#include <unordered_set>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -209,7 +211,7 @@ void RemoveUnreachableItemsFromDB(LevelDBWrapper* db,
 
   // Delete all unreachable trackers, and list all |file_id| referred by
   // remained trackers.
-  base::hash_set<std::string> referred_file_ids;
+  std::unordered_set<std::string> referred_file_ids;
   {
     std::unique_ptr<LevelDBWrapper::Iterator> itr = db->NewIterator();
     for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {

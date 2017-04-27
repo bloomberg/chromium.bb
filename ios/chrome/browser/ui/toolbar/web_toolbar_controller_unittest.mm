@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include <map>
 #include <memory>
 
 #include "base/ios/ios_util.h"
@@ -191,8 +192,8 @@ TEST_F(WebToolbarControllerTest, TestUpdateToolbar_TestLayoutOmnibox) {
   // Test that the initial setup of the toolbar matches the layout produced by
   // calling layoutOmnibox.  If the initial frames do not match those set during
   // layoutOmnibox, there will be minor animations during startup.
-  typedef base::hash_map<unsigned long, CGRect> FrameHash;
-  typedef base::hash_map<unsigned long, CGRect>::iterator FrameHashIter;
+  typedef std::map<unsigned long, CGRect> FrameHash;
+  typedef std::map<unsigned long, CGRect>::iterator FrameHashIter;
   FrameHash initialFrames;
   FrameHash postLayoutFrames;
 

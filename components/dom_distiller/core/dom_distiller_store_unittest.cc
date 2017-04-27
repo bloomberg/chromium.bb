@@ -47,7 +47,7 @@ namespace {
 
 const ModelType kDomDistillerModelType = syncer::ARTICLES;
 
-typedef base::hash_map<std::string, ArticleEntry> EntryMap;
+typedef std::map<std::string, ArticleEntry> EntryMap;
 
 void AddEntry(const ArticleEntry& e, EntryMap* map) {
   (*map)[e.entry_id()] = e;

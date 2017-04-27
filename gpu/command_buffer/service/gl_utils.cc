@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gl_utils.h"
 
+#include <unordered_set>
+
 #include "base/metrics/histogram.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/feature_info.h"

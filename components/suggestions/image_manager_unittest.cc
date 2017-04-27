@@ -41,7 +41,7 @@ const char kInvalidImagePath[] = "files/DOESNOTEXIST";
 
 using leveldb_proto::test::FakeDB;
 
-typedef base::hash_map<std::string, ImageData> EntryMap;
+typedef std::map<std::string, ImageData> EntryMap;
 
 void AddEntry(const ImageData& d, EntryMap* map) { (*map)[d.url()] = d; }
 
