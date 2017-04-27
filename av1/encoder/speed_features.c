@@ -31,6 +31,21 @@ static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
   50, 25, 15, 5, 1, 1
 };
 
+#if CONFIG_INTRABC
+// TODO(aconverse@google.com): These settings are pretty relaxed, tune them for
+// each speed setting
+static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
+  { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
+};
+static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
+                                                            25,  25,  10 };
+#endif
+
 // Intra only frames, golden frames (except alt ref overlays) and
 // alt ref frames tend to be coded at a higher than ambient quality
 static int frame_is_boosted(const AV1_COMP *cpi) {
@@ -435,6 +450,17 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     sf->mesh_patterns[i].interval =
         good_quality_mesh_patterns[speed][i].interval;
   }
+#if CONFIG_INTRABC
+  if ((frame_is_intra_only(cm) && cm->allow_screen_content_tools) &&
+      (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
+       cpi->oxcf.content == AOM_CONTENT_SCREEN)) {
+    for (i = 0; i < MAX_MESH_STEP; ++i) {
+      sf->mesh_patterns[i].range = intrabc_mesh_patterns[speed][i].range;
+      sf->mesh_patterns[i].interval = intrabc_mesh_patterns[speed][i].interval;
+    }
+    sf->max_exaustive_pct = intrabc_max_mesh_pct[speed];
+  }
+#endif  // CONFIG_INTRABC
 
 #if !CONFIG_XIPHRC
   // Slow quant, dct and trellis not worthwhile for first pass
