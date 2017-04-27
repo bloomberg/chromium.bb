@@ -21,7 +21,6 @@
 #include "ash/mus/window_properties.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
@@ -249,13 +248,6 @@ void WindowManager::CreateAndRegisterRootWindowController(
   std::unique_ptr<RootWindowController> root_window_controller(
       new RootWindowController(nullptr, window_tree_host.release()));
   root_window_controller->Init(root_window_type);
-  // TODO: To avoid lots of IPC AddActivationParent() should take an array.
-  // http://crbug.com/682048.
-  aura::Window* root_window = root_window_controller->GetRootWindow();
-  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
-    window_manager_client_->AddActivationParent(
-        root_window->GetChildById(kActivatableShellWindowIds[i]));
-  }
   root_window_controllers_.insert(std::move(root_window_controller));
 }
 

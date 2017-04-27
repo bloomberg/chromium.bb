@@ -21,6 +21,7 @@ namespace ui {
 class Event;
 
 namespace mojom {
+class WindowManagerClient;
 class WindowTree;
 }
 }
@@ -64,6 +65,8 @@ class WindowTreeClientPrivate {
   // Sets the WindowTree and client id.
   void SetTreeAndClientId(ui::mojom::WindowTree* window_tree,
                           ClientSpecificId client_id);
+
+  void SetWindowManagerClient(ui::mojom::WindowManagerClient* client);
 
   bool HasPointerWatcher();
 

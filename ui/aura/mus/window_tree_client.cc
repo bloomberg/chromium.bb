@@ -526,6 +526,7 @@ void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
   if (window_manager_delegate_) {
     tree_ptr_->GetWindowManagerClient(
         MakeRequest(&window_manager_internal_client_));
+    window_manager_client_ = window_manager_internal_client_.get();
   }
 }
 
@@ -734,9 +735,8 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
         gfx::Rect(
             display_init_params->viewport_metrics.bounds_in_pixels.size()));
 
-    // Tests may not config |window_manager_internal_client_|.
-    if (window_manager_internal_client_) {
-      window_manager_internal_client_->SetDisplayRoot(
+    if (window_manager_client_) {
+      window_manager_client_->SetDisplayRoot(
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
           base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
@@ -892,8 +892,8 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
 
 void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
                                              bool completed) {
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmResponse(change_id, completed);
+  if (window_manager_client_)
+    window_manager_client_->WmResponse(change_id, completed);
 
   if (change_id == current_wm_move_loop_change_) {
     current_wm_move_loop_change_ = 0;
@@ -986,6 +986,7 @@ void WindowTreeClient::OnEmbed(
   if (window_manager_delegate_) {
     tree_ptr_->GetWindowManagerClient(
         MakeRequest(&window_manager_internal_client_));
+    window_manager_client_ = window_manager_internal_client_.get();
   }
 
   OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data), display_id,
@@ -1535,8 +1536,8 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
   } else {
     DVLOG(1) << "Unknown window passed to WmSetBounds().";
   }
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmSetBoundsResponse(change_id);
+  if (window_manager_client_)
+    window_manager_client_->WmSetBoundsResponse(change_id);
 }
 
 void WindowTreeClient::WmSetProperty(
@@ -1559,8 +1560,8 @@ void WindowTreeClient::WmSetProperty(
           window->GetWindow(), name, data.get());
     }
   }
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmResponse(change_id, result);
+  if (window_manager_client_)
+    window_manager_client_->WmResponse(change_id, result);
 }
 
 void WindowTreeClient::WmSetModalType(Id window_id, ui::ModalType type) {
@@ -1593,13 +1594,13 @@ void WindowTreeClient::WmCreateTopLevelWindow(
   Window* window = window_manager_delegate_->OnWmCreateTopLevelWindow(
       window_type, &properties);
   if (!window) {
-    window_manager_internal_client_->OnWmCreatedTopLevelWindow(
-        change_id, kInvalidServerId);
+    window_manager_client_->OnWmCreatedTopLevelWindow(change_id,
+                                                      kInvalidServerId);
     return;
   }
   embedded_windows_[requesting_client_id].insert(window);
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->OnWmCreatedTopLevelWindow(
+  if (window_manager_client_) {
+    window_manager_client_->OnWmCreatedTopLevelWindow(
         change_id, WindowMus::Get(window)->server_id());
   }
 }
@@ -1701,16 +1702,16 @@ void WindowTreeClient::WmStackAbove(uint32_t wm_change_id, Id above_id,
   WindowMus* below_mus = GetWindowByServerId(below_id);
   if (!below_mus) {
     DVLOG(1) << "Attempt to stack at top invalid window " << below_id;
-    if (window_manager_internal_client_)
-      window_manager_internal_client_->WmResponse(wm_change_id, false);
+    if (window_manager_client_)
+      window_manager_client_->WmResponse(wm_change_id, false);
     return;
   }
 
   WindowMus* above_mus = GetWindowByServerId(above_id);
   if (!above_mus) {
     DVLOG(1) << "Attempt to stack at top invalid window " << above_id;
-    if (window_manager_internal_client_)
-      window_manager_internal_client_->WmResponse(wm_change_id, false);
+    if (window_manager_client_)
+      window_manager_client_->WmResponse(wm_change_id, false);
     return;
   }
 
@@ -1719,15 +1720,15 @@ void WindowTreeClient::WmStackAbove(uint32_t wm_change_id, Id above_id,
 
   if (above->parent() != below->parent()) {
     DVLOG(1) << "Windows do not share the same parent";
-    if (window_manager_internal_client_)
-      window_manager_internal_client_->WmResponse(wm_change_id, false);
+    if (window_manager_client_)
+      window_manager_client_->WmResponse(wm_change_id, false);
     return;
   }
 
   above->parent()->StackChildAbove(above, below);
 
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmResponse(wm_change_id, true);
+  if (window_manager_client_)
+    window_manager_client_->WmResponse(wm_change_id, true);
 }
 
 void WindowTreeClient::WmStackAtTop(uint32_t wm_change_id, uint32_t window_id) {
@@ -1737,16 +1738,16 @@ void WindowTreeClient::WmStackAtTop(uint32_t wm_change_id, uint32_t window_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window) {
     DVLOG(1) << "Attempt to stack at top invalid window " << window_id;
-    if (window_manager_internal_client_)
-      window_manager_internal_client_->WmResponse(wm_change_id, false);
+    if (window_manager_client_)
+      window_manager_client_->WmResponse(wm_change_id, false);
     return;
   }
 
   Window* parent = window->GetWindow()->parent();
   parent->StackChildAtTop(window->GetWindow());
 
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmResponse(wm_change_id, true);
+  if (window_manager_client_)
+    window_manager_client_->WmResponse(wm_change_id, true);
 }
 
 void WindowTreeClient::OnAccelerator(uint32_t ack_id,
@@ -1756,24 +1757,22 @@ void WindowTreeClient::OnAccelerator(uint32_t ack_id,
   std::unordered_map<std::string, std::vector<uint8_t>> properties;
   const ui::mojom::EventResult result = window_manager_delegate_->OnAccelerator(
       accelerator_id, *event.get(), &properties);
-  if (ack_id && window_manager_internal_client_)
-    window_manager_internal_client_->OnAcceleratorAck(ack_id, result,
-                                                      properties);
+  if (ack_id && window_manager_client_)
+    window_manager_client_->OnAcceleratorAck(ack_id, result, properties);
 }
 
 void WindowTreeClient::SetFrameDecorationValues(
     ui::mojom::FrameDecorationValuesPtr values) {
-  if (window_manager_internal_client_) {
+  if (window_manager_client_) {
     normal_client_area_insets_ = values->normal_client_area_insets;
-    window_manager_internal_client_->WmSetFrameDecorationValues(
-        std::move(values));
+    window_manager_client_->WmSetFrameDecorationValues(std::move(values));
   }
 }
 
 void WindowTreeClient::SetNonClientCursor(Window* window,
                                           ui::mojom::CursorType cursor_id) {
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->WmSetNonClientCursor(
+  if (window_manager_client_) {
+    window_manager_client_->WmSetNonClientCursor(
         WindowMus::Get(window)->server_id(), cursor_id);
   }
 }
@@ -1781,42 +1780,41 @@ void WindowTreeClient::SetNonClientCursor(Window* window,
 void WindowTreeClient::AddAccelerators(
     std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
     const base::Callback<void(bool)>& callback) {
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->AddAccelerators(std::move(accelerators),
-                                                     callback);
+  if (window_manager_client_) {
+    window_manager_client_->AddAccelerators(std::move(accelerators), callback);
   }
 }
 
 void WindowTreeClient::RemoveAccelerator(uint32_t id) {
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->RemoveAccelerator(id);
+  if (window_manager_client_) {
+    window_manager_client_->RemoveAccelerator(id);
   }
 }
 
 void WindowTreeClient::AddActivationParent(Window* window) {
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->AddActivationParent(
+  if (window_manager_client_) {
+    window_manager_client_->AddActivationParent(
         WindowMus::Get(window)->server_id());
   }
 }
 
 void WindowTreeClient::RemoveActivationParent(Window* window) {
-  if (window_manager_internal_client_) {
-    window_manager_internal_client_->RemoveActivationParent(
+  if (window_manager_client_) {
+    window_manager_client_->RemoveActivationParent(
         WindowMus::Get(window)->server_id());
   }
 }
 
 void WindowTreeClient::ActivateNextWindow() {
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->ActivateNextWindow();
+  if (window_manager_client_)
+    window_manager_client_->ActivateNextWindow();
 }
 
 void WindowTreeClient::SetExtendedHitArea(Window* window,
                                           const gfx::Insets& hit_area) {
-  if (window_manager_internal_client_) {
+  if (window_manager_client_) {
     float device_scale_factor = ScaleFactorForDisplay(window);
-    window_manager_internal_client_->SetExtendedHitArea(
+    window_manager_client_->SetExtendedHitArea(
         WindowMus::Get(window)->server_id(),
         gfx::ConvertInsetsToPixel(device_scale_factor, hit_area));
   }
@@ -1824,9 +1822,8 @@ void WindowTreeClient::SetExtendedHitArea(Window* window,
 
 void WindowTreeClient::RequestClose(Window* window) {
   DCHECK(window);
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmRequestClose(
-        WindowMus::Get(window)->server_id());
+  if (window_manager_client_)
+    window_manager_client_->WmRequestClose(WindowMus::Get(window)->server_id());
 }
 
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(

@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/mus/test_window_manager_client.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/display/display.h"
@@ -26,9 +27,12 @@ void TestWindowTreeClientSetup::Init(
 void TestWindowTreeClientSetup::InitForWindowManager(
     WindowTreeClientDelegate* window_tree_delegate,
     WindowManagerDelegate* window_manager_delegate) {
+  test_window_manager_client_ = base::MakeUnique<TestWindowManagerClient>();
   CommonInit(window_tree_delegate, window_manager_delegate);
-  WindowTreeClientPrivate(window_tree_client_.get())
-      .SetTreeAndClientId(window_tree_.get(), 1);
+  WindowTreeClientPrivate window_tree_client_private(window_tree_client_.get());
+  window_tree_client_private.SetTreeAndClientId(window_tree_.get(), 1);
+  window_tree_client_private.SetWindowManagerClient(
+      test_window_manager_client_.get());
 }
 
 std::unique_ptr<WindowTreeClient>

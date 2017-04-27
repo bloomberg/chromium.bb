@@ -139,7 +139,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
@@ -747,6 +749,11 @@ Shell::~Shell() {
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
   focus_controller_->RemoveObserver(this);
+  if (config != Config::CLASSIC &&
+      window_tree_client_->focus_synchronizer()->active_focus_client() ==
+          focus_controller_.get()) {
+    window_tree_client_->focus_synchronizer()->SetSingletonFocusClient(nullptr);
+  }
   focus_controller_.reset();
   screen_position_controller_.reset();
 
@@ -914,6 +921,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   focus_controller_ =
       base::MakeUnique<::wm::FocusController>(new wm::AshFocusRules());
   focus_controller_->AddObserver(this);
+  if (config != Config::CLASSIC) {
+    window_tree_client_->focus_synchronizer()->SetSingletonFocusClient(
+        focus_controller_.get());
+  }
 
   screen_position_controller_.reset(new ScreenPositionController);
 

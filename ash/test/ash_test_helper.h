@@ -109,6 +109,9 @@ class AshTestHelper {
   mus::WindowManagerApplication* window_manager_app() {
     return window_manager_app_.get();
   }
+  aura::TestWindowTreeClientSetup* window_tree_client_setup() {
+    return &window_tree_client_setup_;
+  }
 
   TestSessionControllerClient* test_session_controller_client() {
     return session_controller_client_.get();

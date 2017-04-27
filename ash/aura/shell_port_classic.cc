@@ -249,6 +249,9 @@ std::unique_ptr<AshWindowTreeHost> ShellPortClassic::CreateAshWindowTreeHost(
   return nullptr;
 }
 
+void ShellPortClassic::OnCreatedRootWindowContainers(
+    RootWindowController* root_window_controller) {}
+
 void ShellPortClassic::CreatePrimaryHost() {
   Shell::Get()->window_tree_host_manager()->Start();
   AshWindowTreeHostInitParams ash_init_params;
