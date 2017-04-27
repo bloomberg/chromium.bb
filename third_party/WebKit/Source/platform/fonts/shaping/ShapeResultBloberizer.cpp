@@ -147,11 +147,28 @@ void ShapeResultBloberizer::FillTextEmphasisGlyphs(
     for (unsigned i = 0; i < word_result->runs_.size(); i++) {
       unsigned resolved_offset =
           word_offset - (run_info.run.Rtl() ? word_result->NumCharacters() : 0);
-      advance +=
-          FillTextEmphasisGlyphsForRun(word_result->runs_[i].get(), run_info,
-                                       emphasis_data, advance, resolved_offset);
+      advance += FillTextEmphasisGlyphsForRun(
+          word_result->runs_[i].get(), run_info.run,
+          run_info.run.CharactersLength(), run_info.run.Direction(),
+          run_info.from, run_info.to, emphasis_data, advance, resolved_offset);
     }
     word_offset += word_result->NumCharacters() * (run_info.run.Rtl() ? -1 : 1);
+  }
+}
+
+void ShapeResultBloberizer::FillTextEmphasisGlyphs(const StringView& text,
+                                                   TextDirection direction,
+                                                   unsigned from,
+                                                   unsigned to,
+                                                   const GlyphData& emphasis,
+                                                   const ShapeResult* result) {
+  float advance = 0;
+  unsigned offset = 0;
+
+  for (unsigned i = 0; i < result->runs_.size(); i++) {
+    advance += FillTextEmphasisGlyphsForRun(result->runs_[i].get(), text,
+                                            text.length(), direction, from, to,
+                                            emphasis, advance, offset);
   }
 }
 
@@ -307,9 +324,14 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   return advance;
 }
 
+template <typename TextContainerType>
 float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
     const ShapeResult::RunInfo* run,
-    const TextRunPaintInfo& run_info,
+    const TextContainerType& text,
+    unsigned text_length,
+    TextDirection direction,
+    unsigned from,
+    unsigned to,
     const GlyphData& emphasis_data,
     float initial_advance,
     unsigned run_offset) {
@@ -321,12 +343,6 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
 
   FloatPoint glyph_center =
       emphasis_data.font_data->BoundsForGlyph(emphasis_data.glyph).Center();
-
-  const auto& text_run = run_info.run;
-  const auto from = run_info.from;
-  const auto to = run_info.to;
-
-  TextDirection direction = text_run.Direction();
 
   // A "cluster" in this context means a cluster as it is used by HarfBuzz:
   // The minimal group of characters and corresponding glyphs, that cannot be
@@ -360,10 +376,9 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
 
     cluster_advance += glyph_data.advance;
 
-    if (text_run.Is8Bit()) {
+    if (text.Is8Bit()) {
       float glyph_advance_x = glyph_data.advance;
-      if (Character::CanReceiveTextEmphasis(
-              text_run[current_character_index])) {
+      if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
         AddEmphasisMark(*this, emphasis_data, glyph_center,
                         advance_so_far + glyph_advance_x / 2);
       }
@@ -378,8 +393,7 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
                        : run->GlyphToCharacterIndex(i + 1) + run_offset);
       }
       graphemes_in_cluster = CountGraphemesInCluster(
-          text_run.Characters16(), text_run.CharactersLength(), cluster_start,
-          cluster_end);
+          text.Characters16(), text_length, cluster_start, cluster_end);
       if (!graphemes_in_cluster || !cluster_advance)
         continue;
 
@@ -387,8 +401,7 @@ float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
       for (unsigned j = 0; j < graphemes_in_cluster; ++j) {
         // Do not put emphasis marks on space, separator, and control
         // characters.
-        if (Character::CanReceiveTextEmphasis(
-                text_run[current_character_index])) {
+        if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
           AddEmphasisMark(*this, emphasis_data, glyph_center,
                           advance_so_far + glyph_advance_x / 2);
         }

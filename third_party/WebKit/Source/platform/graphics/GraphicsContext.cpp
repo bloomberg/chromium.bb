@@ -739,15 +739,30 @@ void GraphicsContext::DrawRect(const IntRect& rect) {
   }
 }
 
-void GraphicsContext::DrawText(const Font& font,
-                               const TextRunPaintInfo& run_info,
-                               const FloatPoint& point,
-                               const PaintFlags& flags) {
+template <typename TextPaintInfo>
+void GraphicsContext::DrawTextInternal(const Font& font,
+                                       const TextPaintInfo& text_info,
+                                       const FloatPoint& point,
+                                       const PaintFlags& flags) {
   if (ContextDisabled())
     return;
 
-  if (font.DrawText(canvas_, run_info, point, device_scale_factor_, flags))
+  if (font.DrawText(canvas_, text_info, point, device_scale_factor_, flags))
     paint_controller_.SetTextPainted();
+}
+
+void GraphicsContext::DrawText(const Font& font,
+                               const TextRunPaintInfo& text_info,
+                               const FloatPoint& point,
+                               const PaintFlags& flags) {
+  DrawTextInternal(font, text_info, point, flags);
+}
+
+void GraphicsContext::DrawText(const Font& font,
+                               const TextFragmentPaintInfo& text_info,
+                               const FloatPoint& point,
+                               const PaintFlags& flags) {
+  DrawTextInternal(font, text_info, point, flags);
 }
 
 template <typename DrawTextFunc>
@@ -769,30 +784,58 @@ void GraphicsContext::DrawTextPasses(const DrawTextFunc& draw_text) {
   }
 }
 
-void GraphicsContext::DrawText(const Font& font,
-                               const TextRunPaintInfo& run_info,
-                               const FloatPoint& point) {
+template <typename TextPaintInfo>
+void GraphicsContext::DrawTextInternal(const Font& font,
+                                       const TextPaintInfo& text_info,
+                                       const FloatPoint& point) {
   if (ContextDisabled())
     return;
 
-  DrawTextPasses([&font, &run_info, &point, this](const PaintFlags& flags) {
-    if (font.DrawText(canvas_, run_info, point, device_scale_factor_, flags))
+  DrawTextPasses([&font, &text_info, &point, this](const PaintFlags& flags) {
+    if (font.DrawText(canvas_, text_info, point, device_scale_factor_, flags))
       paint_controller_.SetTextPainted();
   });
 }
 
-void GraphicsContext::DrawEmphasisMarks(const Font& font,
-                                        const TextRunPaintInfo& run_info,
-                                        const AtomicString& mark,
-                                        const FloatPoint& point) {
+void GraphicsContext::DrawText(const Font& font,
+                               const TextRunPaintInfo& text_info,
+                               const FloatPoint& point) {
+  DrawTextInternal(font, text_info, point);
+}
+
+void GraphicsContext::DrawText(const Font& font,
+                               const TextFragmentPaintInfo& text_info,
+                               const FloatPoint& point) {
+  DrawTextInternal(font, text_info, point);
+}
+
+template <typename TextPaintInfo>
+void GraphicsContext::DrawEmphasisMarksInternal(const Font& font,
+                                                const TextPaintInfo& text_info,
+                                                const AtomicString& mark,
+                                                const FloatPoint& point) {
   if (ContextDisabled())
     return;
 
   DrawTextPasses(
-      [&font, &run_info, &mark, &point, this](const PaintFlags& flags) {
-        font.DrawEmphasisMarks(canvas_, run_info, mark, point,
+      [&font, &text_info, &mark, &point, this](const PaintFlags& flags) {
+        font.DrawEmphasisMarks(canvas_, text_info, mark, point,
                                device_scale_factor_, flags);
       });
+}
+
+void GraphicsContext::DrawEmphasisMarks(const Font& font,
+                                        const TextRunPaintInfo& text_info,
+                                        const AtomicString& mark,
+                                        const FloatPoint& point) {
+  DrawEmphasisMarksInternal(font, text_info, mark, point);
+}
+
+void GraphicsContext::DrawEmphasisMarks(const Font& font,
+                                        const TextFragmentPaintInfo& text_info,
+                                        const AtomicString& mark,
+                                        const FloatPoint& point) {
+  DrawEmphasisMarksInternal(font, text_info, mark, point);
 }
 
 void GraphicsContext::DrawBidiText(

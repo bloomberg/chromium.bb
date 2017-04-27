@@ -39,6 +39,12 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
+  void FillTextEmphasisGlyphs(const StringView&,
+                              TextDirection,
+                              unsigned from,
+                              unsigned to,
+                              const GlyphData& emphasis_data,
+                              const ShapeResult*);
 
   void Add(Glyph glyph, const SimpleFontData* font_data, float h_offset) {
     // cannot mix x-only/xy offsets
@@ -110,8 +116,13 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
 
+  template <typename TextContainerType>
   float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
-                                     const TextRunPaintInfo&,
+                                     const TextContainerType&,
+                                     unsigned text_length,
+                                     TextDirection,
+                                     unsigned from,
+                                     unsigned to,
                                      const GlyphData& emphasis_data,
                                      float initial_advance,
                                      unsigned run_offset);

@@ -237,14 +237,26 @@ class PLATFORM_EXPORT GraphicsContext {
                 SkClipOp = SkClipOp::kIntersect);
 
   void DrawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
+  void DrawText(const Font&, const TextFragmentPaintInfo&, const FloatPoint&);
+
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&);
+  void DrawText(const Font&,
+                const TextFragmentPaintInfo&,
+                const FloatPoint&,
+                const PaintFlags&);
+
   void DrawEmphasisMarks(const Font&,
                          const TextRunPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&);
+  void DrawEmphasisMarks(const Font&,
+                         const TextFragmentPaintInfo&,
+                         const AtomicString& mark,
+                         const FloatPoint&);
+
   void DrawBidiText(
       const Font&,
       const TextRunPaintInfo&,
@@ -369,6 +381,21 @@ class PLATFORM_EXPORT GraphicsContext {
     RealizePaintSave();
     return paint_state_;
   }
+
+  template <typename TextPaintInfo>
+  void DrawTextInternal(const Font&,
+                        const TextPaintInfo&,
+                        const FloatPoint&,
+                        const PaintFlags&);
+
+  template <typename TextPaintInfo>
+  void DrawTextInternal(const Font&, const TextPaintInfo&, const FloatPoint&);
+
+  template <typename TextPaintInfo>
+  void DrawEmphasisMarksInternal(const Font&,
+                                 const TextPaintInfo&,
+                                 const AtomicString& mark,
+                                 const FloatPoint&);
 
   template <typename DrawTextFunc>
   void DrawTextPasses(const DrawTextFunc&);
