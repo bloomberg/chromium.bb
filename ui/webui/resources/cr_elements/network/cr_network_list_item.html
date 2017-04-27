@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
@@ -87,6 +88,9 @@
       <template is="dom-if"
           if="[[isSubpageButtonVisible_(networkState, showButtons)]]">
         <div id="subpageDiv" class="layout horizontal">
+          <!-- iron-list captures 'enter' so handle it here explicitly. -->
+          <iron-a11y-keys keys="enter" on-keys-pressed="fireShowDetails_">
+          </iron-a11y-keys>
           <button class="subpage-arrow" is="paper-icon-button-light"
               on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
               aria-label$="[[ariaLabel]]">

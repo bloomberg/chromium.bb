@@ -65,6 +65,18 @@ Polymer({
       notify: true,
     },
 
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        var map = new Map();
+        map.set(
+            settings.Route.BLUETOOTH_DEVICES.path,
+            '#bluetoothDevices .subpage-arrow');
+        return map;
+      },
+    },
+
     /**
      * Interface for bluetooth calls. May be overriden by tests.
      * @type {Bluetooth}

@@ -16,7 +16,8 @@
   <template>
     <style include="settings-shared">
     </style>
-    <settings-animated-pages id="pages" section="bluetooth">
+    <settings-animated-pages id="pages" section="bluetooth"
+        focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <div id="bluetoothDevices"
             class="settings-box two-line" actionable on-tap="onTap_">
@@ -32,7 +33,7 @@
               pref="[[prefs.cros.device.allow_bluetooth]]"
             hidden="[[prefs.cros.device.allow_bluetooth.value]]">
           </cr-policy-pref-indicator>
-          <template is="dom-if" if="[[bluetoothEnabled_]]">
+          <template is="dom-if" if="[[bluetoothToggleState_]]">
             <button class="subpage-arrow" is="paper-icon-button-light"
                 on-tap="onSubpageArrowTap_"
                 aria-label="$i18n{bluetoothPageTitle}"
