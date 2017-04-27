@@ -35,7 +35,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace net {
-enum AddressFamily;
 class DrainableIOBuffer;
 class IOBuffer;
 class SSLClientSocket;

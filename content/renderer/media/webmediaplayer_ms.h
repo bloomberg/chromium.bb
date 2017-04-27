@@ -29,7 +29,6 @@ class WebString;
 
 namespace media {
 class MediaLog;
-enum VideoRotation;
 }
 
 namespace cc_blink {

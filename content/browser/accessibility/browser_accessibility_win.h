@@ -25,11 +25,6 @@
 #include "third_party/isimpledom/ISimpleDOMText.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
-namespace ui {
-enum TextBoundaryDirection;
-enum TextBoundaryType;
-}
-
 namespace content {
 class BrowserAccessibilityRelation;
 

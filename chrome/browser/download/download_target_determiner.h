@@ -26,10 +26,6 @@
 class Profile;
 class DownloadPrefs;
 
-namespace content {
-enum DownloadDangerType;
-}
-
 // Determines the target of the download.
 //
 // Terminology:
