@@ -39,9 +39,9 @@
 
 namespace {
 
-// Waits until specified timing and metadata expectations are satisfied.
-class PageLoadMetricsWaiter
-    : public page_load_metrics::MetricsWebContentsObserver::TestingObserver {
+// Waits until a PageLoadMetricsMsg_TimingUpdated message IPC is received
+// matching a PageLoadTiming. See WaitForMatchingIPC for details.
+class TimingUpdatedObserver : public content::BrowserMessageFilter {
  public:
   // A bitvector to express which timing fields to match on.
   enum ExpectedTimingFields {
@@ -50,40 +50,57 @@ class PageLoadMetricsWaiter
     STYLE_UPDATE_BEFORE_FCP = 1 << 2
   };
 
-  explicit PageLoadMetricsWaiter(content::WebContents* web_contents)
-      : TestingObserver(web_contents) {}
+  explicit TimingUpdatedObserver(content::RenderWidgetHost* render_widget_host)
+      : content::BrowserMessageFilter(PageLoadMetricsMsgStart) {
+    render_widget_host->GetProcess()->AddFilter(this);
 
-  ~PageLoadMetricsWaiter() override { DCHECK_EQ(nullptr, run_loop_.get()); }
+    // Roundtrip to the IO thread, to ensure that the filter is properly
+    // installed.
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE, base::BindOnce(&base::DoNothing),
+        base::BindOnce(&TimingUpdatedObserver::Quit, this));
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset(nullptr);
+  }
 
-  // Add the given expectation to match on.
-  void AddExpectation(ExpectedTimingFields fields) {
+  // Add the given timing fields to the set of fields to match on.
+  void AddMatchingFields(ExpectedTimingFields fields) {
     matching_fields_ |= fields;
   }
 
   // Instructs observer to also watch for |count|
   // WebLoadingBehaviorDocumentWriteBlockReload events.
-  void ExpectDocumentWriteBlockReload(int count) {
+  void MatchDocumentWriteBlockReload(int count) {
     match_document_write_block_reload_ = count;
   }
 
   // Waits for a TimingUpdated IPC that matches the fields set by
-  // |AddExpectation|.  All matching fields must be set in a TimingUpdated
+  // |AddMatchingFields|.  All matching fields must be set in a TimingUpdated
   // IPC for it to end this wait.
-  void Wait() {
-    if (expectations_satisfied_)
+  void WaitForMatchingIPC() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (matched_timing_update_)
       return;
 
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
     run_loop_.reset(nullptr);
-
-    EXPECT_TRUE(expectations_satisfied_);
   }
 
  private:
-  void OnTimingUpdated(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadMetadata& metadata) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    IPC_BEGIN_MESSAGE_MAP(TimingUpdatedObserver, message)
+      IPC_MESSAGE_HANDLER(PageLoadMetricsMsg_TimingUpdated, OnTimingUpdated)
+    IPC_END_MESSAGE_MAP()
+
+    return false;
+  }
+
+  bool OnTimingUpdated(const page_load_metrics::PageLoadTiming& timing,
+                       const page_load_metrics::PageLoadMetadata& metadata) {
     if (match_document_write_block_reload_ > 0 &&
         metadata.behavior_flags &
             blink::WebLoadingBehaviorFlag::
@@ -92,7 +109,7 @@ class PageLoadMetricsWaiter
     }
 
     if (match_document_write_block_reload_ > 0) {
-      return;
+      return true;
     }
 
     if ((!(matching_fields_ & FIRST_PAINT) ||
@@ -101,15 +118,41 @@ class PageLoadMetricsWaiter
          timing.paint_timing.first_contentful_paint) &&
         (!(matching_fields_ & STYLE_UPDATE_BEFORE_FCP) ||
          timing.style_sheet_timing.update_style_duration_before_fcp)) {
-      expectations_satisfied_ = true;
-      if (run_loop_)
-        run_loop_->Quit();
+      // Ensure that any other handlers of this message, for example the real
+      // PageLoadMetric observers, get a chance to handle this message before
+      // this waiter unblocks.
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&TimingUpdatedObserver::BounceTimingUpdate, this,
+                         timing, metadata));
     }
+    return true;
   }
+
+  void BounceTimingUpdate(const page_load_metrics::PageLoadTiming& timing,
+                          const page_load_metrics::PageLoadMetadata& metadata) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&TimingUpdatedObserver::SetTimingUpdatedAndQuit, this));
+  }
+
+  void Quit() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void SetTimingUpdatedAndQuit() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    matched_timing_update_ = true;
+    Quit();
+  }
+
+  ~TimingUpdatedObserver() override {}
 
   std::unique_ptr<base::RunLoop> run_loop_;
   int matching_fields_ = 0;  // A bitvector composed from ExpectedTimingFields.
-  bool expectations_satisfied_ = false;
+  bool matched_timing_update_ = false;
   int match_document_write_block_reload_ = 0;
 };
 
@@ -136,10 +179,12 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     return total_pageload_histograms - total_internal_histograms == 0;
   }
 
-  std::unique_ptr<PageLoadMetricsWaiter> CreatePageLoadMetricsWaiter() {
+  scoped_refptr<TimingUpdatedObserver> CreateTimingUpdatedObserver() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    return base::MakeUnique<PageLoadMetricsWaiter>(web_contents);
+    scoped_refptr<TimingUpdatedObserver> observer(new TimingUpdatedObserver(
+        web_contents->GetRenderViewHost()->GetWidget()));
+    return observer;
   }
 
   base::HistogramTester histogram_tester_;
@@ -296,14 +341,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, IgnoreDownloads) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/page_load_metrics/document_write_external_script.html"));
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 1);
@@ -324,13 +370,14 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPreloadDocumentWrite) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
@@ -342,14 +389,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWrite) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/page_load_metrics/document_write_script_block.html"));
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
@@ -359,12 +407,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
-  std::unique_ptr<PageLoadMetricsWaiter> reload_waiter =
-      CreatePageLoadMetricsWaiter();
-  reload_waiter->ExpectDocumentWriteBlockReload(2);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> reload_observer =
+      CreateTimingUpdatedObserver();
+  reload_observer->MatchDocumentWriteBlockReload(2);
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -382,8 +431,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 
-  fcp_waiter->Wait();
-  reload_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
+  reload_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
@@ -441,9 +490,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> timing_waiter =
-      CreatePageLoadMetricsWaiter();
-  timing_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_PAINT);
+  scoped_refptr<TimingUpdatedObserver> timing_observer =
+      CreateTimingUpdatedObserver();
+  timing_observer->AddMatchingFields(TimingUpdatedObserver::FIRST_PAINT);
 
   // When an XHTML page contains invalid XML, it causes a paint of the error
   // message without a layout. Page load metrics currently treats this as an
@@ -454,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
       browser(),
       embedded_test_server()->GetURL("/page_load_metrics/badxml.xhtml"));
 
-  timing_waiter->Wait();
+  timing_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
@@ -641,14 +690,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintNotRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/page_load_metrics/page_with_active_connections.html"));
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   // Navigate away before a FMP is reported.
   NavigateToUntrackedUrl();
@@ -666,14 +716,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoStatePrefetchObserverCacheable) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
 
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 0);
@@ -685,14 +736,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoStatePrefetchObserverNoStore) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::FIRST_CONTENTFUL_PAINT);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::FIRST_CONTENTFUL_PAINT);
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/nostore.html"));
 
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 1);
@@ -703,9 +755,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<PageLoadMetricsWaiter> fcp_waiter =
-      CreatePageLoadMetricsWaiter();
-  fcp_waiter->AddExpectation(PageLoadMetricsWaiter::STYLE_UPDATE_BEFORE_FCP);
+  scoped_refptr<TimingUpdatedObserver> fcp_observer =
+      CreateTimingUpdatedObserver();
+  fcp_observer->AddMatchingFields(
+      TimingUpdatedObserver::STYLE_UPDATE_BEFORE_FCP);
 
   // Careful: Blink code clamps timestamps to 5us, so any CSS parsing we do here
   // must take >> 5us, otherwise we'll log 0 for the value and it will remain
@@ -714,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
       browser(),
       embedded_test_server()->GetURL("/page_load_metrics/page_with_css.html"));
   NavigateToUntrackedUrl();
-  fcp_waiter->Wait();
+  fcp_observer->WaitForMatchingIPC();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
                                      1);
