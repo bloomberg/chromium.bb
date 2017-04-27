@@ -298,10 +298,8 @@ public class ContentView extends FrameLayout
     // Implements SmartClipProvider
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
-        float dpi = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
-        y -= mContentViewCore.getRenderCoordinates().getContentOffsetYPix();
         mContentViewCore.getWebContents().requestSmartClipExtract(
-                (int) (x / dpi), (int) (y / dpi), (int) (width / dpi), (int) (height / dpi));
+                x, y, width, height, mContentViewCore.getRenderCoordinates());
     }
 
     // Implements SmartClipProvider
