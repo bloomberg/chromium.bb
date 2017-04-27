@@ -29,6 +29,7 @@
 #include "net/spdy/core/spdy_frame_reader.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -95,7 +96,7 @@ class SpdyFramerTestUtil {
     SpdyHeadersHandlerInterface* OnHeaderFrameStart(
         SpdyStreamId stream_id) override {
       if (headers_handler_ == nullptr) {
-        headers_handler_ = base::MakeUnique<TestHeadersHandler>();
+        headers_handler_ = SpdyMakeUnique<TestHeadersHandler>();
       }
       return headers_handler_.get();
     }
@@ -116,7 +117,7 @@ class SpdyFramerTestUtil {
                    bool exclusive,
                    bool fin,
                    bool end) override {
-      auto headers = base::MakeUnique<SpdyHeadersIR>(stream_id);
+      auto headers = SpdyMakeUnique<SpdyHeadersIR>(stream_id);
       headers->set_has_priority(has_priority);
       headers->set_weight(weight);
       headers->set_parent_stream_id(parent_stream_id);
@@ -128,8 +129,7 @@ class SpdyFramerTestUtil {
     void OnPushPromise(SpdyStreamId stream_id,
                        SpdyStreamId promised_stream_id,
                        bool end) override {
-      frame_ =
-          base::MakeUnique<SpdyPushPromiseIR>(stream_id, promised_stream_id);
+      frame_ = SpdyMakeUnique<SpdyPushPromiseIR>(stream_id, promised_stream_id);
     }
 
     // TODO(birenroy): Add support for CONTINUATION.
@@ -235,7 +235,7 @@ class SpdyFramerPeer {
   // header serialization path.
   static std::unique_ptr<SpdyHeadersIR> CloneSpdyHeadersIR(
       const SpdyHeadersIR& headers) {
-    auto newHeaders = base::MakeUnique<SpdyHeadersIR>(
+    auto newHeaders = SpdyMakeUnique<SpdyHeadersIR>(
         headers.stream_id(), headers.header_block().Clone());
     newHeaders->set_fin(headers.fin());
     newHeaders->set_has_priority(headers.has_priority());
@@ -305,7 +305,7 @@ class SpdyFramerPeer {
 
   static std::unique_ptr<SpdyPushPromiseIR> CloneSpdyPushPromiseIR(
       const SpdyPushPromiseIR& push_promise) {
-    auto new_push_promise = base::MakeUnique<SpdyPushPromiseIR>(
+    auto new_push_promise = SpdyMakeUnique<SpdyPushPromiseIR>(
         push_promise.stream_id(), push_promise.promised_stream_id(),
         push_promise.header_block().Clone());
     new_push_promise->set_fin(push_promise.fin());
@@ -457,7 +457,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override {
     if (headers_handler_ == nullptr) {
-      headers_handler_ = base::MakeUnique<TestHeadersHandler>();
+      headers_handler_ = SpdyMakeUnique<TestHeadersHandler>();
     }
     return headers_handler_.get();
   }
@@ -1253,7 +1253,7 @@ TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
 
   SpdyContinuationIR continuation(0);
   auto some_nonsense_encoding =
-      base::MakeUnique<SpdyString>("some nonsense encoding");
+      SpdyMakeUnique<SpdyString>("some nonsense encoding");
   continuation.take_encoding(std::move(some_nonsense_encoding));
   continuation.set_end_headers(true);
   SpdySerializedFrame frame(framer.SerializeContinuation(continuation));
@@ -2526,7 +2526,7 @@ TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
   SpdyHeaderBlock header_block;
   header_block["bar"] = "foo";
   header_block["foo"] = "bar";
-  auto buffer = base::MakeUnique<SpdyString>();
+  auto buffer = SpdyMakeUnique<SpdyString>();
   HpackEncoder encoder(ObtainHpackHuffmanTable());
   encoder.DisableCompression();
   encoder.EncodeHeaderSet(header_block, buffer.get());
@@ -2796,7 +2796,7 @@ TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
 
 TEST_P(SpdyFramerTest, MultipleContinuationFramesWithIterator) {
   SpdyFramer framer(SpdyFramer::DISABLE_COMPRESSION);
-  auto headers = base::MakeUnique<SpdyHeadersIR>(1);
+  auto headers = SpdyMakeUnique<SpdyHeadersIR>(/* stream_id = */ 1);
   headers->set_padding_len(256);
 
   // Exact payload length will change with HPACK, but this should be long
@@ -2862,7 +2862,9 @@ TEST_P(SpdyFramerTest, MultipleContinuationFramesWithIterator) {
 
 TEST_P(SpdyFramerTest, PushPromiseFramesWithIterator) {
   SpdyFramer framer(SpdyFramer::DISABLE_COMPRESSION);
-  auto push_promise = base::MakeUnique<SpdyPushPromiseIR>(1, 2);
+  auto push_promise =
+      SpdyMakeUnique<SpdyPushPromiseIR>(/* stream_id = */ 1,
+                                        /* promised_stream_id = */ 2);
   push_promise->set_padding_len(256);
 
   // Exact payload length will change with HPACK, but this should be long
@@ -4688,7 +4690,7 @@ TEST_P(SpdyFramerTest, ReadInvalidRstStreamWithPayload) {
 TEST_P(SpdyFramerTest, ProcessAllInput) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   auto visitor =
-      base::MakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
+      SpdyMakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
   framer.set_visitor(visitor.get());
 
   // Create two input frames.
@@ -4774,7 +4776,7 @@ TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
   for (size_t first_size = 0; first_size <= buf_size; ++first_size) {
     VLOG(1) << "first_size = " << first_size;
     auto visitor =
-        base::MakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
+        SpdyMakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
     framer.set_visitor(visitor.get());
 
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());

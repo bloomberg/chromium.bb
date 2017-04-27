@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
 
 #if defined(COMPILER_GCC)
@@ -186,7 +187,8 @@ class NestedSpdyFramerDecoder : public SpdyFramerDecoderAdapter {
   // SpdyFramer instance is passed to OnError. Passes the call on to the
   // base adapter class and wrapped SpdyFramer.
   void set_visitor(SpdyFramerVisitorInterface* visitor) override {
-    visitor_adapter_.reset(new SpdyFramerVisitorAdapter(visitor, outer_));
+    visitor_adapter_ =
+        SpdyMakeUnique<SpdyFramerVisitorAdapter>(visitor, outer_);
     SpdyFramerDecoderAdapter::set_visitor(visitor_adapter_.get());
     framer_.set_visitor(visitor_adapter_.get());
   }
@@ -244,8 +246,7 @@ class NestedSpdyFramerDecoder : public SpdyFramerDecoderAdapter {
 
 std::unique_ptr<SpdyFramerDecoderAdapter> CreateNestedSpdyFramerDecoder(
     SpdyFramer* outer) {
-  return std::unique_ptr<SpdyFramerDecoderAdapter>(
-      new NestedSpdyFramerDecoder(outer));
+  return SpdyMakeUnique<NestedSpdyFramerDecoder>(outer);
 }
 
 }  // namespace net

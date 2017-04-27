@@ -5,6 +5,7 @@
 #include "net/spdy/core/spdy_header_indexing.h"
 
 #include "base/memory/ptr_util.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -56,7 +57,7 @@ class SpdyHeaderIndexingTest : public ::testing::Test {
   SpdyHeaderIndexingTest() {
     FLAGS_gfe_spdy_indexing_set_bound = 3;
     FLAGS_gfe_spdy_tracking_set_bound = 4;
-    hi_ = base::MakeUnique<HeaderIndexingPeer>();
+    hi_ = SpdyMakeUnique<HeaderIndexingPeer>();
     hi_->CreateTestInit();
   }
   void SetUp() override {
