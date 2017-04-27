@@ -35,10 +35,10 @@ static_assert(sizeof(StyleBoxData) == sizeof(SameSizeAsStyleBoxData),
               "StyleBoxData should stay small");
 
 StyleBoxData::StyleBoxData()
-    : min_width_(ComputedStyle::InitialMinSize()),
-      max_width_(ComputedStyle::InitialMaxSize()),
-      min_height_(ComputedStyle::InitialMinSize()),
-      max_height_(ComputedStyle::InitialMaxSize()),
+    : min_width_(ComputedStyle::InitialMinWidth()),
+      max_width_(ComputedStyle::InitialMaxWidth()),
+      min_height_(ComputedStyle::InitialMinHeight()),
+      max_height_(ComputedStyle::InitialMaxHeight()),
       z_index_(0),
       has_auto_z_index_(true),
       box_sizing_(static_cast<unsigned>(ComputedStyle::InitialBoxSizing())),

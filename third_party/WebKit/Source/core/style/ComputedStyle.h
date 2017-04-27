@@ -1011,31 +1011,34 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Width/height properties.
-  static Length InitialSize() { return Length(); }
-  static Length InitialMaxSize() { return Length(kMaxSizeNone); }
-  static Length InitialMinSize() { return Length(); }
 
   // width
+  static Length InitialWidth() { return Length(); }
   const Length& Width() const { return box_data_->Width(); }
   void SetWidth(const Length& v) { SET_VAR(box_data_, width_, v); }
 
   // height
+  static Length InitialHeight() { return Length(); }
   const Length& Height() const { return box_data_->Height(); }
   void SetHeight(const Length& v) { SET_VAR(box_data_, height_, v); }
 
   // max-width
+  static Length InitialMaxWidth() { return Length(kMaxSizeNone); }
   const Length& MaxWidth() const { return box_data_->MaxWidth(); }
   void SetMaxWidth(const Length& v) { SET_VAR(box_data_, max_width_, v); }
 
   // max-height
+  static Length InitialMaxHeight() { return Length(kMaxSizeNone); }
   const Length& MaxHeight() const { return box_data_->MaxHeight(); }
   void SetMaxHeight(const Length& v) { SET_VAR(box_data_, max_height_, v); }
 
   // min-width
+  static Length InitialMinWidth() { return Length(); }
   const Length& MinWidth() const { return box_data_->MinWidth(); }
   void SetMinWidth(const Length& v) { SET_VAR(box_data_, min_width_, v); }
 
   // min-height
+  static Length InitialMinHeight() { return Length(); }
   const Length& MinHeight() const { return box_data_->MinHeight(); }
   void SetMinHeight(const Length& v) { SET_VAR(box_data_, min_height_, v); }
 

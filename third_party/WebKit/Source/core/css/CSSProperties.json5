@@ -1152,7 +1152,6 @@
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
-      initial: "InitialSize",
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       supports_percentage: true,
@@ -1363,14 +1362,12 @@
       name: "max-height",
       converter: "ConvertLengthMaxSizing",
       is_descriptor: true,
-      initial: "InitialMaxSize",
       interpolable: true,
     },
     {
       name: "max-width",
       converter: "ConvertLengthMaxSizing",
       is_descriptor: true,
-      initial: "InitialMaxSize",
       interpolable: true,
     },
     {
@@ -1378,7 +1375,6 @@
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
-      initial: "InitialMinSize",
       interpolable: true,
     },
     {
@@ -1386,7 +1382,6 @@
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
-      initial: "InitialMinSize",
       interpolable: true,
     },
     {
@@ -2451,7 +2446,6 @@
       api_class: "CSSPropertyAPIWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
-      initial: "InitialSize",
       interpolable: true,
       keywords: ["auto", "fit-content", "min-content", "max-content"],
       supports_percentage: true,

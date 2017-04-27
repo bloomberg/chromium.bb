@@ -3517,8 +3517,8 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   Length logical_height = size_type == kMinSize ? Style()->LogicalMinHeight()
                                                 : Style()->LogicalMaxHeight();
   Length initial_logical_height = size_type == kMinSize
-                                      ? ComputedStyle::InitialMinSize()
-                                      : ComputedStyle::InitialMaxSize();
+                                      ? ComputedStyle::InitialMinHeight()
+                                      : ComputedStyle::InitialMaxHeight();
 
   if (logical_height == initial_logical_height)
     return true;
