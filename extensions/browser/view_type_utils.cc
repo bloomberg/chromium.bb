@@ -5,6 +5,7 @@
 #include "extensions/browser/view_type_utils.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -39,7 +40,8 @@ ViewType GetViewType(WebContents* tab) {
 }
 
 void SetViewType(WebContents* tab, ViewType type) {
-  tab->SetUserData(&kViewTypeUserDataKey, new ViewTypeUserData(type));
+  tab->SetUserData(&kViewTypeUserDataKey,
+                   base::MakeUnique<ViewTypeUserData>(type));
 
   ExtensionsBrowserClient::Get()->AttachExtensionTaskManagerTag(tab, type);
 }

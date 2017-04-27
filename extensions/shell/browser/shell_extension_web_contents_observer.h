@@ -15,12 +15,14 @@ namespace extensions {
 class ShellExtensionWebContentsObserver
     : public ExtensionWebContentsObserver,
       public content::WebContentsUserData<ShellExtensionWebContentsObserver> {
+ public:
+  ~ShellExtensionWebContentsObserver() override;
+
  private:
   friend class content::WebContentsUserData<ShellExtensionWebContentsObserver>;
 
   explicit ShellExtensionWebContentsObserver(
       content::WebContents* web_contents);
-  ~ShellExtensionWebContentsObserver() override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionWebContentsObserver);
 };

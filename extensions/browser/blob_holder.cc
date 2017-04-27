@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -33,7 +34,8 @@ BlobHolder* BlobHolder::FromRenderProcessHost(
     return existing;
 
   BlobHolder* new_instance = new BlobHolder(render_process_host);
-  render_process_host->SetUserData(&kBlobHolderUserDataKey, new_instance);
+  render_process_host->SetUserData(&kBlobHolderUserDataKey,
+                                   base::WrapUnique(new_instance));
   return new_instance;
 }
 

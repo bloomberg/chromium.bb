@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -36,7 +37,7 @@ WebViewContentScriptManager* WebViewContentScriptManager::Get(
   if (!manager) {
     manager = new WebViewContentScriptManager(browser_context);
     browser_context->SetUserData(webview::kWebViewContentScriptManagerKeyName,
-                                 manager);
+                                 base::WrapUnique(manager));
   }
   return manager;
 }
