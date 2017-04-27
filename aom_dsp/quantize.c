@@ -83,7 +83,7 @@ static void quantize_b_helper_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        quant_shift_ptr[rc != 0]) >>
                       (16 - log_scale));  // quantization
 #endif  // CONFIG_AOM_QM
-        qcoeff_ptr[rc] = (tmp ^ coeff_sign) - coeff_sign;
+        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
 #if CONFIG_AOM_QM
         const int dequant =
             (dequant_ptr[rc != 0] * iqm_ptr[rc] + (1 << (AOM_QM_BITS - 1))) >>
