@@ -109,7 +109,8 @@ void CvcUnmaskViewController::ShowUnmaskPrompt(
 
 void CvcUnmaskViewController::OnUnmaskVerificationResult(
     autofill::AutofillClient::PaymentsRpcResult result) {
-  // TODO(anthonyvd): Show result.
+  // TODO(crbug.com/716020): Handle FullCardRequest errors with more
+  // granularity and display an error in the UI.
 }
 
 base::string16 CvcUnmaskViewController::GetSheetTitle() {
@@ -182,6 +183,10 @@ void CvcUnmaskViewController::ButtonPressed(views::Button* sender,
   switch (sender->tag()) {
     case static_cast<int>(Tags::CONFIRM_TAG):
       CvcConfirmed();
+      break;
+    case static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG):
+      unmask_delegate_->OnUnmaskPromptClosed();
+      dialog()->GoBack();
       break;
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);

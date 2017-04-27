@@ -113,7 +113,9 @@ void AutofillPaymentInstrument::OnFullCardRequestSucceeded(
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestFailed() {
-  // TODO(anthonyvd): Do something with the error.
+  // The user may have cancelled the unmask or something has gone wrong (e.g.,
+  // the network request failed). In all cases, reset the |delegate_| so another
+  // request can start.
   delegate_ = nullptr;
 }
 
