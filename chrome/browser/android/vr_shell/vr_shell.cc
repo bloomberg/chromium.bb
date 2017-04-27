@@ -88,7 +88,7 @@ VrShell::VrShell(JNIEnv* env,
                  bool reprojected_rendering)
     : vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrShell)),
       window_(window),
-      compositor_(base::MakeUnique<VrCompositor>(window_, false)),
+      compositor_(base::MakeUnique<VrCompositor>(window_)),
       delegate_provider_(delegate),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
