@@ -64,6 +64,11 @@ Polymer({
     return this.$.container;
   },
 
+  /** @return {boolean} */
+  isTopLevelFolder_: function() {
+    return this.depth == 0;
+  },
+
   /**
    * @private
    * @return {string}
@@ -133,6 +138,6 @@ Polymer({
    * @return {boolean}
    */
   isRootFolder_: function() {
-    return this.depth == 0;
+    return this.itemId == ROOT_NODE_ID;
   },
 });

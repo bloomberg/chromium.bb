@@ -86,7 +86,8 @@ Polymer({
       splitterTarget.style.width =
           window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY];
     }
-    this.sidebarWidth_ = splitterTarget.getComputedStyleValue('width');
+    this.sidebarWidth_ =
+        /** @type {string} */ (getComputedStyle(splitterTarget).width);
 
     splitter.addEventListener('resize', function(e) {
       window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY] =
@@ -100,7 +101,8 @@ Polymer({
 
   /** @private */
   updateSidebarWidth_: function() {
-    this.sidebarWidth_ = this.$.sidebar.getComputedStyleValue('width');
+    this.sidebarWidth_ =
+        /** @type {string} */ (getComputedStyle(this.$.sidebar).width);
   },
 
   /** @private */

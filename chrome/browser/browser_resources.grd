@@ -285,8 +285,6 @@
         <include name="IDR_MD_BOOKMARKS_ROUTER_JS" file="resources\md_bookmarks\router.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_SHARED_STYLE_HTML" file="resources\md_bookmarks\shared_style.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_SHARED_VARS_HTML" file="resources\md_bookmarks\shared_vars.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_SIDEBAR_HTML" file="resources\md_bookmarks\sidebar.html" type="BINDATA" />
-        <include name="IDR_MD_BOOKMARKS_SIDEBAR_JS" file="resources\md_bookmarks\sidebar.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_HTML" file="resources\md_bookmarks\store_client.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_JS" file="resources\md_bookmarks\store_client.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_STORE_HTML" file="resources\md_bookmarks\store.html" type="BINDATA" />

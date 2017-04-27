@@ -56,7 +56,7 @@ suite('<bookmarks-app>', function() {
 
   test('write and load sidebar width', function() {
     assertEquals(
-        app.$.sidebar.getComputedStyleValue('width'), app.sidebarWidth_);
+        getComputedStyle(app.$.sidebar).width, app.sidebarWidth_);
 
     var sidebarWidth = '500px';
     app.$.sidebar.style.width = sidebarWidth;

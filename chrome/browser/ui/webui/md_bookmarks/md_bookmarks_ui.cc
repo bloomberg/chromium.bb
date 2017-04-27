@@ -102,8 +102,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
                           IDR_MD_BOOKMARKS_SHARED_STYLE_HTML);
   source->AddResourcePath("shared_vars.html",
                           IDR_MD_BOOKMARKS_SHARED_VARS_HTML);
-  source->AddResourcePath("sidebar.html", IDR_MD_BOOKMARKS_SIDEBAR_HTML);
-  source->AddResourcePath("sidebar.js", IDR_MD_BOOKMARKS_SIDEBAR_JS);
   source->AddResourcePath("store.html", IDR_MD_BOOKMARKS_STORE_HTML);
   source->AddResourcePath("store.js", IDR_MD_BOOKMARKS_STORE_JS);
   source->AddResourcePath("store_client.html",

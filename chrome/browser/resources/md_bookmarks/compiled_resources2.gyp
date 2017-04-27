@@ -115,13 +115,6 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'sidebar',
-      'dependencies': [
-        'store_client',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'store',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',

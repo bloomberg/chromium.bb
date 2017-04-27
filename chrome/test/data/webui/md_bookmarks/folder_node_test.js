@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-suite('<bookmarks-sidebar>', function() {
-  var sidebar;
+suite('<bookmarks-folder-node>', function() {
+  var rootNode;
   var store;
 
   setup(function() {
@@ -24,14 +24,15 @@ suite('<bookmarks-sidebar>', function() {
     });
     bookmarks.Store.instance_ = store;
 
-    sidebar = document.createElement('bookmarks-sidebar');
-    replaceBody(sidebar);
+    rootNode = document.createElement('bookmarks-folder-node');
+    rootNode.itemId = '0';
+    rootNode.depth = -1;
+    replaceBody(rootNode);
     Polymer.dom.flush();
   });
 
   test('selecting and deselecting folders dispatches action', function() {
-    var rootFolders =
-        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
+    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
     var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
     var secondGen =
@@ -51,8 +52,7 @@ suite('<bookmarks-sidebar>', function() {
   });
 
   test('depth calculation', function() {
-    var rootFolders =
-        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
+    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
     var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
     var secondGen =
@@ -73,8 +73,7 @@ suite('<bookmarks-sidebar>', function() {
   });
 
   test('doesn\'t highlight selected folder while searching', function() {
-    var rootFolders =
-        sidebar.$['folder-tree'].querySelectorAll('bookmarks-folder-node');
+    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
 
     store.data.selectedFolder = '1';
     store.notifyObservers();
