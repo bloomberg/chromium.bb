@@ -88,6 +88,8 @@ void ConnectorImpl::FilterInterfaces(const std::string& spec,
                                      const Identity& source_identity,
                                      mojom::InterfaceProviderRequest request,
                                      mojom::InterfaceProviderPtr target) {
+  if (!BindConnectorIfNecessary())
+    return;
   connector_->FilterInterfaces(spec, source_identity, std::move(request),
                                std::move(target));
 }
