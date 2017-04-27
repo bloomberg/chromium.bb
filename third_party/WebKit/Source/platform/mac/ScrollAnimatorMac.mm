@@ -796,7 +796,7 @@ void ScrollAnimatorMac::ImmediateScrollTo(const ScrollOffset& new_offset) {
   ScrollOffset delta = adjusted_offset - current_offset_;
 
   current_offset_ = adjusted_offset;
-  NotifyContentAreaScrolled(delta);
+  NotifyContentAreaScrolled(delta, kUserScroll);
   NotifyOffsetChanged();
 }
 
@@ -924,13 +924,15 @@ void ScrollAnimatorMac::WillRemoveHorizontalScrollbar(Scrollbar& scrollbar) {
   [scrollbar_painter_controller_.Get() setHorizontalScrollerImp:nil];
 }
 
-void ScrollAnimatorMac::NotifyContentAreaScrolled(const ScrollOffset& delta) {
+void ScrollAnimatorMac::NotifyContentAreaScrolled(const ScrollOffset& delta,
+                                                  ScrollType scrollType) {
   // This function is called when a page is going into the page cache, but the
   // page
   // isn't really scrolling in that case. We should only pass the message on to
   // the
   // ScrollbarPainterController when we're really scrolling on an active page.
-  if (GetScrollableArea()->ScrollbarsCanBeActive())
+  if (IsExplicitScrollType(scrollType) &&
+      GetScrollableArea()->ScrollbarsCanBeActive())
     SendContentAreaScrolledSoon(delta);
 }
 

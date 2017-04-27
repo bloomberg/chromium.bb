@@ -1976,7 +1976,8 @@ void FrameView::DidUpdateElasticOverscroll() {
         elastic_overscroll.Width() - HorizontalScrollbar()->ElasticOverscroll();
     if (delta != 0) {
       HorizontalScrollbar()->SetElasticOverscroll(elastic_overscroll.Width());
-      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(delta, 0));
+      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(delta, 0),
+                                                    kCompositorScroll);
       SetScrollbarNeedsPaintInvalidation(kHorizontalScrollbar);
     }
   }
@@ -1985,7 +1986,8 @@ void FrameView::DidUpdateElasticOverscroll() {
         elastic_overscroll.Height() - VerticalScrollbar()->ElasticOverscroll();
     if (delta != 0) {
       VerticalScrollbar()->SetElasticOverscroll(elastic_overscroll.Height());
-      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(0, delta));
+      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(0, delta),
+                                                    kCompositorScroll);
       SetScrollbarNeedsPaintInvalidation(kVerticalScrollbar);
     }
   }
