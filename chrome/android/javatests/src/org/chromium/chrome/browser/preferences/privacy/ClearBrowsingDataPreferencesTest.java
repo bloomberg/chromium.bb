@@ -52,6 +52,8 @@ public class ClearBrowsingDataPreferencesTest
 
     @Override
     protected void setUp() throws Exception {
+        SigninTestUtil.setUpAuthForTest(getInstrumentation());
+
         super.setUp();
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
@@ -60,6 +62,8 @@ public class ClearBrowsingDataPreferencesTest
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         super.tearDown();
+
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     public ClearBrowsingDataPreferencesTest() {
@@ -68,7 +72,6 @@ public class ClearBrowsingDataPreferencesTest
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTest(getInstrumentation());
         startMainActivityOnBlankPage();
     }
 

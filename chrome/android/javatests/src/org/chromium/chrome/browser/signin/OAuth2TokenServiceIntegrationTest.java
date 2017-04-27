@@ -65,14 +65,16 @@ public class OAuth2TokenServiceIntegrationTest {
         mapAccountNamesToIds();
         ApplicationData.clearAppData(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
-        // Set up AccountManager.
+        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerHelper, so it should
+        // be initialized beforehand.
         mContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         mAccountManager = new MockAccountManager(
                 mContext, InstrumentationRegistry.getInstrumentation().getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
+
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         // Make sure there is no account signed in yet.
         mChromeSigninController = ChromeSigninController.get();
@@ -98,6 +100,7 @@ public class OAuth2TokenServiceIntegrationTest {
                 mOAuth2TokenService.validateAccounts(false);
             }
         });
+        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     private void mapAccountNamesToIds() {

@@ -20,6 +20,8 @@ class ChildAccountInfoFetcherAndroid : public ChildAccountInfoFetcher {
       AccountFetcherService* service,
       const std::string& account_id);
 
+  static void InitializeForTests();
+
   // Register JNI methods.
   static bool Register(JNIEnv* env);
 
