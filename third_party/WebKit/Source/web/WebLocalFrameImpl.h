@@ -43,7 +43,6 @@
 #include "web/LocalFrameClientImpl.h"
 #include "web/UserMediaClientImpl.h"
 #include "web/WebExport.h"
-#include "web/WebFrameImplBase.h"
 #include "web/WebFrameWidgetBase.h"
 #include "web/WebInputMethodControllerImpl.h"
 
@@ -84,7 +83,7 @@ class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
 class WEB_EXPORT WebLocalFrameImpl final
-    : public WebFrameImplBase,
+    : public GarbageCollectedFinalized<WebLocalFrameImpl>,
       NON_EXPORTED_BASE(public WebLocalFrame) {
  public:
   // WebFrame methods:
@@ -239,8 +238,6 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   WebString LayerTreeAsText(bool show_debug_info = false) const override;
 
-  WebFrameImplBase* ToImplBase() override { return this; }
-
   // WebLocalFrame methods:
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
@@ -321,11 +318,8 @@ class WEB_EXPORT WebLocalFrameImpl final
                             WebString& clip_text,
                             WebString& clip_html) override;
 
-  // WebFrameImplBase methods:
-  void InitializeCoreFrame(Page&,
-                           FrameOwner*,
-                           const AtomicString& name) override;
-  LocalFrame* GetFrame() const override { return frame_.Get(); }
+  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();
   void WillDetachParent();

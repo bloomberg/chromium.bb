@@ -158,8 +158,6 @@ component("web") {
     "WebFrame.cpp",
     "WebFrameClient.cpp",
     "WebFrameContentDumper.cpp",
-    "WebFrameImplBase.cpp",
-    "WebFrameImplBase.h",
     "WebFrameSerializer.cpp",
     "WebFrameSerializerImpl.cpp",
     "WebFrameSerializerImpl.h",

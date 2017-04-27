@@ -305,7 +305,7 @@ void WebView::DidExitModalLoop() {
 }
 
 void WebViewImpl::SetMainFrame(WebFrame* frame) {
-  frame->ToImplBase()->InitializeCoreFrame(*GetPage(), 0, g_null_atom);
+  WebFrame::InitializeCoreFrame(*frame, *GetPage());
 }
 
 void WebViewImpl::SetCredentialManagerClient(
@@ -2679,7 +2679,7 @@ void WebViewImpl::FocusDocumentView(WebFrame* frame) {
   // duplicate frameFocused updates from FocusController to the browser
   // process, which already knows the latest focused frame.
   GetPage()->GetFocusController().FocusDocumentView(
-      frame->ToImplBase()->GetFrame(), false /* notifyEmbedder */);
+      WebFrame::ToCoreFrame(*frame), false /* notifyEmbedder */);
 }
 
 void WebViewImpl::SetInitialFocus(bool reverse) {

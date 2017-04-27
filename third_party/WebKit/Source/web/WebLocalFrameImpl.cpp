@@ -869,7 +869,7 @@ v8::Local<v8::Context> WebLocalFrameImpl::MainWorldScriptContext() const {
 
 bool WebFrame::ScriptCanAccess(WebFrame* target) {
   return BindingSecurity::ShouldAllowAccessToFrame(
-      CurrentDOMWindow(MainThreadIsolate()), target->ToImplBase()->GetFrame(),
+      CurrentDOMWindow(MainThreadIsolate()), ToCoreFrame(*target),
       BindingSecurity::ErrorReportOption::kDoNotReport);
 }
 
@@ -1549,7 +1549,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   DCHECK(client);
   WebLocalFrameImpl* web_frame = new WebLocalFrameImpl(
       old_web_frame, client, interface_provider, interface_registry);
-  Frame* old_frame = old_web_frame->ToImplBase()->GetFrame();
+  Frame* old_frame = ToWebRemoteFrameImpl(old_web_frame)->GetFrame();
   web_frame->SetParent(old_web_frame->Parent());
   web_frame->SetOpener(old_web_frame->Opener());
   // Note: this *always* temporarily sets a frame owner, even for main frames!
@@ -1627,7 +1627,6 @@ DEFINE_TRACE(WebLocalFrameImpl) {
   visitor->Trace(context_menu_node_);
   visitor->Trace(text_checker_client_);
   WebFrame::TraceFrames(visitor, this);
-  WebFrameImplBase::Trace(visitor);
 }
 
 void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {

@@ -13,7 +13,6 @@
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"
 #include "web/WebExport.h"
-#include "web/WebFrameImplBase.h"
 
 namespace blink {
 
@@ -24,7 +23,7 @@ class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 
 class WEB_EXPORT WebRemoteFrameImpl final
-    : public WebFrameImplBase,
+    : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
       NON_EXPORTED_BASE(public WebRemoteFrame) {
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType,
@@ -105,20 +104,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
 
   WebString LayerTreeAsText(bool show_debug_info = false) const override;
 
-  WebFrameImplBase* ToImplBase() { return this; }
-
-  // WebFrameImplBase methods:
-  void InitializeCoreFrame(Page&,
-                           FrameOwner*,
-                           const AtomicString& name) override;
-  RemoteFrame* GetFrame() const override { return frame_.Get(); }
-
-  void SetCoreFrame(RemoteFrame*);
-
-  WebRemoteFrameClient* Client() const { return client_; }
-
-  static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
-
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                   const WebString& name,
@@ -156,6 +141,15 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void WillEnterFullscreen() override;
   void SetHasReceivedUserGesture() override;
   v8::Local<v8::Object> GlobalProxy() const override;
+
+  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  RemoteFrame* GetFrame() const { return frame_.Get(); }
+
+  void SetCoreFrame(RemoteFrame*);
+
+  WebRemoteFrameClient* Client() const { return client_; }
+
+  static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
   DECLARE_TRACE();
 

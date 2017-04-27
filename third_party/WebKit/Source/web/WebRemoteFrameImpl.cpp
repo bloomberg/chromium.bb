@@ -52,7 +52,6 @@ DEFINE_TRACE(WebRemoteFrameImpl) {
   visitor->Trace(frame_client_);
   visitor->Trace(frame_);
   WebFrame::TraceFrames(visitor, this);
-  WebFrameImplBase::Trace(visitor);
 }
 
 bool WebRemoteFrameImpl::IsWebLocalFrame() const {

@@ -52,6 +52,7 @@ namespace blink {
 
 class Frame;
 class OpenedFrameTracker;
+class Page;
 class Visitor;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -60,7 +61,6 @@ class WebData;
 class WebDataSource;
 class WebDocument;
 class WebElement;
-class WebFrameImplBase;
 class WebLocalFrame;
 class WebPerformance;
 class WebRemoteFrame;
@@ -417,21 +417,18 @@ class WebFrame {
   // text form. This is used only by layout tests.
   virtual WebString LayerTreeAsText(bool show_debug_info = false) const = 0;
 
-  virtual WebFrameImplBase* ToImplBase() = 0;
-  // TODO(dcheng): Fix const-correctness issues and remove this overload.
-  virtual const WebFrameImplBase* ToImplBase() const {
-    return const_cast<WebFrame*>(this)->ToImplBase();
-  }
-
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given element is not a frame, iframe or if the frame is empty.
   BLINK_EXPORT static WebFrame* FromFrameOwnerElement(const WebElement&);
 
 #if BLINK_IMPLEMENTATION
+  // TODO(mustaq): Should be named FromCoreFrame instead.
   static WebFrame* FromFrame(Frame*);
+  BLINK_EXPORT static Frame* ToCoreFrame(const WebFrame&);
 
   bool InShadowTree() const { return scope_ == WebTreeScopeType::kShadow; }
 
+  static void InitializeCoreFrame(WebFrame&, Page&);
   static void TraceFrames(Visitor*, WebFrame*);
 #endif
 
