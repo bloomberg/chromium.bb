@@ -2901,12 +2901,6 @@ extern const char kMediaRemotingName[];
 // Desciption for the flag to enable Media Remoting
 extern const char kMediaRemotingDescription[];
 
-// Name for the flag to enable Media Remoting of encrypted content
-extern const char kMediaRemotingEncryptedName[];
-
-// Desciption for the flag to enable Media Remoting of encrypted content
-extern const char kMediaRemotingEncryptedDescription[];
-
 //  Chrome OS component updates chrome://flags strings
 
 // Name for the flag to enable Chrome OS component flash updates
