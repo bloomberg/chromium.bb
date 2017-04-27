@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -97,11 +97,11 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  plugin_list_task_runner_ =
-      BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::GetSequenceToken(),
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::USER_VISIBLE)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
   PluginList::Singleton()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
