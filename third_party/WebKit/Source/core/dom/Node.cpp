@@ -606,7 +606,33 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
 
   // Swap the NodeLayoutData to point to a new NodeLayoutData instead of the
   // static SharedEmptyData instance.
-  node_layout_data = new NodeLayoutData(layout_object);
+  DCHECK(!node_layout_data->GetNonAttachedStyle());
+  node_layout_data = new NodeLayoutData(layout_object, nullptr);
+  if (HasRareData())
+    data_.rare_data_->SetNodeLayoutData(node_layout_data);
+  else
+    data_.node_layout_data_ = node_layout_data;
+}
+
+void Node::SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style) {
+  NodeLayoutData* node_layout_data = HasRareData()
+                                         ? data_.rare_data_->GetNodeLayoutData()
+                                         : data_.node_layout_data_;
+
+  // Already pointing to a non empty NodeLayoutData so just set the pointer to
+  // the new LayoutObject.
+  if (!node_layout_data->IsSharedEmptyData()) {
+    node_layout_data->SetNonAttachedStyle(non_attached_style);
+    return;
+  }
+
+  if (!non_attached_style)
+    return;
+
+  // Swap the NodeLayoutData to point to a new NodeLayoutData instead of the
+  // static SharedEmptyData instance.
+  DCHECK(!node_layout_data->GetLayoutObject());
+  node_layout_data = new NodeLayoutData(nullptr, non_attached_style);
   if (HasRareData())
     data_.rare_data_->SetNodeLayoutData(node_layout_data);
   else

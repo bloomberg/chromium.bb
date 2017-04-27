@@ -61,8 +61,7 @@ using namespace HTMLNames;
 
 inline ComputedStyle* GetElementStyle(Element& element) {
   if (element.NeedsReattachLayoutTree()) {
-    if (ComputedStyle* computed_style =
-            element.GetDocument().GetNonAttachedStyle(element))
+    if (ComputedStyle* computed_style = element.GetNonAttachedStyle())
       return computed_style;
   }
   return element.MutableComputedStyle();
