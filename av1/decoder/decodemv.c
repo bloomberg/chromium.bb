@@ -1238,11 +1238,15 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const REFERENCE_MODE mode = read_block_reference_mode(cm, xd, r);
     // FIXME(rbultje) I'm pretty sure this breaks segmentation ref frame coding
     if (mode == COMPOUND_REFERENCE) {
+#if CONFIG_LOWDELAY_COMPOUND  // Normative in decoder (for low delay)
+      const int idx = 1;
+#else
 #if CONFIG_EXT_REFS
       const int idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
 #else
       const int idx = cm->ref_frame_sign_bias[cm->comp_fixed_ref];
 #endif  // CONFIG_EXT_REFS
+#endif
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
 
       const int bit = aom_read(r, fc->comp_ref_prob[ctx][0], ACCT_STR);

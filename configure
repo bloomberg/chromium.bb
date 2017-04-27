@@ -323,6 +323,7 @@ EXPERIMENT_LIST="
     new_multisymbol
     compound_singleref
     aom_qm
+    lowdelay_compound
 "
 CONFIG_LIST="
     dependency_tracking

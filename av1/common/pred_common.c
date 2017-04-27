@@ -278,19 +278,29 @@ int av1_get_reference_mode_context(const AV1_COMMON *cm,
 //
 // NOTE(zoeliu): The probability of ref_frame[0] is either
 //               GOLDEN_FRAME or LAST3_FRAME.
+#if CONFIG_LOWDELAY_COMPOUND
+int av1_get_pred_context_comp_ref_p(UNUSED const AV1_COMMON *cm,
+                                    const MACROBLOCKD *xd) {
+#else
 int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
                                     const MACROBLOCKD *xd) {
+#endif
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries correpsonding to real macroblocks.
-  // The prediction flags in these dummy entries are initialised to 0.
+// Note:
+// The mode info data structure has a one element border above and to the
+// left of the entries correpsonding to real macroblocks.
+// The prediction flags in these dummy entries are initialised to 0.
+#if CONFIG_LOWDELAY_COMPOUND  // No change to bitstream
+  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  const int bwd_ref_sign_idx = 1;
+#else
   const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
+#endif
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   if (above_in_image && left_in_image) {  // both edges available
@@ -378,19 +388,29 @@ int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
 //
 // NOTE(zoeliu): The probability of ref_frame[0] is LAST_FRAME,
 // conditioning on it is either LAST_FRAME or LAST2_FRAME.
+#if CONFIG_LOWDELAY_COMPOUND
+int av1_get_pred_context_comp_ref_p1(UNUSED const AV1_COMMON *cm,
+                                     const MACROBLOCKD *xd) {
+#else
 int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
                                      const MACROBLOCKD *xd) {
+#endif
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries correpsonding to real macroblocks.
-  // The prediction flags in these dummy entries are initialised to 0.
+// Note:
+// The mode info data structure has a one element border above and to the
+// left of the entries correpsonding to real macroblocks.
+// The prediction flags in these dummy entries are initialised to 0.
+#if CONFIG_LOWDELAY_COMPOUND  // No change to bitstream
+  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  const int bwd_ref_sign_idx = 1;
+#else
   const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
+#endif
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   if (above_in_image && left_in_image) {  // both edges available
@@ -479,19 +499,29 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
 //
 // NOTE(zoeliu): The probability of ref_frame[0] is GOLDEN_FRAME,
 // conditioning on it is either GOLDEN or LAST3.
+#if CONFIG_LOWDELAY_COMPOUND
+int av1_get_pred_context_comp_ref_p2(UNUSED const AV1_COMMON *cm,
+                                     const MACROBLOCKD *xd) {
+#else
 int av1_get_pred_context_comp_ref_p2(const AV1_COMMON *cm,
                                      const MACROBLOCKD *xd) {
+#endif
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries correpsonding to real macroblocks.
-  // The prediction flags in these dummy entries are initialised to 0.
+// Note:
+// The mode info data structure has a one element border above and to the
+// left of the entries correpsonding to real macroblocks.
+// The prediction flags in these dummy entries are initialised to 0.
+#if CONFIG_LOWDELAY_COMPOUND  // No change to bitstream
+  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  const int bwd_ref_sign_idx = 1;
+#else
   const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
+#endif
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   if (above_in_image && left_in_image) {  // both edges available
@@ -574,19 +604,29 @@ int av1_get_pred_context_comp_ref_p2(const AV1_COMMON *cm,
 }
 
 // Returns a context number for the given MB prediction signal
+#if CONFIG_LOWDELAY_COMPOUND
+int av1_get_pred_context_comp_bwdref_p(UNUSED const AV1_COMMON *cm,
+                                       const MACROBLOCKD *xd) {
+#else
 int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
                                        const MACROBLOCKD *xd) {
+#endif
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries corresponding to real macroblocks.
-  // The prediction flags in these dummy entries are initialized to 0.
+// Note:
+// The mode info data structure has a one element border above and to the
+// left of the entries corresponding to real macroblocks.
+// The prediction flags in these dummy entries are initialized to 0.
+#if CONFIG_LOWDELAY_COMPOUND  // No change to bitstream
+  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  const int bwd_ref_sign_idx = 1;
+#else
   const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
+#endif
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   if (above_in_image && left_in_image) {  // both edges available
