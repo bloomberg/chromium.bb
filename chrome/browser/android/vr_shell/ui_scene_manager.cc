@@ -20,6 +20,16 @@ static constexpr int kWarningTimeoutSeconds = 30;
 static constexpr float kWarningDistance = 0.7;
 static constexpr float kWarningAngleRadians = 16.3 * M_PI / 180.0;
 
+static constexpr float kPermanentWarningHeight = 0.226;
+static constexpr float kPermanentWarningWidth = 0.078;
+static constexpr float kTransientWarningHeight = 0.512;
+static constexpr float kTransientWarningWidth = 0.160;
+
+static constexpr float kContentHeight = 2.4;
+static constexpr float kContentWidth = 1.6;
+static constexpr float kContentDistance = 2.5;
+static constexpr float kContentVerticalOffset = -0.26;
+
 }  // namespace
 
 UiSceneManager::UiSceneManager(UiScene* scene)
@@ -36,7 +46,7 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   element->id = id++;
   element->name = "Permanent security warning";
   element->fill = vr_shell::Fill::NONE;
-  element->size = {0.226f, 0.078f, 1};
+  element->size = {kPermanentWarningWidth, kPermanentWarningHeight, 1};
   element->scale = {kWarningDistance, kWarningDistance, 1};
   element->translation = {0, kWarningDistance * sin(kWarningAngleRadians),
                           -kWarningDistance * cos(kWarningAngleRadians)};
@@ -52,7 +62,7 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   element->id = id++;
   element->name = "Transient security warning";
   element->fill = vr_shell::Fill::NONE;
-  element->size = {0.512f, 0.160f, 1};
+  element->size = {kTransientWarningWidth, kTransientWarningHeight, 1};
   element->scale = {kWarningDistance, kWarningDistance, 1};
   element->translation = {0, 0, -kWarningDistance};
   element->visible = false;
@@ -66,8 +76,8 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   element->id = id++;
   element->name = "Content";
   element->fill = vr_shell::Fill::CONTENT;
-  element->size = {2.4f, 1.6f, 1};
-  element->translation = {0, -0.1f, -2.5f};
+  element->size = {kContentWidth, kContentHeight, 1};
+  element->translation = {0, kContentVerticalOffset, -kContentDistance};
   element->visible = false;
   main_content_ = element.get();
   scene_->AddUiElement(std::move(element));
