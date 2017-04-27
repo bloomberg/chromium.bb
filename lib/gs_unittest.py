@@ -468,13 +468,7 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
     """Test auto_compress behavior."""
     path = os.path.join(self.tempdir, 'ok.txt')
     self._Copy(self.ctx, path, self.GIVEN_REMOTE, auto_compress=True)
-    self.gs_mock.assertCommandContains(['-z', 'txt'], expected=True)
-
-  def testCompressNoExt(self):
-    """Test auto_compress w/bad src path."""
-    path = os.path.join(self.tempdir, 'bad.dir/bad-file')
-    self.assertRaises(ValueError, self._Copy, self.ctx, path,
-                      self.GIVEN_REMOTE, auto_compress=True)
+    self.gs_mock.assertCommandContains(['-Z'], expected=True)
 
   def testGeneration(self):
     """Test generation return value."""

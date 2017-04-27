@@ -820,12 +820,7 @@ class GSContext(object):
         cmd.append('-e')
 
     if auto_compress:
-      # Pass the suffix without the '.' as that is what gsutil wants.
-      suffix = os.path.splitext(src_path)[1]
-      if not suffix:
-        raise ValueError('src file "%s" needs an extension to compress' %
-                         (src_path,))
-      cmd += ['-z', suffix[1:]]
+      cmd.append('-Z')
 
     acl = self.acl if acl is None else acl
     if acl is not None:
