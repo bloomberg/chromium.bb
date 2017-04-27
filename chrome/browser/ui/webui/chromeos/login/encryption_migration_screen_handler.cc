@@ -16,12 +16,14 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/login/localized_values_builder.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -312,6 +314,26 @@ void EncryptionMigrationScreenHandler::StopBlockingPowerSave() {
   }
 }
 
+void EncryptionMigrationScreenHandler::RemoveCryptohome() {
+  // Set invalid token status so that user is forced to go through Gaia on the
+  // next sign-in.
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
+      user_context_.GetAccountId(),
+      user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
+      cryptohome::Identification(user_context_.GetAccountId()),
+      base::Bind(&EncryptionMigrationScreenHandler::OnRemoveCryptohome,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EncryptionMigrationScreenHandler::OnRemoveCryptohome(
+    bool success,
+    cryptohome::MountError return_code) {
+  LOG_IF(ERROR, !success) << "Removing cryptohome failed. return code: "
+                          << return_code;
+  UpdateUIState(UIState::MIGRATION_FAILED);
+}
+
 cryptohome::KeyDefinition EncryptionMigrationScreenHandler::GetAuthKey() {
   // |auth_key| is created in the same manner as CryptohomeAuthenticator.
   const Key* key = user_context_.GetKey();
@@ -344,12 +366,13 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_FAILED:
-      UpdateUIState(UIState::MIGRATION_FAILED);
       // Stop listening to the progress updates.
       DBusThreadManager::Get()
           ->GetCryptohomeClient()
           ->SetDircryptoMigrationProgressHandler(
               CryptohomeClient::DircryptoMigrationProgessHandler());
+      // Shows error screen after removing user directory is completed.
+      RemoveCryptohome();
       break;
     default:
       break;
@@ -357,12 +380,8 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
 }
 
 void EncryptionMigrationScreenHandler::OnMigrationRequested(bool success) {
-  // This function is called when MigrateToDircrypto is correctly requested.
-  // It does not mean that the migration is completed. We should know the
-  // completion by DircryptoMigrationProgressHandler. success == false means a
-  // failure in DBus communication.
-  // TODO(fukino): Handle this case. Should we retry or restart?
-  DCHECK(success);
+  LOG_IF(ERROR, !success) << "Requesting MigrateToDircrypto failed.";
+  UpdateUIState(UIState::MIGRATION_FAILED);
 }
 
 }  // namespace chromeos

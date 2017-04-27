@@ -77,6 +77,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
                             const std::string& mount_hash);
   void StartBlockingPowerSave();
   void StopBlockingPowerSave();
+  // Removes cryptohome and shows the error screen after the removal finishes.
+  void RemoveCryptohome();
+  void OnRemoveCryptohome(bool success, cryptohome::MountError return_code);
 
   // Creates authorization key for MountEx method using |user_context_|.
   cryptohome::KeyDefinition GetAuthKey();
