@@ -230,7 +230,7 @@ class CC_EXPORT GpuImageDecodeCache
     UsageStats usage_stats_;
   };
 
-  struct ImageData : public base::RefCounted<ImageData> {
+  struct ImageData : public base::RefCountedThreadSafe<ImageData> {
     ImageData(DecodedDataMode mode,
               size_t size,
               const gfx::ColorSpace& target_color_space,
@@ -250,7 +250,7 @@ class CC_EXPORT GpuImageDecodeCache
     UploadedImageData upload;
 
    private:
-    friend class base::RefCounted<ImageData>;
+    friend class base::RefCountedThreadSafe<ImageData>;
     ~ImageData();
   };
 
