@@ -29,6 +29,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -1669,9 +1670,9 @@ TEST_F(URLRequestInterceptorTest, Intercept) {
   base::SupportsUserData::Data* user_data0 = new base::SupportsUserData::Data();
   base::SupportsUserData::Data* user_data1 = new base::SupportsUserData::Data();
   base::SupportsUserData::Data* user_data2 = new base::SupportsUserData::Data();
-  req->SetUserData(nullptr, user_data0);
-  req->SetUserData(&user_data1, user_data1);
-  req->SetUserData(&user_data2, user_data2);
+  req->SetUserData(nullptr, base::WrapUnique(user_data0));
+  req->SetUserData(&user_data1, base::WrapUnique(user_data1));
+  req->SetUserData(&user_data2, base::WrapUnique(user_data2));
   req->set_method("GET");
   req->Start();
   base::RunLoop().Run();
