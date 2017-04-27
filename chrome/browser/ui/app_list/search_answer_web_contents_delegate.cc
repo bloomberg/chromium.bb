@@ -100,12 +100,20 @@ content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
   if (!params.user_gesture)
     return WebContentsDelegate::OpenURLFromTab(source, params);
 
-  // Open the user-clicked link in a new browser tab. This will automatically
-  // close the app list.
+  // Open the user-clicked link in the browser taking into account the requested
+  // disposition.
   chrome::NavigateParams new_tab_params(profile_, params.url,
                                         params.transition);
-  new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+
+  new_tab_params.disposition = params.disposition;
+
+  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    // When the user asks to open a link as a background tab, we show an
+    // activated window with the new activated tab after the user closes the
+    // launcher. So it's "background" relative to the launcher itself.
+    new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW_INACTIVE;
+  }
 
   chrome::Navigate(&new_tab_params);
 
