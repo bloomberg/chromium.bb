@@ -4,25 +4,38 @@
 
 package org.chromium.chrome.browser.compositor;
 
-import android.annotation.TargetApi;
 import android.graphics.Rect;
-import android.support.test.annotation.UiThreadTest;
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.view.SurfaceView;
 import android.view.View;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import org.chromium.chrome.browser.ChromeActivityTest;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
  * Integration tests for {@link org.chromium.chrome.browser.compositor.CompositorView}.
  */
-@TargetApi(21)
-public class CompositorVisibilityTest extends ChromeActivityTest {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+public class CompositorVisibilityTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     private CompositorView mCompositorView;
 
     private LayoutRenderHost mRenderHost = new LayoutRenderHost() {
@@ -71,29 +84,44 @@ public class CompositorVisibilityTest extends ChromeActivityTest {
         public void invalidateAccessibilityProvider() {}
     };
 
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+    }
+
     // Verify that setVisibility on |mCompositorView| is transferred to its children.  Otherwise,
     // the underlying surface is not destroyed.  This can interfere with VR, which hides the
     // CompositorView and creates its own surfaces.  The compositor surfaces can show up when the VR
     // surfaces are supposed to be visible.
+    @Test
     @SmallTest
-    @UiThreadTest
-    public void testSetVisibilityHidesSurfaces() {
-        mCompositorView = new CompositorView(getActivity(), mRenderHost);
-        mCompositorView.setVisibility(View.VISIBLE);
-        assertEquals(View.VISIBLE, mCompositorView.getChildAt(0).getVisibility());
-        mCompositorView.setVisibility(View.INVISIBLE);
-        assertEquals(View.INVISIBLE, mCompositorView.getChildAt(0).getVisibility());
+    public void testSetVisibilityHidesSurfaces() throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCompositorView = new CompositorView(mActivityTestRule.getActivity(), mRenderHost);
+                mCompositorView.setVisibility(View.VISIBLE);
+                Assert.assertEquals(View.VISIBLE, mCompositorView.getChildAt(0).getVisibility());
+                mCompositorView.setVisibility(View.INVISIBLE);
+                Assert.assertEquals(View.INVISIBLE, mCompositorView.getChildAt(0).getVisibility());
+            }
+        });
     }
 
     // The surfaceview should be attached during construction, so that the application window knows
     // to set the blending hint correctly on the surface.  Otherwise, it will have to setFormat()
     // when the SurfaceView is attached to the CompositorView, which causes visual artifacts when
     // the surface is torn down and re-created (crbug.com/704866).
+    @Test
     @SmallTest
-    @UiThreadTest
-    public void testSurfaceViewIsAttachedImmediately() {
-        mCompositorView = new CompositorView(getActivity(), mRenderHost);
-        assertEquals(mCompositorView.getChildCount(), 1);
-        assertTrue(mCompositorView.getChildAt(0) instanceof SurfaceView);
+    public void testSurfaceViewIsAttachedImmediately() throws Throwable {
+        mActivityTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCompositorView = new CompositorView(mActivityTestRule.getActivity(), mRenderHost);
+                Assert.assertEquals(mCompositorView.getChildCount(), 1);
+                Assert.assertTrue(mCompositorView.getChildAt(0) instanceof SurfaceView);
+            }
+        });
     }
 }
