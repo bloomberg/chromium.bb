@@ -104,7 +104,8 @@ const CGFloat kBackgroundFrameYInset = 2.0;
 }
 
 - (NSRect)focusRingMaskBounds {
-  return [[self superview] convertRect:apparentFrame_ toView:self];
+  return owner_->GetRealFocusRingBounds(
+      [[self superview] convertRect:apparentFrame_ toView:self]);
 }
 
 @end
@@ -182,6 +183,10 @@ void LocationBarDecoration::UpdateAccessibilityView(NSRect apparent_frame) {
   auto v = static_cast<DecorationAccessibilityView*>(accessibility_view_);
   [accessibility_view_ setEnabled:AcceptsMousePress()];
   [v setApparentFrame:apparent_frame];
+}
+
+NSRect LocationBarDecoration::GetRealFocusRingBounds(NSRect bounds) const {
+  return bounds;
 }
 
 void LocationBarDecoration::DrawInFrame(NSRect frame, NSView* control_view) {

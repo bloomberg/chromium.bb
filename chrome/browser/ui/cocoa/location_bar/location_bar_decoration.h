@@ -153,6 +153,11 @@ class LocationBarDecoration {
   // different from its frame in the Cocoa sense).
   void UpdateAccessibilityView(NSRect apparent_frame);
 
+  // Computes the real bounds the focus ring should be drawn around for this
+  // decoration. Some decorations include visual spacing or separators in their
+  // bounds, but these should not be encompassed by the focus ring.
+  virtual NSRect GetRealFocusRingBounds(NSRect bounds) const;
+
   DecorationMouseState state() const { return state_; }
 
   bool active() const { return active_; }
