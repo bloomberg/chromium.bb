@@ -38,9 +38,7 @@ void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
   is_secure_context_ = is_secure_context;
 }
 
-bool NullExecutionContext::IsSecureContext(
-    String& error_message,
-    const SecureContextCheck privilege_context_check) const {
+bool NullExecutionContext::IsSecureContext(String& error_message) const {
   if (!is_secure_context_)
     error_message = "A secure context is required";
   return is_secure_context_;

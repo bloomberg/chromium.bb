@@ -189,10 +189,9 @@ bool ExecutionContext::IsWindowInteractionAllowed() const {
   return window_interaction_tokens_ > 0;
 }
 
-bool ExecutionContext::IsSecureContext(
-    const SecureContextCheck privilege_context_check) const {
+bool ExecutionContext::IsSecureContext() const {
   String unused_error_message;
-  return IsSecureContext(unused_error_message, privilege_context_check);
+  return IsSecureContext(unused_error_message);
 }
 
 String ExecutionContext::OutgoingReferrer() const {

@@ -62,9 +62,7 @@ class CORE_EXPORT WorkletGlobalScope
     NOTREACHED();
     return nullptr;
   }  // WorkletGlobalScopes don't have an event queue.
-  bool IsSecureContext(
-      String& error_message,
-      const SecureContextCheck = kStandardSecureContextCheck) const final;
+  bool IsSecureContext(String& error_message) const final;
 
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;

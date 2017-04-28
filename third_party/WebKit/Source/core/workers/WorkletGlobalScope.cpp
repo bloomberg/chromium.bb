@@ -59,9 +59,7 @@ bool WorkletGlobalScope::IsJSExecutionForbidden() const {
   return script_controller_->IsExecutionForbidden();
 }
 
-bool WorkletGlobalScope::IsSecureContext(
-    String& error_message,
-    const SecureContextCheck privilege_context_check) const {
+bool WorkletGlobalScope::IsSecureContext(String& error_message) const {
   // Until there are APIs that are available in worklets and that
   // require a privileged context test that checks ancestors, just do
   // a simple check here.

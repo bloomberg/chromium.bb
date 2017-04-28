@@ -33,5 +33,5 @@
 ] interface Crypto {
     [RaisesException, MeasureAs=CryptoGetRandomValues] ArrayBufferView getRandomValues(ArrayBufferView array);
 
-    readonly attribute SubtleCrypto subtle;
+    [SecureContext] readonly attribute SubtleCrypto subtle;
 };
