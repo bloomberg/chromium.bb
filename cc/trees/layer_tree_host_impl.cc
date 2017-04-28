@@ -340,6 +340,8 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
       tile_manager_.TakeImagesToInvalidateOnSyncTree());
 
   if (CommitToActiveTree()) {
+    active_tree_->HandleScrollbarShowRequestsFromMain();
+
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
     // UpdateDrawProperties.
@@ -3283,8 +3285,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   DistributeScrollDelta(scroll_state);
 
-  active_tree_->SetCurrentlyScrollingNode(
-      scroll_state->current_native_scrolling_node());
+  ScrollNode* current_scrolling_node =
+      scroll_state->current_native_scrolling_node();
+  active_tree_->SetCurrentlyScrollingNode(current_scrolling_node);
   did_lock_scrolling_layer_ =
       scroll_state->delta_consumed_for_scroll_sequence();
 
@@ -3292,6 +3295,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   bool did_scroll_y = scroll_state->caused_scroll_y();
   bool did_scroll_content = did_scroll_x || did_scroll_y;
   if (did_scroll_content) {
+    ShowScrollbarsForImplScroll(current_scrolling_node->element_id);
+
     // If we are scrolling with an active scroll handler, forward latency
     // tracking information to the main thread so the delay introduced by the
     // handler is accounted for.
@@ -3352,6 +3357,7 @@ void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
   if (!changed)
     return;
 
+  ShowScrollbarsForImplScroll(OuterViewportScrollLayer()->element_id());
   client_->SetNeedsCommitOnImplThread();
   // After applying the synchronous input handler's scroll offset, tell it what
   // we ended up with.
@@ -4153,6 +4159,7 @@ void LayerTreeHostImpl::SetElementScrollOffsetMutated(
     const gfx::ScrollOffset& scroll_offset) {
   if (list_type == ElementListType::ACTIVE) {
     SetTreeLayerScrollOffsetMutated(element_id, active_tree(), scroll_offset);
+    ShowScrollbarsForImplScroll(element_id);
   } else {
     SetTreeLayerScrollOffsetMutated(element_id, pending_tree(), scroll_offset);
     SetTreeLayerScrollOffsetMutated(element_id, recycle_tree(), scroll_offset);
@@ -4303,6 +4310,14 @@ void LayerTreeHostImpl::UpdateScrollSourceInfo(bool is_wheel_scroll) {
     has_scrolled_by_wheel_ = true;
   else
     has_scrolled_by_touch_ = true;
+}
+
+void LayerTreeHostImpl::ShowScrollbarsForImplScroll(ElementId element_id) {
+  if (!element_id)
+    return;
+  if (ScrollbarAnimationController* animation_controller =
+          ScrollbarAnimationControllerForElementId(element_id))
+    animation_controller->DidScrollUpdate();
 }
 
 }  // namespace cc

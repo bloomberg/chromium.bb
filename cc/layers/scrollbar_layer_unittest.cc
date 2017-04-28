@@ -753,6 +753,7 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
       scroll_layer->element_id()));
 
   scroll_layer->SetBounds(gfx::Size(20, 20));
+  scroll_layer->ShowScrollbars();
   scroll_layer->SetForceRenderSurfaceForTesting(true);
   layer_tree_host_->UpdateLayers();
   host_impl->CreatePendingTree();

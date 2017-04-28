@@ -2919,8 +2919,10 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     LayerImpl* root = host_impl_->active_tree()->InnerViewportContainerLayer();
     scrollbar->SetScrollElementId(scroll->element_id());
     root->test_properties()->AddChild(std::move(scrollbar));
+    scroll->set_needs_show_scrollbars(true);
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
+    host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
     DrawFrame();
 
     // SetScrollElementId will initialize the scrollbar which will cause it to
@@ -3056,8 +3058,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
       host_impl_->DidFinishImplFrame();
     }
 
-    // Setting the scroll offset outside a scroll should also cause the
-    // scrollbar to appear and to schedule a scrollbar animation.
+    // Setting the scroll offset outside a scroll should not cause the
+    // scrollbar to appear or schedule a scrollbar animation.
     if (host_impl_->active_tree()
             ->property_trees()
             ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -3067,56 +3069,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
           host_impl_->InnerViewportScrollLayer()->id());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    if (expecting_animations) {
-      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                requested_animation_delay_);
-      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-      requested_animation_delay_ = base::TimeDelta();
-      animation_task_ = base::Closure();
-    } else {
-      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-    }
-
-    if (expecting_animations) {
-      // Scrolling should have stopped the animation, so we should not be
-      // getting redraws.
-      begin_frame_args =
-          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 5, fake_now);
-      host_impl_->WillBeginImplFrame(begin_frame_args);
-      host_impl_->Animate();
-      EXPECT_FALSE(did_request_next_frame_);
-      did_request_next_frame_ = false;
-      EXPECT_FALSE(did_request_redraw_);
-      did_request_redraw_ = false;
-      host_impl_->DidFinishImplFrame();
-    }
-
-    // For Andrdoid, scrollbar animation is not triggered unnecessarily.
-    // For Aura Overlay Scrollbar, scrollbar appears even if scroll offset did
-    // not change.
-    host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                            InputHandler::WHEEL);
-    host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(5, 0)).get());
-    EXPECT_FALSE(did_request_next_frame_);
-    EXPECT_TRUE(did_request_redraw_);
-    did_request_redraw_ = false;
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-
-    host_impl_->ScrollEnd(EndState().get());
-    EXPECT_FALSE(did_request_next_frame_);
-    EXPECT_FALSE(did_request_redraw_);
-    if (animator == LayerTreeSettings::AURA_OVERLAY) {
-      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                requested_animation_delay_);
-      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-      requested_animation_delay_ = base::TimeDelta();
-      animation_task_ = base::Closure();
-    } else {
-      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-    }
 
     // Changing page scale triggers scrollbar animation.
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
@@ -3267,6 +3221,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   scrollbar->SetScrollElementId(scroll->element_id());
   container->test_properties()->AddChild(std::move(scrollbar));
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+  scroll->set_needs_show_scrollbars(true);
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
   host_impl_->ActivateSyncTree();
 
@@ -3407,20 +3362,11 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   EXPECT_TRUE(host_impl_->ScrollbarAnimationControllerForElementId(
       root_scroll->element_id()));
 
-  // Changing one of the viewport layers should result in a scrollbar animation
-  // update.
+  // Scrolling the viewport should result in a scrollbar animation update.
   animation_task_ = base::Closure();
-  host_impl_->active_tree()
-      ->InnerViewportContainerLayer()
-      ->SetViewportBoundsDelta(gfx::Vector2dF(10, 10));
-  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-  animation_task_ = base::Closure();
-  host_impl_->active_tree()->OuterViewportScrollLayer()->SetCurrentScrollOffset(
-      gfx::ScrollOffset(10, 10));
-  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-  animation_task_ = base::Closure();
-  host_impl_->active_tree()->InnerViewportScrollLayer()->SetCurrentScrollOffset(
-      gfx::ScrollOffset(10, 10));
+  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(10, 10)).get());
+  host_impl_->ScrollEnd(EndState().get());
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
   animation_task_ = base::Closure();
 
@@ -3446,9 +3392,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   // update.
   animation_task_ = base::Closure();
   child_clip_ptr->SetBounds(gfx::Size(200, 200));
-  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-  animation_task_ = base::Closure();
-  child_ptr->SetCurrentScrollOffset(gfx::ScrollOffset(10, 10));
+  child_ptr->set_needs_show_scrollbars(true);
+  host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
   animation_task_ = base::Closure();
 
@@ -12242,6 +12187,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
 
   // Capture scrollbar_1, then move mouse to scrollbar_2's layer, should post an
   // event to fade out scrollbar_1.
+  scrollbar_1_animation_controller->DidScrollUpdate();
   animation_task_ = base::Closure();
 
   host_impl_->MouseDown();

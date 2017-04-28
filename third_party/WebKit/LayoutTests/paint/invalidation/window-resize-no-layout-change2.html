@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <script src="resources/window-resize-repaint.js"></script>
-<script>
-if (window.internals) {
-    internals.settings.setOverlayScrollbarsEnabled(true);
-    internals.settings.setMockScrollbarsEnabled(true);
-}
-</script>
+<style>
+  html { overflow: hidden; }
+</style>
 <div style="position: absolute; width: 2000px; height: 2000px; background-color: blue">
     <div style="width: 20%; height: 20%; background-color: yellow">
     </div>
