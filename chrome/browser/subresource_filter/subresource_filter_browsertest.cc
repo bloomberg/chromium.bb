@@ -29,6 +29,8 @@
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -686,6 +688,41 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
   NavigateFromRendererSide(GetURLWithFragment(url, "ref"));
 
+  ASSERT_NO_FATAL_FAILURE(InsertDynamicFrameWithScript());
+  content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
+  ASSERT_TRUE(dynamic_frame);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
+}
+
+// If a navigation starts but aborts before commit, page level activation should
+// remain unchanged.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       PageLevelActivationOutlivesAbortedNavigation) {
+  GURL url(GetTestUrl(kTestFrameSetPath));
+  ConfigureAsPhishingURL(url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::RenderFrameHost* frame = FindFrameByName("one");
+  EXPECT_FALSE(WasParsedScriptElementLoaded(frame));
+
+  // Start a new navigation, but abort it right away.
+  GURL aborted_url = GURL("https://abort-me.com");
+  content::TestNavigationManager manager(
+      browser()->tab_strip_model()->GetActiveWebContents(), aborted_url);
+
+  chrome::NavigateParams params(browser(), aborted_url,
+                                ui::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
+  ASSERT_TRUE(manager.WaitForRequestStart());
+  browser()->tab_strip_model()->GetActiveWebContents()->Stop();
+
+  // Will return false if the navigation was successfully aborted.
+  ASSERT_FALSE(manager.WaitForResponse());
+  manager.WaitForNavigationFinished();
+
+  // Now, dynamically insert a frame and expect that it is still activated.
   ASSERT_NO_FATAL_FAILURE(InsertDynamicFrameWithScript());
   content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
   ASSERT_TRUE(dynamic_frame);
