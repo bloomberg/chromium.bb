@@ -278,7 +278,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
     private boolean isAnchorAtBottom(View anchorView, Rect visibleDisplayFrame) {
         anchorView.getLocationOnScreen(mTempLocation);
-        return (mTempLocation[1] + anchorView.getHeight()) == visibleDisplayFrame.bottom;
+        return (mTempLocation[1] + anchorView.getHeight()) >= visibleDisplayFrame.bottom;
     }
 
     private void setPopupOffset(
