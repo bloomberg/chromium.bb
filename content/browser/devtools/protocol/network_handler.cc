@@ -704,8 +704,9 @@ void NetworkHandler::NavigationPreloadCompleted(
         completion_status.error_code == net::Error::ERR_ABORTED);
   }
   frontend_->LoadingFinished(
-      request_id, base::TimeTicks::Now().ToInternalValue() /
-                      static_cast<double>(base::Time::kMicrosecondsPerSecond),
+      request_id,
+      completion_status.completion_time.ToInternalValue() /
+          static_cast<double>(base::Time::kMicrosecondsPerSecond),
       completion_status.encoded_data_length);
 }
 
