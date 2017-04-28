@@ -56,7 +56,7 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
     }
 
     @Override
-    public void invokePaymentApp(String merchantName, String origin, String iframeOrigin,
+    public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
             byte[][] unusedCertificateChain, Map<String, PaymentMethodData> methodData,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {

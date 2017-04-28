@@ -4723,6 +4723,7 @@ interface PaymentManager
     method setManifest
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
+    getter id
     getter onshippingaddresschange
     getter onshippingoptionchange
     getter shippingAddress
@@ -4745,6 +4746,7 @@ interface PaymentResponse
     getter payerEmail
     getter payerName
     getter payerPhone
+    getter requestId
     getter shippingAddress
     getter shippingOption
     method complete

@@ -300,6 +300,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     private SectionInformation mUiShippingOptions;
 
+    private String mId;
     private Map<String, PaymentMethodData> mMethodData;
     private boolean mRequestShipping;
     private boolean mRequestPayerName;
@@ -457,6 +458,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             disconnectFromClientWithDebugMessage("Missing total");
             return;
         }
+        mId = details.id;
 
         PaymentAppFactory.getInstance().create(mWebContents,
                 Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
@@ -1225,7 +1227,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        instrument.invokePaymentApp(mMerchantName, mSchemelessOriginForPaymentApp,
+        instrument.invokePaymentApp(mId, mMerchantName, mSchemelessOriginForPaymentApp,
                 mSchemelessIFrameOriginForPaymentApp, mCertificateChain,
                 Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
                 Collections.unmodifiableMap(modifiers), this);

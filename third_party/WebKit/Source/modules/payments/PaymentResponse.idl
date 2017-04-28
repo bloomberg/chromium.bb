@@ -17,6 +17,7 @@ enum PaymentComplete {
 ] interface PaymentResponse {
     serializer = {attribute};
 
+    readonly attribute DOMString requestId;
     readonly attribute DOMString methodName;
     [RuntimeEnabled=PaymentRequestPayerName] readonly attribute DOMString? payerName;
     readonly attribute DOMString? payerEmail;

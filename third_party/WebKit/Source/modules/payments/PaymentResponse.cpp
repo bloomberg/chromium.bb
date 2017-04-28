@@ -15,8 +15,10 @@ namespace blink {
 
 PaymentResponse::PaymentResponse(
     payments::mojom::blink::PaymentResponsePtr response,
-    PaymentCompleter* payment_completer)
-    : method_name_(response->method_name),
+    PaymentCompleter* payment_completer,
+    const String& requestId)
+    : requestId_(requestId),
+      method_name_(response->method_name),
       stringified_details_(response->stringified_details),
       shipping_address_(
           response->shipping_address
@@ -34,6 +36,7 @@ PaymentResponse::~PaymentResponse() {}
 
 ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);
+  result.AddString("requestId", requestId());
   result.AddString("methodName", methodName());
   result.Add("details", details(script_state, ASSERT_NO_EXCEPTION));
 

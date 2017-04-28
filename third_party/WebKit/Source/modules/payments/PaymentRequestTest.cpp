@@ -631,5 +631,19 @@ TEST(PaymentRequestTest,
   EXPECT_TRUE(request->shippingOption().IsNull());
 }
 
+TEST(PaymentRequestTest, DetailsIdIsSet) {
+  V8TestingScope scope;
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentDetailsInit details;
+  details.setTotal(BuildPaymentItemForTest());
+  details.setId("my_payment_id");
+
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(), details,
+      scope.GetExceptionState());
+
+  EXPECT_EQ("my_payment_id", request->id());
+}
+
 }  // namespace
 }  // namespace blink

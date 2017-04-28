@@ -193,6 +193,11 @@ struct PaymentDetails {
   array<PaymentShippingOption> shipping_options;
   array<PaymentDetailsModifier> modifiers;
   string error = "";
+  // Identifier identifying the payment request, to be exposed
+  // to payment apps. It is optional since this structure is used
+  // by PaymentDetailsUpdate (next to PaymentDetailsInit) but
+  // PaymentDetailsUpdate has no id.
+  string? id;
 };
 
 enum PaymentShippingType {
