@@ -368,7 +368,7 @@ void Text::AttachLayoutTree(const AttachContext& context) {
   CharacterData::AttachLayoutTree(context);
 }
 
-void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
+void Text::ReattachLayoutTreeIfNeeded() {
   bool layout_object_is_needed = false;
   ContainerNode* style_parent = LayoutTreeBuilderTraversal::Parent(*this);
   LayoutObject* parent_layout_object =
@@ -385,7 +385,7 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   // The following is almost the same as Node::reattachLayoutTree() except that
   // we create a layoutObject only if needed.  Not calling reattachLayoutTree()
   // to avoid repeated calls to Text::textLayoutObjectIsNeeded().
-  AttachContext reattach_context(context);
+  AttachContext reattach_context;
   reattach_context.performing_reattach = true;
 
   if (GetStyleChangeType() < kNeedsReattachStyleChange)
