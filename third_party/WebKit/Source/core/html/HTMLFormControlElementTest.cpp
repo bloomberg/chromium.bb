@@ -4,16 +4,54 @@
 
 #include "core/html/HTMLFormControlElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/ValidationMessageClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
+
+namespace {
+class MockValidationMessageClient
+    : public GarbageCollectedFinalized<MockValidationMessageClient>,
+      public ValidationMessageClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockValidationMessageClient);
+
+ public:
+  void ShowValidationMessage(const Element& anchor,
+                             const String&,
+                             TextDirection,
+                             const String&,
+                             TextDirection) override {
+    anchor_ = anchor;
+  }
+
+  void HideValidationMessage(const Element& anchor) override {
+    if (anchor_ == &anchor)
+      anchor_ = nullptr;
+  }
+
+  bool IsValidationMessageVisible(const Element& anchor) override {
+    return anchor_ == &anchor;
+  }
+
+  void WillUnloadDocument(const Document&) override {}
+  void DocumentDetached(const Document&) override {}
+  void WillBeDestroyed() override {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(anchor_);
+    ValidationMessageClient::Trace(visitor);
+  }
+
+ private:
+  Member<const Element> anchor_;
+};
+}
 
 class HTMLFormControlElementTest : public ::testing::Test {
  protected:
@@ -82,6 +120,23 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
                                                   sub_message, sub_message_dir);
   EXPECT_EQ(TextDirection::kLtr, message_dir);
   EXPECT_EQ(TextDirection::kRtl, sub_message_dir);
+}
+
+TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
+  GetDocument().documentElement()->setInnerHTML(
+      "<body><input required id=input></body>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ValidationMessageClient* validation_message_client =
+      new MockValidationMessageClient();
+  GetDocument().GetPage()->SetValidationMessageClient(
+      validation_message_client);
+
+  HTMLInputElement* input =
+      toHTMLInputElement(GetDocument().getElementById("input"));
+  GetDocument().GetFrame()->SetPrinting(true, FloatSize(800, 600),
+                                        FloatSize(800, 600), 1);
+  input->reportValidity();
+  EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));
 }
 
 }  // namespace blink
