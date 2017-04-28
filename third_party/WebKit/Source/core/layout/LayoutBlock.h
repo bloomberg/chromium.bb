@@ -412,7 +412,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                        HitTestAction) override;
   void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
-  void UpdateAfterLayout();
+  void UpdateAfterLayout() override;
 
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;

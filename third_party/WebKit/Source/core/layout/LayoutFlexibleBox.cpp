@@ -399,8 +399,6 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     ComputeOverflow(ClientLogicalBottomAfterRepositioning());
   }
 
-  UpdateLayerTransformAfterLayout();
-
   // We have to reset this, because changes to our ancestors' style can affect
   // this value. Also, this needs to be before we call updateAfterLayout, as
   // that function may re-enter this one.

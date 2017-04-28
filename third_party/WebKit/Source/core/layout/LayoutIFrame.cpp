@@ -55,7 +55,7 @@ void LayoutIFrame::UpdateLayout() {
 
   overflow_.reset();
   AddVisualEffectOverflow();
-  UpdateLayerTransformAfterLayout();
+  UpdateAfterLayout();
 
   ClearNeedsLayout();
 }

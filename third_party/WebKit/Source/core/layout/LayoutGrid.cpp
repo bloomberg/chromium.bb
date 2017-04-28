@@ -356,7 +356,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     ComputeOverflow(old_client_after_edge);
   }
 
-  UpdateLayerTransformAfterLayout();
   UpdateAfterLayout();
 
   ClearNeedsLayout();

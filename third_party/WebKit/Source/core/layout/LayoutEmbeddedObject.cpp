@@ -135,7 +135,7 @@ void LayoutEmbeddedObject::UpdateLayout() {
   overflow_.reset();
   AddVisualEffectOverflow();
 
-  UpdateLayerTransformAfterLayout();
+  UpdateAfterLayout();
 
   if (!GetFrameOrPlugin() && GetFrameView())
     GetFrameView()->AddPartToUpdate(*this);
