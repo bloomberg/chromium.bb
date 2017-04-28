@@ -135,9 +135,14 @@ PaintResult PaintLayerPainter::Paint(
           ->ShouldThrottleRendering())
     return kFullyPainted;
 
-  // If this layer is totally invisible then there is nothing to paint.
-  if (PaintedOutputInvisible(painting_info))
+  // If this layer is totally invisible then there is nothing to paint. In SPv2
+  // we simplify this optimization by painting even when effectively invisible
+  // but skipping the painted content during layerization in
+  // PaintArtifactCompositor.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      PaintedOutputInvisible(painting_info)) {
     return kFullyPainted;
+  }
 
   if (paint_layer_.PaintsWithTransparency(painting_info.GetGlobalPaintFlags()))
     paint_flags |= kPaintLayerHaveTransparency;

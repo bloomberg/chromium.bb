@@ -32,23 +32,19 @@ class PaintLayerPainterTest
       : ScopedRootLayerScrollingForTest(GetParam().root_layer_scrolling),
         PaintControllerPaintTestBase(GetParam().slimming_paint_v2) {}
 
-  void ExpectPaintedOutputVisibility(const char* element_name,
-                                     bool expected_spv1) {
-    ExpectPaintedOutputVisibility(element_name, expected_spv1, expected_spv1);
-  }
+  void ExpectPaintedOutputInvisible(const char* element_name,
+                                    bool expected_value) {
+    // The optimization to skip painting for effectively-invisible content is
+    // limited to SPv1.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      return;
 
-  void ExpectPaintedOutputVisibility(const char* element_name,
-                                     bool expected_spv1,
-                                     bool expected_spv2) {
     PaintLayer* target_layer =
         ToLayoutBox(GetLayoutObjectByElementId(element_name))->Layer();
     PaintLayerPaintingInfo painting_info(nullptr, LayoutRect(),
                                          kGlobalPaintNormalPhase, LayoutSize());
     bool invisible =
         PaintLayerPainter(*target_layer).PaintedOutputInvisible(painting_info);
-    bool expected_value = RuntimeEnabledFeatures::slimmingPaintV2Enabled()
-                              ? expected_spv2
-                              : expected_spv1;
     EXPECT_EQ(expected_value, invisible)
         << "Failed painted output visibility [spv2_enabled="
         << RuntimeEnabledFeatures::slimmingPaintV2Enabled()
@@ -795,21 +791,21 @@ TEST_P(PaintLayerPainterTest,
 TEST_P(PaintLayerPainterTest, DontPaintWithTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001'></div>");
-  ExpectPaintedOutputVisibility("target", true, false);
+  ExpectPaintedOutputInvisible("target", true);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndWillChangeOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001; "
       "will-change: opacity'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndBackdropFilter) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "  backdrop-filter: blur(2px);'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -817,20 +813,20 @@ TEST_P(PaintLayerPainterTest,
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "  backdrop-filter: blur(2px); will-change: opacity'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithCompositedTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       " will-change: transform'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithNonTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.1'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
@@ -848,10 +844,10 @@ TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
       "} "
       "</style> "
       "<div id='target'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
-TEST_P(PaintLayerPainterTest, DontPaintWithTransformAnimationZeroOpacity) {
+TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
   SetBodyInnerHTML(
       "<style> "
       "div#target { "
@@ -865,7 +861,7 @@ TEST_P(PaintLayerPainterTest, DontPaintWithTransformAnimationZeroOpacity) {
       "} "
       "</style> "
       "<div id='target'>x</div></div>");
-  ExpectPaintedOutputVisibility("target", false, true);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -884,7 +880,7 @@ TEST_P(PaintLayerPainterTest,
       "} "
       "</style> "
       "<div id='target'>x</div></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
@@ -897,7 +893,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
       "}"
       "</style> "
       "<div id='target'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
@@ -911,7 +907,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
       "}"
       "</style> "
       "<div id='target'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -926,7 +922,7 @@ TEST_P(PaintLayerPainterTest,
       "}"
       "</style> "
       "<div id='target'></div>");
-  ExpectPaintedOutputVisibility("target", false);
+  ExpectPaintedOutputInvisible("target", false);
 }
 
 }  // namespace blink
