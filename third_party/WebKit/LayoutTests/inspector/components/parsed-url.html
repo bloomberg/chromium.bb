@@ -39,6 +39,23 @@ function test()
     parseAndDumpURL("http://example.com/foo////bar/baz.html");
     parseAndDumpURL("http://example.com/foo/bar/////baz.html");
 
+    function testSplitLineColumn(url) {
+        var result = Common.ParsedURL.splitLineAndColumn(url);
+
+        InspectorTest.addResult("Splitting url: " + url);
+        InspectorTest.addResult("  URL: " + result.url);
+        InspectorTest.addResult("  Line: " + result.lineNumber);
+        InspectorTest.addResult("  Column: " + result.columnNumber);
+    }
+
+    testSplitLineColumn("http://www.chromium.org");
+    testSplitLineColumn("http://www.chromium.org:8000");
+    testSplitLineColumn("http://www.chromium.org:8000/");
+    testSplitLineColumn("http://www.chromium.org:8000/foo.js:10");
+    testSplitLineColumn("http://www.chromium.org:8000/foo.js:10:20");
+    testSplitLineColumn("http://www.chromium.org/foo.js:10");
+    testSplitLineColumn("http://www.chromium.org/foo.js:10:20");
+
     InspectorTest.completeTest();
 }
 
