@@ -9,8 +9,6 @@
 
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/tile_visual_type.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "url/gurl.h"
 
 class ReadingListModel;
@@ -18,12 +16,10 @@ class LargeIconCache;
 namespace favicon {
 class LargeIconService;
 }
-@class TabModel;
-@protocol WebToolbarDelegate;
 
 // DataSource for the google landing controller.
 // TODO(crbug.com/694750): Most everything here can be moved to dispatcher.
-@protocol GoogleLandingDataSource<OmniboxFocuser, UrlLoader>
+@protocol GoogleLandingDataSource
 
 // Removes a blacklisted URL in both |_mostVisitedData|.
 - (void)removeBlacklistedURL:(const GURL&)url;
@@ -40,10 +36,6 @@ class LargeIconService;
 
 // Called when a what's new promo is tapped.
 - (void)promoTapped;
-
-// TODO(crbug.com/694750): This should move to a dispatcher.
-// Called before the fake tab switcher icon is tapped to save snapshots.
-- (void)prepareToEnterTabSwitcher:(id)sender;
 
 // TODO(crbug.com/694750): The following two methods should be moved to the
 // consumer, and converted into types more suitable for a consumer.
@@ -65,8 +57,6 @@ class LargeIconService;
 
 // Gets the large icon service.
 - (favicon::LargeIconService*)largeIconService;
-
-
 
 @end
 

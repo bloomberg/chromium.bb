@@ -21,7 +21,8 @@
 
 // Creates a NewTabPageToolbarController using the given |toolbarDelegate|,
 // |focuser| and |readingListModel|, and adds the toolbar view to self.
-- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource;
+- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource
+                      dispatcher:(id)dispatcher;
 
 // Changes the frame of |searchField| based on its |initialFrame| and the scroll
 // view's y |offset|. Also adjust the alpha values for |_searchBoxBorder| and

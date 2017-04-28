@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_mediator.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,14 +30,20 @@
   // PLACEHOLDER: self.mediator and self.oldMediator should be merged together.
   self.mediator = [[NTPHomeMediator alloc] init];
   self.mediator.dispatcher = static_cast<id>(self.browser->dispatcher());
+
+  // PLACEHOLDER: These will go elsewhere.
+  [self.browser->dispatcher() startDispatchingToTarget:self.mediator
+                                           forProtocol:@protocol(UrlLoader)];
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self.mediator
+                   forProtocol:@protocol(OmniboxFocuser)];
   self.viewController = [[GoogleLandingController alloc] init];
+  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
-        initWithConsumer:self.viewController
-            browserState:self.browser->browser_state()
-                  loader:self.mediator
-                 focuser:self.mediator
-      webToolbarDelegate:nil
-            webStateList:&self.browser->web_state_list()];
+      initWithConsumer:self.viewController
+          browserState:self.browser->browser_state()
+            dispatcher:static_cast<id>(self.browser->dispatcher())
+          webStateList:&self.browser->web_state_list()];
   self.viewController.dataSource = self.googleLandingMediator;
   [super start];
 }
@@ -44,6 +51,10 @@
 - (void)stop {
   [super stop];
   [self.googleLandingMediator shutdown];
+
+  [self.browser->dispatcher() stopDispatchingForProtocol:@protocol(UrlLoader)];
+  [self.browser->dispatcher()
+      stopDispatchingForProtocol:@protocol(OmniboxFocuser)];
 }
 
 @end

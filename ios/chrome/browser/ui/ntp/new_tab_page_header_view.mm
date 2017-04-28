@@ -64,12 +64,13 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   [self addSubview:[_toolbarController view]];
 }
 
-- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource {
+- (void)addToolbarWithDataSource:(id<GoogleLandingDataSource>)dataSource
+                      dispatcher:(id)dispatcher {
   DCHECK(!_toolbarController);
   DCHECK(dataSource);
 
-  _toolbarController.reset([[NewTabPageToolbarController alloc]
-      initWithToolbarDataSource:dataSource]);
+  _toolbarController.reset([[NewTabPageToolbarController alloc] init]);
+  [_toolbarController setDispatcher:dispatcher];
   _toolbarController.get().readingListModel = [dataSource readingListModel];
 
   UIView* toolbarView = [_toolbarController view];

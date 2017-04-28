@@ -59,12 +59,10 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
     controller_ = [[GoogleLandingController alloc] init];
     webStateList_ = base::MakeUnique<WebStateList>(&webStateListDelegate_);
     mediator_ = [[GoogleLandingMediator alloc]
-          initWithConsumer:controller_
-              browserState:chrome_browser_state_.get()
-                    loader:(id<UrlLoader>)mockUrlLoader_
-                   focuser:nil
-        webToolbarDelegate:nil
-              webStateList:webStateList_.get()];
+        initWithConsumer:controller_
+            browserState:chrome_browser_state_.get()
+              dispatcher:nil
+            webStateList:webStateList_.get()];
   };
 
   void TearDown() override { [mediator_ shutdown]; }
