@@ -15,6 +15,8 @@ namespace task_manager {
 // which represents browser <*view> tag plugin guests.
 class GuestTag : public WebContentsTag {
  public:
+  ~GuestTag() override;
+
   // task_manager::WebContentsTag:
   GuestTask* CreateTask() const override;
 
@@ -22,7 +24,6 @@ class GuestTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit GuestTag(content::WebContents* web_contents);
-  ~GuestTag() override;
 
   DISALLOW_COPY_AND_ASSIGN(GuestTag);
 };

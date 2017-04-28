@@ -15,6 +15,8 @@ namespace task_manager {
 // PrerenderManager.
 class PrerenderTag : public WebContentsTag {
  public:
+  ~PrerenderTag() override;
+
   // task_manager::WebContentsTag:
   PrerenderTask* CreateTask() const override;
 
@@ -22,7 +24,6 @@ class PrerenderTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit PrerenderTag(content::WebContents* web_contents);
-  ~PrerenderTag() override;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTag);
 };

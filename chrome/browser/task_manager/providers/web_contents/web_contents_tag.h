@@ -25,6 +25,8 @@ class RendererTask;
 // |task_manager::WebContentsTags|.
 class WebContentsTag : public base::SupportsUserData::Data {
  public:
+  ~WebContentsTag() override;
+
   // Retrieves the instance of the WebContentsTag that was attached to the
   // specified WebContents and returns it. If no instance was attached, returns
   // nullptr.
@@ -45,7 +47,6 @@ class WebContentsTag : public base::SupportsUserData::Data {
   friend class WebContentsTags;
 
   explicit WebContentsTag(content::WebContents* contents);
-  ~WebContentsTag() override;
 
  private:
   // The user data key.

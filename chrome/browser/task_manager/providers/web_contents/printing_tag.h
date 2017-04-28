@@ -15,6 +15,8 @@ namespace task_manager {
 // and background printing.
 class PrintingTag : public WebContentsTag {
  public:
+  ~PrintingTag() override;
+
   // task_manager::WebContentsTag:
   PrintingTask* CreateTask() const override;
 
@@ -22,7 +24,6 @@ class PrintingTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit PrintingTag(content::WebContents* web_contents);
-  ~PrintingTag() override;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingTag);
 };

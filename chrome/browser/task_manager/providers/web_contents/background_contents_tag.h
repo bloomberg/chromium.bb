@@ -17,6 +17,8 @@ namespace task_manager {
 // service.
 class BackgroundContentsTag : public WebContentsTag {
  public:
+  ~BackgroundContentsTag() override;
+
   // task_manager::WebContentsTag:
   BackgroundContentsTask* CreateTask() const override;
 
@@ -25,7 +27,6 @@ class BackgroundContentsTag : public WebContentsTag {
 
   BackgroundContentsTag(content::WebContents* web_contents,
                         BackgroundContents* background_contents);
-  ~BackgroundContentsTag() override;
 
   // The owning BackgroundContents.
   BackgroundContents* background_contents_;

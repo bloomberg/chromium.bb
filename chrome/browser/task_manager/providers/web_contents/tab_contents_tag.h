@@ -14,6 +14,8 @@ namespace task_manager {
 // Defines a concrete UserData type for WebContents owned by the TabStripModel.
 class TabContentsTag : public WebContentsTag {
  public:
+  ~TabContentsTag() override;
+
   // task_manager::WebContentsTag:
   TabContentsTask* CreateTask() const override;
 
@@ -21,7 +23,6 @@ class TabContentsTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit TabContentsTag(content::WebContents* web_contents);
-  ~TabContentsTag() override;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsTag);
 };
