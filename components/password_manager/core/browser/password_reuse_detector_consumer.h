@@ -21,11 +21,12 @@ class PasswordReuseDetectorConsumer
   virtual ~PasswordReuseDetectorConsumer();
 
   // Called when a password reuse is found.
-  // |saved_domain| is the domain on which |password| is saved.
+  // |legitimate_domain| is the domain on which |password| is saved or the sync
+  // domain if |password| is a sync password.
   // |saved_passwords| is total number of passwords stored in Password Manager.
   // |number_matches| is a number of sites on which |password| is saved.
   virtual void OnReuseFound(const base::string16& password,
-                            const std::string& saved_domain,
+                            const std::string& legitimate_domain,
                             int saved_passwords,
                             int number_matches) = 0;
 };

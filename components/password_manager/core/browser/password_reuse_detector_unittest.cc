@@ -184,6 +184,49 @@ TEST(PasswordReuseDetectorTest, CheckLongestPasswordMatchReturn) {
                             &mockConsumer);
 }
 
+TEST(PasswordReuseDetectorTest, SyncPasswordNoReuse) {
+  PasswordReuseDetector reuse_detector;
+  reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
+  MockPasswordReuseDetectorConsumer mockConsumer;
+
+  reuse_detector.SaveSyncPasswordHash(ASCIIToUTF16("sync_password"));
+
+  EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
+  reuse_detector.CheckReuse(ASCIIToUTF16("sync_password"),
+                            "https://accounts.google.com", &mockConsumer);
+  // Only suffixes are verifed.
+  reuse_detector.CheckReuse(ASCIIToUTF16("sync_password123"),
+                            "https://evil.com", &mockConsumer);
+}
+
+TEST(PasswordReuseDetectorTest, SyncPasswordReuseFound) {
+  PasswordReuseDetector reuse_detector;
+  reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
+  MockPasswordReuseDetectorConsumer mockConsumer;
+
+  reuse_detector.SaveSyncPasswordHash(ASCIIToUTF16("sync_password"));
+
+  EXPECT_CALL(mockConsumer, OnReuseFound(ASCIIToUTF16("sync_password"),
+                                         "accounts.google.com", 1, 0));
+  reuse_detector.CheckReuse(ASCIIToUTF16("sync_password"), "https://evil.com",
+                            &mockConsumer);
+}
+
+TEST(PasswordReuseDetectorTest, SavedPasswordsReuseSyncPasswordAvailable) {
+  // Check that reuse of saved passwords is detected also if the sync password
+  // hash is saved.
+  PasswordReuseDetector reuse_detector;
+  reuse_detector.OnGetPasswordStoreResults(GetForms(GetTestDomainsPasswords()));
+  MockPasswordReuseDetectorConsumer mockConsumer;
+
+  reuse_detector.SaveSyncPasswordHash(ASCIIToUTF16("sync_password"));
+
+  EXPECT_CALL(mockConsumer,
+              OnReuseFound(ASCIIToUTF16("password"), "google.com", 5, 1));
+  reuse_detector.CheckReuse(ASCIIToUTF16("password"), "https://evil.com",
+                            &mockConsumer);
+}
+
 }  // namespace
 
 }  // namespace password_manager
