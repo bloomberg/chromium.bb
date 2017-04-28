@@ -167,7 +167,9 @@ const OncFieldSignature ethernet_fields[] = {
     {::onc::ethernet::kEAP, &kEAPSignature},
     {NULL}};
 
-const OncFieldSignature tether_fields[] = {
+const OncFieldSignature tether_fields[] = {{NULL}};
+
+const OncFieldSignature tether_with_state_fields[] = {
     {::onc::tether::kBatteryPercentage, &kIntegerSignature},
     {::onc::tether::kCarrier, &kStringSignature},
     {::onc::tether::kSignalStrength, &kIntegerSignature},
@@ -336,7 +338,7 @@ const OncFieldSignature network_with_state_fields[] = {
     {::onc::network_config::kRestrictedConnectivity, &kBoolSignature},
     {::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
     {::onc::network_config::kSource, &kStringSignature},
-    {::onc::network_config::kTether, &kTetherSignature},
+    {::onc::network_config::kTether, &kTetherWithStateSignature},
     {::onc::network_config::kWiFi, &kWiFiWithStateSignature},
     {::onc::network_config::kWimax, &kWiMAXWithStateSignature},
     {NULL}};
@@ -401,8 +403,6 @@ const OncValueSignature kVPNSignature = {base::Value::Type::DICTIONARY,
                                          vpn_fields, NULL};
 const OncValueSignature kEthernetSignature = {base::Value::Type::DICTIONARY,
                                               ethernet_fields, NULL};
-const OncValueSignature kTetherSignature = {base::Value::Type::DICTIONARY,
-                                            tether_fields, NULL};
 const OncValueSignature kIPConfigSignature = {base::Value::Type::DICTIONARY,
                                               ipconfig_fields, NULL};
 const OncValueSignature kSavedIPConfigSignature = {
@@ -439,6 +439,11 @@ const OncValueSignature kNetworkWithStateSignature = {
 const OncValueSignature kWiFiWithStateSignature = {
     base::Value::Type::DICTIONARY, wifi_with_state_fields, NULL,
     &kWiFiSignature};
+const OncValueSignature kTetherSignature = {base::Value::Type::DICTIONARY,
+                                            tether_fields, NULL};
+const OncValueSignature kTetherWithStateSignature = {
+    base::Value::Type::DICTIONARY, tether_with_state_fields, NULL,
+    &kTetherSignature};
 const OncValueSignature kWiMAXWithStateSignature = {
     base::Value::Type::DICTIONARY, wimax_with_state_fields, NULL,
     &kWiMAXSignature};

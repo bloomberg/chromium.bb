@@ -81,6 +81,18 @@ var privateHelpers = {
     };
     chrome.networkingPrivate.onPortalDetectionCompleted.addListener(
         self.onPortalDetectionCompleted);
+  },
+  verifyTetherNetwork: function(
+      properties, expectedGuid, expectedName, expectedBatteryPercentage,
+      expectedCarrier, expectedSignalStrength) {
+    //assertEq(NetworkType.Tether, properties.Type);
+    assertEq(expectedGuid, properties.GUID);
+    assertEq(expectedName,
+             properties.Name.hasOwnProperty('Active') ? properties.Name.Active
+                                                      : properties.Name);
+    assertEq(expectedBatteryPercentage, properties.Tether.BatteryPercentage);
+    assertEq(expectedCarrier, properties.Tether.Carrier);
+    assertEq(expectedSignalStrength, properties.Tether.SignalStrength);
   }
 };
 
@@ -922,6 +934,41 @@ var availableTests = [
         AllowOnlyPolicyNetworksToConnect: false,
       }, result);
     }));
+  },
+  function getTetherNetworks() {
+    chrome.networkingPrivate.getNetworks(
+        {networkType: 'Tether'},
+        callbackPass(function(tetherNetworks) {
+          assertEq(2, tetherNetworks.length);
+          privateHelpers.verifyTetherNetwork(tetherNetworks[0], 'tetherGuid1',
+              'tetherName1', 50, 'tetherCarrier1', 75);
+          privateHelpers.verifyTetherNetwork(tetherNetworks[1], 'tetherGuid2',
+              'tetherName2', 75, 'tetherCarrier2', 100);
+        }));
+  },
+  function getTetherNetworkProperties() {
+    chrome.networkingPrivate.getProperties(
+        'tetherGuid1',
+        callbackPass(function(tetherNetwork) {
+          privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
+              'tetherName1', 50, 'tetherCarrier1', 75);
+        }));
+  },
+  function getTetherNetworkManagedProperties() {
+    chrome.networkingPrivate.getManagedProperties(
+        'tetherGuid1',
+        callbackPass(function(tetherNetwork) {
+          privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
+              'tetherName1', 50, 'tetherCarrier1', 75);
+        }));
+  },
+  function getTetherNetworkState() {
+    chrome.networkingPrivate.getState(
+        'tetherGuid1',
+        callbackPass(function(tetherNetwork) {
+          privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
+              'tetherName1', 50, 'tetherCarrier1', 75);
+        }));
   },
 ];
 

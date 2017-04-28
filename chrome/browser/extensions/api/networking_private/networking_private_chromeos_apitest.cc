@@ -300,6 +300,19 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     content::RunAllPendingInMessageLoop();
   }
 
+  void SetupTether() {
+    chromeos::NetworkStateHandler* network_state_handler =
+        chromeos::NetworkHandler::Get()->network_state_handler();
+    network_state_handler->SetTetherTechnologyState(
+        chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
+    network_state_handler->AddTetherNetworkState(
+        "tetherGuid1", "tetherName1", "tetherCarrier1",
+        50 /* battery_percentage */, 75 /* signal_strength */);
+    network_state_handler->AddTetherNetworkState(
+        "tetherGuid2", "tetherName2", "tetherCarrier2",
+        75 /* battery_percentage */, 100 /* signal_strength */);
+  }
+
   void AddService(const std::string& service_path,
                   const std::string& name,
                   const std::string& type,
@@ -849,6 +862,31 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetGlobalPolicy) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       Tether_GetTetherNetworks) {
+  SetupTether();
+  EXPECT_TRUE(RunNetworkingSubtest("getTetherNetworks")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       Tether_GetTetherNetworkProperties) {
+  SetupTether();
+  EXPECT_TRUE(RunNetworkingSubtest("getTetherNetworkProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       Tether_GetTetherNetworkManagedProperties) {
+  SetupTether();
+  EXPECT_TRUE(RunNetworkingSubtest("getTetherNetworkManagedProperties"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       Tether_GetTetherNetworkState) {
+  SetupTether();
+  EXPECT_TRUE(RunNetworkingSubtest("getTetherNetworkState")) << message_;
 }
 
 // Tests subset of networking API for the networking API alias - to verify that
