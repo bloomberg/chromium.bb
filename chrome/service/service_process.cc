@@ -172,8 +172,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
 
-  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-      "CloudPrintServiceProcess",
+  base::TaskScheduler::Create("CloudPrintServiceProcess");
+  base::TaskScheduler::GetInstance()->Start(
       {{StandbyThreadPolicy::LAZY, kMaxBackgroundThreads,
         kSuggestedReclaimTime},
        {StandbyThreadPolicy::LAZY, kMaxBackgroundBlockingThreads,
