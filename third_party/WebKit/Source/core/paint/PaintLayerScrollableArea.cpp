@@ -555,6 +555,31 @@ int PaintLayerScrollableArea::VisibleWidth() const {
   return Layer()->size().Width();
 }
 
+LayoutSize PaintLayerScrollableArea::ClientSize() const {
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    bool is_main_frame_root_layer =
+        layer_.IsRootLayer() && Box().GetDocument().GetFrame()->IsMainFrame();
+    if (is_main_frame_root_layer) {
+      LayoutSize result(Box().GetFrameView()->GetLayoutSize());
+      result -= IntSize(VerticalScrollbarWidth(), HorizontalScrollbarHeight());
+      return result;
+    }
+  }
+  return LayoutSize(Box().ClientWidth(), Box().ClientHeight());
+}
+
+IntSize PaintLayerScrollableArea::PixelSnappedClientSize() const {
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    bool is_main_frame_root_layer =
+        layer_.IsRootLayer() && Box().GetDocument().GetFrame()->IsMainFrame();
+    if (is_main_frame_root_layer) {
+      return ExcludeScrollbars(Box().GetFrameView()->GetLayoutSize());
+    }
+  }
+  return IntSize(Box().PixelSnappedClientWidth(),
+                 Box().PixelSnappedClientHeight());
+}
+
 IntSize PaintLayerScrollableArea::ContentsSize() const {
   return IntSize(PixelSnappedScrollWidth(), PixelSnappedScrollHeight());
 }
@@ -827,12 +852,12 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
     // Set up the range (and page step/line step).
     if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar()) {
-      int client_width = Box().PixelSnappedClientWidth();
+      int client_width = PixelSnappedClientSize().Width();
       horizontal_scrollbar->SetProportion(client_width,
                                           OverflowRect().Width().ToInt());
     }
     if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar()) {
-      int client_height = Box().PixelSnappedClientHeight();
+      int client_height = PixelSnappedClientSize().Height();
       vertical_scrollbar->SetProportion(client_height,
                                         OverflowRect().Height().ToInt());
     }
@@ -929,14 +954,14 @@ bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
   // converse problem seems to happen much less frequently in practice, so we
   // bias the logic towards preventing unwanted horizontal scrollbars, which
   // are more common and annoying.
-  int client_width = Box().PixelSnappedClientWidth();
+  int client_width = PixelSnappedClientSize().Width();
   if (NeedsRelayout() && !HadVerticalScrollbarBeforeRelayout())
     client_width += VerticalScrollbarWidth();
   return PixelSnappedScrollWidth() > client_width;
 }
 
 bool PaintLayerScrollableArea::HasVerticalOverflow() const {
-  return PixelSnappedScrollHeight() > Box().PixelSnappedClientHeight();
+  return PixelSnappedScrollHeight() > PixelSnappedClientSize().Height();
 }
 
 bool PaintLayerScrollableArea::HasScrollableHorizontalOverflow() const {
@@ -1044,12 +1069,12 @@ bool PaintLayerScrollableArea::UpdateAfterCompositingChange() {
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
   UpdateScrollDimensions();
   if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar()) {
-    int client_width = Box().PixelSnappedClientWidth();
+    int client_width = PixelSnappedClientSize().Width();
     horizontal_scrollbar->SetProportion(client_width,
                                         OverflowRect().Width().ToInt());
   }
   if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar()) {
-    int client_height = Box().PixelSnappedClientHeight();
+    int client_height = PixelSnappedClientSize().Height();
     vertical_scrollbar->SetProportion(client_height,
                                       OverflowRect().Height().ToInt());
   }
@@ -1704,10 +1729,9 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
           .AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
           .BoundingBox());
   local_expose_rect.Move(-Box().BorderLeft(), -Box().BorderTop());
-  LayoutRect layer_bounds(
-      LayoutPoint(), LayoutSize(Box().ClientWidth(), Box().ClientHeight()));
+  LayoutRect visible_rect(LayoutPoint(), ClientSize());
   LayoutRect r = ScrollAlignment::GetRectToExpose(
-      layer_bounds, local_expose_rect, align_x, align_y);
+      visible_rect, local_expose_rect, align_x, align_y);
 
   ScrollOffset old_scroll_offset = GetScrollOffset();
   ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
@@ -1717,8 +1741,8 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
 
   LayoutRect intersect =
-      LocalToAbsolute(Box(), Intersection(layer_bounds, local_expose_rect));
-  if (intersect.IsEmpty() && !layer_bounds.IsEmpty() &&
+      LocalToAbsolute(Box(), Intersection(visible_rect, local_expose_rect));
+  if (intersect.IsEmpty() && !visible_rect.IsEmpty() &&
       !local_expose_rect.IsEmpty()) {
     return LocalToAbsolute(Box(), local_expose_rect);
   }
