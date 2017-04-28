@@ -66,10 +66,11 @@ class ServerWindowObserver {
                                       float old_opacity,
                                       float new_opacity) {}
 
-  virtual void OnWindowPredefinedCursorChanged(ServerWindow* window,
-                                               mojom::CursorType cursor_id) {}
-  virtual void OnWindowNonClientCursorChanged(ServerWindow* window,
-                                              mojom::CursorType cursor_id) {}
+  virtual void OnWindowCursorChanged(ServerWindow* window,
+                                     const ui::CursorData& cursor_data) {}
+  virtual void OnWindowNonClientCursorChanged(
+      ServerWindow* window,
+      const ui::CursorData& cursor_data) {}
 
   virtual void OnWindowTextInputStateChanged(ServerWindow* window,
                                              const ui::TextInputState& state) {}

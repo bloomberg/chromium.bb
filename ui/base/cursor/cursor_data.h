@@ -45,9 +45,11 @@ class UI_BASE_EXPORT CursorData {
              float scale_factor,
              const base::TimeDelta& frame_delay);
   CursorData(const CursorData& cursor);
+  CursorData(CursorData&& cursor);
   ~CursorData();
 
   CursorData& operator=(const CursorData& cursor);
+  CursorData& operator=(CursorData&& cursor);
 
   CursorType cursor_type() const { return cursor_type_; }
   const base::TimeDelta& frame_delay() const { return frame_delay_; }

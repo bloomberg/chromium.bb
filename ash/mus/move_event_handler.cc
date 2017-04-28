@@ -10,6 +10,7 @@
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -28,26 +29,26 @@ namespace ash {
 namespace mus {
 namespace {
 
-ui::mojom::CursorType CursorForWindowComponent(int window_component) {
+ui::CursorType CursorForWindowComponent(int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return ui::mojom::CursorType::kSouthResize;
+      return ui::CursorType::kSouthResize;
     case HTBOTTOMLEFT:
-      return ui::mojom::CursorType::kSouthWestResize;
+      return ui::CursorType::kSouthWestResize;
     case HTBOTTOMRIGHT:
-      return ui::mojom::CursorType::kSouthEastResize;
+      return ui::CursorType::kSouthEastResize;
     case HTLEFT:
-      return ui::mojom::CursorType::kWestResize;
+      return ui::CursorType::kWestResize;
     case HTRIGHT:
-      return ui::mojom::CursorType::kEastResize;
+      return ui::CursorType::kEastResize;
     case HTTOP:
-      return ui::mojom::CursorType::kNorthResize;
+      return ui::CursorType::kNorthResize;
     case HTTOPLEFT:
-      return ui::mojom::CursorType::kNorthWestResize;
+      return ui::CursorType::kNorthWestResize;
     case HTTOPRIGHT:
-      return ui::mojom::CursorType::kNorthEastResize;
+      return ui::CursorType::kNorthEastResize;
     default:
-      return ui::mojom::CursorType::kNull;
+      return ui::CursorType::kNull;
   }
 }
 
@@ -122,7 +123,8 @@ void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     const int hit_test_location =
         wm_window_->GetNonClientComponent(event->location());
     window_manager_client_->SetNonClientCursor(
-        wm_window_->aura_window(), CursorForWindowComponent(hit_test_location));
+        wm_window_->aura_window(),
+        ui::CursorData(CursorForWindowComponent(hit_test_location)));
   }
 
   WorkspaceEventHandlerMus* workspace_event_handler =

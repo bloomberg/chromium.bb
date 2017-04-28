@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "cc/surfaces/local_surface_id.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -46,7 +47,7 @@ enum class ChangeType {
   NEW_TOP_LEVEL_WINDOW,
   NEW_WINDOW,
   OPACITY,
-  PREDEFINED_CURSOR,
+  CURSOR,
   PROPERTY,
   REMOVE_CHILD,
   REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
@@ -271,20 +272,19 @@ class InFlightPropertyChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(InFlightPropertyChange);
 };
 
-class InFlightPredefinedCursorChange : public InFlightChange {
+class InFlightCursorChange : public InFlightChange {
  public:
-  InFlightPredefinedCursorChange(WindowMus* window,
-                                 ui::mojom::CursorType revert_value);
-  ~InFlightPredefinedCursorChange() override;
+  InFlightCursorChange(WindowMus* window, const ui::CursorData& revert_value);
+  ~InFlightCursorChange() override;
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
   void Revert() override;
 
  private:
-  ui::mojom::CursorType revert_cursor_;
+  ui::CursorData revert_cursor_;
 
-  DISALLOW_COPY_AND_ASSIGN(InFlightPredefinedCursorChange);
+  DISALLOW_COPY_AND_ASSIGN(InFlightCursorChange);
 };
 
 class InFlightVisibleChange : public InFlightChange {

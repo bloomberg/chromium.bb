@@ -30,9 +30,13 @@ CursorData::CursorData(const gfx::Point& hotspot_point,
 
 CursorData::CursorData(const CursorData& cursor) = default;
 
+CursorData::CursorData(CursorData&& cursor) = default;
+
 CursorData::~CursorData() {}
 
 CursorData& CursorData::operator=(const CursorData& cursor) = default;
+
+CursorData& CursorData::operator=(CursorData&& cursor) = default;
 
 bool CursorData::IsType(CursorType cursor_type) const {
   return cursor_type_ == cursor_type;

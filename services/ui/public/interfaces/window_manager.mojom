@@ -298,7 +298,7 @@ interface WindowManagerClient {
   WmSetFrameDecorationValues(FrameDecorationValues values);
 
   // Sets the cursor that the non-client areas of the window should use.
-  WmSetNonClientCursor(uint32 window_id, CursorType cursor_id);
+  WmSetNonClientCursor(uint32 window_id, CursorData cursor);
 
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.

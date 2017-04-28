@@ -105,10 +105,8 @@ class ServerWindow {
   bool can_accept_drops() const { return accepts_drops_; }
   void SetCanAcceptDrops(bool accepts_drags);
 
-  ui::mojom::CursorType cursor() const { return cursor_id_; }
-  ui::mojom::CursorType non_client_cursor() const {
-    return non_client_cursor_id_;
-  }
+  const ui::CursorData& cursor() const { return cursor_; }
+  const ui::CursorData& non_client_cursor() const { return non_client_cursor_; }
 
   const ServerWindow* parent() const { return parent_; }
   ServerWindow* parent() { return parent_; }
@@ -151,8 +149,8 @@ class ServerWindow {
   float opacity() const { return opacity_; }
   void SetOpacity(float value);
 
-  void SetPredefinedCursor(ui::mojom::CursorType cursor_id);
-  void SetNonClientCursor(ui::mojom::CursorType cursor_id);
+  void SetCursor(ui::CursorData cursor);
+  void SetNonClientCursor(ui::CursorData cursor);
 
   const gfx::Transform& transform() const { return transform_; }
   void SetTransform(const gfx::Transform& transform);
@@ -252,8 +250,8 @@ class ServerWindow {
   std::vector<gfx::Rect> additional_client_areas_;
   std::unique_ptr<ServerWindowCompositorFrameSinkManager>
       compositor_frame_sink_manager_;
-  mojom::CursorType cursor_id_;
-  mojom::CursorType non_client_cursor_id_;
+  ui::CursorData cursor_;
+  ui::CursorData non_client_cursor_;
   float opacity_;
   bool can_focus_;
   mojom::EventTargetingPolicy event_targeting_policy_ =

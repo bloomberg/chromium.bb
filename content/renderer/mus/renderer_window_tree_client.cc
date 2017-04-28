@@ -242,9 +242,8 @@ void RendererWindowTreeClient::OnPointerEventObserved(
 
 void RendererWindowTreeClient::OnWindowFocused(ui::Id focused_window_id) {}
 
-void RendererWindowTreeClient::OnWindowPredefinedCursorChanged(
-    ui::Id window_id,
-    ui::mojom::CursorType cursor) {}
+void RendererWindowTreeClient::OnWindowCursorChanged(ui::Id window_id,
+                                                     ui::CursorData cursor) {}
 
 void RendererWindowTreeClient::OnWindowSurfaceChanged(
     ui::Id window_id,

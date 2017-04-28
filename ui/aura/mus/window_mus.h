@@ -81,7 +81,7 @@ class AURA_EXPORT WindowMus {
       const base::Optional<cc::LocalSurfaceId>& local_surface_id) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
   virtual void SetOpacityFromServer(float opacity) = 0;
-  virtual void SetPredefinedCursorFromServer(ui::mojom::CursorType cursor) = 0;
+  virtual void SetCursorFromServer(const ui::CursorData& cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetFrameSinkIdFromServer(

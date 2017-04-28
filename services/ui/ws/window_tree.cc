@@ -30,6 +30,7 @@
 #include "services/ui/ws/window_manager_state.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree_binding.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
@@ -898,7 +899,7 @@ void WindowTree::ProcessWindowOpacityChanged(const ServerWindow* window,
 }
 
 void WindowTree::ProcessCursorChanged(const ServerWindow* window,
-                                      mojom::CursorType cursor_id,
+                                      const ui::CursorData& cursor,
                                       bool originated_change) {
   if (originated_change)
     return;
@@ -906,7 +907,7 @@ void WindowTree::ProcessCursorChanged(const ServerWindow* window,
   if (!IsWindowKnown(window, &client_window_id))
     return;
 
-  client()->OnWindowPredefinedCursorChanged(client_window_id.id, cursor_id);
+  client()->OnWindowCursorChanged(client_window_id.id, cursor);
 }
 
 void WindowTree::ProcessFocusChanged(const ServerWindow* old_focused_window,
@@ -1773,19 +1774,45 @@ void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
     window->set_event_targeting_policy(policy);
 }
 
-void WindowTree::SetPredefinedCursor(uint32_t change_id,
-                                     Id transport_window_id,
-                                     ui::mojom::CursorType cursor_id) {
+void WindowTree::SetCursor(uint32_t change_id,
+                           Id transport_window_id,
+                           ui::CursorData cursor) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
+  if (!window) {
+    DVLOG(1) << "SetCursor failed (invalid id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
 
   // Only the owner of the window can change the bounds.
-  bool success = window && access_policy_->CanSetCursorProperties(window);
-  if (success) {
-    Operation op(this, window_server_,
-                 OperationType::SET_WINDOW_PREDEFINED_CURSOR);
-    window->SetPredefinedCursor(cursor_id);
+  bool success = access_policy_->CanSetCursorProperties(window);
+  if (!success) {
+    DVLOG(1) << "SetCursor failed (access denied)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
   }
+
+  // If the cursor is custom, it must have valid frames.
+  if (cursor.cursor_type() == ui::CursorType::kCustom) {
+    if (cursor.cursor_frames().empty()) {
+      DVLOG(1) << "SetCursor failed (no frames with custom cursor)";
+      client()->OnChangeCompleted(change_id, false);
+      return;
+    }
+
+    for (const SkBitmap& bitmap : cursor.cursor_frames()) {
+      if (bitmap.drawsNothing()) {
+        DVLOG(1) << "SetCursor failed (cursor frame draws nothing)";
+        client()->OnChangeCompleted(change_id, false);
+        return;
+      }
+    }
+  }
+
+  Operation op(this, window_server_,
+               OperationType::SET_WINDOW_PREDEFINED_CURSOR);
+  window->SetCursor(std::move(cursor));
   client()->OnChangeCompleted(change_id, success);
 }
 
@@ -2232,11 +2259,11 @@ void WindowTree::WmSetFrameDecorationValues(
 }
 
 void WindowTree::WmSetNonClientCursor(uint32_t window_id,
-                                      mojom::CursorType cursor_id) {
+                                      ui::CursorData cursor) {
   DCHECK(window_manager_state_);
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   if (window) {
-    window->SetNonClientCursor(cursor_id);
+    window->SetNonClientCursor(std::move(cursor));
   } else {
     DVLOG(1) << "trying to update non-client cursor of invalid window";
   }

@@ -46,7 +46,7 @@ class PlatformDisplay : public ui::EventSource {
 
   virtual void ReleaseCapture() = 0;
 
-  virtual void SetCursorById(mojom::CursorType cursor) = 0;
+  virtual void SetCursor(const ui::CursorData& cursor) = 0;
 
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;

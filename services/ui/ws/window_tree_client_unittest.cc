@@ -23,6 +23,7 @@
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/test_change_tracker.h"
 #include "services/ui/ws/window_server_service_test_base.h"
+#include "ui/base/cursor/cursor.h"
 
 using mojo::InterfaceRequest;
 using service_manager::Service;
@@ -236,9 +237,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     return WaitForChangeCompleted(change_id);
   }
 
-  bool SetPredefinedCursor(Id window_id, mojom::CursorType cursor) {
+  bool SetCursor(Id window_id, const ui::CursorData& cursor) {
     const uint32_t change_id = GetAndAdvanceChangeId();
-    tree()->SetPredefinedCursor(change_id, window_id, cursor);
+    tree()->SetCursor(change_id, window_id, cursor);
     return WaitForChangeCompleted(change_id);
   }
 
@@ -385,9 +386,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
   // TODO(sky): add testing coverage.
   void OnWindowFocused(uint32_t focused_window_id) override {}
-  void OnWindowPredefinedCursorChanged(uint32_t window_id,
-                                       mojom::CursorType cursor_id) override {
-    tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
+  void OnWindowCursorChanged(uint32_t window_id,
+                             ui::CursorData cursor) override {
+    tracker_.OnWindowCursorChanged(window_id, cursor);
   }
 
   void OnDragDropStart(
@@ -1638,11 +1639,11 @@ TEST_F(WindowTreeClientTest, SetCursor) {
   Id window_1_1 = BuildWindowId(client_id_1(), 1);
   changes2()->clear();
 
-  ASSERT_TRUE(
-      wt_client1()->SetPredefinedCursor(window_1_1, mojom::CursorType::kIBeam));
+  ASSERT_TRUE(wt_client1()->SetCursor(window_1_1,
+                                      ui::CursorData(ui::CursorType::kIBeam)));
   wt_client2_->WaitForChangeCount(1u);
 
-  EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_id=4",
+  EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_type=4",
             SingleChangeToDescription(*changes2()));
 }
 

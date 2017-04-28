@@ -24,6 +24,7 @@
 #include "services/ui/ws/window_tree.h"
 #include "services/ui/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -42,7 +43,9 @@ class CursorTest : public testing::Test {
   TestWindowServerDelegate* window_server_delegate() {
     return ws_test_helper_.window_server_delegate();
   }
-  mojom::CursorType cursor() const { return ws_test_helper_.cursor(); }
+  ui::CursorType cursor_type() const {
+    return ws_test_helper_.cursor().cursor_type();
+  }
 
  protected:
   // testing::Test:
@@ -108,81 +111,86 @@ class CursorTest : public testing::Test {
 
 TEST_F(CursorTest, ChangeByMouseMove) {
   ServerWindow* win = BuildServerWindow();
-  win->SetPredefinedCursor(mojom::CursorType::kIBeam);
-  win->parent()->SetPredefinedCursor(mojom::CursorType::kCell);
-  EXPECT_EQ(mojom::CursorType::kIBeam, win->cursor());
-  win->SetNonClientCursor(mojom::CursorType::kEastResize);
-  EXPECT_EQ(mojom::CursorType::kEastResize, win->non_client_cursor());
+  win->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+  win->parent()->SetCursor(ui::CursorData(ui::CursorType::kCell));
+  EXPECT_EQ(ui::CursorType::kIBeam, win->cursor().cursor_type());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kEastResize));
+  EXPECT_EQ(ui::CursorType::kEastResize,
+            win->non_client_cursor().cursor_type());
 
   // Non client area
   MoveCursorTo(gfx::Point(15, 15));
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 
   // Client area, which comes from win->parent().
   MoveCursorTo(gfx::Point(25, 25));
-  EXPECT_EQ(mojom::CursorType::kCell, cursor());
+  EXPECT_EQ(ui::CursorType::kCell, cursor_type());
 }
 
 TEST_F(CursorTest, ChangeByClientAreaChange) {
   ServerWindow* win = BuildServerWindow();
-  win->parent()->SetPredefinedCursor(mojom::CursorType::kCross);
-  win->SetPredefinedCursor(mojom::CursorType::kIBeam);
-  EXPECT_EQ(mojom::CursorType::kIBeam, mojom::CursorType(win->cursor()));
-  win->SetNonClientCursor(mojom::CursorType::kEastResize);
-  EXPECT_EQ(mojom::CursorType::kEastResize, win->non_client_cursor());
+  win->parent()->SetCursor(ui::CursorData(ui::CursorType::kCross));
+  win->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+  EXPECT_EQ(ui::CursorType::kIBeam, win->cursor().cursor_type());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kEastResize));
+  EXPECT_EQ(ui::CursorType::kEastResize,
+            win->non_client_cursor().cursor_type());
 
   // Non client area before we move.
   MoveCursorTo(gfx::Point(15, 15));
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 
   // Changing the client area should cause a change. The cursor for the client
   // area comes from root ancestor, which is win->parent().
   win->SetClientArea(gfx::Insets(1, 1), std::vector<gfx::Rect>());
-  EXPECT_EQ(mojom::CursorType::kCross, cursor());
+  EXPECT_EQ(ui::CursorType::kCross, cursor_type());
 }
 
 TEST_F(CursorTest, NonClientCursorChange) {
   ServerWindow* win = BuildServerWindow();
-  win->SetPredefinedCursor(mojom::CursorType::kIBeam);
-  EXPECT_EQ(mojom::CursorType::kIBeam, win->cursor());
-  win->SetNonClientCursor(mojom::CursorType::kEastResize);
-  EXPECT_EQ(mojom::CursorType::kEastResize, win->non_client_cursor());
+  win->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+  EXPECT_EQ(ui::CursorType::kIBeam, win->cursor().cursor_type());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kEastResize));
+  EXPECT_EQ(ui::CursorType::kEastResize,
+            win->non_client_cursor().cursor_type());
 
   MoveCursorTo(gfx::Point(15, 15));
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 
-  win->SetNonClientCursor(mojom::CursorType::kWestResize);
-  EXPECT_EQ(mojom::CursorType::kWestResize, cursor());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kWestResize));
+  EXPECT_EQ(ui::CursorType::kWestResize, cursor_type());
 }
 
 TEST_F(CursorTest, IgnoreClientCursorChangeInNonClientArea) {
   ServerWindow* win = BuildServerWindow();
-  win->SetPredefinedCursor(mojom::CursorType::kIBeam);
-  EXPECT_EQ(mojom::CursorType::kIBeam, win->cursor());
-  win->SetNonClientCursor(mojom::CursorType::kEastResize);
-  EXPECT_EQ(mojom::CursorType::kEastResize, win->non_client_cursor());
+  win->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+  EXPECT_EQ(ui::CursorType::kIBeam, win->cursor().cursor_type());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kEastResize));
+  EXPECT_EQ(ui::CursorType::kEastResize,
+            win->non_client_cursor().cursor_type());
 
   MoveCursorTo(gfx::Point(15, 15));
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 
-  win->SetPredefinedCursor(mojom::CursorType::kHelp);
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  win->SetCursor(ui::CursorData(ui::CursorType::kHelp));
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 }
 
 TEST_F(CursorTest, NonClientToClientByBoundsChange) {
   ServerWindow* win = BuildServerWindow();
-  win->parent()->SetPredefinedCursor(mojom::CursorType::kCopy);
-  win->SetPredefinedCursor(mojom::CursorType::kIBeam);
-  EXPECT_EQ(mojom::CursorType::kIBeam, win->cursor());
-  win->SetNonClientCursor(mojom::CursorType::kEastResize);
-  EXPECT_EQ(mojom::CursorType::kEastResize, win->non_client_cursor());
+  win->parent()->SetCursor(ui::CursorData(ui::CursorType::kCopy));
+  win->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
+  EXPECT_EQ(ui::CursorType::kIBeam, win->cursor().cursor_type());
+  win->SetNonClientCursor(ui::CursorData(ui::CursorType::kEastResize));
+  EXPECT_EQ(ui::CursorType::kEastResize,
+            win->non_client_cursor().cursor_type());
 
   // Non client area before we move.
   MoveCursorTo(gfx::Point(15, 15));
-  EXPECT_EQ(mojom::CursorType::kEastResize, cursor());
+  EXPECT_EQ(ui::CursorType::kEastResize, cursor_type());
 
   win->SetBounds(gfx::Rect(0, 0, 30, 30));
-  EXPECT_EQ(mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 }
 
 }  // namespace test

@@ -35,6 +35,10 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -131,8 +135,21 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
 
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
-    aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
-        ui::mojom::CursorType(cursor.native_type()));
+    ui::CursorData mojo_cursor;
+    if (cursor.platform()) {
+#if defined(USE_OZONE)
+      mojo_cursor =
+          ui::CursorDataFactoryOzone::GetCursorData(cursor.platform());
+#else
+      NOTIMPLEMENTED()
+          << "Can't pass native platform cursors on non-ozone platforms";
+      mojo_cursor = ui::CursorData(ui::CursorType::kPointer);
+#endif
+    } else {
+      mojo_cursor = ui::CursorData(cursor.native_type());
+    }
+
+    aura::WindowPortMus::Get(window_)->SetCursor(mojo_cursor);
     delegate->CommitCursor(cursor);
   }
 
@@ -143,8 +160,8 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
     if (visible) {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
-      aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
-          ui::mojom::CursorType::kNone);
+      aura::WindowPortMus::Get(window_)->SetCursor(
+          ui::CursorData(ui::CursorType::kNone));
     }
   }
 

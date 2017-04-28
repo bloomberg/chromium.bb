@@ -99,4 +99,21 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   }
 }
 
+// Test that we deal with empty bitmaps. (When a cursor resource isn't loaded
+// in the renderer, the renderer will send a kCurstomCursor with an empty
+// bitmap.)
+TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
+  const base::TimeDelta kFrameDelay = base::TimeDelta::FromMilliseconds(15);
+  const gfx::Point kHotspot = gfx::Point(5, 2);
+  const float kScale = 2.0f;
+
+  ui::CursorData input(kHotspot, {SkBitmap()}, kScale, kFrameDelay);
+
+  ui::CursorData output;
+  ASSERT_TRUE(EchoCursorData(input, &output));
+
+  ASSERT_EQ(1u, output.cursor_frames().size());
+  EXPECT_TRUE(output.cursor_frames().front().empty());
+}
+
 }  // namespace ui

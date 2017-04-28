@@ -69,12 +69,12 @@ void WindowPortMus::SetImeVisibility(bool visible,
   window_tree_client_->SetImeVisibility(this, visible, std::move(state));
 }
 
-void WindowPortMus::SetPredefinedCursor(ui::mojom::CursorType cursor_id) {
-  if (cursor_id == predefined_cursor_)
+void WindowPortMus::SetCursor(const ui::CursorData& cursor) {
+  if (cursor_.IsSameAs(cursor))
     return;
 
-  window_tree_client_->SetPredefinedCursor(this, predefined_cursor_, cursor_id);
-  predefined_cursor_ = cursor_id;
+  window_tree_client_->SetCursor(this, cursor_, cursor);
+  cursor_ = cursor;
 }
 
 void WindowPortMus::SetEventTargetingPolicy(
@@ -270,11 +270,10 @@ void WindowPortMus::SetOpacityFromServer(float opacity) {
   window_->layer()->SetOpacity(opacity);
 }
 
-void WindowPortMus::SetPredefinedCursorFromServer(
-    ui::mojom::CursorType cursor) {
+void WindowPortMus::SetCursorFromServer(const ui::CursorData& cursor) {
   // As this does nothing more than set the cursor we don't need to use
   // ServerChange.
-  predefined_cursor_ = cursor;
+  cursor_ = cursor;
 }
 
 void WindowPortMus::SetPropertyFromServer(
