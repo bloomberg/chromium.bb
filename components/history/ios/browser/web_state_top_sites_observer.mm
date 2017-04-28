@@ -5,6 +5,7 @@
 #include "components/history/ios/browser/web_state_top_sites_observer.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
@@ -22,8 +23,9 @@ void WebStateTopSitesObserver::CreateForWebState(web::WebState* web_state,
                                                  TopSites* top_sites) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           new WebStateTopSitesObserver(web_state, top_sites));
+    web_state->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new WebStateTopSitesObserver(web_state, top_sites)));
   }
 }
 

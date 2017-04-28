@@ -453,10 +453,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // The user data allows the clients to associate data with this object.
   // Multiple user data values can be stored under different keys.
-  // This object will TAKE OWNERSHIP of the given data pointer, and will
-  // delete the object if it is changed or the object is destroyed.
   base::SupportsUserData::Data* GetUserData(const void* key) const;
-  void SetUserData(const void* key, base::SupportsUserData::Data* data);
+  void SetUserData(const void* key,
+                   std::unique_ptr<base::SupportsUserData::Data> data);
 
   // Testing -------------------------------------------------------------------
 
