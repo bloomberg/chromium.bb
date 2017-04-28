@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
+import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -247,8 +248,15 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         System.loadLibrary("webviewchromium_plat_support");
 
         // Use shared preference to check for package downgrade.
-        mWebViewPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
-                CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+        // Since N, getSharedPreferences creates the preference dir if it doesn't exist,
+        // causing a disk write.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            mWebViewPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                    CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
         int currentVersion = packageInfo.versionCode;
         if (!versionCodeGE(currentVersion, lastVersion)) {
