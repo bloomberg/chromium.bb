@@ -49,9 +49,6 @@
  *
  *   paramList: C++ parameter list with optional names. Names will be deduced from types if omitted but you have to
  *        specify explicit names for multiple parameters of the same type.
- *
- * Parameters with type PassRefPtr<T> are converted to raw pointers,
- * so reference will not be passed or released until all agents are notified.
  */
 
 interface CoreProbes {
@@ -104,7 +101,7 @@ interface CoreProbes {
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
   void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
-  void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
+  void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, RefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
   void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);

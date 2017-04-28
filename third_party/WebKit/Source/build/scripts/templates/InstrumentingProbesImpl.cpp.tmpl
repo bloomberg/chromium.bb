@@ -54,11 +54,6 @@ namespace probe {
   {{sink_class}}* sink = To{{sink_class}}({{probe.params[0].name}});
   if (!sink)
     return;
-{% for param in probe.params %}
-{% if param.is_prp %}
-  RefPtr<{{param.inner_type}}> {{param.value}} = {{param.name}};
-{% endif %}
-{% endfor %}
 {% for agent in probe.agents %}
 {% set class_name = agent | agent_name_to_class %}
   if (sink->has{{class_name}}s()) {
@@ -90,7 +85,7 @@ CORE_EXPORT void {{probe.name}}({{ params_list(probe) }}) {
 {% call probe_body(probe, "") %}
 {%- for param in probe.params %}
 {%- if not loop.first or "Keep" in param.options -%}
-{{param.value}}
+{{param.name}}
 {%- if not loop.last %}, {% endif -%}
 {%- endif -%}
 {%- endfor %}
