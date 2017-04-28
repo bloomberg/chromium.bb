@@ -32,7 +32,7 @@ const libaom_test::TestMode kEncodingModeVectors[] = {
 };
 
 // Encoding speeds
-const int kCpuUsedVectors[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+const int kCpuUsedVectors[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
 // MV test modes: 1 - always use maximum MV; 2 - always use minimum MV.
 const int kMVTestModes[] = { MAX_EXTREME_MV, MIN_EXTREME_MV };

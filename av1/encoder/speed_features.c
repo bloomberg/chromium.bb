@@ -271,13 +271,6 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     sf->coeff_prob_appx_step = 4;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
   }
-  if (speed >= 8) {
-    sf->mv.search_method = FAST_DIAMOND;
-    sf->partition_search_type = VAR_BASED_PARTITION;
-    sf->mv.fullpel_search_step_param = 10;
-    sf->mv.subpel_force_stop = 2;
-    sf->lpf_pick = LPF_PICK_MINIMAL_LPF;
-  }
 }
 
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
