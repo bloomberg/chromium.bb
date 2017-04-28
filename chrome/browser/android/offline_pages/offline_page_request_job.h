@@ -91,7 +91,6 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
-  int GetResponseCode() const override;
 
   // net::URLRequestFileJob overrides:
   void OnOpenComplete(int result) override;

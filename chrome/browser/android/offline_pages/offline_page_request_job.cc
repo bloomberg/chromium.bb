@@ -639,13 +639,6 @@ bool OfflinePageRequestJob::CopyFragmentOnRedirect(const GURL& location) const {
   return false;
 }
 
-int OfflinePageRequestJob::GetResponseCode() const {
-  if (!fake_headers_for_redirect_)
-    return URLRequestFileJob::GetResponseCode();
-
-  return net::URLRequestRedirectJob::REDIRECT_302_FOUND;
-}
-
 void OfflinePageRequestJob::OnOpenComplete(int result) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.RequestJob.OpenFileErrorCode",
                               -result);
