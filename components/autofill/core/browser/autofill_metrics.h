@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace ukm {
@@ -645,12 +646,16 @@ class AutofillMetrics {
   };
 
   static void LogCardUploadDecisionMetric(CardUploadDecisionMetric metric);
-  static void LogCreditCardInfoBarMetric(InfoBarMetric metric,
-                                         bool is_uploading);
+  static void LogCreditCardInfoBarMetric(
+      InfoBarMetric metric,
+      bool is_uploading,
+      int previous_save_credit_card_prompt_user_decision);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
-  static void LogSaveCardPromptMetric(SaveCardPromptMetric metric,
-                                      bool is_uploading,
-                                      bool is_reshow);
+  static void LogSaveCardPromptMetric(
+      SaveCardPromptMetric metric,
+      bool is_uploading,
+      bool is_reshow,
+      int previous_save_credit_card_prompt_user_decision);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
   // Should be called when credit card scan is finished. |duration| should be

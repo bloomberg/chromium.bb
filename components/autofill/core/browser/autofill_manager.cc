@@ -284,6 +284,9 @@ void AutofillManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
+  registry->RegisterIntegerPref(
+      prefs::kAutofillAcceptSaveCreditCardPromptState,
+      prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
 }
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {

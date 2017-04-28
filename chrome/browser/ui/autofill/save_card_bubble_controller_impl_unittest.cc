@@ -18,6 +18,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,8 +63,13 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("about:blank"));
-    TestSaveCardBubbleControllerImpl::CreateForTesting(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    TestSaveCardBubbleControllerImpl::CreateForTesting(web_contents);
+    user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())
+        ->SetInteger(
+            prefs::kAutofillAcceptSaveCreditCardPromptState,
+            prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   }
 
   BrowserWindow* CreateBrowserWindow() override {
@@ -264,6 +271,63 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_CancelButton) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.Reshows",
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_FirstShow_CancelButton_FirstShow) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble();
+  controller()->OnCancelButton();
+  controller()->OnBubbleClosed();
+
+  ShowLocalBubble();
+  controller()->OnCancelButton();
+  controller()->OnBubbleClosed();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow.PreviouslyDenied"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Local_FirstShow_CancelButton_FirstShow_SaveButton_FirstShow) {
+  base::HistogramTester histogram_tester;
+  ShowLocalBubble();
+  controller()->OnCancelButton();
+  controller()->OnBubbleClosed();
+
+  ShowLocalBubble();
+  controller()->OnSaveButton();
+  controller()->OnBubbleClosed();
+
+  ShowLocalBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow.PreviouslyAccepted"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Local.FirstShow.PreviouslyDenied"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1)));
 }
 
 TEST_F(SaveCardBubbleControllerImplTest,
