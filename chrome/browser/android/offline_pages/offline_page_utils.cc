@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/mime_util.h"
 
 namespace offline_pages {
 namespace {
@@ -296,6 +297,15 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
   if (!tab_helper)
     return;
   tab_helper->ScheduleDownloadHelper(web_contents, name_space, url, ui_action);
+}
+
+// static
+bool OfflinePageUtils::CanDownloadAsOfflinePage(
+    const GURL& url,
+    const std::string& contents_mime_type) {
+  return url.SchemeIsHTTPOrHTTPS() &&
+         (net::MatchesMimeType(contents_mime_type, "text/html") ||
+          net::MatchesMimeType(contents_mime_type, "application/xhtml+xml"));
 }
 
 }  // namespace offline_pages

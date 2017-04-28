@@ -109,6 +109,11 @@ class OfflinePageUtils {
                                const std::string& name_space,
                                const GURL& url,
                                DownloadUIActionFlags ui_action);
+
+  // Determines if offline page download should be triggered based on MIME type
+  // of download resource.
+  static bool CanDownloadAsOfflinePage(const GURL& url,
+                                       const std::string& contents_mime_type);
 };
 
 }  // namespace offline_pages

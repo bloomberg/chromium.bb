@@ -28,6 +28,9 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
@@ -337,9 +340,36 @@ void OfflinePageDownloadBridge::StartDownload(
     return;
 
   GURL url = web_contents->GetLastCommittedURL();
+  if (url.is_empty())
+    return;
+
   GURL original_url =
       offline_pages::OfflinePageUtils::GetOriginalURLFromWebContents(
           web_contents);
+
+  // If the page is not a HTML page, route to DownloadManager.
+  if (!offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(
+          url, web_contents->GetContentsMimeType())) {
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
+        web_contents->GetBrowserContext());
+    std::unique_ptr<content::DownloadUrlParameters> dl_params(
+        content::DownloadUrlParameters::CreateForWebContentsMainFrame(
+            web_contents, url));
+
+    content::NavigationEntry* entry =
+        web_contents->GetController().GetLastCommittedEntry();
+    // |entry| should not be null since otherwise an empty URL is returned from
+    // calling GetLastCommittedURL and we should bail out earlier.
+    DCHECK(entry);
+    content::Referrer referrer =
+        content::Referrer::SanitizeForRequest(url, entry->GetReferrer());
+    dl_params->set_referrer(referrer);
+
+    dl_params->set_prefer_cache(true);
+    dl_params->set_prompt(false);
+    dlm->DownloadUrl(std::move(dl_params));
+    return;
+  }
 
   ScopedJavaGlobalRef<jobject> j_tab_ref(env, j_tab);
 
