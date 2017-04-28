@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -33,6 +33,10 @@ namespace {
 class VoicesearchCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
+  VoicesearchCollectionViewControllerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   void SetUp() override {
     CollectionViewControllerTest::SetUp();
     pref_service_ = CreateLocalState();
@@ -58,7 +62,7 @@ class VoicesearchCollectionViewControllerTest
                                                        inSection:0]]);
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<PrefService> pref_service_;
 };
 

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -32,6 +32,10 @@ const NSInteger kNumberOfItems = 5;
 class TimeRangeSelectorCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
+  TimeRangeSelectorCollectionViewControllerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   void SetUp() override {
     CollectionViewControllerTest::SetUp();
     pref_service_ = CreateLocalState();
@@ -64,7 +68,7 @@ class TimeRangeSelectorCollectionViewControllerTest
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<PrefService> pref_service_;
   id delegate_;
   TimeRangeSelectorCollectionViewController* time_range_selector_controller_;

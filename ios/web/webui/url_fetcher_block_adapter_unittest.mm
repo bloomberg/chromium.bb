@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -22,8 +23,12 @@ namespace web {
 // Test fixture for URLFetcherBlockAdapter.
 class URLFetcherBlockAdapterTest : public PlatformTest {
  protected:
+  URLFetcherBlockAdapterTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   // Required for base::MessageLoop::current().
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Tests that URLFetcherBlockAdapter calls its completion handler with the
