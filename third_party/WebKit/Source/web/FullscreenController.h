@@ -41,11 +41,11 @@ namespace blink {
 
 class Element;
 class LocalFrame;
-class WebViewImpl;
+class WebViewBase;
 
 class FullscreenController {
  public:
-  static std::unique_ptr<FullscreenController> Create(WebViewImpl*);
+  static std::unique_ptr<FullscreenController> Create(WebViewBase*);
 
   // Called by Fullscreen (via ChromeClient) to request entering or exiting
   // fullscreen.
@@ -69,13 +69,13 @@ class FullscreenController {
   void DidUpdateLayout();
 
  protected:
-  explicit FullscreenController(WebViewImpl*);
+  explicit FullscreenController(WebViewBase*);
 
  private:
   void UpdatePageScaleConstraints(bool remove_constraints);
   void RestoreBackgroundColorOverride();
 
-  WebViewImpl* web_view_impl_;
+  WebViewBase* web_view_base_;
 
   // State is used to avoid unnecessary enter/exit requests, and to restore the
   // m_initial* after the first layout upon exiting fullscreen. Typically, the

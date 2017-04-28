@@ -4,6 +4,7 @@
 
 #include "web/DevToolsEmulator.h"
 
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -15,13 +16,13 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace {
 
@@ -58,7 +59,7 @@ static float calculateDeviceScaleAdjustment(int width,
 
 namespace blink {
 
-DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view_impl)
+DevToolsEmulator::DevToolsEmulator(WebViewBase* web_view_impl)
     : web_view_impl_(web_view_impl),
       device_metrics_enabled_(false),
       emulate_mobile_enabled_(false),
@@ -102,8 +103,8 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view_impl)
 
 DevToolsEmulator::~DevToolsEmulator() {}
 
-DevToolsEmulator* DevToolsEmulator::Create(WebViewImpl* web_view_impl) {
-  return new DevToolsEmulator(web_view_impl);
+DevToolsEmulator* DevToolsEmulator::Create(WebViewBase* web_view_base) {
+  return new DevToolsEmulator(web_view_base);
 }
 
 DEFINE_TRACE(DevToolsEmulator) {}

@@ -10,5 +10,6 @@ blink_core_sources("exported") {
     "WebBlob.cpp",
     "WebDataSourceImpl.cpp",
     "WebDataSourceImpl.h",
+    "WebViewBase.h",
   ]
 }

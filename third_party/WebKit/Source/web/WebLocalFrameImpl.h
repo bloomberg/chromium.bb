@@ -72,7 +72,7 @@ class WebPlugin;
 class WebPluginContainerImpl;
 class WebScriptExecutionCallback;
 class WebView;
-class WebViewImpl;
+class WebViewBase;
 enum class WebFrameLoadType;
 struct FrameLoadRequest;
 struct WebContentSecurityPolicyViolation;
@@ -359,7 +359,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   static WebPluginContainerImpl* CurrentPluginContainer(LocalFrame*,
                                                         Node* = nullptr);
 
-  WebViewImpl* ViewImpl() const;
+  WebViewBase* ViewImpl() const;
 
   FrameView* GetFrameView() const {
     return GetFrame() ? GetFrame()->View() : 0;

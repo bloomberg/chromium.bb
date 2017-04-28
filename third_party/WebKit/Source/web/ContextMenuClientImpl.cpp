@@ -40,6 +40,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -79,7 +80,6 @@
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

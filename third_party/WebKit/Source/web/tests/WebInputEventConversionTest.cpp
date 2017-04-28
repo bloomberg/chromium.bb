@@ -37,6 +37,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
@@ -49,7 +50,6 @@
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {

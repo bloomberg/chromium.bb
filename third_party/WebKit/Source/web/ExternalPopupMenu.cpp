@@ -32,6 +32,7 @@
 
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLOptionElement.h"
@@ -43,20 +44,21 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebExternalPopupMenu.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPopupMenuInfo.h"
+#include "public/web/WebView.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
 ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
                                      HTMLSelectElement& owner_element,
-                                     WebViewImpl& web_view)
+                                     WebView& web_view)
     : owner_element_(owner_element),
       local_frame_(frame),
       web_view_(web_view),
@@ -113,7 +115,7 @@ void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
 #if OS(MACOSX)
-  const WebInputEvent* current_event = WebViewImpl::CurrentInputEvent();
+  const WebInputEvent* current_event = WebViewBase::CurrentInputEvent();
   if (current_event && current_event->GetType() == WebInputEvent::kMouseDown) {
     synthetic_event_ = WTF::WrapUnique(new WebMouseEvent);
     *synthetic_event_ = *static_cast<const WebMouseEvent*>(current_event);

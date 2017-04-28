@@ -46,7 +46,7 @@ class HTMLSelectElement;
 class LocalFrame;
 class WebExternalPopupMenu;
 class WebMouseEvent;
-class WebViewImpl;
+class WebView;
 struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
@@ -54,7 +54,7 @@ struct WebPopupMenuInfo;
 class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
                                            public WebExternalPopupMenuClient {
  public:
-  ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
+  ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebView&);
   ~ExternalPopupMenu() override;
 
   // Fills |info| with the popup menu information contained in the
@@ -86,7 +86,7 @@ class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
 
   Member<HTMLSelectElement> owner_element_;
   Member<LocalFrame> local_frame_;
-  WebViewImpl& web_view_;
+  WebView& web_view_;
   std::unique_ptr<WebMouseEvent> synthetic_event_;
   TaskRunnerTimer<ExternalPopupMenu> dispatch_event_timer_;
   // The actual implementor of the show menu.

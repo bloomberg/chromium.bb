@@ -39,6 +39,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/events/UIEventWithKeyState.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -123,7 +124,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebSettingsImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -347,7 +347,7 @@ WebNavigationPolicy GetNavigationPolicy(const WindowFeatures& features) {
   NavigationPolicy policy = kNavigationPolicyNewForegroundTab;
   if (as_popup)
     policy = kNavigationPolicyNewPopup;
-  UpdatePolicyForEvent(WebViewImpl::CurrentInputEvent(), &policy);
+  UpdatePolicyForEvent(WebViewBase::CurrentInputEvent(), &policy);
 
   return static_cast<WebNavigationPolicy>(policy);
 }

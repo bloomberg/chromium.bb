@@ -283,6 +283,10 @@ WebViewImpl* WebViewImpl::Create(WebViewClient* client,
   return AdoptRef(new WebViewImpl(client, visibility_state)).LeakRef();
 }
 
+const WebInputEvent* WebViewBase::CurrentInputEvent() {
+  return WebViewImpl::CurrentInputEvent();
+}
+
 void WebView::SetUseExternalPopupMenus(bool use_external_popup_menus) {
   g_should_use_external_popup_menus = use_external_popup_menus;
 }
@@ -1656,6 +1660,11 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent(
         ->GetEventHandler()
         .SendContextMenuEventForKey(nullptr);
   }
+}
+#else
+WebInputEventResult WebViewImpl::SendContextMenuEvent(
+    const WebKeyboardEvent& event) {
+  return WebInputEventResult::kNotHandled;
 }
 #endif
 

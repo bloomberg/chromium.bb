@@ -40,6 +40,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 #include "public/web/WebInputMethodController.h"
+#include "web/CompositorMutatorImpl.h"
 #include "web/PageWidgetDelegate.h"
 #include "web/WebFrameWidgetBase.h"
 #include "web/WebInputMethodControllerImpl.h"

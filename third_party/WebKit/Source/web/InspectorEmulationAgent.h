@@ -12,7 +12,7 @@
 namespace blink {
 
 class WebLocalFrameImpl;
-class WebViewImpl;
+class WebViewBase;
 
 namespace protocol {
 namespace DOM {
@@ -60,7 +60,7 @@ class InspectorEmulationAgent final
 
  private:
   InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
-  WebViewImpl* GetWebViewImpl();
+  WebViewBase* GetWebViewBase();
   void VirtualTimeBudgetExpired();
 
   Member<WebLocalFrameImpl> web_local_frame_impl_;

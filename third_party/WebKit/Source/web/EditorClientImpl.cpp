@@ -27,15 +27,15 @@
 #include "web/EditorClientImpl.h"
 
 #include "core/editing/SelectionType.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
-EditorClientImpl::EditorClientImpl(WebViewImpl* webview) : web_view_(webview) {}
+EditorClientImpl::EditorClientImpl(WebViewBase* webview) : web_view_(webview) {}
 
 EditorClientImpl::~EditorClientImpl() {}
 

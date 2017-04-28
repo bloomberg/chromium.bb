@@ -37,11 +37,11 @@
 namespace blink {
 
 class LocalFrame;
-class WebViewImpl;
+class WebViewBase;
 
 class EditorClientImpl final : public EditorClient {
  public:
-  explicit EditorClientImpl(WebViewImpl*);
+  explicit EditorClientImpl(WebViewBase*);
   ~EditorClientImpl() override;
 
   void RespondToChangedContents() override;
@@ -51,7 +51,7 @@ class EditorClientImpl final : public EditorClient {
   bool HandleKeyboardEvent(LocalFrame*) override;
 
  private:
-  WebViewImpl* web_view_;
+  WebViewBase* web_view_;
 };
 
 }  // namespace blink

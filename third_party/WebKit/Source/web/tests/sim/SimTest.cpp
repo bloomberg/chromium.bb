@@ -5,13 +5,13 @@
 #include "web/tests/sim/SimTest.h"
 
 #include "core/dom/Document.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebCache.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

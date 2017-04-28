@@ -39,6 +39,7 @@
 #include "core/editing/iterators/SearchBuffer.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextAutosizer.h"
@@ -54,7 +55,6 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

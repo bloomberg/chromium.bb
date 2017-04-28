@@ -4,6 +4,7 @@
 
 #include "web/InspectorEmulationAgent.h"
 
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/protocol/DOM.h"
@@ -16,7 +17,6 @@
 #include "public/platform/WebThread.h"
 #include "web/DevToolsEmulator.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -48,7 +48,7 @@ InspectorEmulationAgent::InspectorEmulationAgent(
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
 
-WebViewImpl* InspectorEmulationAgent::GetWebViewImpl() {
+WebViewBase* InspectorEmulationAgent::GetWebViewBase() {
   return web_local_frame_impl_->ViewImpl();
 }
 
@@ -106,30 +106,30 @@ Response InspectorEmulationAgent::forceViewport(double x,
   state_->setDouble(EmulationAgentState::kForcedViewportY, y);
   state_->setDouble(EmulationAgentState::kForcedViewportScale, scale);
 
-  GetWebViewImpl()->GetDevToolsEmulator()->ForceViewport(WebFloatPoint(x, y),
+  GetWebViewBase()->GetDevToolsEmulator()->ForceViewport(WebFloatPoint(x, y),
                                                          scale);
   return Response::OK();
 }
 
 Response InspectorEmulationAgent::resetViewport() {
   state_->setBoolean(EmulationAgentState::kForcedViewportEnabled, false);
-  GetWebViewImpl()->GetDevToolsEmulator()->ResetViewport();
+  GetWebViewBase()->GetDevToolsEmulator()->ResetViewport();
   return Response::OK();
 }
 
 Response InspectorEmulationAgent::resetPageScaleFactor() {
-  GetWebViewImpl()->ResetScaleStateImmediately();
+  GetWebViewBase()->ResetScaleStateImmediately();
   return Response::OK();
 }
 
 Response InspectorEmulationAgent::setPageScaleFactor(double page_scale_factor) {
-  GetWebViewImpl()->SetPageScaleFactor(static_cast<float>(page_scale_factor));
+  GetWebViewBase()->SetPageScaleFactor(static_cast<float>(page_scale_factor));
   return Response::OK();
 }
 
 Response InspectorEmulationAgent::setScriptExecutionDisabled(bool value) {
   state_->setBoolean(EmulationAgentState::kScriptExecutionDisabled, value);
-  GetWebViewImpl()->GetDevToolsEmulator()->SetScriptExecutionDisabled(value);
+  GetWebViewBase()->GetDevToolsEmulator()->SetScriptExecutionDisabled(value);
   return Response::OK();
 }
 
@@ -137,14 +137,14 @@ Response InspectorEmulationAgent::setTouchEmulationEnabled(
     bool enabled,
     Maybe<String> configuration) {
   state_->setBoolean(EmulationAgentState::kTouchEventEmulationEnabled, enabled);
-  GetWebViewImpl()->GetDevToolsEmulator()->SetTouchEventEmulationEnabled(
+  GetWebViewBase()->GetDevToolsEmulator()->SetTouchEventEmulationEnabled(
       enabled);
   return Response::OK();
 }
 
 Response InspectorEmulationAgent::setEmulatedMedia(const String& media) {
   state_->setString(EmulationAgentState::kEmulatedMedia, media);
-  GetWebViewImpl()->GetPage()->GetSettings().SetMediaTypeOverride(media);
+  GetWebViewBase()->GetPage()->GetSettings().SetMediaTypeOverride(media);
   return Response::OK();
 }
 
@@ -192,7 +192,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
     Maybe<protocol::DOM::RGBA> color) {
   if (!color.isJust()) {
     // Clear the override and state.
-    GetWebViewImpl()->ClearBaseBackgroundColorOverride();
+    GetWebViewBase()->ClearBaseBackgroundColorOverride();
     state_->remove(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA);
     return Response::OK();
   }
@@ -202,7 +202,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
                    rgba->toValue());
   // Clamping of values is done by Color() constructor.
   int alpha = lroundf(255.0f * rgba->getA(1.0f));
-  GetWebViewImpl()->SetBaseBackgroundColorOverride(
+  GetWebViewBase()->SetBaseBackgroundColorOverride(
       Color(rgba->getR(), rgba->getG(), rgba->getB(), alpha).Rgb());
   return Response::OK();
 }

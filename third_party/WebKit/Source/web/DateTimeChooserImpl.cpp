@@ -40,7 +40,6 @@
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "web/ChromeClientImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

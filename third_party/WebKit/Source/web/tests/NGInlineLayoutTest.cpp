@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/exported/WebViewBase.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
@@ -10,7 +11,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/text/CharacterNames.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"

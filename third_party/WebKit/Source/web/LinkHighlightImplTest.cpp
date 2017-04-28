@@ -28,6 +28,7 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Node.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/page/Page.h"
@@ -48,7 +49,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 namespace blink {

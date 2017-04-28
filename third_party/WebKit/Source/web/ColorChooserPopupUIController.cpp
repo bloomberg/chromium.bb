@@ -33,7 +33,6 @@
 #include "public/platform/Platform.h"
 #include "public/web/WebColorChooser.h"
 #include "web/ChromeClientImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
