@@ -26,6 +26,7 @@ ThrottledOfflineContentProvider::ThrottledOfflineContentProvider(
     const base::TimeDelta& delay_between_updates,
     OfflineContentProvider* provider)
     : delay_between_updates_(delay_between_updates),
+      last_update_time_(base::TimeTicks::Now()),
       update_queued_(false),
       wrapped_provider_(provider),
       weak_ptr_factory_(this) {
@@ -43,22 +44,27 @@ bool ThrottledOfflineContentProvider::AreItemsAvailable() {
 
 void ThrottledOfflineContentProvider::OpenItem(const ContentId& id) {
   wrapped_provider_->OpenItem(id);
+  FlushUpdates();
 }
 
 void ThrottledOfflineContentProvider::RemoveItem(const ContentId& id) {
   wrapped_provider_->RemoveItem(id);
+  FlushUpdates();
 }
 
 void ThrottledOfflineContentProvider::CancelDownload(const ContentId& id) {
   wrapped_provider_->CancelDownload(id);
+  FlushUpdates();
 }
 
 void ThrottledOfflineContentProvider::PauseDownload(const ContentId& id) {
   wrapped_provider_->PauseDownload(id);
+  FlushUpdates();
 }
 
 void ThrottledOfflineContentProvider::ResumeDownload(const ContentId& id) {
   wrapped_provider_->ResumeDownload(id);
+  FlushUpdates();
 }
 
 const OfflineItem* ThrottledOfflineContentProvider::GetItemById(
@@ -122,15 +128,27 @@ void ThrottledOfflineContentProvider::OnItemRemoved(const ContentId& id) {
 
 void ThrottledOfflineContentProvider::OnItemUpdated(const OfflineItem& item) {
   updates_[item.id] = item;
+
+  // If we already queued an update, we're throttling, just wait until the
+  // update passes through.
   if (update_queued_)
     return;
 
+  // If we haven't sent an update recently, let the update go through.
+  base::TimeDelta current_delay = base::TimeTicks::Now() - last_update_time_;
+  if (current_delay >= delay_between_updates_) {
+    FlushUpdates();
+    return;
+  }
+
+  // Queue the update so we wait for the proper amount of time before notifying
+  // observers.
   update_queued_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ThrottledOfflineContentProvider::FlushUpdates,
                  weak_ptr_factory_.GetWeakPtr()),
-      delay_between_updates_);
+      delay_between_updates_ - current_delay);
 }
 
 void ThrottledOfflineContentProvider::NotifyItemsAvailable(
@@ -148,6 +166,7 @@ void ThrottledOfflineContentProvider::UpdateItemIfPresent(
 }
 
 void ThrottledOfflineContentProvider::FlushUpdates() {
+  last_update_time_ = base::TimeTicks::Now();
   update_queued_ = false;
 
   OfflineItemMap updates = std::move(updates_);

@@ -13,9 +13,12 @@
 #include "components/offline_items_collection/core/test_support/scoped_mock_offline_content_provider.h"
 #include "components/offline_items_collection/core/throttled_offline_content_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::CallbackToFunctor;
+using testing::InvokeWithoutArgs;
 using testing::Return;
 
 namespace offline_items_collection {
@@ -56,13 +59,20 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
   ThrottledOfflineContentProviderTest()
       : task_runner_(new base::TestMockTimeTaskRunner),
         handle_(task_runner_),
-        provider_(base::TimeDelta::FromMilliseconds(1), &wrapped_provider_) {}
+        delay_(base::TimeDelta::FromSeconds(1)),
+        provider_(delay_, &wrapped_provider_) {}
   ~ThrottledOfflineContentProviderTest() override {}
 
  protected:
+  base::TimeTicks GetTimeThatWillAllowAnUpdate() {
+    return base::TimeTicks::Now() - delay_ -
+           base::TimeDelta::FromMilliseconds(1);
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
 
+  base::TimeDelta delay_;
   MockOfflineContentProvider wrapped_provider_;
   ThrottledOfflineContentProvider provider_;
 };
@@ -130,6 +140,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestRemoveCancelsUpdate) {
   EXPECT_CALL(observer, OnItemRemoved(id)).Times(1);
 
   wrapped_provider_.NotifyOnItemsAvailable();
+  provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item);
   wrapped_provider_.NotifyOnItemRemoved(id);
   task_runner_->FastForwardUntilNoTasksRemain();
@@ -154,6 +165,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestOnItemUpdatedSquashed) {
   EXPECT_CALL(observer, OnItemUpdated(updated_item2)).Times(1);
 
   wrapped_provider_.NotifyOnItemsAvailable();
+  provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
   wrapped_provider_.NotifyOnItemUpdated(updated_item2);
@@ -181,6 +193,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestGetItemByIdOverridesUpdate) {
   EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
 
   wrapped_provider_.NotifyOnItemsAvailable();
+  provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
 
@@ -211,6 +224,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestGetAllItemsOverridesUpdate) {
   EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
 
   wrapped_provider_.NotifyOnItemsAvailable();
+  provider_.set_last_update_time(base::TimeTicks::Now());
   wrapped_provider_.NotifyOnItemUpdated(item1);
   wrapped_provider_.NotifyOnItemUpdated(item2);
 
@@ -232,20 +246,61 @@ TEST_F(ThrottledOfflineContentProviderTest, TestThrottleWorksProperly) {
   OfflineItem item3(id1);
   item3.title = "updated2";
 
-  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-  EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
+  OfflineItem item4(id1);
+  item4.title = "updated3";
 
+  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
   wrapped_provider_.NotifyOnItemsAvailable();
 
   {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    provider_.set_last_update_time(GetTimeThatWillAllowAnUpdate());
     wrapped_provider_.NotifyOnItemUpdated(item1);
-    wrapped_provider_.NotifyOnItemUpdated(item2);
-    task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
   }
 
   {
     EXPECT_CALL(observer, OnItemUpdated(item3)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item2);
     wrapped_provider_.NotifyOnItemUpdated(item3);
+    task_runner_->FastForwardBy(delay_);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item4)).Times(1);
+    provider_.set_last_update_time(GetTimeThatWillAllowAnUpdate());
+    wrapped_provider_.NotifyOnItemUpdated(item4);
+    task_runner_->FastForwardUntilNoTasksRemain();
+  }
+}
+
+TEST_F(ThrottledOfflineContentProviderTest, TestInitialRequestGoesThrough) {
+  ScopedMockOfflineContentProvider::ScopedMockObserver observer(&provider_);
+
+  ContentId id1("1", "A");
+
+  OfflineItem item1(id1);
+
+  OfflineItem item1_updated(id1);
+  item1_updated.title = "updated1";
+
+  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
+  wrapped_provider_.NotifyOnItemsAvailable();
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    provider_.set_last_update_time(GetTimeThatWillAllowAnUpdate());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(_)).Times(0);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1_updated);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1_updated)).Times(1);
     task_runner_->FastForwardUntilNoTasksRemain();
   }
 }
@@ -261,18 +316,93 @@ TEST_F(ThrottledOfflineContentProviderTest, TestReentrantUpdatesGetQueued) {
                                               updated_item);
 
   EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
-
   wrapped_provider_.NotifyOnItemsAvailable();
 
   {
     wrapped_provider_.NotifyOnItemUpdated(item);
     EXPECT_CALL(observer, OnItemUpdated(item)).Times(1);
-    task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+    task_runner_->FastForwardBy(delay_);
   }
 
   {
     EXPECT_CALL(observer, OnItemUpdated(updated_item)).Times(1);
     task_runner_->FastForwardUntilNoTasksRemain();
+  }
+}
+
+TEST_F(ThrottledOfflineContentProviderTest, TestPokingProviderFlushesQueue) {
+  ScopedMockOfflineContentProvider::ScopedMockObserver observer(&provider_);
+
+  EXPECT_CALL(observer, OnItemsAvailable(&provider_)).Times(1);
+  wrapped_provider_.NotifyOnItemsAvailable();
+
+  ContentId id1("1", "A");
+  OfflineItem item1(id1);
+
+  OfflineItem item2(ContentId("2", "B"));
+  OfflineItem item3(ContentId("3", "C"));
+  OfflineItem item4(ContentId("4", "D"));
+  OfflineItem item5(ContentId("5", "E"));
+  OfflineItem item6(ContentId("6", "F"));
+
+  auto updater = base::Bind(&MockOfflineContentProvider::NotifyOnItemUpdated,
+                            base::Unretained(&wrapped_provider_));
+
+  // Set up reentrancy calls back into the provider.
+  EXPECT_CALL(wrapped_provider_, OpenItem(_))
+      .WillRepeatedly(
+          InvokeWithoutArgs(CallbackToFunctor(base::Bind(updater, item2))));
+  EXPECT_CALL(wrapped_provider_, RemoveItem(_))
+      .WillRepeatedly(
+          InvokeWithoutArgs(CallbackToFunctor(base::Bind(updater, item3))));
+  EXPECT_CALL(wrapped_provider_, CancelDownload(_))
+      .WillRepeatedly(
+          InvokeWithoutArgs(CallbackToFunctor(base::Bind(updater, item4))));
+  EXPECT_CALL(wrapped_provider_, PauseDownload(_))
+      .WillRepeatedly(
+          InvokeWithoutArgs(CallbackToFunctor(base::Bind(updater, item5))));
+  EXPECT_CALL(wrapped_provider_, ResumeDownload(_))
+      .WillRepeatedly(
+          InvokeWithoutArgs(CallbackToFunctor(base::Bind(updater, item6))));
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    EXPECT_CALL(observer, OnItemUpdated(item2)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+    provider_.OpenItem(id1);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    EXPECT_CALL(observer, OnItemUpdated(item3)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+    provider_.RemoveItem(id1);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    EXPECT_CALL(observer, OnItemUpdated(item4)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+    provider_.CancelDownload(id1);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    EXPECT_CALL(observer, OnItemUpdated(item5)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+    provider_.PauseDownload(id1);
+  }
+
+  {
+    EXPECT_CALL(observer, OnItemUpdated(item1)).Times(1);
+    EXPECT_CALL(observer, OnItemUpdated(item6)).Times(1);
+    provider_.set_last_update_time(base::TimeTicks::Now());
+    wrapped_provider_.NotifyOnItemUpdated(item1);
+    provider_.ResumeDownload(id1);
   }
 }
 
