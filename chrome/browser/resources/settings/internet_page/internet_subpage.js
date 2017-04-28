@@ -254,6 +254,8 @@ Polymer({
     if (!this.enableToggleIsVisible_(deviceState))
       return '';
     switch (deviceState.Type) {
+      case CrOnc.Type.TETHER:
+        return this.i18n('internetToggleTetherA11yLabel');
       case CrOnc.Type.CELLULAR:
         return this.i18n('internetToggleMobileA11yLabel');
       case CrOnc.Type.WI_FI:

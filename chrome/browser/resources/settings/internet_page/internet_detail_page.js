@@ -129,6 +129,7 @@ Polymer({
       value: {
         CELLULAR: CrOnc.Type.CELLULAR,
         ETHERNET: CrOnc.Type.ETHERNET,
+        TETHER: CrOnc.Type.TETHER,
         VPN: CrOnc.Type.VPN,
         WIFI: CrOnc.Type.WI_FI,
         WIMAX: CrOnc.Type.WI_MAX,
@@ -801,6 +802,10 @@ Polymer({
       fields.push(
           'Cellular.ActivationState', 'Cellular.RoamingState',
           'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
+    } else if (type == CrOnc.Type.TETHER && !!this.networkProperties.Tether) {
+      fields.push(
+          'Tether.BatteryPercentage', 'Tether.SignalStrength',
+          'Tether.Carrier');
     } else if (type == CrOnc.Type.VPN && !!this.networkProperties.VPN) {
       var vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
       if (vpnType == 'ThirdPartyVPN') {
