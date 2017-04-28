@@ -22,7 +22,10 @@ class GLSurface;
 
 namespace gpu {
 class GLInProcessContext;
-}
+namespace gles2 {
+class GLES2TraceImplementation;
+}  // namespace gles2
+}  // namespace gpu
 
 namespace android_webview {
 
@@ -59,6 +62,7 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
   base::ThreadChecker main_thread_checker_;
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   sk_sp<class GrContext> gr_context_;
   std::unique_ptr<cc::ContextCacheController> cache_controller_;
 
