@@ -63,10 +63,6 @@ sync_preferences::PrefServiceSyncable* ChromeBrowserState::GetSyncablePrefs() {
   return static_cast<sync_preferences::PrefServiceSyncable*>(GetPrefs());
 }
 
-TestChromeBrowserState* ChromeBrowserState::AsTestChromeBrowserState() {
-  return nullptr;
-}
-
 net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!request_context_getter_) {

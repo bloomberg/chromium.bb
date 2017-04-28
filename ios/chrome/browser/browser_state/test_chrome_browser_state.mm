@@ -293,10 +293,6 @@ TestChromeBrowserState::CreateIsolatedRequestContext(
   return nullptr;
 }
 
-TestChromeBrowserState* TestChromeBrowserState::AsTestChromeBrowserState() {
-  return this;
-}
-
 void TestChromeBrowserState::CreateWebDataService() {
   ignore_result(
       ios::WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(

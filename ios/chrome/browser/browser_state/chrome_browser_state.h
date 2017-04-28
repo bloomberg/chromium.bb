@@ -128,13 +128,6 @@ class ChromeBrowserState : public web::BrowserState {
   virtual net::URLRequestContextGetter* CreateIsolatedRequestContext(
       const base::FilePath& partition_path) = 0;
 
-  // Returns the current ChromeBrowserState casted as a TestChromeBrowserState
-  // or null if it is not a TestChromeBrowserState.
-  // TODO(crbug.com/583682): This method should not be used. It is there for
-  // supporting a legacy test, and will be removed as soon as the deprecated
-  // test is removed.
-  virtual TestChromeBrowserState* AsTestChromeBrowserState();
-
   // web::BrowserState
   net::URLRequestContextGetter* GetRequestContext() override;
 
