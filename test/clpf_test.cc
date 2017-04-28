@@ -87,7 +87,7 @@ typedef CDEFClpfBlockHbdTest ClpfHbdSpeedTest;
 #endif
 
 template <typename pixel>
-void test_clpf(int w, int h, int depth, int iterations,
+void test_clpf(int w, int h, unsigned int depth, unsigned int iterations,
                void (*clpf)(pixel *dst, const uint16_t *src, int dstride,
                             int sstride, int sizex, int sizey,
                             unsigned int strength, unsigned int bitdepth),
@@ -102,8 +102,8 @@ void test_clpf(int w, int h, int depth, int iterations,
   memset(ref_d, 0, size * size * sizeof(*ref_d));
   memset(d, 0, size * size * sizeof(*d));
 
-  int error = 0, pos = 0, strength = 0, xpos = 8, ypos = 8;
-  int bits, level, count, damp = 0, boundary = 0;
+  int error = 0, pos = 0, xpos = 8, ypos = 8;
+  unsigned int strength = 0, bits, level, count, damp = 0, boundary = 0;
 
   assert(size >= w + 16 && size >= h + 16);
   assert(depth >= 8);
@@ -117,7 +117,7 @@ void test_clpf(int w, int h, int depth, int iterations,
   // If clpf and ref_clpf are the same, we're just testing speed
   for (boundary = 0; boundary < 16; boundary++) {
     for (count = 0; count < iterations; count++) {
-      for (level = 0; level < (1 << depth) && !error;
+      for (level = 0; level < (1U << depth) && !error;
            level += (1 + 4 * !!boundary) << (depth - 8)) {
         for (bits = 1; bits <= depth && !error; bits++) {
           for (damp = 4 + depth - 8; damp < depth - 1 && !error; damp++) {
@@ -192,7 +192,7 @@ void test_clpf(int w, int h, int depth, int iterations,
 }
 
 template <typename pixel>
-void test_clpf_speed(int w, int h, int depth, int iterations,
+void test_clpf_speed(int w, int h, unsigned int depth, unsigned int iterations,
                      void (*clpf)(pixel *dst, const uint16_t *src, int dstride,
                                   int sstride, int sizex, int sizey,
                                   unsigned int strength, unsigned int bitdepth),
