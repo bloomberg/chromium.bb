@@ -2,6 +2,7 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
+#include "core/exported/WebViewBase.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/WebRTCError.h"
@@ -11,7 +12,6 @@
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 

@@ -32,15 +32,16 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutFullScreen.h"
+#include "core/page/Page.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -56,12 +57,12 @@ WebFrameClient& GetWebFrameClient(LocalFrame& frame) {
 }  // anonymous namespace
 
 std::unique_ptr<FullscreenController> FullscreenController::Create(
-    WebViewImpl* web_view_impl) {
-  return WTF::WrapUnique(new FullscreenController(web_view_impl));
+    WebViewBase* web_view_base) {
+  return WTF::WrapUnique(new FullscreenController(web_view_base));
 }
 
-FullscreenController::FullscreenController(WebViewImpl* web_view_impl)
-    : web_view_impl_(web_view_impl) {}
+FullscreenController::FullscreenController(WebViewBase* web_view_base)
+    : web_view_base_(web_view_base) {}
 
 void FullscreenController::DidEnterFullscreen() {
   // |Browser::EnterFullscreenModeForTab()| can enter fullscreen without going
@@ -71,15 +72,15 @@ void FullscreenController::DidEnterFullscreen() {
     return;
 
   UpdatePageScaleConstraints(false);
-  web_view_impl_->SetPageScaleFactor(1.0f);
-  if (web_view_impl_->MainFrame()->IsWebLocalFrame())
-    web_view_impl_->MainFrame()->SetScrollOffset(WebSize());
-  web_view_impl_->SetVisualViewportOffset(FloatPoint());
+  web_view_base_->SetPageScaleFactor(1.0f);
+  if (web_view_base_->MainFrame()->IsWebLocalFrame())
+    web_view_base_->MainFrame()->SetScrollOffset(WebSize());
+  web_view_base_->SetVisualViewportOffset(FloatPoint());
 
   state_ = State::kFullscreen;
 
   // Notify all local frames that we have entered fullscreen.
-  for (Frame* frame = web_view_impl_->GetPage()->MainFrame(); frame;
+  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
@@ -113,7 +114,7 @@ void FullscreenController::DidExitFullscreen() {
   // isn't set for the topmost document when an iframe goes fullscreen, but can
   // be done once |m_currentFullScreenElement| is gone and all state is in the
   // fullscreen element stack. https://crbug.com/402421
-  for (Frame* frame = web_view_impl_->GetPage()->MainFrame(); frame;
+  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
@@ -147,16 +148,16 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame) {
   // restore a previous set. This can happen if we exit and quickly reenter
   // fullscreen without performing a layout.
   if (state_ == State::kInitial) {
-    initial_page_scale_factor_ = web_view_impl_->PageScaleFactor();
+    initial_page_scale_factor_ = web_view_base_->PageScaleFactor();
     initial_scroll_offset_ =
-        web_view_impl_->MainFrame()->IsWebLocalFrame()
-            ? web_view_impl_->MainFrame()->GetScrollOffset()
+        web_view_base_->MainFrame()->IsWebLocalFrame()
+            ? web_view_base_->MainFrame()->GetScrollOffset()
             : WebSize();
-    initial_visual_viewport_offset_ = web_view_impl_->VisualViewportOffset();
+    initial_visual_viewport_offset_ = web_view_base_->VisualViewportOffset();
     initial_background_color_override_enabled_ =
-        web_view_impl_->BackgroundColorOverrideEnabled();
+        web_view_base_->BackgroundColorOverrideEnabled();
     initial_background_color_override_ =
-        web_view_impl_->BackgroundColorOverride();
+        web_view_base_->BackgroundColorOverride();
   }
 
   // If already entering fullscreen, just wait.
@@ -201,7 +202,7 @@ void FullscreenController::FullscreenElementChanged(Element* from_element,
       // If the video uses overlay fullscreen mode, make the background
       // transparent.
       if (video_element.UsesOverlayFullscreenVideo())
-        web_view_impl_->SetBackgroundColorOverride(Color::kTransparent);
+        web_view_base_->SetBackgroundColorOverride(Color::kTransparent);
     }
   }
 
@@ -216,21 +217,21 @@ void FullscreenController::FullscreenElementChanged(Element* from_element,
 }
 
 void FullscreenController::RestoreBackgroundColorOverride() {
-  if (web_view_impl_->BackgroundColorOverrideEnabled() !=
+  if (web_view_base_->BackgroundColorOverrideEnabled() !=
           initial_background_color_override_enabled_ ||
-      web_view_impl_->BackgroundColorOverride() !=
+      web_view_base_->BackgroundColorOverride() !=
           initial_background_color_override_) {
     if (initial_background_color_override_enabled_) {
-      web_view_impl_->SetBackgroundColorOverride(
+      web_view_base_->SetBackgroundColorOverride(
           initial_background_color_override_);
     } else {
-      web_view_impl_->ClearBackgroundColorOverride();
+      web_view_base_->ClearBackgroundColorOverride();
     }
   }
 }
 
 void FullscreenController::UpdateSize() {
-  DCHECK(web_view_impl_->GetPage());
+  DCHECK(web_view_base_->GetPage());
 
   if (state_ != State::kFullscreen && state_ != State::kExitingFullscreen)
     return;
@@ -238,7 +239,7 @@ void FullscreenController::UpdateSize() {
   UpdatePageScaleConstraints(false);
 
   // Traverse all local frames and notify the LayoutFullScreen object, if any.
-  for (Frame* frame = web_view_impl_->GetPage()->MainFrame(); frame;
+  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
@@ -256,11 +257,11 @@ void FullscreenController::DidUpdateLayout() {
   if (state_ != State::kNeedsScrollAndScaleRestore)
     return;
 
-  web_view_impl_->SetPageScaleFactor(initial_page_scale_factor_);
-  if (web_view_impl_->MainFrame()->IsWebLocalFrame())
-    web_view_impl_->MainFrame()->SetScrollOffset(
+  web_view_base_->SetPageScaleFactor(initial_page_scale_factor_);
+  if (web_view_base_->MainFrame()->IsWebLocalFrame())
+    web_view_base_->MainFrame()->SetScrollOffset(
         WebSize(initial_scroll_offset_));
-  web_view_impl_->SetVisualViewportOffset(initial_visual_viewport_offset_);
+  web_view_base_->SetVisualViewportOffset(initial_visual_viewport_offset_);
   // Background color override was already restored when
   // fullscreenElementChanged([..], nullptr) was called while exiting.
 
@@ -271,11 +272,11 @@ void FullscreenController::UpdatePageScaleConstraints(bool remove_constraints) {
   PageScaleConstraints fullscreen_constraints;
   if (!remove_constraints) {
     fullscreen_constraints = PageScaleConstraints(1.0, 1.0, 1.0);
-    fullscreen_constraints.layout_size = FloatSize(web_view_impl_->Size());
+    fullscreen_constraints.layout_size = FloatSize(web_view_base_->Size());
   }
-  web_view_impl_->GetPageScaleConstraintsSet().SetFullscreenConstraints(
+  web_view_base_->GetPageScaleConstraintsSet().SetFullscreenConstraints(
       fullscreen_constraints);
-  web_view_impl_->GetPageScaleConstraintsSet().ComputeFinalConstraints();
+  web_view_base_->GetPageScaleConstraintsSet().ComputeFinalConstraints();
 
   // Although we called |computedFinalConstraints()| above, the "final"
   // constraints are not actually final. They are still subject to scale factor
@@ -283,12 +284,12 @@ void FullscreenController::UpdatePageScaleConstraints(bool remove_constraints) {
   // size mutation after layout, however the contents size is not guaranteed to
   // mutate, and the scale factor may remain unclamped. Just fire the event
   // again to ensure the final constraints pick up the latest contents size.
-  web_view_impl_->DidChangeContentsSize();
-  if (web_view_impl_->MainFrameImpl() &&
-      web_view_impl_->MainFrameImpl()->GetFrameView())
-    web_view_impl_->MainFrameImpl()->GetFrameView()->SetNeedsLayout();
+  web_view_base_->DidChangeContentsSize();
+  if (web_view_base_->MainFrameImpl() &&
+      web_view_base_->MainFrameImpl()->GetFrameView())
+    web_view_base_->MainFrameImpl()->GetFrameView()->SetNeedsLayout();
 
-  web_view_impl_->UpdateMainFrameLayoutSize();
+  web_view_base_->UpdateMainFrameLayoutSize();
 }
 
 }  // namespace blink

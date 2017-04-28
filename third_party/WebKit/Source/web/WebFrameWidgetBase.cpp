@@ -222,7 +222,7 @@ WebPoint WebFrameWidgetBase::ViewportToRootFrame(
   return GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);
 }
 
-WebViewImpl* WebFrameWidgetBase::View() const {
+WebViewBase* WebFrameWidgetBase::View() const {
   return ToWebLocalFrameImpl(LocalRoot())->ViewImpl();
 }
 

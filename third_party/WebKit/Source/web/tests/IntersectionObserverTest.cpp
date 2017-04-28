@@ -6,10 +6,10 @@
 
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverInit.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/CurrentTime.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"

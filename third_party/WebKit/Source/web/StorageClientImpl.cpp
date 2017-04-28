@@ -26,12 +26,12 @@
 #include "web/StorageClientImpl.h"
 
 #include <memory>
+#include "core/exported/WebViewBase.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "modules/storage/StorageNamespace.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -43,7 +43,7 @@ STATIC_ASSERT_MATCHING_ENUM(kLocalStorage,
 STATIC_ASSERT_MATCHING_ENUM(kSessionStorage,
                             ContentSettingsClient::StorageType::kSession);
 
-StorageClientImpl::StorageClientImpl(WebViewImpl* web_view)
+StorageClientImpl::StorageClientImpl(WebViewBase* web_view)
     : web_view_(web_view) {}
 
 std::unique_ptr<StorageNamespace>

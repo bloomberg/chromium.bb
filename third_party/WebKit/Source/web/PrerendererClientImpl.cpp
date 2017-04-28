@@ -31,10 +31,10 @@
 
 #include "web/PrerendererClientImpl.h"
 
+#include "core/exported/WebViewBase.h"
 #include "platform/Prerender.h"
 #include "public/platform/WebPrerender.h"
 #include "public/web/WebPrerendererClient.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 

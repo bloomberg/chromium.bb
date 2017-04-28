@@ -21,13 +21,13 @@ class IntPoint;
 class IntRect;
 class TransformationMatrix;
 class WebInputEvent;
-class WebViewImpl;
+class WebViewBase;
 
 class WEB_EXPORT DevToolsEmulator final
     : public GarbageCollectedFinalized<DevToolsEmulator> {
  public:
   ~DevToolsEmulator();
-  static DevToolsEmulator* Create(WebViewImpl*);
+  static DevToolsEmulator* Create(WebViewBase*);
   DECLARE_TRACE();
 
   // Settings overrides.
@@ -65,7 +65,7 @@ class WEB_EXPORT DevToolsEmulator final
   WTF::Optional<IntRect> VisibleContentRectForPainting() const;
 
  private:
-  explicit DevToolsEmulator(WebViewImpl*);
+  explicit DevToolsEmulator(WebViewBase*);
 
   void EnableMobileEmulation();
   void DisableMobileEmulation();
@@ -78,7 +78,7 @@ class WEB_EXPORT DevToolsEmulator final
   void ApplyViewportOverride(TransformationMatrix*);
   void UpdateRootLayerTransform();
 
-  WebViewImpl* web_view_impl_;
+  WebViewBase* web_view_impl_;
 
   bool device_metrics_enabled_;
   bool emulate_mobile_enabled_;

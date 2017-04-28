@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/editing/markers/DocumentMarker.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/KeyboardEventManager.h"
@@ -57,7 +58,6 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebNode.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -944,7 +944,7 @@ void WebAXObject::ShowContextMenu() const {
   if (!frame)
     return;
 
-  WebViewImpl* view = WebLocalFrameImpl::FromFrame(frame)->ViewImpl();
+  WebViewBase* view = WebLocalFrameImpl::FromFrame(frame)->ViewImpl();
   if (!view)
     return;
 

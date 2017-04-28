@@ -34,6 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -54,7 +55,6 @@
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
 using blink::testing::RunPendingTasks;

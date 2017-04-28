@@ -37,12 +37,12 @@ namespace blink {
 
 class Document;
 class Editor;
-class WebViewImpl;
+class WebViewBase;
 struct WebContextMenuData;
 
 class ContextMenuClientImpl final : public ContextMenuClient {
  public:
-  explicit ContextMenuClientImpl(WebViewImpl* web_view) : web_view_(web_view) {}
+  explicit ContextMenuClientImpl(WebViewBase* web_view) : web_view_(web_view) {}
   ~ContextMenuClientImpl() override {}
   bool ShowContextMenu(const ContextMenu*, bool from_touch) override;
   void ClearContextMenu() override;
@@ -51,7 +51,7 @@ class ContextMenuClientImpl final : public ContextMenuClient {
   void PopulateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
   static int ComputeEditFlags(Document&, Editor&);
   bool ShouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
-  WebViewImpl* web_view_;
+  WebViewBase* web_view_;
 };
 
 }  // namespace blink

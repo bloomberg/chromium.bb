@@ -123,6 +123,7 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -230,7 +231,6 @@
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebRemoteFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -1736,7 +1736,7 @@ void WebLocalFrameImpl::CreateFrameView() {
   DCHECK(GetFrame());  // If frame() doesn't exist, we probably didn't init
                        // properly.
 
-  WebViewImpl* web_view = ViewImpl();
+  WebViewBase* web_view = ViewImpl();
 
   // Check if we're shutting down.
   if (!web_view->GetPage())
@@ -1785,7 +1785,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
       ToLocalFrame(ToHTMLFrameOwnerElement(element)->ContentFrame()));
 }
 
-WebViewImpl* WebLocalFrameImpl::ViewImpl() const {
+WebViewBase* WebLocalFrameImpl::ViewImpl() const {
   if (!GetFrame())
     return nullptr;
   return WebViewImpl::FromPage(GetFrame()->GetPage());

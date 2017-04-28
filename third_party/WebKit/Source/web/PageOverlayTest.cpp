@@ -4,6 +4,8 @@
 
 #include "web/PageOverlay.h"
 
+#include <memory>
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -20,9 +22,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
-#include <memory>
 
 using testing::_;
 using testing::AtLeast;
