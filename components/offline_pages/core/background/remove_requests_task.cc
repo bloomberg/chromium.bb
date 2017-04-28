@@ -35,9 +35,8 @@ void RemoveRequestsTask::RemoveRequests() {
 }
 
 void RemoveRequestsTask::CompleteEarly(ItemActionStatus status) {
-  // TODO(fgorski): store_->state() once implemented
   std::unique_ptr<UpdateRequestsResult> result(
-      new UpdateRequestsResult(StoreState::LOADED));
+      new UpdateRequestsResult(store_->state()));
   for (int64_t request_id : request_ids_)
     result->item_statuses.push_back(std::make_pair(request_id, status));
   CompleteWithResult(std::move(result));
