@@ -45,6 +45,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'command_handler_deps',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'connection',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },

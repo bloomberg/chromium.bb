@@ -8,6 +8,7 @@
  * FileManager objects encapsulate the functionality of the file selector
  * dialogs, as well as the full screen file manager application.
  *
+ * @implements {CommandHandlerDeps}
  * @constructor
  * @struct
  */
@@ -336,6 +337,12 @@ FileManager.prototype = /** @struct */ {
     return this.directoryModel_;
   },
   /**
+   * @return {DirectoryTreeNamingController}
+   */
+  get directoryTreeNamingController() {
+    return this.directoryTreeNamingController_;
+  },
+  /**
    * @return {!FileFilter}
    */
   get fileFilter() {
@@ -370,6 +377,12 @@ FileManager.prototype = /** @struct */ {
    */
   get metadataModel() {
     return this.metadataModel_;
+  },
+  /**
+   * @return {FileSelectionHandler}
+   */
+  get selectionHandler() {
+    return this.selectionHandler_;
   },
   /**
    * @return {DirectoryTree}
@@ -1094,13 +1107,6 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * @return {DirectoryTreeNamingController}
-   */
-  FileManager.prototype.getDirectoryTreeNamingController = function() {
-    return this.directoryTreeNamingController_;
-  };
-
-  /**
    * @private
    */
   FileManager.prototype.initDirectoryTree_ = function() {
@@ -1367,40 +1373,6 @@ FileManager.prototype = /** @struct */ {
       this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
       this.ui_.dialogFooter.selectTargetNameInFilenameInput();
     }
-  };
-
-  /**
-   * TODO(mtomasz): Move this to a utility function working on the root type.
-   * @return {boolean} True if the current directory content is from Google
-   *     Drive.
-   */
-  FileManager.prototype.isOnDrive = function() {
-    return this.directoryModel_.isOnDrive();
-  };
-
-  /**
-   * @return {boolean} True if the current directory content is from MTP volume.
-   */
-  FileManager.prototype.isOnMTP = function() {
-    return this.directoryModel_.isOnMTP();
-  };
-
-  /**
-   * Check if the drive-related setting items should be shown on currently
-   * displayed gear menu.
-   * @return {boolean} True if those setting items should be shown.
-   */
-  FileManager.prototype.shouldShowDriveSettings = function() {
-    return this.isOnDrive();
-  };
-
-  /**
-   * Tells whether the current directory is read only.
-   * TODO(mtomasz): Remove and use EntryLocation directly.
-   * @return {boolean} True if read only, false otherwise.
-   */
-  FileManager.prototype.isOnReadonlyDirectory = function() {
-    return this.directoryModel_.isReadOnly();
   };
 
   /**
