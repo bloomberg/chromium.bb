@@ -57,11 +57,13 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
 
 void HoverHighlightView::SetSubText(const base::string16& sub_text) {
   DCHECK(text_label_);
+  DCHECK(!sub_text.empty());
 
   if (!sub_text_label_) {
     sub_text_label_ = TrayPopupUtils::CreateDefaultLabel();
     tri_view_->AddView(TriView::Container::CENTER, sub_text_label_);
   }
+
   TrayPopupItemStyle sub_style(TrayPopupItemStyle::FontStyle::CAPTION);
   sub_style.set_color_style(TrayPopupItemStyle::ColorStyle::INACTIVE);
   sub_style.SetupLabel(sub_text_label_);
@@ -117,7 +119,8 @@ void HoverHighlightView::DoAddIconAndLabels(
   style.SetupLabel(text_label_);
   tri_view_->AddView(TriView::Container::CENTER, text_label_);
 
-  SetSubText(sub_text);
+  if (!sub_text.empty())
+    SetSubText(sub_text);
 
   tri_view_->SetContainerVisible(TriView::Container::END, false);
 
