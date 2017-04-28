@@ -381,39 +381,21 @@ class SPDY_EXPORT_PRIVATE SpdyFrameIR {
 
   virtual void Visit(SpdyFrameVisitor* visitor) const = 0;
   virtual SpdyFrameType frame_type() const = 0;
-
- protected:
-  SpdyFrameIR() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameIR);
-};
-
-// Abstract class intended to be inherited by IRs that have a stream associated
-// to them.
-class SPDY_EXPORT_PRIVATE SpdyFrameWithStreamIdIR : public SpdyFrameIR {
- public:
-  ~SpdyFrameWithStreamIdIR() override {}
   SpdyStreamId stream_id() const { return stream_id_; }
-  void set_stream_id(SpdyStreamId stream_id) {
-    DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-    stream_id_ = stream_id;
-  }
 
  protected:
-  explicit SpdyFrameWithStreamIdIR(SpdyStreamId stream_id) {
-    set_stream_id(stream_id);
-  }
+  SpdyFrameIR() : stream_id_(0) {}
+  explicit SpdyFrameIR(SpdyStreamId stream_id) : stream_id_(stream_id) {}
 
  private:
   SpdyStreamId stream_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithStreamIdIR);
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameIR);
 };
 
 // Abstract class intended to be inherited by IRs that have the option of a FIN
-// flag. Implies SpdyFrameWithStreamIdIR.
-class SPDY_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
+// flag.
+class SPDY_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameIR {
  public:
   ~SpdyFrameWithFinIR() override {}
   bool fin() const { return fin_; }
@@ -421,8 +403,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
 
  protected:
   explicit SpdyFrameWithFinIR(SpdyStreamId stream_id)
-      : SpdyFrameWithStreamIdIR(stream_id),
-        fin_(false) {}
+      : SpdyFrameIR(stream_id), fin_(false) {}
 
  private:
   bool fin_;
@@ -530,7 +511,7 @@ class SPDY_EXPORT_PRIVATE SpdyDataIR
   DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
 };
 
-class SPDY_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
+class SPDY_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameIR {
  public:
   SpdyRstStreamIR(SpdyStreamId stream_id, SpdyErrorCode error_code);
 
@@ -680,10 +661,10 @@ class SPDY_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };
 
-class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
+class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
  public:
   SpdyWindowUpdateIR(SpdyStreamId stream_id, int32_t delta)
-      : SpdyFrameWithStreamIdIR(stream_id) {
+      : SpdyFrameIR(stream_id) {
     set_delta(delta);
   }
   int32_t delta() const { return delta_; }
@@ -740,7 +721,7 @@ class SPDY_EXPORT_PRIVATE SpdyPushPromiseIR
   DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
 };
 
-class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameWithStreamIdIR {
+class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameIR {
  public:
   explicit SpdyContinuationIR(SpdyStreamId stream_id);
   ~SpdyContinuationIR() override;
@@ -762,7 +743,7 @@ class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyContinuationIR);
 };
 
-class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
+class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameIR {
  public:
   explicit SpdyAltSvcIR(SpdyStreamId stream_id);
   ~SpdyAltSvcIR() override;
@@ -787,13 +768,13 @@ class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyAltSvcIR);
 };
 
-class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameWithStreamIdIR {
+class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
  public:
   SpdyPriorityIR(SpdyStreamId stream_id,
                  SpdyStreamId parent_stream_id,
                  int weight,
                  bool exclusive)
-      : SpdyFrameWithStreamIdIR(stream_id),
+      : SpdyFrameIR(stream_id),
         parent_stream_id_(parent_stream_id),
         weight_(weight),
         exclusive_(exclusive) {}
