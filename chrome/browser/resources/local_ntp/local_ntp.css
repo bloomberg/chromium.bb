@@ -283,3 +283,8 @@ html[dir=rtl] #attribution,
   height: 100%;
   width: 100%;
 }
+
+#one-google {
+  position: fixed;
+  z-index: 1;
+}
