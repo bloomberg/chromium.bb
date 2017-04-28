@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -17,9 +18,13 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A node in the tree containing a list of all suggestions sections. It listens to changes in the
@@ -31,6 +36,8 @@ public class SectionList
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
     private final Map<Integer, SuggestionsSection> mSections = new LinkedHashMap<>();
+    /** List of categories that are hidden because they have no content to show. */
+    private final Set<Integer> mBlacklistedCategories = new HashSet<>();
     private final SuggestionsUiDelegate mUiDelegate;
     private final OfflinePageBridge mOfflinePageBridge;
     private final SuggestionsRanker mSuggestionsRanker;
@@ -99,8 +106,11 @@ public class SectionList
 
         // Do not show an empty section if not allowed.
         if (suggestions.isEmpty() && !info.showIfEmpty() && !alwaysAllowEmptySections) {
+            mBlacklistedCategories.add(category);
             if (section != null) removeSection(section);
             return 0;
+        } else {
+            mBlacklistedCategories.remove(category);
         }
 
         // Create the section if needed.
@@ -146,6 +156,9 @@ public class SectionList
     public void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int status) {
         // Observers should not be registered for this state.
         assert status != CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED;
+
+        // If the category was blacklisted, we note that there might be new content to show.
+        mBlacklistedCategories.remove(category);
 
         // If there is no section for this category there is nothing to do.
         if (!mSections.containsKey(category)) return;
@@ -227,12 +240,9 @@ public class SectionList
     public void synchroniseWithSource() {
         int[] categories = mUiDelegate.getSuggestionsSource().getCategories();
 
-        // TODO(dgn): this naive implementation does not quite work as some sections are removed
-        // from the UI when they are empty, even though they stay around in the backend. Also, we
-        // might not always get notifications of new content for local sections.
-        // See https://crbug.com/711414, https://crbug.com/689962
-
         if (categoriesChanged(categories)) {
+            Log.d(TAG, "The categories have changed: old=%s, new=%s - Resetting all the sections.",
+                    mSections.keySet(), Arrays.toString(categories));
             // The number or the order of the sections changed. We reset everything.
             resetSections(/* alwaysAllowEmptySections = */ false);
             return;
@@ -243,6 +253,7 @@ public class SectionList
 
             @CategoryInt
             int category = sectionsEntry.getKey();
+            Log.d(TAG, "The section for category %d is stale - Resetting.", category);
             resetSection(category, mUiDelegate.getSuggestionsSource().getCategoryStatus(category),
                     /* alwaysAllowEmptySections = */ false);
         }
@@ -273,15 +284,19 @@ public class SectionList
      * Checks that the list of categories currently displayed by this list is the same as
      * {@code newCategories}: same categories in the same order.
      */
-    private boolean categoriesChanged(@CategoryInt int[] newCategories) {
-        if (mSections.size() != newCategories.length) return true;
-
-        int index = 0;
-        for (@CategoryInt int category : mSections.keySet()) {
-            if (category != newCategories[index++]) return true;
+    @VisibleForTesting
+    boolean categoriesChanged(@CategoryInt int[] newCategories) {
+        Iterator<Integer> shownCategories = mSections.keySet().iterator();
+        for (int category : newCategories) {
+            if (mBlacklistedCategories.contains(category)) {
+                Log.d(TAG, "categoriesChanged: ignoring blacklisted category %d", category);
+                continue;
+            }
+            if (!shownCategories.hasNext()) return true;
+            if (shownCategories.next() != category) return true;
         }
 
-        return false;
+        return shownCategories.hasNext();
     }
 
     /**
@@ -290,6 +305,9 @@ public class SectionList
      * compatible with displaying content.
      */
     private boolean canProcessSuggestions(@CategoryInt int category, @CategoryStatus int status) {
+        // If the category was blacklisted, we note that there might be new content to show.
+        mBlacklistedCategories.remove(category);
+
         // We never want to add suggestions from unknown categories.
         if (!mSections.containsKey(category)) return false;
 
