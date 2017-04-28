@@ -12,10 +12,10 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
@@ -362,14 +362,15 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // An NSTextView which helps set the expectations for our tests.
   base::scoped_nsobject<NSTextView> dummy_text_view_;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
 };
 
-BridgedNativeWidgetTest::BridgedNativeWidgetTest() {
-}
+BridgedNativeWidgetTest::BridgedNativeWidgetTest()
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
 BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
 }

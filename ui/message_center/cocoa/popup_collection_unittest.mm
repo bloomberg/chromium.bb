@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/message_center/cocoa/notification_controller.h"
 #import "ui/message_center/cocoa/popup_controller.h"
@@ -25,7 +25,9 @@ namespace message_center {
 
 class PopupCollectionTest : public ui::CocoaTest {
  public:
-  PopupCollectionTest() {
+  PopupCollectionTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
     collection_.reset(
@@ -95,7 +97,7 @@ class PopupCollectionTest : public ui::CocoaTest {
     nested_run_loop_.reset();
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> nested_run_loop_;
   message_center::MessageCenter* center_;
   base::scoped_nsobject<MCPopupCollection> collection_;

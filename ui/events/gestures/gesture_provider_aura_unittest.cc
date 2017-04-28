@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 
@@ -15,7 +15,9 @@ namespace ui {
 class GestureProviderAuraTest : public testing::Test,
                                 public GestureProviderAuraClient {
  public:
-  GestureProviderAuraTest() {}
+  GestureProviderAuraTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   ~GestureProviderAuraTest() override {}
 
@@ -34,7 +36,7 @@ class GestureProviderAuraTest : public testing::Test,
  private:
   std::unique_ptr<GestureConsumer> consumer_;
   std::unique_ptr<GestureProviderAura> provider_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(GestureProviderAuraTest, IgnoresExtraPressEvents) {

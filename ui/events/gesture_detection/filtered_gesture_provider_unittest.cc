@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+#include "base/test/scoped_task_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
 
 namespace ui {
@@ -12,14 +12,16 @@ namespace ui {
 class FilteredGestureProviderTest : public GestureProviderClient,
                                     public testing::Test {
  public:
-  FilteredGestureProviderTest() {}
+  FilteredGestureProviderTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~FilteredGestureProviderTest() override {}
 
   // GestureProviderClient implementation.
   void OnGestureEvent(const GestureEventData&) override {}
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Single touch drag test: After touch-start, the moved_beyond_slop_region bit

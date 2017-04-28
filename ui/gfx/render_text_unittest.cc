@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -427,7 +428,9 @@ class RenderTextTest : public testing::Test,
                        public ::testing::WithParamInterface<RenderTextBackend> {
  public:
   RenderTextTest()
-      : render_text_(CreateRenderTextInstance()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        render_text_(CreateRenderTextInstance()),
         test_api_(new test::RenderTextTestApi(render_text_.get())),
         renderer_(canvas()) {}
 
@@ -493,15 +496,13 @@ class RenderTextTest : public testing::Test,
   test::RenderTextTestApi* test_api() { return test_api_.get(); };
 
  private:
+  // Needed to bypass DCHECK in GetFallbackFont.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<RenderText> render_text_;
   std::unique_ptr<test::RenderTextTestApi> test_api_;
   Canvas canvas_;
   TestSkiaTextRenderer renderer_;
-
-#if defined(OS_WIN)
-  // Needed to bypass DCHECK in GetFallbackFont.
-  base::MessageLoopForUI message_loop_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextTest);
 };
