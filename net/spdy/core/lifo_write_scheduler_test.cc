@@ -61,12 +61,11 @@ TEST(LifoWriteSchedulerTest, ReadyListTest) {
   EXPECT_TRUE(lifo.HasReadyStreams());
   EXPECT_EQ((uint32_t)7, lifo.NumReadyStreams());
 
-  EXPECT_SPDY_BUG(lifo.MarkStreamReady(11, true),
-                  "Stream already exists in the list");
-  EXPECT_SPDY_BUG(lifo.MarkStreamNotReady(5),
-                  "Try to remove a stream that is not on list");
-  EXPECT_SPDY_BUG(lifo.MarkStreamNotReady(21),
-                  "Try to remove a stream that is not on list");
+  // Verify MarkStream(Not)Ready() can be called multiple times for the same
+  // stream.
+  lifo.MarkStreamReady(11, true);
+  lifo.MarkStreamNotReady(5);
+  lifo.MarkStreamNotReady(21);
 
   EXPECT_EQ((uint32_t)17, lifo.PopNextReadyStream());
   EXPECT_EQ((uint32_t)15, std::get<0>(lifo.PopNextReadyStreamAndPrecedence()));
@@ -81,6 +80,10 @@ TEST(LifoWriteSchedulerTest, ReadyListTest) {
   lifo.MarkStreamNotReady(7);
   EXPECT_TRUE(peer.GetReadyList()->find(7) == peer.GetReadyList()->end());
   EXPECT_EQ((uint32_t)2, lifo.NumReadyStreams());
+
+  lifo.MarkStreamNotReady(9);
+  lifo.MarkStreamNotReady(11);
+  EXPECT_FALSE(lifo.ShouldYield(1));
 }
 
 // Test add and remove from registered list.
