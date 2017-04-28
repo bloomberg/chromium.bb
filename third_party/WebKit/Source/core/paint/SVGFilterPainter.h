@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class FilterData;
 class LayoutObject;
 class LayoutSVGResourceFilter;
 
@@ -24,8 +23,8 @@ class SVGFilterRecordingContext {
   explicit SVGFilterRecordingContext(GraphicsContext& initial_context)
       : initial_context_(initial_context) {}
 
-  GraphicsContext* BeginContent(FilterData*);
-  void EndContent(FilterData*);
+  GraphicsContext* BeginContent();
+  sk_sp<PaintRecord> EndContent(const FloatRect&);
 
   GraphicsContext& PaintingContext() const { return initial_context_; }
 

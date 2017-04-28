@@ -16,10 +16,7 @@
 
 namespace blink {
 
-GraphicsContext* SVGFilterRecordingContext::BeginContent(
-    FilterData* filter_data) {
-  DCHECK_EQ(filter_data->state_, FilterData::kInitial);
-
+GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   // Create a new context so the contents of the filter can be drawn and cached.
   paint_controller_ = PaintController::Create();
   context_ = WTF::WrapUnique(new GraphicsContext(*paint_controller_));
@@ -30,69 +27,47 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent(
     paint_controller_->UpdateCurrentPaintChunkProperties(
         nullptr, PropertyTreeState::Root());
   }
-
-  filter_data->state_ = FilterData::kRecordingContent;
   return context_.get();
 }
 
-void SVGFilterRecordingContext::EndContent(FilterData* filter_data) {
-  DCHECK_EQ(filter_data->state_, FilterData::kRecordingContent);
-
-  Filter* filter = filter_data->last_effect->GetFilter();
-  SourceGraphic* source_graphic = filter->GetSourceGraphic();
-  DCHECK(source_graphic);
-
+sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
+    const FloatRect& bounds) {
   // Use the context that contains the filtered content.
   DCHECK(paint_controller_);
   DCHECK(context_);
-  context_->BeginRecording(filter->FilterRegion());
+  context_->BeginRecording(bounds);
   paint_controller_->CommitNewDisplayItems();
 
-  paint_controller_->GetPaintArtifact().Replay(filter->FilterRegion(),
-                                               *context_);
+  paint_controller_->GetPaintArtifact().Replay(bounds, *context_);
 
-  SkiaImageFilterBuilder::BuildSourceGraphic(source_graphic,
-                                             context_->EndRecording());
-
+  sk_sp<PaintRecord> content = context_->EndRecording();
   // Content is cached by the source graphic so temporaries can be freed.
   paint_controller_ = nullptr;
   context_ = nullptr;
-
-  filter_data->state_ = FilterData::kReadyToPaint;
+  return content;
 }
 
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
-                                 FilterData* filter_data) {
+                                 const FloatRect& bounds,
+                                 FilterEffect* effect) {
   if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
           context, object, DisplayItem::kSVGFilter))
     return;
 
-  FloatRect filter_bounds =
-      filter_data ? filter_data->last_effect->GetFilter()->FilterRegion()
-                  : FloatRect();
   LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter,
-                                       filter_bounds);
-  if (!filter_data || filter_data->state_ != FilterData::kReadyToPaint)
-    return;
-  DCHECK(filter_data->last_effect->GetFilter()->GetSourceGraphic());
-
-  filter_data->state_ = FilterData::kPaintingFilter;
-
-  FilterEffect* last_effect = filter_data->last_effect;
+                                       bounds);
   sk_sp<SkImageFilter> image_filter =
-      SkiaImageFilterBuilder::Build(last_effect, kColorSpaceDeviceRGB);
+      SkiaImageFilterBuilder::Build(effect, kColorSpaceDeviceRGB);
   context.Save();
 
   // Clip drawing of filtered image to the minimum required paint rect.
-  context.ClipRect(last_effect->MapRect(object.StrokeBoundingBox()));
+  context.ClipRect(effect->MapRect(object.StrokeBoundingBox()));
 
-  context.BeginLayer(1, SkBlendMode::kSrcOver, &filter_bounds, kColorFilterNone,
+  context.BeginLayer(1, SkBlendMode::kSrcOver, &bounds, kColorFilterNone,
                      std::move(image_filter));
   context.EndLayer();
   context.Restore();
-
-  filter_data->state_ = FilterData::kReadyToPaint;
 }
 
 GraphicsContext* SVGFilterPainter::PrepareEffect(
@@ -127,34 +102,51 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
   FilterData* filter_data = FilterData::Create();
   filter_data->last_effect = filter->LastEffect();
   filter_data->node_map = node_map;
+  DCHECK_EQ(filter_data->state_, FilterData::kInitial);
 
   // TODO(pdr): Can this be moved out of painter?
   filter_.SetFilterDataForLayoutObject(const_cast<LayoutObject*>(&object),
                                        filter_data);
-  return recording_context.BeginContent(filter_data);
+  filter_data->state_ = FilterData::kRecordingContent;
+  return recording_context.BeginContent();
 }
 
 void SVGFilterPainter::FinishEffect(
     const LayoutObject& object,
     SVGFilterRecordingContext& recording_context) {
   FilterData* filter_data = filter_.GetFilterDataForLayoutObject(&object);
-  if (filter_data) {
-    // A painting cycle can occur when an FeImage references a source that
-    // makes use of the FeImage itself. This is the first place we would hit
-    // the cycle so we reset the state and continue.
-    if (filter_data->state_ == FilterData::kPaintingFilterCycleDetected)
-      filter_data->state_ = FilterData::kPaintingFilter;
+  if (!filter_data)
+    return;
 
-    // Check for RecordingContent here because we may can be re-painting
-    // without re-recording the contents to be filtered.
-    if (filter_data->state_ == FilterData::kRecordingContent)
-      recording_context.EndContent(filter_data);
-
-    if (filter_data->state_ == FilterData::kRecordingContentCycleDetected)
-      filter_data->state_ = FilterData::kRecordingContent;
+  // A painting cycle can occur when an FeImage references a source that
+  // makes use of the FeImage itself. This is the first place we would hit
+  // the cycle so we reset the state and continue.
+  if (filter_data->state_ == FilterData::kPaintingFilterCycleDetected) {
+    filter_data->state_ = FilterData::kPaintingFilter;
+    return;
   }
-  PaintFilteredContent(recording_context.PaintingContext(), object,
-                       filter_data);
+  if (filter_data->state_ == FilterData::kRecordingContentCycleDetected) {
+    filter_data->state_ = FilterData::kRecordingContent;
+    return;
+  }
+
+  // Check for RecordingContent here because we may can be re-painting
+  // without re-recording the contents to be filtered.
+  Filter* filter = filter_data->last_effect->GetFilter();
+  FloatRect bounds = filter->FilterRegion();
+  if (filter_data->state_ == FilterData::kRecordingContent) {
+    DCHECK(filter->GetSourceGraphic());
+    sk_sp<PaintRecord> content = recording_context.EndContent(bounds);
+    SkiaImageFilterBuilder::BuildSourceGraphic(filter->GetSourceGraphic(),
+                                               std::move(content));
+    filter_data->state_ = FilterData::kReadyToPaint;
+  }
+
+  DCHECK_EQ(filter_data->state_, FilterData::kReadyToPaint);
+  filter_data->state_ = FilterData::kPaintingFilter;
+  PaintFilteredContent(recording_context.PaintingContext(), object, bounds,
+                       filter_data->last_effect);
+  filter_data->state_ = FilterData::kReadyToPaint;
 }
 
 }  // namespace blink
