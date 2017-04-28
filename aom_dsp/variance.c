@@ -842,25 +842,29 @@ void highbd_12_masked_variance(const uint8_t *a8, int a_stride,
     int sum;                                                                 \
     highbd_masked_variance(a, a_stride, b, b_stride, m, m_stride, W, H, sse, \
                            &sum);                                            \
-    return *sse - (((int64_t)sum * sum) / (W * H));                          \
+    return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H));            \
   }                                                                          \
                                                                              \
   unsigned int aom_highbd_10_masked_variance##W##x##H##_c(                   \
       const uint8_t *a, int a_stride, const uint8_t *b, int b_stride,        \
       const uint8_t *m, int m_stride, unsigned int *sse) {                   \
     int sum;                                                                 \
+    int64_t var;                                                             \
     highbd_10_masked_variance(a, a_stride, b, b_stride, m, m_stride, W, H,   \
                               sse, &sum);                                    \
-    return *sse - (((int64_t)sum * sum) / (W * H));                          \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                   \
   }                                                                          \
                                                                              \
   unsigned int aom_highbd_12_masked_variance##W##x##H##_c(                   \
       const uint8_t *a, int a_stride, const uint8_t *b, int b_stride,        \
       const uint8_t *m, int m_stride, unsigned int *sse) {                   \
     int sum;                                                                 \
+    int64_t var;                                                             \
     highbd_12_masked_variance(a, a_stride, b, b_stride, m, m_stride, W, H,   \
                               sse, &sum);                                    \
-    return *sse - (((int64_t)sum * sum) / (W * H));                          \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                   \
   }
 
 #define HIGHBD_MASK_SUBPIX_VAR(W, H)                                          \
@@ -1123,23 +1127,27 @@ static INLINE void highbd_12_obmc_variance(const uint8_t *pre8, int pre_stride,
       const int32_t *mask, unsigned int *sse) {                            \
     int sum;                                                               \
     highbd_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum);    \
-    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+    return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H));          \
   }                                                                        \
                                                                            \
   unsigned int aom_highbd_10_obmc_variance##W##x##H##_c(                   \
       const uint8_t *pre, int pre_stride, const int32_t *wsrc,             \
       const int32_t *mask, unsigned int *sse) {                            \
     int sum;                                                               \
+    int64_t var;                                                           \
     highbd_10_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
-    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));              \
+    return (var >= 0) ? (uint32_t)var : 0;                                 \
   }                                                                        \
                                                                            \
   unsigned int aom_highbd_12_obmc_variance##W##x##H##_c(                   \
       const uint8_t *pre, int pre_stride, const int32_t *wsrc,             \
       const int32_t *mask, unsigned int *sse) {                            \
     int sum;                                                               \
+    int64_t var;                                                           \
     highbd_12_obmc_variance(pre, pre_stride, wsrc, mask, W, H, sse, &sum); \
-    return *sse - (((int64_t)sum * sum) / (W * H));                        \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));              \
+    return (var >= 0) ? (uint32_t)var : 0;                                 \
   }
 
 #define HIGHBD_OBMC_SUBPIX_VAR(W, H)                                           \
