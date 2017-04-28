@@ -37,7 +37,7 @@ class CORE_EXPORT CustomElement {
 
   static bool IsValidName(const AtomicString& name) {
     // This quickly rejects all common built-in element names.
-    if (name.Find('-', 1) == kNotFound)
+    if (name.find('-', 1) == kNotFound)
       return false;
 
     if (!IsASCIILower(name[0]))

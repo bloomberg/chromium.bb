@@ -64,7 +64,7 @@ void V0CustomElement::AddEmbedderCustomElementName(const AtomicString& name) {
 }
 
 static inline bool IsValidNCName(const AtomicString& name) {
-  if (kNotFound != name.Find(':'))
+  if (kNotFound != name.find(':'))
     return false;
 
   if (!name.GetString().Is8Bit()) {
@@ -86,7 +86,7 @@ bool V0CustomElement::IsValidName(const AtomicString& name,
       kNotFound != EmbedderCustomElementNames().Find(name))
     return Document::IsValidName(name);
 
-  if ((valid_names & kStandardNames) && kNotFound != name.Find('-')) {
+  if ((valid_names & kStandardNames) && kNotFound != name.find('-')) {
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reserved_names, ());
     if (reserved_names.IsEmpty()) {
       // FIXME(crbug.com/426605): We should be able to remove this.
