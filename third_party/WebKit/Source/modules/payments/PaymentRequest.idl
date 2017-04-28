@@ -17,6 +17,7 @@
     [CallWith=ScriptState] Promise<void> abort();
     [CallWith=ScriptState, RuntimeEnabled=CanMakePayment] Promise<boolean> canMakePayment();
 
+    readonly attribute DOMString id;
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
     readonly attribute PaymentShippingType? shippingType;

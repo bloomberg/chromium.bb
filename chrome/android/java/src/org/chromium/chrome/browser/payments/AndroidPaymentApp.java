@@ -56,6 +56,7 @@ public class AndroidPaymentApp
     /** The maximum number of milliseconds to wait for a connection to READY_TO_PAY service. */
     private static final long SERVICE_CONNECTION_TIMEOUT_MS = 1000;
 
+    private static final String EXTRA_ID = "id";
     private static final String EXTRA_MERCHANT_NAME = "merchantName";
     private static final String EXTRA_METHOD_NAME = "methodName";
     private static final String EXTRA_METHOD_NAMES = "methodNames";
@@ -146,8 +147,8 @@ public class AndroidPaymentApp
             public void onServiceDisconnected(ComponentName name) {}
         };
 
-        mIsReadyToPayIntent.putExtras(buildExtras(
-                null, origin, iframeOrigin, certificateChain, methodDataMap, null, null, null));
+        mIsReadyToPayIntent.putExtras(buildExtras(null, null, origin, iframeOrigin,
+                certificateChain, methodDataMap, null, null, null));
         try {
             if (!ContextUtils.getApplicationContext().bindService(
                         mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE)) {
@@ -243,7 +244,7 @@ public class AndroidPaymentApp
     }
 
     @Override
-    public void invokePaymentApp(final String merchantName, final String origin,
+    public void invokePaymentApp(final String id, final String merchantName, final String origin,
             final String iframeOrigin, final byte[][] certificateChain,
             final Map<String, PaymentMethodData> methodDataMap, final PaymentItem total,
             final List<PaymentItem> displayItems,
@@ -252,8 +253,8 @@ public class AndroidPaymentApp
         mInstrumentDetailsCallback = callback;
 
         if (!mIsIncognito) {
-            launchPaymentApp(merchantName, origin, iframeOrigin, certificateChain, methodDataMap,
-                    total, displayItems, modifiers);
+            launchPaymentApp(id, merchantName, origin, iframeOrigin, certificateChain,
+                    methodDataMap, total, displayItems, modifiers);
             return;
         }
 
@@ -270,7 +271,7 @@ public class AndroidPaymentApp
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                launchPaymentApp(merchantName, origin, iframeOrigin,
+                                launchPaymentApp(id, merchantName, origin, iframeOrigin,
                                         certificateChain, methodDataMap, total, displayItems,
                                         modifiers);
                             }
@@ -291,10 +292,10 @@ public class AndroidPaymentApp
                 .show();
     }
 
-    private void launchPaymentApp(String merchantName, String origin, String iframeOrigin,
-            byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
-            PaymentItem total, List<PaymentItem> displayItems,
-            Map<String, PaymentDetailsModifier> modifiers) {
+    private void launchPaymentApp(String id, String merchantName, String origin,
+            String iframeOrigin, byte[][] certificateChain,
+            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
+            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentDetailsCallback != null;
 
@@ -309,20 +310,21 @@ public class AndroidPaymentApp
             return;
         }
 
-        mPayIntent.putExtras(buildExtras(merchantName, origin, iframeOrigin, certificateChain,
+        mPayIntent.putExtras(buildExtras(id, merchantName, origin, iframeOrigin, certificateChain,
                 methodDataMap, total, displayItems, modifiers));
         if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
             notifyErrorInvokingPaymentApp();
         }
     }
 
-    private static Bundle buildExtras(@Nullable String merchantName, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain,
+    private static Bundle buildExtras(@Nullable String id, @Nullable String merchantName,
+            String origin, String iframeOrigin, @Nullable byte[][] certificateChain,
             Map<String, PaymentMethodData> methodDataMap, @Nullable PaymentItem total,
             @Nullable List<PaymentItem> displayItems,
             @Nullable Map<String, PaymentDetailsModifier> modifiers) {
         Bundle extras = new Bundle();
 
+        if (id != null) extras.putString(EXTRA_ID, id);
         if (merchantName != null) extras.putString(EXTRA_MERCHANT_NAME, merchantName);
         extras.putString(EXTRA_ORIGIN, origin);
         extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);

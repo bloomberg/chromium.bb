@@ -81,8 +81,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     }
 
     @Override
-    public void invokePaymentApp(String unusedMerchantName, String unusedOrigin,
-            String unusedIFrameOrigin, byte[][] unusedCertificateChain,
+    public void invokePaymentApp(String unusedRequestId, String unusedMerchantName,
+            String unusedOrigin, String unusedIFrameOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentMethodData> unusedMethodDataMap, PaymentItem unusedTotal,
             List<PaymentItem> unusedDisplayItems,
             Map<String, PaymentDetailsModifier> unusedModifiers,

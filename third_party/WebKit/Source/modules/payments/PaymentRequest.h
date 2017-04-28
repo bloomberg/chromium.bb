@@ -61,6 +61,7 @@ class MODULES_EXPORT PaymentRequest final
   ScriptPromise show(ScriptState*);
   ScriptPromise abort(ScriptState*);
 
+  const String& id() const { return id_; }
   PaymentAddress* getShippingAddress() const { return shipping_address_.Get(); }
   const String& shippingOption() const { return shipping_option_; }
   const String& shippingType() const { return shipping_type_; }
@@ -116,6 +117,7 @@ class MODULES_EXPORT PaymentRequest final
 
   PaymentOptions options_;
   Member<PaymentAddress> shipping_address_;
+  String id_;
   String shipping_option_;
   String shipping_type_;
   Member<ScriptPromiseResolver> show_resolver_;

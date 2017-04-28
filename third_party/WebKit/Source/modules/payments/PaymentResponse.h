@@ -30,11 +30,13 @@ class MODULES_EXPORT PaymentResponse final
 
  public:
   PaymentResponse(payments::mojom::blink::PaymentResponsePtr,
-                  PaymentCompleter*);
+                  PaymentCompleter*,
+                  const String& requestId);
   virtual ~PaymentResponse();
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
+  const String& requestId() const { return requestId_; }
   const String& methodName() const { return method_name_; }
   ScriptValue details(ScriptState*, ExceptionState&) const;
   PaymentAddress* shippingAddress() const { return shipping_address_.Get(); }
@@ -48,6 +50,7 @@ class MODULES_EXPORT PaymentResponse final
   DECLARE_TRACE();
 
  private:
+  String requestId_;
   String method_name_;
   String stringified_details_;
   Member<PaymentAddress> shipping_address_;

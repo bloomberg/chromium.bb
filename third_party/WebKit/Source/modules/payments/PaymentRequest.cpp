@@ -39,6 +39,7 @@
 #include "modules/payments/PaymentsValidators.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/UUID.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/InterfaceProvider.h"
@@ -536,6 +537,11 @@ void ValidateAndConvertPaymentDetailsInit(const PaymentDetailsInit& input,
     return;
   }
 
+  if (input.hasId())
+    output->id = input.id();
+  else
+    output->id = CreateCanonicalUUIDString();
+
   ValidateAndConvertTotal(input.total(), output->total, exception_state);
 }
 
@@ -880,6 +886,8 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
   if (exception_state.HadException())
     return;
 
+  id_ = validated_details->id;
+
   if (options_.requestShipping())
     shipping_type_ = GetValidShippingType(options_.shippingType());
 
@@ -975,7 +983,7 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 
   complete_timer_.StartOneShot(kCompleteTimeoutSeconds, BLINK_FROM_HERE);
 
-  show_resolver_->Resolve(new PaymentResponse(std::move(response), this));
+  show_resolver_->Resolve(new PaymentResponse(std::move(response), this, id_));
 
   // Do not close the mojo connection here. The merchant website should call
   // PaymentResponse::complete(String), which will be forwarded over the mojo

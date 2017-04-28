@@ -1013,10 +1013,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public void invokePaymentApp(String merchantName, String origin, String iframeOrigin,
-                byte[][] certificateChain, Map<String, PaymentMethodData> methodData,
-                PaymentItem total, List<PaymentItem> displayItems,
-                Map<String, PaymentDetailsModifier> modifiers,
+        public void invokePaymentApp(String id, String merchantName, String origin,
+                String iframeOrigin, byte[][] certificateChain,
+                Map<String, PaymentMethodData> methodData, PaymentItem total,
+                List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");
