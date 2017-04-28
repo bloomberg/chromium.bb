@@ -25,11 +25,10 @@ namespace blink {
 
 class FindPaintOffsetNeedingUpdateScope {
  public:
-  FindPaintOffsetNeedingUpdateScope(
-      const LayoutObject& object,
-      const PaintPropertyTreeBuilderContext& context)
+  FindPaintOffsetNeedingUpdateScope(const LayoutObject& object,
+                                    bool& is_actually_needed)
       : object_(object),
-        context_(context),
+        is_actually_needed_(is_actually_needed),
         old_paint_offset_(object.PaintOffset()) {
     if (object.PaintProperties() &&
         object.PaintProperties()->PaintOffsetTranslation()) {
@@ -39,7 +38,7 @@ class FindPaintOffsetNeedingUpdateScope {
   }
 
   ~FindPaintOffsetNeedingUpdateScope() {
-    if (context_.is_actually_needed)
+    if (is_actually_needed_)
       return;
     DCHECK_OBJECT_PROPERTY_EQ(object_, &old_paint_offset_,
                               &object_.PaintOffset());
@@ -53,7 +52,7 @@ class FindPaintOffsetNeedingUpdateScope {
 
  private:
   const LayoutObject& object_;
-  const PaintPropertyTreeBuilderContext& context_;
+  const bool& is_actually_needed_;
   LayoutPoint old_paint_offset_;
   RefPtr<const TransformPaintPropertyNode> old_paint_offset_translation_;
 };

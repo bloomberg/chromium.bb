@@ -18,7 +18,8 @@ namespace blink {
 // properties needed an update but were not marked as such. If paint properties
 // will change, the object must be marked as needing a paint property update
 // using {FrameView, LayoutObject}::setNeedsPaintPropertyUpdate() or by forcing
-// a subtree update (see: PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
+// a subtree update (see:
+// PaintPropertyTreeBuilderContext::force_subtree_update).
 //
 // Both scope classes work by recording the paint property state of an object
 // before rebuilding properties, forcing the properties to get updated, then
@@ -49,12 +50,11 @@ namespace blink {
 
 class FindFrameViewPropertiesNeedingUpdateScope {
  public:
-  FindFrameViewPropertiesNeedingUpdateScope(
-      FrameView* frame_view,
-      PaintPropertyTreeBuilderContext& context)
+  FindFrameViewPropertiesNeedingUpdateScope(FrameView* frame_view,
+                                            bool force_subtree_update)
       : frame_view_(frame_view),
         needed_paint_property_update_(frame_view->NeedsPaintPropertyUpdate()),
-        needed_forced_subtree_update_(context.force_subtree_update) {
+        needed_forced_subtree_update_(force_subtree_update) {
     // No need to check if an update was already needed.
     if (needed_paint_property_update_ || needed_forced_subtree_update_)
       return;
@@ -80,7 +80,7 @@ class FindFrameViewPropertiesNeedingUpdateScope {
     // 1) The FrameView should have been marked as needing an update with
     //    FrameView::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
-    //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
+    //    PaintPropertyTreeBuilderContext::force_subtree_update).
     DCHECK_FRAMEVIEW_PROPERTY_EQ(original_pre_translation_,
                                  frame_view_->PreTranslation());
     DCHECK_FRAMEVIEW_PROPERTY_EQ(original_content_clip_,
@@ -107,12 +107,11 @@ class FindFrameViewPropertiesNeedingUpdateScope {
 
 class FindObjectPropertiesNeedingUpdateScope {
  public:
-  FindObjectPropertiesNeedingUpdateScope(
-      const LayoutObject& object,
-      PaintPropertyTreeBuilderContext& context)
+  FindObjectPropertiesNeedingUpdateScope(const LayoutObject& object,
+                                         bool force_subtree_update)
       : object_(object),
         needed_paint_property_update_(object.NeedsPaintPropertyUpdate()),
-        needed_forced_subtree_update_(context.force_subtree_update),
+        needed_forced_subtree_update_(force_subtree_update),
         original_paint_offset_(object.PaintOffset()) {
     // No need to check if an update was already needed.
     if (needed_paint_property_update_ || needed_forced_subtree_update_)
@@ -153,7 +152,7 @@ class FindObjectPropertiesNeedingUpdateScope {
     // 1) The LayoutObject should have been marked as needing an update with
     //    LayoutObject::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
-    //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
+    //    PaintPropertyTreeBuilderContext::force_subtree_update).
     if (original_properties_ && object_properties) {
       DCHECK_OBJECT_PROPERTY_EQ(object_, original_properties_->Transform(),
                                 object_properties->Transform());

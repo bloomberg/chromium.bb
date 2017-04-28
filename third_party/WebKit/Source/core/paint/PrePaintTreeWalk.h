@@ -37,7 +37,7 @@ class PrePaintTreeWalk {
   // Returns the clip applied to children for the given containing block context
   // + effect, in the space of ancestorState adjusted by ancestorPaintOffset.
   ALWAYS_INLINE LayoutRect ComputeClipRectForContext(
-      const PaintPropertyTreeBuilderContext::ContainingBlockContext&,
+      const PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext&,
       const EffectPaintPropertyNode*,
       const PropertyTreeState& ancestor_state,
       const LayoutPoint& ancestor_paint_offset);
