@@ -62,8 +62,11 @@ class UiScene {
   std::vector<const UiElement*> GetHeadLockedElements() const;
   bool HasVisibleHeadLockedElements() const;
 
+  void SetBackgroundColor(const vr::Colorf& color);
   const vr::Colorf& GetBackgroundColor() const;
+  void SetBackgroundDistance(float distance);
   float GetBackgroundDistance() const;
+
   bool GetWebVrRenderingEnabled() const;
 
   void OnGLInitialized();
