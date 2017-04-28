@@ -1069,6 +1069,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
     // has changed so that reloaded GAIA shows/hides the option to create a new
     // account.
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
+    UpdateAddButtonStatus();
   }
 }
 
