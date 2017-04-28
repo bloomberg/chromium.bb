@@ -734,3 +734,8 @@ external/wpt/uievents/order-of-events/mouse-events/click-order-manual.html [ Ski
 external/wpt/uievents/order-of-events/mouse-events/mouseevents-mousemove-manual.htm [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/mousemove-across-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html [ Skip ]
+external/wpt/keyboard-lock/idlharness.https.html [ Skip ]
+external/wpt/keyboard-lock/navigator-cancelKeyLock.https.html [ Skip ]
+external/wpt/keyboard-lock/navigator-requestKeyLock.https.html [ Skip ]
+external/wpt/keyboard-lock/navigator-requestKeyLock-two-parallel-requests.https.html [ Skip ]
+external/wpt/keyboard-lock/navigator-requestKeyLock-two-sequential-requests.https.html [ Skip ]

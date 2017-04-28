@@ -614,6 +614,7 @@ modules_dependency_idl_files =
           "indexeddb/WindowIndexedDatabase.idl",
           "indexeddb/WorkerGlobalScopeIndexedDatabase.idl",
           "installedapp/NavigatorInstalledApp.idl",
+          "keyboard_lock/NavigatorKeyboardLock.idl",
           "media_capabilities/NavigatorMediaCapabilities.idl",
           "mediacapturefromelement/HTMLCanvasElementCapture.idl",
           "mediacapturefromelement/HTMLMediaElementCapture.idl",

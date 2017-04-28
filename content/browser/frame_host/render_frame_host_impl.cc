@@ -38,6 +38,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
+#include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -2713,6 +2714,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
+
+  GetInterfaceRegistry()->AddInterface(base::Bind(
+      &KeyboardLockServiceImpl::CreateMojoService));
 
   GetContentClient()->browser()->ExposeInterfacesToFrame(GetInterfaceRegistry(),
                                                          this);

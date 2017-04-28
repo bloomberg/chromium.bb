@@ -699,6 +699,7 @@ mojom("mojo_bindings") {
     "platform/modules/budget_service/budget_service.mojom",
     "platform/modules/fetch/fetch_api_request.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
+    "platform/modules/keyboard_lock/keyboard_lock.mojom",
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",

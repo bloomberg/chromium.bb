@@ -536,6 +536,10 @@
       status: "stable",
     },
     {
+      name: "KeyboardLock",
+      status: "test",
+    },
+    {
       name: "LangAttributeAwareFormControlUI",
     },
     {
