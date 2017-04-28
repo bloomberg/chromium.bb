@@ -232,6 +232,12 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
 
     private void configureSettingsButton(RemoteViews bigView) {
         if (mSettingsAction == null) {
+            bigView.setViewVisibility(R.id.origin_settings_icon, View.GONE);
+            int rightPadding =
+                    dpToPx(BUTTON_ICON_PADDING_DP, mContext.getResources().getDisplayMetrics());
+            int leftPadding =
+                    Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? rightPadding : 0;
+            bigView.setViewPadding(R.id.origin, leftPadding, 0, rightPadding, 0);
             return;
         }
         bigView.setOnClickPendingIntent(R.id.origin, mSettingsAction.intent);

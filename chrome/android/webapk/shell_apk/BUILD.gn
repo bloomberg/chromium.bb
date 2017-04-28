@@ -112,7 +112,6 @@ android_library("webapk_java") {
     "src/org/chromium/webapk/shell_apk/DexLoader.java",
     "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
-    "src/org/chromium/webapk/shell_apk/NotificationSettingsLauncherActivity.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService0.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",

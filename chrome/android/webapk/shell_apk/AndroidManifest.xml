@@ -31,12 +31,6 @@
                 <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" android:pathPrefix="{{{scope_url_path}}}"></data>
             </intent-filter>
         </activity>
-        <activity android:name="org.chromium.webapk.shell_apk.NotificationSettingsLauncherActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.NOTIFICATION_PREFERENCES"/>
-            </intent-filter>
-        </activity>
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{{start_url}}}" />
