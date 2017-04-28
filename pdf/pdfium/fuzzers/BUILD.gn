@@ -177,6 +177,13 @@ if (pdf_enable_xfa) {
     dict = "dicts/pdf_xml.dict"
   }
 
+  fuzzer_test("pdf_cfx_barcode_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_cfx_barcode_fuzzer",
+    ]
+  }
+
   fuzzer_test("pdf_cfx_saxreader_fuzzer") {
     sources = []
     deps = [
