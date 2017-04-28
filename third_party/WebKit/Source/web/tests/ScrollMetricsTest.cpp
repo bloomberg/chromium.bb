@@ -347,9 +347,10 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
   // areas from the chain have corresponding reasons.
   EXPECT_WHEEL_BUCKET(kHasOpacityAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kIsNotStackingContextAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kHasBorderRadius, 1);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 0);
-  EXPECT_WHEEL_TOTAL(3);
+  EXPECT_WHEEL_TOTAL(4);
 }
 
 }  // namespace
