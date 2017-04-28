@@ -65,11 +65,6 @@
 // Tell location bar has taken focus.
 - (void)locationBarBecomesFirstResponder;
 
-// TODO(crbug.com/694750): This call will be removed once dispatching is
-// available.
-// Asks the consumer to execute a chrome command.
-- (void)chromeExecuteCommand:(id)sender;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_GOOGLE_LANDING_CONSUMER_H_

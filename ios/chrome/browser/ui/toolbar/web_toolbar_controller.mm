@@ -1249,7 +1249,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     // Evaluate the URL as JavaScript if its scheme is JavaScript.
     NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
         stringByRemovingPercentEncoding];
-    [self.delegate loadJavaScriptFromLocationBar:jsToEval];
+    [self.urlLoader loadJavaScriptFromLocationBar:jsToEval];
   } else {
     // When opening a URL, force the omnibox to resign first responder.  This
     // will also close the popup.

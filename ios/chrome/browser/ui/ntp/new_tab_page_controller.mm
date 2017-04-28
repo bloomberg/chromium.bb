@@ -172,6 +172,10 @@ enum {
 // is initiated, and when WebController calls -willBeDismissed.
 @property(nonatomic, assign) UIViewController* parentViewController;
 
+// To ease modernizing the NTP a non-descript CommandDispatcher is passed thru
+// to be used by the reuabled NTP panels.
+@property(nonatomic, assign) id dispatcher;
+
 @end
 
 @implementation NewTabPageController
@@ -179,6 +183,7 @@ enum {
 @synthesize ntpView = newTabPageView_;
 @synthesize swipeRecognizerProvider = swipeRecognizerProvider_;
 @synthesize parentViewController = parentViewController_;
+@synthesize dispatcher = dispatcher_;
 
 - (id)initWithUrl:(const GURL&)url
                   loader:(id<UrlLoader>)loader
@@ -188,7 +193,8 @@ enum {
               colorCache:(NSMutableDictionary*)colorCache
       webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
                 tabModel:(TabModel*)tabModel
-    parentViewController:(UIViewController*)parentViewController {
+    parentViewController:(UIViewController*)parentViewController
+              dispatcher:(id)dispatcher {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
@@ -198,6 +204,7 @@ enum {
     loader_ = loader;
     newTabPageObserver_ = ntpObserver;
     parentViewController_ = parentViewController;
+    dispatcher_ = dispatcher;
     focuser_.reset(focuser);
     webToolbarDelegate_.reset(webToolbarDelegate);
     tabModel_.reset([tabModel retain]);
@@ -539,13 +546,12 @@ enum {
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
     if (!googleLandingController_) {
       googleLandingController_.reset([[GoogleLandingController alloc] init]);
+      [googleLandingController_ setDispatcher:self.dispatcher];
       googleLandingMediator_.reset([[GoogleLandingMediator alloc]
-            initWithConsumer:googleLandingController_
-                browserState:browserState_
-                      loader:loader_
-                     focuser:focuser_
-          webToolbarDelegate:webToolbarDelegate_
-                webStateList:[tabModel_ webStateList]]);
+          initWithConsumer:googleLandingController_
+              browserState:browserState_
+                dispatcher:self.dispatcher
+              webStateList:[tabModel_ webStateList]]);
       [googleLandingController_ setDataSource:googleLandingMediator_];
     }
     panelController = googleLandingController_;

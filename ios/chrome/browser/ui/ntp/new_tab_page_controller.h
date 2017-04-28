@@ -98,7 +98,8 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
               colorCache:(NSMutableDictionary*)colorCache
       webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
                 tabModel:(TabModel*)tabModel
-    parentViewController:(UIViewController*)parentViewController;
+    parentViewController:(UIViewController*)parentViewController
+              dispatcher:(id)dispatcher;
 
 // Select a panel based on the given |panelType|.
 - (void)selectPanel:(NewTabPage::PanelIdentifier)panelType;

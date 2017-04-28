@@ -102,7 +102,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                        colorCache:nil
                                webToolbarDelegate:nil
                                          tabModel:tabModel_
-                             parentViewController:parentViewController_];
+                             parentViewController:parentViewController_
+                                       dispatcher:nil];
 
     incognitoController_ = [[NewTabPageController alloc]
                  initWithUrl:url
@@ -114,7 +115,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                   colorCache:nil
           webToolbarDelegate:nil
                     tabModel:nil
-        parentViewController:parentViewController_];
+        parentViewController:parentViewController_
+                  dispatcher:nil];
   };
 
   void TearDown() override {

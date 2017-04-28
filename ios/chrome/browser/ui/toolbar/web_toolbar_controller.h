@@ -46,9 +46,6 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 - (IBAction)locationBarBeganEdit:(id)sender;
 // Called when the stack view controller is about to be shown.
 - (IBAction)prepareToEnterTabSwitcher:(id)sender;
-// Loads the text entered in the location bar as javascript.
-// Note: The JavaScript is executed asynchronously.
-- (void)loadJavaScriptFromLocationBar:(NSString*)script;
 // Returns the WebState.
 - (web::WebState*)currentWebState;
 // Called when the toolbar height changes. Other elements, such as the web view,

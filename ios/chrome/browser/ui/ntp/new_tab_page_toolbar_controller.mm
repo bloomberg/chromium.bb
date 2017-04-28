@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -43,8 +44,6 @@ enum {
   base::scoped_nsobject<UIButton> _backButton;
   base::scoped_nsobject<UIButton> _forwardButton;
   base::scoped_nsobject<UIButton> _omniboxFocuser;
-
-  base::WeakNSProtocol<id<GoogleLandingDataSource>> _dataSource;
 }
 
 // |YES| if the google landing toolbar can show the forward arrow.
@@ -57,14 +56,13 @@ enum {
 
 @implementation NewTabPageToolbarController
 
+@synthesize dispatcher = _dispatcher;
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
 
-- (instancetype)initWithToolbarDataSource:
-    (id<GoogleLandingDataSource>)dataSource {
+- (instancetype)init {
   self = [super initWithStyle:ToolbarControllerStyleLightMode];
   if (self) {
-    _dataSource.reset(dataSource);
     [self.backgroundView setHidden:YES];
 
     CGFloat boundingWidth = self.view.bounds.size.width;
@@ -217,11 +215,11 @@ enum {
 }
 
 - (void)focusOmnibox:(id)sender {
-  [_dataSource focusFakebox];
+  [self.dispatcher focusFakebox];
 }
 
 - (IBAction)stackButtonTouchDown:(id)sender {
-  [_dataSource prepareToEnterTabSwitcher:self];
+  [self.dispatcher prepareToEnterTabSwitcher:self];
 }
 
 @end

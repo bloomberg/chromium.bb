@@ -15,6 +15,8 @@
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
 @protocol GoogleLandingDataSource;
+@protocol OmniboxFocuser;
+@protocol UrlLoader;
 
 // Google centric new tab page.
 @interface GoogleLandingController
@@ -24,6 +26,8 @@
                        ToolbarOwner>
 
 @property(nonatomic, assign) id<GoogleLandingDataSource> dataSource;
+
+@property(nonatomic, assign) id<UrlLoader, OmniboxFocuser> dispatcher;
 
 @end
 

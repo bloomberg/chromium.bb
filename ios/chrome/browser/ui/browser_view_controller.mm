@@ -169,6 +169,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/navigation_item.h"
@@ -399,6 +400,9 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<JavaScriptDialogPresenterImpl> _javaScriptDialogPresenter;
+
+  // Handles command dispatching.
+  CommandDispatcher* _dispatcher;
 
   // Keyboard commands provider.  It offloads most of the keyboard commands
   // management off of the BVC.
@@ -948,6 +952,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _nativeControllersForTabIDs = [NSMapTable strongToWeakObjectsMapTable];
     _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                         presentingViewController:self];
+    _dispatcher = [[CommandDispatcher alloc] init];
+    [_dispatcher startDispatchingToTarget:self
+                              forProtocol:@protocol(UrlLoader)];
+    [_dispatcher startDispatchingToTarget:self
+                              forProtocol:@protocol(WebToolbarDelegate)];
+    [_dispatcher startDispatchingToTarget:self
+                              forSelector:@selector(chromeExecuteCommand:)];
+
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
@@ -1716,6 +1728,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // The file remover needs the browser state, so needs to be destroyed now.
   _externalFileRemover = nil;
   _browserState = nullptr;
+  [_dispatcher stopDispatchingToTarget:self];
+  _dispatcher = nil;
 }
 
 - (void)installFakeStatusBar {
@@ -1762,6 +1776,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       newWebToolbarControllerWithDelegate:self
                                 urlLoader:self
                           preloadProvider:_preloadController];
+  [_dispatcher startDispatchingToTarget:_toolbarController
+                            forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarController setTabCount:[_model count]];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(_toolbarController);
@@ -3028,7 +3044,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                                        colorCache:_dominantColorCache
                                webToolbarDelegate:self
                                          tabModel:_model
-                             parentViewController:self];
+                             parentViewController:self
+                                       dispatcher:_dispatcher];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
 
     // Panel is always NTP for iPhone.

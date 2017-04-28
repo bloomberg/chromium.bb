@@ -8,6 +8,9 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 
 @protocol GoogleLandingDataSource;
+@protocol UrlLoader;
+@protocol OmniboxFocuser;
+@protocol WebToolbarDelegate;
 
 // New tab page specific toolbar. The background view is hidden and the
 // navigation buttons are also hidden if there is no forward history. Does not
@@ -17,8 +20,10 @@
 
 // Designated initializer. The underlying ToolbarController is initialized with
 // ToolbarControllerStyleLightMode.
-- (instancetype)initWithToolbarDataSource:
-    (id<GoogleLandingDataSource>)dataSource;
+- (instancetype)init;
+
+@property(nonatomic, assign) id<UrlLoader, OmniboxFocuser, WebToolbarDelegate>
+    dispatcher;
 
 // |YES| if the toolbar can show the forward arrow.
 - (void)setCanGoForward:(BOOL)canGoForward;

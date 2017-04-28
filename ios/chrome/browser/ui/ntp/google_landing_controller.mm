@@ -21,8 +21,10 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/ntp/whats_new_header_view.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -30,6 +32,7 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 
 using base::UserMetricsAction;
 
@@ -264,6 +267,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 @synthesize dataSource = _dataSource;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
+@synthesize dispatcher = _dispatcher;
 @synthesize isOffTheRecord = _isOffTheRecord;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize promoText = _promoText;
@@ -792,7 +796,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
         if (_scrolledToTop) {
           _animateHeader = NO;
           if (!IsIPadIdiom()) {
-            [self.dataSource onFakeboxAnimationComplete];
+            [self.dispatcher onFakeboxAnimationComplete];
             [_headerView fadeOutShadow];
             [_searchTapTarget setHidden:YES];
           }
@@ -801,12 +805,12 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 }
 
 - (void)searchFieldTapped:(id)sender {
-  [self.dataSource focusFakebox];
+  [self.dispatcher focusFakebox];
 }
 
 - (void)blurOmnibox {
   if (_omniboxFocused) {
-    [self.dataSource cancelOmniboxEdit];
+    [self.dispatcher cancelOmniboxEdit];
   } else {
     [self locationBarResignsFirstResponder];
   }
@@ -829,7 +833,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   _scrolledToTop = NO;
   if (!IsIPadIdiom()) {
     [_searchTapTarget setHidden:NO];
-    [self.dataSource onFakeboxBlur];
+    [self.dispatcher onFakeboxBlur];
   }
 
   // Reload most visited sites in case the number of placeholder cells needs to
@@ -978,7 +982,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   [self blurOmnibox];
   DCHECK(visitedIndex < [self numberOfItems]);
   [self.dataSource logMostVisitedClick:visitedIndex tileType:cell.tileType];
-  [self.dataSource loadURL:[self urlForIndex:visitedIndex]
+  [self.dispatcher loadURL:[self urlForIndex:visitedIndex]
                   referrer:web::Referrer()
                 transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
          rendererInitiated:NO];
@@ -1008,7 +1012,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
       if (!IsIPadIdiom()) {
         // iPhone header also contains a toolbar since the normal toolbar is
         // hidden.
-        [_headerView addToolbarWithDataSource:self.dataSource];
+        [_headerView addToolbarWithDataSource:self.dataSource
+                                   dispatcher:self.dispatcher];
         [_headerView setToolbarTabCount:self.tabCount];
         [_headerView setCanGoForward:self.canGoForward];
         [_headerView setCanGoBack:self.canGoBack];
@@ -1141,7 +1146,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
       MostVisitedCell* cell = (MostVisitedCell*)sender.view;
       [[strongSelf dataSource] logMostVisitedClick:index
                                           tileType:cell.tileType];
-      [[strongSelf dataSource] webPageOrderedOpen:url
+      [[strongSelf dispatcher] webPageOrderedOpen:url
                                          referrer:web::Referrer()
                                      inBackground:YES
                                          appendTo:kCurrentTab];
@@ -1161,7 +1166,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
         MostVisitedCell* cell = (MostVisitedCell*)sender.view;
         [[strongSelf dataSource] logMostVisitedClick:index
                                             tileType:cell.tileType];
-        [[strongSelf dataSource] webPageOrderedOpen:url
+        [[strongSelf dispatcher] webPageOrderedOpen:url
                                            referrer:web::Referrer()
                                         inIncognito:YES
                                        inBackground:NO
@@ -1222,7 +1227,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 }
 
 - (void)onPromoLabelTapped {
-  [self.dataSource cancelOmniboxEdit];
+  [self.dispatcher cancelOmniboxEdit];
   [_promoHeaderView setHidden:YES];
   [self.view setNeedsLayout];
   [self.dataSource promoTapped];
@@ -1319,7 +1324,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   CGFloat pinnedOffsetY = [self pinnedOffsetY];
   if (_omniboxFocused && scrollView.dragging &&
       scrollView.contentOffset.y < pinnedOffsetY) {
-    [self.dataSource cancelOmniboxEdit];
+    [self.dispatcher cancelOmniboxEdit];
   }
 
   if (IsIPadIdiom()) {

@@ -20,4 +20,11 @@
 - (void)chromeExecuteCommand:(id)sender;
 @end
 
+@protocol ChromeExecuteCommand
+// Executes a Chrome command.  |sender| must implement the |-tag| method and
+// return the id of the command to execute.  The default implementation of this
+// method simply forwards the call to the next responder.
+- (IBAction)chromeExecuteCommand:(id)sender;
+@end
+
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_UIKIT_CHROMEEXECUTECOMMAND_H_

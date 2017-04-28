@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/web/public/web_state/web_state.h"
 
 using base::UserMetricsAction;
@@ -82,19 +83,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 }  // namespace google_landing
 
-@interface GoogleLandingMediator ()<MostVisitedSitesObserving,
+@interface GoogleLandingMediator ()<GoogleLandingDataSource,
+                                    MostVisitedSitesObserving,
                                     WebStateListObserving> {
   // The ChromeBrowserState associated with this mediator.
   ios::ChromeBrowserState* _browserState;  // Weak.
 
   // |YES| if impressions were logged already and shouldn't be logged again.
   BOOL _recordedPageImpression;
-
-  // The designated url loader.
-  id<UrlLoader> _loader;  // Weak.
-
-  // Delegate to focus and blur the omnibox.
-  base::WeakNSProtocol<id<OmniboxFocuser>> _focuser;
 
   // Controller to fetch and show doodles or a default Google logo.
   base::scoped_nsprotocol<id<LogoVendor>> _doodleController;
@@ -114,8 +110,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // the callback).
   ntp_tiles::NTPTilesVector _mostVisitedData;
 
-  base::WeakNSProtocol<id<WebToolbarDelegate>> _webToolbarDelegate;
-
   // Observes the WebStateList so that this mediator can update the UI when the
   // active WebState changes.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
@@ -130,6 +124,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 // The WebStateList that is being observed by this mediator.
 @property(nonatomic, assign) WebStateList* webStateList;
 
+// The dispatcher for this mediator.
+@property(nonatomic, assign) id<ChromeExecuteCommand, UrlLoader> dispatcher;
+
 // Perform initial setup.
 - (void)setUp;
 
@@ -138,21 +135,18 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @implementation GoogleLandingMediator
 
 @synthesize consumer = _consumer;
+@synthesize dispatcher = _dispatcher;
 @synthesize webStateList = _webStateList;
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
-                          loader:(id<UrlLoader>)loader
-                         focuser:(id<OmniboxFocuser>)focuser
-              webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
+                      dispatcher:(id<ChromeExecuteCommand, UrlLoader>)dispatcher
                     webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     _consumer = consumer;
     _browserState = browserState;
-    _loader = loader;
-    _focuser.reset(focuser);
-    _webToolbarDelegate.reset(webToolbarDelegate);
+    _dispatcher = dispatcher;
     _webStateList = webStateList;
 
     _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
@@ -190,7 +184,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       new google_landing::SearchEngineObserver(self, _templateURLService));
   _templateURLService->Load();
   _doodleController.reset(ios::GetChromeBrowserProvider()->CreateLogoVendor(
-      _browserState, _loader));
+      _browserState, self.dispatcher));
   [_consumer setLogoVendor:_doodleController];
   [self updateShowLogo];
 
@@ -352,10 +346,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [self.consumer setPromoCanShow:_notification_promo->CanShow()];
 
   if (_notification_promo->IsURLPromo()) {
-    [_loader webPageOrderedOpen:_notification_promo->url()
-                       referrer:web::Referrer()
-                   inBackground:NO
-                       appendTo:kCurrentTab];
+    [self.dispatcher webPageOrderedOpen:_notification_promo->url()
+                               referrer:web::Referrer()
+                           inBackground:NO
+                               appendTo:kCurrentTab];
     return;
   }
 
@@ -363,78 +357,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     base::scoped_nsobject<GenericChromeCommand> command(
         [[GenericChromeCommand alloc]
             initWithTag:_notification_promo->command_id()]);
-    [self.consumer chromeExecuteCommand:command];
+    [self.dispatcher chromeExecuteCommand:command];
     return;
   }
   NOTREACHED();
-}
-
-- (void)prepareToEnterTabSwitcher:(id)sender {
-  [_webToolbarDelegate prepareToEnterTabSwitcher:sender];
-}
-
-#pragma mark - UrlLoader
-
-- (void)loadURL:(const GURL&)url
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated {
-  [_loader loadURL:url
-               referrer:referrer
-             transition:transition
-      rendererInitiated:rendererInitiated];
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  [_loader webPageOrderedOpen:url
-                     referrer:referrer
-                 inBackground:inBackground
-                     appendTo:appendTo];
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  [_loader webPageOrderedOpen:url
-                     referrer:referrer
-                  inIncognito:inIncognito
-                 inBackground:inBackground
-                     appendTo:appendTo];
-}
-
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  NOTREACHED();
-}
-
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  NOTREACHED();
-}
-
-#pragma mark - OmniboxFocuser
-
-- (void)focusOmnibox {
-  [_focuser focusOmnibox];
-}
-
-- (void)cancelOmniboxEdit {
-  [_focuser cancelOmniboxEdit];
-}
-
-- (void)focusFakebox {
-  [_focuser focusFakebox];
-}
-
-- (void)onFakeboxBlur {
-  [_focuser onFakeboxBlur];
-}
-
-- (void)onFakeboxAnimationComplete {
-  [_focuser onFakeboxAnimationComplete];
 }
 
 @end
