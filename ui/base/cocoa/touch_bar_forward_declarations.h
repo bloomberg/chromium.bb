@@ -118,6 +118,16 @@ UI_BASE_EXPORT extern NSString* const NSTouchBarItemIdentifierFlexibleSpace;
 #endif  // MAC_OS_X_VERSION_10_12_1
 }  // extern "C"
 
+#if !defined(MAC_OS_X_VERSION_10_12_2) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12_2
+
+@interface NSTouchBar (SierraPointTwoSDK)
+@property(copy, nullable)
+    NSTouchBarItemIdentifier escapeKeyReplacementItemIdentifier;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_12_2
+
 #pragma clang assume_nonnull end
 
 #endif  // UI_BASE_COCOA_TOUCH_BAR_FORWARD_DECLARATIONS_H_

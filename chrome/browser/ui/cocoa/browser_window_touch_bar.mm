@@ -20,6 +20,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,6 +32,7 @@
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/vector_icons.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/color_palette.h"
@@ -63,6 +68,8 @@ NSString* const kHomeTouchId = @"HOME";
 NSString* const kSearchTouchId = @"SEARCH";
 NSString* const kStarTouchId = @"BOOKMARK";
 NSString* const kNewTabTouchId = @"NEW-TAB";
+NSString* const kExitFullscreenTouchId = @"EXIT-FULLSCREEN";
+NSString* const kFullscreenOriginLabelTouchId = @"FULLSCREEN-ORIGIN-LABEL";
 
 // The button indexes in the back and forward segment control.
 const int kBackSegmentIndex = 0;
@@ -101,16 +108,11 @@ NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
   return button;
 }
 
-NSString* GetTouchBarId(NSString* const touch_bar_id) {
+NSString* GetTouchBarId() {
   NSString* chrome_bundle_id =
       base::SysUTF8ToNSString(base::mac::BaseBundleID());
-  return [NSString stringWithFormat:@"%@.%@", chrome_bundle_id, touch_bar_id];
-}
-
-NSString* GetTouchBarItemId(NSString* const touch_bar_id,
-                            NSString* const item_id) {
   return [NSString
-      stringWithFormat:@"%@-%@", GetTouchBarId(touch_bar_id), item_id];
+      stringWithFormat:@"%@.%@", chrome_bundle_id, kBrowserWindowTouchBarId];
 }
 
 TouchBarAction TouchBarActionFromCommand(int command) {
@@ -191,6 +193,10 @@ class HomePrefNotificationBridge {
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
++ (NSString*)touchBarIdForItemId:(NSString*)id {
+  return [NSString stringWithFormat:@"%@-%@", GetTouchBarId(), id];
+}
+
 - (instancetype)initWithBrowser:(Browser*)browser
         browserWindowController:(BrowserWindowController*)bwc {
   if ((self = [self init])) {
@@ -216,6 +222,25 @@ class HomePrefNotificationBridge {
 
   base::scoped_nsobject<NSTouchBar> touchBar(
       [[NSClassFromString(@"NSTouchBar") alloc] init]);
+  [touchBar setCustomizationIdentifier:GetTouchBarId()];
+  [touchBar setDelegate:self];
+
+  // When in tab fullscreen, only the option to exit fullscreen should show up
+  // on the touch bar since the toolbar is hidden in that state.
+  if ([bwc_ isFullscreenForTabContentOrExtension]) {
+    if ([touchBar respondsToSelector:
+        @selector(setEscapeKeyReplacementItemIdentifier:)]) {
+      [touchBar setEscapeKeyReplacementItemIdentifier:
+                    [BrowserWindowTouchBar
+                        touchBarIdForItemId:kExitFullscreenTouchId]];
+      [touchBar setDefaultItemIdentifiers:@[
+        [BrowserWindowTouchBar
+            touchBarIdForItemId:kFullscreenOriginLabelTouchId]
+      ]];
+    }
+    return touchBar.autorelease();
+  }
+
   NSMutableArray* customIdentifiers = [NSMutableArray arrayWithCapacity:7];
   NSMutableArray* defaultIdentifiers = [NSMutableArray arrayWithCapacity:6];
 
@@ -225,8 +250,7 @@ class HomePrefNotificationBridge {
   ];
 
   for (NSString* item in touchBarItems) {
-    NSString* itemIdentifier =
-        GetTouchBarItemId(kBrowserWindowTouchBarId, item);
+    NSString* itemIdentifier = [BrowserWindowTouchBar touchBarIdForItemId:item];
     [customIdentifiers addObject:itemIdentifier];
 
     // Don't add the home button if it's not shown in the toolbar.
@@ -236,10 +260,8 @@ class HomePrefNotificationBridge {
 
   [customIdentifiers addObject:NSTouchBarItemIdentifierFlexibleSpace];
 
-  [touchBar setCustomizationIdentifier:GetTouchBarId(kBrowserWindowTouchBarId)];
   [touchBar setDefaultItemIdentifiers:defaultIdentifiers];
   [touchBar setCustomizationAllowedItemIdentifiers:customIdentifiers];
-  [touchBar setDelegate:self];
 
   return touchBar.autorelease();
 }
@@ -294,6 +316,29 @@ class HomePrefNotificationBridge {
     [touchBarItem setView:[self searchTouchBarView]];
     [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
                                             IDS_TOUCH_BAR_GOOGLE_SEARCH)];
+  } else if ([identifier hasSuffix:kExitFullscreenTouchId]) {
+    NSButton* button = [NSButton
+        buttonWithTitle:l10n_util::GetNSString(IDS_TOUCH_BAR_EXIT_FULLSCREEN)
+                 target:self
+                 action:@selector(exitFullscreenForTab:)];
+    [touchBarItem setView:button];
+  } else if ([identifier hasSuffix:kFullscreenOriginLabelTouchId]) {
+    content::WebContents* contents =
+        browser_->tab_strip_model()->GetActiveWebContents();
+    GURL originUrl = contents->GetLastCommittedURL();
+
+    base::string16 displayText = base::ASCIIToUTF16(originUrl.GetContent());
+    size_t hostLength = originUrl.host().length();
+    base::scoped_nsobject<NSMutableAttributedString> attributedString(
+        [[NSMutableAttributedString alloc]
+            initWithString:base::SysUTF16ToNSString(displayText)]);
+    [attributedString
+        addAttribute:NSForegroundColorAttributeName
+               value:OmniboxViewMac::BaseTextColor(true)
+               range:NSMakeRange(hostLength,
+                                 [attributedString length] - hostLength)];
+    [touchBarItem
+        setView:[NSTextField labelWithAttributedString:attributedString.get()]];
   }
 
   return touchBarItem.autorelease();
@@ -379,6 +424,12 @@ class HomePrefNotificationBridge {
       [control selectedSegment] == kBackSegmentIndex ? IDC_BACK : IDC_FORWARD;
   LogTouchBarUMA(command);
   commandUpdater_->ExecuteCommand(command);
+}
+
+- (void)exitFullscreenForTab:(id)sender {
+  browser_->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ExitExclusiveAccessIfNecessary();
 }
 
 - (void)executeCommand:(id)sender {
