@@ -27,6 +27,17 @@ ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
   return fetcher;
 }
 
+ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
+    ModuleScript* module_script,
+    Modulator* modulator,
+    ModuleTreeClient* client) {
+  ModuleTreeLinker* fetcher = ModuleTreeLinker::FetchDescendantsForInlineScript(
+      module_script, modulator, this, client);
+  DCHECK(fetcher->IsFetching());
+  active_tree_linkers_.insert(fetcher);
+  return fetcher;
+}
+
 void ModuleTreeLinkerRegistry::ReleaseFinishedFetcher(
     ModuleTreeLinker* fetcher) {
   DCHECK(fetcher->HasFinished());

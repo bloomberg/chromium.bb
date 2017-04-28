@@ -31,6 +31,12 @@ class CORE_EXPORT ModuleTreeLinker final
                                  Modulator*,
                                  ModuleTreeLinkerRegistry*,
                                  ModuleTreeClient*);
+  static ModuleTreeLinker* FetchDescendantsForInlineScript(
+      ModuleScript*,
+      Modulator*,
+      ModuleTreeLinkerRegistry*,
+      ModuleTreeClient*);
+
   virtual ~ModuleTreeLinker() = default;
   DECLARE_TRACE();
 

@@ -46,6 +46,8 @@ class ModulatorImpl final : public Modulator {
   SecurityOrigin* GetSecurityOrigin() override;
 
   void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
+  void FetchDescendantsForInlineScript(ModuleScript*,
+                                       ModuleTreeClient*) override;
   void FetchTreeInternal(const ModuleScriptFetchRequest&,
                          const AncestorList&,
                          ModuleGraphLevel,

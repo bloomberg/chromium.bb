@@ -321,7 +321,21 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   CrossOriginAttributeValue cross_origin =
       GetCrossOriginAttributeValue(element_->CrossOriginAttributeValue());
 
-  // 16. is handled below.
+  // 16. "Let module script credentials mode be determined by switching
+  //      on CORS setting:"
+  WebURLRequest::FetchCredentialsMode credentials_mode =
+      WebURLRequest::kFetchCredentialsModeOmit;
+  switch (cross_origin) {
+    case kCrossOriginAttributeNotSet:
+      credentials_mode = WebURLRequest::kFetchCredentialsModeOmit;
+      break;
+    case kCrossOriginAttributeAnonymous:
+      credentials_mode = WebURLRequest::kFetchCredentialsModeSameOrigin;
+      break;
+    case kCrossOriginAttributeUseCredentials:
+      credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+      break;
+  }
 
   // 17. "If the script element has a nonce attribute,
   //      then let cryptographic nonce be that attribute's value.
@@ -390,9 +404,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       else
         encoding = element_document.characterSet();
 
-      // Step 16 is skipped because "module script credentials" is not used
-      // for classic scripts.
-
       // 18. "If the script element has an integrity attribute,
       //      then let integrity metadata be that attribute's value.
       //      Otherwise, let integrity metadata be the empty string."
@@ -419,22 +430,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       // Steps 14 and 18 are skipped because they are not used in module
       // scripts.
-
-      // 16. "Let module script credentials mode be determined by switching
-      //      on CORS setting:"
-      WebURLRequest::FetchCredentialsMode credentials_mode =
-          WebURLRequest::kFetchCredentialsModeOmit;
-      switch (cross_origin) {
-        case kCrossOriginAttributeNotSet:
-          credentials_mode = WebURLRequest::kFetchCredentialsModeOmit;
-          break;
-        case kCrossOriginAttributeAnonymous:
-          credentials_mode = WebURLRequest::kFetchCredentialsModeSameOrigin;
-          break;
-        case kCrossOriginAttributeUseCredentials:
-          credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
-          break;
-      }
 
       DCHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
       Modulator* modulator = Modulator::From(
@@ -482,16 +477,34 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         break;
 
       // - "module":
-      case ScriptType::kModule:
-        // TODO(hiroshige): Implement inline module scripts.
-        element_document.AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kErrorMessageLevel,
-            "Inline module script is not yet supported",
-            SourceLocation::Create(element_document.Url().GetString(),
-                                   script_start_position.line_.OneBasedInt(),
-                                   script_start_position.column_.OneBasedInt(),
-                                   nullptr)));
-        return false;
+      case ScriptType::kModule: {
+        // 1. "Let base URL be the script element's node document's document
+        //     base URL."
+        KURL base_url = element_document.BaseURL();
+
+        // 2. "Let script be the result of creating a module script using
+        //     source text, settings, base URL, cryptographic nonce,
+        //     parser state, and module script credentials mode."
+        Modulator* modulator = Modulator::From(
+            ToScriptStateForMainWorld(element_document.GetFrame()));
+        ModuleScript* module_script = ModuleScript::Create(
+            ScriptContent(), modulator, base_url, nonce, parser_state,
+            credentials_mode, kSharableCrossOrigin);
+
+        // 3. "If this returns null, set the script's script to null and abort
+        //     these substeps; the script is ready."
+        if (!module_script)
+          return false;
+
+        // 4. "Fetch the descendants of script (using an empty ancestor list).
+        //     When this asynchronously completes, set the script's script to
+        //     the result. At that time, the script is ready."
+        DCHECK(!module_tree_client_);
+        module_tree_client_ = ModulePendingScriptTreeClient::Create();
+        modulator->FetchDescendantsForInlineScript(module_script,
+                                                   module_tree_client_);
+        break;
+      }
     }
   }
 

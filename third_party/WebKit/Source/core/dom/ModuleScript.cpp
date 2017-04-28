@@ -33,11 +33,12 @@ ModuleScript* ModuleScript::Create(
   if (result.IsNull())
     return nullptr;
 
-  return CreateInternal(modulator, result, base_url, nonce, parser_state,
-                        credentials_mode);
+  return CreateInternal(source_text, modulator, result, base_url, nonce,
+                        parser_state, credentials_mode);
 }
 
 ModuleScript* ModuleScript::CreateInternal(
+    const String& source_text,
     Modulator* modulator,
     ScriptModule result,
     const KURL& base_url,
@@ -52,8 +53,10 @@ ModuleScript* ModuleScript::CreateInternal(
   // Step 10. Set script's parser state to the parser state.
   // Step 11. Set script's credentials mode to the credentials mode provided.
   // Step 12. Return script.
-  ModuleScript* module_script = new ModuleScript(
-      modulator, result, base_url, nonce, parser_state, credentials_mode);
+  // [not specced] |source_text| is saved for CSP checks.
+  ModuleScript* module_script =
+      new ModuleScript(modulator, result, base_url, nonce, parser_state,
+                       credentials_mode, source_text);
 
   // Step 5, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.
@@ -69,8 +72,9 @@ ModuleScript* ModuleScript::CreateForTest(
     const String& nonce,
     ParserDisposition parser_state,
     WebURLRequest::FetchCredentialsMode credentials_mode) {
-  return CreateInternal(modulator, record, base_url, nonce, parser_state,
-                        credentials_mode);
+  String dummy_source_text = "";
+  return CreateInternal(dummy_source_text, modulator, record, base_url, nonce,
+                        parser_state, credentials_mode);
 }
 
 void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {
@@ -125,10 +129,7 @@ void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
 }
 
 String ModuleScript::InlineSourceTextForCSP() const {
-  // Currently we don't support inline module scripts.
-  // TODO(hiroshige): Implement this.
-  NOTREACHED();
-  return String();
+  return source_text_;
 }
 
 }  // namespace blink

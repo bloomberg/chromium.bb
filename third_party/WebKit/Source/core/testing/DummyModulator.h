@@ -44,6 +44,8 @@ class DummyModulator : public Modulator {
   void FetchSingle(const ModuleScriptFetchRequest&,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
+  void FetchDescendantsForInlineScript(ModuleScript*,
+                                       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,

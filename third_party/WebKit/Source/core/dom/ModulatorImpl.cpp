@@ -84,6 +84,12 @@ void ModulatorImpl::FetchTreeInternal(const ModuleScriptFetchRequest& request,
   tree_linker_registry_->Fetch(request, ancestor_list, level, this, client);
 }
 
+void ModulatorImpl::FetchDescendantsForInlineScript(ModuleScript* module_script,
+                                                    ModuleTreeClient* client) {
+  tree_linker_registry_->FetchDescendantsForInlineScript(module_script, this,
+                                                         client);
+}
+
 void ModulatorImpl::FetchSingle(const ModuleScriptFetchRequest& request,
                                 ModuleGraphLevel level,
                                 SingleModuleClient* client) {

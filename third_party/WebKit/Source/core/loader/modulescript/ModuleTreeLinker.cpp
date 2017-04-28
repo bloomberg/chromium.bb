@@ -9,6 +9,7 @@
 #include "core/dom/ModuleScript.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/wtf/Vector.h"
 
@@ -27,6 +28,36 @@ ModuleTreeLinker* ModuleTreeLinker::Fetch(
   ModuleTreeLinker* fetcher =
       new ModuleTreeLinker(ancestor_list_with_url, modulator, registry, client);
   fetcher->FetchSelf(request, level);
+  return fetcher;
+}
+
+ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
+    ModuleScript* module_script,
+    Modulator* modulator,
+    ModuleTreeLinkerRegistry* registry,
+    ModuleTreeClient* client) {
+  AncestorList empty_ancestor_list;
+
+  // Substep 4 in "module" case in Step 22 of "prepare a script":"
+  // https://html.spec.whatwg.org/#prepare-a-script
+
+  // 4. "Fetch the descendants of script (using an empty ancestor list)."
+  ModuleTreeLinker* fetcher =
+      new ModuleTreeLinker(empty_ancestor_list, modulator, registry, client);
+  fetcher->module_script_ = module_script;
+  fetcher->AdvanceState(State::kFetchingSelf);
+
+  // "When this asynchronously completes, set the script's script to
+  //  the result. At that time, the script is ready."
+  //
+  // Currently we execute "internal module script graph
+  // fetching procedure" Step 5- in addition to "fetch the descendants",
+  // which is not specced yet. https://github.com/whatwg/html/issues/2544
+  // TODO(hiroshige): Fix the implementation and/or comments once the spec
+  // is updated.
+  modulator->TaskRunner()->PostTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(&ModuleTreeLinker::FetchDescendants, WrapPersistent(fetcher)));
   return fetcher;
 }
 
