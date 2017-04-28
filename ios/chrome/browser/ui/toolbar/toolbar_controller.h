@@ -114,18 +114,18 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // from also being visible.
 // TODO(blundell): Figure out how to fix this and have the top-level view be a
 // UIView. b/6167700
-@property(nonatomic, readonly, retain) ToolbarView* view;
+@property(nonatomic, readonly, strong) ToolbarView* view;
 // The view for the toolbar background image. This is a subview of |view| to
 // allow clients to alter the transparency of the background image without
 // affecting the other components of the toolbar.
-@property(nonatomic, readonly, retain) UIImageView* backgroundView;
+@property(nonatomic, readonly, strong) UIImageView* backgroundView;
 // The view for the toolbar shadow image.  This is a subview of |view| to allow
 // clients to alter the visibility of the shadow without affecting other
 // components of the toolbar.
-@property(nonatomic, readonly, retain) UIImageView* shadowView;
+@property(nonatomic, readonly, strong) UIImageView* shadowView;
 
 // The tools popup controller. Nil if the tools popup menu is not visible.
-@property(nonatomic, readonly, retain)
+@property(nonatomic, readonly, strong)
     ToolsPopupController* toolsPopupController;
 
 // Style of this toolbar.
