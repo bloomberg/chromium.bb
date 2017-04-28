@@ -1307,6 +1307,46 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckElementValue("password", "12345");
 }
 
+// https://crbug.com/713645
+// Navigate to a page that can't load some of the subresources. Create a hidden
+// form when the body is loaded. Make the form visible. Chrome should autofill
+// the form.
+// The fact that the form is hidden isn't super important but reproduces the
+// actual bug.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, SlowPageFill) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("admin");
+  signin_form.password_value = base::ASCIIToUTF16("12345");
+  password_store->AddLogin(signin_form);
+
+  GURL url =
+      embedded_test_server()->GetURL("/password/infinite_password_form.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // Wait for autofill.
+  BubbleObserver bubble_observer(WebContents());
+  bubble_observer.WaitForManagementState();
+
+  // Show the form and make sure that the password was autofilled.
+  std::string show_form =
+      "document.getElementsByTagName('form')[0].style.display = 'block'";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), show_form));
+
+  CheckElementValue("username", "admin");
+  CheckElementValue("password", "12345");
+}
+
 // Test that if there was no previous page load then the PasswordManagerDriver
 // does not think that there were SSL errors on the current page. The test opens
 // a new tab with a URL for which the embedded test server issues a basic auth

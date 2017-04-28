@@ -737,16 +737,12 @@ bool AutofillAgent::IsUserGesture() const {
 }
 
 void AutofillAgent::DidAssociateFormControlsDynamically() {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-
-  // Frame is only processed if it has finished loading, otherwise you can end
-  // up with a partially parsed form.
-  if (frame && !frame->IsLoading()) {
-    ProcessForms();
-    password_autofill_agent_->OnDynamicFormsSeen();
-    if (password_generation_agent_)
-      password_generation_agent_->OnDynamicFormsSeen();
-  }
+  // If the control flow is here than the document was at least loaded. The
+  // whole page doesn't have to be loaded.
+  ProcessForms();
+  password_autofill_agent_->OnDynamicFormsSeen();
+  if (password_generation_agent_)
+    password_generation_agent_->OnDynamicFormsSeen();
 }
 
 void AutofillAgent::DidCompleteFocusChangeInFrame() {
