@@ -72,10 +72,6 @@ base::StringPiece ShellContentClient::GetDataResource(
         resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_GIF;
 #endif
         break;
-
-      case IDR_TEXTAREA_RESIZER:
-        resource_id = IDR_CONTENT_SHELL_TEXT_AREA_RESIZE_CORNER_PNG;
-        break;
     }
   }
   return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
