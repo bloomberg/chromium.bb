@@ -5111,16 +5111,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     if (params.origin.scheme() != url::kFileScheme ||
         !render_view_->GetWebkitPreferences()
              .allow_universal_access_from_file_urls) {
-      base::debug::SetCrashKeyValue("origin_mismatch_url", params.url.spec());
-      base::debug::SetCrashKeyValue("origin_mismatch_origin",
-                                    params.origin.Serialize());
-      base::debug::SetCrashKeyValue("origin_mismatch_transition",
-                                    base::IntToString(params.transition));
-      base::debug::SetCrashKeyValue("origin_mismatch_redirects",
-                                    base::IntToString(params.redirects.size()));
-      base::debug::SetCrashKeyValue(
-          "origin_mismatch_same_page",
-          base::IntToString(params.was_within_same_document));
       CHECK(params.origin.IsSamePhysicalOriginWith(url::Origin(params.url)))
           << " url:" << params.url << " origin:" << params.origin;
     }
