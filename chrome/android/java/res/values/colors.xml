@@ -179,9 +179,6 @@
     <color name="webapp_url_bar_bg">#fafafa</color>
     <color name="webapp_url_bar_separator">#e1e1e1</color>
 
-    <!-- Colors common to secondary activities like the BookmarkActivity and the DownloadManagerUi -->
-    <color name="appbar_background">@color/default_primary_color</color>
-
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_text">#212121</color>
     <color name="bookmark_detail_section">#7C7B79</color>
