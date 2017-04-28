@@ -10,8 +10,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/block_cleanup_test.h"
@@ -27,9 +27,9 @@
 
 namespace {
 
-class GoogleLandingControllerTest : public BlockCleanupTest {
+class GoogleLandingViewControllerTest : public BlockCleanupTest {
  public:
-  GoogleLandingControllerTest()
+  GoogleLandingViewControllerTest()
       : ui_thread_(web::WebThread::UI, &message_loop_),
         io_thread_(web::WebThread::IO, &message_loop_) {}
 
@@ -56,7 +56,7 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
 
     // Set up stub UrlLoader.
     mockUrlLoader_ = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-    controller_ = [[GoogleLandingController alloc] init];
+    controller_ = [[GoogleLandingViewController alloc] init];
     webStateList_ = base::MakeUnique<WebStateList>(&webStateListDelegate_);
     mediator_ = [[GoogleLandingMediator alloc]
         initWithConsumer:controller_
@@ -76,10 +76,10 @@ class GoogleLandingControllerTest : public BlockCleanupTest {
   std::unique_ptr<WebStateList> webStateList_;
   OCMockObject* mockUrlLoader_;
   GoogleLandingMediator* mediator_;
-  GoogleLandingController* controller_;
+  GoogleLandingViewController* controller_;
 };
 
-TEST_F(GoogleLandingControllerTest, TestConstructorDestructor) {
+TEST_F(GoogleLandingViewControllerTest, TestConstructorDestructor) {
   EXPECT_TRUE(controller_);
 }
 

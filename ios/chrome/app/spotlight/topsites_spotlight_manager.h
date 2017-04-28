@@ -13,9 +13,9 @@ class ChromeBrowserState;
 
 // This spotlight manager handles indexing of sites shown on the NTP. Because of
 // privacy concerns, only sites shown on the NTP are indexed; therefore, this
-// manager mirrors the functionality seen in google_landing_controller. It uses
-// suggestions (most likely) as a data source if the user is logged in and top
-// sites otherwise.
+// manager mirrors the functionality seen in google_landing_view_controller. It
+// uses suggestions (most likely) as a data source if the user is logged in and
+// top sites otherwise.
 
 @interface TopSitesSpotlightManager : BaseSpotlightManager
 

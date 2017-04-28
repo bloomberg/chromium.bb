@@ -4,8 +4,8 @@
 
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_coordinator.h"
 
-#import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_mediator.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
@@ -18,7 +18,7 @@
 @interface NTPHomeCoordinator ()
 @property(nonatomic, strong) NTPHomeMediator* mediator;
 @property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
-@property(nonatomic, strong) GoogleLandingController* viewController;
+@property(nonatomic, strong) GoogleLandingViewController* viewController;
 @end
 
 @implementation NTPHomeCoordinator
@@ -37,7 +37,7 @@
   [self.browser->dispatcher()
       startDispatchingToTarget:self.mediator
                    forProtocol:@protocol(OmniboxFocuser)];
-  self.viewController = [[GoogleLandingController alloc] init];
+  self.viewController = [[GoogleLandingViewController alloc] init];
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
       initWithConsumer:self.viewController
