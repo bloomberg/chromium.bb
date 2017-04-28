@@ -175,7 +175,7 @@ bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
   if (mime_type.StartsWith("application/json", kTextCaseASCIIInsensitive))
     return true;
   if (mime_type.StartsWith("application/", kTextCaseASCIIInsensitive)) {
-    size_t subtype = mime_type.Find("+json", 12, kTextCaseASCIIInsensitive);
+    size_t subtype = mime_type.FindIgnoringASCIICase("+json", 12);
     if (subtype != kNotFound) {
       // Just check that a parameter wasn't matched.
       size_t parameter_marker = mime_type.Find(";");

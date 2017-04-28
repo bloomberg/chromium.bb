@@ -41,7 +41,7 @@ String ContentType::Parameter(const String& parameter_name) const {
   size_t semi = stripped_type.find(';');
   if (semi != kNotFound) {
     size_t start =
-        stripped_type.Find(parameter_name, semi + 1, kTextCaseASCIIInsensitive);
+        stripped_type.FindIgnoringASCIICase(parameter_name, semi + 1);
     if (start != kNotFound) {
       start = stripped_type.find('=', start + parameter_name.length());
       if (start != kNotFound) {
