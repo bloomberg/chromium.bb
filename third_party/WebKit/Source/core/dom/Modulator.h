@@ -102,6 +102,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptValue InstantiateModule(ScriptModule) = 0;
 
+  virtual ScriptValue GetInstantiationError(const ModuleScript*) = 0;
+
   virtual Vector<String> ModuleRequestsFromScriptModule(ScriptModule) = 0;
 
   virtual void ExecuteModule(const ModuleScript*) = 0;

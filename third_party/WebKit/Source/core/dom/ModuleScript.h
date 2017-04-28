@@ -58,10 +58,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
     return instantiation_state_;
   }
 
-  v8::Local<v8::Value> CreateInstantiationError(v8::Isolate* isolate) const {
-    return instantiation_error_.NewLocal(isolate);
-  }
-
   // Implements Step 7.1 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationErrorAndClearRecord(ScriptValue error);
@@ -99,6 +95,15 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                                     const SecurityOrigin*) const override;
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
+
+  friend class ModulatorImpl;
+  friend class ModuleTreeLinkerTestModulator;
+  // Access this func only via ModulatorImpl::GetInstantiationError(),
+  // or via Modulator mocks for unit tests.
+  v8::Local<v8::Value> CreateInstantiationErrorInternal(
+      v8::Isolate* isolate) const {
+    return instantiation_error_.NewLocal(isolate);
+  }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
   Member<Modulator> settings_object_;
