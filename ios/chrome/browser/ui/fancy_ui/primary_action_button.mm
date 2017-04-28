@@ -6,6 +6,10 @@
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation PrimaryActionButton
 
 - (id)initWithFrame:(CGRect)frame {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("fancy_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "bidi_container_view.h",
     "bidi_container_view.mm",

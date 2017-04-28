@@ -4,11 +4,13 @@
 
 #include "ios/chrome/browser/ui/fancy_ui/tinted_button.h"
 
-#import "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface TintedButton () {
-  base::scoped_nsobject<UIColor> normalStateTint_;
-  base::scoped_nsobject<UIColor> highlightedTint_;
+  UIColor* normalStateTint_;
+  UIColor* highlightedTint_;
 }
 
 // Makes the button's tint color reflect its current state.
@@ -21,10 +23,10 @@
 - (void)setTintColor:(UIColor*)color forState:(UIControlState)state {
   switch (state) {
     case UIControlStateNormal:
-      normalStateTint_.reset([color copy]);
+      normalStateTint_ = [color copy];
       break;
     case UIControlStateHighlighted:
-      highlightedTint_.reset([color copy]);
+      highlightedTint_ = [color copy];
       break;
     default:
       return;
@@ -50,13 +52,13 @@
   UIColor* newTint = nil;
   switch (self.state) {
     case UIControlStateNormal:
-      newTint = normalStateTint_.get();
+      newTint = normalStateTint_;
       break;
     case UIControlStateHighlighted:
-      newTint = highlightedTint_.get();
+      newTint = highlightedTint_;
       break;
     default:
-      newTint = normalStateTint_.get();
+      newTint = normalStateTint_;
       break;
   }
   self.tintColor = newTint;
