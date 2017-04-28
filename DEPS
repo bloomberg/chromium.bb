@@ -1152,6 +1152,15 @@ hooks = [
                'src/third_party/gvr-android-sdk/test-apks/update.py',
     ],
   },
+
+  # Download Telemetry's binary dependencies
+  {
+    'name': 'fetch_telemetry_binary_dependencies',
+    'pattern': '.',
+    'action': [ 'python',
+                'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
+    ],
+  },
 ]
 
 recursedeps = [
