@@ -109,11 +109,6 @@ CodecEnumerator::CodecEnumerator() {
   return;
 #endif
 
-#if defined(OS_ANDROID)
-  // See https://crbug.com/653864.
-  return;
-#endif
-
   content::RenderThreadImpl* const render_thread_impl =
       content::RenderThreadImpl::current();
   if (!render_thread_impl) {
@@ -132,12 +127,17 @@ CodecEnumerator::CodecEnumerator() {
       gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
   for (const auto& supported_profile : vea_supported_profiles) {
     for (auto& codec_id_and_profile : kPreferredCodecIdAndVEAProfiles) {
-      if (supported_profile.profile >= codec_id_and_profile.min_profile &&
-          supported_profile.profile <= codec_id_and_profile.max_profile) {
-        DVLOG(2) << "Accelerated codec found: "
-                 << media::GetProfileName(supported_profile.profile);
-        codec_id_to_profile_.insert(std::make_pair(
-            codec_id_and_profile.codec_id, supported_profile.profile));
+      const media::VideoCodecProfile codec = supported_profile.profile;
+#if defined(OS_ANDROID)
+      // TODO(mcasas): enable other codecs, https://crbug.com/653864.
+      if (codec < media::VP8PROFILE_MIN || codec > media::VP8PROFILE_MAX)
+        continue;
+#endif
+      if (codec >= codec_id_and_profile.min_profile &&
+          codec <= codec_id_and_profile.max_profile) {
+        DVLOG(2) << "Accelerated codec found: " << media::GetProfileName(codec);
+        codec_id_to_profile_.insert(
+            std::make_pair(codec_id_and_profile.codec_id, codec));
       }
     }
   }
