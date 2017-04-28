@@ -27,8 +27,58 @@ namespace base {
 
 // SharedMemoryHandle is a platform specific type which represents
 // the underlying OS handle to a shared memory segment.
+// TODO(erikchen): Refactor this to create a single class on all platforms,
+// rather than 3 separate class definitions that are very similar.
+// https://crbug.com/713763.
 #if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
-typedef FileDescriptor SharedMemoryHandle;
+class BASE_EXPORT SharedMemoryHandle {
+ public:
+  // The default constructor returns an invalid SharedMemoryHandle.
+  SharedMemoryHandle();
+
+  // This constructor is deprecated, as it fails to propagate the GUID, which
+  // will be added in the near future.
+  // TODO(rockot): Remove this constructor once Mojo supports GUIDs.
+  // https://crbug.com/713763.
+  explicit SharedMemoryHandle(const base::FileDescriptor& file_descriptor);
+
+  // Creates a SharedMemoryHandle from an |fd| supplied from an external
+  // service.
+  static SharedMemoryHandle ImportHandle(int fd);
+
+  // Returns the underlying OS resource.
+  int GetHandle() const;
+
+  // Takes ownership of the OS resource.
+  void SetHandle(int fd);
+
+  // Whether the underlying OS resource is valid.
+  bool IsValid() const;
+
+  // Closes the underlying OS resource.
+  // The fact that this method needs to be "const" is an artifact of the
+  // original interface for base::SharedMemory::CloseHandle.
+  // TODO(erikchen): This doesn't clear the underlying reference, which seems
+  // like a bug, but is how this class has always worked. Fix this:
+  // https://crbug.com/716072.
+  void Close() const;
+
+  // Invalidates [but doesn't close] the underlying OS resource. This will leak
+  // unless the caller is careful.
+  int Release();
+
+  // Duplicates the underlying OS resource.
+  SharedMemoryHandle Duplicate() const;
+
+  // If this returns true, then ownership of the underlying OS resource is
+  // implicitly passed to the IPC subsystem during serialization.
+  void SetOwnershipPassesToIPC(bool ownership_passes);
+  bool OwnershipPassesToIPC() const;
+
+ private:
+  // This must be public to support serialization by Chrome IPC.
+  FileDescriptor file_descriptor_;
+};
 #elif defined(OS_WIN)
 class BASE_EXPORT SharedMemoryHandle {
  public:

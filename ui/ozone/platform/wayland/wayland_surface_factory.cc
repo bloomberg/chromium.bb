@@ -68,7 +68,7 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
     return nullptr;
 
   wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
-      connection_->shm(), shared_memory->handle().fd, length));
+      connection_->shm(), shared_memory->handle().GetHandle(), length));
   if (!pool)
     return nullptr;
   wl::Object<wl_buffer> buffer(

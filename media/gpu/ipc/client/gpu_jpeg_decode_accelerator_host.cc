@@ -178,9 +178,8 @@ void GpuJpegDecodeAcceleratorHost::Decode(
   if (!base::SharedMemory::IsHandleValid(output_handle)) {
     DLOG(ERROR) << "Failed to duplicate handle of VideoFrame";
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    if (input_handle.auto_close) {
-      // Defer closing task to the ScopedFD.
-      base::ScopedFD(input_handle.fd);
+    if (input_handle.OwnershipPassesToIPC()) {
+      input_handle.Close();
     }
 #else
 // TODO(kcwu) fix the handle leak after crbug.com/493414 resolved.

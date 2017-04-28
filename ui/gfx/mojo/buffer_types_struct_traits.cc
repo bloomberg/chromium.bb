@@ -75,12 +75,7 @@ mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   mojo::Handle mojo_handle = scoped_handle.release();
   return mojo::MakeScopedHandle(mojo_handle);
 #else  // defined(OS_MACOSX)
-  base::PlatformFile platform_file = base::kInvalidPlatformFile;
-#if defined(OS_WIN)
-  platform_file = handle.handle.GetHandle();
-#else
-  platform_file = handle.handle.fd;
-#endif
+  base::PlatformFile platform_file = handle.handle.GetHandle();
   return mojo::WrapPlatformFile(platform_file);
 #endif  // defined(OS_MACOSX)
 }
@@ -137,7 +132,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->handle =
           base::SharedMemoryHandle(platform_file, base::GetCurrentProcId());
 #else
-      out->handle = base::SharedMemoryHandle(platform_file, true);
+      out->handle =
+          base::SharedMemoryHandle(base::FileDescriptor(platform_file, true));
 #endif
 #endif  // defined(OS_MACOSX)
     }

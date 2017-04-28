@@ -125,7 +125,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     os_buffer.value = static_cast<uint64_t>(memory_handle.GetMemoryObject());
 #elif defined(OS_POSIX)
-    os_buffer.value = static_cast<uint64_t>(memory_handle.fd);
+    os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
 #elif defined(OS_WIN)
     os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
 #endif
@@ -168,8 +168,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer, PlatformWrapperTest,
       base::GetCurrentProcId());
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
-  base::SharedMemoryHandle memory_handle(static_cast<int>(os_buffer.value),
-                                         false);
+  base::SharedMemoryHandle memory_handle(
+      base::FileDescriptor(static_cast<int>(os_buffer.value), false));
 #elif defined(OS_WIN)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(

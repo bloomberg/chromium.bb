@@ -1156,11 +1156,7 @@ bool FieldTrialList::CreateTrialsFromDescriptor(int fd_key) {
   if (fd == -1)
     return false;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
   SharedMemoryHandle shm_handle(FileDescriptor(fd, true));
-#else
-  SharedMemoryHandle shm_handle(fd, true);
-#endif
 
   bool result = FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
   DCHECK(result);

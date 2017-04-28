@@ -341,7 +341,7 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
   int shm_fd = -1;
   base::SharedMemory shm;
   if (shm.Create(options))
-    shm_fd = shm.handle().fd;
+    shm_fd = shm.handle().GetHandle();
   base::Pickle reply;
   SendRendererReply(fds, reply, shm_fd);
 }

@@ -450,9 +450,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
   size_t stride = width_ * kBytesPerPixel;
   buffer->shared_memory.reset(new base::SharedMemory());
   buffer->shared_memory->CreateAndMapAnonymous(stride * height_);
-  buffer->shm_pool.reset(
-      wl_shm_create_pool(globals_.shm.get(), buffer->shared_memory->handle().fd,
-                         buffer->shared_memory->requested_size()));
+  buffer->shm_pool.reset(wl_shm_create_pool(
+      globals_.shm.get(), buffer->shared_memory->handle().GetHandle(),
+      buffer->shared_memory->requested_size()));
 
   buffer->buffer.reset(static_cast<wl_buffer*>(wl_shm_pool_create_buffer(
       buffer->shm_pool.get(), 0, width_, height_, stride, kShmFormat)));

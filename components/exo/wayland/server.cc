@@ -443,7 +443,7 @@ void shm_create_pool(wl_client* client,
                      int32_t size) {
   std::unique_ptr<SharedMemory> shared_memory =
       GetUserDataAs<Display>(resource)->CreateSharedMemory(
-          base::FileDescriptor(fd, true), size);
+          base::SharedMemoryHandle::ImportHandle(fd), size);
   if (!shared_memory) {
     wl_resource_post_no_memory(resource);
     return;
@@ -2749,7 +2749,7 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
     memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
     wl_keyboard_send_keymap(keyboard_resource_,
                             WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-                            shared_keymap.handle().fd, keymap_size);
+                            shared_keymap.handle().GetHandle(), keymap_size);
   }
 
   // Overridden from KeyboardDelegate:

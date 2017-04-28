@@ -37,15 +37,12 @@ class DictionaryValue;
 class FilePath;
 class ListValue;
 class NullableString16;
+class SharedMemoryHandle;
 class Time;
 class TimeDelta;
 class TimeTicks;
 class UnguessableToken;
 struct FileDescriptor;
-
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-class SharedMemoryHandle;
-#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 }
 
 namespace IPC {
@@ -585,7 +582,6 @@ struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
 };
 #endif  // defined(OS_POSIX)
 
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 template <>
 struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
   typedef base::SharedMemoryHandle param_type;
@@ -596,7 +592,6 @@ struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
 template <>
 struct IPC_EXPORT ParamTraits<base::FilePath> {
