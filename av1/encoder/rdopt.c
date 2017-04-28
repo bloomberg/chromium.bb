@@ -2880,124 +2880,86 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                            dst, dst_stride);
 #endif  // !CONFIG_PVQ
 
-        if (is_lossless) {
-          TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
-          const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
-          const int coeff_ctx =
-              combine_entropy_contexts(tempa[idx], templ[idy]);
+        TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
+        const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
+        const int coeff_ctx = combine_entropy_contexts(tempa[idx], templ[idy]);
 #if CONFIG_CB4X4
-          block = 4 * block;
+        block = 4 * block;
 #endif  // CONFIG_CB4X4
 #if !CONFIG_PVQ
-          av1_xform_quant(cm, x, 0, block,
+        const AV1_XFORM_QUANT xform_quant =
+            is_lossless ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
+        av1_xform_quant(cm, x, 0, block,
 #if CONFIG_CB4X4
-                          2 * (row + idy), 2 * (col + idx),
+                        2 * (row + idy), 2 * (col + idx),
 #else
-                          row + idy, col + idx,
+                        row + idy, col + idx,
 #endif  // CONFIG_CB4X4
-                          BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
-          ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
-                                   tempa + idx, templ + idy,
-                                   cpi->sf.use_fast_coef_costing);
-          skip = (p->eobs[block] == 0);
-          can_skip &= skip;
-          tempa[idx] = !skip;
-          templ[idy] = !skip;
-#if CONFIG_EXT_TX
-          if (tx_size == TX_8X4) {
-            tempa[idx + 1] = tempa[idx];
-          } else if (tx_size == TX_4X8) {
-            templ[idy + 1] = templ[idy];
-          }
-#endif  // CONFIG_EXT_TX
-#else
-          (void)scan_order;
+                        BLOCK_8X8, tx_size, coeff_ctx, xform_quant);
 
-          av1_xform_quant(cm, x, 0, block,
-#if CONFIG_CB4X4
-                          2 * (row + idy), 2 * (col + idx),
-#else
-                          row + idy, col + idx,
-#endif  // CONFIG_CB4X4
-                          BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
-
-          ratey += x->rate;
-          skip = x->pvq_skip[0];
-          tempa[idx] = !skip;
-          templ[idy] = !skip;
-          can_skip &= skip;
-#endif  // !CONFIG_PVQ
-          if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
-            goto next;
-#if CONFIG_PVQ
-          if (!skip)
-#endif  // CONFIG_PVQ
-            av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
-                                        DCT_DCT, tx_size, dst, dst_stride,
-                                        p->eobs[block]);
-        } else {
-          int64_t dist;
-          unsigned int tmp;
-          TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
-          const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
-          const int coeff_ctx =
-              combine_entropy_contexts(tempa[idx], templ[idy]);
-#if CONFIG_CB4X4
-          block = 4 * block;
-#endif  // CONFIG_CB4X4
-#if !CONFIG_PVQ
-          av1_xform_quant(cm, x, 0, block,
-#if CONFIG_CB4X4
-                          2 * (row + idy), 2 * (col + idx),
-#else
-                          row + idy, col + idx,
-#endif  // CONFIG_CB4X4
-                          BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
+        if (!is_lossless) {
           av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-          ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
-                                   tempa + idx, templ + idy,
-                                   cpi->sf.use_fast_coef_costing);
-          skip = (p->eobs[block] == 0);
-          can_skip &= skip;
-          tempa[idx] = !skip;
-          templ[idy] = !skip;
+        }
+
+        ratey +=
+            av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order, tempa + idx,
+                            templ + idy, cpi->sf.use_fast_coef_costing);
+        skip = (p->eobs[block] == 0);
+        can_skip &= skip;
+        tempa[idx] = !skip;
+        templ[idy] = !skip;
 #if CONFIG_EXT_TX
-          if (tx_size == TX_8X4) {
-            tempa[idx + 1] = tempa[idx];
-          } else if (tx_size == TX_4X8) {
-            templ[idy + 1] = templ[idy];
-          }
+        if (tx_size == TX_8X4) {
+          tempa[idx + 1] = tempa[idx];
+        } else if (tx_size == TX_4X8) {
+          templ[idy + 1] = templ[idy];
+        }
 #endif  // CONFIG_EXT_TX
 #else
-          (void)scan_order;
+        (void)scan_order;
 
-          av1_xform_quant(cm, x, 0, block,
+        av1_xform_quant(cm, x, 0, block,
 #if CONFIG_CB4X4
-                          2 * (row + idy), 2 * (col + idx),
+                        2 * (row + idy), 2 * (col + idx),
 #else
-                          row + idy, col + idx,
+                        row + idy, col + idx,
 #endif  // CONFIG_CB4X4
-                          BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-          ratey += x->rate;
-          skip = x->pvq_skip[0];
-          tempa[idx] = !skip;
-          templ[idy] = !skip;
-          can_skip &= skip;
+                        BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
+
+        ratey += x->rate;
+        skip = x->pvq_skip[0];
+        tempa[idx] = !skip;
+        templ[idy] = !skip;
+        can_skip &= skip;
 #endif  // !CONFIG_PVQ
+
+        if (!is_lossless) {  // To use the pixel domain distortion, we need to
+                             // calculate inverse txfm *before* calculating RD
+                             // cost. Compared to calculating the distortion in
+                             // the frequency domain, the overhead of encoding
+                             // effort is low.
 #if CONFIG_PVQ
           if (!skip)
 #endif  // CONFIG_PVQ
             av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
                                         tx_type, tx_size, dst, dst_stride,
                                         p->eobs[block]);
+          unsigned int tmp;
           cpi->fn_ptr[sub_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
-          dist = (int64_t)tmp << 4;
+          const int64_t dist = (int64_t)tmp << 4;
           distortion += dist;
-          // To use the pixel domain distortion, the step below needs to be
-          // put behind the inv txfm. Compared to calculating the distortion
-          // in the frequency domain, the overhead of encoding effort is low.
-          if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
-            goto next;
+        }
+
+        if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
+          goto next;
+
+        if (is_lossless) {  // Calculate inverse txfm *after* RD cost.
+#if CONFIG_PVQ
+          if (!skip)
+#endif  // CONFIG_PVQ
+            av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+                                        DCT_DCT, tx_size, dst, dst_stride,
+                                        p->eobs[block]);
         }
       }
     }
