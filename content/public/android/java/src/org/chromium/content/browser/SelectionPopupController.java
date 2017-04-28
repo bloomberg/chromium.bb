@@ -859,15 +859,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnDismiss = true;
-                // When this event comes as the result of SelectAll, SelectionClient should not
-                // change the selection range (http://crbug.com/714106). We assume that two or
-                // more selected words means SelectAll.
-                // TODO(amaralp): Find a better way to know that SELECTION_HANDLES_SHOWN was
-                // caused by SelectAll.
-                boolean oneWordSelected =
-                        !getSelectedText().isEmpty() && !getSelectedText().matches(".*\\s+.*");
-                if (!oneWordSelected || mSelectionClient == null
-                        || !mSelectionClient.sendsSelectionPopupUpdates()) {
+                if (mSelectionClient == null || !mSelectionClient.sendsSelectionPopupUpdates()) {
                     showActionModeOrClearOnFailure();
                 } else {
                     // Rely on |mSelectionClient| sending a classification request and the request
