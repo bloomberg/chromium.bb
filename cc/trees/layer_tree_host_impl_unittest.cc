@@ -2934,8 +2934,6 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
     settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
-    settings.scrollbar_fade_out_resize_delay =
-        base::TimeDelta::FromMilliseconds(20);
     settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
 
     // If no animator is set, scrollbar won't show and no animation is expected.
