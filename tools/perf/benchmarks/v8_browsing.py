@@ -279,7 +279,6 @@ class V8RuntimeStatsDesktopClassicBrowsingBenchmark(
 
 
 
-@benchmark.Disabled('reference')  # http://crbug.com/694658
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['mythria@chromium.org'])
 class V8RuntimeStatsMobileBrowsingBenchmark(
@@ -291,7 +290,6 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
     return 'v8.runtimestats.browsing_mobile'
 
 
-@benchmark.Disabled('reference')  # http://crbug.com/694658
 @benchmark.Enabled('android')
 @benchmark.Disabled('all')
 @benchmark.Owner(emails=['mythria@chromium.org'])
@@ -309,7 +307,6 @@ class V8RuntimeStatsMobileTurboBrowsingBenchmark(
     return 'v8.runtimestats.browsing_mobile_turbo'
 
 
-@benchmark.Disabled('reference')  # http://crbug.com/694658
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['hablich@chromium.org'])
 class V8RuntimeStatsMobileClassicBrowsingBenchmark(
