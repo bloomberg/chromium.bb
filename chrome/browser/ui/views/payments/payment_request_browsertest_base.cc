@@ -35,7 +35,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/base_event_utils.h"
@@ -81,7 +81,7 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
   // allowing the test to inject itself as a dialog observer.
   content::WebContents* web_contents = GetActiveWebContents();
-  service_manager::InterfaceRegistry* registry =
+  service_manager::BinderRegistry* registry =
       web_contents->GetMainFrame()->GetInterfaceRegistry();
   registry->RemoveInterface(payments::mojom::PaymentRequest::Name_);
   registry->AddInterface(

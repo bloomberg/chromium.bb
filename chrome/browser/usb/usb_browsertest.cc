@@ -21,7 +21,7 @@
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/webusb_descriptors.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 using content::RenderFrameHost;
 using device::MockDeviceClient;

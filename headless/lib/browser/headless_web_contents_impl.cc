@@ -33,7 +33,7 @@
 #include "headless/lib/browser/headless_devtools_client_impl.h"
 #include "headless/lib/browser/headless_tab_socket_impl.h"
 #include "printing/features/features.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
@@ -207,7 +207,7 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
     render_frame_host->AllowBindings(content::BINDINGS_POLICY_HEADLESS);
   }
 
-  service_manager::InterfaceRegistry* interface_registry =
+  service_manager::BinderRegistry* interface_registry =
       render_frame_host->GetInterfaceRegistry();
 
   for (const MojoService& service : mojo_services_) {

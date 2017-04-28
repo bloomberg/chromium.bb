@@ -30,11 +30,11 @@ namespace content {
 class CONTENT_EXPORT ChildConnection {
  public:
   // Prepares a new child connection for a child process which will be
-  // identified to the service manager as |name|. |instance_id| must be unique
-  // among all child connections using the same |name|. |connector| is the
-  // connector to use to establish the connection.
-  ChildConnection(const std::string& name,
-                  const std::string& instance_id,
+  // identified to the service manager as |child_identity|. |child_identity|'s
+  // instance field must be unique among all child connections using the same
+  // service name. |connector| is the connector to use to establish the
+  // connection.
+  ChildConnection(const service_manager::Identity& child_identity,
                   mojo::edk::PendingProcessConnection* process_connection,
                   service_manager::Connector* connector,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner);

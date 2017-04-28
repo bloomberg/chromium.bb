@@ -19,7 +19,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/switches.h"
 #include "extensions/features/features.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 #if BUILDFLAG(ENABLE_WIFI_DISPLAY)
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_media_service_impl.h"
@@ -49,7 +49,7 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
                               const Extension* extension) {
   DCHECK(extension);
 
-  service_manager::InterfaceRegistry* registry =
+  service_manager::BinderRegistry* registry =
       render_frame_host->GetInterfaceRegistry();
   registry->AddInterface(base::Bind(
       KeepAliveImpl::Create,
