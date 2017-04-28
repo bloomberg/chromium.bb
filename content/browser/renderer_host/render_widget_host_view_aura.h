@@ -590,6 +590,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // provides an implementation, and directs events to |host_|.
   std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
+  cc::FrameSinkId frame_sink_id_;
+
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
