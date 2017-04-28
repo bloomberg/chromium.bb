@@ -504,16 +504,6 @@ public class NotificationPlatformBridge {
                 NotificationSystemStatusUtil.determineAppNotificationStatus(context),
                 NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_BOUNDARY);
 
-        // Set up a pending intent for going to the settings screen for |origin|.
-        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
-                context, SingleWebsitePreferences.class.getName());
-        settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
-        settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
-                SingleWebsitePreferences.createFragmentArgsForSite(origin));
-
-        PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,
-                PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
         PendingIntent clickIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin, profileId,
                 incognito, tag, webApkPackage, -1 /* actionIndex */);
@@ -555,19 +545,6 @@ public class NotificationPlatformBridge {
             }
         }
 
-        // If action buttons are displayed, there isn't room for the full Site Settings button
-        // label and icon, so abbreviate it. This has the unfortunate side-effect of unnecessarily
-        // abbreviating it on Android Wear also (crbug.com/576656). If custom layouts are enabled,
-        // the label and icon provided here only affect Android Wear, so don't abbreviate them.
-        boolean abbreviateSiteSettings = actions.length > 0 && !useCustomLayouts(hasImage);
-        int settingsIconId = abbreviateSiteSettings ? 0 : R.drawable.settings_cog;
-        CharSequence settingsTitle = abbreviateSiteSettings
-                                     ? res.getString(R.string.notification_site_settings_button)
-                                     : res.getString(R.string.page_info_site_settings_button);
-        // If the settings button is displayed together with the other buttons it has to be the last
-        // one, so add it after the other actions.
-        notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
-
         // The Android framework applies a fallback vibration pattern for the sound when the device
         // is in vibrate mode, there is no custom pattern, and the vibration default has been
         // disabled. To truly prevent vibration, provide a custom empty pattern.
@@ -581,6 +558,31 @@ public class NotificationPlatformBridge {
 
         String platformTag = makePlatformTag(notificationId, origin, tag);
         if (webApkPackage.isEmpty()) {
+            // Set up a pending intent for going to the settings screen for |origin|.
+            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
+                    context, SingleWebsitePreferences.class.getName());
+            settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
+            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
+                    SingleWebsitePreferences.createFragmentArgsForSite(origin));
+
+            PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,
+                    PENDING_INTENT_REQUEST_CODE, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            // If action buttons are displayed, there isn't room for the full Site Settings button
+            // label and icon, so abbreviate it. This has the unfortunate side-effect of
+            // unnecessarily abbreviating it on Android Wear also (crbug.com/576656). If custom
+            // layouts are enabled, the label and icon provided here only affect Android Wear, so
+            // don't abbreviate them.
+            boolean abbreviateSiteSettings = actions.length > 0 && !useCustomLayouts(hasImage);
+            int settingsIconId = abbreviateSiteSettings ? 0 : R.drawable.settings_cog;
+            CharSequence settingsTitle = abbreviateSiteSettings
+                    ? res.getString(R.string.notification_site_settings_button)
+                    : res.getString(R.string.page_info_site_settings_button);
+            // If the settings button is displayed together with the other buttons it has to be the
+            // last one, so add it after the other actions.
+            notificationBuilder.addSettingsAction(
+                    settingsIconId, settingsTitle, pendingSettingsIntent);
+
             mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
             NotificationUmaTracker.getInstance().onNotificationShown(
                     NotificationUmaTracker.SITES, ChannelDefinitions.CHANNEL_ID_SITES);
