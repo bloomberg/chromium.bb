@@ -97,10 +97,13 @@ function mouseChordedButtonPress(targetSelector) {
   });
 }
 
-function mouseClickInTarget(targetSelector, targetFrame) {
+function mouseClickInTarget(targetSelector, targetFrame, button) {
   var targetDocument = document;
   var frameLeft = 0;
   var frameTop = 0;
+  if (button === undefined) {
+    button = 'left';
+  }
   if (targetFrame !== undefined) {
     targetDocument = targetFrame.contentDocument;
     var frameRect = targetFrame.getBoundingClientRect();
@@ -119,8 +122,8 @@ function mouseClickInTarget(targetSelector, targetFrame) {
             source: 'mouse',
             actions: [
               {name: 'pointerMove', x: xPosition, y: yPosition},
-              {name: 'pointerDown', x: xPosition, y: yPosition},
-              {name: 'pointerUp'}
+              {name: 'pointerDown', x: xPosition, y: yPosition, button: button},
+              {name: 'pointerUp', button: button}
             ]
           }],
           resolve);

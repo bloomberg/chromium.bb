@@ -234,7 +234,6 @@ virtual/sharedarraybuffer/webaudio/codec-tests/aac [ WontFix ]
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]
 external/wpt/assumptions [ WontFix ]
-external/wpt/auxclick [ WontFix ]
 external/wpt/clear-site-data [ WontFix ]
 external/wpt/css-values [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
