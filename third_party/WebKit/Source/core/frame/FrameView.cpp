@@ -1711,7 +1711,13 @@ void FrameView::ViewportSizeChanged(bool width_changed, bool height_changed) {
     }
   }
 
-  if (!HasViewportConstrainedObjects())
+  if (GetFrame().GetDocument() && !IsInPerformLayout())
+    MarkViewportConstrainedObjectsForLayout(width_changed, height_changed);
+}
+
+void FrameView::MarkViewportConstrainedObjectsForLayout(bool width_changed,
+                                                        bool height_changed) {
+  if (!HasViewportConstrainedObjects() || !(width_changed || height_changed))
     return;
 
   for (const auto& viewport_constrained_object :

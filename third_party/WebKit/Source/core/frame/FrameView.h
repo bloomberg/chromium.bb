@@ -228,6 +228,8 @@ class CORE_EXPORT FrameView final
   void DidUpdateElasticOverscroll();
 
   void ViewportSizeChanged(bool width_changed, bool height_changed);
+  void MarkViewportConstrainedObjectsForLayout(bool width_changed,
+                                               bool height_changed);
 
   AtomicString MediaType() const;
   void SetMediaType(const AtomicString&);
