@@ -2622,8 +2622,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-zero-suggest-redirect-to-chrome",
      flag_descriptions::kEnableZeroSuggestRedirectToChromeName,
-     flag_descriptions::kEnableZeroSuggestRedirectToChromeDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestRedirectToChrome)},
+     flag_descriptions::kEnableZeroSuggestRedirectToChromeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestRedirectToChrome)},
     {"new-omnibox-answer-types", flag_descriptions::kNewOmniboxAnswerTypesName,
      flag_descriptions::kNewOmniboxAnswerTypesDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kNewOmniboxAnswerTypes)},
