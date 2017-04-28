@@ -113,44 +113,44 @@ test(function() {
     assert_equals(request2.mode, 'cors', 'Request.mode should match');
     assert_equals(request2.credentials, 'omit',
                   'Request.credentials should match');
-    assert_equals(request2.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+    assert_equals(request2.headers.get('X-Fetch-Foo').split(', ')[0], 'foo1',
                   'Request.headers should match');
-    assert_equals(request2.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+    assert_equals(request2.headers.get('X-Fetch-Foo').split(', ')[1], 'foo2',
                   'Request.headers should match');
-    assert_equals(request2.headers.getAll('X-Fetch-Bar')[0], 'bar',
+    assert_equals(request2.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
     var request3 = new Request(URL,
                                {headers: [['X-Fetch-Foo', 'foo1'],
                                           ['X-Fetch-Foo', 'foo2'],
                                           ['X-Fetch-Bar', 'bar']]});
-    assert_equals(request3.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+    assert_equals(request3.headers.get('X-Fetch-Foo').split(', ')[0], 'foo1',
                   'Request.headers should match');
-    assert_equals(request3.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+    assert_equals(request3.headers.get('X-Fetch-Foo').split(', ')[1], 'foo2',
                   'Request.headers should match');
-    assert_equals(request3.headers.getAll('X-Fetch-Bar')[0], 'bar',
+    assert_equals(request3.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
     var request4 = new Request(URL,
                                {headers: {'X-Fetch-Foo': 'foo1',
                                           'X-Fetch-Foo': 'foo2',
                                           'X-Fetch-Bar': 'bar'}});
-    assert_equals(request4.headers.getAll('X-Fetch-Foo')[0], 'foo2',
+    assert_equals(request4.headers.get('X-Fetch-Foo').split(', ')[0], 'foo2',
                   'Request.headers should match');
-    assert_equals(request4.headers.getAll('X-Fetch-Bar')[0], 'bar',
+    assert_equals(request4.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
     // https://github.com/whatwg/fetch/issues/479
     var request5 = new Request(request, {headers: undefined});
-    assert_equals(request5.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+    assert_equals(request5.headers.get('X-Fetch-Foo').split(', ')[0], 'foo1',
                   'Request.headers should match');
-    assert_equals(request5.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+    assert_equals(request5.headers.get('X-Fetch-Foo').split(', ')[1], 'foo2',
                   'Request.headers should match');
-    assert_equals(request5.headers.getAll('X-Fetch-Bar')[0], 'bar',
+    assert_equals(request5.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
     var request6 = new Request(request, {});
-    assert_equals(request6.headers.getAll('X-Fetch-Foo')[0], 'foo1',
+    assert_equals(request6.headers.get('X-Fetch-Foo').split(', ')[0], 'foo1',
                   'Request.headers should match');
-    assert_equals(request6.headers.getAll('X-Fetch-Foo')[1], 'foo2',
+    assert_equals(request6.headers.get('X-Fetch-Foo').split(', ')[1], 'foo2',
                   'Request.headers should match');
-    assert_equals(request6.headers.getAll('X-Fetch-Bar')[0], 'bar',
+    assert_equals(request6.headers.get('X-Fetch-Bar').split(', ')[0], 'bar',
                   'Request.headers should match');
     assert_throws(new TypeError(),
                   () => { new Request(request, {headers: null}) },

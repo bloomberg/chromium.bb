@@ -167,21 +167,6 @@ String Headers::get(const String& name, ExceptionState& exception_state) {
   return result;
 }
 
-Vector<String> Headers::getAll(const String& name,
-                               ExceptionState& exception_state) {
-  // "The getAll(|name|) method, when invoked, must run these steps:"
-  // "1. If |name| is not a name, throw a TypeError."
-  if (!FetchHeaderList::IsValidHeaderName(name)) {
-    exception_state.ThrowTypeError("Invalid name");
-    return Vector<String>();
-  }
-  // "2. Return the values of all headers in header list whose name is |name|,
-  //     in list order, and the empty sequence otherwise."
-  Vector<String> result;
-  header_list_->GetAll(name, result);
-  return result;
-}
-
 bool Headers::has(const String& name, ExceptionState& exception_state) {
   // "The has(|name|) method, when invoked, must run these steps:"
   // "1. If |name| is not a name, throw a TypeError."
