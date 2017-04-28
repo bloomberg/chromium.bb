@@ -165,6 +165,12 @@ class PermissionsData {
   // display at install time, in a nested format ready for display.
   PermissionMessages GetPermissionMessages() const;
 
+  // Returns the list of permission details for permissions that are included in
+  // active_permissions(), but not present in |granted_permissions|.  These are
+  // returned in a nested format, ready for display.
+  PermissionMessages GetNewPermissionMessages(
+      const PermissionSet& granted_permissions) const;
+
   // Returns true if the extension has requested all-hosts permissions (or
   // something close to it), but has had it withheld.
   bool HasWithheldImpliedAllHosts() const;
