@@ -148,10 +148,29 @@
 #      'target_name': 'file_manager',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_manager_commands',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_manager_commands',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:background_window',
+        '../../../externs/compiled_resources2.gyp:command_handler_deps',
+        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        'actions_controller',
+        'dialog_type',
+        'directory_contents',
+        'directory_model',
+        'directory_tree_naming_controller',
+        'file_selection',
+        'file_transfer_controller',
+        'naming_controller',
+        'providers_model',
+        'spinner_controller',
+        'task_controller',
+        'ui/compiled_resources2.gyp:directory_tree',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_selection',
       'dependencies': [
