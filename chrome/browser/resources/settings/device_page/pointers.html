@@ -53,12 +53,14 @@
       <!-- Subsection title only appears if both mouse and touchpad exist. -->
       <h2 hidden$="[[!hasMouse]]">$i18n{touchpadTitle}</h2>
       <div class$="[[getSubsectionClass_(hasMouse, hasTouchpad)]]">
-        <div class="settings-box block first">
-          <settings-toggle-button id="enableTapToClick"
+        <div class="settings-box first">
+          <settings-toggle-button id="enableTapToClick" class="start"
               pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
               label="$i18n{touchpadTapToClickEnabledLabel}">
           </settings-toggle-button>
-          <settings-toggle-button id="enableTapDragging"
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button id="enableTapDragging" class="start"
               pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
               label="$i18n{tapDraggingLabel}">
           </settings-toggle-button>
