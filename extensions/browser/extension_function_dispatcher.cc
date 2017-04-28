@@ -140,8 +140,6 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
       dispatcher_->ui_thread_response_callback_wrappers_
           .erase(render_frame_host);
     }
-
-    delete this;
   }
 
   ExtensionFunction::ResponseCallback CreateCallback(int request_id) {
@@ -370,9 +368,9 @@ void ExtensionFunctionDispatcher::Dispatch(
       callback_wrapper =
           new UIThreadResponseCallbackWrapper(AsWeakPtr(), render_frame_host);
       ui_thread_response_callback_wrappers_[render_frame_host] =
-          callback_wrapper;
+          base::WrapUnique(callback_wrapper);
     } else {
-      callback_wrapper = iter->second;
+      callback_wrapper = iter->second.get();
     }
     DispatchWithCallbackInternal(
         params, render_frame_host, render_process_id,
