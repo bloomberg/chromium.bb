@@ -55,7 +55,7 @@ void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
   }
 
   contents->SetUserData(kContentAutofillDriverFactoryWebContentsUserDataKey,
-                        new_factory.release());
+                        std::move(new_factory));
 }
 
 // static

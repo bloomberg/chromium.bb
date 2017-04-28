@@ -26,6 +26,8 @@ namespace autofill {
 class AutofillDriverIOS : public AutofillDriver,
                           public web::WebStateUserData<AutofillDriverIOS> {
  public:
+  ~AutofillDriverIOS() override;
+
   static void CreateForWebStateAndDelegate(
       web::WebState* web_state,
       AutofillClient* client,
@@ -67,7 +69,6 @@ class AutofillDriverIOS : public AutofillDriver,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
-  ~AutofillDriverIOS() override;
 
   // The WebState with which this object is associated.
   web::WebState* web_state_;

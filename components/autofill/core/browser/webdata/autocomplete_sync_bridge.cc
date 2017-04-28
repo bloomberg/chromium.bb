@@ -285,7 +285,7 @@ void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
     AutofillWebDataBackend* web_data_backend) {
   web_data_service->GetDBUserData()->SetUserData(
       UserDataKey(),
-      new AutocompleteSyncBridge(
+      base::MakeUnique<AutocompleteSyncBridge>(
           web_data_backend,
           base::BindRepeating(
               &ModelTypeChangeProcessor::Create,

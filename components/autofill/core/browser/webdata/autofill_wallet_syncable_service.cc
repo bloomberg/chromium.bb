@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -240,8 +241,8 @@ void AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(),
-      new AutofillWalletSyncableService(webdata_backend, app_locale));
+      UserDataKey(), base::WrapUnique(new AutofillWalletSyncableService(
+                         webdata_backend, app_locale)));
 }
 
 // static
