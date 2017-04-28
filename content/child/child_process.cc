@@ -54,8 +54,9 @@ ChildProcess::ChildProcess(
   // test process.
   if (!base::TaskScheduler::GetInstance()) {
     if (task_scheduler_init_params) {
-      base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-          task_scheduler_name, *task_scheduler_init_params.get());
+      base::TaskScheduler::Create(task_scheduler_name);
+      base::TaskScheduler::GetInstance()->Start(
+          *task_scheduler_init_params.get());
     } else {
       base::TaskScheduler::CreateAndStartWithDefaultParams(task_scheduler_name);
     }
