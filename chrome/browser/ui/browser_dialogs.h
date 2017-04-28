@@ -56,7 +56,7 @@ class PaymentRequestDialog;
 }
 
 namespace safe_browsing {
-class SRTPromptController;
+class ChromeCleanerDialogController;
 }
 
 namespace security_state {
@@ -244,8 +244,9 @@ void RecordDialogCreation(DialogIdentifier identifier);
 // Shows the Chrome Cleanup dialog asking the user if they want to clean their
 // system from unwanted software. This is called when unwanted software has been
 // detected on the system.
-void ShowSRTPrompt(Browser* browser,
-                   safe_browsing::SRTPromptController* controller);
+void ShowChromeCleanerPrompt(
+    Browser* browser,
+    safe_browsing::ChromeCleanerDialogController* controller);
 
 #endif  // OS_WIN
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_PROMPT_CONTROLLER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SRT_PROMPT_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_DIALOG_CONTROLLER_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_DIALOG_CONTROLLER_H_
 
 #include <vector>
 
@@ -19,9 +19,9 @@ namespace safe_browsing {
 // This class manages its own lifetime and will delete itself once the Cleaner
 // dialog has been dismissed and either of |Accept()| or |Cancel()| have been
 // called.
-class SRTPromptController {
+class ChromeCleanerDialogController {
  public:
-  SRTPromptController();
+  ChromeCleanerDialogController();
 
   base::string16 GetWindowTitle() const;
   base::string16 GetMainText() const;
@@ -52,14 +52,14 @@ class SRTPromptController {
   void AdvancedButtonClicked();
 
  protected:
-  ~SRTPromptController();
+  ~ChromeCleanerDialogController();
 
  private:
   void OnInteractionDone();
 
-  DISALLOW_COPY_AND_ASSIGN(SRTPromptController);
+  DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialogController);
 };
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_PROMPT_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_DIALOG_CONTROLLER_H_

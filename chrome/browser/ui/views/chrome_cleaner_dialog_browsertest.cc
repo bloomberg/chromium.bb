@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/srt_prompt_dialog.h"
+#include "chrome/browser/ui/views/chrome_cleaner_dialog.h"
 
 #include "base/macros.h"
-#include "chrome/browser/safe_browsing/srt_prompt_controller.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner_dialog_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -15,19 +15,20 @@
 
 namespace {
 
-class SRTPromptDialogTest : public DialogBrowserTest {
+class ChromeCleanerDialogTest : public DialogBrowserTest {
  public:
-  SRTPromptDialogTest() {}
+  ChromeCleanerDialogTest() {}
 
   void ShowDialog(const std::string& name) override {
-    chrome::ShowSRTPrompt(browser(), new safe_browsing::SRTPromptController());
+    chrome::ShowChromeCleanerPrompt(
+        browser(), new safe_browsing::ChromeCleanerDialogController());
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SRTPromptDialogTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialogTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SRTPromptDialogTest, InvokeDialog_default) {
+IN_PROC_BROWSER_TEST_F(ChromeCleanerDialogTest, InvokeDialog_default) {
   RunDialog();
 }
 
