@@ -36,38 +36,6 @@ const char kCreateProtoTableStatementTemplate[] =
     "key TEXT, "
     "proto BLOB, "
     "PRIMARY KEY(key))";
-const char kInsertProtoStatementTemplate[] =
-    "INSERT INTO %s (key, proto) VALUES (?,?)";
-const char kDeleteProtoStatementTemplate[] = "DELETE FROM %s WHERE key=?";
-const char kSelectAllStatementTemplate[] = "SELECT * FROM %s";
-
-void BindProtoDataToStatement(const std::string& key,
-                              const MessageLite& data,
-                              sql::Statement* statement) {
-  int size = data.ByteSize();
-  DCHECK_GT(size, 0);
-  std::vector<char> proto_buffer(size);
-  data.SerializeToArray(&proto_buffer[0], size);
-
-  statement->BindString(0, key);
-  statement->BindBlob(1, &proto_buffer[0], size);
-}
-
-bool StepAndInitializeProtoData(sql::Statement* statement,
-                                std::string* key,
-                                MessageLite* data) {
-  if (!statement->Step())
-    return false;
-
-  *key = statement->ColumnString(0);
-
-  int size = statement->ColumnByteLength(1);
-  const void* blob = statement->ColumnBlob(1);
-  DCHECK(blob);
-  data->ParseFromArray(blob, size);
-
-  return true;
-}
 
 predictors::ResourceData::ResourceType PrecacheResourceTypeToResourceType(
     precache::PrecacheResource::Type resource_type) {
@@ -192,12 +160,12 @@ void ResourcePrefetchPredictorTables::GetAllData(
   manifest_map->clear();
   origin_data_map->clear();
 
-  GetAllResourceDataHelper(PREFETCH_KEY_TYPE_URL, url_data_map);
-  GetAllResourceDataHelper(PREFETCH_KEY_TYPE_HOST, host_data_map);
-  GetAllRedirectDataHelper(PREFETCH_KEY_TYPE_URL, url_redirect_data_map);
-  GetAllRedirectDataHelper(PREFETCH_KEY_TYPE_HOST, host_redirect_data_map);
-  GetAllManifestDataHelper(manifest_map);
-  GetAllOriginDataHelper(origin_data_map);
+  url_resource_table_->GetAllData(url_data_map);
+  host_resource_table_->GetAllData(host_data_map);
+  url_redirect_table_->GetAllData(url_redirect_data_map);
+  host_redirect_table_->GetAllData(host_redirect_data_map);
+  manifest_table_->GetAllData(manifest_map);
+  origin_table_->GetAllData(origin_data_map);
 }
 
 void ResourcePrefetchPredictorTables::UpdateResourceData(
@@ -208,8 +176,10 @@ void ResourcePrefetchPredictorTables::UpdateResourceData(
   if (CantAccessDatabase())
     return;
 
-  UpdateDataHelper(key_type, PrefetchDataType::RESOURCE, data.primary_key(),
-                   data);
+  if (key_type == PREFETCH_KEY_TYPE_URL)
+    url_resource_table_->UpdateData(data.primary_key(), data);
+  else
+    host_resource_table_->UpdateData(data.primary_key(), data);
 }
 
 void ResourcePrefetchPredictorTables::UpdateRedirectData(
@@ -220,8 +190,10 @@ void ResourcePrefetchPredictorTables::UpdateRedirectData(
   if (CantAccessDatabase())
     return;
 
-  UpdateDataHelper(key_type, PrefetchDataType::REDIRECT, data.primary_key(),
-                   data);
+  if (key_type == PREFETCH_KEY_TYPE_URL)
+    url_redirect_table_->UpdateData(data.primary_key(), data);
+  else
+    host_redirect_table_->UpdateData(data.primary_key(), data);
 }
 
 void ResourcePrefetchPredictorTables::UpdateManifestData(
@@ -232,8 +204,7 @@ void ResourcePrefetchPredictorTables::UpdateManifestData(
   if (CantAccessDatabase())
     return;
 
-  UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::MANIFEST, host,
-                   manifest_data);
+  manifest_table_->UpdateData(host, manifest_data);
 }
 
 void ResourcePrefetchPredictorTables::UpdateOriginData(
@@ -243,8 +214,7 @@ void ResourcePrefetchPredictorTables::UpdateOriginData(
   if (CantAccessDatabase())
     return;
 
-  UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::ORIGIN,
-                   origin_data.host(), origin_data);
+  origin_table_->UpdateData(origin_data.host(), origin_data);
 }
 
 void ResourcePrefetchPredictorTables::DeleteResourceData(
@@ -257,9 +227,9 @@ void ResourcePrefetchPredictorTables::DeleteResourceData(
   DCHECK(!urls.empty() || !hosts.empty());
 
   if (!urls.empty())
-    DeleteDataHelper(PREFETCH_KEY_TYPE_URL, PrefetchDataType::RESOURCE, urls);
+    url_resource_table_->DeleteData(urls);
   if (!hosts.empty())
-    DeleteDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::RESOURCE, hosts);
+    host_resource_table_->DeleteData(hosts);
 }
 
 void ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint(
@@ -269,7 +239,10 @@ void ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint(
   if (CantAccessDatabase())
     return;
 
-  DeleteDataHelper(key_type, PrefetchDataType::RESOURCE, {key});
+  if (key_type == PREFETCH_KEY_TYPE_URL)
+    url_resource_table_->DeleteData({key});
+  else
+    host_resource_table_->DeleteData({key});
 }
 
 void ResourcePrefetchPredictorTables::DeleteRedirectData(
@@ -282,9 +255,9 @@ void ResourcePrefetchPredictorTables::DeleteRedirectData(
   DCHECK(!urls.empty() || !hosts.empty());
 
   if (!urls.empty())
-    DeleteDataHelper(PREFETCH_KEY_TYPE_URL, PrefetchDataType::REDIRECT, urls);
+    url_redirect_table_->DeleteData(urls);
   if (!hosts.empty())
-    DeleteDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::REDIRECT, hosts);
+    host_redirect_table_->DeleteData(hosts);
 }
 
 void ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint(
@@ -294,7 +267,10 @@ void ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint(
   if (CantAccessDatabase())
     return;
 
-  DeleteDataHelper(key_type, PrefetchDataType::REDIRECT, {key});
+  if (key_type == PREFETCH_KEY_TYPE_URL)
+    url_redirect_table_->DeleteData({key});
+  else
+    host_redirect_table_->DeleteData({key});
 }
 
 void ResourcePrefetchPredictorTables::DeleteManifestData(
@@ -303,7 +279,7 @@ void ResourcePrefetchPredictorTables::DeleteManifestData(
   if (CantAccessDatabase())
     return;
 
-  DeleteDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::MANIFEST, hosts);
+  manifest_table_->DeleteData(hosts);
 }
 
 void ResourcePrefetchPredictorTables::DeleteOriginData(
@@ -312,7 +288,7 @@ void ResourcePrefetchPredictorTables::DeleteOriginData(
   if (CantAccessDatabase())
     return;
 
-  DeleteDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::ORIGIN, hosts);
+  origin_table_->DeleteData(hosts);
 }
 
 void ResourcePrefetchPredictorTables::DeleteAllData() {
@@ -320,117 +296,17 @@ void ResourcePrefetchPredictorTables::DeleteAllData() {
   if (CantAccessDatabase())
     return;
 
-  sql::Statement deleter;
-  for (const char* table_name :
-       {kUrlResourceTableName, kUrlRedirectTableName, kHostResourceTableName,
-        kHostRedirectTableName, kManifestTableName}) {
-    deleter.Assign(DB()->GetUniqueStatement(
-        base::StringPrintf("DELETE FROM %s", table_name).c_str()));
-    deleter.Run();
-  }
+  url_resource_table_->DeleteAllData();
+  url_redirect_table_->DeleteAllData();
+  host_resource_table_->DeleteAllData();
+  host_redirect_table_->DeleteAllData();
+  manifest_table_->DeleteAllData();
+  origin_table_->DeleteAllData();
 }
 
-ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables() {}
+ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables() = default;
 
-ResourcePrefetchPredictorTables::~ResourcePrefetchPredictorTables() {}
-
-void ResourcePrefetchPredictorTables::GetAllResourceDataHelper(
-    PrefetchKeyType key_type,
-    PrefetchDataMap* data_map) {
-  // Read the resources table and organize it per primary key.
-  const char* table_name = GetTableName(key_type, PrefetchDataType::RESOURCE);
-  sql::Statement resource_reader(DB()->GetUniqueStatement(
-      base::StringPrintf(kSelectAllStatementTemplate, table_name).c_str()));
-
-  PrefetchData data;
-  std::string key;
-  while (StepAndInitializeProtoData(&resource_reader, &key, &data)) {
-    data_map->insert({key, data});
-    DCHECK_EQ(data.primary_key(), key);
-  }
-}
-
-void ResourcePrefetchPredictorTables::GetAllRedirectDataHelper(
-    PrefetchKeyType key_type,
-    RedirectDataMap* data_map) {
-  // Read the redirects table and organize it per primary key.
-  const char* table_name = GetTableName(key_type, PrefetchDataType::REDIRECT);
-  sql::Statement redirect_reader(DB()->GetUniqueStatement(
-      base::StringPrintf(kSelectAllStatementTemplate, table_name).c_str()));
-
-  RedirectData data;
-  std::string key;
-  while (StepAndInitializeProtoData(&redirect_reader, &key, &data)) {
-    data_map->insert({key, data});
-    DCHECK_EQ(data.primary_key(), key);
-  }
-}
-
-void ResourcePrefetchPredictorTables::GetAllManifestDataHelper(
-    ManifestDataMap* manifest_map) {
-  sql::Statement manifest_reader(DB()->GetUniqueStatement(
-      base::StringPrintf(kSelectAllStatementTemplate, kManifestTableName)
-          .c_str()));
-
-  precache::PrecacheManifest data;
-  std::string key;
-  while (StepAndInitializeProtoData(&manifest_reader, &key, &data)) {
-    manifest_map->insert({key, data});
-  }
-}
-
-void ResourcePrefetchPredictorTables::GetAllOriginDataHelper(
-    OriginDataMap* origin_map) {
-  sql::Statement reader(DB()->GetUniqueStatement(
-      base::StringPrintf(kSelectAllStatementTemplate, kOriginTableName)
-          .c_str()));
-
-  OriginData data;
-  std::string key;
-  while (StepAndInitializeProtoData(&reader, &key, &data)) {
-    origin_map->insert({key, data});
-    DCHECK_EQ(data.host(), key);
-  }
-}
-
-void ResourcePrefetchPredictorTables::UpdateDataHelper(
-    PrefetchKeyType key_type,
-    PrefetchDataType data_type,
-    const std::string& key,
-    const MessageLite& data) {
-  DB()->BeginTransaction();
-
-  // Delete the older data from the table.
-  std::unique_ptr<sql::Statement> deleter(
-      GetTableUpdateStatement(key_type, data_type, TableOperationType::REMOVE));
-  deleter->BindString(0, key);
-  bool success = deleter->Run();
-
-  if (success) {
-    // Add the new data to the table.
-    std::unique_ptr<sql::Statement> inserter(GetTableUpdateStatement(
-        key_type, data_type, TableOperationType::INSERT));
-    BindProtoDataToStatement(key, data, inserter.get());
-    success = inserter->Run();
-  }
-
-  if (!success)
-    DB()->RollbackTransaction();
-  else
-    DB()->CommitTransaction();
-}
-
-void ResourcePrefetchPredictorTables::DeleteDataHelper(
-    PrefetchKeyType key_type,
-    PrefetchDataType data_type,
-    const std::vector<std::string>& keys) {
-  for (const std::string& key : keys) {
-    std::unique_ptr<sql::Statement> deleter(GetTableUpdateStatement(
-        key_type, data_type, TableOperationType::REMOVE));
-    deleter->BindString(0, key);
-    deleter->Run();
-  }
-}
+ResourcePrefetchPredictorTables::~ResourcePrefetchPredictorTables() = default;
 
 // static
 float ResourcePrefetchPredictorTables::ComputeResourceScore(
@@ -586,6 +462,24 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
 
   if (!success)
     ResetDB();
+
+  if (success) {
+    url_resource_table_ = base::MakeUnique<GlowplugKeyValueTable<PrefetchData>>(
+        kUrlResourceTableName, db);
+    url_redirect_table_ = base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
+        kUrlRedirectTableName, db);
+    host_resource_table_ =
+        base::MakeUnique<GlowplugKeyValueTable<PrefetchData>>(
+            kHostResourceTableName, db);
+    host_redirect_table_ =
+        base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
+            kHostRedirectTableName, db);
+    manifest_table_ =
+        base::MakeUnique<GlowplugKeyValueTable<precache::PrecacheManifest>>(
+            kManifestTableName, db);
+    origin_table_ = base::MakeUnique<GlowplugKeyValueTable<OriginData>>(
+        kOriginTableName, db);
+  }
 }
 
 void ResourcePrefetchPredictorTables::LogDatabaseStats() {
@@ -606,41 +500,6 @@ void ResourcePrefetchPredictorTables::LogDatabaseStats() {
   if (statement.Step())
     UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableRowCount2",
                          statement.ColumnInt(0));
-}
-
-std::unique_ptr<sql::Statement>
-ResourcePrefetchPredictorTables::GetTableUpdateStatement(
-    PrefetchKeyType key_type,
-    PrefetchDataType data_type,
-    TableOperationType op_type) {
-  sql::StatementID id(__FILE__, key_type | (static_cast<int>(data_type) << 1) |
-                                    (static_cast<int>(op_type) << 3));
-  const char* statement_template =
-      (op_type == TableOperationType::REMOVE ? kDeleteProtoStatementTemplate
-                                             : kInsertProtoStatementTemplate);
-  const char* table_name = GetTableName(key_type, data_type);
-  return base::MakeUnique<sql::Statement>(DB()->GetCachedStatement(
-      id, base::StringPrintf(statement_template, table_name).c_str()));
-}
-
-// static
-const char* ResourcePrefetchPredictorTables::GetTableName(
-    PrefetchKeyType key_type,
-    PrefetchDataType data_type) {
-  bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
-  switch (data_type) {
-    case PrefetchDataType::RESOURCE:
-      return is_host ? kHostResourceTableName : kUrlResourceTableName;
-    case PrefetchDataType::REDIRECT:
-      return is_host ? kHostRedirectTableName : kUrlRedirectTableName;
-    case PrefetchDataType::MANIFEST:
-      return kManifestTableName;
-    case PrefetchDataType::ORIGIN:
-      return kOriginTableName;
-  }
-
-  NOTREACHED();
-  return nullptr;
 }
 
 }  // namespace predictors
