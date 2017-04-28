@@ -3580,8 +3580,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
 }
 
 // Verify origin replication with an A-embed-B-embed-C-embed-A hierarchy.
-// Disabled due to flake on multiple platforms: https://crbug.com/692864.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_OriginReplication) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(a),b), a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
