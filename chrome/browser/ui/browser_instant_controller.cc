@@ -163,9 +163,6 @@ void BrowserInstantController::ModelChanged(
 
     instant_.SearchModeChanged(old_state.mode, new_mode);
   }
-
-  if (old_state.instant_support != new_state.instant_support)
-    instant_.InstantSupportChanged(new_state.instant_support);
 }
 
 void BrowserInstantController::DefaultSearchProviderChanged(
