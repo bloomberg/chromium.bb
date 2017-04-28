@@ -223,7 +223,10 @@ void SearchResultListView::VisibilityChanged(views::View* starting_from,
 
 void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(auto_launch_animation_.get(), animation);
-  view_delegate_->OpenSearchResult(results()->GetItemAt(0), true, ui::EF_NONE);
+  if (results()->item_count() > 0) {
+    view_delegate_->OpenSearchResult(results()->GetItemAt(0), true,
+                                     ui::EF_NONE);
+  }
 
   // The auto-launch has to be canceled explicitly. Think that one of searcher
   // is extremely slow. Sometimes the events would happen in the following
