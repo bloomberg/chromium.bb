@@ -117,6 +117,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 context.getResources(), R.drawable.toolbar_handle_dark);
         mHandleLight = ApiCompatibilityUtils.getDrawable(
                 context.getResources(), R.drawable.toolbar_handle_light);
+        mLocationBarVerticalMargin =
+                getResources().getDimensionPixelOffset(R.dimen.bottom_location_bar_vertical_margin);
     }
 
     /**
@@ -207,6 +209,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
+
+        // Add extra top margin to the URL bar to compensate for the change to location bar's
+        // vertical margin in the constructor.
+        ((MarginLayoutParams) mLocationBar.findViewById(R.id.url_bar).getLayoutParams()).topMargin =
+                getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_url_bar_top_margin);
 
         // Exclude the location bar from the list of browsing mode views. This prevents its
         // visibility from changing during transitions.

@@ -225,8 +225,8 @@ public class ToolbarPhone extends ToolbarLayout
     private final Point mNtpSearchBoxTranslation = new Point();
 
     private final int mToolbarSidePadding;
-    private final int mLocationBarVerticalMargin;
     private final int mLocationBarBackgroundCornerRadius;
+    protected int mLocationBarVerticalMargin;
 
     private ValueAnimator mBrandColorTransitionAnimation;
     private boolean mBrandColorTransitionActive;

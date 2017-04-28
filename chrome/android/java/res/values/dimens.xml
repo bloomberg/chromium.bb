@@ -201,8 +201,9 @@
     <!-- Full Screen Dimensions -->
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
-    <dimen name="bottom_control_container_height">64dp</dimen>
-    <dimen name="bottom_toolbar_top_margin">8dp</dimen>
+    <dimen name="bottom_control_container_height">56dp</dimen>
+    <dimen name="bottom_toolbar_top_margin">2dp</dimen>
+    <dimen name="bottom_toolbar_url_bar_top_margin">4dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="webapp_control_container_height">22dp</dimen>
 
@@ -245,10 +246,10 @@
     <dimen name="toolbar_shadow_height">8dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
-    <dimen name="toolbar_handle_height">4dp</dimen>
-    <dimen name="toolbar_handle_width">40dp</dimen>
-    <dimen name="toolbar_handle_corner_radius">2dp</dimen>
-    <dimen name="toolbar_handle_margin_top">14dp</dimen>
+    <dimen name="toolbar_handle_height">3dp</dimen>
+    <dimen name="toolbar_handle_width">24dp</dimen>
+    <dimen name="toolbar_handle_corner_radius">1.5dp</dimen>
+    <dimen name="toolbar_handle_margin_top">12dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
     <dimen name="location_bar_google_g_width">24dp</dimen>
@@ -256,6 +257,7 @@
     <!-- location_bar_google_g_width + 2 * location_bar_google_g_margin -->
     <dimen name="location_bar_google_g_container_width">40dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
+    <dimen name="bottom_location_bar_vertical_margin">9dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_incognito_badge_padding">7dp</dimen>
     <dimen name="location_bar_icon_width">32dp</dimen>
