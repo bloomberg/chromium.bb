@@ -166,7 +166,8 @@ class TestDriver:
       # Override flags given in code with any command line arguments.
       for override_arg in shlex.split(self._flags.browser_args):
         arg_key = GetDictKey(override_arg)
-        if arg_key in original_args:
+        if (arg_key in original_args
+            and original_args[arg_key] in self._chrome_args):
           self._chrome_args.remove(original_args[arg_key])
           self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
         self._chrome_args.add(override_arg)
