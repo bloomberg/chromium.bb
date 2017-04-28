@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -544,7 +545,8 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
     if (info->use_default())
       return nullptr;
   } else {
-    request->SetUserData(&kUserDataKey, new OfflinePageRequestInfo());
+    request->SetUserData(&kUserDataKey,
+                         base::MakeUnique<OfflinePageRequestInfo>());
   }
 
   return new OfflinePageRequestJob(request, network_delegate, previews_decider);

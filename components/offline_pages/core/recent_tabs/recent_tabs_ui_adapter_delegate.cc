@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/recent_tabs/recent_tabs_ui_adapter_delegate.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -35,7 +36,7 @@ RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
     recent_tabs_ui_adapter = new DownloadUIAdapter(
         offline_page_model, request_coordinator, std::move(delegate));
     offline_page_model->SetUserData(kRecentTabsUIAdapterKey,
-                                    recent_tabs_ui_adapter);
+                                    base::WrapUnique(recent_tabs_ui_adapter));
   }
 
   return recent_tabs_ui_adapter;
