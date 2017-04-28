@@ -47,6 +47,12 @@ sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
   return content;
 }
 
+void SVGFilterRecordingContext::Abort() {
+  if (!paint_controller_)
+    return;
+  EndContent(FloatRect());
+}
+
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
                                  const FloatRect& bounds,
@@ -115,8 +121,14 @@ void SVGFilterPainter::FinishEffect(
     const LayoutObject& object,
     SVGFilterRecordingContext& recording_context) {
   FilterData* filter_data = filter_.GetFilterDataForLayoutObject(&object);
-  if (!filter_data)
+  if (!filter_data) {
+    // Our state was torn down while we were being painted (selection style for
+    // <text> can have this effect), or it was never created (invalid filter.)
+    // In the former case we may have been in the process of recording content,
+    // so make sure we put recording state into a consistent state.
+    recording_context.Abort();
     return;
+  }
 
   // A painting cycle can occur when an FeImage references a source that
   // makes use of the FeImage itself. This is the first place we would hit
