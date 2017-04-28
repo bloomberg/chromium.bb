@@ -192,10 +192,13 @@ Remember to replace `<full_path_to_your_home>`!
   },
 
   "files.watcherExclude": {
-    // Don't check out/ and third_party/ for changes to fix issue
+    // Don't watch out*/ and third_party/ for changes to fix an issue
     // where vscode doesn't notice that files have changed.
     // https://github.com/Microsoft/vscode/issues/3998
-    "**/out/**": true,
+    // There is currently another issue that requires a leading **/ for
+    // watcherExlude. Beware that this pattern might affect other out* folders
+    // like src/cc/output/.
+    "**/out*/**": true,
     "**/third_party/**": true
   },
 
