@@ -35,10 +35,6 @@
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UserMetricsAction;
 using ios::material::TimingFunction;
 
@@ -80,6 +76,10 @@ NSString* const kToolbarShareButtonIdentifier =
 // Makes a two-element C array of CGRects as described above, one for each
 // device idiom.
 #define FRAME_PAIR(H) { IPHONE_FRAME(H), IPAD_FRAME(H) }
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 // clang-format on
 
 const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT] = FRAME_PAIR(56);
