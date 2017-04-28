@@ -14,10 +14,6 @@ import("//url/features.gni")
 
 assert(!is_component_build, "Cronet requires static library build.")
 
-declare_args() {
-  cronet_enable_data_reduction_proxy_support = false
-}
-
 generate_jni("cronet_jni_headers") {
   sources = [
     "java/src/org/chromium/net/impl/CronetBidirectionalStream.java",
@@ -181,8 +177,6 @@ template("cronet_static_tmpl") {
       "//components/cronet/android/cert/cert_verifier_cache_serializer.h",
       "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",
       "//components/cronet/android/cronet_bidirectional_stream_adapter.h",
-      "//components/cronet/android/cronet_in_memory_pref_store.cc",
-      "//components/cronet/android/cronet_in_memory_pref_store.h",
       "//components/cronet/android/cronet_library_loader.cc",
       "//components/cronet/android/cronet_library_loader.h",
       "//components/cronet/android/cronet_upload_data_stream.cc",
@@ -219,14 +213,6 @@ template("cronet_static_tmpl") {
       "log",
     ]
 
-    if (cronet_enable_data_reduction_proxy_support) {
-      defines += [ "DATA_REDUCTION_PROXY_SUPPORT" ]
-      sources += [
-        "//components/cronet/android/cronet_data_reduction_proxy.cc",
-        "//components/cronet/android/cronet_data_reduction_proxy.h",
-      ]
-    }
-
     if (defined(invoker.defines)) {
       defines += invoker.defines
     }
@@ -242,13 +228,6 @@ cronet_static_tmpl("cronet_static") {
     "//net",
     "//url",
   ]
-
-  if (cronet_enable_data_reduction_proxy_support) {
-    deps += [
-      "//components/data_reduction_proxy/core/browser:browser_small",
-      "//components/data_reduction_proxy/core/common",
-    ]
-  }
 
   if (!use_platform_icu_alternatives) {
     deps += [ "//base:i18n" ]
@@ -548,10 +527,6 @@ shared_library("cronet_tests") {
   ]
 
   include_dirs = [ _cronet_version_header_include_dir ]
-
-  if (cronet_enable_data_reduction_proxy_support) {
-    deps += [ "//components/data_reduction_proxy/core/browser:browser_small" ]
-  }
 }
 
 android_resources("cronet_test_apk_resources") {
@@ -631,8 +606,6 @@ android_assets("cronet_test_apk_assets") {
     "test/assets/test/cacheable.txt.mock-http-headers",
     "test/assets/test/content_length_mismatch.html",
     "test/assets/test/content_length_mismatch.html.mock-http-headers",
-    "test/assets/test/datareductionproxysuccess.txt",
-    "test/assets/test/datareductionproxysuccess.txt.mock-http-headers",
     "test/assets/test/gzipped.html",
     "test/assets/test/gzipped.html.mock-http-headers",
     "test/assets/test/multiredirect.html",

@@ -190,49 +190,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    @OnlyRunNativeCronet
-    public void testDataReductionProxyEnabled() throws Exception {
-        final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
-
-        // Ensure native code is loaded before trying to start test server.
-        new ExperimentalCronetEngine.Builder(getContext()).build().shutdown();
-
-        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
-        if (!NativeTestServer.isDataReductionProxySupported()) {
-            return;
-        }
-        String serverHostPort = NativeTestServer.getHostPort();
-
-        // Enable the Data Reduction Proxy and configure it to use the test
-        // server as its primary proxy, and to check successfully that this
-        // proxy is OK to use.
-        ExperimentalCronetEngine.Builder cronetEngineBuilder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        cronetEngineBuilder.enableDataReductionProxy("test-key");
-        cronetEngineBuilder.setDataReductionProxyOptions(serverHostPort, "unused.net:9999",
-                NativeTestServer.getFileURL("/secureproxychecksuccess.txt"));
-        testFramework.mCronetEngine = (CronetEngineBase) cronetEngineBuilder.build();
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-
-        // Construct and start a request that can only be returned by the test
-        // server. This request will fail if the configuration logic for the
-        // Data Reduction Proxy is not used.
-        UrlRequest.Builder urlRequestBuilder = testFramework.mCronetEngine.newUrlRequestBuilder(
-                "http://DomainThatDoesnt.Resolve/datareductionproxysuccess.txt", callback,
-                callback.getExecutor());
-        urlRequestBuilder.build().start();
-        callback.blockForDone();
-
-        // Verify that the request is successful and that the Data Reduction
-        // Proxy logic configured to use the test server as its proxy.
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(serverHostPort, callback.mResponseInfo.getProxyServer());
-        assertEquals("http://DomainThatDoesnt.Resolve/datareductionproxysuccess.txt",
-                callback.mResponseInfo.getUrl());
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
     @DisabledTest(message = "Disabled due to flaky assert. See crbug.com/710626")
     public void testRealTimeNetworkQualityObservationsNotEnabled() throws Exception {
         ExperimentalCronetEngine.Builder mCronetEngineBuilder =
@@ -1414,10 +1371,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.addQuicHint("example.com", 12, 34);
         builder.setCertVerifierData("test_cert_verifier_data");
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
-        builder.enableDataReductionProxy("abcd");
         builder.setUserAgent("efgh");
         builder.setExperimentalOptions("ijkl");
-        builder.setDataReductionProxyOptions("mnop", "qrst", "uvwx");
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);
         nativeVerifyUrlRequestContextConfig(

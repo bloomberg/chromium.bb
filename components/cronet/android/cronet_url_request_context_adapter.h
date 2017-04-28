@@ -42,10 +42,6 @@ class FileNetLogObserver;
 namespace cronet {
 class TestUtil;
 
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-class CronetDataReductionProxy;
-#endif
-
 struct URLRequestContextConfig;
 
 bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
@@ -254,10 +250,6 @@ class CronetURLRequestContextAdapter
 
   // Java object that owns this CronetURLRequestContextAdapter.
   base::android::ScopedJavaGlobalRef<jobject> jcronet_url_request_context_;
-
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-  std::unique_ptr<CronetDataReductionProxy> data_reduction_proxy_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextAdapter);
 };

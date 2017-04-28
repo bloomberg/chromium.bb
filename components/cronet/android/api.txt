@@ -99,7 +99,6 @@ public abstract class org.chromium.net.ICronetEngineBuilder {
   public org.chromium.net.ICronetEngineBuilder();
   public abstract org.chromium.net.ICronetEngineBuilder addPublicKeyPins(java.lang.String, java.util.Set<byte[]>, boolean, java.util.Date);
   public abstract org.chromium.net.ICronetEngineBuilder addQuicHint(java.lang.String, int, int);
-  public abstract org.chromium.net.ICronetEngineBuilder enableDataReductionProxy(java.lang.String);
   public abstract org.chromium.net.ICronetEngineBuilder enableHttp2(boolean);
   public abstract org.chromium.net.ICronetEngineBuilder enableHttpCache(int, long);
   public abstract org.chromium.net.ICronetEngineBuilder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean);
@@ -114,7 +113,6 @@ public abstract class org.chromium.net.ICronetEngineBuilder {
   public abstract org.chromium.net.ExperimentalCronetEngine build();
   public org.chromium.net.ICronetEngineBuilder enableNetworkQualityEstimator(boolean);
   public org.chromium.net.ICronetEngineBuilder setCertVerifierData(java.lang.String);
-  public org.chromium.net.ICronetEngineBuilder setDataReductionProxyOptions(java.lang.String, java.lang.String, java.lang.String);
 }
 public final class org.chromium.net.InlineExecutionProhibitedException extends java.util.concurrent.RejectedExecutionException {
   public org.chromium.net.InlineExecutionProhibitedException();

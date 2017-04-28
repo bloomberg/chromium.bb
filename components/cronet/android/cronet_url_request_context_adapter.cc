@@ -68,10 +68,6 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_interceptor.h"
 
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-#include "components/cronet/android/cronet_data_reduction_proxy.h"
-#endif
-
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -615,25 +611,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   std::unique_ptr<net::NetworkDelegate> network_delegate(
       new BasicNetworkDelegate());
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-  DCHECK(!data_reduction_proxy_);
-  // For now, the choice to enable the data reduction proxy happens once,
-  // at initialization. It cannot be disabled thereafter.
-  if (!config->data_reduction_proxy_key.empty()) {
-    data_reduction_proxy_.reset(new CronetDataReductionProxy(
-        config->data_reduction_proxy_key, config->data_reduction_primary_proxy,
-        config->data_reduction_fallback_proxy,
-        config->data_reduction_secure_proxy_check_url, config->user_agent,
-        GetNetworkTaskRunner(), g_net_log.Get().net_log()));
-    network_delegate = data_reduction_proxy_->CreateNetworkDelegate(
-        std::move(network_delegate));
-    context_builder.set_proxy_delegate(
-        data_reduction_proxy_->CreateProxyDelegate());
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>> interceptors;
-    interceptors.push_back(data_reduction_proxy_->CreateInterceptor());
-    context_builder.SetInterceptors(std::move(interceptors));
-  }
-#endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
   context_builder.set_network_delegate(std::move(network_delegate));
   context_builder.set_net_log(g_net_log.Get().net_log());
 
@@ -819,10 +796,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   Java_CronetUrlRequestContext_initNetworkThread(env,
                                                  jcronet_url_request_context);
 
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-  if (data_reduction_proxy_)
-    data_reduction_proxy_->Init(true, GetURLRequestContext());
-#endif
   is_context_initialized_ = true;
   while (!tasks_waiting_for_context_.empty()) {
     tasks_waiting_for_context_.front().Run();
@@ -1092,10 +1065,6 @@ static jlong CreateRequestContextConfig(
     jboolean jhttp2_enabled,
     jboolean jsdch_enabled,
     jboolean jbrotli_enabled,
-    const JavaParamRef<jstring>& jdata_reduction_proxy_key,
-    const JavaParamRef<jstring>& jdata_reduction_proxy_primary_proxy,
-    const JavaParamRef<jstring>& jdata_reduction_proxy_fallback_proxy,
-    const JavaParamRef<jstring>& jdata_reduction_proxy_secure_proxy_check_url,
     jboolean jdisable_cache,
     jint jhttp_cache_mode,
     jlong jhttp_cache_max_size,
@@ -1114,12 +1083,6 @@ static jlong CreateRequestContextConfig(
       ConvertNullableJavaStringToUTF8(env, juser_agent),
       ConvertNullableJavaStringToUTF8(env,
                                       jexperimental_quic_connection_options),
-      ConvertNullableJavaStringToUTF8(env, jdata_reduction_proxy_key),
-      ConvertNullableJavaStringToUTF8(env, jdata_reduction_proxy_primary_proxy),
-      ConvertNullableJavaStringToUTF8(env,
-                                      jdata_reduction_proxy_fallback_proxy),
-      ConvertNullableJavaStringToUTF8(
-          env, jdata_reduction_proxy_secure_proxy_check_url),
       base::WrapUnique(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier)),
       jenable_network_quality_estimator,

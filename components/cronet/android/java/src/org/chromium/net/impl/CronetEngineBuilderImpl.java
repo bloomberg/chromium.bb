@@ -84,10 +84,6 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     private boolean mHttp2Enabled;
     private boolean mSdchEnabled;
     private boolean mBrotiEnabled;
-    private String mDataReductionProxyKey;
-    private String mDataReductionProxyPrimaryProxy;
-    private String mDataReductionProxyFallbackProxy;
-    private String mDataReductionProxySecureProxyCheckUrl;
     private boolean mDisableCache;
     private int mHttpCacheMode;
     private long mHttpCacheMaxSize;
@@ -197,41 +193,6 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     boolean brotliEnabled() {
         return mBrotiEnabled;
-    }
-
-    @Override
-    public CronetEngineBuilderImpl enableDataReductionProxy(String key) {
-        mDataReductionProxyKey = key;
-        return this;
-    }
-
-    String dataReductionProxyKey() {
-        return mDataReductionProxyKey;
-    }
-
-    @Override
-    public CronetEngineBuilderImpl setDataReductionProxyOptions(
-            String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
-        if (primaryProxy.isEmpty() || fallbackProxy.isEmpty() || secureProxyCheckUrl.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Primary and fallback proxies and check url must be set");
-        }
-        mDataReductionProxyPrimaryProxy = primaryProxy;
-        mDataReductionProxyFallbackProxy = fallbackProxy;
-        mDataReductionProxySecureProxyCheckUrl = secureProxyCheckUrl;
-        return this;
-    }
-
-    String dataReductionProxyPrimaryProxy() {
-        return mDataReductionProxyPrimaryProxy;
-    }
-
-    String dataReductionProxyFallbackProxy() {
-        return mDataReductionProxyFallbackProxy;
-    }
-
-    String dataReductionProxySecureProxyCheckUrl() {
-        return mDataReductionProxySecureProxyCheckUrl;
     }
 
     @IntDef({
