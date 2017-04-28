@@ -23,9 +23,12 @@
         -webkit-margin-end: var(--settings-control-spacing);
       }
 
-      #onoff[on] {
-        color: var(--settings-toggle-color);
+      #onOff {
         font-weight: 500;
+      }
+
+      #onOff[on] {
+        color: var(--settings-toggle-color);
       }
 
       .vpn-header {
@@ -42,7 +45,7 @@
 
     <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
       <div class="settings-box first">
-        <div id="onoff" class="start" on$="[[deviceIsEnabled_(deviceState)]]">
+        <div id="onOff" class="start" on$="[[deviceIsEnabled_(deviceState)]]">
           [[getOffOnString_(deviceState,
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>

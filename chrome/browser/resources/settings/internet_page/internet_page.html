@@ -19,10 +19,6 @@
 <dom-module id="settings-internet-page">
   <template>
     <style include="settings-shared">
-      div.add-no-icon {
-        -webkit-margin-start: 36px
-      }
-
       iron-icon {
         -webkit-margin-end: 12px;
         -webkit-margin-start: 4px;
@@ -48,30 +44,32 @@
             </cr-expand-button>
           </div>
           <template is="dom-if" if="[[addConnectionExpanded_]]">
-            <template is="dom-if" if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
-              <div actionable class="settings-box continuation center"
-                  on-tap="onAddWiFiTap_">
-                <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
+            <div class="list-frame vertical-list">
+              <template is="dom-if"
+                  if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
+                <div actionable class="list-item" on-tap="onAddWiFiTap_">
+                  <div class="start">$i18n{internetAddWiFi}</div>
+                  <button class="icon-external" is="paper-icon-button-light"
+                      aria-label="$i18n{internetAddWiFi}">
+                  </button>
+                </div>
+              </template>
+              <div actionable class="list-item" on-tap="onAddVPNTap_">
+                <div class="start">$i18n{internetAddVPN}</div>
                 <button class="icon-external" is="paper-icon-button-light"
-                    aria-label="$i18n{internetAddWiFi}">
+                    aria-label="$i18n{internetAddVPN}">
                 </button>
               </div>
-            </template>
-            <div actionable class="settings-box continuation center"
-                on-tap="onAddVPNTap_">
-              <div class="start add-no-icon">$i18n{internetAddVPN}</div>
-              <button class="icon-external" is="paper-icon-button-light"
-                  aria-label="$i18n{internetAddVPN}">
-              </button>
-            </div>
-            <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
-              <div actionable class="settings-box continuation center"
-                  on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
-                <div class="start add-no-icon">
-                  [[getAddThirdParrtyVpnLabel_(item)]]
+              <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
+                <div actionable class="list-item"
+                    on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
+                  <div class="start">[[getAddThirdParrtyVpnLabel_(item)]]</div>
+                  <button class="icon-external" is="paper-icon-button-light"
+                      aria-label$="[[getAddThirdParrtyVpnLabel_(item)]]">
+                  </button>
                 </div>
-              </div>
-            </template>
+              </template>
+            </div>
           </template>
         </template>
         <template is="dom-if" if="[[!allowAddConnection_(globalPolicy_)]]">

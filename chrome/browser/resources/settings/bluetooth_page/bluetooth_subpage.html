@@ -28,13 +28,17 @@
         @apply(--cr-icon-height-width);
       }
 
-      #onoff[on] {
+      #onOff {
+        font-weight: 500;
+      }
+
+      #onOff[on] {
         color: var(--settings-toggle-color);
       }
     </style>
 
     <div class="settings-box first">
-      <div id="onoff" class="start" on$="[[bluetoothToggleState]]">
+      <div id="onOff" class="start" on$="[[bluetoothToggleState]]">
         [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
       </div>

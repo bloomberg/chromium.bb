@@ -61,7 +61,12 @@
       }
 
       #buttonDiv paper-button {
-        margin: 10px 0;
+        /* Align text edge with trailing margin (12px button padding) */
+        -webkit-margin-end: -12px;
+        /* 8px spacing between highlight edges. */
+        -webkit-margin-start: calc(12px + 8px);
+        margin-bottom: 10px;
+        margin-top: 10px;
       }
 
       #networkState {
