@@ -109,7 +109,6 @@ class TestDownloadRequestHandler::PartialResponseJob
   void GetResponseInfo(net::HttpResponseInfo* response_info) override;
   int64_t GetTotalReceivedBytes() const override;
   bool GetMimeType(std::string* mime_type) const override;
-  int GetResponseCode() const override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
 
  private:
@@ -273,11 +272,6 @@ bool TestDownloadRequestHandler::PartialResponseJob::GetMimeType(
     std::string* mime_type) const {
   *mime_type = parameters_->content_type;
   return !parameters_->content_type.empty();
-}
-
-int TestDownloadRequestHandler::PartialResponseJob::GetResponseCode() const {
-  return response_info_.headers.get() ? response_info_.headers->response_code()
-                                      : 0;
 }
 
 int TestDownloadRequestHandler::PartialResponseJob::ReadRawData(
