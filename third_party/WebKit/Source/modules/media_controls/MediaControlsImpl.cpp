@@ -45,6 +45,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
+#include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
@@ -225,6 +226,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
           WTF::Bind(&MediaControlsImpl::HideAllMenus,
                     WrapWeakPersistent(this)))),
       orientation_lock_delegate_(nullptr),
+      rotate_to_fullscreen_delegate_(nullptr),
       hide_media_controls_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
                                 &media_element.GetDocument()),
@@ -252,9 +254,18 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
   controls->InitializeControls();
   controls->Reset();
 
-  // Initialize the orientation lock when going fullscreen feature.
-  if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
+  // RotateToFullscreen and FullscreenOrientationLock are not yet compatible
+  // so enabling RotateToFullscreen disables FullscreenOrientationLock.
+  // TODO(johnme): Make it possible to use both features simultaneously.
+  if (RuntimeEnabledFeatures::videoRotateToFullscreenEnabled() &&
       media_element.IsHTMLVideoElement()) {
+    // Initialize the rotate-to-fullscreen feature.
+    controls->rotate_to_fullscreen_delegate_ =
+        new MediaControlsRotateToFullscreenDelegate(
+            toHTMLVideoElement(media_element));
+  } else if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
+             media_element.IsHTMLVideoElement()) {
+    // Initialize the orientation lock when going fullscreen feature.
     controls->orientation_lock_delegate_ =
         new MediaControlsOrientationLockDelegate(
             toHTMLVideoElement(media_element));
@@ -408,6 +419,8 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
   media_event_listener_->Attach();
   if (orientation_lock_delegate_)
     orientation_lock_delegate_->Attach();
+  if (rotate_to_fullscreen_delegate_)
+    rotate_to_fullscreen_delegate_->Attach();
 
   if (!resize_observer_) {
     resize_observer_ =
@@ -430,6 +443,8 @@ void MediaControlsImpl::RemovedFrom(ContainerNode*) {
   media_event_listener_->Detach();
   if (orientation_lock_delegate_)
     orientation_lock_delegate_->Detach();
+  if (rotate_to_fullscreen_delegate_)
+    rotate_to_fullscreen_delegate_->Detach();
 
   resize_observer_.Clear();
 }
@@ -1130,6 +1145,7 @@ DEFINE_TRACE(MediaControlsImpl) {
   visitor->Trace(media_event_listener_);
   visitor->Trace(window_event_listener_);
   visitor->Trace(orientation_lock_delegate_);
+  visitor->Trace(rotate_to_fullscreen_delegate_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

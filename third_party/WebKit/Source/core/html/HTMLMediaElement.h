@@ -724,6 +724,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;
   friend class MediaControlsOrientationLockDelegateTest;
+  friend class MediaControlsRotateToFullscreenDelegateTest;
 
   Member<AutoplayPolicy> autoplay_policy_;
 

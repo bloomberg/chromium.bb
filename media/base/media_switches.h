@@ -109,6 +109,7 @@ MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kAndroidMediaPlayerRenderer;
 MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;
+MEDIA_EXPORT extern const base::Feature kVideoRotateToFullscreen;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 #endif  // defined(OS_ANDROID)
 

@@ -2583,6 +2583,15 @@ const char kVideoFullscreenOrientationLockDescription[] =
     "Lock the screen orientation of the device to match video orientation "
     "when a video goes fullscreen. Only on phones.";
 
+//  Video rotate-to-fullscreen experiment strings.
+
+const char kVideoRotateToFullscreenName[] =
+    "Rotate-to-fullscreen gesture for videos.";
+
+const char kVideoRotateToFullscreenDescription[] =
+    "Enter/exit fullscreen when device is rotated to/from the orientation of "
+    "the video. Only on phones.";
+
 //  Expensive background timer throttling flag
 
 const char kExpensiveBackgroundTimerThrottlingName[] =

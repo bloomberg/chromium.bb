@@ -56,7 +56,7 @@ class StubLocalFrameClient : public EmptyLocalFrameClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return WTF::WrapUnique(new MockVideoWebMediaPlayer());
+    return WTF::MakeUnique<MockVideoWebMediaPlayer>();
   }
 };
 

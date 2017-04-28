@@ -147,6 +147,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableSendBeaconThrowForBlobWithNonSimpleType(bool);
   BLINK_EXPORT static void EnableBackgroundVideoTrackOptimization(bool);
   BLINK_EXPORT static void EnableVideoFullscreenOrientationLock(bool);
+  BLINK_EXPORT static void EnableVideoRotateToFullscreen(bool);
   BLINK_EXPORT static void EnableVideoFullscreenDetection(bool);
   BLINK_EXPORT static void EnableMediaControlsOverlayPlayButton(bool);
 

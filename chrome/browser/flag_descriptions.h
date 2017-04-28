@@ -2806,6 +2806,14 @@ extern const char kVideoFullscreenOrientationLockName[];
 // playback.
 extern const char kVideoFullscreenOrientationLockDescription[];
 
+//  Video rotate-to-fullscreen experiment strings.
+
+// Name of the flag for enabling rotate-to-fullscreen for video playback.
+extern const char kVideoRotateToFullscreenName[];
+
+// Description of the flag for enabling rotate-to-fullscreen for video playback.
+extern const char kVideoRotateToFullscreenDescription[];
+
 //  Expensive background timer throttling flag
 
 // Name for the flag to enable expensive background timer throttling

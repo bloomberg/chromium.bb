@@ -396,6 +396,10 @@ void WebRuntimeFeatures::EnableVideoFullscreenOrientationLock(bool enable) {
   RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableVideoRotateToFullscreen(bool enable) {
+  RuntimeEnabledFeatures::setVideoRotateToFullscreenEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableVideoFullscreenDetection(bool enable) {
   RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(enable);
 }

@@ -36,6 +36,7 @@ namespace blink {
 class Event;
 class MediaControlsMediaEventListener;
 class MediaControlsOrientationLockDelegate;
+class MediaControlsRotateToFullscreenDelegate;
 class MediaControlsWindowEventListener;
 class MediaControlCastButtonElement;
 class MediaControlCurrentTimeDisplayElement;
@@ -146,6 +147,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // For tests.
   friend class MediaControlsOrientationLockDelegateTest;
+  friend class MediaControlsRotateToFullscreenDelegateTest;
   friend class MediaControlsImplTest;
 
   // Need to be members of MediaControls for private member access.
@@ -245,6 +247,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlsMediaEventListener> media_event_listener_;
   Member<MediaControlsWindowEventListener> window_event_listener_;
   Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
+  Member<MediaControlsRotateToFullscreenDelegate>
+      rotate_to_fullscreen_delegate_;
 
   TaskRunnerTimer<MediaControlsImpl> hide_media_controls_timer_;
   unsigned hide_timer_behavior_flags_;

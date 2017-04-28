@@ -219,6 +219,10 @@ const base::Feature kExternalClearKeyForTesting{
 const base::Feature kVideoFullscreenOrientationLock{
     "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enter/exit fullscreen when device is rotated to/from the video orientation.
+const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experimental feature to enable persistent-license type support in MediaDrm
 // when using Encrypted Media Extensions (EME) API.
 // TODO(xhwang): Remove this after feature launch. See http://crbug.com/493521

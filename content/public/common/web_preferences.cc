@@ -208,6 +208,7 @@ WebPreferences::WebPreferences()
       progress_bar_completion(ProgressBarCompletion::LOAD_EVENT),
       spellcheck_enabled_by_default(true),
       video_fullscreen_orientation_lock_enabled(false),
+      video_rotate_to_fullscreen_enabled(false),
       video_fullscreen_detection_enabled(false),
       embedded_media_experience_enabled(false),
 #else  // defined(OS_ANDROID)

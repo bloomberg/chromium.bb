@@ -247,6 +247,9 @@ struct CONTENT_EXPORT WebPreferences {
   bool spellcheck_enabled_by_default;
   // If enabled, when a video goes fullscreen, the orientation should be locked.
   bool video_fullscreen_orientation_lock_enabled;
+  // If enabled, fullscreen should be entered/exited when the device is rotated
+  // to/from the orientation of the video.
+  bool video_rotate_to_fullscreen_enabled;
   // If enabled, video fullscreen detection will be enabled.
   bool video_fullscreen_detection_enabled;
   bool embedded_media_experience_enabled;
