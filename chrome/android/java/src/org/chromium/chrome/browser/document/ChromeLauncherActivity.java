@@ -418,8 +418,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             startActivity(newIntent);
         } catch (SecurityException ex) {

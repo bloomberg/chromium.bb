@@ -91,8 +91,7 @@ public class ShapeDetectionTest extends ChromeActivityTestCaseBase<ChromeActivit
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOldPolicy = StrictMode.allowThreadDiskReads();
-                StrictMode.allowThreadDiskWrites();
+                mOldPolicy = StrictMode.allowThreadDiskWrites();
             }
         });
     }

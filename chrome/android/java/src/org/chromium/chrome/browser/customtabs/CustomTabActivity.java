@@ -1019,8 +1019,7 @@ public class CustomTabActivity extends ChromeActivity {
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
         boolean willChromeHandleIntent = getIntentDataProvider().isOpenedByChrome();
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             willChromeHandleIntent |= ExternalNavigationDelegateImpl
                     .willChromeHandleIntent(intent, true);
@@ -1046,7 +1045,6 @@ public class CustomTabActivity extends ChromeActivity {
             tab.detachAndStartReparenting(intent, startActivityOptions, finalizeCallback);
         } else {
             // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
-            StrictMode.allowThreadDiskReads();
             StrictMode.allowThreadDiskWrites();
             try {
                 if (mIntentDataProvider.isInfoPage()) {

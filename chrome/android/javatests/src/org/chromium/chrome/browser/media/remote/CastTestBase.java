@@ -134,8 +134,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOldPolicy = StrictMode.allowThreadDiskReads();
-                StrictMode.allowThreadDiskWrites();
+                mOldPolicy = StrictMode.allowThreadDiskWrites();
             }
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());

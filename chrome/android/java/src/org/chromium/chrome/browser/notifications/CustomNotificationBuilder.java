@@ -105,8 +105,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         String formattedTime = "";
 
         // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             long time = SystemClock.elapsedRealtime();
             formattedTime = DateFormat.getTimeFormat(mContext).format(new Date());
