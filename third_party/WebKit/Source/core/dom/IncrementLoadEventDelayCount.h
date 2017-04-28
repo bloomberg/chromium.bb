@@ -6,6 +6,7 @@
 #define IncrementLoadEventDelayCount_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
@@ -16,7 +17,7 @@ class Document;
 
 // A helper class that will increment a document's loadEventDelayCount on
 // contruction and decrement it on destruction (semantics similar to RefPtr).
-class IncrementLoadEventDelayCount {
+class CORE_EXPORT IncrementLoadEventDelayCount {
   USING_FAST_MALLOC(IncrementLoadEventDelayCount);
   WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
 

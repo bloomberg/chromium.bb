@@ -402,23 +402,31 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   }
 
   HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
-  FrameLoader& loader = GetFrameLoader();
-  if (state_ < kCommitted) {
-    if (state_ == kNotStarted)
+  switch (state_) {
+    case kNotStarted:
       probe::frameClearedScheduledClientNavigation(frame_);
-    state_ = kSentDidFinishLoad;
-    GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
-                                                         history_commit_type);
-    if (!frame_)
-      return;
-    loader.DetachProvisionalDocumentLoader(this);
-  } else if (state_ == kCommitted) {
-    if (frame_->GetDocument()->Parser())
-      frame_->GetDocument()->Parser()->StopParsing();
-    state_ = kSentDidFinishLoad;
-    GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
+    // Fall-through
+    case kProvisional:
+      state_ = kSentDidFinishLoad;
+      GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
+                                                           history_commit_type);
+      if (frame_)
+        GetFrameLoader().DetachProvisionalDocumentLoader(this);
+      break;
+    case kCommitted:
+      if (frame_->GetDocument()->Parser())
+        frame_->GetDocument()->Parser()->StopParsing();
+      state_ = kSentDidFinishLoad;
+      GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
+      if (frame_)
+        frame_->GetDocument()->CheckCompleted();
+      break;
+    case kSentDidFinishLoad:
+      // TODO(japhet): Why do we need to call DidFinishNavigation() again?
+      GetFrameLoader().DidFinishNavigation();
+      break;
   }
-  loader.CheckCompleted();
+  DCHECK_EQ(kSentDidFinishLoad, state_);
 }
 
 void DocumentLoader::FinishedLoading(double finish_time) {
