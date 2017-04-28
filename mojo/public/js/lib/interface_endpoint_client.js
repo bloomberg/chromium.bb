@@ -232,6 +232,10 @@ define("mojo/public/js/lib/interface_endpoint_client", [
     this.controlMessageProxy_.requireVersion(version);
   };
 
+  InterfaceEndpointClient.prototype.getEncounteredError = function() {
+    return this.encounteredError_;
+  };
+
   var exports = {};
   exports.InterfaceEndpointClient = InterfaceEndpointClient;
 

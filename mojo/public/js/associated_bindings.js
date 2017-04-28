@@ -116,6 +116,13 @@ define("mojo/public/js/associated_bindings", [
     this.reset();
   };
 
+  // Indicates whether an error has been encountered. If true, method calls
+  // on this interface will be dropped (and may already have been dropped).
+  AssociatedInterfacePtrController.prototype.getEncounteredError = function() {
+    return this.interfaceEndpointClient_ ?
+        this.interfaceEndpointClient_.getEncounteredError() : false;
+  };
+
   AssociatedInterfacePtrController.prototype.setConnectionErrorHandler =
       function(callback) {
     if (!this.isBound()) {
