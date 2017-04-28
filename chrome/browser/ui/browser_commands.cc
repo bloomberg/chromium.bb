@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -1103,9 +1102,11 @@ void OpenTaskManager(Browser* browser) {
 #endif
 }
 
-void OpenFeedbackDialog(Browser* browser) {
+void OpenFeedbackDialog(Browser* browser, FeedbackSource source) {
   base::RecordAction(UserMetricsAction("Feedback"));
-  chrome::ShowFeedbackPage(browser, std::string(), std::string());
+  chrome::ShowFeedbackPage(browser, source,
+                           std::string() /* description_template */,
+                           std::string() /* category_tag */);
 }
 
 void ToggleBookmarkBar(Browser* browser) {

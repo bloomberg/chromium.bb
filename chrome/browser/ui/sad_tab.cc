@@ -53,7 +53,7 @@ void RecordEvent(bool feedback, SadTabEvent event) {
   }
 }
 
-const char kCategoryTagCrash[] = "Crash";
+constexpr char kCategoryTagCrash[] = "Crash";
 
 bool ShouldShowFeedbackButton() {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -158,9 +158,10 @@ void SadTab::PerformAction(SadTab::Action action) {
     case Action::BUTTON:
       RecordEvent(show_feedback_button_, SadTabEvent::BUTTON_CLICKED);
       if (show_feedback_button_) {
-        chrome::ShowFeedbackPage(
-            chrome::FindBrowserWithWebContents(web_contents_),
-            l10n_util::GetStringUTF8(kind_ == chrome::SAD_TAB_KIND_CRASHED
+        ShowFeedbackPage(
+            FindBrowserWithWebContents(web_contents_),
+            kFeedbackSourceSadTabPage,
+            l10n_util::GetStringUTF8(kind_ == SAD_TAB_KIND_CRASHED
                                          ? IDS_CRASHED_TAB_FEEDBACK_MESSAGE
                                          : IDS_KILLED_TAB_FEEDBACK_MESSAGE),
             std::string(kCategoryTagCrash));

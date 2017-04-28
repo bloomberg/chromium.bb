@@ -271,7 +271,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
-                             message, std::string());
+                             chrome::kFeedbackSourceSupervisedUserInterstitial,
+                             message, std::string() /* category_tag */);
 #endif
     return;
   }
