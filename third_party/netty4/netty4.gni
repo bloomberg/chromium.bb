@@ -4,4 +4,5 @@
 
 # Defines location of netty4 jar file.
 
-NETTY4_JAR_FILE = "//third_party/netty4/src/jar/all-in-one/netty-all-4.1.0.CR1-20160111.120759-50.jar"
+NETTY4_JAR_FILE =
+    "//third_party/netty4/src/jar/all-in-one/netty-all-4.1.9.Final.jar"

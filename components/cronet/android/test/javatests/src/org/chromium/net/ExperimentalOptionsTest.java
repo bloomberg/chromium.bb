@@ -32,7 +32,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         CronetTestUtil.setMockCertVerifierForTesting(
                 mBuilder, QuicTestServer.createMockCertVerifier());
         assertTrue(Http2TestServer.startHttp2TestServer(
-                getContext(), QuicTestServer.getServerCert(), QuicTestServer.getServerCertKey()));
+                getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM));
     }
 
     @Override
