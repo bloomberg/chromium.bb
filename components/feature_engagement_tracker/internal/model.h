@@ -22,9 +22,9 @@ struct FeatureConfig;
 // A Model provides all necessary runtime state.
 class Model {
  public:
-  // Callback for when model initialization has finished. The bool argument
-  // denotes whether the model was successfully initialized.
-  using OnModelInitializationFinished = base::Callback<void(bool)>;
+  // Callback for when model initialization has finished. The |success|
+  // argument denotes whether the model was successfully initialized.
+  using OnModelInitializationFinished = base::Callback<void(bool success)>;
 
   virtual ~Model() = default;
 
@@ -32,7 +32,7 @@ class Model {
   // required operations have been finished, a callback is posted.
   virtual void Initialize(const OnModelInitializationFinished& callback) = 0;
 
-  // Returns whether the model is ready, i.e. whether it has been fully
+  // Returns whether the model is ready, i.e. whether it has been successfully
   // initialized.
   virtual bool IsReady() const = 0;
 

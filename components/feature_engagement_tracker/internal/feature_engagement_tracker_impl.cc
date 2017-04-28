@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
@@ -73,6 +74,7 @@ FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
     std::unique_ptr<ConditionValidator> condition_validator,
     std::unique_ptr<StorageValidator> storage_validator)
     : condition_validator_(std::move(condition_validator)),
+      initialization_finished_(false),
       weak_ptr_factory_(this) {
   model_ = base::MakeUnique<ModelImpl>(
       std::move(store), std::move(configuration), std::move(storage_validator));
@@ -101,13 +103,31 @@ void FeatureEngagementTrackerImpl::Dismissed() {
   model_->SetIsCurrentlyShowing(false);
 }
 
-void FeatureEngagementTrackerImpl::AddOnInitializedCallback(
-    OnInitializedCallback callback) {
-  // TODO(nyquist): Add support for this.
+bool FeatureEngagementTrackerImpl::IsInitialized() {
+  return model_->IsReady();
 }
 
-void FeatureEngagementTrackerImpl::OnModelInitializationFinished(bool result) {
-  // TODO(nyquist): Ensure that all OnInitializedCallbacks are invoked.
+void FeatureEngagementTrackerImpl::AddOnInitializedCallback(
+    OnInitializedCallback callback) {
+  if (initialization_finished_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, model_->IsReady()));
+    return;
+  }
+
+  on_initialized_callbacks_.push_back(callback);
+}
+
+void FeatureEngagementTrackerImpl::OnModelInitializationFinished(bool success) {
+  DCHECK_EQ(success, model_->IsReady());
+  initialization_finished_ = true;
+
+  for (auto& callback : on_initialized_callbacks_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, success));
+  }
+
+  on_initialized_callbacks_.clear();
 }
 
 }  // namespace feature_engagement_tracker

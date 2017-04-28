@@ -37,16 +37,55 @@ void RegisterFeatureConfig(EditableConfiguration* configuration,
   configuration->SetConfiguration(&feature, config);
 }
 
+// An OnInitializedCallback that stores whether it has been invoked and what
+// the result was.
+class StoringInitializedCallback {
+ public:
+  StoringInitializedCallback() : invoked_(false), success_(false) {}
+
+  void OnInitialized(bool success) {
+    DCHECK(!invoked_);
+    invoked_ = true;
+    success_ = success;
+  }
+
+  bool invoked() { return invoked_; }
+
+  bool success() { return success_; }
+
+ private:
+  bool invoked_;
+  bool success_;
+
+  DISALLOW_COPY_AND_ASSIGN(StoringInitializedCallback);
+};
+
+// An InMemoryStore that is able to fake successful and unsuccessful
+// loading of state.
+class TestInMemoryStore : public InMemoryStore {
+ public:
+  explicit TestInMemoryStore(bool load_should_succeed)
+      : InMemoryStore(), load_should_succeed_(load_should_succeed) {}
+
+  void Load(const OnLoadedCallback& callback) override {
+    HandleLoadResult(callback, load_should_succeed_);
+  }
+
+ private:
+  // Denotes whether the call to Load(...) should succeed or not. This impacts
+  // both the ready-state and the result for the OnLoadedCallback.
+  bool load_should_succeed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInMemoryStore);
+};
+
 class FeatureEngagementTrackerImplTest : public ::testing::Test {
  public:
-  FeatureEngagementTrackerImplTest() {
-    std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
+  FeatureEngagementTrackerImplTest() = default;
+
+  void SetUp() override {
     std::unique_ptr<EditableConfiguration> configuration =
         base::MakeUnique<EditableConfiguration>();
-    std::unique_ptr<ConditionValidator> condition_validator =
-        base::MakeUnique<OnceConditionValidator>();
-    std::unique_ptr<StorageValidator> storage_validator =
-        base::MakeUnique<NeverStorageValidator>();
 
     RegisterFeatureConfig(configuration.get(), kTestFeatureFoo, true);
     RegisterFeatureConfig(configuration.get(), kTestFeatureBar, true);
@@ -56,21 +95,177 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
         {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
 
     tracker_.reset(new FeatureEngagementTrackerImpl(
-        std::move(store), std::move(configuration),
-        std::move(condition_validator), std::move(storage_validator)));
-    // Ensure all initialization is finished.
-    base::RunLoop().RunUntilIdle();
+        CreateStore(), std::move(configuration),
+        base::MakeUnique<OnceConditionValidator>(),
+        base::MakeUnique<NeverStorageValidator>()));
   }
 
  protected:
+  virtual std::unique_ptr<Store> CreateStore() {
+    // Returns a Store that will successfully initialize.
+    return base::MakeUnique<TestInMemoryStore>(true);
+  }
+
   base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FeatureEngagementTrackerImplTest);
+};
+
+// A top-level test class where the store fails to initialize.
+class FailingInitFeatureEngagementTrackerImplTest
+    : public FeatureEngagementTrackerImplTest {
+ public:
+  FailingInitFeatureEngagementTrackerImplTest() = default;
+
+ protected:
+  std::unique_ptr<Store> CreateStore() override {
+    // Returns a Store that will fail to initialize.
+    return base::MakeUnique<TestInMemoryStore>(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailingInitFeatureEngagementTrackerImplTest);
 };
 
 }  // namespace
 
+TEST_F(FeatureEngagementTrackerImplTest, TestInitialization) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  EXPECT_FALSE(callback.invoked());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker_->IsInitialized());
+  EXPECT_TRUE(callback.invoked());
+  EXPECT_TRUE(callback.success());
+}
+
+TEST_F(FeatureEngagementTrackerImplTest, TestInitializationMultipleCallbacks) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback1;
+  StoringInitializedCallback callback2;
+
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback1)));
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback2)));
+  EXPECT_FALSE(callback1.invoked());
+  EXPECT_FALSE(callback2.invoked());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker_->IsInitialized());
+  EXPECT_TRUE(callback1.invoked());
+  EXPECT_TRUE(callback2.invoked());
+  EXPECT_TRUE(callback1.success());
+  EXPECT_TRUE(callback2.success());
+}
+
+TEST_F(FeatureEngagementTrackerImplTest, TestAddingCallbackAfterInitFinished) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  EXPECT_FALSE(callback.invoked());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback.invoked());
+}
+
+TEST_F(FeatureEngagementTrackerImplTest,
+       TestAddingCallbackBeforeAndAfterInitFinished) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback_before;
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback_before)));
+  EXPECT_FALSE(callback_before.invoked());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_before.invoked());
+
+  StoringInitializedCallback callback_after;
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback_after)));
+  EXPECT_FALSE(callback_after.invoked());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(callback_after.invoked());
+}
+
+TEST_F(FailingInitFeatureEngagementTrackerImplTest, TestFailingInitialization) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  EXPECT_FALSE(callback.invoked());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(tracker_->IsInitialized());
+  EXPECT_TRUE(callback.invoked());
+  EXPECT_FALSE(callback.success());
+}
+
+TEST_F(FailingInitFeatureEngagementTrackerImplTest,
+       TestFailingInitializationMultipleCallbacks) {
+  EXPECT_FALSE(tracker_->IsInitialized());
+
+  StoringInitializedCallback callback1;
+  StoringInitializedCallback callback2;
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback1)));
+  tracker_->AddOnInitializedCallback(
+      base::Bind(&StoringInitializedCallback::OnInitialized,
+                 base::Unretained(&callback2)));
+  EXPECT_FALSE(callback1.invoked());
+  EXPECT_FALSE(callback2.invoked());
+
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(tracker_->IsInitialized());
+  EXPECT_TRUE(callback1.invoked());
+  EXPECT_TRUE(callback2.invoked());
+  EXPECT_FALSE(callback1.success());
+  EXPECT_FALSE(callback2.success());
+}
+
 TEST_F(FeatureEngagementTrackerImplTest, TestTriggering) {
+  // Ensure all initialization is finished.
+  base::RunLoop().RunUntilIdle();
+
   // The first time a feature triggers it should be shown.
   EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
   EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));

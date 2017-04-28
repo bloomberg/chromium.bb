@@ -6,9 +6,11 @@
 
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
@@ -121,11 +123,22 @@ void FeatureEngagementTrackerImplAndroid::Dismissed(
   feature_engagement_tracker_impl_->Dismissed();
 }
 
+bool FeatureEngagementTrackerImplAndroid::IsInitialized(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
+  return feature_engagement_tracker_impl_->IsInitialized();
+}
+
 void FeatureEngagementTrackerImplAndroid::AddOnInitializedCallback(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj,
     const base::android::JavaParamRef<jobject>& j_callback_obj) {
-  // TODO(nyquist): Implement support for the wrapped base::Callback.
+  // Disambiguate RunCallbackAndroid to get the reference to the bool version.
+  void (*runBoolCallback)(const base::android::JavaRef<jobject>&, bool) =
+      &base::android::RunCallbackAndroid;
+  feature_engagement_tracker_impl_->AddOnInitializedCallback(
+      base::Bind(runBoolCallback,
+                 base::android::ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 }  // namespace feature_engagement_tracker

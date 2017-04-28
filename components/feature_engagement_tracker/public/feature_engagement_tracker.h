@@ -37,8 +37,8 @@ class FeatureEngagementTracker : public KeyedService {
 #endif  // defined(OS_ANDROID)
 
   // Invoked when the tracker has been initialized. The |success| parameter
-  // indicates that the initialization was a success and it it ready to receive
-  // calls.
+  // indicates that the initialization was a success and the tracker is ready to
+  // receive calls.
   using OnInitializedCallback = base::Callback<void(bool success)>;
 
   // The |storage_dir| is the path to where all local storage will be.
@@ -61,8 +61,19 @@ class FeatureEngagementTracker : public KeyedService {
   // Must be called after display of feature enlightenment finishes.
   virtual void Dismissed() = 0;
 
-  // For features that trigger on startup, they register a callback to ensure
-  // that they are told when the tracker has been initialized.
+  // Returns whether the tracker has been successfully initialized. During
+  // startup, this will be false until the internal model has been loaded at
+  // which point it is set to true if the initialization was successful. The
+  // state will never change from initialized to uninitialized.
+  // Callers can invoke AddOnInitializedCallback(...) to be notified when the
+  // result of the initialization is ready.
+  virtual bool IsInitialized() = 0;
+
+  // For features that trigger on startup, they can register a callback to
+  // ensure that they are informed when the tracker has finished the
+  // initialization. If the tracker has already been initialized, the callback
+  // will still be invoked with the result. The callback is guaranteed to be
+  // invoked exactly one time.
   virtual void AddOnInitializedCallback(OnInitializedCallback callback) = 0;
 
  protected:

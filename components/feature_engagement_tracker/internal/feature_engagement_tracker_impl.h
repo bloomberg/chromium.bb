@@ -36,11 +36,12 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   void NotifyEvent(const std::string& event) override;
   bool ShouldTriggerHelpUI(const base::Feature& feature) override;
   void Dismissed() override;
+  bool IsInitialized() override;
   void AddOnInitializedCallback(OnInitializedCallback callback) override;
 
  private:
   // Invoked by the Model when it has been initialized.
-  void OnModelInitializationFinished(bool result);
+  void OnModelInitializationFinished(bool success);
 
   // The current model.
   std::unique_ptr<Model> model_;
@@ -48,6 +49,13 @@ class FeatureEngagementTrackerImpl : public FeatureEngagementTracker,
   // The ConditionValidator provides functionality for knowing when to trigger
   // help UI.
   std::unique_ptr<ConditionValidator> condition_validator_;
+
+  // Whether the initialization of the underlying model has finished.
+  bool initialization_finished_;
+
+  // The list of callbacks to invoke when initialization has finished. This
+  // is cleared after the initialization has happened.
+  std::vector<OnInitializedCallback> on_initialized_callbacks_;
 
   base::WeakPtrFactory<FeatureEngagementTrackerImpl> weak_ptr_factory_;
 
