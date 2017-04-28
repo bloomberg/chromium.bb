@@ -107,9 +107,9 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
 
     auto container_contents_properties =
         context.paint_invalidation_container->ContentsProperties();
-    if (context.tree_builder_context_->current.transform ==
+    if (context.tree_builder_context_->fragments[0].current.transform ==
             container_contents_properties.Transform() &&
-        context.tree_builder_context_->current.clip ==
+        context.tree_builder_context_->fragments[0].current.clip ==
             container_contents_properties.Clip()) {
       result = LayoutRect(rect);
     } else {
@@ -118,13 +118,14 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
       // snapping, when transforms are applied. If there is no transform,
       // enclosingIntRect is applied in the last step of paint invalidation
       // (see CompositedLayerMapping::setContentsNeedDisplayInRect()).
-      if (!is_svg_child && context.tree_builder_context_->current.transform !=
-                               container_contents_properties.Transform())
+      if (!is_svg_child &&
+          context.tree_builder_context_->fragments[0].current.transform !=
+              container_contents_properties.Transform())
         rect = Rect(EnclosingIntRect(rect));
 
       PropertyTreeState current_tree_state(
-          context.tree_builder_context_->current.transform,
-          context.tree_builder_context_->current.clip, nullptr);
+          context.tree_builder_context_->fragments[0].current.transform,
+          context.tree_builder_context_->fragments[0].current.clip, nullptr);
 
       FloatClipRect float_rect((FloatRect(rect)));
       GeometryMapper::SourceToDestinationVisualRect(
@@ -181,12 +182,12 @@ LayoutPoint PaintInvalidator::ComputeLocationInBacking(
 
     const auto* container_transform =
         context.paint_invalidation_container->ContentsProperties().Transform();
-    if (context.tree_builder_context_->current.transform !=
+    if (context.tree_builder_context_->fragments[0].current.transform !=
         container_transform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
       GeometryMapper::SourceToDestinationRect(
-          context.tree_builder_context_->current.transform, container_transform,
-          rect);
+          context.tree_builder_context_->fragments[0].current.transform,
+          container_transform, rect);
       point = LayoutPoint(rect.Location());
     }
 
@@ -265,28 +266,33 @@ class ScopedUndoFrameViewContentClipAndScroll {
       const PaintPropertyTreeBuilderContext& tree_builder_context)
       : tree_builder_context_(
             const_cast<PaintPropertyTreeBuilderContext&>(tree_builder_context)),
-        saved_context_(tree_builder_context_.current) {
+        saved_context_(tree_builder_context_.fragments[0].current) {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
 
-    if (frame_view.ContentClip() == saved_context_.clip)
-      tree_builder_context_.current.clip = saved_context_.clip->Parent();
+    if (frame_view.ContentClip() == saved_context_.clip) {
+      tree_builder_context_.fragments[0].current.clip =
+          saved_context_.clip->Parent();
+    }
     if (const auto* scroll_translation = frame_view.ScrollTranslation()) {
-      if (scroll_translation->ScrollNode() == saved_context_.scroll)
-        tree_builder_context_.current.scroll = saved_context_.scroll->Parent();
+      if (scroll_translation->ScrollNode() == saved_context_.scroll) {
+        tree_builder_context_.fragments[0].current.scroll =
+            saved_context_.scroll->Parent();
+      }
       if (scroll_translation == saved_context_.transform) {
-        tree_builder_context_.current.transform =
+        tree_builder_context_.fragments[0].current.transform =
             saved_context_.transform->Parent();
       }
     }
   }
 
   ~ScopedUndoFrameViewContentClipAndScroll() {
-    tree_builder_context_.current = saved_context_;
+    tree_builder_context_.fragments[0].current = saved_context_;
   }
 
  private:
   PaintPropertyTreeBuilderContext& tree_builder_context_;
-  PaintPropertyTreeBuilderContext::ContainingBlockContext saved_context_;
+  PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext
+      saved_context_;
 };
 
 }  // namespace
@@ -377,7 +383,7 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   // The paint offset should already be updated through
   // PaintPropertyTreeBuilder::updatePropertiesForSelf.
   DCHECK(context.tree_builder_context_);
-  DCHECK(context.tree_builder_context_->current.paint_offset ==
+  DCHECK(context.tree_builder_context_->fragments[0].current.paint_offset ==
          object.PaintOffset());
 
   Optional<ScopedUndoFrameViewContentClipAndScroll>

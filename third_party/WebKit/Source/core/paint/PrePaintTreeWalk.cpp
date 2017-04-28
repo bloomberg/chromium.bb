@@ -129,7 +129,8 @@ static void UpdateAuxiliaryObjectProperties(const LayoutObject& object,
 }
 
 LayoutRect PrePaintTreeWalk::ComputeClipRectForContext(
-    const PaintPropertyTreeBuilderContext::ContainingBlockContext& context,
+    const PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext&
+        context,
     const EffectPaintPropertyNode* effect,
     const PropertyTreeState& ancestor_state,
     const LayoutPoint& ancestor_paint_offset) {
@@ -194,28 +195,30 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
       context.ancestor_transformed_or_root_paint_layer->GetLayoutObject()
           .PaintOffset();
 
-  const auto* effect = context.tree_builder_context->current_effect;
-  auto overflow_clip_rect =
-      ComputeClipRectForContext(context.tree_builder_context->current, effect,
-                                ancestor_state, ancestor_paint_offset);
+  // TODO(chrishtr): generalize this for multicol.
+  const auto* effect =
+      context.tree_builder_context->fragments[0].current_effect;
+  auto overflow_clip_rect = ComputeClipRectForContext(
+      context.tree_builder_context->fragments[0].current, effect,
+      ancestor_state, ancestor_paint_offset);
 #ifdef CHECK_CLIP_RECTS
   CHECK(overflow_clip_rect == old_clip_rects.OverflowClipRect().Rect())
       << " new=" << overflow_clip_rect.ToString()
       << " old=" << old_clip_rects.OverflowClipRect().Rect().ToString();
 #endif
 
-  auto fixed_clip_rect =
-      ComputeClipRectForContext(context.tree_builder_context->fixed_position,
-                                effect, ancestor_state, ancestor_paint_offset);
+  auto fixed_clip_rect = ComputeClipRectForContext(
+      context.tree_builder_context->fragments[0].fixed_position, effect,
+      ancestor_state, ancestor_paint_offset);
 #ifdef CHECK_CLIP_RECTS
   CHECK(fixed_clip_rect == old_clip_rects.FixedClipRect().Rect())
       << " new=" << fixed_clip_rect.ToString()
       << " old=" << old_clip_rects.FixedClipRect().Rect().ToString();
 #endif
 
-  auto pos_clip_rect =
-      ComputeClipRectForContext(context.tree_builder_context->absolute_position,
-                                effect, ancestor_state, ancestor_paint_offset);
+  auto pos_clip_rect = ComputeClipRectForContext(
+      context.tree_builder_context->fragments[0].absolute_position, effect,
+      ancestor_state, ancestor_paint_offset);
 #ifdef CHECK_CLIP_RECTS
   CHECK(pos_clip_rect == old_clip_rects.PosClipRect().Rect())
       << " new=" << pos_clip_rect.ToString()
@@ -308,11 +311,12 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
     FrameView* frame_view = layout_part.ChildFrameView();
     if (frame_view) {
       if (context.tree_builder_context) {
-        context.tree_builder_context->current.paint_offset +=
+        context.tree_builder_context->fragments[0].current.paint_offset +=
             layout_part.ReplacedContentRect().Location() -
             frame_view->FrameRect().Location();
-        context.tree_builder_context->current.paint_offset =
-            RoundedIntPoint(context.tree_builder_context->current.paint_offset);
+        context.tree_builder_context->fragments[0].current.paint_offset =
+            RoundedIntPoint(context.tree_builder_context->fragments[0]
+                                .current.paint_offset);
       }
       Walk(*frame_view, context);
     }
