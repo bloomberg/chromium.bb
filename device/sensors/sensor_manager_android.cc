@@ -55,7 +55,6 @@ namespace device {
 
 SensorManagerAndroid::SensorManagerAndroid()
     : number_active_device_motion_sensors_(0),
-      device_light_buffer_(nullptr),
       device_motion_buffer_(nullptr),
       device_orientation_buffer_(nullptr),
       motion_buffer_initialized_(false),
@@ -197,28 +196,12 @@ void SensorManagerAndroid::GotRotationRate(JNIEnv*,
   }
 }
 
-void SensorManagerAndroid::GotLight(JNIEnv*,
-                                    const JavaParamRef<jobject>&,
-                                    double value) {
-  base::AutoLock autolock(light_buffer_lock_);
-
-  if (!device_light_buffer_)
-    return;
-
-  device_light_buffer_->seqlock.WriteBegin();
-  device_light_buffer_->data.value = value;
-  device_light_buffer_->seqlock.WriteEnd();
-}
-
 bool SensorManagerAndroid::Start(ConsumerType consumer_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!device_sensors_.is_null());
-  int rate_in_microseconds = (consumer_type == CONSUMER_TYPE_LIGHT)
-                                 ? kLightSensorIntervalMicroseconds
-                                 : kDeviceSensorIntervalMicroseconds;
   return Java_DeviceSensors_start(
       AttachCurrentThread(), device_sensors_, reinterpret_cast<intptr_t>(this),
-      static_cast<jint>(consumer_type), rate_in_microseconds);
+      static_cast<jint>(consumer_type), kDeviceSensorIntervalMicroseconds);
 }
 
 void SensorManagerAndroid::Stop(ConsumerType consumer_type) {
@@ -244,48 +227,6 @@ SensorManagerAndroid::GetOrientationSensorTypeUsed() {
 }
 
 // ----- Shared memory API methods
-
-// --- Device Light
-
-void SensorManagerAndroid::StartFetchingDeviceLightData(
-    DeviceLightHardwareBuffer* buffer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(buffer);
-  if (is_shutdown_)
-    return;
-
-  {
-    base::AutoLock autolock(light_buffer_lock_);
-    device_light_buffer_ = buffer;
-    SetLightBufferValue(-1);
-  }
-  bool success = Start(CONSUMER_TYPE_LIGHT);
-  if (!success) {
-    base::AutoLock autolock(light_buffer_lock_);
-    SetLightBufferValue(std::numeric_limits<double>::infinity());
-  }
-}
-
-void SensorManagerAndroid::StopFetchingDeviceLightData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (is_shutdown_)
-    return;
-
-  Stop(CONSUMER_TYPE_LIGHT);
-  {
-    base::AutoLock autolock(light_buffer_lock_);
-    if (device_light_buffer_) {
-      SetLightBufferValue(-1);
-      device_light_buffer_ = nullptr;
-    }
-  }
-}
-
-void SensorManagerAndroid::SetLightBufferValue(double lux) {
-  device_light_buffer_->seqlock.WriteBegin();
-  device_light_buffer_->data.value = lux;
-  device_light_buffer_->seqlock.WriteEnd();
-}
 
 // --- Device Motion
 

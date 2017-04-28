@@ -24,7 +24,6 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchFailEvent.idl",
     "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchedEvent.idl",
     "//third_party/WebKit/Source/modules/background_sync/SyncEvent.idl",
-    "//third_party/WebKit/Source/modules/device_light/DeviceLightEvent.idl",
     "//third_party/WebKit/Source/modules/device_orientation/DeviceMotionEvent.idl",
     "//third_party/WebKit/Source/modules/device_orientation/DeviceOrientationEvent.idl",
     "//third_party/WebKit/Source/modules/encryptedmedia/MediaEncryptedEvent.idl",

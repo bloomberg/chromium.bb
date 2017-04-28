@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,17 +21,13 @@ namespace {
 class FakeDataFetcher : public DataFetcherSharedMemoryBase {
  public:
   FakeDataFetcher()
-      : start_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED),
-        start_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      : start_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
         start_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
         start_orientation_absolute_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        stop_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                    base::WaitableEvent::InitialState::NOT_SIGNALED),
         stop_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED),
         stop_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -40,8 +35,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         stop_orientation_absolute_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        updated_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                       base::WaitableEvent::InitialState::NOT_SIGNALED),
         updated_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
         updated_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -49,7 +42,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         updated_orientation_absolute_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        light_buffer_(nullptr),
         motion_buffer_(nullptr),
         orientation_buffer_(nullptr),
         orientation_absolute_buffer_(nullptr) {}
@@ -70,22 +62,10 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         orientation_absolute_buffer_ =
             static_cast<DeviceOrientationHardwareBuffer*>(buffer);
         break;
-      case CONSUMER_TYPE_LIGHT:
-        light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
-        break;
       default:
         return false;
     }
     return true;
-  }
-
-  void UpdateLight() {
-    DeviceLightHardwareBuffer* buffer = GetLightBuffer();
-    ASSERT_TRUE(buffer);
-    buffer->seqlock.WriteBegin();
-    buffer->data.value = 100;
-    buffer->seqlock.WriteEnd();
-    updated_light_.Signal();
   }
 
   void UpdateMotion() {
@@ -116,8 +96,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     updated_orientation_absolute_.Signal();
   }
 
-  DeviceLightHardwareBuffer* GetLightBuffer() const { return light_buffer_; }
-
   DeviceMotionHardwareBuffer* GetMotionBuffer() const { return motion_buffer_; }
 
   DeviceOrientationHardwareBuffer* GetOrientationBuffer() const {
@@ -139,9 +117,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         start_orientation_absolute_.Wait();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        start_light_.Wait();
-        break;
     }
   }
 
@@ -155,9 +130,6 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         break;
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         stop_orientation_absolute_.Wait();
-        break;
-      case CONSUMER_TYPE_LIGHT:
-        stop_light_.Wait();
         break;
     }
   }
@@ -173,28 +145,21 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         updated_orientation_absolute_.Wait();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        updated_light_.Wait();
-        break;
     }
   }
 
  protected:
-  base::WaitableEvent start_light_;
   base::WaitableEvent start_motion_;
   base::WaitableEvent start_orientation_;
   base::WaitableEvent start_orientation_absolute_;
-  base::WaitableEvent stop_light_;
   base::WaitableEvent stop_motion_;
   base::WaitableEvent stop_orientation_;
   base::WaitableEvent stop_orientation_absolute_;
-  base::WaitableEvent updated_light_;
   base::WaitableEvent updated_motion_;
   base::WaitableEvent updated_orientation_;
   base::WaitableEvent updated_orientation_absolute_;
 
  private:
-  DeviceLightHardwareBuffer* light_buffer_;
   DeviceMotionHardwareBuffer* motion_buffer_;
   DeviceOrientationHardwareBuffer* orientation_buffer_;
   DeviceOrientationHardwareBuffer* orientation_absolute_buffer_;
@@ -225,11 +190,6 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
           UpdateOrientationAbsolute();
         start_orientation_absolute_.Signal();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        if (update_)
-          UpdateLight();
-        start_light_.Signal();
-        break;
       default:
         return false;
     }
@@ -246,9 +206,6 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
         break;
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         stop_orientation_absolute_.Signal();
-        break;
-      case CONSUMER_TYPE_LIGHT:
-        stop_light_.Signal();
         break;
       default:
         return false;
@@ -290,9 +247,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         start_orientation_absolute_.Signal();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        start_light_.Signal();
-        break;
       default:
         return false;
     }
@@ -313,9 +267,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         stop_orientation_absolute_.Signal();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        stop_light_.Signal();
-        break;
       default:
         return false;
     }
@@ -327,8 +278,7 @@ class FakePollingDataFetcher : public FakeDataFetcher {
         GetPollingMessageLoop()->task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
                 consumer_bitmask & CONSUMER_TYPE_ORIENTATION_ABSOLUTE ||
-                consumer_bitmask & CONSUMER_TYPE_MOTION ||
-                consumer_bitmask & CONSUMER_TYPE_LIGHT);
+                consumer_bitmask & CONSUMER_TYPE_MOTION);
 
     if (consumer_bitmask & CONSUMER_TYPE_ORIENTATION)
       UpdateOrientation();
@@ -336,8 +286,6 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       UpdateOrientationAbsolute();
     if (consumer_bitmask & CONSUMER_TYPE_MOTION)
       UpdateMotion();
-    if (consumer_bitmask & CONSUMER_TYPE_LIGHT)
-      UpdateLight();
   }
 
   FetcherType GetType() const override { return FETCHER_TYPE_POLLING_CALLBACK; }
@@ -366,9 +314,6 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         start_orientation_absolute_.Signal();
         break;
-      case CONSUMER_TYPE_LIGHT:
-        start_light_.Signal();
-        break;
       default:
         return false;
     }
@@ -388,9 +333,6 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
         break;
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         stop_orientation_absolute_.Signal();
-        break;
-      case CONSUMER_TYPE_LIGHT:
-        stop_light_.Signal();
         break;
       default:
         return false;
@@ -458,20 +400,6 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientationAbsolute) {
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
 }
 
-TEST(DataFetcherSharedMemoryBaseTest, DoesStartLight) {
-  FakeNonPollingDataFetcher fake_data_fetcher;
-  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
-            fake_data_fetcher.GetType());
-
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_LIGHT));
-  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_LIGHT);
-
-  EXPECT_EQ(100, fake_data_fetcher.GetLightBuffer()->data.value);
-
-  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);
-  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_LIGHT);
-}
-
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
   FakePollingDataFetcher fake_data_fetcher;
   EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
@@ -519,21 +447,6 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientationAbsolute) {
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-}
-
-TEST(DataFetcherSharedMemoryBaseTest, DoesPollLight) {
-  FakePollingDataFetcher fake_data_fetcher;
-  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
-            fake_data_fetcher.GetType());
-
-  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_LIGHT));
-  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_LIGHT);
-  fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_LIGHT);
-
-  EXPECT_EQ(100, fake_data_fetcher.GetLightBuffer()->data.value);
-
-  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);
-  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_LIGHT);
 }
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {

@@ -13,7 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "device/sensors/device_sensor_export.h"
 #include "device/sensors/device_sensors_consts.h"
-#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 
@@ -24,7 +23,7 @@ struct DefaultSingletonTraits;
 
 namespace device {
 
-// Android implementation of Device {Motion|Orientation|Light} API.
+// Android implementation of Device {Motion|Orientation} API.
 //
 // Android's SensorManager has a push API, so when Got*() methods are called
 // by the system the browser process puts the received data into a shared
@@ -38,9 +37,6 @@ class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
   static SensorManagerAndroid* GetInstance();
 
   // Called from Java via JNI.
-  void GotLight(JNIEnv*,
-                const base::android::JavaParamRef<jobject>&,
-                double value);
   void GotOrientation(JNIEnv*,
                       const base::android::JavaParamRef<jobject>&,
                       double alpha,
@@ -69,9 +65,6 @@ class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
                        double gamma);
 
   // Shared memory related methods.
-  void StartFetchingDeviceLightData(DeviceLightHardwareBuffer* buffer);
-  void StopFetchingDeviceLightData();
-
   void StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
   void StopFetchingDeviceMotionData();
 
@@ -121,8 +114,6 @@ class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
     RECEIVED_MOTION_DATA_MAX = 3,
   };
 
-  void SetLightBufferValue(double lux);
-
   void CheckMotionBufferReadyToRead();
   void SetMotionBufferReadyStatus(bool ready);
   void ClearInternalMotionBuffers();
@@ -133,7 +124,6 @@ class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
   int received_motion_data_[RECEIVED_MOTION_DATA_MAX];
 
   // Cached pointers to buffers, owned by DataFetcherSharedMemoryBase.
-  DeviceLightHardwareBuffer* device_light_buffer_;
   DeviceMotionHardwareBuffer* device_motion_buffer_;
   DeviceOrientationHardwareBuffer* device_orientation_buffer_;
   DeviceOrientationHardwareBuffer* device_orientation_absolute_buffer_;
@@ -142,7 +132,6 @@ class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
   bool orientation_buffer_initialized_;
   bool orientation_absolute_buffer_initialized_;
 
-  base::Lock light_buffer_lock_;
   base::Lock motion_buffer_lock_;
   base::Lock orientation_buffer_lock_;
   base::Lock orientation_absolute_buffer_lock_;

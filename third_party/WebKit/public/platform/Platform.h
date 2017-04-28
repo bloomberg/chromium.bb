@@ -40,7 +40,6 @@
 #include "WebAudioDevice.h"
 #include "WebCommon.h"
 #include "WebData.h"
-#include "WebDeviceLightListener.h"
 #include "WebFeaturePolicy.h"
 #include "WebGamepadListener.h"
 #include "WebGestureDevice.h"
@@ -613,7 +612,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual InterfaceProvider* GetInterfaceProvider();
 
   // Platform events -----------------------------------------------------
-  // Device Orientation, Device Motion, Device Light, Battery, Gamepad.
+  // Device Orientation, Device Motion, Battery, Gamepad.
 
   // Request the platform to start listening to the events of the specified
   // type and notify the given listener (if not null) when there is an update.

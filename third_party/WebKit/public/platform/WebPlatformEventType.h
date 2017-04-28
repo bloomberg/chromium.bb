@@ -11,7 +11,6 @@ enum WebPlatformEventType {
   kWebPlatformEventTypeDeviceMotion,
   kWebPlatformEventTypeDeviceOrientation,
   kWebPlatformEventTypeDeviceOrientationAbsolute,
-  kWebPlatformEventTypeDeviceLight,
   kWebPlatformEventTypeGamepad,
 };
 

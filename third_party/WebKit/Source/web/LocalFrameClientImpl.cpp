@@ -54,7 +54,6 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
-#include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
@@ -153,8 +152,6 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
       DeviceMotionController::From(*document);
       DeviceOrientationController::From(*document);
       DeviceOrientationAbsoluteController::From(*document);
-      if (RuntimeEnabledFeatures::deviceLightEnabled())
-        DeviceLightController::From(*document);
       NavigatorGamepad::From(*document);
       NavigatorServiceWorker::From(*document);
       DOMWindowStorageController::From(*document);

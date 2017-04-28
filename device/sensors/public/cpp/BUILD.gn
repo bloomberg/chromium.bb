@@ -32,13 +32,8 @@ source_set("shared_with_blink") {
 # dependencies on the STL and Chromium code.
 source_set("full") {
   sources = [
-    "device_light_data.h",
-    "device_light_hardware_buffer.h",
     "device_motion_hardware_buffer.h",
     "device_orientation_hardware_buffer.h",
-    "device_sensors_consts.h",
-    "device_util_mac.cc",
-    "device_util_mac.h",
   ]
 
   public_deps = [

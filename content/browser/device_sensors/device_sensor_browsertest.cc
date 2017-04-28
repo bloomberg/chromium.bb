@@ -18,7 +18,6 @@
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "device/sensors/data_fetcher_shared_memory.h"
 #include "device/sensors/device_sensor_service.h"
-#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 
@@ -37,14 +36,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
 
   void SetMotionStoppedCallback(base::Closure motion_stopped_callback) {
     motion_stopped_callback_ = motion_stopped_callback;
-  }
-
-  void SetLightStartedCallback(base::Closure light_started_callback) {
-    light_started_callback_ = light_started_callback;
-  }
-
-  void SetLightStoppedCallback(base::Closure light_stopped_callback) {
-    light_stopped_callback_ = light_stopped_callback;
   }
 
   void SetOrientationStartedCallback(
@@ -100,16 +91,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 orientation_absolute_started_callback_);
       } break;
-      case device::CONSUMER_TYPE_LIGHT: {
-        device::DeviceLightHardwareBuffer* light_buffer =
-            static_cast<device::DeviceLightHardwareBuffer*>(buffer);
-        UpdateLight(light_buffer,
-                    sensor_data_available_
-                        ? 100
-                        : std::numeric_limits<double>::infinity());
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                light_started_callback_);
-      } break;
       default:
         return false;
     }
@@ -129,10 +110,6 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
       case device::CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 orientation_absolute_stopped_callback_);
-        break;
-      case device::CONSUMER_TYPE_LIGHT:
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                light_stopped_callback_);
         break;
       default:
         return false;
@@ -217,21 +194,13 @@ class FakeDataFetcher : public device::DataFetcherSharedMemory {
     buffer->seqlock.WriteEnd();
   }
 
-  void UpdateLight(device::DeviceLightHardwareBuffer* buffer, double lux) {
-    buffer->seqlock.WriteBegin();
-    buffer->data.value = lux;
-    buffer->seqlock.WriteEnd();
-  }
-
   // The below callbacks should be run on the UI thread.
   base::Closure motion_started_callback_;
   base::Closure orientation_started_callback_;
   base::Closure orientation_absolute_started_callback_;
-  base::Closure light_started_callback_;
   base::Closure motion_stopped_callback_;
   base::Closure orientation_stopped_callback_;
   base::Closure orientation_absolute_stopped_callback_;
-  base::Closure light_stopped_callback_;
   bool sensor_data_available_;
 
  private:
@@ -248,8 +217,6 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     // Initialize the RunLoops now that the main thread has been created.
-    light_started_runloop_.reset(new base::RunLoop());
-    light_stopped_runloop_.reset(new base::RunLoop());
     motion_started_runloop_.reset(new base::RunLoop());
     motion_stopped_runloop_.reset(new base::RunLoop());
     orientation_started_runloop_.reset(new base::RunLoop());
@@ -271,8 +238,6 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
   void SetUpFetcher() {
     fetcher_ = new FakeDataFetcher();
-    fetcher_->SetLightStartedCallback(light_started_runloop_->QuitClosure());
-    fetcher_->SetLightStoppedCallback(light_stopped_runloop_->QuitClosure());
     fetcher_->SetMotionStartedCallback(motion_started_runloop_->QuitClosure());
     fetcher_->SetMotionStoppedCallback(motion_stopped_runloop_->QuitClosure());
     fetcher_->SetOrientationStartedCallback(
@@ -309,19 +274,10 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
     runner->Run();
   }
 
-  void EnableExperimentalFeatures() {
-    // TODO(riju): remove when the DeviceLight feature goes stable.
-    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (!cmd_line->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
-      cmd_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   FakeDataFetcher* fetcher_;
 
   // NOTE: These can only be initialized once the main thread has been created
   // and so must be pointers instead of plain objects.
-  std::unique_ptr<base::RunLoop> light_started_runloop_;
-  std::unique_ptr<base::RunLoop> light_stopped_runloop_;
   std::unique_ptr<base::RunLoop> motion_started_runloop_;
   std::unique_ptr<base::RunLoop> motion_stopped_runloop_;
   std::unique_ptr<base::RunLoop> orientation_started_runloop_;
@@ -358,19 +314,6 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationAbsoluteTest) {
   orientation_absolute_stopped_runloop_->Run();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightTest) {
-  // The test page will register an event handler for light events,
-  // expects to get an event with fake values, then removes the event
-  // handler and navigates to #pass.
-  EnableExperimentalFeatures();
-  GURL test_url = GetTestUrl("device_sensors", "device_light_test.html");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
-
-  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  light_started_runloop_->Run();
-  light_stopped_runloop_->Run();
-}
-
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionTest) {
   // The test page will register an event handler for motion events,
   // expects to get an event with fake values, then removes the event
@@ -381,21 +324,6 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionTest) {
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   motion_started_runloop_->Run();
   motion_stopped_runloop_->Run();
-}
-
-IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightOneOffInfintyTest) {
-  // The test page registers an event handler for light events and expects
-  // to get an event with value equal to infinity, because no sensor data can
-  // be provided.
-  EnableExperimentalFeatures();
-  fetcher_->SetSensorDataAvailable(false);
-  GURL test_url =
-      GetTestUrl("device_sensors", "device_light_infinity_test.html");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
-
-  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  light_started_runloop_->Run();
-  light_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationNullTest) {

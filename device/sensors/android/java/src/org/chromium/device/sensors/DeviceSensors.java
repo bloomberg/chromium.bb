@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Android implementation of the device {motion|orientation|light} APIs.
+ * Android implementation of the device {motion|orientation} APIs.
  */
 @JNINamespace("device")
 class DeviceSensors implements SensorEventListener {
@@ -81,13 +81,11 @@ class DeviceSensors implements SensorEventListener {
             CollectionUtil.newHashSet(Sensor.TYPE_ROTATION_VECTOR);
     static final Set<Integer> DEVICE_MOTION_SENSORS = CollectionUtil.newHashSet(
             Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_LINEAR_ACCELERATION, Sensor.TYPE_GYROSCOPE);
-    static final Set<Integer> DEVICE_LIGHT_SENSORS = CollectionUtil.newHashSet(Sensor.TYPE_LIGHT);
 
     @VisibleForTesting
     final Set<Integer> mActiveSensors = new HashSet<Integer>();
     final List<Set<Integer>> mOrientationSensorSets;
     Set<Integer> mDeviceOrientationSensors;
-    boolean mDeviceLightIsActive;
     boolean mDeviceMotionIsActive;
     boolean mDeviceOrientationIsActive;
     boolean mDeviceOrientationIsActiveWithBackupSensors;
@@ -141,7 +139,7 @@ class DeviceSensors implements SensorEventListener {
      * @param rateInMicroseconds Requested callback rate in microseconds. The
      *            actual rate may be higher. Unwanted events should be ignored.
      * @param eventType Type of event to listen to, can be either DEVICE_ORIENTATION,
-     *            DEVICE_ORIENTATION_ABSOLUTE, DEVICE_MOTION or DEVICE_LIGHT.
+     *            DEVICE_ORIENTATION_ABSOLUTE or DEVICE_MOTION.
      * @return True on success.
      */
     @CalledByNative
@@ -160,9 +158,6 @@ class DeviceSensors implements SensorEventListener {
                 case ConsumerType.MOTION:
                     // note: device motion spec does not require all sensors to be available
                     success = registerSensors(DEVICE_MOTION_SENSORS, rateInMicroseconds, false);
-                    break;
-                case ConsumerType.LIGHT:
-                    success = registerSensors(DEVICE_LIGHT_SENSORS, rateInMicroseconds, true);
                     break;
                 default:
                     Log.e(TAG, "Unknown event type: %d", eventType);
@@ -207,7 +202,7 @@ class DeviceSensors implements SensorEventListener {
      * if they are still in use by a different event type.
      *
      * @param eventType Type of event to listen to, can be either DEVICE_ORIENTATION or
-     *                  DEVICE_MOTION or DEVICE_LIGHT.
+     *                  DEVICE_MOTION.
      * We strictly guarantee that the corresponding native*() methods will not be called
      * after this method returns.
      */
@@ -227,10 +222,6 @@ class DeviceSensors implements SensorEventListener {
 
             if (mDeviceMotionIsActive && eventType != ConsumerType.MOTION) {
                 sensorsToRemainActive.addAll(DEVICE_MOTION_SENSORS);
-            }
-
-            if (mDeviceLightIsActive && eventType != ConsumerType.LIGHT) {
-                sensorsToRemainActive.addAll(DEVICE_LIGHT_SENSORS);
             }
 
             Set<Integer> sensorsToDeactivate = new HashSet<Integer>(mActiveSensors);
@@ -302,11 +293,6 @@ class DeviceSensors implements SensorEventListener {
                     }
                     System.arraycopy(
                             values, 0, mMagneticFieldVector, 0, mMagneticFieldVector.length);
-                }
-                break;
-            case Sensor.TYPE_LIGHT:
-                if (mDeviceLightIsActive) {
-                    gotLight(values[0]);
                 }
                 break;
             default:
@@ -467,9 +453,6 @@ class DeviceSensors implements SensorEventListener {
             case ConsumerType.MOTION:
                 mDeviceMotionIsActive = active;
                 return;
-            case ConsumerType.LIGHT:
-                mDeviceLightIsActive = active;
-                return;
         }
     }
 
@@ -571,14 +554,6 @@ class DeviceSensors implements SensorEventListener {
         }
     }
 
-    protected void gotLight(double value) {
-        synchronized (mNativePtrLock) {
-            if (mNativePtr != 0) {
-                nativeGotLight(mNativePtr, value);
-            }
-        }
-    }
-
     private Handler getHandler() {
         // TODO(timvolodine): Remove the mHandlerLock when sure that getHandler is not called
         // from multiple threads. This will be the case when device motion and device orientation
@@ -637,11 +612,6 @@ class DeviceSensors implements SensorEventListener {
      */
     private native void nativeGotRotationRate(
             long nativeSensorManagerAndroid, double alpha, double beta, double gamma);
-
-    /**
-     * Device Light value from Ambient Light sensors.
-     */
-    private native void nativeGotLight(long nativeSensorManagerAndroid, double value);
 
     /**
      * Need the an interface for SensorManager for testing.

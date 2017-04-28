@@ -9,7 +9,7 @@
 
 namespace device {
 
-// Constants related to the Device {Motion|Orientation|Light} APIs.
+// Constants related to the Device {Motion|Orientation} APIs.
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.sensors
@@ -17,7 +17,6 @@ enum ConsumerType {
   CONSUMER_TYPE_MOTION = 1 << 0,
   CONSUMER_TYPE_ORIENTATION = 1 << 1,
   CONSUMER_TYPE_ORIENTATION_ABSOLUTE = 1 << 2,
-  CONSUMER_TYPE_LIGHT = 1 << 3,
 };
 
 // Specifies the sampling rate for sensor data updates.
@@ -27,12 +26,6 @@ enum ConsumerType {
 const int kDeviceSensorSamplingRateHz = 60;
 const int kDeviceSensorIntervalMicroseconds =
     base::Time::kMicrosecondsPerSecond / kDeviceSensorSamplingRateHz;
-
-// Corresponding |kDefaultLightPumpFrequencyHz| is in
-// content/renderer/device_sensors/device_light_event_pump.cc.
-const int kLightSensorSamplingRateHz = 5;
-const int kLightSensorIntervalMicroseconds =
-    base::Time::kMicrosecondsPerSecond / kLightSensorSamplingRateHz;
 
 }  // namespace device
 

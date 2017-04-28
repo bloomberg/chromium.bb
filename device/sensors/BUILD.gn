@@ -10,8 +10,6 @@ if (is_android) {
 
 component("sensors") {
   sources = [
-    "ambient_light_mac.cc",
-    "ambient_light_mac.h",
     "android/device_sensor_jni_registrar.cc",
     "android/device_sensor_jni_registrar.h",
     "data_fetcher_shared_memory.h",

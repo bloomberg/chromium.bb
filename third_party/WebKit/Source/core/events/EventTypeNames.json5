@@ -75,7 +75,6 @@
     "dblclick",
     "defaultsessionstart",
     "devicechange",
-    "devicelight",
     "devicemotion",
     "deviceorientation",
     "deviceorientationabsolute",

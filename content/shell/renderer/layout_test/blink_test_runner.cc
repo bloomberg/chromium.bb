@@ -278,10 +278,6 @@ void BlinkTestRunner::SetGamepadProvider(
   SetMockGamepadProvider(std::move(provider));
 }
 
-void BlinkTestRunner::SetDeviceLightData(const double data) {
-  SetMockDeviceLightData(data);
-}
-
 void BlinkTestRunner::SetDeviceMotionData(const MotionData& data) {
   SetMockDeviceMotionData(data);
 }

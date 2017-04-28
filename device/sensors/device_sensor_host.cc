@@ -62,8 +62,6 @@ void DeviceSensorHost<MojoInterface,
 }
 
 template class DEVICE_SENSOR_EXPORT
-    DeviceSensorHost<device::mojom::LightSensor, CONSUMER_TYPE_LIGHT>;
-template class DEVICE_SENSOR_EXPORT
     DeviceSensorHost<device::mojom::MotionSensor, CONSUMER_TYPE_MOTION>;
 template class DEVICE_SENSOR_EXPORT
     DeviceSensorHost<device::mojom::OrientationSensor,

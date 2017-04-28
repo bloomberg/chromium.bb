@@ -63,9 +63,6 @@ class WebTestDelegate {
   virtual void SetGamepadProvider(GamepadController* controller) = 0;
 
   // Set data to return when registering via
-  // Platform::setDeviceLightListener().
-  virtual void SetDeviceLightData(const double data) = 0;
-  // Set data to return when registering via
   // Platform::setDeviceMotionListener().
   virtual void SetDeviceMotionData(const device::MotionData& data) = 0;
   // Set data to return when registering via
