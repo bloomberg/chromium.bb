@@ -5,7 +5,6 @@
 package org.chromium.content_shell_apk;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -22,12 +21,6 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.BaseChildProcessConnection;
-import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.browser.LauncherThread;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.Semaphore;
 
 /**
  * A Service that assists the ChildProcessLauncherTest that responds to one message, which
@@ -52,53 +45,6 @@ public class ChildProcessLauncherTestHelperService extends Service {
     };
 
     private final HandlerThread mHandlerThread = new HandlerThread("Helper Service Handler");
-
-    public static void runOnLauncherThreadBlocking(final Runnable runnable) {
-        if (LauncherThread.runningOnLauncherThread()) {
-            runnable.run();
-            return;
-        }
-        final Semaphore done = new Semaphore(0);
-        LauncherThread.post(new Runnable() {
-            @Override
-            public void run() {
-                runnable.run();
-                done.release();
-            }
-        });
-        done.acquireUninterruptibly();
-    }
-
-    public static <R> R runOnLauncherAndGetResult(Callable<R> callable) {
-        if (LauncherThread.runningOnLauncherThread()) {
-            try {
-                return callable.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        try {
-            FutureTask<R> task = new FutureTask<R>(callable);
-            LauncherThread.post(task);
-            return task.get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static BaseChildProcessConnection startInternalForTesting(final Context context,
-            final String[] commandLine, final FileDescriptorInfo[] filesToMap,
-            final ChildProcessCreationParams params) {
-        return runOnLauncherAndGetResult(new Callable<BaseChildProcessConnection>() {
-            @Override
-            public BaseChildProcessConnection call() {
-                return ChildProcessLauncher.startInternal(context, commandLine,
-                        0 /* childProcessId */, filesToMap, null /* launchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, params);
-            }
-        });
-    }
 
     @Override
     public void onCreate() {
@@ -125,7 +71,8 @@ public class ChildProcessLauncherTestHelperService extends Service {
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
         final BaseChildProcessConnection conn =
-                startInternalForTesting(this, commandLine, new FileDescriptorInfo[0], params);
+                ChildProcessLauncherTestUtils.startInternalForTesting(
+                        this, commandLine, new FileDescriptorInfo[0], params);
 
         // Poll the connection until it is set up. The main test in ChildProcessLauncherTest, which
         // has bound the connection to this service, manages the timeout via the lifetime of this
@@ -136,10 +83,11 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
             @Override
             public void run() {
-                if (conn.getPid() != 0) {
+                int pid = ChildProcessLauncherTestUtils.getConnectionPid(conn);
+                if (pid != 0) {
                     try {
-                        mReplyTo.send(Message.obtain(null, MSG_BIND_SERVICE_REPLY, conn.getPid(),
-                                    conn.getServiceNumber()));
+                        mReplyTo.send(Message.obtain(null, MSG_BIND_SERVICE_REPLY, pid,
+                                ChildProcessLauncherTestUtils.getConnectionServiceNumber(conn)));
                     } catch (RemoteException ex) {
                         throw new RuntimeException(ex);
                     }
