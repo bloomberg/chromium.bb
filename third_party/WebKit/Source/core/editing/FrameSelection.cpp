@@ -471,10 +471,9 @@ void FrameSelection::UpdateStyleAndLayoutIfNeeded() {
   frame_caret_->UpdateStyleAndLayoutIfNeeded();
 }
 
-void FrameSelection::InvalidatePaintIfNeeded(
-    const LayoutBlock& block,
-    const PaintInvalidatorContext& context) {
-  frame_caret_->InvalidatePaintIfNeeded(block, context);
+void FrameSelection::InvalidatePaint(const LayoutBlock& block,
+                                     const PaintInvalidatorContext& context) {
+  frame_caret_->InvalidatePaint(block, context);
 }
 
 bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {

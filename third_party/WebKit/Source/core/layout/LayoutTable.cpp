@@ -1701,18 +1701,18 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   RecalcCollapsedBordersIfNeeded();
 }
 
-PaintInvalidationReason LayoutTable::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutTable::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   if (CollapseBorders() && !collapsed_borders_.IsEmpty())
     paint_invalidation_state.PaintingLayer()
         .SetNeedsPaintPhaseDescendantBlockBackgrounds();
 
-  return LayoutBlock::InvalidatePaintIfNeeded(paint_invalidation_state);
+  return LayoutBlock::InvalidatePaint(paint_invalidation_state);
 }
 
-PaintInvalidationReason LayoutTable::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutTable::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return TablePaintInvalidator(*this, context).InvalidatePaintIfNeeded();
+  return TablePaintInvalidator(*this, context).InvalidatePaint();
 }
 
 LayoutUnit LayoutTable::PaddingTop() const {

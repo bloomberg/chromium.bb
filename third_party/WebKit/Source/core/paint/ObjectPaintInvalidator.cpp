@@ -622,7 +622,7 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
 
 DISABLE_CFI_PERF
 PaintInvalidationReason
-ObjectPaintInvalidatorWithContext::InvalidatePaintIfNeededWithComputedReason(
+ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
     PaintInvalidationReason reason) {
   // We need to invalidate the selection before checking for whether we are
   // doing a full invalidation.  This is because we need to update the previous

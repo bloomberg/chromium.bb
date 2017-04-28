@@ -21,7 +21,7 @@ class EmbeddedObjectPaintInvalidator {
                                  const PaintInvalidatorContext& context)
       : embedded_object_(embedded_object), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaint();
 
  private:
   const LayoutEmbeddedObject& embedded_object_;

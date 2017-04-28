@@ -68,8 +68,7 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   void UpdateStyleAndLayoutIfNeeded(const PositionWithAffinity& caret_position);
 
   // Called during LayoutBlock paint invalidation.
-  void InvalidatePaintIfNeeded(const LayoutBlock&,
-                               const PaintInvalidatorContext&);
+  void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
 
   bool ShouldPaintCaret(const LayoutBlock& block) const {
     return &block == layout_block_;

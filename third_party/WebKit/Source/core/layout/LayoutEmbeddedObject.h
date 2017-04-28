@@ -53,7 +53,7 @@ class LayoutEmbeddedObject final : public LayoutPart {
   void PaintContents(const PaintInfo&, const LayoutPoint&) const final;
   void PaintReplaced(const PaintInfo&, const LayoutPoint&) const final;
   void Paint(const PaintInfo&, const LayoutPoint&) const final;
-  PaintInvalidationReason InvalidatePaintIfNeeded(
+  PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const final;
 
   void UpdateLayout() final;

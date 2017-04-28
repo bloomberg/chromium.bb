@@ -41,7 +41,7 @@ class LayoutHTMLCanvas final : public LayoutReplaced {
   }
   PaintLayerType LayerTypeRequired() const override;
 
-  PaintInvalidationReason InvalidatePaintIfNeeded(
+  PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const final;
 
   void CanvasSizeChanged();

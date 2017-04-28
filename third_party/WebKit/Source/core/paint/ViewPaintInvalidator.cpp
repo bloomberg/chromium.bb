@@ -10,9 +10,9 @@
 
 namespace blink {
 
-PaintInvalidationReason ViewPaintInvalidator::InvalidatePaintIfNeeded() {
+PaintInvalidationReason ViewPaintInvalidator::InvalidatePaint() {
   InvalidateBackgroundIfNeeded();
-  return BoxPaintInvalidator(view_, context_).InvalidatePaintIfNeeded();
+  return BoxPaintInvalidator(view_, context_).InvalidatePaint();
 }
 
 void ViewPaintInvalidator::InvalidateBackgroundIfNeeded() {

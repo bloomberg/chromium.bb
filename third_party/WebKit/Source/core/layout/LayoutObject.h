@@ -1707,7 +1707,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual LayoutRect ViewRect() const;
 
   // New version to replace the above old version.
-  virtual PaintInvalidationReason InvalidatePaintIfNeeded(
+  virtual PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const;
 
   // When this object is invalidated for paint, this method is called to
@@ -2081,7 +2081,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // This function generates the invalidation for this object only.
   // It doesn't recurse into other object, as this is handled by
   // invalidatePaintOfSubtreesIfNeeded.
-  virtual PaintInvalidationReason InvalidatePaintIfNeeded(
+  virtual PaintInvalidationReason InvalidatePaint(
       const PaintInvalidationState&);
 
   void SetIsBackgroundAttachmentFixedObject(bool);

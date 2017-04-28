@@ -441,14 +441,14 @@ void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
                              LayoutSize(GetFrameView()->ContentsSize())));
 }
 
-PaintInvalidationReason LayoutView::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutView::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
-  return LayoutBlockFlow::InvalidatePaintIfNeeded(paint_invalidation_state);
+  return LayoutBlockFlow::InvalidatePaint(paint_invalidation_state);
 }
 
-PaintInvalidationReason LayoutView::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutView::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return ViewPaintInvalidator(*this, context).InvalidatePaintIfNeeded();
+  return ViewPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 void LayoutView::Paint(const PaintInfo& paint_info,

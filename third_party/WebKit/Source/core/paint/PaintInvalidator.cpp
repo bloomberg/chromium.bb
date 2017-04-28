@@ -407,9 +407,8 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   ObjectPaintInvalidator(object).SetLocationInBacking(context.new_location);
 }
 
-void PaintInvalidator::InvalidatePaintIfNeeded(
-    FrameView& frame_view,
-    PaintInvalidatorContext& context) {
+void PaintInvalidator::InvalidatePaint(FrameView& frame_view,
+                                       PaintInvalidatorContext& context) {
   LayoutView* layout_view = frame_view.GetLayoutView();
   CHECK(layout_view);
 
@@ -426,9 +425,8 @@ void PaintInvalidator::InvalidatePaintIfNeeded(
   }
 }
 
-void PaintInvalidator::InvalidatePaintIfNeeded(
-    const LayoutObject& object,
-    PaintInvalidatorContext& context) {
+void PaintInvalidator::InvalidatePaint(const LayoutObject& object,
+                                       PaintInvalidatorContext& context) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
                "PaintInvalidator::invalidatePaintIfNeeded()", "object",
                object.DebugName().Ascii());
@@ -465,7 +463,7 @@ void PaintInvalidator::InvalidatePaintIfNeeded(
         PaintInvalidatorContext::kForcedSubtreeNoRasterInvalidation;
   }
 
-  PaintInvalidationReason reason = object.InvalidatePaintIfNeeded(context);
+  PaintInvalidationReason reason = object.InvalidatePaint(context);
   switch (reason) {
     case kPaintInvalidationDelayedFull:
       pending_delayed_paint_invalidations_.push_back(&object);

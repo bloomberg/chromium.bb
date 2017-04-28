@@ -24,7 +24,7 @@ class BoxPaintInvalidator {
 
   static void BoxWillBeDestroyed(const LayoutBox&);
 
-  PaintInvalidationReason InvalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaint();
 
  private:
   bool BackgroundGeometryDependsOnLayoutOverflowRect();

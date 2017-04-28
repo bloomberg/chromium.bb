@@ -246,7 +246,7 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
       kPaintInvalidationBackgroundOnScrollingContentsLayer);
 }
 
-PaintInvalidationReason BoxPaintInvalidator::InvalidatePaintIfNeeded() {
+PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
   InvalidateScrollingContentsBackgroundIfNeeded();
 
   PaintInvalidationReason reason = ComputePaintInvalidationReason();
@@ -271,12 +271,12 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaintIfNeeded() {
     // Though we have done incremental invalidation, we still need to call
     // ObjectPaintInvalidator with PaintInvalidationNone to do any other
     // required operations.
-    reason = std::max(reason, ObjectPaintInvalidatorWithContext(box_, context_)
-                                  .InvalidatePaintIfNeededWithComputedReason(
-                                      kPaintInvalidationNone));
+    reason = std::max(
+        reason, ObjectPaintInvalidatorWithContext(box_, context_)
+                    .InvalidatePaintWithComputedReason(kPaintInvalidationNone));
   } else {
     reason = ObjectPaintInvalidatorWithContext(box_, context_)
-                 .InvalidatePaintIfNeededWithComputedReason(reason);
+                 .InvalidatePaintWithComputedReason(reason);
   }
 
   if (PaintLayerScrollableArea* area = box_.GetScrollableArea())

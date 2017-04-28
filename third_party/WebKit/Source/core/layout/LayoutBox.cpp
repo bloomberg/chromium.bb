@@ -1885,7 +1885,7 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   }
 }
 
-PaintInvalidationReason LayoutBox::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutBox::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   if (HasBoxDecorationBackground()
       // We also paint overflow controls in background phase.
@@ -1895,13 +1895,12 @@ PaintInvalidationReason LayoutBox::InvalidatePaintIfNeeded(
       layer.SetNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 
-  return LayoutBoxModelObject::InvalidatePaintIfNeeded(
-      paint_invalidation_state);
+  return LayoutBoxModelObject::InvalidatePaint(paint_invalidation_state);
 }
 
-PaintInvalidationReason LayoutBox::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutBox::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return BoxPaintInvalidator(*this, context).InvalidatePaintIfNeeded();
+  return BoxPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 LayoutRect LayoutBox::OverflowClipRect(

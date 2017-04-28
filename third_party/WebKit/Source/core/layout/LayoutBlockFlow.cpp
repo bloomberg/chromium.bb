@@ -4649,12 +4649,12 @@ void LayoutBlockFlow::AddOutlineRects(
         include_block_overflows);
 }
 
-PaintInvalidationReason LayoutBlockFlow::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutBlockFlow::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   if (ContainsFloats())
     paint_invalidation_state.PaintingLayer().SetNeedsPaintPhaseFloat();
 
-  return LayoutBlock::InvalidatePaintIfNeeded(paint_invalidation_state);
+  return LayoutBlock::InvalidatePaint(paint_invalidation_state);
 }
 
 void LayoutBlockFlow::InvalidateDisplayItemClients(

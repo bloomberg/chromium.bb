@@ -189,7 +189,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     new_layout_block->SetMayNeedPaintInvalidation();
 }
 
-void CaretDisplayItemClient::InvalidatePaintIfNeeded(
+void CaretDisplayItemClient::InvalidatePaint(
     const LayoutBlock& block,
     const PaintInvalidatorContext& context) {
   if (block == layout_block_) {

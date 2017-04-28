@@ -20,14 +20,13 @@ void BlockPaintInvalidator::ClearPreviousVisualRects() {
   block_.GetFrame()->GetPage()->GetDragCaret().ClearPreviousVisualRect(block_);
 }
 
-PaintInvalidationReason BlockPaintInvalidator::InvalidatePaintIfNeeded(
+PaintInvalidationReason BlockPaintInvalidator::InvalidatePaint(
     const PaintInvalidatorContext& context) {
   PaintInvalidationReason reason =
-      BoxPaintInvalidator(block_, context).InvalidatePaintIfNeeded();
+      BoxPaintInvalidator(block_, context).InvalidatePaint();
 
-  block_.GetFrame()->Selection().InvalidatePaintIfNeeded(block_, context);
-  block_.GetFrame()->GetPage()->GetDragCaret().InvalidatePaintIfNeeded(block_,
-                                                                       context);
+  block_.GetFrame()->Selection().InvalidatePaint(block_, context);
+  block_.GetFrame()->GetPage()->GetDragCaret().InvalidatePaint(block_, context);
 
   return reason;
 }

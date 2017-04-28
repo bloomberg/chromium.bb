@@ -14,9 +14,9 @@
 
 namespace blink {
 
-PaintInvalidationReason TablePaintInvalidator::InvalidatePaintIfNeeded() {
+PaintInvalidationReason TablePaintInvalidator::InvalidatePaint() {
   PaintInvalidationReason reason =
-      BoxPaintInvalidator(table_, context_).InvalidatePaintIfNeeded();
+      BoxPaintInvalidator(table_, context_).InvalidatePaint();
 
   // If any col changed background, we need to invalidate all sections because
   // col background paints into section's background display item.

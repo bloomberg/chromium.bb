@@ -996,14 +996,14 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
   }
 }
 
-PaintInvalidationReason LayoutBlock::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutBlock::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
-  return LayoutBox::InvalidatePaintIfNeeded(paint_invalidation_state);
+  return LayoutBox::InvalidatePaint(paint_invalidation_state);
 }
 
-PaintInvalidationReason LayoutBlock::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutBlock::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return BlockPaintInvalidator(*this).InvalidatePaintIfNeeded(context);
+  return BlockPaintInvalidator(*this).InvalidatePaint(context);
 }
 
 void LayoutBlock::ClearPreviousVisualRects() {

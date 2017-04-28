@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PaintInvalidationReason HTMLCanvasPaintInvalidator::InvalidatePaintIfNeeded() {
+PaintInvalidationReason HTMLCanvasPaintInvalidator::InvalidatePaint() {
   PaintInvalidationReason reason =
-      BoxPaintInvalidator(html_canvas_, context_).InvalidatePaintIfNeeded();
+      BoxPaintInvalidator(html_canvas_, context_).InvalidatePaint();
 
   HTMLCanvasElement* element = toHTMLCanvasElement(html_canvas_.GetNode());
   if (element->IsDirty()) {
