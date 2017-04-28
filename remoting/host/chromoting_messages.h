@@ -167,6 +167,9 @@ IPC_STRUCT_BEGIN(SerializedDesktopFrame)
 
   // DPI for this frame.
   IPC_STRUCT_MEMBER(webrtc::DesktopVector, dpi)
+
+  // Capturer Id
+  IPC_STRUCT_MEMBER(uint32_t, capturer_id)
 IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(webrtc::DesktopCapturer::Result,

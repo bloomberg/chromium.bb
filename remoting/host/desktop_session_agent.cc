@@ -320,6 +320,7 @@ void DesktopSessionAgent::OnCaptureResult(
     serialized_frame.dimensions = frame->size();
     serialized_frame.capture_time_ms = frame->capture_time_ms();
     serialized_frame.dpi = frame->dpi();
+    serialized_frame.capturer_id = frame->capturer_id();
     for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
          !i.IsAtEnd(); i.Advance()) {
       serialized_frame.dirty_region.push_back(i.rect());

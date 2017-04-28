@@ -482,6 +482,7 @@ void DesktopSessionProxy::OnCaptureResult(
           new IpcSharedBuffer(shared_buffer_core)));
   frame->set_capture_time_ms(serialized_frame.capture_time_ms);
   frame->set_dpi(serialized_frame.dpi);
+  frame->set_capturer_id(serialized_frame.capturer_id);
 
   for (const auto& rect : serialized_frame.dirty_region) {
     frame->mutable_updated_region()->AddRect(rect);
