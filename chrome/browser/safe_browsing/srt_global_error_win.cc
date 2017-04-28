@@ -13,10 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -33,12 +31,7 @@
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using base::SingleThreadTaskRunner;
-using base::ThreadTaskRunnerHandle;
-using content::BrowserThread;
 
 namespace safe_browsing {
 
@@ -53,14 +46,11 @@ const char kSRTDownloadURL[] =
 // downloaded.
 const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
-void MaybeExecuteSRTFromBlockingPool(
+bool MaybeExecuteSRTFromBlockingPool(
     const base::FilePath& downloaded_path,
     bool metrics_enabled,
     bool sber_enabled,
-    chrome_cleaner::ChromePromptValue prompt_value,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner,
-    const base::Closure& success_callback,
-    const base::Closure& failure_callback) {
+    chrome_cleaner::ChromePromptValue prompt_value) {
   DCHECK(!downloaded_path.empty());
 
   if (base::PathExists(downloaded_path)) {
@@ -96,14 +86,10 @@ void MaybeExecuteSRTFromBlockingPool(
 
       base::Process srt_process(
           base::LaunchProcess(srt_command_line, base::LaunchOptions()));
-      if (srt_process.IsValid()) {
-        task_runner->PostTask(FROM_HERE, success_callback);
-        return;
-      }
+      return srt_process.IsValid();
     }
   }
-
-  task_runner->PostTask(FROM_HERE, failure_callback);
+  return false;
 }
 
 void DeleteFilesFromBlockingPool(const base::FilePath& downloaded_path) {
@@ -222,7 +208,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
   // At this point, this object owns itself, since ownership has been taken back
   // from the global_error_service_ in the call to OnUserInteractionStarted.
   // This means that it is safe to use base::Unretained here.
-  base::PostTaskWithTraits(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       base::TaskTraits().MayBlock().WithPriority(
           base::TaskPriority::BACKGROUND),
@@ -232,12 +218,15 @@ void SRTGlobalError::MaybeExecuteSRT() {
           SafeBrowsingExtendedReportingEnabled(),
           bubble_shown_from_menu_
               ? chrome_cleaner::ChromePromptValue::kShownFromMenu
-              : chrome_cleaner::ChromePromptValue::kPrompted,
-          base::ThreadTaskRunnerHandle::Get(),
-          base::Bind(&SRTGlobalError::OnUserinteractionDone,
-                     base::Unretained(this)),
-          base::Bind(&SRTGlobalError::FallbackToDownloadPage,
-                     base::Unretained(this))));
+              : chrome_cleaner::ChromePromptValue::kPrompted),
+      base::Bind(
+          [](SRTGlobalError* self, bool success) {
+            if (success)
+              self->OnUserinteractionDone();
+            else
+              self->FallbackToDownloadPage();
+          },
+          base::Unretained(this)));
 }
 
 void SRTGlobalError::FallbackToDownloadPage() {
