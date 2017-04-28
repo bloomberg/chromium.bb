@@ -6,8 +6,8 @@
 
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -17,7 +17,9 @@ namespace {
 
 class AshTestEnvironmentDefault : public AshTestEnvironment {
  public:
-  AshTestEnvironmentDefault() {}
+  AshTestEnvironmentDefault()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   ~AshTestEnvironmentDefault() override {
     base::RunLoop().RunUntilIdle();
@@ -40,7 +42,7 @@ class AshTestEnvironmentDefault : public AshTestEnvironment {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentDefault);
