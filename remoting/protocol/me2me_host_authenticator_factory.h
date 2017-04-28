@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -31,7 +32,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      const std::string& required_client_domain,
+      std::vector<std::string> required_client_domain_list,
       const std::string& pin_hash,
       scoped_refptr<PairingRegistry> pairing_registry);
 
@@ -41,7 +42,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      const std::string& required_client_domain,
+      std::vector<std::string> required_client_domain_list,
       scoped_refptr<TokenValidatorFactory> token_validator_factory);
 
   Me2MeHostAuthenticatorFactory();
@@ -58,7 +59,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   std::string host_owner_;
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  std::string required_client_domain_;
+  std::vector<std::string> required_client_domain_list_;
 
   // Used only for PIN-based host authenticators.
   std::string pin_hash_;

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -137,8 +138,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Handlers for NAT traversal and domain policies.
   void UpdateNatPolicy(bool nat_traversal_enabled);
-  void UpdateHostDomainPolicy(const std::string& host_domain);
-  void UpdateClientDomainPolicy(const std::string& client_domain);
+  void UpdateHostDomainListPolicy(std::vector<std::string> host_domain_list);
+  void UpdateClientDomainListPolicy(
+      std::vector<std::string> client_domain_list);
 
   void DisconnectOnNetworkThread();
 
@@ -174,8 +176,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   bool nat_traversal_enabled_ = false;
 
   // The client and host domain policy setting.
-  std::string required_client_domain_;
-  std::string required_host_domain_;
+  std::vector<std::string> required_client_domain_list_;
+  std::vector<std::string> required_host_domain_list_;
 
   // Tracks the JID of the remote user when in a connecting state.
   std::string connecting_jid_;

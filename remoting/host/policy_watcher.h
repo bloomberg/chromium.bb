@@ -92,11 +92,17 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // Gets Chromoting schema stored inside |owned_schema_registry_|.
   const policy::Schema* GetPolicySchema() const;
 
-  // Simplifying wrapper around Schema::Normalize.
+  // Normalizes policies using Schema::Normalize and converts deprecated
+  // policies.
+  //
   // - Returns false if |dict| is invalid (i.e. contains mistyped policy
   // values).
   // - Returns true if |dict| was valid or got normalized.
   bool NormalizePolicies(base::DictionaryValue* dict);
+
+  // Converts each deprecated policy to its replacement if and only if the
+  // replacement policy is not set, and removes deprecated policied from dict.
+  void HandleDeprecatedPolicies(base::DictionaryValue* dict);
 
   // Stores |new_policies| into |old_policies_|.  Returns dictionary with items
   // from |new_policies| that are different from the old |old_policies_|.
