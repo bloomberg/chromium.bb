@@ -5,6 +5,7 @@
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -19,8 +20,9 @@ void WebContentsTopSitesObserver::CreateForWebContents(
     TopSites* top_sites) {
   DCHECK(web_contents);
   if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(UserDataKey(), new WebContentsTopSitesObserver(
-                                                 web_contents, top_sites));
+    web_contents->SetUserData(UserDataKey(),
+                              base::WrapUnique(new WebContentsTopSitesObserver(
+                                  web_contents, top_sites)));
   }
 }
 

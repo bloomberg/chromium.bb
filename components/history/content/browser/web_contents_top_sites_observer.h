@@ -19,6 +19,8 @@ class WebContentsTopSitesObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsTopSitesObserver> {
  public:
+  ~WebContentsTopSitesObserver() override;
+
   static void CreateForWebContents(content::WebContents* web_contents,
                                    TopSites* top_sites);
 
@@ -27,7 +29,6 @@ class WebContentsTopSitesObserver
 
   WebContentsTopSitesObserver(content::WebContents* web_contents,
                               TopSites* top_sites);
-  ~WebContentsTopSitesObserver() override;
 
   // content::WebContentsObserver implementation.
   void NavigationEntryCommitted(

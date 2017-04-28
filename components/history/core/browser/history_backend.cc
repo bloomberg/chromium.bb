@@ -2484,10 +2484,11 @@ base::SupportsUserData::Data* HistoryBackend::GetUserData(
   return supports_user_data_helper_->GetUserData(key);
 }
 
-void HistoryBackend::SetUserData(const void* key,
-                                 base::SupportsUserData::Data* data) {
+void HistoryBackend::SetUserData(
+    const void* key,
+    std::unique_ptr<base::SupportsUserData::Data> data) {
   DCHECK(supports_user_data_helper_);
-  supports_user_data_helper_->SetUserData(key, data);
+  supports_user_data_helper_->SetUserData(key, std::move(data));
 }
 
 void HistoryBackend::ProcessDBTask(
