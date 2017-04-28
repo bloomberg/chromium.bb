@@ -914,6 +914,7 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderFrame* render_frame,
       is_loading_(false),
       is_scripted_preview_delayed_(false),
       ipc_nesting_level_(0),
+      render_frame_gone_(false),
       weak_ptr_factory_(this) {
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
@@ -995,8 +996,6 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   // choose to ignore message or safely crash process.
   ++ipc_nesting_level_;
 
-  auto self = weak_ptr_factory_.GetWeakPtr();
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -1015,13 +1014,17 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  // Check if |this| is still valid. e.g. when OnPrintPages() returns.
-  if (self)
-    --ipc_nesting_level_;
+  --ipc_nesting_level_;
+  if (ipc_nesting_level_ == 0 && render_frame_gone_)
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   return handled;
 }
 
 void PrintWebViewHelper::OnDestruct() {
+  if (ipc_nesting_level_ > 0) {
+    render_frame_gone_ = true;
+    return;
+  }
   delete this;
 }
 
@@ -1212,7 +1215,7 @@ void PrintWebViewHelper::PrepareFrameForPreviewDocument() {
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
       base::Bind(&PrintWebViewHelper::OnFramePreparedForPreviewDocument,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrintWebViewHelper::OnFramePreparedForPreviewDocument() {
@@ -1839,7 +1842,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
   prep_frame_view_->CopySelectionIfNeeded(
       render_frame()->GetWebkitPreferences(),
       base::Bind(&PrintWebViewHelper::OnFramePreparedForPrintPages,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -1983,7 +1986,7 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
         // DidStopLoading() is called. Defer showing the preview until then.
         on_stop_loading_closure_ =
             base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
-                       base::Unretained(this));
+                       weak_ptr_factory_.GetWeakPtr());
       } else {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
@@ -2006,7 +2009,7 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
         on_stop_loading_closure_ =
             base::Bind(&PrintWebViewHelper::RequestPrintPreview,
-                       base::Unretained(this), type);
+                       weak_ptr_factory_.GetWeakPtr(), type);
         return;
       }
 
@@ -2022,7 +2025,7 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       if (is_loading_ && GetPlugin(print_preview_context_.source_frame())) {
         on_stop_loading_closure_ =
             base::Bind(&PrintWebViewHelper::RequestPrintPreview,
-                       base::Unretained(this), type);
+                       weak_ptr_factory_.GetWeakPtr(), type);
         return;
       }
 
@@ -2091,10 +2094,10 @@ PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
     : total_page_count_(0),
       current_page_index_(0),
       generate_draft_pages_(true),
+      is_modifiable_(true),
       print_ready_metafile_page_count_(0),
       error_(PREVIEW_ERROR_NONE),
-      state_(UNINITIALIZED) {
-}
+      state_(UNINITIALIZED) {}
 
 PrintWebViewHelper::PrintPreviewContext::~PrintPreviewContext() {
 }
@@ -2106,6 +2109,7 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
   state_ = INITIALIZED;
   source_frame_.Reset(web_frame);
   source_node_.Reset();
+  CalculateIsModifiable();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
@@ -2116,6 +2120,7 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
   state_ = INITIALIZED;
   source_frame_.Reset(web_node.GetDocument().GetFrame());
   source_node_ = web_node;
+  CalculateIsModifiable();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
@@ -2241,9 +2246,9 @@ bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
   return state_ == RENDERING || state_ == DONE;
 }
 
-bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() {
-  // The only kind of node we can print right now is a PDF node.
-  return !PrintingNodeOrPdfFrame(source_frame(), source_node_);
+bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
+  DCHECK(state_ != UNINITIALIZED);
+  return is_modifiable_;
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::HasSelection() {
@@ -2318,6 +2323,11 @@ void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
   metafile_.reset();
   pages_to_render_.clear();
   error_ = PREVIEW_ERROR_NONE;
+}
+
+void PrintWebViewHelper::PrintPreviewContext::CalculateIsModifiable() {
+  // The only kind of node we can print right now is a PDF node.
+  is_modifiable_ = !PrintingNodeOrPdfFrame(source_frame(), source_node_);
 }
 
 void PrintWebViewHelper::SetPrintPagesParams(

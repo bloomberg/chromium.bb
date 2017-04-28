@@ -449,7 +449,7 @@ class PrintWebViewHelper
     // Helper functions
     int GetNextPageNumber();
     bool IsRendering() const;
-    bool IsModifiable();
+    bool IsModifiable() const;
     bool HasSelection();
     bool IsLastPageOfPrintReadyMetafile() const;
     bool IsFinalPageRendered() const;
@@ -487,6 +487,8 @@ class PrintWebViewHelper
     // Reset some of the internal rendering context.
     void ClearContext();
 
+    void CalculateIsModifiable();
+
     // Specifies what to render for print preview.
     FrameReference source_frame_;
     blink::WebNode source_node_;
@@ -506,6 +508,9 @@ class PrintWebViewHelper
     // True, when draft pages needs to be generated.
     bool generate_draft_pages_;
 
+    // True, if the document source is modifiable. e.g. HTML and not PDF.
+    bool is_modifiable_;
+
     // Specifies the total number of pages in the print ready metafile.
     int print_ready_metafile_page_count_;
 
@@ -515,6 +520,8 @@ class PrintWebViewHelper
     enum PrintPreviewErrorBuckets error_;
 
     State state_;
+
+    DISALLOW_COPY_AND_ASSIGN(PrintPreviewContext);
   };
 
   class ScriptingThrottler {
@@ -541,6 +548,7 @@ class PrintWebViewHelper
   bool is_loading_;
   bool is_scripted_preview_delayed_;
   int ipc_nesting_level_;
+  bool render_frame_gone_;
 
   // Used to fix a race condition where the source is a PDF and print preview
   // hangs because RequestPrintPreview is called before DidStopLoading() is
