@@ -820,6 +820,8 @@ source_set("browser") {
     "indexed_db/list_set.h",
     "installedapp/installed_app_provider_impl_default.cc",
     "installedapp/installed_app_provider_impl_default.h",
+    "keyboard_lock/keyboard_lock_service_impl.cc",
+    "keyboard_lock/keyboard_lock_service_impl.h",
     "leveldb_wrapper_impl.cc",
     "leveldb_wrapper_impl.h",
     "loader/async_resource_handler.cc",
