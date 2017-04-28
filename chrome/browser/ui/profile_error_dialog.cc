@@ -48,7 +48,8 @@ void ShowProfileErrorDialog(ProfileErrorType type,
         l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
     feedback_description += "\n" + diagnostics;
 
-    chrome::ShowFeedbackPage(nullptr, feedback_description,
+    chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceProfileErrorDialog,
+                             feedback_description,
                              kProfileErrorFeedbackCategory);
   }
 #endif

@@ -559,7 +559,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #endif
 #if defined(GOOGLE_CHROME_BUILD)
     case IDC_FEEDBACK:
-      OpenFeedbackDialog(browser_);
+      OpenFeedbackDialog(browser_, kFeedbackSourceBrowserCommand);
       break;
 #endif
     case IDC_SHOW_BOOKMARK_BAR:

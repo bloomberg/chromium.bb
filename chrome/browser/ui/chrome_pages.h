@@ -34,6 +34,24 @@ enum HelpSource {
   HELP_SOURCE_WEBUI,
 };
 
+// Sources of feedback requests.
+//
+// WARNING: The below enum MUST never be renamed, modified or reordered, as
+// they're written to logs. You can only insert a new element immediately
+// before the last.
+enum FeedbackSource {
+  kFeedbackSourceArcApp = 0,
+  kFeedbackSourceAsh,
+  kFeedbackSourceBrowserCommand,
+  kFeedbackSourceMdSettingsAboutPage,
+  kFeedbackSourceOldSettingsAboutPage,
+  kFeedbackSourceProfileErrorDialog,
+  kFeedbackSourceSadTabPage,
+  kFeedbackSourceSupervisedUserInterstitial,
+
+  // Must be last.
+  kFeedbackSourceCount,
+};
 
 void ShowBookmarkManager(Browser* browser);
 void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id);
@@ -46,6 +64,7 @@ void ShowConflicts(Browser* browser);
 // ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
 // |browser| should be NULL if there are no currently open browser windows.
 void ShowFeedbackPage(Browser* browser,
+                      FeedbackSource source,
                       const std::string& description_template,
                       const std::string& category_tag);
 

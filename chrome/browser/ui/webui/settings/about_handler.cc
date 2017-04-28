@@ -440,7 +440,8 @@ void AboutHandler::HandleOpenFeedbackDialog(const base::ListValue* args) {
   DCHECK(args->empty());
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  chrome::OpenFeedbackDialog(browser);
+  chrome::OpenFeedbackDialog(browser,
+                             chrome::kFeedbackSourceMdSettingsAboutPage);
 }
 
 void AboutHandler::HandleOpenHelpPage(const base::ListValue* args) {

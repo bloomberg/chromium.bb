@@ -1004,7 +1004,7 @@ void ArcSessionManager::OnRetryClicked() {
 
 void ArcSessionManager::OnSendFeedbackClicked() {
   DCHECK(support_host_);
-  chrome::OpenFeedbackDialog(nullptr);
+  chrome::OpenFeedbackDialog(nullptr, chrome::kFeedbackSourceArcApp);
 }
 
 void ArcSessionManager::SetArcSessionRunnerForTesting(

@@ -218,5 +218,5 @@ void ChromeNewWindowClient::ShowTaskManager() {
 }
 
 void ChromeNewWindowClient::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(GetActiveBrowser());
+  chrome::OpenFeedbackDialog(GetActiveBrowser(), chrome::kFeedbackSourceAsh);
 }
