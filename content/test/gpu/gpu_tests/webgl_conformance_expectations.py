@@ -623,6 +623,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=609883)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=716496)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=610951)
@@ -693,16 +696,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
         ['android', 'android-chromium',
          ('nvidia', 'NVIDIA Tegra')], bug=624621)
-
-    # NVIDIA Shield
-    self.Flaky('conformance/context/' +
-        'context-eviction-with-garbage-collection.html',
-        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
-    self.Flaky('conformance/glsl/misc/glsl-long-variable-names.html',
-        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
-    self.Flaky('conformance/textures/image_bitmap_from_video/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
 
     ############
     # ChromeOS #
