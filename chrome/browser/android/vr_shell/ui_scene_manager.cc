@@ -19,10 +19,10 @@ namespace {
 static constexpr int kWarningTimeoutSeconds = 30;
 static constexpr float kWarningDistance = 0.7;
 static constexpr float kWarningAngleRadians = 16.3 * M_PI / 180.0;
-static constexpr float kPermanentWarningHeight = 0.226;
-static constexpr float kPermanentWarningWidth = 0.078;
-static constexpr float kTransientWarningHeight = 0.512;
-static constexpr float kTransientWarningWidth = 0.160;
+static constexpr float kPermanentWarningHeight = 0.070f;
+static constexpr float kPermanentWarningWidth = 0.224f;
+static constexpr float kTransientWarningHeight = 0.160;
+static constexpr float kTransientWarningWidth = 0.512;
 
 static constexpr float kContentWidth = 2.4;
 static constexpr float kContentHeight = 1.6;
