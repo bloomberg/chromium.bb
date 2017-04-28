@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -48,6 +49,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final ContextMenuManager mContextMenuManager;
     private final SuggestionsUiDelegateImpl mSuggestionsManager;
     private final TileGroup.Delegate mTileGroupDelegate;
+    private final BottomSheet mBottomSheet;
+    private final BottomSheetObserver mBottomSheetObserver;
 
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
             TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
@@ -86,7 +89,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mRecyclerView.init(uiConfig, mContextMenuManager, adapter);
 
         final SuggestionsSource suggestionsSource = mSuggestionsManager.getSuggestionsSource();
-        activity.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
+        mBottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened() {
                 mRecyclerView.scrollToPosition(0);
@@ -96,7 +99,9 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 adapter.refreshSuggestions();
                 suggestionsSource.onNtpInitialized();
             }
-        });
+        };
+        mBottomSheet = activity.getBottomSheet();
+        mBottomSheet.addObserver(mBottomSheetObserver);
         adapter.refreshSuggestions();
         suggestionsSource.onNtpInitialized();
 
@@ -150,6 +155,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     @Override
     public void destroy() {
+        mBottomSheet.removeObserver(mBottomSheetObserver);
         mSuggestionsManager.onDestroy();
         mTileGroupDelegate.destroy();
     }
