@@ -9,10 +9,6 @@
 
 #include "ios/chrome/browser/ui/toolbar/toolbar_button_tints.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // The number of dots drawn.
 const int kNumberOfDots = 3;
@@ -52,7 +48,7 @@ const CGFloat kLineWidthAtApogee = 3;
   // Whether the reading list contains unseen items.
   BOOL readingListContainsUnseenItems_;
   // The CALayers containing the drawn dots.
-  NSMutableArray<CAShapeLayer*>* pathLayers_;
+  base::scoped_nsobject<CAShapeLayer> pathLayers_[kNumberOfDots];
   // Whether the CALayers are being animated.
   BOOL animationOnGoing_;
 }
@@ -85,7 +81,6 @@ const CGFloat kLineWidthAtApogee = 3;
               forState:UIControlStateNormal];
     [self setTintColor:toolbar::HighlighButtonTint(style_)
               forState:UIControlStateHighlighted];
-    pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
   }
   return self;
 }
@@ -118,7 +113,7 @@ const CGFloat kLineWidthAtApogee = 3;
 
 - (void)initializeShapeLayers {
   for (int i = 0; i < kNumberOfDots; i++) {
-    CAShapeLayer* pathLayer = pathLayers_[i];
+    base::scoped_nsobject<CAShapeLayer>& pathLayer = pathLayers_[i];
     if (pathLayer) {
       [pathLayer removeFromSuperlayer];
     }
@@ -130,7 +125,7 @@ const CGFloat kLineWidthAtApogee = 3;
     [path moveToPoint:CGPointMake(x - kMaxWidthOfSegment * 0.5, y)];
     [path addLineToPoint:CGPointMake(x + kMaxWidthOfSegment * 0.5, y)];
 
-    pathLayer = [CAShapeLayer layer];
+    pathLayer.reset([[CAShapeLayer layer] retain]);
     [pathLayer setFrame:self.bounds];
     [pathLayer setPath:path.CGPath];
     [pathLayer setStrokeColor:[self.tintColor CGColor]];
@@ -139,8 +134,7 @@ const CGFloat kLineWidthAtApogee = 3;
     [pathLayer setLineCap:kCALineCapRound];
     [pathLayer setStrokeStart:kStrokeStartAtRest];
     [pathLayer setStrokeEnd:kStrokeEndAtRest];
-    [self.layer addSublayer:pathLayer];
-    pathLayers_[i] = pathLayer;
+    [self.layer addSublayer:pathLayer.get()];
   }
 }
 
@@ -212,7 +206,8 @@ const CGFloat kLineWidthAtApogee = 3;
 
   // Add four animations for each stroke.
   for (int i = 0; i < kNumberOfDots; i++) {
-    CAShapeLayer* pathLayer = pathLayers_[i];
+    base::scoped_nsobject<CAShapeLayer>& pathLayer = pathLayers_[i];
+    DCHECK(pathLayer.get());
     const int frameStart =
         (kNumberOfDots - i) * kFramesBetweenAnimationOfEachDot;
 
