@@ -8,11 +8,13 @@
 namespace {
 
 // Report a single hard-coded supported format to clients.
-media::VideoCaptureFormat kSupportedFormat(gfx::Size(),
+media::VideoCaptureFormat kSupportedFormat(gfx::Size(640, 480),
                                            25.0f,
                                            media::PIXEL_FORMAT_I420,
                                            media::PIXEL_STORAGE_CPU);
 
+// Wraps a raw pointer to a media::VideoCaptureDevice and allows us to
+// create a std::unique_ptr<media::VideoCaptureDevice> that delegates to it.
 class RawPointerVideoCaptureDevice : public media::VideoCaptureDevice {
  public:
   explicit RawPointerVideoCaptureDevice(media::VideoCaptureDevice* device)
@@ -34,6 +36,9 @@ class RawPointerVideoCaptureDevice : public media::VideoCaptureDevice {
   }
   void TakePhoto(TakePhotoCallback callback) override {
     device_->TakePhoto(std::move(callback));
+  }
+  void OnUtilizationReport(int frame_feedback_id, double utilization) override {
+    device_->OnUtilizationReport(frame_feedback_id, utilization);
   }
 
  private:

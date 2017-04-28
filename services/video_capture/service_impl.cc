@@ -10,6 +10,7 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
+#include "media/capture/video/video_capture_system_impl.h"
 #include "services/service_manager/public/cpp/service_info.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 
@@ -65,18 +66,23 @@ void ServiceImpl::LazyInitializeDeviceFactory() {
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
       media::VideoCaptureDeviceFactory::CreateFactory(
           base::MessageLoop::current()->task_runner());
+  auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+      std::move(media_device_factory));
 
   device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-      std::move(media_device_factory), base::Bind(CreateJpegDecoder));
+      std::move(video_capture_system), base::Bind(CreateJpegDecoder));
 }
 
 void ServiceImpl::LazyInitializeFakeDeviceFactory() {
   if (fake_device_factory_)
     return;
 
+  auto factory = base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
+  auto video_capture_system =
+      base::MakeUnique<media::VideoCaptureSystemImpl>(std::move(factory));
+
   fake_device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-      base::MakeUnique<media::FakeVideoCaptureDeviceFactory>(),
-      base::Bind(&CreateJpegDecoder));
+      std::move(video_capture_system), base::Bind(&CreateJpegDecoder));
 }
 
 }  // namespace video_capture
