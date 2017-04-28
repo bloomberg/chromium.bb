@@ -95,10 +95,11 @@ class NetworkScreen : public BaseScreen,
 
  private:
   friend class NetworkScreenTest;
+  friend class NetworkScreenUnitTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
-  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, RequiresNoInput);
-  FRIEND_TEST_ALL_PREFIXES(HandsOffNetworkScreenTest, ContinueClickedOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesAutomatically);
+  FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen implementation:
   void Show() override;

@@ -104,7 +104,8 @@ class UI_BASE_IME_EXPORT ComponentExtensionIMEManager {
   input_method::InputMethodDescriptors GetAllIMEAsInputMethodDescriptor();
 
   // Returns all XKB keyboard IME as InputMethodDescriptors.
-  input_method::InputMethodDescriptors GetXkbIMEAsInputMethodDescriptor();
+  virtual input_method::InputMethodDescriptors
+  GetXkbIMEAsInputMethodDescriptor();
 
  private:
   // Finds ComponentExtensionIME and EngineDescription associated with
