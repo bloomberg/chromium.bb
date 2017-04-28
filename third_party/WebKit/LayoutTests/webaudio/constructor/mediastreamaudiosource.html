@@ -5,63 +5,45 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
     <script>
-      var context = new AudioContext();
+      let context = new AudioContext();
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new MediaStreamAudioSourceNode()", function () {
-          node = new MediaStreamAudioSourceNode();
-        }).throw("TypeError");
-        success = Should("new MediaStreamAudioSourceNode(1)", function () {
-          node = new MediaStreamAudioSourceNode(1) && success;
-        }).throw("TypeError");
-        success = Should("new MediaStreamAudioSourceNode(context, 42)",
-          function () {
-            node = new MediaStreamAudioSourceNode(context, 42) && success;
-          }).throw("TypeError");
-
-        Should("Invalid constructors", success)
-          .summarize(
-            "correctly threw errors",
-            "did not throw errors in all cases");
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("constructor options", function (taskDone) {
-        var node;
-        var success = true;
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(should, 'MediaStreamAudioSourceNode', context);
+        task.done();
+      });
 
-        var options = {
-          mediaStream: new MediaStream()
-        };
+      audit.define('constructor options', (task, should) => {
+        let node;
+
+        let options = {mediaStream: new MediaStream()};
 
         // We throw because the mediaStream has no tracks. But otherwise the
         // constructor worked.
-        success = Should("node = new MediaStreamAudioSourceNode(, " + JSON.stringify(
-            options) + ")",
-          function () {
-            node = new MediaStreamAudioSourceNode(context, options);
-          }).throw("InvalidStateError") && success;
+        should(
+            () => {
+              node = new MediaStreamAudioSourceNode(context, options);
+            },
+            'node = new MediaStreamAudioSourceNode(context, ' +
+                JSON.stringify(options) + ')')
+            .throw('InvalidStateError');
 
-        Should("new MediaStreamAudioSourceNode(c, options)", success)
-          .summarize(
-            "constructed with correct attributes",
-            "was not constructed correctly");
-
-        taskDone();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
