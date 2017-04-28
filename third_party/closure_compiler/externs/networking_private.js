@@ -775,16 +775,6 @@ chrome.networkingPrivate.TetherProperties;
 
 /**
  * @typedef {{
- *   BatteryPercentage: (!chrome.networkingPrivate.ManagedLong|undefined),
- *   Carrier: (!chrome.networkingPrivate.ManagedDOMString|undefined),
- *   SignalStrength: (!chrome.networkingPrivate.ManagedLong|undefined)
- * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-ManagedTetherProperties
- */
-chrome.networkingPrivate.ManagedTetherProperties;
-
-/**
- * @typedef {{
  *   AutoConnect: (boolean|undefined),
  *   Host: (string|undefined),
  *   IPsec: (!chrome.networkingPrivate.IPSecProperties|undefined),
@@ -968,7 +958,7 @@ chrome.networkingPrivate.NetworkProperties;
  *   StaticIPConfig: (!chrome.networkingPrivate.ManagedIPConfigProperties|undefined),
  *   SavedIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
  *   Source: (string|undefined),
- *   Tether: (!chrome.networkingPrivate.ManagedTetherProperties|undefined),
+ *   Tether: (!chrome.networkingPrivate.TetherProperties|undefined),
  *   Type: !chrome.networkingPrivate.NetworkType,
  *   VPN: (!chrome.networkingPrivate.ManagedVPNProperties|undefined),
  *   WiFi: (!chrome.networkingPrivate.ManagedWiFiProperties|undefined),

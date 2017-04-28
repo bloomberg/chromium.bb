@@ -586,12 +586,6 @@ namespace networkingPrivate {
     long? SignalStrength;
   };
 
-  dictionary ManagedTetherProperties {
-    ManagedLong? BatteryPercentage;
-    ManagedDOMString? Carrier;
-    ManagedLong? SignalStrength;
-  };
-
   dictionary VPNProperties {
     boolean? AutoConnect;
     DOMString? Host;
@@ -732,7 +726,7 @@ namespace networkingPrivate {
     ManagedIPConfigProperties? StaticIPConfig;
     IPConfigProperties? SavedIPConfig;
     DOMString? Source;
-    ManagedTetherProperties? Tether;
+    TetherProperties? Tether;
     NetworkType Type;
     ManagedVPNProperties? VPN;
     ManagedWiFiProperties? WiFi;

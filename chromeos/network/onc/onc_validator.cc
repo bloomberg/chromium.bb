@@ -129,7 +129,7 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateEAP(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
-    } else if (&signature == &kTetherSignature) {
+    } else if (&signature == &kTetherWithStateSignature) {
       valid = ValidateTether(repaired.get());
     }
   }

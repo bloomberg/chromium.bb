@@ -476,8 +476,11 @@ const NetworkState* NetworkStateHandler::GetNetworkStateFromServicePath(
     bool configured_only) const {
   ManagedState* managed =
       GetModifiableManagedState(&network_list_, service_path);
-  if (!managed)
-    return nullptr;
+  if (!managed) {
+    managed = GetModifiableManagedState(&tether_network_list_, service_path);
+    if (!managed)
+      return nullptr;
+  }
   const NetworkState* network = managed->AsNetworkState();
   DCHECK(network);
   if (!network->update_received() ||

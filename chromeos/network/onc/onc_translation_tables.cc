@@ -248,6 +248,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kVerifyX509Signature, verify_x509_fields},
     {&kVPNSignature, vpn_fields},
     {&kTetherSignature, tether_fields},
+    {&kTetherWithStateSignature, tether_fields},
     {&kWiFiSignature, wifi_fields},
     {&kWiFiWithStateSignature, wifi_fields},
     {&kWiMAXSignature, wimax_fields},
