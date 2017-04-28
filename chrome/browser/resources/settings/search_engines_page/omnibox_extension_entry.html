@@ -11,11 +11,18 @@
   <template>
     <style include="settings-shared search-engine-entry">
       .name-column {
+        align-items: center;
+        display: flex;
         flex: 3;
+        word-break: break-word;
       }
 
       .keyword-column {
         flex: 7;
+      }
+
+      .favicon-image + span {
+        -webkit-margin-end: 8px;
       }
     </style>
     <div class="list-item">
