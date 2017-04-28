@@ -54,7 +54,7 @@ manifest_processor_template("shell_apk_manifest") {
   output = shell_apk_manifest
 
   variables = [
-    "shell_apk_version=$template_shell_apk_version",
+    "shell_apk_version=$shell_apk_version",
     "manifest_package=org.chromium.webapk",
     "runtime_host=$webapk_runtime_host",
     "start_url=$webapk_start_url",
@@ -81,7 +81,7 @@ manifest_processor_template("shell_apk_manifest_javatests") {
   output = shell_apk_manifest_javatests
 
   variables = [
-    "shell_apk_version=$template_shell_apk_version",
+    "shell_apk_version=$shell_apk_version",
     "manifest_package=org.chromium.webapk.test",
     "runtime_host=org.chromium.chrome",
     "start_url=https://www.template.com/home_page",
