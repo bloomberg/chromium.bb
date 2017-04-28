@@ -97,13 +97,6 @@ size_t RegisterCastCrashKeys() {
       {"newframe_replicated_origin", ::crash_keys::kSmallSize},
       {"newframe_oopifs_possible", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/630103.
-      {"origin_mismatch_url", ::crash_keys::kLargeSize},
-      {"origin_mismatch_origin", ::crash_keys::kMediumSize},
-      {"origin_mismatch_transition", ::crash_keys::kSmallSize},
-      {"origin_mismatch_redirects", ::crash_keys::kSmallSize},
-      {"origin_mismatch_same_page", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/612711.
       {"aci_wrong_sp_extension_id", ::crash_keys::kSmallSize},
 
