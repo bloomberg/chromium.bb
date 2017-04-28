@@ -19,7 +19,7 @@ namespace offline_items_collection {
 
 // A simple wrapper around an OfflineContentProvider that throttles
 // OfflineContentProvider::Observer::OnItemUpdated() calls to all registered
-// observers.  This class will coalesce updates to an item with an equal
+// observers. This class will coalesce updates to an item with an equal
 // ContentId.
 class ThrottledOfflineContentProvider
     : public OfflineContentProvider,
@@ -32,6 +32,10 @@ class ThrottledOfflineContentProvider
 
   // OfflineContentProvider implementation.
   bool AreItemsAvailable() override;
+
+  // Taking actions on the OfflineContentProvider will flush any queued updates
+  // immediately after performing the action. This is to make sure item updates
+  // in response to the update are immediately reflected back to the caller.
   void OpenItem(const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
@@ -48,6 +52,10 @@ class ThrottledOfflineContentProvider
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
+  // Visible for testing. Overrides the time at which this throttle last pushed
+  // updates to observers.
+  void set_last_update_time(const base::TimeTicks& t) { last_update_time_ = t; }
+
  private:
   // OfflineContentProvider::Observer implementation.
   void OnItemsAvailable(OfflineContentProvider* provider) override;
@@ -59,14 +67,17 @@ class ThrottledOfflineContentProvider
   // called OfflineContentProvider::Observer::OnItemsAvailable().
   void NotifyItemsAvailable(OfflineContentProvider::Observer* observer);
 
-  // Checks if |item| already has an update pending.  If so, replaces the
-  // content of the update with |item|.
+  // Checks if |item| already has an update pending. If so, replaces the content
+  // of the update with |item|.
   void UpdateItemIfPresent(const OfflineItem& item);
 
   // Flushes all pending updates to the observers.
   void FlushUpdates();
 
   const base::TimeDelta delay_between_updates_;
+
+  // Information about whether or not we're queuing updates.
+  base::TimeTicks last_update_time_;
   bool update_queued_;
 
   OfflineContentProvider* const wrapped_provider_;

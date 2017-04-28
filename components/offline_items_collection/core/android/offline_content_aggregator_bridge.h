@@ -15,6 +15,7 @@ namespace offline_items_collection {
 
 struct ContentId;
 struct OfflineItem;
+class ThrottledOfflineContentProvider;
 
 namespace android {
 
@@ -90,7 +91,7 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   // OfflineContentAggregatorBridge.java.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  OfflineContentAggregator* const aggregator_;
+  std::unique_ptr<ThrottledOfflineContentProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineContentAggregatorBridge);
 };
