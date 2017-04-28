@@ -562,13 +562,26 @@ class SafeBrowsingBlockingPageBrowserTest
     if (!rfh)
       return VISIBILITY_ERROR;
 
-    std::unique_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-        rfh, "var node = document.getElementById('" + node_id +
-                 "');\n"
-                 "if (node)\n"
-                 "   node.offsetWidth > 0 && node.offsetHeight > 0;"
-                 "else\n"
-                 "  'node not found';\n");
+    // clang-format off
+    std::string jsFindVisibility = R"(
+      (function isNodeVisible(node) {
+        if (!node) return 'node not found';
+        if (node.offsetWidth === 0 || node.offsetHeight === 0) return false;
+        // Do not check opacity, since the css transition may actually leave
+        // opacity at 0 after it's been unhidden
+        if (node.classList.contains('hidden')) return false;
+        // Otherwise, we must check all parent nodes
+        var parentVisibility = isNodeVisible(node.parentElement);
+        if (parentVisibility === 'node not found') {
+          return true; // none of the parents are set invisible
+        }
+        return parentVisibility;
+      }(document.getElementById(')" + node_id + R"(')));)";
+    // clang-format on
+
+    std::unique_ptr<base::Value> value =
+        content::ExecuteScriptAndGetValue(rfh, jsFindVisibility);
+
     if (!value.get())
       return VISIBILITY_ERROR;
 
