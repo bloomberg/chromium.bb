@@ -338,7 +338,6 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   // See comments for each skipped flag below.
 
   // These are not generated in ComputedStyleBase
-  SetVerticalAlign(other.VerticalAlign());
   SetHasViewportUnits(other.HasViewportUnits());
   SetHasRemUnitsInternal(other.HasRemUnits());
 
@@ -471,8 +470,6 @@ bool ComputedStyle::LoadingCustomFontsEqual(const ComputedStyle& other) const {
 bool ComputedStyle::NonInheritedEqual(const ComputedStyle& other) const {
   // compare everything except the pseudoStyle pointer
   return ComputedStyleBase::NonInheritedEqual(other) &&
-         VerticalAlign() == other.VerticalAlign() &&  // Not generated in
-                                                      // ComputedStyleBase
          box_data_ == other.box_data_ &&
          visual_data_ == other.visual_data_ &&
          rare_non_inherited_data_ == other.rare_non_inherited_data_ &&
