@@ -23,15 +23,15 @@ PASS createDocument("http://example.com/", "0div", null); threw INVALID_CHARACTE
 PASS createDocument("http://example.com/", "di<v", null); threw INVALID_CHARACTER_ERR
 PASS createDocument("http://example.com/", "-div", null); threw INVALID_CHARACTER_ERR
 PASS createDocument("http://example.com/", ".div", null); threw INVALID_CHARACTER_ERR
-PASS createDocument(null, ":div", null); threw NAMESPACE_ERR
-PASS createDocument(null, "div:", null); threw NAMESPACE_ERR
-PASS createDocument("http://example.com/", ":div", null); threw NAMESPACE_ERR
-PASS createDocument("http://example.com/", "div:", null); threw NAMESPACE_ERR
+PASS createDocument(null, ":div", null); threw INVALID_CHARACTER_ERR
+PASS createDocument(null, "div:", null); threw INVALID_CHARACTER_ERR
+PASS createDocument("http://example.com/", ":div", null); threw INVALID_CHARACTER_ERR
+PASS createDocument("http://example.com/", "div:", null); threw INVALID_CHARACTER_ERR
 PASS createDocument(null, "d:iv", null); threw NAMESPACE_ERR
-PASS createDocument(null, "a:b:c", null); valid XML name, invalid QName; threw NAMESPACE_ERR
-PASS createDocument("http://example.com/", "a:b:c", null); valid XML name, invalid QName; threw NAMESPACE_ERR
-PASS createDocument(null, "a::c", null); valid XML name, invalid QName; threw NAMESPACE_ERR
-PASS createDocument("http://example.com/", "a::c", null); valid XML name, invalid QName; threw NAMESPACE_ERR
+PASS createDocument(null, "a:b:c", null); valid XML name, invalid QName; threw INVALID_CHARACTER_ERR
+PASS createDocument("http://example.com/", "a:b:c", null); valid XML name, invalid QName; threw INVALID_CHARACTER_ERR
+PASS createDocument(null, "a::c", null); valid XML name, invalid QName; threw INVALID_CHARACTER_ERR
+PASS createDocument("http://example.com/", "a::c", null); valid XML name, invalid QName; threw INVALID_CHARACTER_ERR
 PASS createDocument("http://example.com/", "a:0", null); valid XML name, not a valid QName; threw INVALID_CHARACTER_ERR
 PASS createDocument("http://example.com/", "0:a", null); 0 at start makes it not a valid XML name; threw INVALID_CHARACTER_ERR
 PASS createDocument("http://example.com/", "a:_", null)
