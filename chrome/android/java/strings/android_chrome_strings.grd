@@ -980,6 +980,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
         No USB devices here
       </message>
 
+      <!-- IPH Strings -->
+      <message name="IDS_IPH_DATA_SAVER_PREVIEW_TEXT" desc="In-product help for when a data saver preview page and infobar are shown.">
+          Chrome is using less data to show you this page
+      </message>
+
       <!-- Data Saver -->
       <message name="IDS_DATA_REDUCTION_TITLE" desc="Menu item for Data Saver, which allows users to save mobile data by compressing network traffic.">
         Data Saver

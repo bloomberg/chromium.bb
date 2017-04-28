@@ -6,6 +6,7 @@ package org.chromium.chrome.test.util;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 
 import java.util.concurrent.TimeoutException;
 
@@ -44,6 +45,9 @@ public class InfoBarTestAnimationListener implements InfoBarAnimationListener {
                         "Animation finished for unknown type " + animationType);
         }
     }
+
+    @Override
+    public void notifyAllAnimationsFinished(Item frontInfoBar) {}
 
     public void addInfoBarAnimationFinished(String msg)
             throws InterruptedException, TimeoutException {

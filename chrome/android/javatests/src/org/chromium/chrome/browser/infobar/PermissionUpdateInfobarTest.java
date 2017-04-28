@@ -77,7 +77,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
         });
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
-        container.setAnimationListener(mListener);
+        container.addAnimationListener(mListener);
 
         final String locationUrl = mTestServer.getURL(GEOLOCATION_PAGE);
         final GeolocationInfo geolocationSettings = ThreadUtils.runOnUiThreadBlockingNoException(
@@ -156,7 +156,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
         });
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
-        container.setAnimationListener(mListener);
+        container.addAnimationListener(mListener);
 
         final String locationUrl = mTestServer.getURL(GEOLOCATION_IFRAME_PAGE);
         final GeolocationInfo geolocationSettings = ThreadUtils.runOnUiThreadBlockingNoException(

@@ -87,7 +87,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         InfoBarContainer container =
                                 getActivity().getActivityTab().getInfoBarContainer();
                         InfoBarTestAnimationListener listener =  new InfoBarTestAnimationListener();
-                        container.setAnimationListener(listener);
+                        container.addAnimationListener(listener);
                         return listener;
                     }
                 });

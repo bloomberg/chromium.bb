@@ -126,7 +126,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         InfoBarContainer container =
                 getActivity().getTabModelSelector().getCurrentTab().getInfoBarContainer();
         mListener = new InfoBarTestAnimationListener();
-        container.setAnimationListener(mListener);
+        container.addAnimationListener(mListener);
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 
