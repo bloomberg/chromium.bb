@@ -12,6 +12,10 @@
 namespace base {
 
 SharedMemoryHandle::SharedMemoryHandle() = default;
+SharedMemoryHandle::SharedMemoryHandle(const SharedMemoryHandle& handle) =
+    default;
+SharedMemoryHandle& SharedMemoryHandle::operator=(
+    const SharedMemoryHandle& handle) = default;
 
 SharedMemoryHandle::SharedMemoryHandle(
     const base::FileDescriptor& file_descriptor)
