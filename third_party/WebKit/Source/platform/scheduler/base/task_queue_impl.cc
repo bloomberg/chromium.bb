@@ -890,10 +890,8 @@ void TaskQueueImpl::ScheduleDelayedWorkInTimeDomain(base::TimeTicks now) {
       this, main_thread_only().delayed_incoming_queue.top().delayed_wake_up(),
       now);
 
-  if (!HasPendingImmediateWork()) {
-    NotifyWakeUpChangedOnMainThread(
-        main_thread_only().delayed_incoming_queue.top().delayed_run_time);
-  }
+  NotifyWakeUpChangedOnMainThread(
+      main_thread_only().delayed_incoming_queue.top().delayed_run_time);
 }
 
 void TaskQueueImpl::NotifyWakeUpChangedOnMainThread(base::TimeTicks wake_up) {
