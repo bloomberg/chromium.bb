@@ -351,7 +351,7 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
 std::unique_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
   root_layer_for_testing_ = nullptr;
   layer_list_.clear();
-  render_surface_layer_list_.clear();
+  render_surface_list_.clear();
   set_needs_update_draw_properties();
   std::unique_ptr<OwnedLayerImplList> ret = std::move(layers_);
   layers_.reset(new OwnedLayerImplList);
@@ -1015,7 +1015,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
   // Clear this after the renderer early out, as it should still be
   // possible to hit test even without a renderer.
-  render_surface_layer_list_.clear();
+  render_surface_list_.clear();
 
   if (layer_list_.empty())
     return false;
@@ -1041,7 +1041,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        &render_surface_layer_list_, &property_trees_);
+        &render_surface_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(
@@ -1051,7 +1051,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
           timer.Elapsed().InMicroseconds());
       UMA_HISTOGRAM_COUNTS_100(
           base::StringPrintf("Compositing.%s.NumRenderSurfaces", client_name),
-          base::saturated_cast<int>(render_surface_layer_list_.size()));
+          base::saturated_cast<int>(render_surface_list_.size()));
     }
   }
 
@@ -1179,15 +1179,15 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
 }
 
-const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
+const RenderSurfaceList& LayerTreeImpl::GetRenderSurfaceList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);
-  return render_surface_layer_list_;
+  return render_surface_list_;
 }
 
 const Region& LayerTreeImpl::UnoccludedScreenSpaceRegion() const {
-  // If this assert triggers, then the render_surface_layer_list_ is dirty, so
-  // the unoccluded_screen_space_region_ is not valid anymore.
+  // If this assert triggers, then the render_surface_list_ is dirty, so the
+  // unoccluded_screen_space_region_ is not valid anymore.
   DCHECK(!needs_update_draw_properties_);
   return unoccluded_screen_space_region_;
 }

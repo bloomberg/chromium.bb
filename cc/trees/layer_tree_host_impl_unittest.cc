@@ -1620,7 +1620,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
-  LayerImplList list;
+  RenderSurfaceList list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, gfx::Size(50, 50), &list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
@@ -7995,7 +7995,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
   TestFrameData frame;
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
-  EXPECT_EQ(1u, frame.render_surface_layer_list->size());
+  EXPECT_EQ(1u, frame.render_surface_list->size());
   EXPECT_EQ(1u, frame.render_passes.size());
   host_impl_->DidDrawAllLayers(frame);
 }
@@ -8380,7 +8380,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   bool update_lcd_text = false;
   host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
-  ASSERT_EQ(1u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
+  ASSERT_EQ(1u, host_impl_->active_tree()->GetRenderSurfaceList().size());
 
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));

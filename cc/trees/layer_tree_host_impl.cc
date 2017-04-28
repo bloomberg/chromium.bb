@@ -163,7 +163,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
                                   "Scheduling.%s.PendingTreeDuration");
 
 LayerTreeHostImpl::FrameData::FrameData()
-    : render_surface_layer_list(nullptr),
+    : render_surface_list(nullptr),
       has_no_damage(false),
       may_contain_video(false) {}
 
@@ -782,7 +782,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // the root damage rect. The root damage rect is then used to scissor each
   // surface.
   DamageTracker::UpdateDamageTracking(active_tree_.get(),
-                                      active_tree_->RenderSurfaceLayerList());
+                                      active_tree_->GetRenderSurfaceList());
 
   // If the root render surface has no visible damage, then don't generate a
   // frame at all.
@@ -790,7 +790,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   bool root_surface_has_no_visible_damage =
       !root_surface->GetDamageRect().Intersects(root_surface->content_rect());
   bool root_surface_has_contributing_layers =
-      !root_surface->layer_list().empty();
+      !!root_surface->num_contributors();
   bool hud_wants_to_draw_ = active_tree_->hud_layer() &&
                             active_tree_->hud_layer()->IsAnimatingHUDContents();
   bool must_always_swap =
@@ -813,25 +813,22 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     return DRAW_SUCCESS;
   }
 
-  TRACE_EVENT_BEGIN2(
-      "cc", "LayerTreeHostImpl::CalculateRenderPasses",
-      "render_surface_layer_list.size()",
-      static_cast<uint64_t>(frame->render_surface_layer_list->size()),
-      "RequiresHighResToDraw", RequiresHighResToDraw());
+  TRACE_EVENT_BEGIN2("cc", "LayerTreeHostImpl::CalculateRenderPasses",
+                     "render_surface_list.size()",
+                     static_cast<uint64_t>(frame->render_surface_list->size()),
+                     "RequiresHighResToDraw", RequiresHighResToDraw());
 
   // Create the render passes in dependency order.
-  size_t render_surface_layer_list_size =
-      frame->render_surface_layer_list->size();
-  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
-    size_t surface_index = render_surface_layer_list_size - 1 - i;
-    LayerImpl* render_surface_layer =
-        (*frame->render_surface_layer_list)[surface_index];
+  size_t render_surface_list_size = frame->render_surface_list->size();
+  for (size_t i = 0; i < render_surface_list_size; ++i) {
+    size_t surface_index = render_surface_list_size - 1 - i;
     RenderSurfaceImpl* render_surface =
-        render_surface_layer->GetRenderSurface();
+        (*frame->render_surface_list)[surface_index];
 
+    bool is_root_surface =
+        render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
     bool should_draw_into_render_pass =
-        active_tree_->IsRootLayer(render_surface_layer) ||
-        render_surface->contributes_to_drawn_surface() ||
+        is_root_surface || render_surface->contributes_to_drawn_surface() ||
         render_surface->HasCopyRequest();
     if (should_draw_into_render_pass)
       frame->render_passes.push_back(render_surface->CreateRenderPass());
@@ -1115,7 +1112,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // they appear as part of the current frame being drawn.
   tile_manager_.Flush();
 
-  frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
+  frame->render_surface_list = &active_tree_->GetRenderSurfaceList();
   frame->render_passes.clear();
   frame->will_draw_layers.clear();
   frame->has_no_damage = false;
@@ -1661,8 +1658,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   if (debug_state_.ShowHudRects()) {
     debug_rect_history_->SaveDebugRectsForCurrentFrame(
-        active_tree(), active_tree_->hud_layer(),
-        *frame->render_surface_layer_list, debug_state_);
+        active_tree(), active_tree_->hud_layer(), *frame->render_surface_list,
+        debug_state_);
   }
 
   bool is_new_trace;
@@ -1746,8 +1743,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // are noted as they occur.
   // TODO(boliu): If we did a temporary software renderer frame, propogate the
   // damage forward to the next frame.
-  for (size_t i = 0; i < frame->render_surface_layer_list->size(); i++) {
-    auto* surface = (*frame->render_surface_layer_list)[i]->GetRenderSurface();
+  for (size_t i = 0; i < frame->render_surface_list->size(); i++) {
+    auto* surface = (*frame->render_surface_list)[i];
     surface->damage_tracker()->DidDrawDamagedArea();
   }
   active_tree_->ResetAllChangeTracking();

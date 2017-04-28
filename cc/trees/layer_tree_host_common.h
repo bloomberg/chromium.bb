@@ -74,7 +74,7 @@ class CC_EXPORT LayerTreeHostCommon {
         int max_texture_size,
         bool can_render_to_separate_surface,
         bool can_adjust_raster_scales,
-        LayerImplList* render_surface_layer_list,
+        RenderSurfaceList* render_surface_list,
         PropertyTrees* property_trees);
 
     LayerImpl* root_layer;
@@ -90,7 +90,7 @@ class CC_EXPORT LayerTreeHostCommon {
     int max_texture_size;
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
-    LayerImplList* render_surface_layer_list;
+    RenderSurfaceList* render_surface_list;
     PropertyTrees* property_trees;
   };
 
@@ -100,18 +100,18 @@ class CC_EXPORT LayerTreeHostCommon {
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
-                                      LayerImplList* render_surface_layer_list);
+                                      RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list);
+                                      RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list);
+                                      RenderSurfaceList* render_surface_list);
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       float device_scale_factor,
-                                      LayerImplList* render_surface_layer_list);
+                                      RenderSurfaceList* render_surface_list);
   };
 
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);

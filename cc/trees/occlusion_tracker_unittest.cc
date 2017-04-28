@@ -188,7 +188,7 @@ class OcclusionTrackerTest : public testing::Test {
 
   void DestroyLayers() {
     host_->host_impl()->active_tree()->SetRootLayerForTesting(nullptr);
-    render_surface_layer_list_impl_.clear();
+    render_surface_list_impl_.clear();
     mask_layers_.clear();
     layer_iterator_.reset();
   }
@@ -217,7 +217,7 @@ class OcclusionTrackerTest : public testing::Test {
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list_impl_);
+        root, root->bounds(), &render_surface_list_impl_);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -305,7 +305,7 @@ class OcclusionTrackerTest : public testing::Test {
   std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> host_;
   // These hold ownership of the layers for the duration of the test.
-  LayerImplList render_surface_layer_list_impl_;
+  RenderSurfaceList render_surface_list_impl_;
   std::unique_ptr<EffectTreeLayerListIterator> layer_iterator_;
   LayerList mask_layers_;
   int next_layer_impl_id_;

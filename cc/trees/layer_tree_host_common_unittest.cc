@@ -139,14 +139,13 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         gfx::Size(root_layer->bounds().width() * device_scale_factor,
                   root_layer->bounds().height() * device_scale_factor);
 
-    render_surface_layer_list_impl_.reset(new LayerImplList);
+    render_surface_list_impl_.reset(new RenderSurfaceList);
 
     // We are probably not testing what is intended if the root_layer bounds are
     // empty.
     DCHECK(!root_layer->bounds().IsEmpty());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size,
-        render_surface_layer_list_impl_.get());
+        root_layer, device_viewport_size, render_surface_list_impl_.get());
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_layer = page_scale_layer;
@@ -258,12 +257,11 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
       LayerImpl* root_layer) {
     gfx::Size device_viewport_size =
         gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
-    render_surface_layer_list_impl_.reset(new LayerImplList);
+    render_surface_list_impl_.reset(new RenderSurfaceList);
 
     DCHECK(!root_layer->bounds().IsEmpty());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size,
-        render_surface_layer_list_impl_.get());
+        root_layer, device_viewport_size, render_surface_list_impl_.get());
     inputs.can_adjust_raster_scales = true;
     inputs.can_render_to_separate_surface = false;
 
@@ -274,12 +272,11 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
       LayerImpl* root_layer) {
     gfx::Size device_viewport_size =
         gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
-    render_surface_layer_list_impl_.reset(new LayerImplList);
+    render_surface_list_impl_.reset(new RenderSurfaceList);
 
     DCHECK(!root_layer->bounds().IsEmpty());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size,
-        render_surface_layer_list_impl_.get());
+        root_layer, device_viewport_size, render_surface_list_impl_.get());
     inputs.can_render_to_separate_surface = true;
     inputs.can_adjust_raster_scales = false;
 
@@ -302,8 +299,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return false;
   }
 
-  const LayerImplList* render_surface_layer_list_impl() const {
-    return render_surface_layer_list_impl_.get();
+  const RenderSurfaceList* render_surface_list_impl() const {
+    return render_surface_list_impl_.get();
   }
   const LayerImplList* update_layer_list_impl() const {
     return update_layer_list_impl_.get();
@@ -317,7 +314,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   }
 
  private:
-  std::unique_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
+  std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
   LayerList update_layer_list_;
   std::unique_ptr<LayerImplList> update_layer_list_impl_;
 };
@@ -1199,9 +1196,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceWithSublayerScale) {
 
   // render_surface will have a sublayer scale because of device scale factor.
   float device_scale_factor = 2.0f;
-  LayerImplList render_surface_layer_list_impl;
+  RenderSurfaceList render_surface_list_impl;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), translate, &render_surface_layer_list_impl);
+      root, root->bounds(), translate, &render_surface_list_impl);
   inputs.device_scale_factor = device_scale_factor;
   inputs.property_trees->needs_rebuild = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
@@ -1229,9 +1226,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   gfx::Transform translate;
   translate.Translate(50, 50);
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), translate, &render_surface_layer_list_impl);
+        root, root->bounds(), translate, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1247,9 +1244,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   gfx::Transform scale;
   scale.Scale(2, 2);
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), scale, &render_surface_layer_list_impl);
+        root, root->bounds(), scale, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1265,9 +1262,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   gfx::Transform rotate;
   rotate.Rotate(2);
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), rotate, &render_surface_layer_list_impl);
+        root, root->bounds(), rotate, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1285,9 +1282,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   composite.ConcatTransform(scale);
   composite.ConcatTransform(rotate);
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), composite, &render_surface_layer_list_impl);
+        root, root->bounds(), composite, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1304,9 +1301,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   float device_scale_factor = 1.5f;
 
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), translate, &render_surface_layer_list_impl);
+        root, root->bounds(), translate, &render_surface_list_impl);
     inputs.device_scale_factor = device_scale_factor;
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
@@ -1329,9 +1326,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   float page_scale_factor = 2.f;
 
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), translate, &render_surface_layer_list_impl);
+        root, root->bounds(), translate, &render_surface_list_impl);
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_layer = root;
     inputs.property_trees->needs_rebuild = true;
@@ -1353,9 +1350,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   root->test_properties()->transform = composite;
 
   {
-    LayerImplList render_surface_layer_list_impl;
+    RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), composite, &render_surface_layer_list_impl);
+        root, root->bounds(), composite, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform compositeSquared = composite;
@@ -1393,7 +1390,7 @@ TEST_F(LayerTreeHostCommonTest,
   // are unexpected at draw time (e.g. we might try to create a content texture
   // of size 0).
   ASSERT_TRUE(root->GetRenderSurface());
-  EXPECT_EQ(1U, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(1U, render_surface_list_impl()->size());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
@@ -1407,9 +1404,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   child->SetBounds(gfx::Size(10, 10));
   child->SetDrawsContent(true);
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_layer_list);
+      root, root->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -1417,9 +1414,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   // not have gotten added anywhere.  Also, the drawable content rect should not
   // have been extended by the children.
   ASSERT_TRUE(root->GetRenderSurface());
-  EXPECT_EQ(0U, root->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(1U, render_surface_layer_list.size());
-  EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
+  EXPECT_EQ(0, root->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(1U, render_surface_list.size());
+  EXPECT_EQ(root->id(), render_surface_list.at(0)->id());
   EXPECT_EQ(gfx::Rect(), root->drawable_content_rect());
 }
 
@@ -1442,17 +1439,17 @@ TEST_F(LayerTreeHostCommonTest,
   root->layer_tree_impl()->SetElementIdsForTesting();
 
   {
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list);
+        root, root->bounds(), &render_surface_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    EXPECT_EQ(2U, render_surface_layer_list.size());
+    EXPECT_EQ(2U, render_surface_list.size());
   }
   // The layer is fully transparent, but has a background filter, so it
   // shouldn't be skipped and should be drawn.
   ASSERT_TRUE(root->GetRenderSurface());
-  EXPECT_EQ(1U, root->GetRenderSurface()->layer_list().size());
+  EXPECT_EQ(1, root->GetRenderSurface()->num_contributors());
   EXPECT_EQ(gfx::RectF(0, 0, 10, 10),
             root->GetRenderSurface()->DrawableContentRect());
   EffectTree& effect_tree =
@@ -1466,9 +1463,9 @@ TEST_F(LayerTreeHostCommonTest,
                                              1.f);
   render_surface1->set_visible_layer_rect(gfx::Rect());
   {
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list);
+        root, root->bounds(), &render_surface_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -1501,15 +1498,15 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
   child2->SetDrawsContent(true);
   child2->test_properties()->force_render_surface = true;
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_layer_list);
+      root, root->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   ASSERT_TRUE(parent->GetRenderSurface());
-  EXPECT_EQ(2U, parent->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(4U, render_surface_layer_list.size());
+  EXPECT_EQ(2, parent->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(4U, render_surface_list.size());
 
   // The rectangle enclosing child1 and child2 (0,0 50x50), expanded for the
   // blur (-30,-30 110x110), and then scaled by the scale matrix
@@ -1746,7 +1743,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
 
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   // The entire subtree of layers that are outside the clip rect should be
-  // culled away, and should not affect the render_surface_layer_list.
+  // culled away, and should not affect the render_surface_list.
   //
   // The test tree is set up as follows:
   //  - all layers except the leaf_nodes are forced to be a new render surface
@@ -1765,9 +1762,8 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   LayerImpl* great_grand_child = AddChild<LayerImpl>(grand_child);
 
-  // leaf_node1 ensures that root and child are kept on the
-  // render_surface_layer_list, even though grand_child and great_grand_child
-  // should be clipped.
+  // leaf_node1 ensures that root and child are kept on the render_surface_list,
+  // even though grand_child and great_grand_child should be clipped.
   LayerImpl* leaf_node1 = AddChild<LayerImpl>(child);
   LayerImpl* leaf_node2 = AddChild<LayerImpl>(great_grand_child);
 
@@ -1784,9 +1780,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   leaf_node2->SetDrawsContent(true);
   ExecuteCalculateDrawProperties(root);
 
-  ASSERT_EQ(2U, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(root->id(), render_surface_layer_list_impl()->at(0)->id());
-  EXPECT_EQ(child->id(), render_surface_layer_list_impl()->at(1)->id());
+  ASSERT_EQ(2U, render_surface_list_impl()->size());
+  EXPECT_EQ(root->id(), render_surface_list_impl()->at(0)->id());
+  EXPECT_EQ(child->id(), render_surface_list_impl()->at(1)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
@@ -1802,7 +1798,7 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
 
   // In this configuration, grand_child should be outside the clipped
   // content rect of the child, making grand_child not appear in the
-  // render_surface_layer_list.
+  // render_surface_list.
 
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* child = AddChildToRoot<LayerImpl>();
@@ -1821,9 +1817,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   ExecuteCalculateDrawProperties(root);
 
   // We should cull child and grand_child from the
-  // render_surface_layer_list.
-  ASSERT_EQ(1U, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(root->id(), render_surface_layer_list_impl()->at(0)->id());
+  // render_surface_list.
+  ASSERT_EQ(1U, render_surface_list_impl()->size());
+  EXPECT_EQ(root->id(), render_surface_list_impl()->at(0)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
@@ -3552,10 +3548,10 @@ TEST_F(LayerTreeHostCommonTest,
   child3->SetBounds(gfx::Size(50, 50));
   child3->SetDrawsContent(true);
 
-  LayerImplList render_surface_layer_list_impl;
+  RenderSurfaceList render_surface_list_impl;
   // Now set the root render surface an empty clip.
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, gfx::Size(), &render_surface_layer_list_impl);
+      root, gfx::Size(), &render_surface_list_impl);
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(root->GetRenderSurface());
@@ -4679,7 +4675,7 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   EXPECT_FLOAT_EQ(device_scale_factor, child->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(device_scale_factor, child2->GetIdealContentsScale());
 
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(1u, render_surface_list_impl()->size());
 
   // Verify root transforms
   gfx::Transform expected_root_transform;
@@ -4806,7 +4802,7 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
                   std::max(target_space_transform_scales.x(),
                            target_space_transform_scales.y()));
 
-  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(3u, render_surface_list_impl()->size());
 
   gfx::Transform expected_parent_draw_transform;
   expected_parent_draw_transform.Scale(device_scale_factor * page_scale_factor,
@@ -4937,7 +4933,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
 
   // We should have two render surfaces. The root's render surface and child's
   // render surface (it needs one because of force_render_surface).
-  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(2u, render_surface_list_impl()->size());
 
   gfx::Transform expected_parent_transform;
   expected_parent_transform.Scale(device_scale_factor, device_scale_factor);
@@ -5007,7 +5003,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   // We should have two render surfaces. The root's render surface and child's
   // render surface (it needs one because of force_render_surface).
-  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(2u, render_surface_list_impl()->size());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
                                   child->GetRenderSurface()->draw_transform());
@@ -5085,24 +5081,24 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   AddOpacityTransitionToElementWithPlayer(child_element_id, timeline, 10.0,
                                           0.0f, 1.0f, false);
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_layer_list);
+      root_layer, root_layer->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The child
   // layer should be included even though it is transparent.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root_layer->GetRenderSurface()->layer_list().size());
+  ASSERT_EQ(1u, render_surface_list.size());
+  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
 
   // If the root itself is hidden, the child should not be drawn even if it has
   // an animating opacity.
   root_layer->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  LayerImplList render_surface_layer_list2;
+  RenderSurfaceList render_surface_list2;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
-      root_layer, root_layer->bounds(), &render_surface_layer_list2);
+      root_layer, root_layer->bounds(), &render_surface_list2);
   inputs2.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs2);
 
@@ -5117,9 +5113,9 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   root_layer->test_properties()->opacity = 1.0f;
   child_ptr->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  LayerImplList render_surface_layer_list3;
+  RenderSurfaceList render_surface_list3;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
-      root_layer, root_layer->bounds(), &render_surface_layer_list3);
+      root_layer, root_layer->bounds(), &render_surface_list3);
   inputs3.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs3);
 
@@ -5384,29 +5380,32 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
       LayerImpl::Create(host_impl.pending_tree(), 2);
   child->SetBounds(gfx::Size(40, 40));
   child->SetDrawsContent(true);
+  LayerImpl* child_layer = child.get();
 
   std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   grand_child->SetBounds(gfx::Size(30, 30));
   grand_child->SetDrawsContent(true);
   grand_child->test_properties()->hide_layer_and_subtree = true;
+  LayerImpl* grand_child_layer = grand_child.get();
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
   host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_layer_list);
+      root_layer, root_layer->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The grand child has
   // hidden itself.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(1, root_layer->GetRenderSurface()->layer_list().at(0)->id());
-  EXPECT_EQ(2, root_layer->GetRenderSurface()->layer_list().at(1)->id());
+  ASSERT_EQ(1u, render_surface_list.size());
+  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_child_layer->is_drawn_render_surface_layer_list_member());
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
@@ -5426,27 +5425,31 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   child->SetBounds(gfx::Size(40, 40));
   child->SetDrawsContent(true);
   child->test_properties()->hide_layer_and_subtree = true;
+  LayerImpl* child_layer = child.get();
 
   std::unique_ptr<LayerImpl> grand_child =
       LayerImpl::Create(host_impl.pending_tree(), 3);
   grand_child->SetBounds(gfx::Size(30, 30));
   grand_child->SetDrawsContent(true);
+  LayerImpl* grand_child_layer = grand_child.get();
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
   host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_layer_list);
+      root_layer, root_layer->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  // We should have one render surface and one layers. The child has
+  // We should have one render surface and one layer. The child has
   // hidden itself and the grand child.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(1u, root_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(1, root_layer->GetRenderSurface()->layer_list().at(0)->id());
+  ASSERT_EQ(1u, render_surface_list.size());
+  ASSERT_EQ(1, root_layer->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_child_layer->is_drawn_render_surface_layer_list_member());
 }
 
 void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
@@ -5532,9 +5535,9 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_layer->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_layer_list);
+      root_layer, root_layer->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -5546,32 +5549,33 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // We should have four render surfaces, one for the root, one for the grand
   // parent since it has opacity and two drawing descendants, one for the parent
   // since it owns a surface, and one for the copy_layer.
-  ASSERT_EQ(4u, render_surface_layer_list.size());
-  EXPECT_EQ(root_layer->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(copy_grand_parent_layer->id(),
-            render_surface_layer_list.at(1)->id());
-  EXPECT_EQ(copy_parent_layer->id(), render_surface_layer_list.at(2)->id());
-  EXPECT_EQ(copy_layer->id(), render_surface_layer_list.at(3)->id());
+  ASSERT_EQ(4u, render_surface_list.size());
+  EXPECT_EQ(root_layer->id(), render_surface_list.at(0)->id());
+  EXPECT_EQ(copy_grand_parent_layer->id(), render_surface_list.at(1)->id());
+  EXPECT_EQ(copy_parent_layer->id(), render_surface_list.at(2)->id());
+  EXPECT_EQ(copy_layer->id(), render_surface_list.at(3)->id());
 
   // The root render surface should have 2 contributing layers.
-  ASSERT_EQ(2u, root_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(root_layer->id(),
-            root_layer->GetRenderSurface()->layer_list().at(0)->id());
-  EXPECT_EQ(copy_grand_parent_layer->id(),
-            root_layer->GetRenderSurface()->layer_list().at(1)->id());
+  EXPECT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(
+      copy_grand_parent_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(copy_grand_parent_sibling_before_layer
+                   ->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(copy_grand_parent_sibling_after_layer
+                   ->is_drawn_render_surface_layer_list_member());
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
-  ASSERT_EQ(1u, copy_parent_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(copy_layer->id(),
-            copy_parent_layer->GetRenderSurface()->layer_list().at(0)->id());
+  ASSERT_EQ(1, copy_parent_layer->GetRenderSurface()->num_contributors());
+  EXPECT_FALSE(copy_parent_layer->is_drawn_render_surface_layer_list_member());
 
-  // The copy_layer's render surface should have two contributing layers.
-  ASSERT_EQ(2u, copy_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(copy_layer->id(),
-            copy_layer->GetRenderSurface()->layer_list().at(0)->id());
-  EXPECT_EQ(copy_child_layer->id(),
-            copy_layer->GetRenderSurface()->layer_list().at(1)->id());
+  // The copy layer's render surface should have 2 contributing layers.
+  ASSERT_EQ(2, copy_layer->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(copy_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(copy_child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(
+      copy_grand_child_layer->is_drawn_render_surface_layer_list_member());
 
   // copy_grand_parent, copy_parent shouldn't be drawn because they are hidden,
   // but the copy_layer and copy_child should be drawn for the copy request.
@@ -5629,23 +5633,22 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_parent->test_properties()->AddChild(std::move(copy_layer));
   root->test_properties()->AddChild(std::move(copy_parent));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerImpl* root_layer = root.get();
   root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_layer_list);
+      root_layer, root_layer->bounds(), &render_surface_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have two render surface, as the others are clipped out.
-  ASSERT_EQ(2u, render_surface_layer_list.size());
-  EXPECT_EQ(root_layer->id(), render_surface_layer_list.at(0)->id());
+  ASSERT_EQ(2u, render_surface_list.size());
+  EXPECT_EQ(root_layer->id(), render_surface_list.at(0)->id());
 
-  // The root render surface should only have 2 contributing layer, since the
-  // other layers are empty/clipped away.
-  ASSERT_EQ(2u, root_layer->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(root_layer->id(),
-            root_layer->GetRenderSurface()->layer_list().at(0)->id());
+  // The root render surface should have only 2 contributing layer, since the
+  // other layers are clipped away.
+  ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
@@ -6146,13 +6149,13 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
 
   {
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, root_layer->bounds(), &render_surface_layer_list);
+        root_layer, root_layer->bounds(), &render_surface_list);
     inputs.can_render_to_separate_surface = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    EXPECT_EQ(2u, render_surface_layer_list.size());
+    EXPECT_EQ(2u, render_surface_list.size());
 
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
@@ -6178,13 +6181,13 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   }
 
   {
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, root_layer->bounds(), &render_surface_layer_list);
+        root_layer, root_layer->bounds(), &render_surface_list);
     inputs.can_render_to_separate_surface = false;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    EXPECT_EQ(1u, render_surface_layer_list.size());
+    EXPECT_EQ(1u, render_surface_list.size());
 
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
@@ -6243,19 +6246,9 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(2u,
-            render_surface_layer_list_impl()
-                ->at(0)
-                ->GetRenderSurface()
-                ->layer_list()
-                .size());
-  EXPECT_EQ(1u,
-            render_surface_layer_list_impl()
-                ->at(1)
-                ->GetRenderSurface()
-                ->layer_list()
-                .size());
+  EXPECT_EQ(3u, render_surface_list_impl()->size());
+  EXPECT_EQ(2, render_surface_list_impl()->at(0)->num_contributors());
+  EXPECT_EQ(1, render_surface_list_impl()->at(1)->num_contributors());
 
   gfx::Transform rotation_transform;
   rotation_transform.RotateAboutXAxis(180.0);
@@ -6269,13 +6262,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   // not double sided, so it should not be in RSLL. render_surface2 is also not
   // double-sided, but will still be in RSLL as it's in a different 3d rendering
   // context.
-  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(1u,
-            render_surface_layer_list_impl()
-                ->at(0)
-                ->GetRenderSurface()
-                ->layer_list()
-                .size());
+  EXPECT_EQ(2u, render_surface_list_impl()->size());
+  EXPECT_EQ(1, render_surface_list_impl()->at(0)->num_contributors());
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
@@ -6294,12 +6282,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   grand_child->test_properties()->should_flatten_transform = false;
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(grand_child,
-            render_surface_layer_list_impl()
-                ->at(0)
-                ->GetRenderSurface()
-                ->layer_list()[0]);
+  EXPECT_EQ(1u, render_surface_list_impl()->size());
+  EXPECT_TRUE(grand_child->is_drawn_render_surface_layer_list_member());
 
   // As all layers have identity transform, we shouldn't check for backface
   // visibility.
@@ -6321,13 +6305,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   child->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(0u,
-            render_surface_layer_list_impl()
-                ->at(0)
-                ->GetRenderSurface()
-                ->layer_list()
-                .size());
+  EXPECT_EQ(1u, render_surface_list_impl()->size());
+  EXPECT_EQ(0, render_surface_list_impl()->at(0)->num_contributors());
 
   // We should check for backface visibilty of child as it has a rotation
   // transform. We should also check for grand_child as it uses the backface
@@ -6348,13 +6327,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   grand_child->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(0u,
-            render_surface_layer_list_impl()
-                ->at(0)
-                ->GetRenderSurface()
-                ->layer_list()
-                .size());
+  EXPECT_EQ(1u, render_surface_list_impl()->size());
+  EXPECT_EQ(0, render_surface_list_impl()->at(0)->num_contributors());
 
   // We should check the backface visibility of child as it has a rotation
   // transform and for grand_child as it is in a 3d rendering context and not
@@ -6490,13 +6464,12 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   scroll_parent->SetBounds(gfx::Size(50, 50));
 
   float device_scale_factor = 1.5f;
-  LayerImplList render_surface_layer_list_impl;
+  RenderSurfaceList render_surface_list_impl;
   gfx::Size device_viewport_size =
       gfx::Size(root->bounds().width() * device_scale_factor,
                 root->bounds().height() * device_scale_factor);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, gfx::Transform(),
-      &render_surface_layer_list_impl);
+      root, device_viewport_size, gfx::Transform(), &render_surface_list_impl);
   inputs.device_scale_factor = device_scale_factor;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -6527,7 +6500,7 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   child->test_properties()->sorting_context_id = 1;
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(3u, render_surface_list_impl()->size());
 
   gfx::Transform singular_transform;
   singular_transform.Scale3d(
@@ -6538,7 +6511,7 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(2u, render_surface_list_impl()->size());
 
   // Ensure that the entire subtree under a layer with singular transform does
   // not get rendered.
@@ -6548,7 +6521,7 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(1u, render_surface_list_impl()->size());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
@@ -6649,10 +6622,10 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
 
   // Despite the fact that we visited the above layers out of order to get the
   // correct clip, the layer lists should be unaffected.
-  EXPECT_EQ(3u, root->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(scroll_child, root->GetRenderSurface()->layer_list().at(0));
-  EXPECT_EQ(scroll_parent, root->GetRenderSurface()->layer_list().at(1));
-  EXPECT_EQ(scroll_grandparent, root->GetRenderSurface()->layer_list().at(2));
+  EXPECT_EQ(3, root->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(scroll_child->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(scroll_parent->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(scroll_grandparent->is_drawn_render_surface_layer_list_member());
 }
 
 TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
@@ -6725,14 +6698,13 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   EXPECT_TRUE(scroll_child->is_clipped());
 
   // Despite the fact that we had to process the layers out of order to get the
-  // right clip, our render_surface_layer_list's order should be unaffected.
-  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
-  EXPECT_EQ(root, render_surface_layer_list_impl()->at(0));
-  EXPECT_EQ(render_surface2, render_surface_layer_list_impl()->at(1));
-  EXPECT_EQ(render_surface1, render_surface_layer_list_impl()->at(2));
-  EXPECT_TRUE(render_surface_layer_list_impl()->at(0)->GetRenderSurface());
-  EXPECT_TRUE(render_surface_layer_list_impl()->at(1)->GetRenderSurface());
-  EXPECT_TRUE(render_surface_layer_list_impl()->at(2)->GetRenderSurface());
+  // right clip, our render_surface_list's order should be unaffected.
+  EXPECT_EQ(3u, render_surface_list_impl()->size());
+  EXPECT_EQ(root->GetRenderSurface(), render_surface_list_impl()->at(0));
+  EXPECT_EQ(render_surface2->GetRenderSurface(),
+            render_surface_list_impl()->at(1));
+  EXPECT_EQ(render_surface1->GetRenderSurface(),
+            render_surface_list_impl()->at(2));
 }
 
 TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
@@ -6858,9 +6830,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
     gfx::Vector2dF scroll_delta(3.0, 5.0);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list);
+        root, root->bounds(), &render_surface_list);
     root->layer_tree_impl()
         ->property_trees()
         ->transform_tree.set_source_to_parent_updates_allowed(false);
@@ -6884,9 +6856,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
     gfx::Vector2dF rounded_scroll_delta(4.f, 8.f);
 
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list);
+        root, root->bounds(), &render_surface_list);
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -6912,9 +6884,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
     gfx::Vector2dF scroll_delta(4.5f, 8.5f);
     SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
-    LayerImplList render_surface_layer_list;
+    RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_layer_list);
+        root, root->bounds(), &render_surface_list);
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -8659,12 +8631,12 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   float page_scale_factor = 3.f;
   float device_scale_factor = 1.0f;
-  std::vector<LayerImpl*> render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, device_viewport_size, &render_surface_layer_list);
+      root_layer, device_viewport_size, &render_surface_list);
 
   inputs.page_scale_factor = page_scale_factor;
   inputs.can_adjust_raster_scales = true;
@@ -8839,10 +8811,9 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
   content->test_properties()->force_render_surface = true;
 
   gfx::Size device_viewport_size(768, 582);
-  LayerImplList render_surface_layer_list_impl;
+  RenderSurfaceList render_surface_list_impl;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, gfx::Transform(),
-      &render_surface_layer_list_impl);
+      root, device_viewport_size, gfx::Transform(), &render_surface_list_impl);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
   inputs.page_scale_layer = nullptr;
@@ -8895,9 +8866,9 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
 
   host_impl.active_tree()->BuildPropertyTreesForTesting();
 
-  LayerImplList layer_impl_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, &layer_impl_list);
+      root, device_viewport_size, &render_surface_list);
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   EXPECT_EQ(gfx::Rect(root_size), sublayer->visible_layer_rect());
@@ -10479,9 +10450,10 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
                   std::isnan(child->DrawTransform().matrix().get(1, 1));
   EXPECT_TRUE(is_inf_or_nan);
 
-  // The root layer should be in the RenderSurfaceLayerListImpl.
-  const auto* rsll = render_surface_layer_list_impl();
-  EXPECT_NE(std::find(rsll->begin(), rsll->end(), root), rsll->end());
+  // The root layer should be in the RenderSurfaceList.
+  const auto* rsl = render_surface_list_impl();
+  EXPECT_NE(std::find(rsl->begin(), rsl->end(), root->GetRenderSurface()),
+            rsl->end());
 }
 
 TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {

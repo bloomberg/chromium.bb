@@ -108,9 +108,9 @@ TEST_F(EffectTreeLayerListIteratorTest, TreeWithNoDrawnLayers) {
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_layer));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -137,9 +137,9 @@ TEST_F(EffectTreeLayerListIteratorTest, SimpleTree) {
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_layer));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -182,9 +182,9 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTree) {
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_layer));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -235,9 +235,9 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_layer));
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+      root_ptr, root_ptr->bounds(), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();

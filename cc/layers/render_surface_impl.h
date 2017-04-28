@@ -104,6 +104,13 @@ class CC_EXPORT RenderSurfaceImpl {
     return has_contributing_layer_that_escapes_clip_;
   }
 
+  void set_is_render_surface_list_member(bool is_render_surface_list_member) {
+    is_render_surface_list_member_ = is_render_surface_list_member;
+  }
+  bool is_render_surface_list_member() const {
+    return is_render_surface_list_member_;
+  }
+
   void CalculateContentRectFromAccumulatedContentRect(int max_texture_size);
   void SetContentRectToViewport();
   void SetContentRectForTesting(const gfx::Rect& rect);
@@ -119,15 +126,20 @@ class CC_EXPORT RenderSurfaceImpl {
     return accumulated_content_rect_;
   }
 
+  void increment_num_contributors() { num_contributors_++; }
+  void decrement_num_contributors() {
+    num_contributors_--;
+    DCHECK_GE(num_contributors_, 0);
+  }
+  void reset_num_contributors() { num_contributors_ = 0; }
+  int num_contributors() const { return num_contributors_; }
+
   const Occlusion& occlusion_in_content_space() const {
     return occlusion_in_content_space_;
   }
   void set_occlusion_in_content_space(const Occlusion& occlusion) {
     occlusion_in_content_space_ = occlusion;
   }
-
-  LayerImplList& layer_list() { return layer_list_; }
-  void ClearLayerLists();
 
   int id() const { return stable_effect_id_; }
 
@@ -204,14 +216,15 @@ class CC_EXPORT RenderSurfaceImpl {
 
   // Is used to calculate the content rect from property trees.
   gfx::Rect accumulated_content_rect_;
+  int num_contributors_;
   // Is used to decide if the surface is clipped.
   bool has_contributing_layer_that_escapes_clip_ : 1;
   bool surface_property_changed_ : 1;
   bool ancestor_property_changed_ : 1;
 
   bool contributes_to_drawn_surface_ : 1;
+  bool is_render_surface_list_member_ : 1;
 
-  LayerImplList layer_list_;
   Occlusion occlusion_in_content_space_;
 
   // The nearest ancestor target surface that will contain the contents of this

@@ -32,8 +32,9 @@ class CC_EXPORT DamageTracker {
   static std::unique_ptr<DamageTracker> Create();
   ~DamageTracker();
 
-  static void UpdateDamageTracking(LayerTreeImpl* layer_tree_impl,
-                                   const LayerImplList& render_surface_list);
+  static void UpdateDamageTracking(
+      LayerTreeImpl* layer_tree_impl,
+      const RenderSurfaceList& render_surface_list);
 
   void DidDrawDamagedArea() { current_damage_ = DamageAccumulator(); }
   void AddDamageNextUpdate(const gfx::Rect& dmg) { current_damage_.Union(dmg); }

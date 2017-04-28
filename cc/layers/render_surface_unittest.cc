@@ -86,7 +86,6 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
       render_surface->SetDrawOpacity(0.5f));
   EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(
       render_surface->SetDrawTransform(dummy_matrix));
-  EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(render_surface->ClearLayerLists());
 }
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {

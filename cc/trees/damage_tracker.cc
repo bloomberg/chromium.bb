@@ -32,7 +32,7 @@ DamageTracker::~DamageTracker() {}
 
 void DamageTracker::UpdateDamageTracking(
     LayerTreeImpl* layer_tree_impl,
-    const LayerImplList& render_surface_list) {
+    const RenderSurfaceList& render_surface_list) {
   //
   // This function computes the "damage rect" of each target surface, and
   // updates the state that is used to correctly track damage across frames. The
@@ -106,8 +106,8 @@ void DamageTracker::UpdateDamageTracking(
   //         erased from map.
   //
 
-  for (LayerImpl* layer : render_surface_list) {
-    layer->GetRenderSurface()->damage_tracker()->PrepareForUpdate();
+  for (RenderSurfaceImpl* render_surface : render_surface_list) {
+    render_surface->damage_tracker()->PrepareForUpdate();
   }
 
   EffectTree& effect_tree = layer_tree_impl->property_trees()->effect_tree;

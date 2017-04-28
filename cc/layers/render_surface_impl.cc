@@ -38,10 +38,12 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
     : layer_tree_impl_(layer_tree_impl),
       stable_effect_id_(stable_effect_id),
       effect_tree_index_(EffectTree::kInvalidNodeId),
+      num_contributors_(0),
       has_contributing_layer_that_escapes_clip_(false),
       surface_property_changed_(false),
       ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
+      is_render_surface_list_member_(false),
       nearest_occlusion_immune_ancestor_(nullptr) {
   damage_tracker_ = DamageTracker::Create();
 }
@@ -352,16 +354,12 @@ void RenderSurfaceImpl::ResetPropertyChangedFlags() {
   ancestor_property_changed_ = false;
 }
 
-void RenderSurfaceImpl::ClearLayerLists() {
-  layer_list_.clear();
-}
-
 int RenderSurfaceImpl::GetRenderPassId() {
   return id();
 }
 
 std::unique_ptr<RenderPass> RenderSurfaceImpl::CreateRenderPass() {
-  std::unique_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
+  std::unique_ptr<RenderPass> pass = RenderPass::Create(num_contributors_);
   gfx::Rect damage_rect = GetDamageRect();
   damage_rect.Intersect(content_rect());
   pass->SetNew(id(), content_rect(), damage_rect,
