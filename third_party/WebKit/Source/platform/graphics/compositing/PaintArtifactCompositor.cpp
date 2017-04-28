@@ -474,11 +474,49 @@ bool PaintArtifactCompositor::CanDecompositeEffect(
   return true;
 }
 
+static bool EffectGroupContainsChunk(
+    const EffectPaintPropertyNode& group_effect,
+    const PaintChunk& chunk) {
+  const EffectPaintPropertyNode* effect =
+      chunk.properties.property_tree_state.Effect();
+  return effect == &group_effect ||
+         StrictChildOfAlongPath(&group_effect, effect);
+}
+
+static bool SkipGroupIfEffectivelyInvisible(
+    const PaintArtifact& paint_artifact,
+    const EffectPaintPropertyNode& current_group,
+    Vector<PaintChunk>::const_iterator& chunk_it) {
+  // The lower bound of visibility is considered to be 0.0004f < 1/2048. With
+  // 10-bit color channels (only available on the newest Macs as of 2016;
+  // otherwise it's 8-bit), we see that an alpha of 1/2048 or less leads to a
+  // color output of less than 0.5 in all channels, hence not visible.
+  static const float kMinimumVisibleOpacity = 0.0004f;
+  if (current_group.Opacity() >= kMinimumVisibleOpacity ||
+      current_group.HasDirectCompositingReasons()) {
+    return false;
+  }
+
+  // Fast-forward to just past the end of the chunk sequence within this
+  // effect group.
+  DCHECK(EffectGroupContainsChunk(current_group, *chunk_it));
+  while (++chunk_it != paint_artifact.PaintChunks().end()) {
+    if (!EffectGroupContainsChunk(current_group, *chunk_it))
+      break;
+  }
+  return true;
+}
+
 void PaintArtifactCompositor::LayerizeGroup(
     const PaintArtifact& paint_artifact,
     Vector<PendingLayer>& pending_layers,
     const EffectPaintPropertyNode& current_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
+  // Skip paint chunks that are effectively invisible due to opacity and don't
+  // have a direct compositing reason.
+  if (SkipGroupIfEffectivelyInvisible(paint_artifact, current_group, chunk_it))
+    return;
+
   size_t first_layer_in_current_group = pending_layers.size();
   // The worst case time complexity of the algorithm is O(pqd), where
   // p = the number of paint chunks.
