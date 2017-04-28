@@ -70,6 +70,8 @@ class CORE_EXPORT FrameSerializer final {
 
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Controls whether HTML serialization should skip the given element.
     virtual bool ShouldIgnoreElement(const Element&) { return false; }
 

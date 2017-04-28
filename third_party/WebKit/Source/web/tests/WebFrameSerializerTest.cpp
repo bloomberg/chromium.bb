@@ -31,6 +31,7 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/exported/WebViewBase.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -234,6 +235,9 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
     mhtml_delegate_.SetRemovePopupOverlay(remove_popup_overlay);
   }
 
+ protected:
+  HistogramTester histogram_tester_;
+
  private:
   SimpleMHTMLPartsGenerationDelegate mhtml_delegate_;
 };
@@ -359,6 +363,17 @@ TEST_F(WebFrameSerializerSanitizationTest, RemovePopupOverlayIfRequested) {
   String mhtml = GenerateMHTMLParts("http://www.test.com", "popup.html");
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
+  histogram_tester_.ExpectUniqueSample(
+      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", true, 1);
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
+  WebView()->Resize(WebSize(500, 500));
+  SetRemovePopupOverlay(true);
+  String mhtml =
+      GenerateMHTMLParts("http://www.test.com", "text_only_page.html");
+  histogram_tester_.ExpectUniqueSample(
+      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", false, 1);
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
@@ -367,6 +382,8 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
   String mhtml = GenerateMHTMLParts("http://www.test.com", "popup.html");
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
+  histogram_tester_.ExpectTotalCount(
+      "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", 0);
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
