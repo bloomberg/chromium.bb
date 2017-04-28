@@ -44,7 +44,6 @@ class CC_EXPORT ScrollbarAnimationController {
       ElementId scroll_element_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta fade_delay,
-      base::TimeDelta fade_out_resize_delay,
       base::TimeDelta fade_duration);
 
   // ScrollbarAnimationController for Desktop Overlay Scrollbar. It has show &
@@ -54,7 +53,6 @@ class CC_EXPORT ScrollbarAnimationController {
       ElementId scroll_element_id,
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta fade_delay,
-      base::TimeDelta fade_out_resize_delay,
       base::TimeDelta fade_duration,
       base::TimeDelta thinning_duration);
 
@@ -71,10 +69,6 @@ class CC_EXPORT ScrollbarAnimationController {
   // DidScrollUpdate expects to be called only if the scroll position change.
   // Effect both Android and Aura Overlay Scrollbar.
   void DidScrollUpdate();
-
-  // DidResize expects to be called when clip layer size changed or scroll layer
-  // size changed.
-  void DidResize();
 
   void DidScrollBegin();
   void DidScrollEnd();
@@ -101,13 +95,11 @@ class CC_EXPORT ScrollbarAnimationController {
   ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta fade_delay,
-                               base::TimeDelta fade_out_resize_delay,
                                base::TimeDelta fade_duration);
 
   ScrollbarAnimationController(ElementId scroll_element_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta fade_delay,
-                               base::TimeDelta fade_out_resize_delay,
                                base::TimeDelta fade_duration,
                                base::TimeDelta thinning_duration);
 
@@ -125,7 +117,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   void Show();
 
-  void PostDelayedAnimation(AnimationChange animation_change, bool on_resize);
+  void PostDelayedAnimation(AnimationChange animation_change);
 
   bool Captured() const;
 
@@ -139,7 +131,6 @@ class CC_EXPORT ScrollbarAnimationController {
   base::TimeTicks last_awaken_time_;
 
   base::TimeDelta fade_delay_;
-  base::TimeDelta fade_out_resize_delay_;
 
   base::TimeDelta fade_duration_;
 

@@ -71,7 +71,6 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
 
  protected:
   const base::TimeDelta kFadeDelay = base::TimeDelta::FromSeconds(4);
-  const base::TimeDelta kResizeFadeOutDelay = base::TimeDelta::FromSeconds(5);
   const base::TimeDelta kFadeDuration = base::TimeDelta::FromSeconds(3);
   const base::TimeDelta kThinningDuration = base::TimeDelta::FromSeconds(2);
 
@@ -116,8 +115,8 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
 
     scrollbar_controller_ = ScrollbarAnimationController::
         CreateScrollbarAnimationControllerAuraOverlay(
-            scroll_layer_ptr->element_id(), &client_, kFadeDelay,
-            kResizeFadeOutDelay, kFadeDuration, kThinningDuration);
+            scroll_layer_ptr->element_id(), &client_, kFadeDelay, kFadeDuration,
+            kThinningDuration);
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
@@ -695,27 +694,6 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_EQ(kFadeDelay, client_.delay());
 }
 
-// Make sure that if the scroll update is as a result of a resize, we use the
-// resize delay time instead of the default one.
-TEST_F(ScrollbarAnimationControllerAuraOverlayTest, ResizeFadeDuration) {
-  ASSERT_TRUE(client_.delay().is_zero());
-
-  scrollbar_controller_->DidResize();
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kResizeFadeOutDelay, client_.delay());
-
-  client_.delay() = base::TimeDelta();
-
-  // We should use the gesture delay rather than the resize delay if we're in a
-  // gesture scroll, even if it is resizing.
-  scrollbar_controller_->DidScrollBegin();
-  scrollbar_controller_->DidResize();
-  scrollbar_controller_->DidScrollEnd();
-
-  EXPECT_FALSE(client_.start_fade().is_null());
-  EXPECT_EQ(kFadeDelay, client_.delay());
-}
-
 // Tests that the fade effect is animated.
 TEST_F(ScrollbarAnimationControllerAuraOverlayTest, FadeAnimated) {
   base::TimeTicks time;
@@ -1188,8 +1166,7 @@ class ScrollbarAnimationControllerAndroidTest
     scrollbar_controller_ =
         ScrollbarAnimationController::CreateScrollbarAnimationControllerAndroid(
             scroll_layer_ptr->element_id(), this,
-            base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(5),
-            base::TimeDelta::FromSeconds(3));
+            base::TimeDelta::FromSeconds(2), base::TimeDelta::FromSeconds(3));
   }
 
   virtual ScrollbarOrientation orientation() const { return HORIZONTAL; }
@@ -1212,24 +1189,6 @@ class VerticalScrollbarAnimationControllerAndroidTest
  protected:
   ScrollbarOrientation orientation() const override { return VERTICAL; }
 };
-
-TEST_F(ScrollbarAnimationControllerAndroidTest, DelayAnimationOnResize) {
-  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
-  // We should use the gesture delay rather than the resize delay if we're in a
-  // gesture scroll, even if it is resizing.
-  scrollbar_controller_->DidScrollBegin();
-  scrollbar_controller_->DidResize();
-  scrollbar_controller_->DidScrollEnd();
-  // Normal Animation delay of 2 seconds.
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-  EXPECT_EQ(delay_, base::TimeDelta::FromSeconds(2));
-
-  scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);
-  scrollbar_controller_->DidResize();
-  // Delay animation on resize to 5 seconds.
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-  EXPECT_EQ(delay_, base::TimeDelta::FromSeconds(5));
-}
 
 TEST_F(ScrollbarAnimationControllerAndroidTest, HiddenInBegin) {
   scrollbar_layer_->SetOverlayScrollbarLayerOpacityAnimated(0.f);

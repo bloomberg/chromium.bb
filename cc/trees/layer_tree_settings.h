@@ -51,7 +51,6 @@ class CC_EXPORT LayerTreeSettings {
   };
   ScrollbarAnimator scrollbar_animator = NO_ANIMATOR;
   base::TimeDelta scrollbar_fade_delay;
-  base::TimeDelta scrollbar_fade_out_resize_delay;
   base::TimeDelta scrollbar_fade_duration;
   base::TimeDelta scrollbar_thinning_duration;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
