@@ -174,7 +174,7 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
                                          referrer.spec(), true);
   }
   request->SetUserData(kRequestAlreadyHasJobDataKey,
-                       new base::SupportsUserData::Data());
+                       base::MakeUnique<base::SupportsUserData::Data>());
   return new AndroidStreamReaderURLRequestJob(
       request, network_delegate,
       base::MakeUnique<ShouldInterceptRequestAdaptor>(

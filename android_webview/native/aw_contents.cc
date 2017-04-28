@@ -210,7 +210,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
-                             new AwContentsUserData(this));
+                             base::MakeUnique<AwContentsUserData>(this));
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
 
   CompositorID compositor_id;
@@ -1239,8 +1239,9 @@ AwRendererPriorityManager* AwContents::GetAwRendererPriorityManager() {
   AwRendererPriorityManager* manager = static_cast<AwRendererPriorityManager*>(
       rph->GetUserData(kComputedRendererPriorityUserDataKey));
   if (manager == nullptr) {
+    manager = new AwRendererPriorityManager(rph);
     rph->SetUserData(kComputedRendererPriorityUserDataKey,
-                     manager = new AwRendererPriorityManager(rph));
+                     base::WrapUnique(manager));
   }
   return manager;
 }
