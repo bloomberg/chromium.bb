@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
@@ -182,9 +183,6 @@ public class ChildProcessLauncher {
     private static Map<Integer, BaseChildProcessConnection> sServiceMap =
             new ConcurrentHashMap<Integer, BaseChildProcessConnection>();
 
-    // Lock for getBindingManager()
-    private static final Object sBindingManagerLock = new Object();
-
     // These variables are used for the warm up sandboxed connection.
     // |sSpareSandboxedConnection| is non-null when there is a pending connection. Note it's cleared
     // to null again after the connection is used for a real child process.
@@ -204,13 +202,13 @@ public class ChildProcessLauncher {
 
     // Lazy initialize sBindingManager
     // TODO(boliu): This should be internal to content.
+    @SuppressFBWarnings("LI_LAZY_INIT_STATIC") // Method is single thread.
     public static BindingManager getBindingManager() {
-        synchronized (sBindingManagerLock) {
-            if (sBindingManager == null) {
-                sBindingManager = BindingManagerImpl.createBindingManager();
-            }
-            return sBindingManager;
+        assert LauncherThread.runningOnLauncherThread();
+        if (sBindingManager == null) {
+            sBindingManager = BindingManagerImpl.createBindingManager();
         }
+        return sBindingManager;
     }
 
     @VisibleForTesting
