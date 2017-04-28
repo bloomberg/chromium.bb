@@ -98,6 +98,9 @@ DownloadInterruptReason ConvertNetErrorToInterruptReason(
     case net::ERR_REQUEST_RANGE_NOT_SATISFIABLE:
       return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
 
+    case net::ERR_CONTENT_LENGTH_MISMATCH:
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH;
+
     default: break;
   }
 

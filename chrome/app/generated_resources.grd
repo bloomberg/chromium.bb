@@ -1382,6 +1382,14 @@ Subsequent notifications, windows and dialogs may be split between desktops.
                desc="Download page message: The download was blocked due to security policy on this machine.">
         Security settings on your computer blocked this file.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_CONTENT_LENGTH_MISMATCH"
+               desc="The download is incomplete as not all the data are received.">
+        File incomplete
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_CONTENT_LENGTH_MISMATCH"
+               desc="Download page message: Reveived fewer bytes than expected and the download was incomplete.">
+        Destination file was incomplete due to a connection issue.
+      </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SECURITY_CHECK_FAILED"
                desc="The security check performed on this download failed unexpectedly">
         Virus scan failed

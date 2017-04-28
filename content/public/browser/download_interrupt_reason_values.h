@@ -116,6 +116,12 @@ INTERRUPT_REASON(SERVER_FORBIDDEN, 36)
 // may not be the intended server.
 INTERRUPT_REASON(SERVER_UNREACHABLE, 37)
 
+// The server sent fewer bytes than the content-length header. It may indicate
+// that the connection was closed prematurely, or the Content-Length header was
+// invalid. The download is only interrupted if strong validators are present.
+// Otherwise, it is treated as finished.
+INTERRUPT_REASON(SERVER_CONTENT_LENGTH_MISMATCH, 38)
+
 // User input.
 
 // The user canceled the download.

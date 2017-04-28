@@ -937,6 +937,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   switch(last_reason_) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+    case DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
@@ -1106,6 +1107,17 @@ void DownloadItemImpl::OnAllDataSaved(
                         // the download and don't expect to receive any more
                         // data.
 
+  if (received_bytes_at_length_mismatch > 0) {
+    if (total_bytes > received_bytes_at_length_mismatch) {
+      RecordDownloadCount(
+          MORE_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT);
+    } else if (total_bytes == received_bytes_at_length_mismatch) {
+      RecordDownloadCount(
+          NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT);
+    } else {
+      // This could happen if the content changes on the server.
+    }
+  }
   DVLOG(20) << __func__ << "() download=" << DebugString(true);
   UpdateObservers();
 }
@@ -1796,6 +1808,9 @@ void DownloadItemImpl::InterruptWithPartialState(
   RecordDownloadInterrupted(reason, received_bytes_, total_bytes_,
                             job_ && job_->IsParallelizable(),
                             IsParallelDownloadEnabled());
+  if (reason == DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH)
+    received_bytes_at_length_mismatch = received_bytes_;
+
   if (!GetWebContents())
     RecordDownloadCount(INTERRUPTED_WITHOUT_WEBCONTENTS);
 

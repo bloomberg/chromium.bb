@@ -76,6 +76,7 @@ const InterruptReasonAssociation historical_reasons[] = {
     {"SERVER_CERT_PROBLEM", 35},
     {"SERVER_FORBIDDEN", 36},
     {"SERVER_UNREACHABLE", 37},
+    {"SERVER_CONTENT_LENGTH_MISMATCH", 38},
     {"USER_CANCELED", 40},
     {"USER_SHUTDOWN", 41},
     {"CRASH", 50},

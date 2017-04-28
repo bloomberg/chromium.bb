@@ -103,6 +103,17 @@ enum DownloadCountTypes {
   // Downloads that are actually completed in normal profile.
   COMPLETED_COUNT_NORMAL_PROFILE,
 
+  // Downloads that are completed with a content length mismatch error.
+  COMPLETED_WITH_CONTENT_LENGTH_MISMATCH_COUNT,
+
+  // After a download is interrupted with a content length mismatch error, more
+  // bytes are received when resuming the download.
+  MORE_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
+
+  // After a download is interrupted with a content length mismatch error, no
+  // bytes are received when resuming the download.
+  NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
