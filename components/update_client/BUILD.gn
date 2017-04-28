@@ -108,6 +108,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/update_client/jebgalgnebhfojomionfpkfelancnnkf.crx",
     "//components/test/data/update_client/updatecheck_reply_1.xml",
     "//components/test/data/update_client/updatecheck_reply_4.xml",
+    "//components/test/data/update_client/updatecheck_reply_noupdate.xml",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +

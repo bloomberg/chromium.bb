@@ -241,6 +241,54 @@ const char* kTwoAppsSetCohort =
     " </app>"
     "</response>";
 
+// Includes a run action for an update check with status='ok'.
+const char* kUpdateCheckStatusOkWithRunAction =
+    "<?xml version='1.0' encoding='UTF-8'?>"
+    "<response protocol='3.0'>"
+    " <app appid='12345'>"
+    "   <updatecheck status='ok'>"
+    "     <urls>"
+    "       <url codebase='http://example.com/'/>"
+    "       <url codebasediff='http://diff.example.com/'/>"
+    "     </urls>"
+    "     <manifest version='1.2.3.4' prodversionmin='2.0.143.0'>"
+    "       <packages>"
+    "         <package name='extension_1_2_3_4.crx'/>"
+    "       </packages>"
+    "     </manifest>"
+    "     <actions>"
+    "       <action run='this'/>"
+    "     </actions>"
+    "   </updatecheck>"
+    " </app>"
+    "</response>";
+
+// Includes a run action for an update check with status='noupdate'.
+const char* kUpdateCheckStatusNoUpdateWithRunAction =
+    "<?xml version='1.0' encoding='UTF-8'?>"
+    "<response protocol='3.0'>"
+    " <app appid='12345'>"
+    "   <updatecheck status='noupdate'>"
+    "     <actions>"
+    "       <action run='this'/>"
+    "     </actions>"
+    "   </updatecheck>"
+    " </app>"
+    "</response>";
+
+// Includes a run action for an update check with status='error'.
+const char* kUpdateCheckStatusErrorWithRunAction =
+    "<?xml version='1.0' encoding='UTF-8'?>"
+    "<response protocol='3.0'>"
+    " <app appid='12345' status='ok'>"
+    "  <updatecheck status='error-osnotsupported'>"
+    "     <actions>"
+    "       <action run='this'/>"
+    "     </actions>"
+    "   </updatecheck>"
+    " </app>"
+    "</response>";
+
 TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   UpdateResponse parser;
 
@@ -361,6 +409,26 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_EQ(secondResult->cohort_attrs.find("cohortname")->second, "cname");
   EXPECT_EQ(secondResult->cohort_attrs.find("cohorthint"),
             secondResult->cohort_attrs.end());
+
+  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusOkWithRunAction));
+  EXPECT_TRUE(parser.errors().empty());
+  EXPECT_FALSE(parser.results().list.empty());
+  firstResult = &parser.results().list[0];
+  EXPECT_STREQ("ok", firstResult->status.c_str());
+  EXPECT_EQ(firstResult->extension_id, "12345");
+  EXPECT_STREQ("this", firstResult->action_run.c_str());
+
+  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusNoUpdateWithRunAction));
+  EXPECT_TRUE(parser.errors().empty());
+  EXPECT_FALSE(parser.results().list.empty());
+  firstResult = &parser.results().list[0];
+  EXPECT_STREQ("noupdate", firstResult->status.c_str());
+  EXPECT_EQ(firstResult->extension_id, "12345");
+  EXPECT_STREQ("this", firstResult->action_run.c_str());
+
+  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusErrorWithRunAction));
+  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser.results().list.empty());
 }
 
 }  // namespace update_client

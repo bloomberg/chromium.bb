@@ -1,6 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <response protocol='3.0'>
   <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
-    <updatecheck status='noupdate'/>j
+    <updatecheck status='noupdate'>
+      <actions>
+        <action run='this'/>
+      </actions>
+    </updatecheck>
   </app>
 </response>

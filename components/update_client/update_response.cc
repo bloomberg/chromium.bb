@@ -25,34 +25,25 @@ const char UpdateResponse::Result::kCohort[] = "cohort";
 const char UpdateResponse::Result::kCohortHint[] = "cohorthint";
 const char UpdateResponse::Result::kCohortName[] = "cohortname";
 
-UpdateResponse::UpdateResponse() {
-}
-UpdateResponse::~UpdateResponse() {
-}
+UpdateResponse::UpdateResponse() = default;
+UpdateResponse::~UpdateResponse() = default;
 
-UpdateResponse::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {
-}
+UpdateResponse::Results::Results() = default;
 UpdateResponse::Results::Results(const Results& other) = default;
-UpdateResponse::Results::~Results() {
-}
+UpdateResponse::Results::~Results() = default;
 
-UpdateResponse::Result::Result() {}
+UpdateResponse::Result::Result() = default;
 UpdateResponse::Result::Result(const Result& other) = default;
-UpdateResponse::Result::~Result() {
-}
+UpdateResponse::Result::~Result() = default;
 
-UpdateResponse::Result::Manifest::Manifest() {
-}
+UpdateResponse::Result::Manifest::Manifest() = default;
 UpdateResponse::Result::Manifest::Manifest(const Manifest& other) = default;
-UpdateResponse::Result::Manifest::~Manifest() {
-}
+UpdateResponse::Result::Manifest::~Manifest() = default;
 
-UpdateResponse::Result::Manifest::Package::Package() : size(0), sizediff(0) {
-}
+UpdateResponse::Result::Manifest::Package::Package() = default;
 UpdateResponse::Result::Manifest::Package::Package(const Package& other) =
     default;
-UpdateResponse::Result::Manifest::Package::~Package() {
-}
+UpdateResponse::Result::Manifest::Package::~Package() = default;
 
 void UpdateResponse::ParseError(const char* details, ...) {
   va_list args;
@@ -254,6 +245,20 @@ bool ParseUrlsTag(xmlNode* urls,
   return true;
 }
 
+// Parses the <actions> tag. It picks up the "run" attribute of the first
+// "action" element in "actions".
+void ParseActionsTag(xmlNode* updatecheck, UpdateResponse::Result* result) {
+  std::vector<xmlNode*> actions = GetChildren(updatecheck, "actions");
+  if (actions.empty())
+    return;
+
+  std::vector<xmlNode*> action = GetChildren(actions.front(), "action");
+  if (action.empty())
+    return;
+
+  result->action_run = GetAttribute(action.front(), "run");
+}
+
 // Parses the <updatecheck> tag.
 bool ParseUpdateCheckTag(xmlNode* updatecheck,
                          UpdateResponse::Result* result,
@@ -265,8 +270,10 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
     return false;
   }
 
-  if (result->status == "noupdate")
+  if (result->status == "noupdate") {
+    ParseActionsTag(updatecheck, result);
     return true;
+  }
 
   if (result->status == "ok") {
     std::vector<xmlNode*> urls = GetChildren(updatecheck, "urls");
@@ -285,6 +292,7 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
       return false;
     }
 
+    ParseActionsTag(updatecheck, result);
     return ParseManifestTag(manifests[0], result, error);
   }
 

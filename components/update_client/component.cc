@@ -198,6 +198,7 @@ void Component::SetParseResult(const UpdateResponse::Result& result) {
   DCHECK_EQ(0, update_check_error_);
 
   status_ = result.status;
+  action_run_ = result.action_run;
 
   if (result.manifest.packages.empty())
     return;
