@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -17,6 +16,9 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+
+using RetrievePolicyResponseType =
+    chromeos::SessionManagerClient::RetrievePolicyResponseType;
 
 namespace em = enterprise_management;
 
@@ -56,10 +58,12 @@ void DeviceLocalAccountPolicyStore::LoadImmediately() {
   // Cancel all running async loads.
   weak_factory_.InvalidateWeakPtrs();
 
-  const std::string policy_blob =
+  std::string policy_blob;
+  RetrievePolicyResponseType response =
       session_manager_client_->BlockingRetrieveDeviceLocalAccountPolicy(
-          account_id_);
-  ValidateLoadedPolicyBlob(false /*validate_in_background*/, policy_blob);
+          account_id_, &policy_blob);
+  ValidateLoadedPolicyBlob(false /*validate_in_background*/, policy_blob,
+                           response);
 }
 
 void DeviceLocalAccountPolicyStore::Store(
@@ -74,8 +78,10 @@ void DeviceLocalAccountPolicyStore::Store(
 
 void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
     bool validate_in_background,
-    const std::string& policy_blob) {
-  if (policy_blob.empty()) {
+    const std::string& policy_blob,
+    RetrievePolicyResponseType response_type) {
+  if (response_type != RetrievePolicyResponseType::SUCCESS ||
+      policy_blob.empty()) {
     status_ = CloudPolicyStore::STATUS_LOAD_ERROR;
     NotifyStoreError();
   } else {

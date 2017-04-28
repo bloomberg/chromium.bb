@@ -14,6 +14,7 @@ namespace dbus {
 
 class Bus;
 class ObjectProxy;
+class ScopedDBusError;
 
 }  // namespace dbus
 
@@ -30,6 +31,12 @@ class CHROMEOS_EXPORT BlockingMethodCaller {
   // Calls the method and blocks until it returns.
   std::unique_ptr<dbus::Response> CallMethodAndBlock(
       dbus::MethodCall* method_call);
+
+  // Calls the method and blocks until it returns. Populates the |error| and
+  // returns null in case of an error.
+  std::unique_ptr<dbus::Response> CallMethodAndBlockWithError(
+      dbus::MethodCall* method_call,
+      dbus::ScopedDBusError* error_out);
 
  private:
   dbus::Bus* bus_;

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -25,7 +26,6 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 class CryptohomeClient;
-class SessionManagerClient;
 }
 
 namespace policy {
@@ -71,7 +71,9 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   void OnPolicyStored(bool success);
 
   // Called back from SessionManagerClient for policy load operations.
-  void OnPolicyRetrieved(const std::string& policy_blob);
+  void OnPolicyRetrieved(
+      const std::string& policy_blob,
+      chromeos::SessionManagerClient::RetrievePolicyResponseType response);
 
   // Starts validation of the loaded |policy| before installing it.
   void ValidateRetrievedPolicy(

@@ -60,9 +60,10 @@ class BlockingMethodCallerTest : public testing::Test {
 
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
-    EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _))
+    EXPECT_CALL(*mock_proxy_.get(),
+                MockCallMethodAndBlockWithErrorDetails(_, _, _))
         .WillRepeatedly(
-             Invoke(this, &BlockingMethodCallerTest::CreateMockProxyResponse));
+            Invoke(this, &BlockingMethodCallerTest::CreateMockProxyResponse));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
@@ -91,7 +92,8 @@ class BlockingMethodCallerTest : public testing::Test {
   // Returns a response for the given method call. Used to implement
   // CallMethodAndBlock() for |mock_proxy_|.
   dbus::Response* CreateMockProxyResponse(dbus::MethodCall* method_call,
-                                          int timeout_ms) {
+                                          int timeout_ms,
+                                          dbus::ScopedDBusError* error) {
     if (method_call->GetInterface() == "org.chromium.TestInterface" &&
         method_call->GetMember() == "Echo") {
       dbus::MessageReader reader(method_call);

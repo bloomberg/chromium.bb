@@ -19,12 +19,15 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+
+using RetrievePolicyResponseType =
+    chromeos::SessionManagerClient::RetrievePolicyResponseType;
 
 namespace em = enterprise_management;
 
@@ -108,9 +111,18 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   // However, on those paths we must load policy synchronously so that the
   // Profile initialization never sees unmanaged prefs, which would lead to
   // data loss. http://crbug.com/263061
-  std::string policy_blob =
+  std::string policy_blob;
+  RetrievePolicyResponseType response_type =
       session_manager_client_->BlockingRetrievePolicyForUser(
-          cryptohome::Identification(account_id_));
+          cryptohome::Identification(account_id_), &policy_blob);
+
+  if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
+    LOG(ERROR)
+        << "Session manager claims that session doesn't exist; signing out";
+    chrome::AttemptUserExit();
+    return;
+  }
+
   if (policy_blob.empty()) {
     // The session manager doesn't have policy, or the call failed.
     NotifyStoreLoaded();
@@ -213,7 +225,19 @@ void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
-    const std::string& policy_blob) {
+    const std::string& policy_blob,
+    RetrievePolicyResponseType response_type) {
+  // Disallow the sign in when the Chrome OS user session has not started, which
+  // should always happen before the profile construction. An attempt to read
+  // the policy outside the session will always fail and return an empty policy
+  // blob.
+  if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
+    LOG(ERROR)
+        << "Session manager claims that session doesn't exist; signing out";
+    chrome::AttemptUserExit();
+    return;
+  }
+
   if (policy_blob.empty()) {
     // session_manager doesn't have policy. Adjust internal state and notify
     // the world about the policy update.

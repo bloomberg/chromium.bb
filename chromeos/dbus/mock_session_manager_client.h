@@ -40,17 +40,19 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD0(NotifyLockScreenDismissed, void(void));
   MOCK_METHOD1(RetrieveActiveSessions, void(const ActiveSessionsCallback&));
   MOCK_METHOD1(RetrieveDevicePolicy, void(const RetrievePolicyCallback&));
-  MOCK_METHOD0(BlockingRetrieveDevicePolicy, std::string(void));
+  MOCK_METHOD1(BlockingRetrieveDevicePolicy,
+               RetrievePolicyResponseType(std::string*));
   MOCK_METHOD2(RetrievePolicyForUser,
                void(const cryptohome::Identification&,
                     const RetrievePolicyCallback&));
-  MOCK_METHOD1(BlockingRetrievePolicyForUser,
-               std::string(const cryptohome::Identification&));
+  MOCK_METHOD2(BlockingRetrievePolicyForUser,
+               RetrievePolicyResponseType(const cryptohome::Identification&,
+                                          std::string*));
   MOCK_METHOD2(RetrieveDeviceLocalAccountPolicy,
                void(const std::string&,
                     const RetrievePolicyCallback&));
-  MOCK_METHOD1(BlockingRetrieveDeviceLocalAccountPolicy,
-               std::string(const std::string&));
+  MOCK_METHOD2(BlockingRetrieveDeviceLocalAccountPolicy,
+               RetrievePolicyResponseType(const std::string&, std::string*));
   MOCK_METHOD2(StoreDevicePolicy,
                void(const std::string&,
                     const StorePolicyCallback&));
