@@ -13,7 +13,6 @@ import android.test.InstrumentationTestCase;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -26,7 +25,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for AndroidSyncSettings.
  */
-@DisabledTest(message = "https://crbug.com/605567")
 public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     private static class CountingMockSyncContentResolverDelegate
             extends MockSyncContentResolverDelegate {
