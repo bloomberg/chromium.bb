@@ -32,13 +32,9 @@ import java.util.regex.Pattern;
  */
 public class AccountManagerHelper {
     private static final String TAG = "Sync_Signin";
-
     private static final Pattern AT_SYMBOL = Pattern.compile("@");
-
     private static final String GMAIL_COM = "gmail.com";
-
     private static final String GOOGLEMAIL_COM = "googlemail.com";
-
     public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
     /**
@@ -50,7 +46,7 @@ public class AccountManagerHelper {
 
     private static final AtomicReference<AccountManagerHelper> sInstance = new AtomicReference<>();
 
-    private final AccountManagerDelegate mAccountManager;
+    private final AccountManagerDelegate mDelegate;
 
     /**
      * A simple callback for getAuthToken.
@@ -73,10 +69,10 @@ public class AccountManagerHelper {
     }
 
     /**
-     * @param accountManager the account manager to use as a backend service
+     * @param delegate the account manager to use as a backend service
      */
-    private AccountManagerHelper(AccountManagerDelegate accountManager) {
-        mAccountManager = accountManager;
+    private AccountManagerHelper(AccountManagerDelegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
@@ -169,7 +165,7 @@ public class AccountManagerHelper {
      * See http://crbug.com/517697 for details.
      */
     public Account[] getGoogleAccounts() {
-        return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
+        return mDelegate.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
 
     /**
@@ -286,7 +282,7 @@ public class AccountManagerHelper {
      * @return Whether or not there is an account authenticator for Google accounts.
      */
     public boolean hasGoogleAccountAuthenticator() {
-        AuthenticatorDescription[] descs = mAccountManager.getAuthenticatorTypes();
+        AuthenticatorDescription[] descs = mDelegate.getAuthenticatorTypes();
         for (AuthenticatorDescription desc : descs) {
             if (GOOGLE_ACCOUNT_TYPE.equals(desc.type)) return true;
         }
@@ -305,7 +301,7 @@ public class AccountManagerHelper {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
-                return mAccountManager.getAuthToken(account, authTokenType);
+                return mDelegate.getAuthToken(account, authTokenType);
             }
             @Override
             public void onSuccess(String token) {
@@ -339,7 +335,7 @@ public class AccountManagerHelper {
         ConnectionRetry.runAuthTask(new AuthTask<Boolean>() {
             @Override
             public Boolean run() throws AuthException {
-                mAccountManager.invalidateAuthToken(authToken);
+                mDelegate.invalidateAuthToken(authToken);
                 return true;
             }
             @Override
@@ -356,7 +352,7 @@ public class AccountManagerHelper {
     }
 
     private boolean hasFeatures(Account account, String[] features) {
-        return mAccountManager.hasFeatures(account, features);
+        return mDelegate.hasFeatures(account, features);
     }
 
     private void hasFeatures(
@@ -380,7 +376,7 @@ public class AccountManagerHelper {
      */
     public void updateCredentials(
             Account account, Activity activity, @Nullable Callback<Boolean> callback) {
-        mAccountManager.updateCredentials(account, activity, callback);
+        mDelegate.updateCredentials(account, activity, callback);
     }
 
     private interface AuthTask<T> {
