@@ -207,45 +207,13 @@ void ModuleScriptLoader::NotifyFinished(Resource*) {
   // Step 9. Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, cryptographic
   // nonce, parser state, and credentials mode.
-  module_script_ = CreateModuleScript(
-      source_text, GetResource()->GetResponse().Url(), modulator_, nonce_,
+  module_script_ = ModuleScript::Create(
+      source_text, modulator_, GetResource()->GetResponse().Url(), nonce_,
       parser_state_,
       GetResource()->GetResourceRequest().GetFetchCredentialsMode(),
       access_control_status);
 
   AdvanceState(State::kFinished);
-}
-
-// https://html.spec.whatwg.org/#creating-a-module-script
-ModuleScript* ModuleScriptLoader::CreateModuleScript(
-    const String& source_text,
-    const KURL& url,
-    Modulator* modulator,
-    const String& nonce,
-    ParserDisposition parser_state,
-    WebURLRequest::FetchCredentialsMode credentials_mode,
-    AccessControlStatus access_control_status) {
-  // Step 1. Let script be a new module script that this algorithm will
-  // subsequently initialize.
-  // Step 2. Set script's settings object to the environment settings object
-  // provided.
-  // Note: "script's settings object" will be "modulator".
-
-  // Delegate to Modulator::compileModule to process Steps 3-6.
-  ScriptModule result = modulator->CompileModule(source_text, url.GetString(),
-                                                 access_control_status);
-  // Step 6: "...return null, and abort these steps."
-  if (result.IsNull())
-    return nullptr;
-  // Step 7. Set script's module record to result.
-  // Step 8. Set script's base URL to the script base URL provided.
-  // Step 9. Set script's cryptographic nonce to the cryptographic nonce
-  // provided.
-  // Step 10. Set script's parser state to the parser state.
-  // Step 11. Set script's credentials mode to the credentials mode provided.
-  // Step 12. Return script.
-  return ModuleScript::Create(modulator, result, url, nonce, parser_state,
-                              credentials_mode);
 }
 
 DEFINE_TRACE(ModuleScriptLoader) {

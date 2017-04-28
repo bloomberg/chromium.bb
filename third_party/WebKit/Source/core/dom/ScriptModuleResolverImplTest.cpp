@@ -61,7 +61,7 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
       scope.GetIsolate(), "import './target.js'; export const a = 42;",
       "referrer.js", kSharableCrossOrigin);
   KURL referrer_url(kParsedURLString, "https://example.com/referrer.js");
-  ModuleScript* referrer_module_script = ModuleScript::Create(
+  ModuleScript* referrer_module_script = ModuleScript::CreateForTest(
       modulator, referrer_record, referrer_url, "", kParserInserted,
       WebURLRequest::kFetchCredentialsModeOmit);
   // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
@@ -76,8 +76,8 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                             "target.js", kSharableCrossOrigin);
   KURL url(kParsedURLString, "https://example.com/target.js");
   ModuleScript* module_script =
-      ModuleScript::Create(modulator, record, url, "", kParserInserted,
-                           WebURLRequest::kFetchCredentialsModeOmit);
+      ModuleScript::CreateForTest(modulator, record, url, "", kParserInserted,
+                                  WebURLRequest::kFetchCredentialsModeOmit);
   // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
   // https://codereview.chromium.org/2782403002/ landed.
   return module_script;
