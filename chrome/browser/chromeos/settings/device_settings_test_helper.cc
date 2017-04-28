@@ -20,6 +20,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 
+using RetrievePolicyResponseType =
+    chromeos::DeviceSettingsTestHelper::RetrievePolicyResponseType;
+
 namespace chromeos {
 
 DeviceSettingsTestHelper::DeviceSettingsTestHelper() {}
@@ -51,7 +54,7 @@ void DeviceSettingsTestHelper::FlushRetrieve() {
   callbacks.swap(device_policy_.retrieve_callbacks_);
   for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
        cb != callbacks.end(); ++cb) {
-    cb->Run(device_policy_.policy_blob_);
+    cb->Run(device_policy_.policy_blob_, RetrievePolicyResponseType::SUCCESS);
   }
 
   std::map<std::string, PolicyState>::iterator device_local_account_state;
@@ -62,7 +65,8 @@ void DeviceSettingsTestHelper::FlushRetrieve() {
     callbacks.swap(device_local_account_state->second.retrieve_callbacks_);
     for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
          cb != callbacks.end(); ++cb) {
-      cb->Run(device_local_account_state->second.policy_blob_);
+      cb->Run(device_local_account_state->second.policy_blob_,
+              RetrievePolicyResponseType::SUCCESS);
     }
   }
 }
@@ -97,8 +101,11 @@ void DeviceSettingsTestHelper::RetrieveDevicePolicy(
   device_policy_.retrieve_callbacks_.push_back(callback);
 }
 
-std::string DeviceSettingsTestHelper::BlockingRetrieveDevicePolicy() {
-  return device_policy_.policy_blob_;
+RetrievePolicyResponseType
+DeviceSettingsTestHelper::BlockingRetrieveDevicePolicy(
+    std::string* policy_out) {
+  *policy_out = device_policy_.policy_blob_;
+  return RetrievePolicyResponseType::SUCCESS;
 }
 
 void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
@@ -108,9 +115,12 @@ void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
       callback);
 }
 
-std::string DeviceSettingsTestHelper::BlockingRetrieveDeviceLocalAccountPolicy(
-    const std::string& account_id) {
-  return "";
+RetrievePolicyResponseType
+DeviceSettingsTestHelper::BlockingRetrieveDeviceLocalAccountPolicy(
+    const std::string& account_id,
+    std::string* policy_out) {
+  *policy_out = "";
+  return RetrievePolicyResponseType::SUCCESS;
 }
 
 void DeviceSettingsTestHelper::StoreDevicePolicy(

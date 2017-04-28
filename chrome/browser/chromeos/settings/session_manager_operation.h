@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace enterprise_management {
@@ -26,8 +27,6 @@ class PublicKey;
 }
 
 namespace chromeos {
-
-class SessionManagerClient;
 
 // Handles a single transaction with session manager. This is a virtual base
 // class that contains common infrastructure for key and policy loading. There
@@ -111,7 +110,9 @@ class SessionManagerOperation {
   void BlockingRetrieveDeviceSettings();
 
   // Validates device settings after retrieval from session_manager.
-  void ValidateDeviceSettings(const std::string& policy_blob);
+  void ValidateDeviceSettings(
+      const std::string& policy_blob,
+      SessionManagerClient::RetrievePolicyResponseType response_type);
 
   // Extracts status and device settings from the validator and reports them.
   void ReportValidatorStatus(policy::DeviceCloudPolicyValidator* validator);
