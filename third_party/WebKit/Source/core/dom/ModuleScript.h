@@ -30,7 +30,16 @@ enum class ModuleInstantiationState {
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
 class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  public:
-  static ModuleScript* Create(
+  // https://html.spec.whatwg.org/#creating-a-module-script
+  static ModuleScript* Create(const String& source_text,
+                              Modulator*,
+                              const KURL& base_url,
+                              const String& nonce,
+                              ParserDisposition,
+                              WebURLRequest::FetchCredentialsMode,
+                              AccessControlStatus);
+
+  static ModuleScript* CreateForTest(
       Modulator* settings_object,
       ScriptModule record,
       const KURL& base_url,

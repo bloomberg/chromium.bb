@@ -10,6 +10,37 @@
 
 namespace blink {
 
+ModuleScript* ModuleScript::Create(
+    const String& source_text,
+    Modulator* modulator,
+    const KURL& base_url,
+    const String& nonce,
+    ParserDisposition parser_state,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
+    AccessControlStatus access_control_status) {
+  // Step 1. Let script be a new module script that this algorithm will
+  // subsequently initialize.
+  // Step 2. Set script's settings object to the environment settings object
+  // provided.
+  // Note: "script's settings object" will be "modulator".
+
+  // Delegate to Modulator::compileModule to process Steps 3-6.
+  ScriptModule result = modulator->CompileModule(
+      source_text, base_url.GetString(), access_control_status);
+  // Step 6: "...return null, and abort these steps."
+  if (result.IsNull())
+    return nullptr;
+  // Step 7. Set script's module record to result.
+  // Step 8. Set script's base URL to the script base URL provided.
+  // Step 9. Set script's cryptographic nonce to the cryptographic nonce
+  // provided.
+  // Step 10. Set script's parser state to the parser state.
+  // Step 11. Set script's credentials mode to the credentials mode provided.
+  // Step 12. Return script.
+  return new ModuleScript(modulator, result, base_url, nonce, parser_state,
+                          credentials_mode);
+}
+
 void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {
   // Implements Step 7.1 of:
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure

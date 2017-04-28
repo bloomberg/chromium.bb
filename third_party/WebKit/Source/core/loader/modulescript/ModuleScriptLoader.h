@@ -69,14 +69,6 @@ class CORE_EXPORT ModuleScriptLoader final
                      ModuleScriptLoaderRegistry*,
                      ModuleScriptLoaderClient*);
 
-  static ModuleScript* CreateModuleScript(const String& source_text,
-                                          const KURL&,
-                                          Modulator*,
-                                          const String& nonce,
-                                          ParserDisposition,
-                                          WebURLRequest::FetchCredentialsMode,
-                                          AccessControlStatus);
-
   void AdvanceState(State new_state);
 #if DCHECK_IS_ON()
   static const char* StateToString(State);

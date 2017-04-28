@@ -76,9 +76,9 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     ScriptModule script_module = ScriptModule::Compile(
         script_state_->GetIsolate(), source_text.ToString(), url.GetString(),
         kSharableCrossOrigin);
-    ModuleScript* module_script =
-        ModuleScript::Create(this, script_module, url, "", kParserInserted,
-                             WebURLRequest::kFetchCredentialsModeOmit);
+    ModuleScript* module_script = ModuleScript::CreateForTest(
+        this, script_module, url, "", kParserInserted,
+        WebURLRequest::kFetchCredentialsModeOmit);
     auto result_request = dependency_module_requests_map_.insert(
         script_module, dependency_module_requests);
     EXPECT_TRUE(result_request.is_new_entry);
@@ -121,9 +121,9 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     ScriptModule script_module = ScriptModule::Compile(
         script_state_->GetIsolate(), "export default 'pineapples';",
         url.GetString(), kSharableCrossOrigin);
-    ModuleScript* module_script =
-        ModuleScript::Create(this, script_module, url, "", kParserInserted,
-                             WebURLRequest::kFetchCredentialsModeOmit);
+    ModuleScript* module_script = ModuleScript::CreateForTest(
+        this, script_module, url, "", kParserInserted,
+        WebURLRequest::kFetchCredentialsModeOmit);
     auto result_map = module_map_.insert(url, module_script);
     EXPECT_TRUE(result_map.is_new_entry);
 
