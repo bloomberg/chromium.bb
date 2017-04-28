@@ -34,13 +34,13 @@ async_test(make_storage_accessibility_test(sessionStorage),
 function make_xorigin_test(storage_name, item_name) {
   var storage = window[storage_name];
   return function(test) {
-      window.addEventListener('message', function(event) {
+      window.addEventListener('message', test.step_func(function(event) {
         if (event.data != 'ready' && event.data.type == storage_name) {
           assert_equals(event.data.value, null);
           assert_equals(storage.getItem(item_name), null);
           test.done();
         }
-      });
+      }));
   };
 }
 
