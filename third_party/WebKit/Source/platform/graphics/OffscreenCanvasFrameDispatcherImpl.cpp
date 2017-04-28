@@ -27,6 +27,10 @@
 
 namespace blink {
 
+enum {
+  kMaxPendingCompositorFrames = 2,
+};
+
 OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     OffscreenCanvasFrameDispatcherClient* client,
     uint32_t client_id,
@@ -399,14 +403,15 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     change_size_for_next_commit_ = false;
   }
 
-  compositor_has_pending_frame_ = true;
+  pending_compositor_frames_++;
   sink_->SubmitCompositorFrame(current_local_surface_id_, std::move(frame));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   ReclaimResources(resources);
-  compositor_has_pending_frame_ = false;
+  pending_compositor_frames_--;
+  DCHECK_GE(pending_compositor_frames_, 0);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::SetNeedsBeginFrame(
@@ -426,7 +431,7 @@ void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
       begin_frame_args.source_id, begin_frame_args.sequence_number,
       begin_frame_args.sequence_number, false);
 
-  if (compositor_has_pending_frame_ ||
+  if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == cc::BeginFrameArgs::MISSED &&
        base::TimeTicks::Now() > begin_frame_args.deadline)) {
     sink_->BeginFrameDidNotSwap(current_begin_frame_ack_);
