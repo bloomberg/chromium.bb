@@ -129,28 +129,32 @@ v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
       return v8::Local<v8::Function>();
   }
 
-  v8::Local<v8::Value> prototype_value;
-  if (!interface_object
-           ->Get(current_context, V8AtomicString(isolate_, "prototype"))
-           .ToLocal(&prototype_value) ||
-      !prototype_value->IsObject())
-    return v8::Local<v8::Function>();
-  v8::Local<v8::Object> prototype_object = prototype_value.As<v8::Object>();
-  if (prototype_object->InternalFieldCount() ==
-          kV8PrototypeInternalFieldcount &&
-      type->wrapper_type_prototype ==
-          WrapperTypeInfo::kWrapperTypeObjectPrototype) {
-    prototype_object->SetAlignedPointerInInternalField(
-        kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-  }
-  type->PreparePrototypeAndInterfaceObject(current_context, world,
-                                           prototype_object, interface_object,
-                                           interface_template);
-  if (type->wrapper_type_prototype ==
-      WrapperTypeInfo::kWrapperTypeExceptionPrototype) {
-    if (!V8CallBoolean(prototype_object->SetPrototype(
-            current_context, error_prototype_.NewLocal(isolate_)))) {
+  v8::Local<v8::Object> prototype_object;
+  if (type->wrapper_type_prototype !=
+      WrapperTypeInfo::kWrapperTypeNoPrototype) {
+    v8::Local<v8::Value> prototype_value;
+    if (!interface_object
+             ->Get(current_context, V8AtomicString(isolate_, "prototype"))
+             .ToLocal(&prototype_value) ||
+        !prototype_value->IsObject())
       return v8::Local<v8::Function>();
+    prototype_object = prototype_value.As<v8::Object>();
+    if (prototype_object->InternalFieldCount() ==
+            kV8PrototypeInternalFieldcount &&
+        type->wrapper_type_prototype ==
+            WrapperTypeInfo::kWrapperTypeObjectPrototype) {
+      prototype_object->SetAlignedPointerInInternalField(
+          kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
+    }
+    type->PreparePrototypeAndInterfaceObject(current_context, world,
+                                             prototype_object, interface_object,
+                                             interface_template);
+    if (type->wrapper_type_prototype ==
+        WrapperTypeInfo::kWrapperTypeExceptionPrototype) {
+      if (!V8CallBoolean(prototype_object->SetPrototype(
+              current_context, error_prototype_.NewLocal(isolate_)))) {
+        return v8::Local<v8::Function>();
+      }
     }
   }
 

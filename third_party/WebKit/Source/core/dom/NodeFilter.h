@@ -25,8 +25,6 @@
 #ifndef NodeFilter_h
 #define NodeFilter_h
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -34,9 +32,8 @@ namespace blink {
 // We never create NodeFilter instances.
 // The IDL interface 'NodeFilter' is represented by V8NodeFilterCondition and a
 // V8 value in Blink.
-class NodeFilter final : public GarbageCollected<NodeFilter>,
-                         public ScriptWrappable {
-  DEFINE_WRAPPERTYPEINFO();
+class NodeFilter final {
+  STATIC_ONLY(NodeFilter);
 
  public:
   /**
@@ -66,16 +63,6 @@ class NodeFilter final : public GarbageCollected<NodeFilter>,
     kShowDocumentFragment = 0x00000400,
     kShowNotation = 0x00000800
   };
-
-  unsigned acceptNode(Node*, ExceptionState&) const {
-    NOTREACHED();
-    return kFilterReject;
-  }
-
-  DEFINE_INLINE_TRACE() {}
-
- private:
-  NodeFilter() = delete;
 };
 
 }  // namespace blink

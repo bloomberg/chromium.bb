@@ -83,6 +83,7 @@ struct WrapperTypeInfo {
   enum WrapperTypePrototype {
     kWrapperTypeObjectPrototype,
     kWrapperTypeExceptionPrototype,
+    kWrapperTypeNoPrototype,  // For legacy callback interface
   };
 
   enum WrapperClassId {
@@ -179,7 +180,7 @@ struct WrapperTypeInfo {
       prepare_prototype_and_interface_object_function;
   const char* const interface_name;
   const WrapperTypeInfo* parent_class;
-  const unsigned wrapper_type_prototype : 1;  // WrapperTypePrototype
+  const unsigned wrapper_type_prototype : 2;  // WrapperTypePrototype
   const unsigned wrapper_class_id : 2;        // WrapperClassId
   const unsigned  // ActiveScriptWrappableInheritance
       active_script_wrappable_inheritance : 1;

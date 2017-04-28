@@ -791,7 +791,7 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
-  V8NodeFilterCondition* cppValue = V8NodeFilterCondition::CreateOrNull(v8Value, ScriptState::Current(info.GetIsolate()));
+  V8NodeFilterCondition* cppValue = V8NodeFilter::toImplWithTypeCheck(info.GetIsolate(), v8Value);
 
   impl->setNodeFilterAttribute(cppValue);
 }

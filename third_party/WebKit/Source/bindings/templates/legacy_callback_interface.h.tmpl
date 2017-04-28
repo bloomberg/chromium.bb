@@ -1,0 +1,24 @@
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
+#ifndef {{v8_class}}_h
+#define {{v8_class}}_h
+
+{% for filename in header_includes %}
+#include "{{filename}}"
+{% endfor %}
+
+namespace blink {
+
+class {{v8_class}} final {
+  STATIC_ONLY({{v8_class}});
+ public:
+  static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
+  {{exported}} static const WrapperTypeInfo wrapperTypeInfo;
+  {{exported}} static void TypeErrorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+};
+
+}
+#endif  // {{v8_class}}_h
+
+{% endfilter %}{# format_blink_cpp_source_code #}
