@@ -220,23 +220,23 @@ public class DownloadSharedPreferenceEntryTest {
     @Test
     @Feature({"Download"})
     public void testParseFromStringVersion6() {
-        String uuid = newUUID();
-        String notificationString = "6,2,test_namespace," + uuid + ",0,1,1,1,test,2.pdf";
+        String id1 = newUUID();
+        String notificationString = "6,2,test_namespace," + id1 + ",0,1,1,1,test,2.pdf";
         DownloadSharedPreferenceEntry entry =
                 DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(2, entry.notificationId);
-        assertEquals(new ContentId("test_namespace", uuid), entry.id);
+        assertEquals(new ContentId("test_namespace", id1), entry.id);
         assertFalse(entry.isOffTheRecord);
         assertTrue(entry.canDownloadWhileMetered);
         assertTrue(entry.isAutoResumable);
         assertTrue(entry.isTransient);
         assertEquals("test,2.pdf", entry.fileName);
 
-        String uuid2 = newUUID();
-        notificationString = "6,3,test_namespace," + uuid + ",1,0,0,0,test,4.pdf";
+        String id2 = "notaguidhurray";
+        notificationString = "6,3,test_namespace," + id2 + ",1,0,0,0,test,4.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(3, entry.notificationId);
-        assertEquals(new ContentId("test_namespace", uuid), entry.id);
+        assertEquals(new ContentId("test_namespace", id2), entry.id);
         assertTrue(entry.isOffTheRecord);
         assertFalse(entry.canDownloadWhileMetered);
         assertFalse(entry.isAutoResumable);
@@ -475,10 +475,16 @@ public class DownloadSharedPreferenceEntryTest {
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
-        // Not able to parse GUID in version 6.
+        // Able to load an invalid GUID in version 6.
         notificationString = "6,2,test_namespace,xxx,0,1,1,1,test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
-        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+        assertEquals(2, entry.notificationId);
+        assertEquals(new ContentId("test_namespace", "xxx"), entry.id);
+        assertFalse(entry.isOffTheRecord);
+        assertTrue(entry.canDownloadWhileMetered);
+        assertTrue(entry.isAutoResumable);
+        assertTrue(entry.isTransient);
+        assertEquals("test,2.pdf", entry.fileName);
     }
 
     @Test

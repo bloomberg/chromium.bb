@@ -1016,7 +1016,7 @@ public class DownloadNotificationService extends Service {
     /**
      * Add a download failed notification.
      * @param id       The {@link ContentId} of the download.
-     * @param fileName GUID of the download.
+     * @param fileName Filename of the download.
      * @param icon     A {@link Bitmap} to be used as the large icon for display.
      */
     @VisibleForTesting
@@ -1354,7 +1354,7 @@ public class DownloadNotificationService extends Service {
         }
 
         ContentId id = getContentIdFromIntent(intent);
-        if (id == null || !DownloadSharedPreferenceEntry.isValidGUID(id.id)) return false;
+        if (id == null) return false;
         return true;
     }
 
