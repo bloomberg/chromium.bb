@@ -62,6 +62,8 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   // views::AXAuraObjCache::Delegate implementation.
   void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;
+  void OnEvent(views::AXAuraObjWrapper* aura_obj,
+               ui::AXEvent event_type) override;
 
  protected:
   AutomationManagerAura();
@@ -69,6 +71,8 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
  private:
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
+
+  FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
 
   // Reset state in this manager. If |reset_serializer| is true, reset the
   // serializer to save memory.

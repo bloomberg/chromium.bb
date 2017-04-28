@@ -108,6 +108,11 @@ void AutomationManagerAura::OnChildWindowRemoved(
   SendEvent(nullptr, parent, ui::AX_EVENT_CHILDREN_CHANGED);
 }
 
+void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
+                                    ui::AXEvent event_type) {
+  SendEvent(nullptr, aura_obj, event_type);
+}
+
 AutomationManagerAura::AutomationManagerAura()
     : AXHostDelegate(extensions::api::automation::kDesktopTreeID),
       enabled_(false),

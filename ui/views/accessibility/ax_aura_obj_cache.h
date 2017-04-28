@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
@@ -43,6 +44,8 @@ class VIEWS_EXPORT AXAuraObjCache
   class Delegate {
    public:
     virtual void OnChildWindowRemoved(AXAuraObjWrapper* parent) = 0;
+    virtual void OnEvent(AXAuraObjWrapper* aura_obj,
+                         ui::AXEvent event_type) = 0;
   };
 
   // Get or create an entry in the cache based on an Aura view.
@@ -85,6 +88,9 @@ class VIEWS_EXPORT AXAuraObjCache
   // Send a notification that the focused view may have changed.
   void OnFocusedViewChanged();
 
+  // Tell our delegate to fire an event on a given object.
+  void FireEvent(AXAuraObjWrapper* aura_obj, ui::AXEvent event_type);
+
   // Indicates if this object's currently being destroyed.
   bool is_destroying() { return is_destroying_; }
 
@@ -104,6 +110,7 @@ class VIEWS_EXPORT AXAuraObjCache
 
   // aura::WindowObserver override.
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
   template <typename AuraViewWrapper, typename AuraView>
   AXAuraObjWrapper* CreateInternal(
