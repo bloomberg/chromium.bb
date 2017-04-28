@@ -85,6 +85,15 @@ class LayoutTableCellTest : public RenderingTest {
   }
 };
 
+TEST_F(LayoutTableCellTest, AbsoluteColumnIndex) {
+  auto* cell = LayoutTableCell::CreateAnonymous(&GetDocument());
+  EXPECT_FALSE(cell->HasSetAbsoluteColumnIndex());
+  cell->SetAbsoluteColumnIndex(kMaxColumnIndex);
+  EXPECT_TRUE(cell->HasSetAbsoluteColumnIndex());
+  EXPECT_NE(kUnsetColumnIndex, cell->AbsoluteColumnIndex());
+  EXPECT_EQ(kMaxColumnIndex, cell->AbsoluteColumnIndex());
+}
+
 TEST_F(LayoutTableCellTest, ResetColspanIfTooBig) {
   SetBodyInnerHTML("<table><td id='cell' colspan='14000'></td></table>");
   ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 8190U);

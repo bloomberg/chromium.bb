@@ -57,6 +57,7 @@ LayoutTable::LayoutTable(Element* element)
       foot_(nullptr),
       first_body_(nullptr),
       collapsed_borders_valid_(false),
+      needs_invalidate_collapsed_borders_for_all_cells_(false),
       has_col_elements_(false),
       needs_section_recalc_(false),
       column_logical_width_changed_(false),
@@ -777,7 +778,30 @@ void LayoutTable::UpdateLayout() {
 void LayoutTable::InvalidateCollapsedBorders() {
   collapsed_borders_.clear();
   collapsed_borders_valid_ = false;
+  needs_invalidate_collapsed_borders_for_all_cells_ = true;
   SetMayNeedPaintInvalidation();
+}
+
+void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
+  DCHECK(CollapseBorders());
+
+  if (!needs_invalidate_collapsed_borders_for_all_cells_)
+    return;
+  needs_invalidate_collapsed_borders_for_all_cells_ = false;
+
+  for (LayoutObject* section = FirstChild(); section;
+       section = section->NextSibling()) {
+    if (!section->IsTableSection())
+      continue;
+    for (LayoutTableRow* row = ToLayoutTableSection(section)->FirstRow(); row;
+         row = row->NextRow()) {
+      for (LayoutTableCell* cell = row->FirstCell(); cell;
+           cell = cell->NextCell()) {
+        DCHECK_EQ(cell->Table(), this);
+        cell->InvalidateCollapsedBorderValues();
+      }
+    }
+  }
 }
 
 // Collect all the unique border values that we want to paint in a sorted list.
