@@ -5,6 +5,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/favicon/content/favicon_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_url.h"
@@ -32,8 +33,9 @@ void ContentFaviconDriver::CreateForWebContents(
     return;
 
   web_contents->SetUserData(
-      UserDataKey(), new ContentFaviconDriver(web_contents, favicon_service,
-                                              history_service, bookmark_model));
+      UserDataKey(),
+      base::WrapUnique(new ContentFaviconDriver(
+          web_contents, favicon_service, history_service, bookmark_model)));
 }
 
 void ContentFaviconDriver::SaveFavicon() {
