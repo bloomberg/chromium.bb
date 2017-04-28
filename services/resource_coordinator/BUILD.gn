@@ -2,13 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# There should be only one memory instrumentaiton coordinator. It is currently
+# There should be only one resource coordinator. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
+
 source_set("lib") {
   sources = [
+    "coordination_unit/coordination_unit_impl.cc",
+    "coordination_unit/coordination_unit_impl.h",
+    "coordination_unit/coordination_unit_provider_impl.cc",
+    "coordination_unit/coordination_unit_provider_impl.h",
     "memory/coordinator/coordinator_impl.cc",
     "memory/coordinator/coordinator_impl.h",
+    "resource_coordinator_service.cc",
+    "resource_coordinator_service.h",
   ]
 
   public_deps = [
@@ -16,12 +27,33 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
+
+  data_deps = [
+    ":manifest",
+  ]
+}
+
+service_manifest("manifest") {
+  name = "resource_coordinator"
+  source = "manifest.json"
+}
+
+service("resource_coordinator") {
+  sources = [
+    "service_main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//mojo/public/cpp/system",
+  ]
 }
 
 source_set("tests") {
   testonly = true
 
   sources = [
+    "coordination_unit/coordination_unit_impl_unittest.cc",
     "memory/coordinator/coordinator_impl_unittest.cc",
     "public/cpp/memory/process_local_dump_manager_impl_unittest.cc",
   ]
@@ -33,4 +65,32 @@ source_set("tests") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//testing/gtest",
   ]
+}
+
+service_test("resource_coordinator_unittests") {
+  sources = [
+    "resource_coordinator_service_unittest.cc",
+  ]
+
+  catalog = ":resource_coordinator_unittests_catalog"
+
+  deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/interfaces",
+    "//testing/gtest",
+  ]
+}
+
+service_manifest("unittest_manifest") {
+  name = "resource_coordinator_unittests"
+  source = "unittest_manifest.json"
+}
+
+catalog("resource_coordinator_unittests_catalog") {
+  embedded_services = [ ":unittest_manifest" ]
+  standalone_services = [ ":manifest" ]
 }
