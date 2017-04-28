@@ -28,6 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This file has been moved to platform/bindings/SharedPersistent.h.
-// TODO(adithyas): Remove this file.
-#include "platform/bindings/SharedPersistent.h"
+#ifndef SharedPersistent_h
+#define SharedPersistent_h
+
+#include "platform/bindings/ScopedPersistent.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "v8/include/v8.h"
+
+namespace blink {
+
+template <typename T>
+class SharedPersistent : public RefCounted<SharedPersistent<T>> {
+  WTF_MAKE_NONCOPYABLE(SharedPersistent);
+
+ public:
+  static PassRefPtr<SharedPersistent<T>> Create(v8::Local<T> value,
+                                                v8::Isolate* isolate) {
+    return AdoptRef(new SharedPersistent<T>(value, isolate));
+  }
+
+  v8::Local<T> NewLocal(v8::Isolate* isolate) const {
+    return value_.NewLocal(isolate);
+  }
+
+  bool IsEmpty() { return value_.IsEmpty(); }
+
+  bool operator==(const SharedPersistent<T>& other) {
+    return value_ == other.value_;
+  }
+
+ private:
+  explicit SharedPersistent(v8::Local<T> value, v8::Isolate* isolate)
+      : value_(isolate, value) {}
+  ScopedPersistent<T> value_;
+};
+
+}  // namespace blink
+
+#endif  // SharedPersistent_h
