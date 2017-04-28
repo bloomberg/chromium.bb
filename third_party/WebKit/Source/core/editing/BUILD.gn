@@ -285,6 +285,7 @@ source_set("unit_tests") {
     "commands/DeleteSelectionCommandTest.cpp",
     "commands/InsertIncrementalTextCommandTest.cpp",
     "commands/InsertListCommandTest.cpp",
+    "commands/InsertTextCommandTest.cpp",
     "commands/ReplaceSelectionCommandTest.cpp",
     "commands/SetCharacterDataCommandTest.cpp",
     "commands/SplitTextNodeCommandTest.cpp",
