@@ -709,6 +709,7 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateScrollSourceInfo(bool is_wheel_scroll);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
+  void ShowScrollbarsForImplScroll(ElementId element_id);
 
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;

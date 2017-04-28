@@ -242,51 +242,23 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
     clip_size.Scale(1 / current_page_scale_factor());
   }
 
-  bool scrollbar_needs_animation = false;
-  bool clip_layer_size_did_change = false;
-  bool scroll_layer_size_did_change = false;
   bool y_offset_did_change = false;
   for (auto* scrollbar : ScrollbarsFor(scroll_layer->element_id())) {
     if (scrollbar->orientation() == HORIZONTAL) {
-      scrollbar_needs_animation |= scrollbar->SetCurrentPos(current_offset.x());
-      clip_layer_size_did_change |=
-          scrollbar->SetClipLayerLength(clip_size.width());
-      scroll_layer_size_did_change |=
-          scrollbar->SetScrollLayerLength(scroll_size.width());
+      scrollbar->SetCurrentPos(current_offset.x());
+      scrollbar->SetClipLayerLength(clip_size.width());
+      scrollbar->SetScrollLayerLength(scroll_size.width());
     } else {
-      scrollbar_needs_animation |= y_offset_did_change |=
-          scrollbar->SetCurrentPos(current_offset.y());
-      clip_layer_size_did_change |=
-          scrollbar->SetClipLayerLength(clip_size.height());
-      scroll_layer_size_did_change |=
-          scrollbar->SetScrollLayerLength(scroll_size.height());
+      y_offset_did_change = scrollbar->SetCurrentPos(current_offset.y());
+      scrollbar->SetClipLayerLength(clip_size.height());
+      scrollbar->SetScrollLayerLength(scroll_size.height());
     }
-    scrollbar_needs_animation |=
-        scrollbar->SetVerticalAdjust(clip_layer->ViewportBoundsDelta().y());
+    scrollbar->SetVerticalAdjust(clip_layer->ViewportBoundsDelta().y());
   }
-
-  scrollbar_needs_animation |=
-      (clip_layer_size_did_change || scroll_layer_size_did_change);
 
   if (y_offset_did_change && IsViewportLayerId(scroll_layer_id))
     TRACE_COUNTER_ID1("cc", "scroll_offset_y", scroll_layer->id(),
                       current_offset.y());
-
-  if (scrollbar_needs_animation) {
-    ScrollbarAnimationController* controller =
-        layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
-            scroll_layer->element_id());
-    if (!controller)
-      return;
-
-    // TODO(chaopeng) clip_layer_size_did_change should call DidResize after
-    // crbug.com/701810 got fixed.
-    if (scroll_layer_size_did_change) {
-      controller->DidResize();
-    } else {
-      controller->DidScrollUpdate();
-    }
-  }
 }
 
 RenderSurfaceImpl* LayerTreeImpl::RootRenderSurface() const {
@@ -494,10 +466,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->has_ever_been_drawn_ = false;
 
   // Note: this needs to happen after SetPropertyTrees.
-  target_tree->ShowScrollbars();
+  target_tree->HandleScrollbarShowRequestsFromMain();
 }
 
-void LayerTreeImpl::ShowScrollbars() {
+void LayerTreeImpl::HandleScrollbarShowRequestsFromMain() {
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, [this](
                                                            LayerImpl* layer) {
     if (!layer->needs_show_scrollbars())
@@ -930,6 +902,13 @@ void LayerTreeImpl::DidUpdatePageScale() {
 
   set_needs_update_draw_properties();
   DidUpdateScrollState(inner_viewport_scroll_layer_id_);
+
+  if (IsActiveTree() && layer_tree_host_impl_->ViewportMainScrollLayer()) {
+    if (ScrollbarAnimationController* controller =
+            layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+                OuterViewportScrollLayer()->element_id()))
+      controller->DidScrollUpdate();
+  }
 }
 
 void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
