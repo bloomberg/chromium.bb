@@ -1052,7 +1052,8 @@ class NonCompositedMainThreadScrollingReasonTest
   static const uint32_t kLCDTextRelatedReasons =
       MainThreadScrollingReason::kHasOpacityAndLCDText |
       MainThreadScrollingReason::kHasTransformAndLCDText |
-      MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
+      MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText |
+      MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
 
  protected:
   NonCompositedMainThreadScrollingReasonTest() {
@@ -1205,6 +1206,35 @@ TEST_P(NonCompositedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
 TEST_P(NonCompositedMainThreadScrollingReasonTest, BoxShadowTest) {
   TestNonCompositedReasons(
       "box-shadow", MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
+}
+
+TEST_P(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
+  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+
+  Document* document = GetFrame()->GetDocument();
+  Element* container = document->getElementById("scroller1");
+  ASSERT_TRUE(container);
+
+  ForceFullCompositingUpdate();
+
+  // If a scroller contains all its children, it's not a stacking context.
+  PaintLayerScrollableArea* scrollable_area =
+      ToLayoutBoxModelObject(container->GetLayoutObject())->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
+              MainThreadScrollingReason::kIsNotStackingContextAndLCDText);
+
+  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+  ForceFullCompositingUpdate();
+  EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
+               MainThreadScrollingReason::kIsNotStackingContextAndLCDText);
+  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+
+  // Adding "contain: paint" to force a stacking context leads to promotion.
+  container->setAttribute("style", "contain: paint", ASSERT_NO_EXCEPTION);
+  ForceFullCompositingUpdate();
+
+  EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 }
 
 TEST_P(NonCompositedMainThreadScrollingReasonTest,

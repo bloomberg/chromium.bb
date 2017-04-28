@@ -1876,6 +1876,10 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
       non_composited_main_thread_scrolling_reasons_ |=
           MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }
+    if (!layer->GetLayoutObject().Style()->IsStackingContext()) {
+      non_composited_main_thread_scrolling_reasons_ |=
+          MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
+    }
 
     needs_composited_scrolling = false;
   }
