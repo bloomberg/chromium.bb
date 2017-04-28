@@ -288,6 +288,7 @@ void FetchBlockedDocWriteScript(ScriptElementBase* element,
   DCHECK(script_loader);
   script_loader->SetFetchDocWrittenScriptDeferIdle();
   script_loader->PrepareScript(script_start_position);
+  CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 }
 
 void EmitWarningForDocWriteScripts(const String& url, Document& document) {

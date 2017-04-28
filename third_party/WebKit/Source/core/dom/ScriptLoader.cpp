@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/ClassicPendingScript.h"
@@ -34,6 +35,8 @@
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentWriteIntervention.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
+#include "core/dom/Modulator.h"
+#include "core/dom/ModulePendingScript.h"
 #include "core/dom/Script.h"
 #include "core/dom/ScriptElementBase.h"
 #include "core/dom/ScriptRunner.h"
@@ -45,6 +48,8 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
@@ -107,6 +112,7 @@ DEFINE_TRACE(ScriptLoader) {
   visitor->Trace(element_);
   visitor->Trace(resource_);
   visitor->Trace(pending_script_);
+  visitor->Trace(module_tree_client_);
   PendingScriptClient::Trace(visitor);
 }
 
@@ -315,7 +321,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   CrossOriginAttributeValue cross_origin =
       GetCrossOriginAttributeValue(element_->CrossOriginAttributeValue());
 
-  // 16. will be handled below once module script support is implemented.
+  // 16. is handled below.
 
   // 17. "If the script element has a nonce attribute,
   //      then let cryptographic nonce be that attribute's value.
@@ -364,50 +370,81 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     }
 
     DCHECK(!resource_);
+    DCHECK(!module_tree_client_);
 
     // 21.6. "Switch on the script's type:"
-    // - "classic":
+    if (GetScriptType() == ScriptType::kClassic) {
+      // - "classic":
 
-    // 14. "If the script element has a charset attribute,
-    //      then let encoding be the result of
-    //      getting an encoding from the value of the charset attribute."
-    //     "If the script element does not have a charset attribute,
-    //      or if getting an encoding failed, let encoding
-    //      be the same as the encoding of the script element's node
-    //      document."
-    // TODO(hiroshige): Should we handle failure in getting an encoding?
-    String encoding;
-    if (!element_->CharsetAttributeValue().IsEmpty())
-      encoding = element_->CharsetAttributeValue();
-    else
-      encoding = element_document.characterSet();
+      // 14. "If the script element has a charset attribute,
+      //      then let encoding be the result of
+      //      getting an encoding from the value of the charset attribute."
+      //     "If the script element does not have a charset attribute,
+      //      or if getting an encoding failed, let encoding
+      //      be the same as the encoding of the script element's node
+      //      document."
+      // TODO(hiroshige): Should we handle failure in getting an encoding?
+      String encoding;
+      if (!element_->CharsetAttributeValue().IsEmpty())
+        encoding = element_->CharsetAttributeValue();
+      else
+        encoding = element_document.characterSet();
 
-    // Step 16 is skipped because "module script credentials" is not used
-    // for classic scripts.
+      // Step 16 is skipped because "module script credentials" is not used
+      // for classic scripts.
 
-    // 18. "If the script element has an integrity attribute,
-    //      then let integrity metadata be that attribute's value.
-    //      Otherwise, let integrity metadata be the empty string."
-    String integrity_attr = element_->IntegrityAttributeValue();
-    IntegrityMetadataSet integrity_metadata;
-    if (!integrity_attr.IsEmpty()) {
-      SubresourceIntegrity::ParseIntegrityAttribute(
-          integrity_attr, integrity_metadata, &element_document);
+      // 18. "If the script element has an integrity attribute,
+      //      then let integrity metadata be that attribute's value.
+      //      Otherwise, let integrity metadata be the empty string."
+      String integrity_attr = element_->IntegrityAttributeValue();
+      IntegrityMetadataSet integrity_metadata;
+      if (!integrity_attr.IsEmpty()) {
+        SubresourceIntegrity::ParseIntegrityAttribute(
+            integrity_attr, integrity_metadata, &element_document);
+      }
+
+      if (!FetchClassicScript(url, element_document.Fetcher(), nonce,
+                              integrity_metadata, parser_state, cross_origin,
+                              element_document.GetSecurityOrigin(), encoding)) {
+        // TODO(hiroshige): Make this asynchronous. Currently we fire the error
+        // event synchronously to keep the existing behavior.
+        DispatchErrorEvent();
+        return false;
+      }
+
+      DCHECK(resource_);
+      DCHECK(!module_tree_client_);
+    } else {
+      // - "module":
+
+      // Steps 14 and 18 are skipped because they are not used in module
+      // scripts.
+
+      // 16. "Let module script credentials mode be determined by switching
+      //      on CORS setting:"
+      WebURLRequest::FetchCredentialsMode credentials_mode =
+          WebURLRequest::kFetchCredentialsModeOmit;
+      switch (cross_origin) {
+        case kCrossOriginAttributeNotSet:
+          credentials_mode = WebURLRequest::kFetchCredentialsModeOmit;
+          break;
+        case kCrossOriginAttributeAnonymous:
+          credentials_mode = WebURLRequest::kFetchCredentialsModeSameOrigin;
+          break;
+        case kCrossOriginAttributeUseCredentials:
+          credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
+          break;
+      }
+
+      DCHECK(RuntimeEnabledFeatures::moduleScriptsEnabled());
+      Modulator* modulator = Modulator::From(
+          ToScriptStateForMainWorld(element_document.GetFrame()));
+      FetchModuleScriptTree(url, modulator, nonce, parser_state,
+                            credentials_mode);
+
+      DCHECK(!resource_);
+      DCHECK(module_tree_client_);
     }
-
-    if (!FetchClassicScript(url, element_document.Fetcher(), nonce,
-                            integrity_metadata, parser_state, cross_origin,
-                            element_document.GetSecurityOrigin(), encoding)) {
-      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
-      // event synchronously to keep the existing behavior.
-      DispatchErrorEvent();
-      return false;
-    }
-
-    DCHECK(resource_);
-
-    // - "module":
-    // TODO(hiroshige): Implement this.
 
     // "When the chosen algorithm asynchronously completes, set
     //  the script's script to the result. At that time, the script is ready."
@@ -421,32 +458,50 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // 22. "If the element does not have a src content attribute,
   //      run these substeps:"
+  if (!element_->HasSourceAttribute()) {
+    // 22.1. "Let source text be the value of the text IDL attribute."
+    // This step is done later:
+    // - in ScriptLoader::pendingScript() (Step 23, 6th Clause),
+    //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
+    // - in HTMLParserScriptRunner::processScriptElementInternal()
+    //   (Duplicated code of Step 23, 6th Clause),
+    //   as Element::textContent(),
+    // - in XMLDocumentParser::endElementNs() (Step 23, 5th Clause),
+    //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
+    // - PendingScript::getSource() (Indirectly used via
+    //   HTMLParserScriptRunner::processScriptElementInternal(),
+    //   Step 23, 5th Clause),
+    //   as Element::textContent().
+    // TODO(hiroshige): Make them merged or consistent.
 
-  // 22.1. "Let source text be the value of the text IDL attribute."
-  // This step is done later:
-  // - in ScriptLoader::pendingScript() (Step 23, 6th Clause),
-  //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
-  // - in HTMLParserScriptRunner::processScriptElementInternal()
-  //   (Duplicated code of Step 23, 6th Clause),
-  //   as Element::textContent(),
-  // - in XMLDocumentParser::endElementNs() (Step 23, 5th Clause),
-  //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
-  // - PendingScript::getSource() (Indirectly used via
-  //   HTMLParserScriptRunner::processScriptElementInternal(),
-  //   Step 23, 5th Clause),
-  //   as Element::textContent().
-  // TODO(hiroshige): Make them merged or consistent.
+    // 22.2. "Switch on the script's type:"
+    switch (GetScriptType()) {
+      // - "classic":
+      case ScriptType::kClassic:
+        // TODO(hiroshige): Clarify how Step 22.2 is implemented for "classic".
+        break;
 
-  // 22.2. "Switch on the script's type:"
-  // TODO(hiroshige): Clarify how Step 22.2 is implemented for "classic".
-  // TODO(hiroshige): Implement Step 22.2 for "module".
+      // - "module":
+      case ScriptType::kModule:
+        // TODO(hiroshige): Implement inline module scripts.
+        element_document.AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kErrorMessageLevel,
+            "Inline module script is not yet supported",
+            SourceLocation::Create(element_document.Url().GetString(),
+                                   script_start_position.line_.OneBasedInt(),
+                                   script_start_position.column_.OneBasedInt(),
+                                   nullptr)));
+        return false;
+    }
+  }
 
   // [Intervention]
   // Since the asynchronous, low priority fetch for doc.written blocked
   // script is not for execution, return early from here. Watch for its
   // completion to be able to remove it from the memory cache.
-  if (document_write_intervention_ ==
-      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
+  if (GetScriptType() == ScriptType::kClassic &&
+      document_write_intervention_ ==
+          DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
     pending_script_ = CreatePendingScript();
     pending_script_->WatchForLoad(this);
     return true;
@@ -467,9 +522,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //    the element has a src attribute, and the element has a defer attribute,
   //    and the element has been flagged as "parser-inserted",
   //    and the element does not have an async attribute"
-  // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (element_->HasSourceAttribute() && element_->DeferAttributeValue() &&
-      parser_inserted_ && !element_->AsyncAttributeValue()) {
+  // - "If the script's type is "module",
+  //    and the element has been flagged as "parser-inserted",
+  //    and the element does not have an async attribute"
+  if ((GetScriptType() == ScriptType::kClassic &&
+       element_->HasSourceAttribute() && element_->DeferAttributeValue() &&
+       parser_inserted_ && !element_->AsyncAttributeValue()) ||
+      (GetScriptType() == ScriptType::kModule && parser_inserted_ &&
+       !element_->AsyncAttributeValue())) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestDeferredScript(), and
     // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
@@ -485,7 +545,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //    and the element has been flagged as "parser-inserted",
   //    and the element does not have an async attribute"
   // TODO(hiroshige): Check the script's type.
-  if (element_->HasSourceAttribute() && parser_inserted_ &&
+  if (GetScriptType() == ScriptType::kClassic &&
+      element_->HasSourceAttribute() && parser_inserted_ &&
       !element_->AsyncAttributeValue()) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestParsingBlockingScript()
@@ -509,7 +570,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // Part of the condition check is done in
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Clean up the split condition check.
-  if (!element_->HasSourceAttribute() && parser_inserted_ &&
+  // We check that the type is "classic" here, because according to the spec
+  // a "module" script doesn't reach the 5th Clause because the 4th Clause
+  // catches all "module" scripts.
+  if (GetScriptType() == ScriptType::kClassic &&
+      !element_->HasSourceAttribute() && parser_inserted_ &&
       !element_document.IsScriptExecutionReady()) {
     // The former part of this clause is
     // implemented by the caller-side of prepareScript():
@@ -527,9 +592,15 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //    and the element has a src attribute,
   //    and the element does not have an async attribute,
   //    and the element does not have the "non-blocking" flag set"
+  // - "If the script's type is "module",
+  //    and the element does not have an async attribute,
+  //    and the element does not have the "non-blocking" flag set"
   // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (element_->HasSourceAttribute() && !element_->AsyncAttributeValue() &&
-      !non_blocking_) {
+  if ((GetScriptType() == ScriptType::kClassic &&
+       element_->HasSourceAttribute() && !element_->AsyncAttributeValue() &&
+       !non_blocking_) ||
+      (GetScriptType() == ScriptType::kModule &&
+       !element_->AsyncAttributeValue() && !non_blocking_)) {
     // "Add the element to the end of the list of scripts that will execute
     // in order as soon as possible associated with the node document of the
     // script element at the time the prepare a script algorithm started."
@@ -550,8 +621,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // 4th Clause:
   // - "If the script's type is "classic", and the element has a src attribute"
-  // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (element_->HasSourceAttribute()) {
+  // - "If the script's type is "module""
+  if ((GetScriptType() == ScriptType::kClassic &&
+       element_->HasSourceAttribute()) ||
+      GetScriptType() == ScriptType::kModule) {
     // "The element must be added to the set of scripts that will execute
     //  as soon as possible of the node document of the script element at the
     //  time the prepare a script algorithm started."
@@ -582,6 +655,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // This clause is executed only if the script's type is "classic"
   // and the element doesn't have a src attribute.
+  DCHECK_EQ(GetScriptType(), ScriptType::kClassic);
+  DCHECK(!is_external_script_);
 
   // Reset line numbering for nested writes.
   TextPosition position = element_document.IsInDocumentWrite()
@@ -669,9 +744,36 @@ bool ScriptLoader::FetchClassicScript(
   return true;
 }
 
+void ScriptLoader::FetchModuleScriptTree(
+    const KURL& url,
+    Modulator* modulator,
+    const String& nonce,
+    ParserDisposition parser_state,
+    WebURLRequest::FetchCredentialsMode credentials_mode) {
+  // https://html.spec.whatwg.org/#prepare-a-script
+  // 21.6, "module":
+  //     "Fetch a module script graph given url, settings, "script",
+  //      cryptographic nonce, parser state, and
+  //      module script credentials mode."
+  ModuleScriptFetchRequest module_request(url, nonce, parser_state,
+                                          credentials_mode);
+
+  module_tree_client_ = ModulePendingScriptTreeClient::Create();
+
+  modulator->FetchTree(module_request, module_tree_client_);
+}
+
 PendingScript* ScriptLoader::CreatePendingScript() {
-  CHECK(resource_);
-  return ClassicPendingScript::Create(element_, resource_);
+  switch (GetScriptType()) {
+    case ScriptType::kClassic:
+      CHECK(resource_);
+      return ClassicPendingScript::Create(element_, resource_);
+    case ScriptType::kModule:
+      CHECK(module_tree_client_);
+      return ModulePendingScript::Create(element_, module_tree_client_);
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 bool ScriptLoader::ExecuteScript(const Script* script) {
@@ -698,6 +800,7 @@ bool ScriptLoader::ExecuteScript(const Script* script) {
 // TODO(hiroshige): Move event dispatching code to doExecuteScript().
 bool ScriptLoader::DoExecuteScript(const Script* script) {
   DCHECK(already_started_);
+  CHECK_EQ(script->GetScriptType(), GetScriptType());
 
   if (script->IsEmpty())
     return true;
@@ -740,10 +843,13 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
   //     or the script's type is module",
   //     then increment the ignore-destructive-writes counter of the
   //     script element's node document. Let neutralized doc be that Document."
-  // TODO(hiroshige): Implement "module" case.
   IgnoreDestructiveWriteCountIncrementer
       ignore_destructive_write_count_incrementer(
-          is_external_script_ || is_imported_script ? context_document : 0);
+          is_external_script_ ||
+                  script->GetScriptType() == ScriptType::kModule ||
+                  is_imported_script
+              ? context_document
+              : 0);
 
   // 4. "Let old script element be the value to which the script element's
   //     node document's currentScript object was most recently set."
@@ -754,18 +860,24 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
   //    1. "If the script element's root is not a shadow root,
   //        then set the script element's node document's currentScript
   //        attribute to the script element. Otherwise, set it to null."
-  context_document->PushCurrentScript(element_.Get());
+  //    - "module":
+  //    1. "Set the script element's node document's currentScript attribute
+  //        to null."
+  ScriptElementBase* current_script = nullptr;
+  if (script->GetScriptType() == ScriptType::kClassic)
+    current_script = element_;
+  context_document->PushCurrentScript(current_script);
 
+  //    - "classic":
   //    2. "Run the classic script given by the script's script."
   // Note: This is where the script is compiled and actually executed.
-  script->RunScript(frame, element_->GetDocument().GetSecurityOrigin());
-
   //    - "module":
-  // TODO(hiroshige): Implement this.
+  //    2. "Run the module script given by the script's script."
+  script->RunScript(frame, element_->GetDocument().GetSecurityOrigin());
 
   // 6. "Set the script element's node document's currentScript attribute
   //     to old script element."
-  context_document->PopCurrentScript(element_.Get());
+  context_document->PopCurrentScript(current_script);
 
   return true;
 
@@ -791,11 +903,13 @@ void ScriptLoader::Execute() {
       DispatchErrorEvent();
   }
   resource_ = nullptr;
+  module_tree_client_ = nullptr;
 }
 
 void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK(!will_be_parser_executed_);
   DCHECK_EQ(pending_script_, pending_script);
+  DCHECK_EQ(pending_script_->GetScriptType(), GetScriptType());
 
   // We do not need this script in the memory cache. The primary goals of
   // sending this fetch request are to let the third party server know

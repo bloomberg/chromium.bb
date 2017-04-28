@@ -2415,9 +2415,18 @@ crbug.com/490015 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simpl
 # This test fails with the stable release mode.
 crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
-# These tests have console error messages whose order is not deterministic.
-crbug.com/679742 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Pass Failure ]
-crbug.com/679742 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Pass Failure ]
+# Failing because of module-related implementation/test issues and
+# lack of inline module script support.
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Failure ]
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Failure ]
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/imports.html [ Failure Crash ]
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/execorder.html [ Failure Timeout ]
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-1.html [ Failure Crash ]
+
+# Inline module scripts are not yet supported.
+crbug.com/715369 external/wpt/html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html [ Failure ]
+crbug.com/715369 fast/dom/HTMLScriptElement/module-script.html [ Failure ]
+crbug.com/715369 virtual/sharedarraybuffer/fast/dom/HTMLScriptElement/module-script.html [ Failure ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
@@ -2709,7 +2718,6 @@ crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.h
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html [ Failure ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_click_during_capture-manual.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/semantics/scripting-1/the-script-element/module/execorder.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/scripting/processing-model-2/unhandled-promise-rejections/allow-crossorigin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/scripting/processing-model-2/unhandled-promise-rejections/disallow-crossorigin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Timeout ]
