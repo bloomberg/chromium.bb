@@ -398,7 +398,13 @@ void DownloadRequestCore::OnResponseCompleted(
             << " status.error() = " << status.error()
             << " response_code = " << response_code;
 
-  DownloadInterruptReason reason = HandleRequestStatus(status);
+  bool has_strong_validators = false;
+  if (request()->response_headers()) {
+    has_strong_validators =
+        request()->response_headers()->HasStrongValidators();
+  }
+  DownloadInterruptReason reason = HandleRequestStatus(
+      status, has_strong_validators);
 
   if (status.error() == net::ERR_ABORTED) {
     // ERR_ABORTED == something outside of the network
@@ -422,12 +428,9 @@ void DownloadRequestCore::OnResponseCompleted(
   }
 
   std::string accept_ranges;
-  bool has_strong_validators = false;
   if (request()->response_headers()) {
     request()->response_headers()->EnumerateHeader(nullptr, "Accept-Ranges",
                                                    &accept_ranges);
-    has_strong_validators =
-        request()->response_headers()->HasStrongValidators();
   }
   RecordAcceptsRanges(accept_ranges, bytes_read_, has_strong_validators);
   RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
@@ -500,7 +503,7 @@ std::string DownloadRequestCore::DebugString() const {
 
 // static
 DownloadInterruptReason DownloadRequestCore::HandleRequestStatus(
-    const net::URLRequestStatus& status) {
+    const net::URLRequestStatus& status, bool has_strong_validators) {
   net::Error error_code = net::OK;
   if (!status.is_success()) {
     error_code = static_cast<net::Error>(status.error());  // Normal case.
@@ -509,12 +512,23 @@ DownloadInterruptReason DownloadRequestCore::HandleRequestStatus(
       error_code = net::ERR_FAILED;
   }
 
-  // ERR_CONTENT_LENGTH_MISMATCH is allowed since a number of servers in the
-  // wild close the connection too early by mistake. Other browsers - IE9,
-  // Firefox 11.0, and Safari 5.1.4 - treat downloads as complete in both cases,
-  // so we follow their lead.
-  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH)
+  // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
+  // 1. Server or proxy closes the connection too early.
+  // 2. The content-length header is wrong.
+  // If the download has strong validators, we can interrupt the download
+  // and let it resume automatically. Otherwise, resuming the download will
+  // cause it to restart and the download may never complete if the error was
+  // caused by reason 2. As a result, downloads without strong validators are
+  // treated as completed here.
+  // TODO(qinmin): check the metrics from downloads with strong validators,
+  // and decide whether we should interrupt downloads without strong validators
+  // rather than complete them.
+  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH &&
+      !has_strong_validators) {
     error_code = net::OK;
+    RecordDownloadCount(COMPLETED_WITH_CONTENT_LENGTH_MISMATCH_COUNT);
+  }
+
   DownloadInterruptReason reason = ConvertNetErrorToInterruptReason(
       error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
 

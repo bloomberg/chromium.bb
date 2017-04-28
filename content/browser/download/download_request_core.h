@@ -116,7 +116,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
  private:
   static DownloadInterruptReason HandleRequestStatus(
-      const net::URLRequestStatus& status);
+      const net::URLRequestStatus& status, bool has_strong_validators);
 
   static DownloadInterruptReason HandleSuccessfulServerResponse(
       const net::HttpResponseHeaders& http_headers,

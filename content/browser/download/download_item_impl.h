@@ -713,6 +713,10 @@ class CONTENT_EXPORT DownloadItemImpl
 
   std::unique_ptr<DownloadJob> job_;
 
+  // Value of |received_bytes_| at the time the download was interrupted with
+  // CONTENT_LENGTH_MISMATCH.
+  int64_t received_bytes_at_length_mismatch = -1;
+
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
