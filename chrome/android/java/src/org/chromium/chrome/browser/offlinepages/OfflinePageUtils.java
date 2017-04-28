@@ -569,9 +569,11 @@ public class OfflinePageUtils {
      * @return True if the offline page is opened.
      */
     public static boolean isOfflinePage(Tab tab) {
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return false;
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
         if (offlinePageBridge == null) return false;
-        return offlinePageBridge.isOfflinePage(tab.getWebContents());
+        return offlinePageBridge.isOfflinePage(webContents);
     }
 
     /**
@@ -580,9 +582,11 @@ public class OfflinePageUtils {
      * @return The offline page if tab currently displays it, null otherwise.
      */
     public static OfflinePageItem getOfflinePage(Tab tab) {
+        WebContents webContents = tab.getWebContents();
+        if (webContents == null) return null;
         OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(tab.getProfile());
         if (offlinePageBridge == null) return null;
-        return offlinePageBridge.getOfflinePage(tab.getWebContents());
+        return offlinePageBridge.getOfflinePage(webContents);
     }
 
     /**
