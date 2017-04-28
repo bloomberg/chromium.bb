@@ -75,7 +75,17 @@ class ModelTypeRegistryTest : public ::testing::Test {
     directory()->MarkInitialSyncEndedForType(&trans, type);
   }
 
+  void SetDummyProgressMarkerForType(ModelType type) {
+    sync_pb::DataTypeProgressMarker progress_marker;
+    progress_marker.set_token("dummy");
+    directory()->SetDownloadProgress(type, progress_marker);
+  }
+
   bool migration_attempted() { return migration_attempted_; }
+
+  syncable::MetahandleSet metahandles_to_purge() {
+    return directory()->kernel()->metahandles_to_purge;
+  }
 
  private:
   bool MigrateDirectory(ModelType type,
@@ -208,15 +218,20 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
 }
 
 // Tests that when directory data is present for type ConnectNonBlockingType
-// triggers USS migration.
-TEST_F(ModelTypeRegistryTest, UssMigrationAttempted) {
+// triggers USS migration and purges old directory data.
+TEST_F(ModelTypeRegistryTest, UssMigration) {
   EXPECT_FALSE(migration_attempted());
 
   MarkInitialSyncEndedForDirectoryType(THEMES);
+  // Purge only proceeds in the presence of a progress marker for the type(s)
+  // being purged.
+  SetDummyProgressMarkerForType(THEMES);
+  EXPECT_EQ(0u, metahandles_to_purge().size());
   registry()->ConnectNonBlockingType(
       THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
 
   EXPECT_TRUE(migration_attempted());
+  EXPECT_NE(0u, metahandles_to_purge().size());
 }
 
 }  // namespace syncer
