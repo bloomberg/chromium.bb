@@ -120,10 +120,9 @@ void LayoutEmbeddedObject::PaintReplaced(
   EmbeddedObjectPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
-PaintInvalidationReason LayoutEmbeddedObject::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutEmbeddedObject::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return EmbeddedObjectPaintInvalidator(*this, context)
-      .InvalidatePaintIfNeeded();
+  return EmbeddedObjectPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 void LayoutEmbeddedObject::UpdateLayout() {

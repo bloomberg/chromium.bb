@@ -83,9 +83,9 @@ void LayoutHTMLCanvas::CanvasSizeChanged() {
     SetNeedsLayout(LayoutInvalidationReason::kSizeChanged);
 }
 
-PaintInvalidationReason LayoutHTMLCanvas::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutHTMLCanvas::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return HTMLCanvasPaintInvalidator(*this, context).InvalidatePaintIfNeeded();
+  return HTMLCanvasPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 CompositingReasons LayoutHTMLCanvas::AdditionalCompositingReasons() const {

@@ -55,10 +55,9 @@ void DragCaret::UpdateStyleAndLayoutIfNeeded() {
                                                      : PositionWithAffinity());
 }
 
-void DragCaret::InvalidatePaintIfNeeded(
-    const LayoutBlock& block,
-    const PaintInvalidatorContext& context) {
-  display_item_client_->InvalidatePaintIfNeeded(block, context);
+void DragCaret::InvalidatePaint(const LayoutBlock& block,
+                                const PaintInvalidatorContext& context) {
+  display_item_client_->InvalidatePaint(block, context);
 }
 
 bool DragCaret::IsContentRichlyEditable() const {

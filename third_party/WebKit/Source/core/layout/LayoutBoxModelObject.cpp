@@ -568,7 +568,7 @@ void LayoutBoxModelObject::InvalidateTreeIfNeeded(
   LayoutRect previous_visual_rect = VisualRect();
   LayoutPoint previous_location = paint_invalidator.LocationInBacking();
   PaintInvalidationReason reason =
-      InvalidatePaintIfNeeded(new_paint_invalidation_state);
+      InvalidatePaint(new_paint_invalidation_state);
 
   if (previous_location != paint_invalidator.LocationInBacking()) {
     new_paint_invalidation_state

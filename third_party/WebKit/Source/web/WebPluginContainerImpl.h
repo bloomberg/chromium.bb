@@ -84,7 +84,7 @@ class WEB_EXPORT WebPluginContainerImpl final
   bool CanProcessDrag() const override;
   bool WantsWheelEvents() override;
   void UpdateAllLifecyclePhases() override;
-  void InvalidatePaintIfNeeded() override { IssuePaintInvalidations(); }
+  void InvalidatePaint() override { IssuePaintInvalidations(); }
   void InvalidateRect(const IntRect&);
   void SetFocused(bool, WebFocusType) override;
   void HandleEvent(Event*) override;

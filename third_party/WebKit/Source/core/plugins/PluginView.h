@@ -73,7 +73,7 @@ class CORE_EXPORT PluginView : public FrameOrPlugin {
   virtual void DidReceiveData(const char*, int) {}
 
   virtual void UpdateAllLifecyclePhases() {}
-  virtual void InvalidatePaintIfNeeded() {}
+  virtual void InvalidatePaint() {}
 };
 
 }  // namespace blink

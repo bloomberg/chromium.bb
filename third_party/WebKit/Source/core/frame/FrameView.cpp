@@ -1378,7 +1378,7 @@ void FrameView::InvalidateTreeIfNeeded(
   TRACE_EVENT1("blink", "FrameView::invalidateTree", "root",
                root_for_paint_invalidation.DebugName().Ascii());
 
-  InvalidatePaintIfNeeded(paint_invalidation_state);
+  InvalidatePaint(paint_invalidation_state);
   root_for_paint_invalidation.InvalidateTreeIfNeeded(paint_invalidation_state);
 
 #if DCHECK_IS_ON()
@@ -1388,7 +1388,7 @@ void FrameView::InvalidateTreeIfNeeded(
   Lifecycle().AdvanceTo(DocumentLifecycle::kPaintInvalidationClean);
 }
 
-void FrameView::InvalidatePaintIfNeeded(
+void FrameView::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   RELEASE_ASSERT(!GetLayoutViewItem().IsNull());
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())

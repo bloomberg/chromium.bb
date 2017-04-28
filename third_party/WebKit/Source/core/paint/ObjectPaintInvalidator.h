@@ -95,13 +95,12 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
                                     const PaintInvalidatorContext& context)
       : ObjectPaintInvalidator(object), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaintIfNeeded() {
-    return InvalidatePaintIfNeededWithComputedReason(
-        ComputePaintInvalidationReason());
+  PaintInvalidationReason InvalidatePaint() {
+    return InvalidatePaintWithComputedReason(ComputePaintInvalidationReason());
   }
 
   PaintInvalidationReason ComputePaintInvalidationReason();
-  PaintInvalidationReason InvalidatePaintIfNeededWithComputedReason(
+  PaintInvalidationReason InvalidatePaintWithComputedReason(
       PaintInvalidationReason);
 
   // This function generates a full invalidation, which means invalidating both

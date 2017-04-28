@@ -1172,7 +1172,7 @@ void LayoutObject::InvalidateTreeIfNeeded(
   }
 
   PaintInvalidationReason reason =
-      InvalidatePaintIfNeeded(new_paint_invalidation_state);
+      InvalidatePaint(new_paint_invalidation_state);
   new_paint_invalidation_state.UpdateForChildren(reason);
   InvalidatePaintOfSubtreesIfNeeded(new_paint_invalidation_state);
 
@@ -1195,7 +1195,7 @@ LayoutRect LayoutObject::SelectionRectInViewCoordinates() const {
   return selection_rect;
 }
 
-PaintInvalidationReason LayoutObject::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutObject::InvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   DCHECK_EQ(&paint_invalidation_state.CurrentObject(), this);
 
@@ -1235,14 +1235,13 @@ PaintInvalidationReason LayoutObject::InvalidatePaintIfNeeded(
     return kPaintInvalidationNone;
   }
 
-  return InvalidatePaintIfNeeded(context);
+  return InvalidatePaint(context);
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason LayoutObject::InvalidatePaintIfNeeded(
+PaintInvalidationReason LayoutObject::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return ObjectPaintInvalidatorWithContext(*this, context)
-      .InvalidatePaintIfNeeded();
+  return ObjectPaintInvalidatorWithContext(*this, context).InvalidatePaint();
 }
 
 void LayoutObject::AdjustVisualRectForCompositedScrolling(

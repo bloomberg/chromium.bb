@@ -10,14 +10,13 @@
 
 namespace blink {
 
-PaintInvalidationReason
-EmbeddedObjectPaintInvalidator::InvalidatePaintIfNeeded() {
+PaintInvalidationReason EmbeddedObjectPaintInvalidator::InvalidatePaint() {
   PaintInvalidationReason reason =
-      BoxPaintInvalidator(embedded_object_, context_).InvalidatePaintIfNeeded();
+      BoxPaintInvalidator(embedded_object_, context_).InvalidatePaint();
 
   PluginView* plugin = embedded_object_.Plugin();
   if (plugin)
-    plugin->InvalidatePaintIfNeeded();
+    plugin->InvalidatePaint();
 
   return reason;
 }

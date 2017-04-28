@@ -21,7 +21,7 @@ class ViewPaintInvalidator {
                        const PaintInvalidatorContext& context)
       : view_(view), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaint();
 
  private:
   void InvalidateBackgroundIfNeeded();

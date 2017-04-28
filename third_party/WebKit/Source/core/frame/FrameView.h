@@ -792,7 +792,7 @@ class CORE_EXPORT FrameView final
 
   // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into
   // PaintInvalidator.
-  void InvalidatePaintIfNeeded(const PaintInvalidationState&);
+  void InvalidatePaint(const PaintInvalidationState&);
 
   // Only for SPv2.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);

@@ -194,8 +194,7 @@ class CORE_EXPORT FrameSelection final
   void ClearPreviousCaretVisualRect(const LayoutBlock&);
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
-  void InvalidatePaintIfNeeded(const LayoutBlock&,
-                               const PaintInvalidatorContext&);
+  void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
 
   void PaintCaret(GraphicsContext&, const LayoutPoint&);
 

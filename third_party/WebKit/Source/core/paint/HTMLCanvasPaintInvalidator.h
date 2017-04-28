@@ -21,7 +21,7 @@ class HTMLCanvasPaintInvalidator {
                              const PaintInvalidatorContext& context)
       : html_canvas_(html_canvas), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaint();
 
  private:
   const LayoutHTMLCanvas& html_canvas_;
