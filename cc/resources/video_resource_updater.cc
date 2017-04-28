@@ -178,7 +178,8 @@ VideoResourceUpdater::VideoResourceUpdater(ContextProvider* context_provider,
                                            bool use_stream_video_draw_quad)
     : context_provider_(context_provider),
       resource_provider_(resource_provider),
-      use_stream_video_draw_quad_(use_stream_video_draw_quad) {}
+      use_stream_video_draw_quad_(use_stream_video_draw_quad),
+      weak_ptr_factory_(this) {}
 
 VideoResourceUpdater::~VideoResourceUpdater() {
   for (const PlaneResource& plane_resource : all_resources_)
@@ -421,8 +422,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     if (software_compositor) {
       external_resources.software_resources.push_back(
           plane_resource.resource_id());
-      external_resources.software_release_callback = base::Bind(
-          &RecycleResource, AsWeakPtr(), plane_resource.resource_id());
+      external_resources.software_release_callback =
+          base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
+                     plane_resource.resource_id());
       external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
     } else {
       // VideoResourceUpdater shares a context with the compositor so
@@ -432,8 +434,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                                  plane_resource.resource_id()));
       mailbox.set_color_space(output_color_space);
       external_resources.mailboxes.push_back(mailbox);
-      external_resources.release_callbacks.push_back(base::Bind(
-          &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
+      external_resources.release_callbacks.push_back(
+          base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
+                     plane_resource.resource_id()));
       external_resources.type = VideoFrameExternalResources::RGBA_RESOURCE;
     }
     return external_resources;
@@ -535,8 +538,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                                plane_resource.resource_id()));
     mailbox.set_color_space(output_color_space);
     external_resources.mailboxes.push_back(mailbox);
-    external_resources.release_callbacks.push_back(base::Bind(
-        &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
+    external_resources.release_callbacks.push_back(
+        base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
+                   plane_resource.resource_id()));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
@@ -612,7 +616,8 @@ void VideoResourceUpdater::CopyPlaneTexture(
   external_resources->mailboxes.push_back(mailbox);
 
   external_resources->release_callbacks.push_back(
-      base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id()));
+      base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
+                 resource->resource_id()));
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -664,8 +669,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           media::VideoFrameMetadata::WANTS_PROMOTION_HINT));
 #endif
       external_resources.mailboxes.push_back(mailbox);
-      external_resources.release_callbacks.push_back(
-          base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
+      external_resources.release_callbacks.push_back(base::Bind(
+          &ReturnTexture, weak_ptr_factory_.GetWeakPtr(), video_frame));
     }
   }
   return external_resources;
