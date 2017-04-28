@@ -22,6 +22,7 @@ chrome.test.runTests([
         chrome.test.assertEq("unknown", result.modelName);
         chrome.test.assertEq(["mmx", "avx"], result.features);
         chrome.test.assertEq(expectedProcessors, result.processors);
+        chrome.test.assertEq([30.125, 40.0625], result.temperatures);
       }));
     }
   }

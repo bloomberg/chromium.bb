@@ -28,6 +28,10 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
     info_.processors[0].usage.user = 2;
     info_.processors[0].usage.idle = 3;
     info_.processors[0].usage.total = 6;
+
+    // The fractional part of these values should be exactly represented as
+    // floating points to avoid rounding errors.
+    info_.temperatures = {30.125, 40.0625};
     return true;
   }
 

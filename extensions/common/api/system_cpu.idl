@@ -44,6 +44,12 @@ namespace system.cpu {
 
     // Information about each logical processor.
     ProcessorInfo[] processors;
+
+    // List of CPU temperature readings from each thermal zone of the CPU.
+    // Temperatures are in degrees Celsius.
+    //
+    // <b>Currently supported on Chrome OS only.</b>
+    double[] temperatures;
   };
 
   callback CpuInfoCallback = void (CpuInfo info);
