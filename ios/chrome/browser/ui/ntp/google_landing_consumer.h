@@ -44,6 +44,12 @@
 // The number of tabs to show in the google landing fake toolbar.
 - (void)setTabCount:(int)tabCount;
 
+// |YES| if the google landing toolbar can show the forward arrow.
+- (void)setCanGoForward:(BOOL)canGoForward;
+
+// |YES| if the google landing toolbar can show the back arrow.
+- (void)setCanGoBack:(BOOL)canGoBack;
+
 // TODO(crbug.com/694750): This should be replaced with consumer suitable data
 // type property.
 // Tells the consumer to that most visited data updated.

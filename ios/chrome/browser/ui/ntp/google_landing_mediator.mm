@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/web/public/web_state/web_state.h"
 
 using base::UserMetricsAction;
 
@@ -175,6 +176,12 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [_consumer
       setMaximumMostVisitedSitesShown:[GoogleLandingMediator maxSitesShown]];
   [_consumer setTabCount:self.webStateList->count()];
+  web::WebState* webState = _webStateList->GetActiveWebState();
+  if (webState) {
+    web::NavigationManager* nav = webState->GetNavigationManager();
+    [_consumer setCanGoForward:nav->CanGoForward()];
+    [_consumer setCanGoBack:nav->CanGoBack()];
+  }
 
   // Set up template URL service to listen for default search engine changes.
   _templateURLService =
@@ -278,6 +285,22 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [self.consumer setTabCount:self.webStateList->count()];
 }
 
+// If the actual webState associated with this mediator were passed in, this
+// would not be necessary.  However, since the active webstate can change when
+// the new tab page is created (and animated in), listen for changes here and
+// always display what's active.
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                 userAction:(BOOL)userAction {
+  if (newWebState) {
+    web::NavigationManager* nav = newWebState->GetNavigationManager();
+    [self.consumer setCanGoForward:nav->CanGoForward()];
+    [self.consumer setCanGoBack:nav->CanGoBack()];
+  }
+}
+
 #pragma mark - GoogleLandingDataSource
 
 - (void)addBlacklistedURL:(const GURL&)url {
@@ -317,10 +340,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   return IOSChromeLargeIconServiceFactory::GetForBrowserState(_browserState);
 }
 
-- (id<WebToolbarDelegate>)toolbarDelegate {
-  return _webToolbarDelegate;
-}
-
 - (void)promoViewed {
   DCHECK(_notification_promo);
   _notification_promo->HandleViewed();
@@ -348,6 +367,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     return;
   }
   NOTREACHED();
+}
+
+- (void)prepareToEnterTabSwitcher:(id)sender {
+  [_webToolbarDelegate prepareToEnterTabSwitcher:sender];
 }
 
 #pragma mark - UrlLoader

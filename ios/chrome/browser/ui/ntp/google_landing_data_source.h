@@ -41,6 +41,10 @@ class LargeIconService;
 // Called when a what's new promo is tapped.
 - (void)promoTapped;
 
+// TODO(crbug.com/694750): This should move to a dispatcher.
+// Called before the fake tab switcher icon is tapped to save snapshots.
+- (void)prepareToEnterTabSwitcher:(id)sender;
+
 // TODO(crbug.com/694750): The following two methods should be moved to the
 // consumer, and converted into types more suitable for a consumer.
 // Gets an a most visited NTP tile at |index|.
@@ -49,7 +53,7 @@ class LargeIconService;
 // Gets the number of most visited entries.
 - (NSUInteger)mostVisitedSize;
 
-// TODO(crbug.com/694750): The following five properties will be removed in
+// TODO(crbug.com/694750): The following three properties will be removed in
 // subsequent CLs, with data provided via GoogleDataConsumer into types more
 // suitable for a consumer.
 
@@ -62,8 +66,6 @@ class LargeIconService;
 // Gets the large icon service.
 - (favicon::LargeIconService*)largeIconService;
 
-// Gets the toolbar delegate.
-- (id<WebToolbarDelegate>)toolbarDelegate;
 
 
 @end

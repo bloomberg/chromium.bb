@@ -69,8 +69,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   DCHECK(dataSource);
 
   _toolbarController.reset([[NewTabPageToolbarController alloc]
-      initWithToolbarDelegate:[dataSource toolbarDelegate]
-                      focuser:dataSource]);
+      initWithToolbarDataSource:dataSource]);
   _toolbarController.get().readingListModel = [dataSource readingListModel];
 
   UIView* toolbarView = [_toolbarController view];
@@ -78,10 +77,19 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   toolbarFrame.size.height = ntp_header::kToolbarHeight;
   toolbarView.frame = toolbarFrame;
   [toolbarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  [self hideToolbarViewsForNewTabPage];
 
   [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   [self addSubview:[_toolbarController view]];
+}
+
+- (void)setCanGoForward:(BOOL)canGoForward {
+  [_toolbarController setCanGoForward:canGoForward];
+  [self hideToolbarViewsForNewTabPage];
+}
+
+- (void)setCanGoBack:(BOOL)canGoBack {
+  [_toolbarController setCanGoBack:canGoBack];
+  [self hideToolbarViewsForNewTabPage];
 }
 
 - (void)hideToolbarViewsForNewTabPage {
