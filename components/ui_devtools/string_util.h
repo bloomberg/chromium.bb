@@ -45,6 +45,11 @@ class StringUtil {
   static String fromDouble(double number) {
     return base::DoubleToString(number);
   }
+  static double toDouble(const char* s, size_t len, bool* ok) {
+    double v = 0.0;
+    *ok = base::StringToDouble(std::string(s, len), &v);
+    return *ok ? v : 0.0;
+  }
   static void builderAppend(StringBuilder& builder, const String& s) {
     builder.append(s);
   }
