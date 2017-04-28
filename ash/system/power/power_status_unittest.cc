@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -38,7 +38,10 @@ class TestObserver : public PowerStatus::Observer {
 
 class PowerStatusTest : public testing::Test {
  public:
-  PowerStatusTest() : power_status_(NULL) {}
+  PowerStatusTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        power_status_(NULL) {}
   ~PowerStatusTest() override {}
 
   void SetUp() override {
@@ -57,7 +60,7 @@ class PowerStatusTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   PowerStatus* power_status_;  // Not owned.
   std::unique_ptr<TestObserver> test_observer_;
 
