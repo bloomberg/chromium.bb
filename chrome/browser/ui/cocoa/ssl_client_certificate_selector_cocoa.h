@@ -16,14 +16,11 @@
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#include "net/cert/x509_certificate.h"
 
 namespace content {
 class BrowserContext;
 class ClientCertificateDelegate;
-}
-
-namespace net {
-class X509Certificate;
 }
 
 class ConstrainedWindowMac;
@@ -58,7 +55,8 @@ class SSLClientAuthObserverCocoaBridge;
                     delegate:
                         (std::unique_ptr<content::ClientCertificateDelegate>)
                             delegate;
-- (void)displayForWebContents:(content::WebContents*)webContents;
+- (void)displayForWebContents:(content::WebContents*)webContents
+                  clientCerts:(net::CertificateList)inputClientCerts;
 - (void)closeWebContentsModalDialog;
 
 - (NSWindow*)overlayWindow;

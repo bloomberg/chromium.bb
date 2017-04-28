@@ -31,6 +31,7 @@ class SSLClientCertificateSelector : public chrome::CertificateSelector,
   SSLClientCertificateSelector(
       content::WebContents* web_contents,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
+      net::CertificateList client_certs,
       std::unique_ptr<content::ClientCertificateDelegate> delegate);
   ~SSLClientCertificateSelector() override;
 

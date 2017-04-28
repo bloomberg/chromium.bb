@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
@@ -74,7 +75,7 @@ class SSLClientAuthHandler {
   class Core;
 
   // Called when |core_| is done retrieving the cert list.
-  void DidGetClientCerts();
+  void DidGetClientCerts(net::CertificateList client_certs);
 
   // A reference-counted core so the ClientCertStore may outlive
   // SSLClientAuthHandler if the handler is destroyed while an operation on the

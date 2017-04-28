@@ -53,8 +53,8 @@ class TokenValidatorBase
       net::SSLCertRequestInfo* cert_request_info) override;
 
  protected:
-  void OnCertificatesSelected(net::CertificateList* selected_certs,
-                              net::ClientCertStore* unused);
+  void OnCertificatesSelected(net::ClientCertStore* unused,
+                              net::CertificateList selected_certs);
 
   virtual void StartValidateRequest(const std::string& token) = 0;
   virtual void ContinueWithCertificate(net::X509Certificate* client_cert,

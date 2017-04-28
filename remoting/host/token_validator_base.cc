@@ -199,31 +199,29 @@ void TokenValidatorBase::OnCertificateRequested(
   // OpenSSL does not use the ClientCertStore infrastructure.
   client_cert_store = nullptr;
 #endif
-  // The callback is uncancellable, and GetClientCert requires selected_certs
-  // and client_cert_store to stay alive until the callback is called. So we
-  // must give it a WeakPtr for |this|, and ownership of the other parameters.
-  net::CertificateList* selected_certs(new net::CertificateList());
+  // The callback is uncancellable, and GetClientCert requires
+  // client_cert_store to stay alive until the callback is called. So we must
+  // give it a WeakPtr for |this|, and ownership of the other parameters.
   client_cert_store->GetClientCerts(
-      *cert_request_info, selected_certs,
+      *cert_request_info,
       base::Bind(&TokenValidatorBase::OnCertificatesSelected,
-                 weak_factory_.GetWeakPtr(), base::Owned(selected_certs),
-                 base::Owned(client_cert_store)));
+                 weak_factory_.GetWeakPtr(), base::Owned(client_cert_store)));
 }
 
 void TokenValidatorBase::OnCertificatesSelected(
-    net::CertificateList* selected_certs,
-    net::ClientCertStore* unused) {
+    net::ClientCertStore* unused,
+    net::CertificateList selected_certs) {
   const std::string& issuer =
       third_party_auth_config_.token_validation_cert_issuer;
 
   base::Time now = base::Time::Now();
 
   auto best_match_position =
-      std::max_element(selected_certs->begin(), selected_certs->end(),
+      std::max_element(selected_certs.begin(), selected_certs.end(),
                        std::bind(&WorseThan, issuer, now, std::placeholders::_1,
                                  std::placeholders::_2));
 
-  if (best_match_position == selected_certs->end() ||
+  if (best_match_position == selected_certs.end() ||
       !IsCertificateValid(issuer, now, *best_match_position)) {
     ContinueWithCertificate(nullptr, nullptr);
   } else {

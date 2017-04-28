@@ -401,6 +401,7 @@ void CastContentBrowserClient::AllowCertificateError(
 void CastContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
 
@@ -411,7 +412,7 @@ void CastContentBrowserClient::SelectClientCertificate(
     return;
   }
 
-  // In our case there are no relevant certs in the cert_request_info. The cert
+  // In our case there are no relevant certs in |client_certs|. The cert
   // we need to return (if permitted) is the Cast device cert, which we can
   // access directly through the ClientAuthSigner instance. However, we need to
   // be on the IO thread to determine whether the app is whitelisted to return

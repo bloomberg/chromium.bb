@@ -13,7 +13,6 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
 
@@ -56,6 +55,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
 void SelectCertificateOnUIThread(
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList client_certs,
     const base::WeakPtr<SSLClientAuthHandler>& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -67,7 +67,8 @@ void SelectCertificateOnUIThread(
     return;
 
   GetContentClient()->browser()->SelectClientCertificate(
-      web_contents, cert_request_info, std::move(delegate));
+      web_contents, cert_request_info, std::move(client_certs),
+      std::move(delegate));
 }
 
 }  // namespace
@@ -92,10 +93,10 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
       // until the call completes is maintained by the reference held in the
       // callback.
       client_cert_store_->GetClientCerts(
-          *cert_request_info_, &cert_request_info_->client_certs,
+          *cert_request_info_,
           base::Bind(&SSLClientAuthHandler::Core::DidGetClientCerts, this));
     } else {
-      DidGetClientCerts();
+      DidGetClientCerts(net::CertificateList());
     }
   }
 
@@ -105,9 +106,9 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
   ~Core() {}
 
   // Called when |client_cert_store_| is done retrieving the cert list.
-  void DidGetClientCerts() {
+  void DidGetClientCerts(net::CertificateList client_certs) {
     if (handler_)
-      handler_->DidGetClientCerts();
+      handler_->DidGetClientCerts(std::move(client_certs));
   }
 
   base::WeakPtr<SSLClientAuthHandler> handler_;
@@ -155,15 +156,15 @@ void SSLClientAuthHandler::CancelCertificateSelection(
     handler->delegate_->CancelCertificateSelection();
 }
 
-void SSLClientAuthHandler::DidGetClientCerts() {
+void SSLClientAuthHandler::DidGetClientCerts(
+    net::CertificateList client_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note that if |client_cert_store_| is NULL, we intentionally fall through to
   // SelectCertificateOnUIThread. This is for platforms where the client cert
   // matching is not performed by Chrome. Those platforms handle the cert
   // matching before showing the dialog.
-  if (core_->has_client_cert_store() &&
-      cert_request_info_->client_certs.empty()) {
+  if (core_->has_client_cert_store() && client_certs.empty()) {
     // No need to query the user if there are no certs to choose from.
     //
     // TODO(davidben): The WebContents-less check on the UI thread should come
@@ -180,9 +181,9 @@ void SSLClientAuthHandler::DidGetClientCerts() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SelectCertificateOnUIThread,
-                 ResourceRequestInfo::ForRequest(request_)->
-                     GetWebContentsGetterForRequest(),
-                 base::RetainedRef(cert_request_info_),
+                 ResourceRequestInfo::ForRequest(request_)
+                     ->GetWebContentsGetterForRequest(),
+                 base::RetainedRef(cert_request_info_), std::move(client_certs),
                  weak_factory_.GetWeakPtr()));
 }
 

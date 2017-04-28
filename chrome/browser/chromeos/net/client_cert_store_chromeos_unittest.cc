@@ -73,6 +73,13 @@ class TestCertFilter : public ClientCertStoreChromeOS::CertFilter {
   scoped_refptr<net::X509Certificate> not_allowed_cert_;
 };
 
+void SaveCertsAndQuitCallback(net::CertificateList* out_certs,
+                              base::Closure quit_closure,
+                              net::CertificateList in_certs) {
+  *out_certs = std::move(in_certs);
+  quit_closure.Run();
+}
+
 }  // namespace
 
 class ClientCertStoreChromeOSTest : public ::testing::Test {
@@ -111,22 +118,24 @@ TEST_F(ClientCertStoreChromeOSTest, RequestWaitsForNSSInitAndSucceeds) {
   scoped_refptr<net::SSLCertRequestInfo> request_all(
       new net::SSLCertRequestInfo());
 
+  net::CertificateList selected_certs;
   base::RunLoop run_loop;
-  store.GetClientCerts(*request_all, &request_all->client_certs,
-                       run_loop.QuitClosure());
+  store.GetClientCerts(*request_all,
+                       base::Bind(SaveCertsAndQuitCallback, &selected_certs,
+                                  run_loop.QuitClosure()));
 
   {
     base::RunLoop run_loop_inner;
     run_loop_inner.RunUntilIdle();
     // GetClientCerts should wait for the initialization of the filter to
     // finish.
-    ASSERT_EQ(0u, request_all->client_certs.size());
+    ASSERT_EQ(0u, selected_certs.size());
     EXPECT_TRUE(cert_filter->init_called());
   }
   cert_filter->FinishInit();
   run_loop.Run();
 
-  ASSERT_EQ(1u, request_all->client_certs.size());
+  ASSERT_EQ(1u, selected_certs.size());
 }
 
 // Ensure that cert requests, that are started after the filter was initialized,
@@ -148,11 +157,13 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
       new net::SSLCertRequestInfo());
 
   base::RunLoop run_loop;
-  store.GetClientCerts(*request_all, &request_all->client_certs,
-                       run_loop.QuitClosure());
+  net::CertificateList selected_certs;
+  store.GetClientCerts(*request_all,
+                       base::Bind(SaveCertsAndQuitCallback, &selected_certs,
+                                  run_loop.QuitClosure()));
   run_loop.Run();
 
-  ASSERT_EQ(1u, request_all->client_certs.size());
+  ASSERT_EQ(1u, selected_certs.size());
 }
 
 TEST_F(ClientCertStoreChromeOSTest, Filter) {
@@ -179,7 +190,9 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
     base::RunLoop run_loop;
     cert_filter->SetNotAllowedCert(cert_2);
     net::CertificateList selected_certs;
-    store.GetClientCerts(*request_all, &selected_certs, run_loop.QuitClosure());
+    store.GetClientCerts(*request_all,
+                         base::Bind(SaveCertsAndQuitCallback, &selected_certs,
+                                    run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_EQ(1u, selected_certs.size());
@@ -190,7 +203,9 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
     base::RunLoop run_loop;
     cert_filter->SetNotAllowedCert(cert_1);
     net::CertificateList selected_certs;
-    store.GetClientCerts(*request_all, &selected_certs, run_loop.QuitClosure());
+    store.GetClientCerts(*request_all,
+                         base::Bind(SaveCertsAndQuitCallback, &selected_certs,
+                                    run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_EQ(1u, selected_certs.size());
@@ -226,7 +241,9 @@ TEST_F(ClientCertStoreChromeOSTest, CertRequestMatching) {
 
   base::RunLoop run_loop;
   net::CertificateList selected_certs;
-  store.GetClientCerts(*request, &selected_certs, run_loop.QuitClosure());
+  store.GetClientCerts(*request,
+                       base::Bind(SaveCertsAndQuitCallback, &selected_certs,
+                                  run_loop.QuitClosure()));
   run_loop.Run();
 
   ASSERT_EQ(1u, selected_certs.size());
