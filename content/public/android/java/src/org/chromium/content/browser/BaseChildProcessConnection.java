@@ -26,7 +26,6 @@ import org.chromium.base.process_launcher.IChildProcessService;
 import java.io.IOException;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Manages a connection between the browser activity and a child service.
@@ -188,52 +187,39 @@ public abstract class BaseChildProcessConnection {
         }
     }
 
-    // Synchronization: While most internal flow occurs on the UI thread, the public API
-    // (specifically start and stop) may be called from any thread, hence all entry point methods
-    // into the class are synchronized on the lock to protect access to these members.
-    // TODO(jcivelli): crbug.com/714657 remove this lock.
-    private final Object mLock = new Object();
-
     // This is set in start() and is used in onServiceConnected().
-    @GuardedBy("mLock")
     private StartCallback mStartCallback;
 
     // This is set in setupConnection() and is later used in doConnectionSetupLocked(), after which
     // the variable is cleared. Therefore this is only valid while the connection is being set up.
-    @GuardedBy("mLock")
     private ConnectionParams mConnectionParams;
 
     // Callback provided in setupConnection() that will communicate the result to the caller. This
     // has to be called exactly once after setupConnection(), even if setup fails, so that the
     // caller can free up resources associated with the setup attempt. This is set to null after the
     // call.
-    @GuardedBy("mLock")
     private ConnectionCallback mConnectionCallback;
 
-    @GuardedBy("mLock")
     private IChildProcessService mService;
 
     // Set to true when the service connection callback runs. This differs from
     // mServiceConnectComplete, which tracks that the connection completed successfully.
-    @GuardedBy("mLock")
     private boolean mDidOnServiceConnected;
 
     // Set to true when the service connected successfully.
-    @GuardedBy("mLock")
     private boolean mServiceConnectComplete;
 
     // Set to true when the service disconnects, as opposed to being properly closed. This happens
     // when the process crashes or gets killed by the system out-of-memory killer.
-    @GuardedBy("mLock")
     private boolean mServiceDisconnected;
 
     // Process ID of the corresponding child process.
-    @GuardedBy("mLock")
     private int mPid;
 
     protected BaseChildProcessConnection(Context context, int number, boolean sandboxed,
             DeathCallback deathCallback, String serviceClassName,
             Bundle childProcessCommonParameters, ChildProcessCreationParams creationParams) {
+        assert LauncherThread.runningOnLauncherThread();
         mContext = context;
         mServiceNumber = number;
         mSandboxed = sandboxed;
@@ -246,33 +232,38 @@ public abstract class BaseChildProcessConnection {
     }
 
     public final Context getContext() {
+        assert LauncherThread.runningOnLauncherThread();
         return mContext;
     }
 
     public final int getServiceNumber() {
+        assert LauncherThread.runningOnLauncherThread();
         return mServiceNumber;
     }
 
     public final boolean isSandboxed() {
+        assert LauncherThread.runningOnLauncherThread();
         return mSandboxed;
     }
 
     public final String getPackageName() {
+        assert LauncherThread.runningOnLauncherThread();
         return mCreationParams != null ? mCreationParams.getPackageName()
                                        : mContext.getPackageName();
     }
 
     public final ChildProcessCreationParams getCreationParams() {
+        assert LauncherThread.runningOnLauncherThread();
         return mCreationParams;
     }
 
     public final IChildProcessService getService() {
-        synchronized (mLock) {
-            return mService;
-        }
+        assert LauncherThread.runningOnLauncherThread();
+        return mService;
     }
 
     public final ComponentName getServiceName() {
+        assert LauncherThread.runningOnLauncherThread();
         return mServiceName;
     }
 
@@ -280,9 +271,8 @@ public abstract class BaseChildProcessConnection {
      * @return the connection pid, or 0 if not yet connected
      */
     public int getPid() {
-        synchronized (mLock) {
-            return mPid;
-        }
+        assert LauncherThread.runningOnLauncherThread();
+        return mPid;
     }
 
     /**
@@ -293,22 +283,21 @@ public abstract class BaseChildProcessConnection {
      * @param startCallback (optional) callback when the child process starts or fails to start.
      */
     public void start(StartCallback startCallback) {
+        assert LauncherThread.runningOnLauncherThread();
         try {
             TraceEvent.begin("BaseChildProcessConnection.start");
             assert LauncherThread.runningOnLauncherThread();
-            synchronized (mLock) {
-                assert mConnectionParams
-                        == null
-                        : "setupConnection() called before start() in BaseChildProcessConnection.";
+            assert mConnectionParams
+                    == null
+                    : "setupConnection() called before start() in BaseChildProcessConnection.";
 
-                mStartCallback = startCallback;
+            mStartCallback = startCallback;
 
-                if (!bind()) {
-                    Log.e(TAG, "Failed to establish the service connection.");
-                    // We have to notify the caller so that they can free-up associated resources.
-                    // TODO(ppi): Can we hard-fail here?
-                    mDeathCallback.onChildProcessDied(BaseChildProcessConnection.this);
-                }
+            if (!bind()) {
+                Log.e(TAG, "Failed to establish the service connection.");
+                // We have to notify the caller so that they can free-up associated resources.
+                // TODO(ppi): Can we hard-fail here?
+                mDeathCallback.onChildProcessDied(BaseChildProcessConnection.this);
             }
         } finally {
             TraceEvent.end("BaseChildProcessConnection.start");
@@ -327,25 +316,23 @@ public abstract class BaseChildProcessConnection {
     public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
             @Nullable IBinder callback, ConnectionCallback connectionCallback) {
         assert LauncherThread.runningOnLauncherThread();
-        synchronized (mLock) {
-            assert mConnectionParams == null;
-            if (mServiceDisconnected) {
-                Log.w(TAG, "Tried to setup a connection that already disconnected.");
-                connectionCallback.onConnected(null);
-                return;
+        assert mConnectionParams == null;
+        if (mServiceDisconnected) {
+            Log.w(TAG, "Tried to setup a connection that already disconnected.");
+            connectionCallback.onConnected(null);
+            return;
+        }
+        try {
+            TraceEvent.begin("BaseChildProcessConnection.setupConnection");
+            mConnectionCallback = connectionCallback;
+            mConnectionParams = new ConnectionParams(commandLine, filesToBeMapped, callback);
+            // Run the setup if the service is already connected. If not,
+            // doConnectionSetupLocked() will be called from onServiceConnected().
+            if (mServiceConnectComplete) {
+                doConnectionSetupLocked();
             }
-            try {
-                TraceEvent.begin("BaseChildProcessConnection.setupConnection");
-                mConnectionCallback = connectionCallback;
-                mConnectionParams = new ConnectionParams(commandLine, filesToBeMapped, callback);
-                // Run the setup if the service is already connected. If not,
-                // doConnectionSetupLocked() will be called from onServiceConnected().
-                if (mServiceConnectComplete) {
-                    doConnectionSetupLocked();
-                }
-            } finally {
-                TraceEvent.end("BaseChildProcessConnection.setupConnection");
-            }
+        } finally {
+            TraceEvent.end("BaseChildProcessConnection.setupConnection");
         }
     }
 
@@ -354,99 +341,91 @@ public abstract class BaseChildProcessConnection {
      * this multiple times.
      */
     public void stop() {
-        synchronized (mLock) {
-            unbind();
-            mService = null;
-            mConnectionParams = null;
-        }
+        assert LauncherThread.runningOnLauncherThread();
+        unbind();
+        mService = null;
+        mConnectionParams = null;
     }
 
     private void onServiceConnectedOnLauncherThread(IBinder service) {
         assert LauncherThread.runningOnLauncherThread();
-        synchronized (mLock) {
-            // A flag from the parent class ensures we run the post-connection logic only once
-            // (instead of once per each ChildServiceConnection).
-            if (mDidOnServiceConnected) {
+        // A flag from the parent class ensures we run the post-connection logic only once
+        // (instead of once per each ChildServiceConnection).
+        if (mDidOnServiceConnected) {
+            return;
+        }
+        try {
+            TraceEvent.begin(
+                    "BaseChildProcessConnection.ChildServiceConnection.onServiceConnected");
+            mDidOnServiceConnected = true;
+            mService = IChildProcessService.Stub.asInterface(service);
+
+            StartCallback startCallback = mStartCallback;
+            mStartCallback = null;
+
+            final boolean bindCheck =
+                    mCreationParams != null && mCreationParams.getBindToCallerCheck();
+            boolean boundToUs = false;
+            try {
+                boundToUs = bindCheck ? mService.bindToCaller() : true;
+            } catch (RemoteException ex) {
+                // Do not trigger the StartCallback here, since the service is already
+                // dead and the DeathCallback will run from onServiceDisconnected().
+                Log.e(TAG, "Failed to bind service to connection.", ex);
                 return;
             }
-            try {
-                TraceEvent.begin(
-                        "BaseChildProcessConnection.ChildServiceConnection.onServiceConnected");
-                mDidOnServiceConnected = true;
-                mService = IChildProcessService.Stub.asInterface(service);
 
-                StartCallback startCallback = mStartCallback;
-                mStartCallback = null;
-
-                final boolean bindCheck =
-                        mCreationParams != null && mCreationParams.getBindToCallerCheck();
-                boolean boundToUs = false;
-                try {
-                    boundToUs = bindCheck ? mService.bindToCaller() : true;
-                } catch (RemoteException ex) {
-                    // Do not trigger the StartCallback here, since the service is already
-                    // dead and the DeathCallback will run from onServiceDisconnected().
-                    Log.e(TAG, "Failed to bind service to connection.", ex);
-                    return;
+            if (startCallback != null) {
+                if (boundToUs) {
+                    startCallback.onChildStarted();
+                } else {
+                    startCallback.onChildStartFailed();
                 }
-
-                if (startCallback != null) {
-                    if (boundToUs) {
-                        startCallback.onChildStarted();
-                    } else {
-                        startCallback.onChildStartFailed();
-                    }
-                }
-
-                if (!boundToUs) {
-                    return;
-                }
-
-                mServiceConnectComplete = true;
-
-                // Run the setup if the connection parameters have already been provided. If
-                // not, doConnectionSetupLocked() will be called from setupConnection().
-                if (mConnectionParams != null) {
-                    doConnectionSetupLocked();
-                }
-            } finally {
-                TraceEvent.end(
-                        "BaseChildProcessConnection.ChildServiceConnection.onServiceConnected");
             }
+
+            if (!boundToUs) {
+                return;
+            }
+
+            mServiceConnectComplete = true;
+
+            // Run the setup if the connection parameters have already been provided. If
+            // not, doConnectionSetupLocked() will be called from setupConnection().
+            if (mConnectionParams != null) {
+                doConnectionSetupLocked();
+            }
+        } finally {
+            TraceEvent.end("BaseChildProcessConnection.ChildServiceConnection.onServiceConnected");
         }
     }
 
     private void onServiceDisconnectedOnLauncherThread() {
         assert LauncherThread.runningOnLauncherThread();
-        synchronized (mLock) {
-            // Ensure that the disconnection logic runs only once (instead of once per each
-            // ChildServiceConnection).
-            if (mServiceDisconnected) {
-                return;
-            }
-            mServiceDisconnected = true;
-            Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
-            stop(); // We don't want to auto-restart on crash. Let the browser do that.
-            mDeathCallback.onChildProcessDied(BaseChildProcessConnection.this);
-            // If we have a pending connection callback, we need to communicate the failure to
-            // the caller.
-            if (mConnectionCallback != null) {
-                mConnectionCallback.onConnected(null);
-            }
-            mConnectionCallback = null;
+        // Ensure that the disconnection logic runs only once (instead of once per each
+        // ChildServiceConnection).
+        if (mServiceDisconnected) {
+            return;
         }
+        mServiceDisconnected = true;
+        Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
+        stop(); // We don't want to auto-restart on crash. Let the browser do that.
+        mDeathCallback.onChildProcessDied(BaseChildProcessConnection.this);
+        // If we have a pending connection callback, we need to communicate the failure to
+        // the caller.
+        if (mConnectionCallback != null) {
+            mConnectionCallback.onConnected(null);
+        }
+        mConnectionCallback = null;
     }
 
     private void onSetupConnectionResult(int pid) {
-        synchronized (mLock) {
-            mPid = pid;
-            assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
+        mPid = pid;
+        assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
 
-            if (mConnectionCallback != null) {
-                mConnectionCallback.onConnected(this);
-            }
-            mConnectionCallback = null;
+        if (mConnectionCallback != null) {
+            mConnectionCallback.onConnected(this);
         }
+        mConnectionCallback = null;
     }
 
     /**
@@ -454,7 +433,6 @@ public abstract class BaseChildProcessConnection {
      * connection has been established (as signaled by onServiceConnected()). These two events can
      * happen in any order. Has to be called with mLock.
      */
-    @GuardedBy("mLock")
     private void doConnectionSetupLocked() {
         try {
             TraceEvent.begin("BaseChildProcessConnection.doConnectionSetupLocked");
@@ -498,10 +476,12 @@ public abstract class BaseChildProcessConnection {
     protected abstract void unbind();
 
     protected ChildServiceConnection createServiceConnection(int bindFlags) {
+        assert LauncherThread.runningOnLauncherThread();
         return new ChildServiceConnectionImpl(bindFlags);
     }
 
     protected boolean shouldBindAsExportedService() {
+        assert LauncherThread.runningOnLauncherThread();
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && getCreationParams() != null
                 && getCreationParams().getIsExternalService()
                 && isExportedService(isSandboxed(), getContext(), getServiceName());
@@ -529,15 +509,11 @@ public abstract class BaseChildProcessConnection {
 
     @VisibleForTesting
     public void crashServiceForTesting() throws RemoteException {
-        synchronized (mLock) {
-            mService.crashIntentionallyForTesting();
-        }
+        mService.crashIntentionallyForTesting();
     }
 
     @VisibleForTesting
-    public boolean isConnected() {
-        synchronized (mLock) {
-            return mService != null;
-        }
+    boolean isConnected() {
+        return mService != null;
     }
 }
