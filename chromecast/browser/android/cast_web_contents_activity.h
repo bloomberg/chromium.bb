@@ -21,8 +21,10 @@ namespace shell {
 // Helper class to get members of the CastWebContentsActivity displaying a
 // given web_contents. This class is lazily created through the Get function and
 // will manage its own lifetime via SupportsUserData.
-class CastWebContentsActivity : base::SupportsUserData::Data {
+class CastWebContentsActivity : public base::SupportsUserData::Data {
  public:
+  ~CastWebContentsActivity() override;
+
   static bool RegisterJni(JNIEnv* env);
   static CastWebContentsActivity* Get(content::WebContents* web_contents);
 
@@ -32,7 +34,6 @@ class CastWebContentsActivity : base::SupportsUserData::Data {
 
  private:
   explicit CastWebContentsActivity(content::WebContents* web_contents);
-  ~CastWebContentsActivity() override;
 
   base::android::ScopedJavaGlobalRef<jobject> content_video_view_embedder_;
 
