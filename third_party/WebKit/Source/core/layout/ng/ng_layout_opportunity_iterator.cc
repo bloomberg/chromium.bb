@@ -271,10 +271,10 @@ NGLayoutOpportunity FindLayoutOpportunityForFragment(
   NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
   while (!opportunity_candidate.IsEmpty()) {
     opportunity = opportunity_candidate;
-    // Checking opportunity's block size is not necessary as a float cannot be
-    // positioned on top of another float inside of the same constraint space.
     auto fragment_inline_size = fragment.InlineSize() + margins.InlineSum();
-    if (opportunity.size.inline_size >= fragment_inline_size)
+    auto fragment_block_size = fragment.BlockSize() + margins.BlockSum();
+    if (opportunity.size.inline_size >= fragment_inline_size &&
+        opportunity.size.block_size >= fragment_block_size)
       break;
     opportunity_candidate = opportunity_iter.Next();
   }
