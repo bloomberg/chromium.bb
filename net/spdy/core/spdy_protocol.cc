@@ -255,7 +255,7 @@ SpdyFrameType SpdyDataIR::frame_type() const {
 
 SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
                                  SpdyErrorCode error_code)
-    : SpdyFrameWithStreamIdIR(stream_id) {
+    : SpdyFrameIR(stream_id) {
   set_error_code(error_code);
 }
 
@@ -324,7 +324,7 @@ SpdyFrameType SpdyGoAwayIR::frame_type() const {
 }
 
 SpdyContinuationIR::SpdyContinuationIR(SpdyStreamId stream_id)
-    : SpdyFrameWithStreamIdIR(stream_id), end_headers_(false) {
+    : SpdyFrameIR(stream_id), end_headers_(false) {
   encoding_ = SpdyMakeUnique<SpdyString>();
 }
 
@@ -362,9 +362,7 @@ SpdyFrameType SpdyPushPromiseIR::frame_type() const {
   return SpdyFrameType::PUSH_PROMISE;
 }
 
-SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id)
-    : SpdyFrameWithStreamIdIR(stream_id) {
-}
+SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id) : SpdyFrameIR(stream_id) {}
 
 SpdyAltSvcIR::~SpdyAltSvcIR() {
 }

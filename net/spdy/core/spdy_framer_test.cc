@@ -396,7 +396,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         continuation_count_(0),
         altsvc_count_(0),
         priority_count_(0),
-        test_altsvc_ir_(0),
         on_unknown_frame_result_(false),
         last_window_update_stream_(0),
         last_window_update_delta_(0),
@@ -551,12 +550,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                     altsvc_vector) override {
     VLOG(1) << "OnAltSvc(" << stream_id << ", \"" << origin
             << "\", altsvc_vector)";
-    test_altsvc_ir_.set_stream_id(stream_id);
+    test_altsvc_ir_ = SpdyMakeUnique<SpdyAltSvcIR>(stream_id);
     if (origin.length() > 0) {
-      test_altsvc_ir_.set_origin(SpdyString(origin));
+      test_altsvc_ir_->set_origin(SpdyString(origin));
     }
     for (const auto& altsvc : altsvc_vector) {
-      test_altsvc_ir_.add_altsvc(altsvc);
+      test_altsvc_ir_->add_altsvc(altsvc);
     }
     ++altsvc_count_;
   }
@@ -664,7 +663,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int continuation_count_;
   int altsvc_count_;
   int priority_count_;
-  SpdyAltSvcIR test_altsvc_ir_;
+  std::unique_ptr<SpdyAltSvcIR> test_altsvc_ir_;
   bool on_unknown_frame_result_;
   SpdyStreamId last_window_update_stream_;
   int last_window_update_delta_;
@@ -4556,9 +4555,10 @@ TEST_P(SpdyFramerTest, ReadChunkedAltSvcFrame) {
   }
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.altsvc_count_);
-  ASSERT_EQ(2u, visitor.test_altsvc_ir_.altsvc_vector().size());
-  EXPECT_TRUE(visitor.test_altsvc_ir_.altsvc_vector()[0] == altsvc1);
-  EXPECT_TRUE(visitor.test_altsvc_ir_.altsvc_vector()[1] == altsvc2);
+  ASSERT_NE(nullptr, visitor.test_altsvc_ir_);
+  ASSERT_EQ(2u, visitor.test_altsvc_ir_->altsvc_vector().size());
+  EXPECT_TRUE(visitor.test_altsvc_ir_->altsvc_vector()[0] == altsvc1);
+  EXPECT_TRUE(visitor.test_altsvc_ir_->altsvc_vector()[1] == altsvc2);
 }
 
 // While RFC7838 Section 4 says that an ALTSVC frame on stream 0 with empty
