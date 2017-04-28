@@ -14,6 +14,25 @@ Browser extensions often provide an interactive toolbar icon, but can also run
 without any UI. They may interact with the browser or tab contents, and can
 request more extensive permissions than apps.
 
+A browser extension can be identified by a `manifest.json` file without any key
+named `app`, `export`, or `theme`.
+
+## Themes
+
+A theme is a special kind of extension that changes the way the browser looks.
+Themes are packaged like regular extensions, but they don't contain JavaScript
+or HTML code.
+
+A theme can be identified by the presence of a `theme` key in `manifest.json`.
+
+## Shared Modules
+
+Shared modules are permissionless collections of resources that can be shared
+between other extensions and apps.
+
+A shared module can be identified by the presence of an `export` key in
+`manifest.json`.
+
 ## Apps
 
 ### Platform app
@@ -29,6 +48,10 @@ can connect to more device types than browser extensions have access to.
 
 Platform apps are deprecated on non-Chrome OS platforms.
 
+A platform app can be identified by the presence of an `app.background` key
+in the manifest, which provides the script that runs when the app is
+launched.
+
 ### Packaged app (legacy)
 
 [Legacy (v1) packaged apps](https://developer.chrome.com/extensions/apps)
@@ -36,40 +59,53 @@ combined the appearance of a [hosted app](#Hosted-app) -- a windowed wrapper
 around a website -- with the power of extension APIs. With the launch of
 platform apps and the app-specific APIs, legacy packaged apps are deprecated.
 
+A packaged app can be identified by the presence of an
+`app.launch.local_url` key in `manifest.json`, which identifies the resource
+in the .crx that's loaded when the app is launched.
+
 ### Hosted app
 
 A [hosted app](https://developer.chrome.com/webstore/hosted_apps) is mostly
 metadata: a web URL to launch, a list of associated URLs, and a list of HTML5
 permissions. Chrome ask for these permissions during the app's installation,
 allowing the associated URL to bypass the normal Chrome permission prompts for
-HTML5 features.
+HTML5 features. Other than metadata in the manifest and an icon, none of a
+hosted app's resources come from the extension system.
+
+A hosted app can be identified by the presence of an `app.launch.web_url` key in
+`manifest.json`, which provides http/https URL that is loaded when the app is
+launched.
 
 ### Bookmark app
 
 A bookmark app is a simplified hosted app that Chrome creates on demand. When
-the user taps "Add to desktop" (or "Add to shelf" on Chrome OS) in the Chrome
-menu, Chrome creates a barebones app whose manifest specifies the current tab's
-URL. A shortcut to this URL appears in chrome://apps using the site's favicon.
+the user taps "More Tools > Add to desktop..." (or "Add to shelf" on Chrome OS)
+in the Chrome menu, Chrome creates a barebones app whose manifest specifies the
+current tab's URL. A shortcut to this URL appears in chrome://apps using the
+site's favicon.
 
 Chrome then creates a desktop shortcut that will open a browser window with
 flags that specify the app and profile. Activating the icon launches the
 "bookmarked" URL in a tab or a window.
 
-## Manifest
+A bookmark app's `manifest.json` identifies it as a hosted app. However, in the
+C++ code, the `Extension` object will return true from its `from_bookmark()`
+method.
 
-A particular manifest key in an extension's `manifest.json` file determines what
-kind of extension it is:
+## Ambiguity surrounding the term "Extension"
 
-* Platform app: `app.background.page` and/or `app.background.scripts`
-* Legacy packaged app: `app.launch.local_path`
-* Hosted app: `app.launch.web_url`
-* Browser extension: none of the above
+In the C++ code, all of the above flavors of extensions and apps are implemented
+in terms of the `Extension` class type, and the `//extensions` module. This can
+cause confusion, since it means that an app *is-an* `Extension`, although
+`Extension::is_extension()` is false.
 
-## Notes
+In code comments, "extension" may be used to refer to non-app extensions, also
+known as *browser extensions*.
 
-`Extension` is the class type for all extensions and apps, so technically
-speaking, an app *is-an* `Extension`. The word "extension" usually refers only
-to non-app extensions, a.k.a. *browser extensions*.
+The three categories of apps are significantly different in terms of
+implementation, capabilities, process model, and restrictions. It is usually
+necessary to consider them as three separate cases, rather than lumping them
+together.
 
 ## See also
 
