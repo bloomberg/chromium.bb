@@ -99,10 +99,7 @@ _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
 ]
-_OS_SPECIFIC_FILTER['mac'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1779
-    'ChromeDriverTest.testWindowMaximize',
-]
+_OS_SPECIFIC_FILTER['mac'] = []
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
@@ -864,11 +861,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testWindowMaximize(self):
     self._driver.SetWindowPosition(100, 200)
-    self._driver.SetWindowSize(600, 400)
+    self._driver.SetWindowSize(500, 300)
     self._driver.MaximizeWindow()
 
     self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
-    self.assertNotEqual([600, 400], self._driver.GetWindowSize())
+    self.assertNotEqual([500, 300], self._driver.GetWindowSize())
     # Set size first so that the window isn't moved offscreen.
     # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
     self._driver.SetWindowSize(600, 400)

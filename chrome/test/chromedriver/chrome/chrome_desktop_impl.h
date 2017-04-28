@@ -82,12 +82,14 @@ class ChromeDesktopImpl : public ChromeImpl {
     int width;
     int height;
   };
+  Status ParseWindowBounds(std::unique_ptr<base::DictionaryValue> params,
+                           Window* window);
   Status ParseWindow(std::unique_ptr<base::DictionaryValue> params,
                      Window* window);
 
   Status GetWindow(const std::string& target_id, Window* window);
-  Status SetWindowState(int window_id, const std::string& window_state);
-  Status SetWindowBounds(const std::string& target_id,
+  Status GetWindowBounds(int window_id, Window* window);
+  Status SetWindowBounds(int window_id,
                          std::unique_ptr<base::DictionaryValue> bounds);
 
   base::Process process_;
