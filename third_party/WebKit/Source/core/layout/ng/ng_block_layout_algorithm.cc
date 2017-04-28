@@ -416,10 +416,13 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionNewFc(
   PositionFloats(curr_bfc_offset_.block_offset, curr_bfc_offset_.block_offset,
                  container_builder_.UnpositionedFloats(), tmp_space.Get());
 
+  NGLogicalOffset origin_offset = curr_bfc_offset_;
+  origin_offset.inline_offset += border_and_padding_.inline_start;
+
   // 2. Find an estimated layout opportunity for our fragment.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      tmp_space->Exclusions().get(), child_space.AvailableSize(),
-      curr_bfc_offset_, curr_child_margins_, fragment);
+      tmp_space->Exclusions().get(), child_space.AvailableSize(), origin_offset,
+      curr_child_margins_, fragment);
 
   // 3. If the found opportunity lies on the same line with our estimated
   //    child's BFC offset then merge fragment's margins with the current
@@ -435,11 +438,14 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionNewFc(
   PositionPendingFloats(curr_bfc_offset_.block_offset, &container_builder_,
                         MutableConstraintSpace());
 
+  origin_offset = curr_bfc_offset_;
+  origin_offset.inline_offset += border_and_padding_.inline_start;
+
   // 5. Find the final layout opportunity for the fragment after all pending
   // floats are positioned at the correct BFC block's offset.
   opportunity = FindLayoutOpportunityForFragment(
       MutableConstraintSpace()->Exclusions().get(), child_space.AvailableSize(),
-      curr_bfc_offset_, curr_child_margins_, fragment);
+      origin_offset, curr_child_margins_, fragment);
 
   curr_bfc_offset_ = opportunity.offset;
   return curr_bfc_offset_;
