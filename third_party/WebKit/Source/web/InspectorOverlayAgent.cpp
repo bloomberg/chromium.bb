@@ -220,7 +220,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
     : frame_impl_(frame_impl),
       inspected_frames_(inspected_frames),
       enabled_(false),
-      overlay_host_(new InspectorOverlayHost(this)),
       draw_view_size_(false),
       resize_timer_active_(false),
       omit_tooltip_(false),
@@ -229,6 +228,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
              this,
              &InspectorOverlayAgent::OnTimer),
       suspended_(false),
+      disposed_(false),
       show_reloading_blanket_(false),
       in_layout_(false),
       needs_update_(false),
@@ -269,15 +269,16 @@ void InspectorOverlayAgent::Restore() {
   setShowViewportSizeOnResize(
       state_->booleanProperty(OverlayAgentState::kShowSizeOnResize, false));
   String message;
-  state_->getString(OverlayAgentState::kPausedInDebuggerMessage, &message);
-  setPausedInDebuggerMessage(message);
+  if (state_->getString(OverlayAgentState::kPausedInDebuggerMessage, &message))
+    setPausedInDebuggerMessage(message);
   setSuspended(state_->booleanProperty(OverlayAgentState::kSuspended, false));
 }
 
 void InspectorOverlayAgent::Dispose() {
-  show_reloading_blanket_ = false;
-  ClearInternal();
   InspectorBaseAgent::Dispose();
+  show_reloading_blanket_ = false;
+  disposed_ = true;
+  ClearInternal();
 }
 
 Response InspectorOverlayAgent::enable() {
@@ -498,6 +499,9 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
 }
 
 void InspectorOverlayAgent::Invalidate() {
+  if (IsEmpty())
+    return;
+
   if (!page_overlay_) {
     page_overlay_ = PageOverlay::Create(
         frame_impl_, WTF::WrapUnique(new InspectorPageOverlayDelegate(*this)));
@@ -640,6 +644,8 @@ void InspectorOverlayAgent::InnerHighlightQuad(
 }
 
 bool InspectorOverlayAgent::IsEmpty() {
+  if (disposed_)
+    return true;
   if (show_reloading_blanket_)
     return false;
   if (suspended_)
@@ -782,6 +788,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
       frame_impl_->GetFrame()->GetPage()->GetChromeClient(), *this);
   page_clients.chrome_client = overlay_chrome_client_.Get();
   overlay_page_ = Page::Create(page_clients);
+  overlay_host_ = new InspectorOverlayHost(this);
 
   Settings& settings = frame_impl_->GetFrame()->GetPage()->GetSettings();
   Settings& overlay_settings = overlay_page_->GetSettings();
@@ -928,11 +935,14 @@ void InspectorOverlayAgent::ClearInternal() {
     overlay_page_->WillBeDestroyed();
     overlay_page_.Clear();
     overlay_chrome_client_.Clear();
+    overlay_host_->ClearListener();
+    overlay_host_.Clear();
   }
   resize_timer_active_ = false;
   paused_in_debugger_message_ = String();
   inspect_mode_ = kNotSearching;
   timer_.Stop();
+  page_overlay_.reset();
   InnerHideHighlight();
 }
 
