@@ -20,6 +20,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/extension.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class Profile;
@@ -117,7 +118,7 @@ class EPKPChallengeKeyBase {
       default_attestation_flow_;
   ChallengeKeyCallback callback_;
   Profile* profile_;
-  std::string extension_id_;
+  scoped_refptr<const Extension> extension_;
 
  private:
   // Holds the context of a PrepareKey() operation.

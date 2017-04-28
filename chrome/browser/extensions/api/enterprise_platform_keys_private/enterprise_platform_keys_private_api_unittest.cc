@@ -13,11 +13,13 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -33,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,13 +151,19 @@ void GetCertificateCallbackFalse(
 }
 
 class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
+ public:
+  enum class ProfileType { USER_PROFILE, SIGNIN_PROFILE };
+
  protected:
-  EPKPChallengeKeyTestBase()
+  explicit EPKPChallengeKeyTestBase(ProfileType profile_type)
       : settings_helper_(false),
-        extension_(test_util::CreateEmptyExtension()),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
+        profile_type_(profile_type),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(fake_user_manager_) {
+    // Create the extension.
+    extension_ = CreateExtension();
+
     // Set up the default behavior of mocks.
     ON_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
         .WillByDefault(WithArgs<3>(Invoke(FakeBoolDBusMethod(
@@ -180,21 +189,28 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     BrowserWithTestWindowTest::SetUp();
+    if (profile_type_ == ProfileType::USER_PROFILE) {
+      // Set the user preferences.
+      prefs_ = browser()->profile()->GetPrefs();
+      base::ListValue whitelist;
+      whitelist.AppendString(extension_->id());
+      prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
 
-    // Set the user preferences.
-    prefs_ = browser()->profile()->GetPrefs();
-    base::ListValue whitelist;
-    whitelist.AppendString(extension_->id());
-    prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
-
-    SetAuthenticatedUser();
+      SetAuthenticatedUser();
+    }
   }
 
   // This will be called by BrowserWithTestWindowTest::SetUp();
   TestingProfile* CreateProfile() override {
-    fake_user_manager_->AddUserWithAffiliation(
-        AccountId::FromUserEmail(kUserEmail), true);
-    return profile_manager_.CreateTestingProfile(kUserEmail);
+    switch (profile_type_) {
+      case ProfileType::USER_PROFILE:
+        fake_user_manager_->AddUserWithAffiliation(
+            AccountId::FromUserEmail(kUserEmail), true);
+        return profile_manager_.CreateTestingProfile(kUserEmail);
+
+      case ProfileType::SIGNIN_PROFILE:
+        return profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
+    }
   }
 
   void DestroyProfile(TestingProfile* profile) override {
@@ -214,21 +230,37 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   NiceMock<cryptohome::MockAsyncMethodCaller> mock_async_method_caller_;
   NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
-  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<Extension> extension_;
   chromeos::StubInstallAttributes stub_install_attributes_;
   TestingProfileManager profile_manager_;
+  ProfileType profile_type_;
   // fake_user_manager_ is owned by user_manager_enabler_.
   chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   PrefService* prefs_ = nullptr;
+
+ private:
+  scoped_refptr<Extension> CreateExtension() {
+    switch (profile_type_) {
+      case ProfileType::USER_PROFILE:
+        return test_util::CreateEmptyExtension();
+
+      case ProfileType::SIGNIN_PROFILE:
+        return test_util::BuildApp(ExtensionBuilder())
+            .SetLocation(Manifest::Location::EXTERNAL_POLICY)
+            .Build();
+    }
+  }
 };
 
 class EPKPChallengeMachineKeyTest : public EPKPChallengeKeyTestBase {
  protected:
   static const char kArgs[];
 
-  EPKPChallengeMachineKeyTest()
-      : impl_(&mock_cryptohome_client_,
+  explicit EPKPChallengeMachineKeyTest(
+      ProfileType profile_type = ProfileType::USER_PROFILE)
+      : EPKPChallengeKeyTestBase(profile_type),
+        impl_(&mock_cryptohome_client_,
               &mock_async_method_caller_,
               &mock_attestation_flow_,
               &stub_install_attributes_),
@@ -316,7 +348,35 @@ TEST_F(EPKPChallengeMachineKeyTest, KeyExists) {
   EXPECT_TRUE(utils::RunFunction(func_.get(), kArgs, browser(), utils::NONE));
 }
 
-TEST_F(EPKPChallengeMachineKeyTest, Success) {
+TEST_F(EPKPChallengeMachineKeyTest, AttestationNotPrepared) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(Invoke(
+          FakeBoolDBusMethod(chromeos::DBUS_METHOD_CALL_SUCCESS, false)));
+
+  EXPECT_EQ(GetCertificateError(kResetRequired),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+TEST_F(EPKPChallengeMachineKeyTest, AttestationPreparedDbusFailed) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(
+          Invoke(FakeBoolDBusMethod(chromeos::DBUS_METHOD_CALL_FAILURE, true)));
+
+  EXPECT_EQ(GetCertificateError(kDBusError),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+// Tests the API with all profiles types as determined by the test parameter.
+class EPKPChallengeMachineKeyAllProfilesTest
+    : public EPKPChallengeMachineKeyTest,
+      public ::testing::WithParamInterface<
+          EPKPChallengeKeyTestBase::ProfileType> {
+ protected:
+  EPKPChallengeMachineKeyAllProfilesTest()
+      : EPKPChallengeMachineKeyTest(GetParam()) {}
+};
+
+TEST_P(EPKPChallengeMachineKeyAllProfilesTest, Success) {
   // GetCertificate must be called exactly once.
   EXPECT_CALL(mock_attestation_flow_,
               GetCertificate(
@@ -339,30 +399,19 @@ TEST_F(EPKPChallengeMachineKeyTest, Success) {
   EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
 }
 
-TEST_F(EPKPChallengeMachineKeyTest, AttestationNotPrepared) {
-  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
-      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
-          chromeos::DBUS_METHOD_CALL_SUCCESS, false)));
-
-  EXPECT_EQ(GetCertificateError(kResetRequired),
-            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
-}
-
-TEST_F(EPKPChallengeMachineKeyTest, AttestationPreparedDbusFailed) {
-  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
-      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
-          chromeos::DBUS_METHOD_CALL_FAILURE, true)));
-
-  EXPECT_EQ(GetCertificateError(kDBusError),
-            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
-}
+INSTANTIATE_TEST_CASE_P(
+    AllProfiles,
+    EPKPChallengeMachineKeyAllProfilesTest,
+    ::testing::Values(EPKPChallengeKeyTestBase::ProfileType::USER_PROFILE,
+                      EPKPChallengeKeyTestBase::ProfileType::SIGNIN_PROFILE));
 
 class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
  protected:
   static const char kArgs[];
 
   EPKPChallengeUserKeyTest()
-      : impl_(&mock_cryptohome_client_,
+      : EPKPChallengeKeyTestBase(ProfileType::USER_PROFILE),
+        impl_(&mock_cryptohome_client_,
               &mock_async_method_caller_,
               &mock_attestation_flow_,
               &stub_install_attributes_),
