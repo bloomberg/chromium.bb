@@ -241,10 +241,18 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'gear_menu_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'gear_menu_controller',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:directory_change_event',
+        '../elements/compiled_resources2.gyp:files_toggle_ripple',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_button',
+        'directory_model',
+        'file_manager_commands',
+        'ui/compiled_resources2.gyp:gear_menu',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'import_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -400,15 +408,17 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'scan_controller',
-#      'dependencies': [
-#        'directory_model',
-#        'spinner_controller',
-#        'ui/compiled_resources2.gyp:list_container',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'scan_controller',
+      'dependencies': [
+        'directory_model',
+        'file_manager_commands',
+        'file_selection',
+        'spinner_controller',
+        'ui/compiled_resources2.gyp:list_container',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'search_controller',
       'dependencies': [
