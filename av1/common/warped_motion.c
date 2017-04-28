@@ -1301,7 +1301,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
       // Vertical filter
       for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
         int sy = sy4 + gamma * (-4) + delta * k;
-        for (l = -4; l < 4; ++l) {
+        for (l = -4; l < AOMMIN(4, p_col + p_width - j - 4); ++l) {
           uint8_t *p =
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           // At this point, sy = sy4 + gamma * l + delta * k

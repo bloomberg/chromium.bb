@@ -270,12 +270,15 @@ void av1_highbd_warp_affine_ssse3(int32_t *mat, uint16_t *ref, int width,
         // Store, blending with 'pred' if needed
         __m128i *p = (__m128i *)&pred[(i + k + 4) * p_stride + j];
 
-        if (ref_frm) {
-          __m128i orig = _mm_loadu_si128(p);
-          _mm_storeu_si128(p, _mm_avg_epu16(res_16bit, orig));
-        } else {
+        if (ref_frm) res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
+
+        // Note: If we're outputting a 4x4 block, we need to be very careful
+        // to only output 4 pixels at this point, to avoid encode/decode
+        // mismatches when encoding with multiple threads.
+        if (p_width == 4)
+          _mm_storel_epi64(p, res_16bit);
+        else
           _mm_storeu_si128(p, res_16bit);
-        }
       }
     }
   }
