@@ -13,4 +13,6 @@ import "services/video_capture/public/interfaces/receiver.mojom";
 // Device or the given |receiver| is closed.
 interface Device {
   Start(media.mojom.VideoCaptureParams requested_settings, Receiver receiver);
+  OnReceiverReportingUtilization(int32 frame_feedback_id,
+                                 double utilization);
 };
