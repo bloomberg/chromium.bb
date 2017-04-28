@@ -132,9 +132,7 @@ void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
     SetPaintToLayer();
 
   layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_mask_ = CreateInkDropMask();
-  if (ink_drop_mask_)
-    ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
+  InstallInkDropMask(ink_drop_layer);
   layer()->Add(ink_drop_layer);
   layer()->StackAtBottom(ink_drop_layer);
 }
@@ -278,6 +276,19 @@ InkDrop* InkDropHostView::GetInkDrop() {
       ink_drop_ = CreateInkDrop();
   }
   return ink_drop_.get();
+}
+
+void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
+// Layer masks don't work on Windows. See crbug.com/713359
+#if !defined(OS_WIN)
+  ink_drop_mask_ = CreateInkDropMask();
+  if (ink_drop_mask_)
+    ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
+#endif
+}
+
+void InkDropHostView::ResetInkDropMask() {
+  ink_drop_mask_.reset();
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {

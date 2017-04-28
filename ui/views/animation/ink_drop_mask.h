@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
@@ -47,14 +47,14 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
 class VIEWS_EXPORT RoundRectInkDropMask : public InkDropMask {
  public:
   RoundRectInkDropMask(const gfx::Size& layer_size,
-                       const gfx::Insets& mask_insets,
+                       const gfx::InsetsF& mask_insets,
                        int corner_radius);
 
  private:
   // Overriden from InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
-  gfx::Insets mask_insets_;
+  gfx::InsetsF mask_insets_;
   int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundRectInkDropMask);
