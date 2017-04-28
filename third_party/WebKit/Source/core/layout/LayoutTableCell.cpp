@@ -35,6 +35,7 @@
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/TableCellPaintInvalidator.h"
 #include "core/paint/TableCellPainter.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -1489,6 +1490,16 @@ bool LayoutTableCell::HasLineIfEmpty() const {
     return true;
 
   return LayoutBlock::HasLineIfEmpty();
+}
+
+PaintInvalidationReason LayoutTableCell::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  return TableCellPaintInvalidator(*this, context).InvalidatePaint();
+}
+
+PaintInvalidationReason LayoutTableCell::InvalidatePaint(
+    const PaintInvalidationState& state) {
+  return LayoutBlockFlow::InvalidatePaint(state);
 }
 
 }  // namespace blink
