@@ -4791,14 +4791,14 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_HIGH_CONTRAST_MODE" desc="The text in the keyboard overlay to explain the shortcut (Toggle high contrast mode).">
     Toggle High Contrast Mode
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Projection touch HUD
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD" desc="The text in the keyboard overlay to explain the shortcut to show the points where a user interfaces with the touch screen. This would be useful for someone doing a presentation where they need the audience to see the points on the screen that are touched.">
+    Show touch points
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
     Speech input
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOUCH_HUD_MODE_CHANGE" desc="The text in the keyboard overlay to explain the shortcut (touch hub mode change).">
-    Touch HUD mode change
+  <message name="IDS_KEYBOARD_OVERLAY_TOUCH_HUD_MODE_CHANGE" desc="The text in the keyboard overlay to explain the shortcut to change the mode of the debug touch HUD. 'HUD' stands for 'heads-up display'. 'Touch' refers to the touch interface.">
+    Change touch HUD mode
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo
