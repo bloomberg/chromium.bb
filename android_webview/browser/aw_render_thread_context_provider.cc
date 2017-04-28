@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_trace_implementation.h"
+#include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
@@ -69,6 +72,14 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuClientTracing)) {
+    // This wraps the real GLES2Implementation and we should always use this
+    // instead when it's present.
+    trace_impl_.reset(new gpu::gles2::GLES2TraceImplementation(
+        context_->GetImplementation()));
+  }
+
   cache_controller_.reset(
       new cc::ContextCacheController(context_->GetImplementation(), nullptr));
 }
@@ -98,7 +109,8 @@ gpu::Capabilities AwRenderThreadContextProvider::ContextCapabilities() {
 
 gpu::gles2::GLES2Interface* AwRenderThreadContextProvider::ContextGL() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-
+  if (trace_impl_)
+    return trace_impl_.get();
   return context_->GetImplementation();
 }
 
