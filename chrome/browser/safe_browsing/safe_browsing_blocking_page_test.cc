@@ -610,8 +610,8 @@ class SafeBrowsingBlockingPageBrowserTest
     EXPECT_EQ(HIDDEN, GetVisibility("extended-reporting-opt-in"));
     EXPECT_EQ(HIDDEN, GetVisibility("opt-in-checkbox"));
     EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
-    EXPECT_TRUE(Click("details-button"));
     EXPECT_EQ(VISIBLE, GetVisibility("learn-more-link"));
+    EXPECT_TRUE(Click("details-button"));
     EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
 
     EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
