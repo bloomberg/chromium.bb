@@ -738,7 +738,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
       event, mouse_down_pos_, drag_start_pos_, mouse_press_node_.Get(),
       last_known_mouse_position_);
 
-  // The call into handleMouseDraggedEvent may have caused a re-layout,
+  // The call into HandleMouseDraggedEvent may have caused a re-layout,
   // so get the LayoutObject again.
   layout_object = target_node->GetLayoutObject();
 
@@ -747,8 +747,15 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
       !frame_->Selection().SelectedHTMLForClipboard().IsEmpty()) {
     if (AutoscrollController* controller =
             scroll_manager_->GetAutoscrollController()) {
-      controller->StartAutoscrollForSelection(layout_object);
-      mouse_down_may_start_autoscroll_ = false;
+      // Avoid updating the lifecycle unless it's possible to autoscroll.
+      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint();
+
+      // The lifecycle update above may have invalidated the previous layout.
+      layout_object = target_node->GetLayoutObject();
+      if (layout_object) {
+        controller->StartAutoscrollForSelection(layout_object);
+        mouse_down_may_start_autoscroll_ = false;
+      }
     }
   }
 
