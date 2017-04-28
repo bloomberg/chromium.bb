@@ -38,7 +38,6 @@ class ScriptWrappable;
   X(CustomElementLifecycle, AttributeChangedCallback) \
   X(CustomElementLifecycle, CreatedCallback)          \
   X(CustomElementLifecycle, DetachedCallback)         \
-  X(CustomEvent, Detail)                              \
   X(DOMException, Error)                              \
   X(ErrorEvent, Error)                                \
   X(FetchEvent, Request)                              \
