@@ -136,6 +136,9 @@ ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
     NET_LOG_ERROR(
         "A cellular device is not available.",
         "Cannot initiate a cellular network scan without a cellular device.");
+    // If there is no cellular device, we set |has_pending_results_| to true so
+    // that HandlePageReady() will show "No networks found." on the web UI.
+    has_pending_results_ = true;
     return;
   }
   handler->AddObserver(this, FROM_HERE);
@@ -220,6 +223,9 @@ void ChooseMobileNetworkHandler::HandleCancel(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
+
+  if (device_path_.empty())
+    return;
 
   // Switch to automatic mode.
   GetNetworkDeviceHandler()->RegisterCellularNetwork(
