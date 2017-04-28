@@ -282,9 +282,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   bool MustRefetchDueToIntegrityMetadata(const FetchParameters&) const;
 
-  double CurrentAge() const;
-  double FreshnessLifetime() const;
-
   bool IsAlive() const { return is_alive_; }
 
   void SetCacheIdentifier(const String& cache_identifier) {
