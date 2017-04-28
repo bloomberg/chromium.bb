@@ -343,8 +343,10 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     return;
   if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
        not_consumed) ||
-      event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
+      event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     frame_connector_->BubbleScrollEvent(event);
+  }
 }
 
 void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(

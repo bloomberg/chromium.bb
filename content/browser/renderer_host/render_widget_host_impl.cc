@@ -1123,12 +1123,11 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
                  blink::WebInputEvent::kGestureScrollEnd ||
              gesture_event.GetType() ==
                  blink::WebInputEvent::kGestureFlingStart) {
-    // TODO(wjmaclean): Re-enable the following DCHECK once crbug.com/695187
-    // is fixed.
-    // DCHECK(*is_in_gesture_scroll ||
-    //       (gesture_event.type() == blink::WebInputEvent::GestureFlingStart &&
-    //        gesture_event.sourceDevice ==
-    //            blink::WebGestureDevice::WebGestureDeviceTouchpad));
+    DCHECK(
+        *is_in_gesture_scroll ||
+        (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
+         gesture_event.source_device ==
+             blink::WebGestureDevice::kWebGestureDeviceTouchpad));
     *is_in_gesture_scroll = false;
     if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
         gesture_event.source_device ==

@@ -940,38 +940,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
 }
 
 // Class to detect incoming GestureScrollEnd acks for bubbling tests.
-class GestureScrollEndObserver
+class InputEventAckWaiter
     : public content::RenderWidgetHost::InputEventObserver {
  public:
-  GestureScrollEndObserver()
+  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
       : message_loop_runner_(new content::MessageLoopRunner),
-        gesture_scroll_end_ack_received_(false) {}
-  ~GestureScrollEndObserver() override {}
+        ack_type_waiting_for_(ack_type_waiting_for),
+        desired_ack_type_received_(false) {}
+  ~InputEventAckWaiter() override {}
 
   void OnInputEventAck(const blink::WebInputEvent& event) override {
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
-      gesture_scroll_end_ack_received_ = true;
+    if (event.GetType() == ack_type_waiting_for_) {
+      desired_ack_type_received_ = true;
       if (message_loop_runner_->loop_running())
         message_loop_runner_->Quit();
     }
   }
 
   void Wait() {
-    if (!gesture_scroll_end_ack_received_) {
+    if (!desired_ack_type_received_) {
       message_loop_runner_->Run();
     }
   }
 
   void Reset() {
-    gesture_scroll_end_ack_received_ = false;
+    desired_ack_type_received_ = false;
     message_loop_runner_ = new content::MessageLoopRunner;
   }
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool gesture_scroll_end_ack_received_;
+  blink::WebInputEvent::Type ack_type_waiting_for_;
+  bool desired_ack_type_received_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureScrollEndObserver);
+  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
 };
 
 // Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
@@ -1121,6 +1123,75 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_LT(update_rect.y(), bounds.y() - rwhv_root->GetViewBounds().y());
 }
 
+// This test verifies that scroll bubbling from an OOPIF properly forwards
+// GestureFlingStart events from the child frame to the parent frame. This
+// test times out on failure.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       GestureFlingStartEventsBubble) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_iframe_node = root->child_at(0);
+
+  std::unique_ptr<InputEventAckWaiter> gesture_fling_start_ack_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureFlingStart);
+  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+      gesture_fling_start_ack_observer.get());
+
+  RenderWidgetHost* child_rwh =
+      child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+
+  WaitForChildFrameSurfaceReady(child_iframe_node->current_frame_host());
+
+  gesture_fling_start_ack_observer->Reset();
+  // Send a GSB, GSU, GFS sequence and verify that the GFS bubbles.
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_begin.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = 5.f;
+
+  child_rwh->ForwardGestureEvent(gesture_scroll_begin);
+
+  blink::WebGestureEvent gesture_scroll_update(
+      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_update.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_update.data.scroll_update.delta_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_update.data.scroll_update.delta_x = 0.f;
+  gesture_scroll_update.data.scroll_update.delta_y = 5.f;
+  gesture_scroll_update.data.scroll_update.velocity_y = 5.f;
+
+  child_rwh->ForwardGestureEvent(gesture_scroll_update);
+
+  blink::WebGestureEvent gesture_fling_start(
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_fling_start.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_fling_start.data.fling_start.velocity_x = 0.f;
+  gesture_fling_start.data.fling_start.velocity_y = 5.f;
+
+  child_rwh->ForwardGestureEvent(gesture_fling_start);
+
+  // We now wait for the fling start event to be acked by the parent
+  // frame. If the test fails, then the test times out.
+  gesture_fling_start_ack_observer->Wait();
+}
+
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
 #if defined(OS_ANDROID)
@@ -1151,8 +1222,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
-  std::unique_ptr<GestureScrollEndObserver> ack_observer =
-      base::MakeUnique<GestureScrollEndObserver>();
+  std::unique_ptr<InputEventAckWaiter> ack_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollEnd);
   parent_iframe_node->current_frame_host()
       ->GetRenderWidgetHost()
       ->AddInputEventObserver(ack_observer.get());

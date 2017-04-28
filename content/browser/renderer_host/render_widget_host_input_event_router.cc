@@ -556,7 +556,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // including bubbling, based on GestureScrollBegin.
   DCHECK(target_view);
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-         event.GetType() == blink::WebInputEvent::kGestureScrollEnd);
+         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+         event.GetType() == blink::WebInputEvent::kGestureFlingStart);
   // DCHECK_XNOR the current and original bubble targets. Both should be set
   // if a bubbling gesture scroll is in progress.
   DCHECK(!first_bubbling_scroll_target_.target ==
@@ -570,7 +571,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   if (target_view == first_bubbling_scroll_target_.target) {
     bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
                                                                 latency_info);
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
       first_bubbling_scroll_target_.target = nullptr;
       bubbling_gesture_scroll_target_.target = nullptr;
     }
