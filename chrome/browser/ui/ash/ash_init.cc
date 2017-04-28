@@ -67,6 +67,11 @@ std::unique_ptr<ash::mus::WindowManager> CreateMusShell() {
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   std::unique_ptr<ash::mus::WindowManager> window_manager =
       base::MakeUnique<ash::mus::WindowManager>(connector, ash::Config::MUS);
+  // The WindowManager normally deletes the Shell when it loses its connection
+  // to mus. Disable that by installing an empty callback. Chrome installs
+  // its own callback to detect when the connection to mus is lost and that is
+  // what shuts everything down.
+  window_manager->SetLostConnectionCallback(base::BindOnce(&base::DoNothing));
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
       base::MakeUnique<aura::WindowTreeClient>(connector, window_manager.get(),
                                                window_manager.get());

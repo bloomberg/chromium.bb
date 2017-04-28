@@ -155,6 +155,10 @@ void WindowManager::Init(
     shell_delegate_ = std::move(shell_delegate);
 }
 
+void WindowManager::SetLostConnectionCallback(base::OnceClosure closure) {
+  lost_connection_callback_ = std::move(closure);
+}
+
 bool WindowManager::WaitForInitialDisplays() {
   return window_manager_client_->WaitForInitialDisplays();
 }
@@ -309,6 +313,10 @@ void WindowManager::OnEmbedRootDestroyed(
 
 void WindowManager::OnLostConnection(aura::WindowTreeClient* client) {
   DCHECK_EQ(client, window_tree_client_.get());
+  if (!lost_connection_callback_.is_null()) {
+    base::ResetAndReturn(&lost_connection_callback_).Run();
+    return;
+  }
   Shutdown();
   // TODO(sky): this case should trigger shutting down WindowManagerApplication
   // too.

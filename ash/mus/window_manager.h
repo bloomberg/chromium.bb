@@ -12,6 +12,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell_delegate.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/ui/common/types.h"
@@ -73,6 +74,10 @@ class WindowManager : public aura::WindowManagerDelegate,
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
             const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
             std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
+
+  // Sets the callback that is run once the connection to mus is lost. If not
+  // set shutdown occurs when the connection is lost (the Shell is deleted).
+  void SetLostConnectionCallback(base::OnceClosure closure);
 
   // Blocks waiting for the initial set of displays.
   bool WaitForInitialDisplays();
@@ -196,6 +201,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   display::mojom::DisplayControllerPtr display_controller_;
 
   const Config config_;
+
+  base::OnceClosure lost_connection_callback_;
 
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
