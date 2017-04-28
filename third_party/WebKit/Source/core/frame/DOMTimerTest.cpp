@@ -87,7 +87,7 @@ const char* const kSetTimeout0ScriptText =
     "}"
     "setTimeout(setTimeoutCallback, 0);";
 
-TEST_F(DOMTimerTest, setTimeout_ZeroIsNotClampedToOne) {
+TEST_F(DOMTimerTest, DISABLED_setTimeout_ZeroIsNotClampedToOne) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   ExecuteScriptAndWaitUntilIdle(kSetTimeout0ScriptText);

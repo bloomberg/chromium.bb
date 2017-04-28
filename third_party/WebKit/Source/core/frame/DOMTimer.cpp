@@ -88,10 +88,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     user_gesture_token_ = UserGestureIndicator::CurrentToken();
   }
 
-  // TODO(delphick): Remove the single shot guard here so that this affects
-  // setInterval as well.
   double interval_milliseconds =
-      std::max(single_shot ? 0.0 : kOneMillisecond, interval * kOneMillisecond);
+      std::max(kOneMillisecond, interval * kOneMillisecond);
   if (interval_milliseconds < kMinimumInterval &&
       nesting_level_ >= kMaxTimerNestingLevel)
     interval_milliseconds = kMinimumInterval;
