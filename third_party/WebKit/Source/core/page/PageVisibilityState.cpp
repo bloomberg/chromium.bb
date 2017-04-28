@@ -42,7 +42,7 @@ String PageVisibilityStateString(PageVisibilityState state) {
       return "prerender";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

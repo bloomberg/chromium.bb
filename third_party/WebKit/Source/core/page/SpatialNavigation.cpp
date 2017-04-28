@@ -102,7 +102,7 @@ static bool RectsIntersectOnOrthogonalAxis(WebFocusType type,
     case kWebFocusTypeDown:
       return a.MaxX() > b.X() && a.X() < b.MaxX();
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -136,7 +136,7 @@ static bool IsRectInDirection(WebFocusType type,
     case kWebFocusTypeDown:
       return Below(target_rect, cur_rect);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -219,7 +219,7 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType type) {
         dy = pixels_per_line_step;
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 
@@ -264,7 +264,7 @@ bool ScrollInDirection(Node* container, WebFocusType type) {
         dy = pixels_per_line_step;
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 
@@ -351,7 +351,7 @@ bool CanScrollInDirection(const Node* container, WebFocusType type) {
                       container->GetLayoutBox()->ClientHeight() <
                   container->GetLayoutBox()->ScrollHeight());
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -382,7 +382,7 @@ bool CanScrollInDirection(const LocalFrame* frame, WebFocusType type) {
     case kWebFocusTypeDown:
       return rect.Height() + offset.Height() < size.Height();
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -475,7 +475,7 @@ void EntryAndExitPointsForDirection(WebFocusType type,
         entry_point.SetY(starting_rect.MaxY());
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   switch (type) {
@@ -518,7 +518,7 @@ void EntryAndExitPointsForDirection(WebFocusType type,
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -607,7 +607,7 @@ void DistanceDataForNode(WebFocusType type,
           (x_axis + orthogonal_bias) * kOrthogonalWeightForUpDown;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
   }
 
@@ -668,7 +668,7 @@ LayoutRect VirtualRectForDirection(WebFocusType type,
       virtual_starting_rect.SetHeight(width);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   return virtual_starting_rect;
