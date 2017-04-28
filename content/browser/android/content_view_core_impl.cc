@@ -398,7 +398,7 @@ jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {
   return rwhva->GetCachedBackgroundColor();
 }
 
-// All positions and sizes are in CSS pixels.
+// All positions and sizes (except |top_shown_pix|) are in CSS pixels.
 // Note that viewport_width/height is a best effort based.
 // ContentViewCore has the actual information about the physical viewport size.
 void ContentViewCoreImpl::UpdateFrameInfo(
@@ -407,16 +407,16 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::Vector2dF& page_scale_factor_limits,
     const gfx::SizeF& content_size,
     const gfx::SizeF& viewport_size,
-    const float top_controls_height,
-    const float top_controls_shown_ratio,
+    const float content_offset,
+    const float top_shown_pix,
+    bool top_changed,
     bool is_mobile_optimized_hint) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  GetViewAndroid()->set_content_offset(
-      gfx::Vector2dF(0.0f, top_controls_height * top_controls_shown_ratio));
+  GetViewAndroid()->set_content_offset(gfx::Vector2dF(0.0f, content_offset));
 
   page_scale_ = page_scale_factor;
 
@@ -424,7 +424,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
       page_scale_factor_limits.x(), page_scale_factor_limits.y(),
       content_size.width(), content_size.height(), viewport_size.width(),
-      viewport_size.height(), top_controls_height, top_controls_shown_ratio,
+      viewport_size.height(), top_shown_pix, top_changed,
       is_mobile_optimized_hint);
 }
 

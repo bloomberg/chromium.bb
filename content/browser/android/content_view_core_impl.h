@@ -252,14 +252,16 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Hides a visible popup menu.
   void HideSelectPopupMenu();
 
-  // All sizes and offsets are in CSS pixels as cached by the renderer.
+  // All sizes and offsets are in CSS pixels (except |top_show_pix|)
+  // as cached by the renderer.
   void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                        float page_scale_factor,
                        const gfx::Vector2dF& page_scale_factor_limits,
                        const gfx::SizeF& content_size,
                        const gfx::SizeF& viewport_size,
-                       const float top_controls_height,
-                       const float top_controls_shown_ratio,
+                       const float content_offset,
+                       const float top_shown_pix,
+                       bool top_changed,
                        bool is_mobile_optimized_hint);
 
   bool HasFocus();

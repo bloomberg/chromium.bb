@@ -1576,9 +1576,8 @@ public class ContentViewCore
     @CalledByNative
     private void updateFrameInfo(float scrollOffsetX, float scrollOffsetY, float pageScaleFactor,
             float minPageScaleFactor, float maxPageScaleFactor, float contentWidth,
-            float contentHeight, float viewportWidth, float viewportHeight,
-            float browserControlsHeightDp, float browserControlsShownRatio,
-            boolean isMobileOptimizedHint) {
+            float contentHeight, float viewportWidth, float viewportHeight, float topBarShownPix,
+            boolean topBarChanged, boolean isMobileOptimizedHint) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
         mIsMobileOptimizedHint = isMobileOptimizedHint;
         // Adjust contentWidth/Height to be always at least as big as
@@ -1588,8 +1587,6 @@ public class ContentViewCore
                 mViewportWidthPix / (deviceScale * pageScaleFactor));
         contentHeight = Math.max(contentHeight,
                 mViewportHeightPix / (deviceScale * pageScaleFactor));
-        final float topBarShownPix =
-                browserControlsHeightDp * deviceScale * browserControlsShownRatio;
 
         final boolean contentSizeChanged =
                 contentWidth != mRenderCoordinates.getContentWidthCss()
@@ -1603,8 +1600,6 @@ public class ContentViewCore
                 pageScaleChanged
                 || scrollOffsetX != mRenderCoordinates.getScrollX()
                 || scrollOffsetY != mRenderCoordinates.getScrollY();
-        final boolean topBarChanged = Float.compare(topBarShownPix,
-                mRenderCoordinates.getContentOffsetYPix()) != 0;
 
         final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
 
