@@ -183,7 +183,8 @@ void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
 void CrossProcessFrameConnector::BubbleScrollEvent(
     const blink::WebGestureEvent& event) {
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-         event.GetType() == blink::WebInputEvent::kGestureScrollEnd);
+         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+         event.GetType() == blink::WebInputEvent::kGestureFlingStart);
   auto* parent_view = GetParentRenderWidgetHostView();
 
   if (!parent_view)
@@ -203,7 +204,8 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
     event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
     is_scroll_bubbling_ = true;
-  } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+  } else if ((event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+              event.GetType() == blink::WebInputEvent::kGestureFlingStart) &&
              is_scroll_bubbling_) {
     event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
     is_scroll_bubbling_ = false;
