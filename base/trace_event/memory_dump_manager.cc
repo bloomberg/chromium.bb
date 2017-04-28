@@ -54,31 +54,6 @@ namespace {
 StaticAtomicSequenceNumber g_next_guid;
 MemoryDumpManager* g_instance_for_testing = nullptr;
 
-// The list of names of dump providers that are blacklisted from strict thread
-// affinity check on unregistration. These providers could potentially cause
-// crashes on build bots if they do not unregister on right thread.
-// TODO(ssid): Fix all the dump providers to unregister if needed and clear the
-// blacklist, crbug.com/643438.
-const char* const kStrictThreadCheckBlacklist[] = {
-    "ClientDiscardableSharedMemoryManager",
-    "ContextProviderCommandBuffer",
-    "DiscardableSharedMemoryManager",
-    "FontCaches",
-    "GpuMemoryBufferVideoFramePool",
-    "IndexedDBBackingStore",
-    "Sql",
-    "ThreadLocalEventBuffer",
-    "TraceLog",
-    "URLRequestContext",
-    "VpxVideoDecoder",
-    "cc::SoftwareImageDecodeCache",
-    "cc::StagingBufferPool",
-    "gpu::BufferManager",
-    "gpu::MappedMemoryManager",
-    "gpu::RenderbufferManager",
-    "BlacklistTestDumpProvider"  // for testing
-};
-
 // Callback wrapper to hook upon the completion of RequestGlobalDump() and
 // inject trace markers.
 void OnGlobalDumpDone(GlobalMemoryDumpCallback wrapped_callback,
@@ -191,9 +166,6 @@ MemoryDumpManager::MemoryDumpManager()
   // At this point the command line may not be initialized but we try to
   // enable the heap profiler to capture allocations as soon as possible.
   EnableHeapProfilingIfNeeded();
-
-  strict_thread_check_blacklist_.insert(std::begin(kStrictThreadCheckBlacklist),
-                                        std::end(kStrictThreadCheckBlacklist));
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
@@ -398,15 +370,7 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
     // - When the provider is removed from other clients (MemoryPeakDetector).
     DCHECK(!(*mdp_iter)->owned_dump_provider);
     (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
-  } else if (strict_thread_check_blacklist_.count((*mdp_iter)->name) == 0 ||
-             subtle::NoBarrier_Load(&is_enabled_)) {
-    // If dump provider's name is on |strict_thread_check_blacklist_|, then the
-    // DCHECK is fired only when tracing is enabled. Otherwise the DCHECK is
-    // fired even when tracing is not enabled (stricter).
-    // TODO(ssid): Remove this condition after removing all the dump providers
-    // in the blacklist and the buildbots are no longer flakily hitting the
-    // DCHECK, crbug.com/643438.
-
+  } else {
     // If you hit this DCHECK, your dump provider has a bug.
     // Unregistration of a MemoryDumpProvider is safe only if:
     // - The MDP has specified a sequenced task runner affinity AND the

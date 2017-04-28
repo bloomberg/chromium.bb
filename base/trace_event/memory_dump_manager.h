@@ -295,11 +295,6 @@ class BASE_EXPORT MemoryDumpManager {
   // Shared among all the PMDs to keep state scoped to the tracing session.
   scoped_refptr<MemoryDumpSessionState> session_state_;
 
-  // The list of names of dump providers that are blacklisted from strict thread
-  // affinity check on unregistration.
-  std::unordered_set<StringPiece, StringPieceHash>
-      strict_thread_check_blacklist_;
-
   std::unique_ptr<MemoryTracingObserver> tracing_observer_;
 
   // Function provided by the embedder to handle global dump requests.
