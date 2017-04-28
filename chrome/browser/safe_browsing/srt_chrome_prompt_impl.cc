@@ -14,8 +14,11 @@ using chrome_cleaner::mojom::ElevationStatus;
 using chrome_cleaner::mojom::PromptAcceptance;
 using chrome_cleaner::mojom::UwSPtr;
 
-ChromePromptImpl::ChromePromptImpl(ChromePromptRequest request)
-    : binding_(this, std::move(request)) {}
+ChromePromptImpl::ChromePromptImpl(ChromePromptRequest request,
+                                   base::Closure on_connection_closed)
+    : binding_(this, std::move(request)) {
+  binding_.set_connection_error_handler(std::move(on_connection_closed));
+}
 
 ChromePromptImpl::~ChromePromptImpl() {}
 
