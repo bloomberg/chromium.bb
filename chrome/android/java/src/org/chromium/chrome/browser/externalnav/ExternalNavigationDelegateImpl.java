@@ -343,7 +343,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         boolean activityWasLaunched;
         // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        StrictMode.allowThreadDiskReads();
         try {
             forcePdfViewerAsIntentHandlerIfNeeded(intent);
             if (proxy) {

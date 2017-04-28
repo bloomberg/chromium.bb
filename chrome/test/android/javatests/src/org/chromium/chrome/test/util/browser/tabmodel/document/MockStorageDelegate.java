@@ -52,8 +52,7 @@ public class MockStorageDelegate extends StorageDelegate {
     @Override
     public File getStateDirectory() {
         // This is a test class, allowing StrictMode violations.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             if (!mStateDirectory.exists() && !mStateDirectory.mkdirs()) {
                 Assert.fail("Failed to create state directory.  Tests should fail.");

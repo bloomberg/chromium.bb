@@ -208,8 +208,7 @@ public class WebappActivity extends FullScreenActivity {
         File tabFile = new File(activityDirectory, tabFileName);
 
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             long time = SystemClock.elapsedRealtime();
             TabState.saveState(tabFile, getActivityTab().getState(), false);

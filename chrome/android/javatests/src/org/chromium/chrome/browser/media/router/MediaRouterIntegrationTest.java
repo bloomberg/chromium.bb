@@ -81,8 +81,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOldPolicy = StrictMode.allowThreadDiskReads();
-                StrictMode.allowThreadDiskWrites();
+                mOldPolicy = StrictMode.allowThreadDiskWrites();
             }
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
