@@ -722,7 +722,7 @@
     ],
 
     'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon': [
-      'android', 'cronet', 'data_reduction_proxy', 'release_bot', 'minimal_symbols', 'arm_no_neon',
+      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon',
     ],
 
     'android_cronet_debug_static_bot_arm64': [
@@ -738,7 +738,7 @@
     ],
 
     'android_cronet_data_reduction_proxy_release_bot_minimal_symbols_arm_no_neon': [
-      'android', 'cronet', 'data_reduction_proxy', 'release_bot', 'minimal_symbols', 'arm_no_neon',
+      'android', 'cronet', 'release_bot', 'minimal_symbols', 'arm_no_neon',
     ],
 
     'android_cronet_debug_static_bot_arm64': [
@@ -1652,10 +1652,6 @@
       # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
       # target_os="chromeos" in it.
       'cros_passthrough': True,
-    },
-
-    'data_reduction_proxy': {
-      'gn_args': 'cronet_enable_data_reduction_proxy_support=true',
     },
 
     'dcheck_always_on': {
