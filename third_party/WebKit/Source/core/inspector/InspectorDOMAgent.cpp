@@ -1009,14 +1009,13 @@ Response InspectorDOMAgent::performSearch(
           AttributeCollection attributes = element->Attributes();
           for (auto& attribute : attributes) {
             // Add attribute pair
-            if (attribute.LocalName().Find(whitespace_trimmed_query, 0,
-                                           kTextCaseUnicodeInsensitive) !=
-                kNotFound) {
+            if (attribute.LocalName().FindIgnoringCase(whitespace_trimmed_query,
+                                                       0) != kNotFound) {
               result_collector.insert(node);
               break;
             }
-            size_t found_position = attribute.Value().Find(
-                attribute_query, 0, kTextCaseUnicodeInsensitive);
+            size_t found_position =
+                attribute.Value().FindIgnoringCase(attribute_query, 0);
             if (found_position != kNotFound) {
               if (!exact_attribute_match ||
                   (!found_position &&

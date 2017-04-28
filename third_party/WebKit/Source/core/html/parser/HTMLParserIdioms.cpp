@@ -358,7 +358,7 @@ String ExtractCharset(const String& value) {
   unsigned length = value.length();
 
   while (pos < length) {
-    pos = value.Find(kCharsetString, pos, kTextCaseASCIIInsensitive);
+    pos = value.FindIgnoringASCIICase(kCharsetString, pos);
     if (pos == kNotFound)
       break;
 

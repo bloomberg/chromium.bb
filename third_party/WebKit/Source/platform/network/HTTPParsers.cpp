@@ -305,8 +305,7 @@ bool ParseHTTPRefresh(const String& refresh,
       ++pos;
     SkipWhiteSpace(refresh, pos, matcher);
     unsigned url_start_pos = pos;
-    if (refresh.Find("url", url_start_pos, kTextCaseASCIIInsensitive) ==
-        url_start_pos) {
+    if (refresh.FindIgnoringASCIICase("url", url_start_pos) == url_start_pos) {
       url_start_pos += 3;
       SkipWhiteSpace(refresh, url_start_pos, matcher);
       if (refresh[url_start_pos] == '=') {
@@ -406,7 +405,7 @@ void FindCharsetInMediaType(const String& media_type,
   unsigned length = media_type.length();
 
   while (pos < length) {
-    pos = media_type.Find("charset", pos, kTextCaseASCIIInsensitive);
+    pos = media_type.FindIgnoringASCIICase("charset", pos);
     if (pos == kNotFound || !pos) {
       charset_len = 0;
       return;
