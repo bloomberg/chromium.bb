@@ -377,7 +377,7 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   ScopedComPtr<IConnector> connector;
   ScopedCoMem<WCHAR> filter_id;
   if (FAILED(device->Activate(__uuidof(IDeviceTopology), CLSCTX_ALL, NULL,
-             topology.ReceiveVoid())) ||
+             &topology)) ||
       // For our purposes checking the first connected device should be enough
       // and if there are cases where there are more than one device connected
       // we're not sure how to handle that anyway. So we pass 0.
@@ -513,7 +513,7 @@ ScopedComPtr<IAudioClient> CoreAudioUtil::CreateClient(
   HRESULT hr = audio_device->Activate(__uuidof(IAudioClient),
                                       CLSCTX_INPROC_SERVER,
                                       NULL,
-                                      audio_client.ReceiveVoid());
+                                      &audio_client);
   DVLOG_IF(1, FAILED(hr)) << "IMMDevice::Activate: " << std::hex << hr;
   return audio_client;
 }
@@ -843,8 +843,7 @@ ScopedComPtr<IAudioCaptureClient> CoreAudioUtil::CreateCaptureClient(
   // Get access to the IAudioCaptureClient interface. This interface
   // enables us to read input data from a capturing endpoint buffer.
   ScopedComPtr<IAudioCaptureClient> audio_capture_client;
-  HRESULT hr = client->GetService(__uuidof(IAudioCaptureClient),
-                                  audio_capture_client.ReceiveVoid());
+  HRESULT hr = client->GetService(IID_PPV_ARGS(&audio_capture_client));
   if (FAILED(hr)) {
     DVLOG(1) << "IAudioClient::GetService: " << std::hex << hr;
     return ScopedComPtr<IAudioCaptureClient>();

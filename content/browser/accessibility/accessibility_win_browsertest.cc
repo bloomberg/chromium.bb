@@ -70,9 +70,8 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       base::win::ScopedComPtr<IAccessibleText>* input_text);
   void SetUpTextareaField(
       base::win::ScopedComPtr<IAccessibleText>* textarea_text);
-  template <typename Interface>
   void SetUpSampleParagraph(
-      base::win::ScopedComPtr<Interface>* com_interface,
+      base::win::ScopedComPtr<IAccessibleText>* accessible_text,
       AccessibilityMode accessibility_mode = kAccessibilityModeComplete);
 
   static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
@@ -231,11 +230,10 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 }
 
 // Loads a page with  a paragraph of sample text.
-template <typename Interface>
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
-    base::win::ScopedComPtr<Interface>* com_interface,
+    base::win::ScopedComPtr<IAccessibleText>* accessible_text,
     AccessibilityMode accessibility_mode) {
-  ASSERT_NE(nullptr, com_interface);
+  ASSERT_NE(nullptr, accessible_text);
   LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html>"
       "<body style=\"overflow: scroll; margin-top: 100vh\">"
@@ -259,7 +257,8 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
   LONG paragraph_role = 0;
   ASSERT_HRESULT_SUCCEEDED(paragraph->role(&paragraph_role));
   ASSERT_EQ(IA2_ROLE_PARAGRAPH, paragraph_role);
-  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(com_interface->Receive()));
+  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(
+      accessible_text->Receive()));
 }
 
 // Static helpers ------------------------------------------------
@@ -1119,8 +1118,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
+  base::win::ScopedComPtr<IAccessibleText> accessible_text;
+  SetUpSampleParagraph(&accessible_text);
   base::win::ScopedComPtr<IAccessible2> paragraph;
-  SetUpSampleParagraph(&paragraph);
+  ASSERT_HRESULT_SUCCEEDED(
+      accessible_text.QueryInterface(IID_PPV_ARGS(&paragraph)));
 
   LONG prev_x, prev_y, x, y, width, height;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
