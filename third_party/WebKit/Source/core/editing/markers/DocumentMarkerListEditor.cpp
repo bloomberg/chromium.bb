@@ -8,29 +8,23 @@
 
 namespace blink {
 
-// TODO(rlanday): this method was created by cutting and pasting code from
-// DocumentMarkerController::AddMarker(), it should be refactored in a future CL
-void DocumentMarkerListEditor::AddMarker(MarkerList* list,
-                                         const DocumentMarker* marker) {
+void DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
+    MarkerList* list,
+    const DocumentMarker* marker) {
   RenderedDocumentMarker* rendered_marker =
       RenderedDocumentMarker::Create(*marker);
-  if (list->IsEmpty() || list->back()->EndOffset() < marker->StartOffset()) {
+  if (list->IsEmpty() || list->back()->EndOffset() <= marker->StartOffset()) {
     list->push_back(rendered_marker);
-  } else {
-    if (marker->GetType() != DocumentMarker::kTextMatch &&
-        marker->GetType() != DocumentMarker::kComposition) {
-      MergeOverlapping(list, rendered_marker);
-    } else {
-      MarkerList::iterator pos = std::lower_bound(
-          list->begin(), list->end(), marker,
-          [](const Member<RenderedDocumentMarker>& marker_in_list,
-             const DocumentMarker* marker_to_insert) {
-            return marker_in_list->StartOffset() <
-                   marker_to_insert->StartOffset();
-          });
-      list->insert(pos - list->begin(), rendered_marker);
-    }
+    return;
   }
+
+  const auto pos = std::lower_bound(
+      list->begin(), list->end(), marker,
+      [](const Member<RenderedDocumentMarker>& marker_in_list,
+         const DocumentMarker* marker_to_insert) {
+        return marker_in_list->StartOffset() < marker_to_insert->StartOffset();
+      });
+  list->insert(pos - list->begin(), rendered_marker);
 }
 
 bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
@@ -134,19 +128,28 @@ bool DocumentMarkerListEditor::ShiftMarkers(MarkerList* list,
   return did_shift_marker;
 }
 
-void DocumentMarkerListEditor::MergeOverlapping(
-    DocumentMarkerListEditor::MarkerList* list,
-    RenderedDocumentMarker* to_insert) {
+void DocumentMarkerListEditor::AddMarkerAndMergeOverlapping(
+    MarkerList* list,
+    const DocumentMarker* marker) {
+  RenderedDocumentMarker* const rendered_marker =
+      RenderedDocumentMarker::Create(*marker);
+  if (list->IsEmpty() || list->back()->EndOffset() < marker->StartOffset()) {
+    list->push_back(rendered_marker);
+    return;
+  }
+
   auto first_overlapping = std::lower_bound(
-      list->begin(), list->end(), to_insert,
+      list->begin(), list->end(), rendered_marker,
       [](const Member<RenderedDocumentMarker>& marker_in_list,
          const DocumentMarker* marker_to_insert) {
         return marker_in_list->EndOffset() < marker_to_insert->StartOffset();
       });
+
   size_t index = first_overlapping - list->begin();
-  list->insert(index, to_insert);
+  list->insert(index, rendered_marker);
   const auto inserted = list->begin() + index;
   first_overlapping = inserted + 1;
+  // TODO(rlanday): optimize this loop so it runs in O(N) time and not O(N^2)
   for (const auto i = first_overlapping;
        i != list->end() && (*i)->StartOffset() <= (*inserted)->EndOffset();) {
     (*inserted)->SetStartOffset(

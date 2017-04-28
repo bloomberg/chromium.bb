@@ -17,7 +17,9 @@ class DocumentMarkerListEditor {
  public:
   using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
 
-  static void AddMarker(MarkerList*, const DocumentMarker*);
+  static void AddMarkerAndMergeOverlapping(MarkerList*, const DocumentMarker*);
+  static void AddMarkerWithoutMergingOverlapping(MarkerList*,
+                                                 const DocumentMarker*);
 
   // Returns true if a marker was moved, false otherwise.
   static bool MoveMarkers(MarkerList* src_list,
@@ -37,9 +39,6 @@ class DocumentMarkerListEditor {
                            unsigned offset,
                            unsigned old_length,
                            unsigned new_length);
-
- private:
-  static void MergeOverlapping(MarkerList*, RenderedDocumentMarker* to_insert);
 };
 
 }  // namespace blink
