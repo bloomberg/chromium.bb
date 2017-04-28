@@ -168,7 +168,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int nhsb, nvsb;
   uint16_t src[OD_DERING_INBUF_SIZE];
   uint16_t *linebuf[3];
-  uint16_t colbuf[3][(MAX_SB_SIZE + 2 * OD_FILT_VBORDER) * OD_FILT_HBORDER];
+  uint16_t *colbuf[3];
   dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
   unsigned char *row_dering, *prev_row_dering, *curr_row_dering;
   int dering_count;
@@ -202,6 +202,10 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * OD_FILT_HBORDER;
   for (pli = 0; pli < nplanes; pli++) {
     linebuf[pli] = aom_malloc(sizeof(*linebuf) * OD_FILT_VBORDER * stride);
+    colbuf[pli] =
+        aom_malloc(sizeof(*colbuf) *
+                   ((MAX_SB_SIZE << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER) *
+                   OD_FILT_HBORDER);
   }
   for (sbr = 0; sbr < nvsb; sbr++) {
     for (pli = 0; pli < nplanes; pli++) {
@@ -436,5 +440,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   aom_free(row_dering);
   for (pli = 0; pli < nplanes; pli++) {
     aom_free(linebuf[pli]);
+    aom_free(colbuf[pli]);
   }
 }
