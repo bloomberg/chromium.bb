@@ -1794,7 +1794,7 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
 
 // Drags from browser to a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DISABLED_DragSingleTabToSeparateWindowInSecondDisplay) {
+                       DragSingleTabToSeparateWindowInSecondDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -1822,16 +1822,12 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
 
-  // This other browser should be on the second screen (with mouse drag)
-  // With the touch input the browser cannot be dragged from one screen
-  // to another and the window stays on the first screen.
-  if (input_source() == INPUT_SOURCE_MOUSE) {
-    aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
-    ASSERT_EQ(2u, roots.size());
-    aura::Window* second_root = roots[1];
-    EXPECT_EQ(second_root,
-              new_browser->window()->GetNativeWindow()->GetRootWindow());
-  }
+  // This other browser should be on the second screen with mouse drag.
+  aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+  aura::Window* second_root = roots[1];
+  EXPECT_EQ(second_root,
+            new_browser->window()->GetNativeWindow()->GetRootWindow());
 
   EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
@@ -2453,9 +2449,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 #endif  // OS_CHROMEOS
 
 #if defined(USE_ASH)
+// There are no use case for touch drag to move across displays right now.
+// Removes touch input here until we have that case.
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                        ::testing::Values("mouse", "touch"));
+                        ::testing::Values("mouse"));
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DifferentDeviceScaleFactorDisplayTabDragControllerTest,
                         ::testing::Values("mouse"));
