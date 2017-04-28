@@ -46,7 +46,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
 
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
         assertTrue(Http2TestServer.startHttp2TestServer(
-                getContext(), QuicTestServer.getServerCert(), QuicTestServer.getServerCertKey()));
+                getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM));
     }
 
     @Override

@@ -587,7 +587,6 @@ android_library("cronet_test_apk_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//net/android:net_java_test_support",
-    "//third_party/netty-tcnative:netty-tcnative_java",
     "//third_party/netty4:netty_all_java",
   ]
 
@@ -1024,7 +1023,6 @@ action("extract_cronet_test_jars") {
     "$root_out_dir/lib.java/components/cronet/android/cronet_test_apk_java.jar",
     "$root_out_dir/lib.java/net/android/net_java.jar",
     "$root_out_dir/lib.java/net/android/net_java_test_support.jar",
-    "$root_out_dir/lib.java/third_party/netty-tcnative/netty-tcnative_java.jar",
     "$root_out_dir/lib.java/url/url_java.jar",
     NETTY4_JAR_FILE,
   ]
@@ -1053,7 +1051,6 @@ action("extract_cronet_test_jars") {
     "//base:base_java_test_support",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
-    "//third_party/netty-tcnative:netty-tcnative_java",
     "//third_party/netty4:netty_all_java",
     "//url:url_java",
   ]

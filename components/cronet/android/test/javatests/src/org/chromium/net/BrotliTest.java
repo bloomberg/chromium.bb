@@ -20,7 +20,7 @@ public class BrotliTest extends CronetTestBase {
         // Load library first to create MockCertVerifier.
         System.loadLibrary("cronet_tests");
         assertTrue(Http2TestServer.startHttp2TestServer(
-                getContext(), QuicTestServer.getServerCert(), QuicTestServer.getServerCertKey()));
+                getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM));
     }
 
     @Override

@@ -24,6 +24,16 @@ import java.net.URL;
  * Base test class for all CronetTest based tests.
  */
 public class CronetTestBase extends AndroidTestCase {
+    /**
+     * Name of the file that contains the test server certificate in PEM format.
+     */
+    static final String SERVER_CERT_PEM = "quic_test.example.com.crt";
+
+    /**
+     * Name of the file that contains the test server private key in PKCS8 PEM format.
+     */
+    static final String SERVER_KEY_PKCS8_PEM = "quic_test.example.com.key.pkcs8.pem";
+
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cronet_test";
     private static final String LOOPBACK_ADDRESS = "127.0.0.1";
 
