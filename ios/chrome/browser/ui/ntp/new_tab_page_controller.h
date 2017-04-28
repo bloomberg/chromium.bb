@@ -38,7 +38,7 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
 
 @class BookmarkHomeTabletNTPController;
 @protocol CRWSwipeRecognizerProvider;
-@class GoogleLandingController;
+@class GoogleLandingViewController;
 @protocol NewTabPagePanelProtocol;
 @protocol OmniboxFocuser;
 @class TabModel;
@@ -77,7 +77,7 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
                               UIScrollViewDelegate> {
  @private
   base::scoped_nsobject<BookmarkHomeTabletNTPController> bookmarkController_;
-  base::scoped_nsobject<GoogleLandingController> googleLandingController_;
+  base::scoped_nsobject<GoogleLandingViewController> googleLandingController_;
   base::scoped_nsprotocol<id<NewTabPagePanelProtocol>> incognitoController_;
   // The currently visible controller, one of the above.
   id<NewTabPagePanelProtocol> currentController_;  // weak

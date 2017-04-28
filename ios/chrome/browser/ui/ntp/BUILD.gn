@@ -114,11 +114,11 @@ source_set("ntp_internal") {
     "centering_scrollview.h",
     "centering_scrollview.mm",
     "google_landing_consumer.h",
-    "google_landing_controller.h",
-    "google_landing_controller.mm",
     "google_landing_data_source.h",
     "google_landing_mediator.h",
     "google_landing_mediator.mm",
+    "google_landing_view_controller.h",
+    "google_landing_view_controller.mm",
     "incognito_panel_controller.h",
     "incognito_panel_controller.mm",
     "most_visited_cell.h",
@@ -215,7 +215,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "centering_scrollview_unittest.mm",
-    "google_landing_controller_unittest.mm",
+    "google_landing_view_controller_unittest.mm",
     "most_visited_cell_unittest.mm",
     "new_tab_page_bar_unittest.mm",
     "new_tab_page_controller_unittest.mm",

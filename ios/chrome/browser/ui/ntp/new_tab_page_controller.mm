@@ -26,8 +26,8 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
@@ -545,7 +545,8 @@ enum {
     [bookmarkController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
     if (!googleLandingController_) {
-      googleLandingController_.reset([[GoogleLandingController alloc] init]);
+      googleLandingController_.reset(
+          [[GoogleLandingViewController alloc] init]);
       [googleLandingController_ setDispatcher:self.dispatcher];
       googleLandingMediator_.reset([[GoogleLandingMediator alloc]
           initWithConsumer:googleLandingController_

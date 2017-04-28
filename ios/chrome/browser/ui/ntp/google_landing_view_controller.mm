@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/google_landing_controller.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 
 #include <algorithm>
 
@@ -72,7 +72,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 }  // namespace
 
-@interface GoogleLandingController (UsedByGoogleLandingView)
+@interface GoogleLandingViewController (UsedByGoogleLandingView)
 // Update frames for subviews depending on the interface orientation.
 - (void)updateSubviewFrames;
 // Resets the collection view's inset to 0.
@@ -82,16 +82,16 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 // Subclassing the main UIScrollView allows calls for setFrame.
 @interface GoogleLandingView : UIView {
-  GoogleLandingController* _googleLanding;
+  GoogleLandingViewController* _googleLanding;
 }
 
-- (void)setFrameDelegate:(GoogleLandingController*)delegate;
+- (void)setFrameDelegate:(GoogleLandingViewController*)delegate;
 
 @end
 
 @implementation GoogleLandingView
 
-- (void)setFrameDelegate:(GoogleLandingController*)delegate {
+- (void)setFrameDelegate:(GoogleLandingViewController*)delegate {
   _googleLanding = delegate;
 }
 
@@ -110,12 +110,12 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 @end
 
-@interface GoogleLandingController ()<OverscrollActionsControllerDelegate,
-                                      UICollectionViewDataSource,
-                                      UICollectionViewDelegate,
-                                      UICollectionViewDelegateFlowLayout,
-                                      UIGestureRecognizerDelegate,
-                                      WhatsNewHeaderViewDelegate> {
+@interface GoogleLandingViewController ()<OverscrollActionsControllerDelegate,
+                                          UICollectionViewDataSource,
+                                          UICollectionViewDelegate,
+                                          UICollectionViewDelegateFlowLayout,
+                                          UIGestureRecognizerDelegate,
+                                          WhatsNewHeaderViewDelegate> {
   // Fake omnibox.
   base::scoped_nsobject<UIButton> _searchTapTarget;
 
@@ -260,7 +260,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 @end
 
-@implementation GoogleLandingController
+@implementation GoogleLandingViewController
 
 @dynamic view;
 @synthesize logoVendor = _logoVendor;
@@ -1137,9 +1137,9 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
     // Open In New Tab.
     GURL url = [self urlForIndex:index];
-    base::WeakNSObject<GoogleLandingController> weakSelf(self);
+    base::WeakNSObject<GoogleLandingViewController> weakSelf(self);
     action = ^{
-      base::scoped_nsobject<GoogleLandingController> strongSelf(
+      base::scoped_nsobject<GoogleLandingViewController> strongSelf(
           [weakSelf retain]);
       if (!strongSelf)
         return;
@@ -1159,7 +1159,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
     if (!self.isOffTheRecord) {
       // Open in Incognito Tab.
       action = ^{
-        base::scoped_nsobject<GoogleLandingController> strongSelf(
+        base::scoped_nsobject<GoogleLandingViewController> strongSelf(
             [weakSelf retain]);
         if (!strongSelf)
           return;
@@ -1182,7 +1182,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
     NSString* title =
         l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
     action = ^{
-      base::scoped_nsobject<GoogleLandingController> strongSelf(
+      base::scoped_nsobject<GoogleLandingViewController> strongSelf(
           [weakSelf retain]);
       // Early return if the controller has been deallocated.
       if (!strongSelf)
@@ -1205,9 +1205,9 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
   MDCSnackbarMessageAction* action =
       [[[MDCSnackbarMessageAction alloc] init] autorelease];
-  base::WeakNSObject<GoogleLandingController> weakSelf(self);
+  base::WeakNSObject<GoogleLandingViewController> weakSelf(self);
   action.handler = ^{
-    base::scoped_nsobject<GoogleLandingController> strongSelf(
+    base::scoped_nsobject<GoogleLandingViewController> strongSelf(
         [weakSelf retain]);
     if (!strongSelf)
       return;
@@ -1413,7 +1413,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   return [self.dataSource mostVisitedAtIndex:index].url;
 }
 
-#pragma mark - GoogleLandingController (ExposedForTesting) methods.
+#pragma mark - GoogleLandingViewController (ExposedForTesting) methods.
 
 - (BOOL)scrolledToTop {
   return _scrolledToTop;
