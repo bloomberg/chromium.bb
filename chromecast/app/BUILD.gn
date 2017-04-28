@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/locales.gni")
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -109,7 +109,7 @@ grit("chromecast_settings") {
   outputs = [
     "grit/chromecast_settings.h",
   ]
-  foreach(locale, locales_with_fake_bidi) {
+  foreach(locale, cast_locales) {
     outputs += [ "chromecast_settings_${locale}.pak" ]
   }
 
@@ -121,8 +121,8 @@ grit("chromecast_settings") {
 # This target ensures that Chromecast developers are notified when locales
 # change. If this target is breaking the build, the CAST_LOCALES list in
 # //chromecast/app/verify_cast_locales.py must be updated to match
-# |locales_with_fake_bidi|. Please see that file for more details. This action
-# will be run on fresh builds, and whenever |locales_with_fake_bidi| is updated.
+# |cast_locales|. Please see that file for more details. This action will be
+# run on fresh builds, and whenever |cast_locales| is updated.
 action("verify_cast_locales") {
   script = "//chromecast/app/verify_cast_locales.py"
 
@@ -133,7 +133,7 @@ action("verify_cast_locales") {
     rebase_path(stamp_file, "$root_out_dir"),
   ]
 
-  args += locales_with_fake_bidi
+  args += cast_locales
 
   outputs = [
     stamp_file,

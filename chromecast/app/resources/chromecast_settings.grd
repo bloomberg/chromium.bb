@@ -25,7 +25,6 @@ This file contains the strings for Chromecast settings.
     <output filename="chromecast_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="chromecast_settings_et.pak" type="data_package" lang="et" />
     <output filename="chromecast_settings_fa.pak" type="data_package" lang="fa" />
-    <output filename="chromecast_settings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="chromecast_settings_fi.pak" type="data_package" lang="fi" />
     <output filename="chromecast_settings_fil.pak" type="data_package" lang="fil" />
     <output filename="chromecast_settings_fr.pak" type="data_package" lang="fr" />

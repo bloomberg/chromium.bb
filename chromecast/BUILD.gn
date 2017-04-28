@@ -4,7 +4,6 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
-import("//build/config/locales.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//chromecast/build/tests/cast_test.gni")
@@ -420,11 +419,11 @@ repack("cast_shell_pak") {
 }
 
 # Intermediate targets that repack grit resources by locale. For each locale
-# in |locales_with_fake_bidi| (see //build/config/locales.gni), all resources
+# in |cast_locales| (see //chromecast/chromecast.gni), all resources
 # are packed into a single .pak file in an output directory. These targets
 # should not be depended on directly; depend on ":chromecast_locales_pak"
 # instead.
-foreach(locale, locales_with_fake_bidi) {
+foreach(locale, cast_locales) {
   repack("_cast_repack_${locale}") {
     visibility = [ ":chromecast_locales_pak" ]
     output = "$root_out_dir/chromecast_locales/${locale}.pak"
@@ -450,7 +449,7 @@ foreach(locale, locales_with_fake_bidi) {
 # A meta-target which repacks resources by locale.
 group("chromecast_locales_pak") {
   deps = []
-  foreach(locale, locales_with_fake_bidi) {
+  foreach(locale, cast_locales) {
     deps += [ ":_cast_repack_${locale}" ]
   }
 }
