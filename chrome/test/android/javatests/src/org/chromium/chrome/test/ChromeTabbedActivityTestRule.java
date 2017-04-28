@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,12 @@ import android.view.View;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeTabbedActivityTestCommon.ChromeTabbedActivityTestCommonCallback;
 
-/**
- * The base class of the ChromeTabbedActivity specific tests. It provides the common methods
- * to access the ChromeTabbedActivity UI.
- */
-public abstract class ChromeTabbedActivityTestBase
-        extends ChromeActivityTestCaseBase<ChromeTabbedActivity>
+/** Custom ActivityTestRule for test using ChromeTabbedActivity */
+public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeTabbedActivity>
         implements ChromeTabbedActivityTestCommonCallback {
-    private ChromeTabbedActivityTestCommon mTestCommon;
+    private final ChromeTabbedActivityTestCommon mTestCommon;
 
-    public ChromeTabbedActivityTestBase() {
+    public ChromeTabbedActivityTestRule() {
         super(ChromeTabbedActivity.class);
         mTestCommon = new ChromeTabbedActivityTestCommon(this);
     }
@@ -30,7 +26,8 @@ public abstract class ChromeTabbedActivityTestBase
      * @param url The url of the page to load.
      * @param numTabs The number of tabs to open.
      */
-    public void loadUrlInManyNewTabs(String url, int numTabs) throws InterruptedException {
+    public void loadUrlInManyNewTabs(final String url, final int numTabs)
+            throws InterruptedException {
         mTestCommon.loadUrlInManyNewTabs(url, numTabs);
     }
 
@@ -42,7 +39,7 @@ public abstract class ChromeTabbedActivityTestBase
      * @param expectIncognito Whether the opened tab is expected to be incognito.
      * @param expectedUrl The expected url for the new tab.
      */
-    protected void invokeContextMenuAndOpenInANewTab(View view, int contextMenuItemId,
+    public void invokeContextMenuAndOpenInANewTab(View view, int contextMenuItemId,
             boolean expectIncognito, final String expectedUrl) throws InterruptedException {
         mTestCommon.invokeContextMenuAndOpenInANewTab(
                 view, contextMenuItemId, expectIncognito, expectedUrl);
