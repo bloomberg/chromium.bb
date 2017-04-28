@@ -12,6 +12,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -709,14 +710,7 @@ TEST_F(SkCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
       CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
                          memory.get(), cropped_frame()->timestamp());
 
-  // Create GL context.
-  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
-  sk_sp<GrContext> gr_context(GrContext::Create(
-      kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(null_interface.get())));
   TestGLES2Interface gles2;
-  Context3D context_3d(&gles2, gr_context.get());
-
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.teximage2d_callback_ =
       base::Bind([](GLenum target, GLint level, GLint internalformat,
@@ -742,9 +736,9 @@ TEST_F(SkCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
           }
         }
       });
-  SkCanvasVideoRenderer::TexImage2D(GL_TEXTURE_2D, &gles2, video_frame.get(), 0,
-                                    GL_RGBA, GL_RGBA, GL_FLOAT, true /*flip_y*/,
-                                    true);
+  SkCanvasVideoRenderer::TexImage2D(
+      GL_TEXTURE_2D, 0, &gles2, gpu::Capabilities(), video_frame.get(), 0,
+      GL_RGBA, GL_RGBA, GL_FLOAT, true /*flip_y*/, true);
 }
 
 TEST_F(SkCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
@@ -764,14 +758,7 @@ TEST_F(SkCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
       CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
                          memory.get(), cropped_frame()->timestamp());
 
-  // Create GL context.
-  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
-  sk_sp<GrContext> gr_context(GrContext::Create(
-      kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(null_interface.get())));
   TestGLES2Interface gles2;
-  Context3D context_3d(&gles2, gr_context.get());
-
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.texsubimage2d_callback_ = base::Bind([](
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,

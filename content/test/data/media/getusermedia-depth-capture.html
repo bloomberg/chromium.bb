@@ -447,9 +447,9 @@
     var arr = new Float32Array(width * height * 4);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, arr);
     var color_step = 1.0 / (width + height);
-    return verifyPixelsRed(arr, width, height, flip_y, color_step,
-                           1.0 /*wrap_around*/, 1.5 / 65535 /*tolerance*/,
-						   test_name);
+    return verifyPixels(arr, width, height, flip_y, color_step,
+                        1.0 /*wrap_around*/, 1.5 / 65535 /*tolerance*/,
+                        test_name);
   }
 
   function onLoad() {

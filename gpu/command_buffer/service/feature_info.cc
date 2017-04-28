@@ -1293,6 +1293,19 @@ void FeatureInfo::InitializeFeatures() {
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
+  if (gl_version_info_->is_desktop_core_profile ||
+      extensions.Contains("GL_EXT_texture_norm16")) {
+    feature_flags_.ext_texture_norm16 = true;
+    AddExtensionString("GL_EXT_texture_norm16");
+
+    // Note: EXT_texture_norm16 is not exposed through WebGL API so we validate
+    // only the combinations used internally.
+    validators_.texture_format.AddValue(GL_RED_EXT);
+    validators_.texture_internal_format.AddValue(GL_R16_EXT);
+    validators_.texture_internal_format.AddValue(GL_RED_EXT);
+    validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
+  }
+
   bool has_opengl_dual_source_blending =
       gl_version_info_->IsAtLeastGL(3, 3) ||
       (gl_version_info_->IsAtLeastGL(3, 2) &&
