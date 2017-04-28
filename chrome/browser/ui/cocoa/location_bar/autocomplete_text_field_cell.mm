@@ -159,9 +159,10 @@ size_t CalculatePositionsInFrame(
   // Flip all frames in RTL.
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
     for (NSRect& rect : *decoration_frames)
-      rect.origin.x = NSWidth(frame) - NSWidth(rect) - NSMinX(rect);
-    text_frame->origin.x =
-        NSWidth(frame) - NSWidth(*text_frame) - NSMinX(*text_frame);
+      rect.origin.x =
+          NSMinX(frame) + NSMaxX(frame) - NSWidth(rect) - NSMinX(rect);
+    text_frame->origin.x = NSMinX(frame) + NSMaxX(frame) -
+                           NSWidth(*text_frame) - NSMinX(*text_frame);
     leading_count = decorations->size() - leading_count;
   }
 
