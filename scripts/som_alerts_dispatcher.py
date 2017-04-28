@@ -18,6 +18,7 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import logdog
 from chromite.lib import milo
+from chromite.lib import parallel
 from chromite.lib import prpc
 from chromite.lib import som
 
@@ -308,7 +309,7 @@ def GenerateAlertsSummary(db, builds=None,
   if not milo_client:
     milo_client = milo.MiloClient()
 
-  alerts = []
+  funcs = []
   now = datetime.datetime.utcnow()
 
   # Iterate over relevant masters.
@@ -349,12 +350,15 @@ def GenerateAlertsSummary(db, builds=None,
 
     # Look for failing and inflight (signifying timeouts) slave builds.
     for build in sorted(statuses, key=lambda s: s['builder_name']):
-      alert = GenerateBuildAlert(build, stages, exceptions,
-                                 severity, now,
-                                 logdog_client, milo_client,
-                                 allow_experimental=allow_experimental)
-      if alert:
-        alerts.append(alert)
+      funcs.append(lambda build_=build, stages_=stages, exceptions_=exceptions,
+                          severity_=severity:
+                   GenerateBuildAlert(build_, stages_, exceptions_, severity_,
+                                      now, logdog_client, milo_client,
+                                      allow_experimental=allow_experimental))
+
+  alerts = [alert for alert in parallel.RunParallelSteps(funcs,
+                                                         return_values=True)
+            if alert]
 
   revision_summaries = {}
   summary = som.AlertsSummary(alerts, revision_summaries, ToEpoch(now))
