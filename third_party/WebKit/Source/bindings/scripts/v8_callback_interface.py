@@ -35,6 +35,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 from idl_types import IdlTypeBase
 from v8_globals import includes
+from v8_interface import constant_context
 import v8_types
 import v8_utilities
 
@@ -49,6 +50,13 @@ CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'platform/wtf/Assertions.h',
     'platform/wtf/GetPtr.h',
     'platform/wtf/RefPtr.h',
+])
+LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
+    'bindings/core/v8/ScriptController.h',
+    'bindings/core/v8/V8BindingForCore.h',
+    'bindings/core/v8/V8DOMConfiguration.h',
+    'core/dom/ExecutionContext.h',
+    'platform/wtf/Assertions.h',
 ])
 
 
@@ -79,6 +87,20 @@ def callback_interface_context(callback_interface, _):
         'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
         'methods': [method_context(operation)
                     for operation in callback_interface.operations],
+    }
+
+
+def legacy_callback_interface_context(callback_interface, _):
+    includes.clear()
+    includes.update(LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES)
+    return {
+        # TODO(bashi): Fix crbug.com/630986, and add 'methods'.
+        'constants': [constant_context(constant, callback_interface)
+                      for constant in callback_interface.constants],
+        'cpp_class': callback_interface.name,
+        'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
+        'interface_name': callback_interface.name,
+        'v8_class': v8_utilities.v8_class_name(callback_interface),
     }
 
 

@@ -1,0 +1,78 @@
+{% filter format_blink_cpp_source_code %}
+
+{% include 'copyright_block.txt' %}
+#include "{{v8_class}}.h"
+
+{% for filename in cpp_includes %}
+#include "{{filename}}"
+{% endfor %}
+
+namespace blink {
+
+// Suppress warning: global constructors, because struct WrapperTypeInfo is
+// trivial and does not depend on another global objects.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = {
+  gin::kEmbedderBlink,
+  {{v8_class}}::DomTemplate,
+  nullptr,
+  nullptr,
+  nullptr,
+  "{{interface_name}}",
+  nullptr,
+  WrapperTypeInfo::kWrapperTypeNoPrototype,
+  WrapperTypeInfo::kObjectClassId,
+  WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
+  WrapperTypeInfo::kDependent
+};
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic pop
+#endif
+
+void {{v8_class}}::TypeErrorConstructorCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8ThrowException::ThrowTypeError(info.GetIsolate(),
+      "Illegal constructor: {{interface_name}}");
+}
+
+{% from 'constants.cpp.tmpl' import install_constants with context %}
+static void Install{{v8_class}}Template(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  // Legacy callback interface must not have a prototype object.
+  interfaceTemplate->RemovePrototype();
+
+  // Initialize the interface object's template.
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate,
+      {{v8_class}}::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(),
+      kV8DefaultWrapperInternalFieldCount);
+  interfaceTemplate->SetCallHandler({{v8_class}}::TypeErrorConstructorCallback);
+  interfaceTemplate->SetLength(0);
+
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instanceTemplate);
+  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+
+  // Register DOM constants.
+  {{install_constants() | indent(2)}}
+}
+
+v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate,
+    const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate,
+      world,
+      const_cast<WrapperTypeInfo*>(&wrapperTypeInfo),
+      Install{{v8_class}}Template);
+}
+
+}  // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

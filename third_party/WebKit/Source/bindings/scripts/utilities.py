@@ -344,9 +344,12 @@ def write_pickle_file(pickle_filename, data):
 # Leading and trailing context (e.g. following '{') used to avoid false matches.
 ################################################################################
 
-def is_callback_interface_from_idl(file_contents):
+def is_non_legacy_callback_interface_from_idl(file_contents):
+    """Returns True if the specified IDL is a non-legacy callback interface."""
     match = re.search(r'callback\s+interface\s+\w+\s*{', file_contents)
-    return bool(match)
+    # Having constants means it's a legacy callback interface.
+    # https://heycam.github.io/webidl/#legacy-callback-interface-object
+    return bool(match) and not re.search(r'\s+const\b', file_contents)
 
 
 def should_generate_impl_file_from_idl(file_contents):

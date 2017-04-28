@@ -523,7 +523,6 @@ V8_VALUE_TO_CPP_VALUE = {
     'DOMString': '{v8_value}',
     # Interface types
     'FlexibleArrayBufferView': 'ToFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
-    'NodeFilter': 'V8NodeFilterCondition::CreateOrNull({v8_value}, ScriptState::Current({isolate}))',
     'Promise': 'ScriptPromise::Cast(ScriptState::Current({isolate}), {v8_value})',
     'ScriptValue': 'ScriptValue(ScriptState::Current({isolate}), {v8_value})',
     'Window': 'ToDOMWindow({isolate}, {v8_value})',
