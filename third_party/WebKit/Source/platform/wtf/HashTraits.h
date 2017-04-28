@@ -223,7 +223,6 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
 
   typedef P* PeekOutType;
   static PeekOutType Peek(const RefPtr<P>& value) { return value.Get(); }
-  static PeekOutType Peek(std::nullptr_t) { return 0; }
 };
 
 template <typename T>
@@ -245,7 +244,6 @@ struct HashTraits<std::unique_ptr<T>>
   static PeekOutType Peek(const std::unique_ptr<T>& value) {
     return value.get();
   }
-  static PeekOutType Peek(std::nullptr_t) { return nullptr; }
 
   static void ConstructDeletedValue(std::unique_ptr<T>& slot, bool) {
     // Dirty trick: implant an invalid pointer to unique_ptr. Destructor isn't
