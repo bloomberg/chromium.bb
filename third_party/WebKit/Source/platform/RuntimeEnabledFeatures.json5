@@ -970,6 +970,9 @@
       name: "VideoFullscreenOrientationLock",
     },
     {
+      name: "VideoRotateToFullscreen",
+    },
+    {
       name: "VisibilityChangeOnUnload",
       status: "stable",
     },

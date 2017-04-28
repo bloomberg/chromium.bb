@@ -2506,6 +2506,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVideoFullscreenOrientationLockName,
      flag_descriptions::kVideoFullscreenOrientationLockDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
+    {"video-rotate-to-fullscreen",
+     flag_descriptions::kVideoRotateToFullscreenName,
+     flag_descriptions::kVideoRotateToFullscreenDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(media::kVideoRotateToFullscreen)},
 #endif
     {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetch,
      flag_descriptions::kNostatePrefetchDescription, kOsAll,

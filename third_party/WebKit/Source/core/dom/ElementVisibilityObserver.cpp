@@ -18,7 +18,7 @@ ElementVisibilityObserver::ElementVisibilityObserver(
 
 ElementVisibilityObserver::~ElementVisibilityObserver() = default;
 
-void ElementVisibilityObserver::Start() {
+void ElementVisibilityObserver::Start(float threshold) {
   DCHECK(!intersection_observer_);
 
   ExecutionContext* context = element_->GetExecutionContext();
@@ -26,8 +26,7 @@ void ElementVisibilityObserver::Start() {
   Document& document = ToDocument(*context);
 
   intersection_observer_ = IntersectionObserver::Create(
-      Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}),
-      &document,
+      {} /* root_margin */, {threshold}, &document,
       WTF::Bind(&ElementVisibilityObserver::OnVisibilityChanged,
                 WrapWeakPersistent(this)));
   DCHECK(intersection_observer_);
@@ -53,7 +52,8 @@ DEFINE_TRACE(ElementVisibilityObserver) {
 
 void ElementVisibilityObserver::OnVisibilityChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool is_visible = entries.back()->intersectionRatio() > 0.f;
+  bool is_visible = entries.back()->intersectionRatio() >
+                    intersection_observer_->thresholds()[0];
   (*callback_.get())(is_visible);
 }
 

@@ -476,6 +476,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.video_fullscreen_orientation_lock_enabled =
       base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
+  prefs.video_rotate_to_fullscreen_enabled =
+      base::FeatureList::IsEnabled(media::kVideoRotateToFullscreen) &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
 #endif
 
   prefs.pointer_events_max_touch_points = ui::MaxTouchPoints();

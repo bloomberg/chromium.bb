@@ -12,6 +12,8 @@ blink_modules_sources("media_controls") {
     "MediaControlsMediaEventListener.h",
     "MediaControlsOrientationLockDelegate.cpp",
     "MediaControlsOrientationLockDelegate.h",
+    "MediaControlsRotateToFullscreenDelegate.cpp",
+    "MediaControlsRotateToFullscreenDelegate.h",
     "MediaControlsWindowEventListener.cpp",
     "MediaControlsWindowEventListener.h",
     "elements/MediaControlCastButtonElement.cpp",

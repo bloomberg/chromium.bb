@@ -33,7 +33,8 @@ class CORE_EXPORT ElementVisibilityObserver final
   ElementVisibilityObserver(Element*, std::unique_ptr<VisibilityCallback>);
   virtual ~ElementVisibilityObserver();
 
-  void Start();
+  // The |threshold| is the minimum fraction that needs to be visible.
+  void Start(float threshold = 0.0);
   void Stop();
 
   void DeliverObservationsForTesting();

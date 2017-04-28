@@ -274,6 +274,7 @@ source_set("unit_tests") {
     "indexeddb/MockWebIDBDatabase.h",
     "media_controls/MediaControlsImplTest.cpp",
     "media_controls/MediaControlsOrientationLockDelegateTest.cpp",
+    "media_controls/MediaControlsRotateToFullscreenDelegateTest.cpp",
     "mediastream/MediaConstraintsTest.cpp",
     "notifications/NotificationDataTest.cpp",
     "notifications/NotificationImageLoaderTest.cpp",
