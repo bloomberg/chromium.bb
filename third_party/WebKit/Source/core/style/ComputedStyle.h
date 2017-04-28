@@ -815,7 +815,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // -webkit-box-decoration-break
   static EBoxDecorationBreak InitialBoxDecorationBreak() {
-    return kBoxDecorationBreakSlice;
+    return EBoxDecorationBreak::kSlice;
   }
   EBoxDecorationBreak BoxDecorationBreak() const {
     return static_cast<EBoxDecorationBreak>(box_data_->box_decoration_break_);

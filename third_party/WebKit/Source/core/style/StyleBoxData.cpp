@@ -42,7 +42,8 @@ StyleBoxData::StyleBoxData()
       z_index_(0),
       has_auto_z_index_(true),
       box_sizing_(static_cast<unsigned>(ComputedStyle::InitialBoxSizing())),
-      box_decoration_break_(kBoxDecorationBreakSlice) {}
+      box_decoration_break_(
+          static_cast<unsigned>(EBoxDecorationBreak::kSlice)) {}
 
 bool StyleBoxData::operator==(const StyleBoxData& o) const {
   return width_ == o.width_ && height_ == o.height_ &&

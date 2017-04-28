@@ -2273,7 +2273,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyWebkitBoxAlign:
       return CSSIdentifierValue::Create(style.BoxAlign());
     case CSSPropertyWebkitBoxDecorationBreak:
-      if (style.BoxDecorationBreak() == kBoxDecorationBreakSlice)
+      if (style.BoxDecorationBreak() == EBoxDecorationBreak::kSlice)
         return CSSIdentifierValue::Create(CSSValueSlice);
       return CSSIdentifierValue::Create(CSSValueClone);
     case CSSPropertyWebkitBoxDirection:

@@ -713,10 +713,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxDecorationBreak e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kBoxDecorationBreakSlice:
+    case EBoxDecorationBreak::kSlice:
       value_id_ = CSSValueSlice;
       break;
-    case kBoxDecorationBreakClone:
+    case EBoxDecorationBreak::kClone:
       value_id_ = CSSValueClone;
       break;
   }
@@ -726,15 +726,15 @@ template <>
 inline EBoxDecorationBreak CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSlice:
-      return kBoxDecorationBreakSlice;
+      return EBoxDecorationBreak::kSlice;
     case CSSValueClone:
-      return kBoxDecorationBreakClone;
+      return EBoxDecorationBreak::kClone;
     default:
       break;
   }
 
   NOTREACHED();
-  return kBoxDecorationBreakSlice;
+  return EBoxDecorationBreak::kSlice;
 }
 
 template <>

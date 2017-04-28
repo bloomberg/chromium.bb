@@ -116,7 +116,7 @@ enum EMarginCollapse {
 
 // Box decoration attributes. Not inherited.
 
-enum EBoxDecorationBreak { kBoxDecorationBreakSlice, kBoxDecorationBreakClone };
+enum class EBoxDecorationBreak { kSlice, kClone };
 
 // Box attributes. Not inherited.
 
