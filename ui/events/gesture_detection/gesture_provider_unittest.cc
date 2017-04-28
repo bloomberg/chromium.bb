@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +65,9 @@ gfx::RectF BoundsForSingleMockTouchAtLocation(float x, float y) {
 
 class GestureProviderTest : public testing::Test, public GestureProviderClient {
  public:
-  GestureProviderTest() {}
+  GestureProviderTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~GestureProviderTest() override {}
 
   static MockMotionEvent ObtainMotionEvent(base::TimeTicks event_time,
@@ -425,7 +428,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   std::vector<GestureEventData> gestures_;
   std::unique_ptr<GestureProvider> gesture_provider_;
   std::unique_ptr<GestureEventData> active_scroll_begin_event_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Verify that a DOWN followed shortly by an UP will trigger a single tap.

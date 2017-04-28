@@ -17,11 +17,11 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,10 +56,15 @@ class ClipboardTest : public PlatformTest {
  public:
 #if defined(USE_AURA)
   ClipboardTest()
-      : event_source_(ClipboardTraits::GetEventSource()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        event_source_(ClipboardTraits::GetEventSource()),
         clipboard_(ClipboardTraits::Create()) {}
 #else
-  ClipboardTest() : clipboard_(ClipboardTraits::Create()) {}
+  ClipboardTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        clipboard_(ClipboardTraits::Create()) {}
 #endif
 
   ~ClipboardTest() override { ClipboardTraits::Destroy(clipboard_); }
@@ -77,7 +82,7 @@ class ClipboardTest : public PlatformTest {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 #if defined(USE_AURA)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif

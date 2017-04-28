@@ -8,9 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,9 @@ class OSExchangeDataProviderMusTest
     : public PlatformTest,
       public ui::OSExchangeDataProviderFactory::Factory {
  public:
-  OSExchangeDataProviderMusTest() {}
+  OSExchangeDataProviderMusTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   // Overridden from PlatformTest:
   void SetUp() override {
@@ -56,7 +58,7 @@ class OSExchangeDataProviderMusTest
 
  private:
   ui::OSExchangeDataProviderFactory::Factory* old_factory_ = nullptr;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(OSExchangeDataProviderMusTest, StringDataGetAndSet) {

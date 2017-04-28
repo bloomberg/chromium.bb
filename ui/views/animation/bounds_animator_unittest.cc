@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
@@ -91,7 +92,11 @@ class TestView : public View {
 
 class BoundsAnimatorTest : public testing::Test {
  public:
-  BoundsAnimatorTest() : child_(new TestView()), animator_(&parent_) {
+  BoundsAnimatorTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        child_(new TestView()),
+        animator_(&parent_) {
     parent_.AddChildView(child_);
   }
 
@@ -100,7 +105,7 @@ class BoundsAnimatorTest : public testing::Test {
   TestBoundsAnimator* animator() { return &animator_; }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestView parent_;
   TestView* child_;  // Owned by |parent_|.
   TestBoundsAnimator animator_;

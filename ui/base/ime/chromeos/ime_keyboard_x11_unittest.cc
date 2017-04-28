@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -24,8 +24,9 @@ namespace {
 class ImeKeyboardTest : public testing::Test,
                         public ImeKeyboard::Observer {
  public:
-  ImeKeyboardTest() {
-  }
+  ImeKeyboardTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     xkey_.reset(ImeKeyboard::Create());
@@ -48,7 +49,7 @@ class ImeKeyboardTest : public testing::Test,
   }
 
   std::unique_ptr<ImeKeyboard> xkey_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   bool caps_changed_;
 };
 
