@@ -701,7 +701,7 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
     case kBorderFillBox:
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 

@@ -126,7 +126,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
             PaintMarkers(paint_context.GetPaintInfo(), bounding_box);
             break;
           default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
       }

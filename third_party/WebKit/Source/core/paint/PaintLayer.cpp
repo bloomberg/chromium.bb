@@ -1806,7 +1806,7 @@ Node* PaintLayer::EnclosingNode() const {
     if (Node* e = r->GetNode())
       return e;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

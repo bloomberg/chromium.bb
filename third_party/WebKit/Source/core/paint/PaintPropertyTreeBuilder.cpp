@@ -1105,7 +1105,7 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
       context.current = context.fixed_position;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (object.IsBox()) {

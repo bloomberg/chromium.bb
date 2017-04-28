@@ -101,7 +101,7 @@ int AdjustJoint(int outline_width,
           return 0;
       }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }

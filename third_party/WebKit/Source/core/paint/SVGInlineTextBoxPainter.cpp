@@ -202,7 +202,7 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
           // Markers don't apply to text
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
           break;
       }
     }
@@ -296,7 +296,7 @@ static inline float BaselineOffsetForDecoration(TextDecoration decoration,
   if (decoration == kTextDecorationLineThrough)
     return font_metrics.FloatAscent() * 3 / 8.0f;
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0.0f;
 }
 
@@ -393,7 +393,7 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
       case PT_MARKERS:
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 }
