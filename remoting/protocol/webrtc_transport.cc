@@ -208,6 +208,9 @@ class WebrtcTransport::PeerConnectionWrapper
     // See crbug.com/660081.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     peer_connection_->Close();
+    peer_connection_ = nullptr;
+    peer_connection_factory_ = nullptr;
+    audio_module_ = nullptr;
   }
 
   WebrtcAudioModule* audio_module() {
