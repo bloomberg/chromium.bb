@@ -65,7 +65,9 @@ class AURA_EXPORT WindowManagerClient {
   // this does nothing.
   virtual void RequestClose(Window* window) = 0;
 
-  // Blocks until the initial displays have been received.
+  // Blocks until the initial displays have been received, or if displays are
+  // not automatically created until the connection to mus has been
+  // established.
   virtual bool WaitForInitialDisplays() = 0;
 
   // Used by the window manager to create a new display. This is only useful if

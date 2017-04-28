@@ -140,6 +140,7 @@ class ShellPortMash : public ShellPort {
 
   WindowManager* window_manager_;
 
+  // TODO(sky): remove this once mash supports simple display management.
   WmWindow* primary_root_window_;
 
   // Only one of |mash_state_| or |mus_state_| is created, depending upon

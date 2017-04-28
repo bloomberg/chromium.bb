@@ -31,6 +31,33 @@
 namespace ui {
 namespace ws {
 
+namespace {
+
+// Returns true if |window| is considered the active window manager for
+// |display|.
+bool IsWindowConsideredWindowManagerRoot(const Display* display,
+                                         const ServerWindow* window) {
+  if (!display)
+    return false;
+
+  const WindowManagerDisplayRoot* display_root =
+      display->GetActiveWindowManagerDisplayRoot();
+  if (!display_root)
+    return false;
+
+  if (window == display_root->root())
+    return true;
+
+  // If the window manager manually creates displays then there is an extra
+  // window, the window supplied via SetDisplayRoot().
+  return !display_root->window_manager_state()
+              ->window_tree()
+              ->automatically_create_display_roots() &&
+         window->parent() == display_root->root();
+}
+
+}  // namespace
+
 struct WindowServer::CurrentMoveLoopState {
   uint32_t change_id;
   ServerWindow* window;
@@ -824,8 +851,8 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   if (!window_paint_callback_.is_null())
     window_paint_callback_.Run(window);
 
-  auto* display = display_manager_->GetDisplayContaining(window);
-  if (display && window == display->GetActiveRootWindow()) {
+  Display* display = display_manager_->GetDisplayContaining(window);
+  if (IsWindowConsideredWindowManagerRoot(display, window)) {
     // A new surface for a WindowManager root has been created. This is a
     // special case because ServerWindows created by the WindowServer are not
     // part of a WindowTree. Send the SurfaceId directly to FrameGenerator and

@@ -524,7 +524,9 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
     // The cursor's native position did not change but its screen position did
     // change. This occurs when the scale factor or the rotation of the display
     // that the cursor is on changes.
-    Shell::Get()->cursor_manager()->SetDisplay(target_display);
+    // TODO: conditional should not be necessary. http://crbug.com/631103.
+    if (Shell::Get()->cursor_manager())
+      Shell::Get()->cursor_manager()->SetDisplay(target_display);
 
     // Update the cursor's root location. This ends up dispatching a synthetic
     // mouse move. The synthetic mouse move updates the composited cursor's
@@ -813,22 +815,29 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   params_with_bounds.initial_bounds = display_info.bounds_in_native();
   params_with_bounds.offscreen =
       display.id() == display::DisplayManager::kUnifiedDisplayId;
+  params_with_bounds.display_id = display.id();
+  params_with_bounds.device_scale_factor = display.device_scale_factor();
+  params_with_bounds.ui_scale_factor = display_info.configured_ui_scale();
   // The AshWindowTreeHost ends up owned by the RootWindowControllers created
   // by this class.
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  if (!input_method_) {  // Singleton input method instance for Ash.
-    input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
-    // Makes sure the input method is focused by default when created, because
-    // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when the
-    // active window changed.
-    input_method_->OnFocus();
-    input_method_event_handler_.reset(
-        new InputMethodEventHandler(input_method_.get()));
+  // TODO: Config::MUS should not install an InputMethod.
+  // http://crbug.com/706913
+  if (!host->has_input_method()) {
+    if (!input_method_) {  // Singleton input method instance for Ash.
+      input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
+      // Makes sure the input method is focused by default when created, because
+      // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when
+      // the active window changed.
+      input_method_->OnFocus();
+      input_method_event_handler_.reset(
+          new InputMethodEventHandler(input_method_.get()));
+    }
+    host->SetSharedInputMethod(input_method_.get());
+    ash_host->set_input_method_handler(input_method_event_handler_.get());
   }
-  host->SetSharedInputMethod(input_method_.get());
-  ash_host->set_input_method_handler(input_method_event_handler_.get());
 
   host->window()->SetName(base::StringPrintf(
       "%sRootWindow-%d", params_with_bounds.offscreen ? "Offscreen" : "",

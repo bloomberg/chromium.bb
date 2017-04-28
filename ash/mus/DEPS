@@ -12,6 +12,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  "ash_window_tree_host_mus\.*": [
+    "+ash/host",
+  ],
+
   "app_launch_unittest.cc": [
     "+mash/quick_launch/public",
   ],

@@ -10,12 +10,14 @@
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
-#include "ash/host/ash_window_tree_host.h"
+#include "ash/display/window_tree_host_manager.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/key_event_watcher.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
+#include "ash/mus/ash_window_tree_host_mus.h"
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "ash/mus/drag_window_resizer.h"
@@ -50,15 +52,22 @@
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
+
+#if defined(USE_OZONE)
+#include "ui/display/manager/forwarding_display_delegate.h"
+#endif
 
 namespace ash {
 namespace mus {
@@ -110,7 +119,6 @@ ShellPortMash::ShellPortMash(
       primary_root_window_(primary_root_window) {
   if (create_session_state_delegate_stub)
     session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
-  DCHECK(primary_root_window_);
 
   if (GetAshConfig() == Config::MASH) {
     mash_state_ = base::MakeUnique<MashSpecificState>();
@@ -155,7 +163,11 @@ void ShellPortMash::Shutdown() {
 
   ShellPort::Shutdown();
 
-  window_manager_->DeleteAllRootWindowControllers();
+  // TODO(sky): Config::MASH should use WindowTreeHostManager too.
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->window_tree_host_manager()->Shutdown();
+  else
+    window_manager_->DeleteAllRootWindowControllers();
 }
 
 Config ShellPortMash::GetAshConfig() const {
@@ -163,12 +175,21 @@ Config ShellPortMash::GetAshConfig() const {
 }
 
 WmWindow* ShellPortMash::GetPrimaryRootWindow() {
+  if (GetAshConfig() == Config::MUS) {
+    return WmWindow::Get(
+        Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow());
+  }
   // NOTE: This is called before the RootWindowController has been created, so
   // it can't call through to RootWindowController to get all windows.
   return primary_root_window_;
 }
 
 WmWindow* ShellPortMash::GetRootWindowForDisplayId(int64_t display_id) {
+  if (GetAshConfig() == Config::MUS) {
+    return WmWindow::Get(
+        Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+            display_id));
+  }
   RootWindowController* root_window_controller =
       GetRootWindowControllerWithDisplayId(display_id);
   return root_window_controller
@@ -210,6 +231,12 @@ bool ShellPortMash::IsInUnifiedModeIgnoreMirroring() const {
 
 void ShellPortMash::SetDisplayWorkAreaInsets(WmWindow* window,
                                              const gfx::Insets& insets) {
+  if (GetAshConfig() == Config::MUS) {
+    Shell::Get()
+        ->window_tree_host_manager()
+        ->UpdateWorkAreaOfDisplayNearestWindow(window->aura_window(), insets);
+    return;
+  }
   window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
 }
 
@@ -230,6 +257,14 @@ bool ShellPortMash::IsMouseEventsEnabled() {
 }
 
 std::vector<WmWindow*> ShellPortMash::GetAllRootWindows() {
+  if (GetAshConfig() == Config::MUS) {
+    aura::Window::Windows root_windows =
+        Shell::Get()->window_tree_host_manager()->GetAllRootWindows();
+    std::vector<WmWindow*> wm_windows(root_windows.size());
+    for (size_t i = 0; i < root_windows.size(); ++i)
+      wm_windows[i] = WmWindow::Get(root_windows[i]);
+    return wm_windows;
+  }
   std::vector<WmWindow*> root_windows;
   for (RootWindowController* root_window_controller :
        RootWindowController::root_window_controllers()) {
@@ -429,7 +464,32 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
 
 std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
     const AshWindowTreeHostInitParams& init_params) {
-  return nullptr;
+  // TODO(sky): make this work for mash too.
+  if (GetAshConfig() != Config::MUS)
+    return nullptr;
+
+  std::unique_ptr<aura::DisplayInitParams> display_params =
+      base::MakeUnique<aura::DisplayInitParams>();
+  display_params->viewport_metrics.bounds_in_pixels =
+      init_params.initial_bounds;
+  display_params->viewport_metrics.device_scale_factor =
+      init_params.device_scale_factor;
+  display_params->viewport_metrics.ui_scale_factor =
+      init_params.ui_scale_factor;
+  display::Display mirrored_display =
+      Shell::Get()->display_manager()->GetMirroringDisplayById(
+          init_params.display_id);
+  if (mirrored_display.is_valid()) {
+    display_params->display =
+        base::MakeUnique<display::Display>(mirrored_display);
+  }
+  // TODO: wire update is_primary_display correctly.
+  display_params->is_primary_display = true;
+  aura::WindowTreeHostMusInitParams aura_init_params =
+      window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
+  aura_init_params.display_id = init_params.display_id;
+  aura_init_params.display_init_params = std::move(display_params);
+  return base::MakeUnique<AshWindowTreeHostMus>(std::move(aura_init_params));
 }
 
 void ShellPortMash::OnCreatedRootWindowContainers(
@@ -443,16 +503,40 @@ void ShellPortMash::OnCreatedRootWindowContainers(
   }
 }
 
-void ShellPortMash::CreatePrimaryHost() {}
+void ShellPortMash::CreatePrimaryHost() {
+  if (GetAshConfig() == Config::MASH)
+    return;
+
+  DCHECK_EQ(Config::MUS, GetAshConfig());
+  Shell::Get()->window_tree_host_manager()->Start();
+  AshWindowTreeHostInitParams ash_init_params;
+  Shell::Get()->window_tree_host_manager()->CreatePrimaryHost(ash_init_params);
+}
 
 void ShellPortMash::InitHosts(const ShellInitParams& init_params) {
-  window_manager_->CreatePrimaryRootWindowController(
-      base::WrapUnique(init_params.primary_window_tree_host));
+  if (GetAshConfig() == Config::MUS) {
+    Shell::Get()->window_tree_host_manager()->InitHosts();
+  } else {
+    window_manager_->CreatePrimaryRootWindowController(
+        base::WrapUnique(init_params.primary_window_tree_host));
+  }
 }
 
 std::unique_ptr<display::NativeDisplayDelegate>
 ShellPortMash::CreateNativeDisplayDelegate() {
+#if defined(USE_OZONE)
+  display::mojom::NativeDisplayDelegatePtr native_display_delegate;
+  if (window_manager_->connector()) {
+    window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                                &native_display_delegate);
+  }
+  return base::MakeUnique<display::ForwardingDisplayDelegate>(
+      std::move(native_display_delegate));
+#else
+  // The bots compile this config, but it is never run.
+  CHECK(false);
   return nullptr;
+#endif
 }
 
 std::unique_ptr<AcceleratorController>

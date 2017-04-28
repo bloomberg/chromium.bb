@@ -7,6 +7,9 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new ash::mus::WindowManagerApplication);
+  const bool show_primary_host_on_connect = true;
+  ash::mus::WindowManagerApplication* app =
+      new ash::mus::WindowManagerApplication(show_primary_host_on_connect);
+  service_manager::ServiceRunner runner(app);
   return runner.Run(service_request_handle);
 }

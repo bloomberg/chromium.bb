@@ -254,7 +254,9 @@ class DBusServices {
     }
     service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
-    if (GetAshConfig() == ash::Config::CLASSIC) {
+    // TODO(sky): once mash supports simplified display mode we should always
+    // use ChromeConsoleServiceProviderDelegate.
+    if (GetAshConfig() != ash::Config::MASH) {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
     } else {

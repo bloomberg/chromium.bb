@@ -8,6 +8,7 @@
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
@@ -26,6 +27,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/views/test/test_views_delegate.h"
 
 namespace ash {
@@ -73,6 +75,11 @@ gfx::Rect ParseDisplayBounds(const std::string& spec) {
 WmTestHelper::WmTestHelper() {}
 
 WmTestHelper::~WmTestHelper() {
+  // Flush the message loop so that any pending tasks are run. This ensures
+  // any delayed tasks, such as deleting RootWindowControllers, are processed
+  // before continuing.
+  base::RunLoop().RunUntilIdle();
+
   // Needs to be destroyed before material design.
   window_manager_app_.reset();
 
@@ -99,7 +106,9 @@ void WmTestHelper::Init() {
 
   views_delegate_ = base::MakeUnique<views::TestViewsDelegate>();
 
-  window_manager_app_ = base::MakeUnique<WindowManagerApplication>();
+  const bool show_primary_host_on_connect = false;
+  window_manager_app_ = base::MakeUnique<WindowManagerApplication>(
+      show_primary_host_on_connect, config);
 
   message_loop_.reset(new base::MessageLoopForUI());
 
@@ -108,8 +117,8 @@ void WmTestHelper::Init() {
   blocking_pool_owner_ = base::MakeUnique<base::SequencedWorkerPoolOwner>(
       kMaxNumberThreads, kThreadNamePrefix);
 
-  window_manager_app_->window_manager_ =
-      base::MakeUnique<WindowManager>(nullptr, config);
+  window_manager_app_->window_manager_ = base::MakeUnique<WindowManager>(
+      nullptr, config, show_primary_host_on_connect);
   window_manager_app_->window_manager()->shell_delegate_ =
       base::MakeUnique<test::TestShellDelegate>();
 
@@ -129,8 +138,12 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager()->window_tree_client();
   window_tree_client_private_ =
       base::MakeUnique<aura::WindowTreeClientPrivate>(window_tree_client);
-  int next_x = 0;
-  CreateRootWindowController("800x600", &next_x);
+  if (config == Config::MUS) {
+    window_tree_client_private_->CallOnConnect();
+  } else {
+    int next_x = 0;
+    CreateRootWindowController("800x600", &next_x);
+  }
 }
 
 std::vector<RootWindowController*> WmTestHelper::GetRootsOrderedByDisplayId() {
@@ -143,6 +156,11 @@ std::vector<RootWindowController*> WmTestHelper::GetRootsOrderedByDisplayId() {
 }
 
 void WmTestHelper::UpdateDisplay(const std::string& display_spec) {
+  if (Shell::GetAshConfig() == Config::MUS) {
+    display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+        .UpdateDisplay(display_spec);
+    return;
+  }
   const std::vector<std::string> parts = base::SplitString(
       display_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::vector<RootWindowController*> root_window_controllers =

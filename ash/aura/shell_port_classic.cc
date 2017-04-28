@@ -42,6 +42,7 @@
 
 #if defined(USE_X11)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
+#include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -267,7 +268,7 @@ ShellPortClassic::CreateNativeDisplayDelegate() {
 #if defined(USE_OZONE)
   return ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
 #else
-  return nullptr;
+  return base::MakeUnique<display::NativeDisplayDelegateX11>();
 #endif
 }
 
