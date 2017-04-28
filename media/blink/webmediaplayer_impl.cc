@@ -331,7 +331,7 @@ void WebMediaPlayerImpl::Load(LoadType load_type,
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
 #if defined(OS_ANDROID)
-  return true;
+  return !using_media_player_renderer_;
 #else
   return false;
 #endif
