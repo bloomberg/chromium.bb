@@ -5080,12 +5080,7 @@ bool Document::ParseQualifiedName(const AtomicString& qualified_name,
     message.Append("has an empty local name.");
   }
 
-  if (return_value.status == kQNInvalidStartChar ||
-      return_value.status == kQNInvalidChar)
-    exception_state.ThrowDOMException(kInvalidCharacterError,
-                                      message.ToString());
-  else
-    exception_state.ThrowDOMException(kNamespaceError, message.ToString());
+  exception_state.ThrowDOMException(kInvalidCharacterError, message.ToString());
   return false;
 }
 
