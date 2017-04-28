@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -36,24 +37,26 @@ constexpr char kSessionJid[] = "user@domain/rest-of-jid";
 using ::remoting::protocol::MockSession;
 
 It2MeStandaloneHost::It2MeStandaloneHost()
-  : context_(ChromotingHostContext::Create(
-        new AutoThreadTaskRunner(
-        message_loop_.task_runner(), run_loop_.QuitClosure()))),
-    main_task_runner_(context_->file_task_runner()),
-    factory_(main_task_runner_,
-             context_->video_capture_task_runner(),
-             context_->input_task_runner(),
-             context_->ui_task_runner()),
-    connection_(base::WrapUnique(new testing::NiceMock<MockSession>())),
-    session_jid_(kSessionJid),
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      context_(ChromotingHostContext::Create(
+          new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
+                                   run_loop_.QuitClosure()))),
+      main_task_runner_(context_->file_task_runner()),
+      factory_(main_task_runner_,
+               context_->video_capture_task_runner(),
+               context_->input_task_runner(),
+               context_->ui_task_runner()),
+      connection_(base::WrapUnique(new testing::NiceMock<MockSession>())),
+      session_jid_(kSessionJid),
 #if defined(OS_LINUX)
-    // We cannot support audio capturing for linux, since a pipe name is
-    // needed to initialize AudioCapturerLinux.
-    config_(protocol::SessionConfig::ForTest()),
+      // We cannot support audio capturing for linux, since a pipe name is
+      // needed to initialize AudioCapturerLinux.
+      config_(protocol::SessionConfig::ForTest()),
 #else
-    config_(protocol::SessionConfig::ForTestWithAudio()),
+      config_(protocol::SessionConfig::ForTestWithAudio()),
 #endif
-    event_logger_(&connection_) {
+      event_logger_(&connection_) {
   EXPECT_CALL(*static_cast<MockSession*>(connection_.session()), jid())
       .WillRepeatedly(testing::ReturnRef(session_jid_));
   EXPECT_CALL(*static_cast<MockSession*>(connection_.session()), config())

@@ -173,6 +173,7 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
 
     deps = [
       ":fake_connection_event_logger",
+      "//base/test:test_support",
       "//third_party/webrtc/modules/desktop_capture",
     ]
 
