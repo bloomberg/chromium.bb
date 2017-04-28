@@ -758,7 +758,6 @@ if (is_win) {
       ":chrome_official_builder_no_unittests",
       "//base:base_unittests",
       "//chrome/test:browser_tests",
-      "//chrome/test:sync_integration_tests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
       "//media/midi:midi_unittests",
