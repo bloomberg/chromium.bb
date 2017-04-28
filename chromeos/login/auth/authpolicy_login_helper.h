@@ -56,7 +56,7 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   void OnAuthCallback(
       AuthCallback callback,
       authpolicy::ErrorType error,
-      const authpolicy::ActiveDirectoryAccountData& account_data);
+      const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
   base::WeakPtrFactory<AuthPolicyLoginHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyLoginHelper);

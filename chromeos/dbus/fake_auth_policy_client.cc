@@ -109,20 +109,28 @@ void FakeAuthPolicyClient::AuthenticateUser(
     int password_fd,
     AuthCallback callback) {
   authpolicy::ErrorType error = authpolicy::ERROR_NONE;
-  authpolicy::ActiveDirectoryAccountData account_data;
+  authpolicy::ActiveDirectoryAccountInfo account_info;
   if (!started_) {
     LOG(ERROR) << "authpolicyd not started";
     error = authpolicy::ERROR_DBUS_FAILURE;
   } else {
     if (auth_error_ == authpolicy::ERROR_NONE) {
       if (object_guid.empty())
-        account_data.set_account_id(base::MD5String(user_principal_name));
+        account_info.set_account_id(base::MD5String(user_principal_name));
       else
-        account_data.set_account_id(object_guid);
+        account_info.set_account_id(object_guid);
     }
     error = auth_error_;
   }
-  PostDelayedClosure(base::BindOnce(std::move(callback), error, account_data));
+  PostDelayedClosure(base::BindOnce(std::move(callback), error, account_info));
+}
+
+void FakeAuthPolicyClient::GetUserStatus(const std::string& object_guid,
+                                         GetUserStatusCallback callback) {
+  authpolicy::ActiveDirectoryUserStatus user_status;
+  user_status.mutable_account_info()->set_account_id(object_guid);
+  PostDelayedClosure(
+      base::BindOnce(std::move(callback), authpolicy::ERROR_NONE, user_status));
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
