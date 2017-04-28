@@ -82,8 +82,6 @@ void ModelTypeRegistry::ConnectNonBlockingType(
       activation_context->model_type_state.initial_sync_done();
   // Attempt migration if the USS initial sync hasn't been done, there is a
   // migrator function, and directory has data for this type.
-  // Note: The injected migrator function is currently null outside of testing
-  // until issues with triggering initial sync correctly are addressed.
   bool do_migration = !initial_sync_done && !uss_migrator_.is_null() &&
                       directory()->InitialSyncEndedForType(type);
   bool trigger_initial_sync = !initial_sync_done && !do_migration;
@@ -124,17 +122,24 @@ void ModelTypeRegistry::ConnectNonBlockingType(
     // TODO(crbug.com/658002): Store a pref before attempting migration
     // indicating that it was attempted so we can avoid failure loops.
     if (uss_migrator_.Run(type, user_share_, worker_ptr)) {
-      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess", type,
+      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess",
+                                ModelTypeToHistogramInt(type),
                                 MODEL_TYPE_COUNT);
+      // If we succesfully migrated, purge the directory of data for the type.
+      // Purging removes the directory's local copy of the data only.
+      directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
+                                          ModelTypeSet());
     } else {
-      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure", type,
+      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure",
+                                ModelTypeToHistogramInt(type),
                                 MODEL_TYPE_COUNT);
     }
   }
 
-  // TODO(crbug.com/658002): Delete directory data here if initial_sync_done and
-  // has_directory_data are both true.
-
+  // We want to check that we haven't accidentally enabled both the non-blocking
+  // and directory implementations for a given model type. This is true even if
+  // migration fails; our fallback in this case is to do an initial GetUpdates,
+  // not to use the directory implementation.
   DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
              .Empty());
 }
