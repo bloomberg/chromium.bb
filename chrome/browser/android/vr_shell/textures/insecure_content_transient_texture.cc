@@ -22,9 +22,8 @@ namespace {
 const SkColor kBackgroundColor = 0xCC1A1A1A;
 const SkColor kForegroundColor = SK_ColorWHITE;
 constexpr float kBorderFactor = 0.045;
-constexpr float kIconSizeFactor = 0.25;
-constexpr float kFontSizeFactor = 0.045;
-constexpr float kTextWidthFactor = 1.0 - 3 * kBorderFactor - kIconSizeFactor;
+constexpr float kFontSizeFactor = 0.048;
+constexpr float kTextWidthFactor = 1.0 - 3 * kBorderFactor;
 
 }  // namespace
 
@@ -47,9 +46,7 @@ void InsecureContentTransientTexture::Draw(gfx::Canvas* canvas,
   int text_height = 0;  // Will be increased during text measurement.
   gfx::Canvas::SizeStringInt(text, fonts, &text_width, &text_height, 0,
                              text_flags);
-  // Making sure that the icon fits in the box.
-  text_height = std::max(
-      text_height, static_cast<int>(ceil(size_.width() * kIconSizeFactor)));
+
   // Making sure the drawing fits within the texture.
   text_height = std::min(
       text_height, static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));
@@ -59,19 +56,8 @@ void InsecureContentTransientTexture::Draw(gfx::Canvas* canvas,
                         size_.height() * kBorderFactor, flags);
 
   canvas->Save();
-  canvas->Translate(
-      gfx::Vector2d(IsRTL() ? 2 * kBorderFactor * size_.width() + text_width
-                            : size_.width() * kBorderFactor,
-                    (size_.height() - kIconSizeFactor * size_.width()) / 2.0));
-  PaintVectorIcon(canvas, ui::kInfoOutlineIcon, size_.width() * kIconSizeFactor,
-                  kForegroundColor);
-  canvas->Restore();
-
-  canvas->Save();
-  canvas->Translate(gfx::Vector2d(
-      IsRTL() ? kBorderFactor * size_.width()
-              : size_.width() * (2 * kBorderFactor + kIconSizeFactor),
-      size_.width() * kBorderFactor));
+  canvas->Translate(gfx::Vector2d(size_.width() * kBorderFactor,
+                                  size_.width() * kBorderFactor));
   canvas->DrawStringRectWithFlags(
       text, fonts, kForegroundColor,
       gfx::Rect(kTextWidthFactor * size_.width(), text_height), text_flags);

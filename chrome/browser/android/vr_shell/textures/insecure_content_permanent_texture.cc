@@ -23,7 +23,7 @@ const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kForegroundColor = 0xFF444444;
 constexpr float kBorderFactor = 0.1;
 constexpr float kIconSizeFactor = 0.7;
-constexpr float kFontSizeFactor = 0.45;
+constexpr float kFontSizeFactor = 0.40;
 constexpr float kTextHeightFactor = 1.0 - 2 * kBorderFactor;
 constexpr float kTextWidthFactor = 4.0 - 3 * kBorderFactor - kIconSizeFactor;
 
