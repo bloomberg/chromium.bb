@@ -2,11 +2,18 @@
 # See https://crbug.com/477150.
 
 # https://crbug.com/716085: Started failing after r466634 landed.
+crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Crash Failure ]
 crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
+crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Crash Failure ]
 crbug.com/716085 http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
+crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy.html [ Failure ]
+crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy-relocate.html [ Failure ]
+crbug.com/716085 virtual/feature-policy/http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Crash ]
+crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-allowed-by-container-policy-relocate.html [ Crash Failure ]
 crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
 crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Crash Failure ]
 crbug.com/716085 virtual/feature-policy-experimental-features/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
+crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]
 crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-disabled.php [ Crash Failure ]
 crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforall.php [ Crash Failure ]
 crbug.com/716085 virtual/mojo-loading/http/tests/feature-policy-experimental-features/vibrate-enabledforself.php [ Crash Failure ]
