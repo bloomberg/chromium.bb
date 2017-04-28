@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "net/base/net_export.h"
 
 namespace net {

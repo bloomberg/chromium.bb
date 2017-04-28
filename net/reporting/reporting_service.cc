@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/tick_clock.h"
@@ -15,6 +15,7 @@
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_header_parser.h"
+#include "net/reporting/reporting_persister.h"
 #include "url/gurl.h"
 
 namespace net {

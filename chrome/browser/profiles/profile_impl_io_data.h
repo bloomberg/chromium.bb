@@ -190,6 +190,9 @@ class ProfileImplIOData : public ProfileIOData {
       const StoragePartitionDescriptor& partition_descriptor) const override;
   chrome_browser_net::Predictor* GetPredictor() override;
 
+  std::unique_ptr<net::ReportingService> MaybeCreateReportingService(
+      net::URLRequestContext* url_request_context) const;
+
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and also deletes HttpServerProperties data.
   // Works asynchronously, however if the |completion| callback is non-null,

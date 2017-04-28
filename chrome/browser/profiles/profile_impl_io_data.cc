@@ -65,6 +65,9 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
+#include "net/reporting/reporting_feature.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -552,6 +555,9 @@ void ProfileImplIOData::InitializeInternal(
   InitializeExtensionsRequestContext(profile_params);
 #endif
 
+  main_context_storage->set_reporting_service(
+      MaybeCreateReportingService(main_context));
+
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
   StoragePartitionDescriptor details(profile_path_, false);
@@ -696,6 +702,8 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
           context->host_resolver()));
   context->SetJobFactory(std::move(top_job_factory));
 
+  context->SetReportingService(MaybeCreateReportingService(context));
+
   return context;
 }
 
@@ -782,6 +790,16 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
 
 chrome_browser_net::Predictor* ProfileImplIOData::GetPredictor() {
   return predictor_.get();
+}
+
+std::unique_ptr<net::ReportingService>
+ProfileImplIOData::MaybeCreateReportingService(
+    net::URLRequestContext* url_request_context) const {
+  if (!base::FeatureList::IsEnabled(features::kReporting))
+    return std::unique_ptr<net::ReportingService>();
+
+  return net::ReportingService::Create(net::ReportingPolicy(),
+                                       url_request_context);
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
