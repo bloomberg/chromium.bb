@@ -4,13 +4,13 @@
 
 #include "ash/system/date/date_view.h"
 
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
 namespace tray {
 
-class TimeViewTest : public AshTest {
+class TimeViewTest : public test::AshTestBase {
  public:
   TimeViewTest() {}
   ~TimeViewTest() override {}
