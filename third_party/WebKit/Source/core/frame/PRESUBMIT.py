@@ -74,24 +74,16 @@ def _RunUmaHistogramChecks(input_api, output_api):
 
     start_marker = '^enum Feature : uint32_t {'
     end_marker = '^kNumberOfFeatures'
-    should_update_histogram, duplicated_values = update_histogram_enum.HistogramNeedsUpdate(
+    presubmit_error = update_histogram_enum.CheckPresubmitErrors(
         histogram_enum_name='FeatureObserver',
+        update_script_name='update_use_counter_feature_enum.py',
         source_enum_path=source_path,
         start_marker=start_marker,
         end_marker=end_marker,
         strip_k_prefix=True)
-    if duplicated_values:
-        return [output_api.PresubmitPromptWarning(
-            'UseCounter::Feature has been updated and there exists duplicated '
-            'values between (%s) and (%s)' % duplicated_values,
-            items=[source_path])]
-    if should_update_histogram:
-        return [output_api.PresubmitPromptWarning(
-            'UseCounter::Feature has been updated and the UMA mapping needs to '
-            'be regenerated. Please run update_use_counter_feature_enum.py in '
-            'src/tools/metrics/histograms/ to update the mapping.',
-            items=[source_path])]
-
+    if presubmit_error:
+        return [output_api.PresubmitPromptWarning(presubmit_error,
+                                                  items=[source_path])]
     return []
 
 
