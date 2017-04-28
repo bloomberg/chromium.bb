@@ -387,6 +387,12 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self.assertEqual(expectations.get_expectations(test_name1), set([PASS, FAIL, TIMEOUT]))
         self.assertEqual(expectations.get_expectations(test_name2), set([CRASH]))
 
+    def test_shorten_filename(self):
+        expectations = TestExpectations(self._port, self.get_basic_tests())
+        self.assertEquals(expectations._shorten_filename('/out-of-checkout/TestExpectations'),
+                          '/out-of-checkout/TestExpectations')
+        self.assertEquals(expectations._shorten_filename('/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'),
+                          'third_party/WebKit/LayoutTests/TestExpectations')
 
 class SkippedTests(Base):
 

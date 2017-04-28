@@ -1097,9 +1097,8 @@ class TestExpectations(object):
 
     def _shorten_filename(self, filename):
         finder = WebKitFinder(self._port.host.filesystem)
-        # TODO(tkent): Can we use path_from_layout_tests() instead?
-        if filename.startswith(finder.path_from_webkit_base()):
-            return self._port.host.filesystem.relpath(filename, finder.path_from_webkit_base())
+        if filename.startswith(finder.path_from_chromium_base()):
+            return self._port.host.filesystem.relpath(filename, finder.path_from_chromium_base())
         return filename
 
     def _report_warnings(self):
