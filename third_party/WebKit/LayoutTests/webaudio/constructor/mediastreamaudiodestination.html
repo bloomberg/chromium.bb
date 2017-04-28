@@ -5,68 +5,56 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audit.js"></script>
+    <script src="new-audionodeoptions.js"></script>
   </head>
 
   <body>
     <script>
-      var context = new AudioContext();
+      let context = new AudioContext();
 
-      var audit = Audit.createTaskRunner();
+      let audit = Audit.createTaskRunner();
 
-      audit.defineTask("invalid constructor", function (taskDone) {
-        var node;
-        var success = true;
-
-        success = Should("new MediaStreamAudioDestinationNode()",
-            function () {
-              node = new MediaStreamAudioDestinationNode();
-            })
-          .throw("TypeError");
-        success = Should("new MediaStreamAudioDestinationNode(1)",
-            function () {
-              node = new MediaStreamAudioDestinationNode(1)
-            })
-          .throw("TypeError") && success;;
-        success = Should("new MediaStreamAudioDestinationNode(context, 42)",
-            function () {
-              node = new MediaStreamAudioDestinationNode(context, 42)
-            })
-          .throw("TypeError") && success;;
-
-        taskDone();
+      audit.define('initialize', (task, should) => {
+        context = initializeContext(should);
+        task.done();
       });
 
-      audit.defineTask("default constructor", function (taskDone) {
-        var node;
-        var success;
-
-        success = Should("new MediaStreamAudioDestinationNode(context)",
-          function () {
-            node = new MediaStreamAudioDestinationNode(context);
-          }).notThrow() && success;
-
-        success = Should("node instanceof MediaStreamAudioDestinationNode",
-            node instanceof MediaStreamAudioDestinationNode)
-          .beEqualTo(true) && success;
-        success = Should("node.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
-
-        taskDone();
+      audit.define('invalid constructor', (task, should) => {
+        testInvalidConstructor(
+            should, 'MediaStreamAudioDestinationNode', context);
+        task.done();
       });
 
-      audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "MediaStreamAudioDestinationNode", {
-          expectedChannelCount: {
-            // An arbitrary but valid, non-default count for this node.
-            value: 7
-          }
-        });
-        taskDone();
+      audit.define('default constructor', (task, should) => {
+        let prefix = 'node0';
+        let node = testDefaultConstructor(
+            should, 'MediaStreamAudioDestinationNode', context, {
+              prefix: prefix,
+              numberOfInputs: 1,
+              numberOfOutputs: 1,
+              channelCount: 2,
+              channelCountMode: 'max',
+              channelInterpretation: 'speakers'
+            });
+
+        testDefaultAttributes(should, node, prefix, []);
+
+        task.done();
       });
 
-      audit.runTasks();
+      audit.define('test AudioNodeOptions', (task, should) => {
+        testAudioNodeOptions(
+            should, context, 'MediaStreamAudioDestinationNode', {
+              channelCount: {
+                // An arbitrary but valid, non-default count for this node.
+                value: 7
+              }
+            });
+        task.done();
+      });
+
+      audit.run();
     </script>
   </body>
 </html>
