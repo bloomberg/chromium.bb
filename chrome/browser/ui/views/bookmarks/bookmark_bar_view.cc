@@ -90,6 +90,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -120,6 +121,9 @@ static const int kNewTabHorizontalPadding = 2;
 
 // Maximum size of buttons on the bookmark bar.
 static const int kMaxButtonWidth = 150;
+
+// Corner radius for masking the ink drop effects on buttons.
+static const int kInkDropCornerRadius = 2;
 
 // Number of pixels the attached bookmark bar overlaps with the toolbar.
 static const int kToolbarAttachedBookmarkBarOverlap = 3;
@@ -240,6 +244,11 @@ class BookmarkButtonBase : public views::LabelButton {
         0));
     return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return base::MakeUnique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
+                                                         kInkDropCornerRadius);
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -365,6 +374,11 @@ class BookmarkMenuButtonBase : public views::MenuButton {
         0));
     return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return base::MakeUnique<views::RoundRectInkDropMask>(size(), kInkDropInsets,
+                                                         kInkDropCornerRadius);
   }
 
   SkColor GetInkDropBaseColor() const override {

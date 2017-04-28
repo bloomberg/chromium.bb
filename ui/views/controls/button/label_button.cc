@@ -423,10 +423,12 @@ void LabelButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer();
   image()->layer()->SetFillsBoundsOpaquely(false);
   ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
 }
 
 void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->DestroyLayer();
+  ResetInkDropMask();
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 

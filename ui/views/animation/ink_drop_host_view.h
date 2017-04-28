@@ -114,6 +114,12 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // subclasses should be able to call SetInkDropMode() during construction.
   InkDrop* GetInkDrop();
 
+  // Initializes and sets a mask on |ink_drop_layer|. No-op if
+  // CreateInkDropMask() returns null.
+  void InstallInkDropMask(ui::Layer* ink_drop_layer);
+
+  void ResetInkDropMask();
+
   // Returns an InkDropImpl configured to work well with a
   // flood-fill ink drop ripple.
   std::unique_ptr<InkDropImpl> CreateDefaultFloodFillInkDropImpl();
