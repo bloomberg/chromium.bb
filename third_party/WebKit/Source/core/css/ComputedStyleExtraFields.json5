@@ -153,15 +153,14 @@
       has_custom_compare_and_copy: true,
     },
     // TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
-    // which can be either a keyword or Length, this is generated as a nonproperty for now. Remove this
-    // once we can support union fields and groups.
+    // which can be either a keyword or Length, this is specified in this file for now. Remove this
+    // once we can support union fields.
     {
       name: "VerticalAlign",
       field_template: "storage_only",
       field_size: 4,
       default_value: "EVerticalAlign::kBaseline",
       type_name: "EVerticalAlign",
-      has_custom_compare_and_copy: true,
     },
     {
       name: "border",
