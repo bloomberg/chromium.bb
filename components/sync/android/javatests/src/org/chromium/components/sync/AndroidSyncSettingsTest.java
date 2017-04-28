@@ -17,7 +17,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 
@@ -97,7 +97,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     private Account mAccount;
     private Account mAlternateAccount;
     private MockSyncSettingsObserver mSyncSettingsObserver;
-    private MockAccountManager mAccountManager;
+    private FakeAccountManagerDelegate mAccountManager;
 
     @Override
     protected void setUp() throws Exception {
@@ -116,7 +116,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
     }
 
     private void setupTestAccounts(Context context) {
-        mAccountManager = new MockAccountManager(context, context);
+        mAccountManager = new FakeAccountManagerDelegate(context);
         AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
         mAccount = setupTestAccount("account@example.com");
         mAlternateAccount = setupTestAccount("alternate@example.com");

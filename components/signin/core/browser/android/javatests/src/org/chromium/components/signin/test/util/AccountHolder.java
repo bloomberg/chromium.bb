@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This class is used by the {@link MockAccountManager} to hold information about a given
+ * This class is used by the {@link FakeAccountManagerDelegate} to hold information about a given
  * account, such as its password and set of granted auth tokens.
  */
 public class AccountHolder {

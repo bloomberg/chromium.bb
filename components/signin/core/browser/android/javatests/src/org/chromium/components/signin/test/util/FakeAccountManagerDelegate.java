@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The MockAccountManager helps out if you want to mock out all calls to the Android AccountManager.
+ * The FakeAccountManagerDelegate is intended for testing components that use AccountManagerHelper.
  *
  * You should provide a set of accounts as a constructor argument, or use the more direct approach
  * and provide an array of AccountHolder objects.
@@ -36,21 +36,19 @@ import java.util.UUID;
  * If you want to auto-approve all auth token types for a given account, use the {@link
  * AccountHolder} builder method alwaysAccept(true).
  */
-public class MockAccountManager implements AccountManagerDelegate {
-    private static final String TAG = "MockAccountManager";
+public class FakeAccountManagerDelegate implements AccountManagerDelegate {
+    private static final String TAG = "FakeAccountManager";
 
-    protected final Context mContext;
-
+    private final Context mContext;
     private final Set<AccountHolder> mAccounts = new HashSet<>();
 
     // Tracks the number of in-progress getAccountsByType() tasks so that tests can wait for
     // their completion.
-    private final ZeroCounter mGetAccountsTaskCounter;
+    private final ZeroCounter mGetAccountsTaskCounter = new ZeroCounter();
 
     @VisibleForTesting
-    public MockAccountManager(Context context, Context testContext, Account... accounts) {
+    public FakeAccountManagerDelegate(Context context, Account... accounts) {
         mContext = context;
-        mGetAccountsTaskCounter = new ZeroCounter();
         if (accounts != null) {
             for (Account account : accounts) {
                 mAccounts.add(AccountHolder.builder(account).alwaysAccept(true).build());
@@ -108,7 +106,8 @@ public class MockAccountManager implements AccountManagerDelegate {
                     && ah.getAuthToken(authTokenScope) == null) {
                 // No authtoken registered. Need to create one.
                 String authToken = UUID.randomUUID().toString();
-                Log.d(TAG, "Created new auth token for " + ah.getAccount() + ": authTokenScope = "
+                Log.d(TAG,
+                        "Created new auth token for " + ah.getAccount() + ": authTokenScope = "
                                 + authTokenScope + ", authToken = " + authToken);
                 ah = ah.withAuthToken(authTokenScope, authToken);
                 mAccounts.add(ah);

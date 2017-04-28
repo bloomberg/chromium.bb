@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.signin.OAuth2TokenService;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
 import java.util.HashSet;
 
@@ -30,7 +30,7 @@ public final class SigninTestUtil {
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
 
     private static Context sContext;
-    private static MockAccountManager sAccountManager;
+    private static FakeAccountManagerDelegate sAccountManager;
 
     /**
      * Sets up the test authentication environment.
@@ -46,7 +46,7 @@ public final class SigninTestUtil {
                 ProcessInitializationHandler.getInstance().initializePreNative();
             }
         });
-        sAccountManager = new MockAccountManager(sContext, instrumentation.getContext());
+        sAccountManager = new FakeAccountManagerDelegate(sContext);
         AccountManagerHelper.overrideAccountManagerHelperForTests(sContext, sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
