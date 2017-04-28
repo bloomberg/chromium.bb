@@ -88,14 +88,15 @@ TEST(CryptAuthWireMessageTest, Deserialize_BodyIsNotADictionary) {
   EXPECT_FALSE(message);
 }
 
-TEST(CryptAuthWireMessageTest, Deserialize_BodyLacksPayload) {
+TEST(CryptAuthWireMessageTest, Deserialize_NonEncryptedMessage) {
   bool is_incomplete;
   std::string header("\3\0\x02", 3);
   std::string bytes = header + "{}";
   std::unique_ptr<WireMessage> message =
       WireMessage::Deserialize(bytes, &is_incomplete);
   EXPECT_FALSE(is_incomplete);
-  EXPECT_FALSE(message);
+  ASSERT_TRUE(message);
+  EXPECT_EQ("{}", message->body());
 }
 
 TEST(CryptAuthWireMessageTest, Deserialize_BodyHasEmptyPayload) {

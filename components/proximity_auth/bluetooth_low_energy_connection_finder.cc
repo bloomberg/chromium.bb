@@ -43,16 +43,19 @@ BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     cryptauth::BluetoothThrottler* bluetooth_throttler)
     : BluetoothLowEnergyConnectionFinder(
           remote_device,
+          kBLEGattServiceUUID,
           beacon_seeds,
           base::MakeUnique<cryptauth::BackgroundEidGenerator>(),
           bluetooth_throttler) {}
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const cryptauth::RemoteDevice remote_device,
+    const std::string& service_uuid,
     const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
     std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
     cryptauth::BluetoothThrottler* bluetooth_throttler)
     : remote_device_(remote_device),
+      service_uuid_(service_uuid),
       beacon_seeds_(beacon_seeds),
       eid_generator_(std::move(eid_generator)),
       bluetooth_throttler_(bluetooth_throttler),
@@ -231,8 +234,7 @@ BluetoothLowEnergyConnectionFinder::CreateConnection(
     const std::string& device_address) {
   return cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
       NewInstance(remote_device_, device_address, adapter_,
-                  device::BluetoothUUID(kBLEGattServiceUUID),
-                  bluetooth_throttler_);
+                  device::BluetoothUUID(service_uuid_), bluetooth_throttler_);
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(

@@ -16,6 +16,11 @@ class WireMessage {
  public:
   // Creates a WireMessage containing |payload| for feature |feature|.
   explicit WireMessage(const std::string& payload, const std::string& feature);
+
+  // Creates a WireMessage containing |body| (a serialized JSON) as the message
+  // body.
+  explicit WireMessage(const std::string& body);
+
   virtual ~WireMessage();
 
   // Returns the deserialized message from |serialized_message|, or nullptr if
@@ -32,6 +37,7 @@ class WireMessage {
 
   const std::string& payload() const { return payload_; }
   const std::string& feature() const { return feature_; }
+  const std::string& body() const { return body_; }
 
  private:
   // The message payload.
@@ -40,6 +46,10 @@ class WireMessage {
   // The feature which sends or intends to receive this message (e.g.,
   // EasyUnlock).
   const std::string feature_;
+
+  // The message body. When this is set |payload_| and |feature_| are empty, and
+  // vice-versa.
+  const std::string body_;
 
   DISALLOW_COPY_AND_ASSIGN(WireMessage);
 };

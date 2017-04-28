@@ -44,6 +44,7 @@ using device::MockBluetoothDevice;
 namespace proximity_auth {
 namespace {
 
+const char kBLEGattServiceUUID[] = "b3b7e28e-a000-3e17-bd86-6e97b9e28c11";
 const char kAdvertisementUUID[] = "0000fe50-0000-1000-8000-00805f9b34fb";
 const int8_t kRssi = -30;
 const char kEidForPreviousTimeQuantum[] = "\x12\x34";
@@ -83,6 +84,7 @@ class MockBluetoothLowEnergyConnectionFinder
   MockBluetoothLowEnergyConnectionFinder()
       : BluetoothLowEnergyConnectionFinder(
             cryptauth::CreateLERemoteDeviceForTest(),
+            kBLEGattServiceUUID,
             CreateBeaconSeeds(),
             base::MakeUnique<FakeEidGenerator>(this),
             nullptr) {}
