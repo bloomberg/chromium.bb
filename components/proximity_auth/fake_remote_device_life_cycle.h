@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
 
@@ -20,6 +21,7 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
   // RemoteDeviceLifeCycle:
   void Start() override;
   cryptauth::RemoteDevice GetRemoteDevice() const override;
+  cryptauth::Connection* GetConnection() const override;
   State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
@@ -29,6 +31,10 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
   void ChangeState(State new_state);
 
   void set_messenger(Messenger* messenger) { messenger_ = messenger; }
+
+  void set_connection(cryptauth::Connection* connection) {
+    connection_ = connection;
+  }
 
   bool started() { return started_; }
 
@@ -42,6 +48,8 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
   bool started_;
 
   State state_;
+
+  cryptauth::Connection* connection_;
 
   Messenger* messenger_;
 

@@ -15,6 +15,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"
@@ -33,24 +34,11 @@ namespace proximity_auth {
 namespace {
 
 const char kRemoteDeviceUserId[] = "example@gmail.com";
-const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
+const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kPersistentSymmetricKey[] = "PSK";
-
-class TestProximityMonitorImpl : public ProximityMonitorImpl {
- public:
-  explicit TestProximityMonitorImpl(
-      const cryptauth::RemoteDevice& remote_device,
-      std::unique_ptr<base::TickClock> clock)
-      : ProximityMonitorImpl(remote_device, std::move(clock)) {}
-  ~TestProximityMonitorImpl() override {}
-
-  using ProximityMonitorImpl::SetStrategy;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestProximityMonitorImpl);
-};
+const int kRssiThreshold = -45;
 
 class MockProximityMonitorObserver : public ProximityMonitorObserver {
  public:
@@ -83,17 +71,17 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
         remote_bluetooth_device_(&*bluetooth_adapter_,
                                  0,
                                  kRemoteDeviceName,
-                                 kBluetoothAddress,
+                                 "",
                                  false /* paired */,
                                  true /* connected */),
-        monitor_(
-            cryptauth::RemoteDevice(kRemoteDeviceUserId,
-                                    kRemoteDeviceName,
-                                    kRemoteDevicePublicKey,
-                                    kBluetoothAddress,
-                                    kPersistentSymmetricKey,
-                                    std::string()),
-            base::WrapUnique(clock_)),
+        remote_device_(kRemoteDeviceUserId,
+                       kRemoteDeviceName,
+                       kRemoteDevicePublicKey,
+                       kBluetoothAddress,
+                       kPersistentSymmetricKey,
+                       std::string()),
+        connection_(remote_device_),
+        monitor_(&connection_, base::WrapUnique(clock_)),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
@@ -102,6 +90,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
         .WillByDefault(SaveArg<0>(&connection_info_callback_));
     monitor_.AddObserver(&observer_);
   }
+
   ~ProximityAuthProximityMonitorImplTest() override {}
 
   void RunPendingTasks() { task_runner_->RunPendingTasks(); }
@@ -126,9 +115,11 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   // Mocks used for verifying interactions with the Bluetooth subsystem.
   scoped_refptr<device::MockBluetoothAdapter> bluetooth_adapter_;
   NiceMock<device::MockBluetoothDevice> remote_bluetooth_device_;
+  cryptauth::RemoteDevice remote_device_;
+  cryptauth::FakeConnection connection_;
 
   // The proximity monitor under test.
-  TestProximityMonitorImpl monitor_;
+  ProximityMonitorImpl monitor_;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -137,304 +128,124 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   ScopedDisableLoggingForTesting disable_logging_;
 };
 
-TEST_F(ProximityAuthProximityMonitorImplTest, GetStrategy) {
-  EXPECT_EQ(ProximityMonitor::Strategy::NONE, monitor_.GetStrategy());
-
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  EXPECT_EQ(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER,
-            monitor_.GetStrategy());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest, ProximityState_StrategyIsNone) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::NONE);
-
-  EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest, ProximityState_NeverStarted) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-
+TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_NeverStarted) {
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_Started_NoConnectionInfoReceivedYet) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+       IsUnlockAllowed_Started_NoConnectionInfoReceivedYet) {
+  monitor_.Start();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
+}
+
+TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_RssiInRange) {
+  monitor_.Start();
+  ProvideConnectionInfo({0, 4, 4});
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
+}
+
+TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_UnknownRssi) {
   monitor_.Start();
 
+  ProvideConnectionInfo({0, 0, 4});
+  ProvideConnectionInfo({BluetoothDevice::kUnknownPower, 0, 4});
+
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_InformsObserverOfChanges) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-
+       IsUnlockAllowed_InformsObserverOfChanges) {
   // Initially, the device is not in proximity.
   monitor_.Start();
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
 
-  // Simulate a reading indicating proximity.
+  // Simulate receiving an RSSI reading in proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
-  ProvideConnectionInfo({0, 0, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate a reading indicating non-proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
-  ProvideConnectionInfo({0, 4, 4});
+  ProvideConnectionInfo({2 * kRssiThreshold, 4, 4});
+  ProvideConnectionInfo({2 * kRssiThreshold, 4, 4});
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_RssiIndicatesProximity_TxPowerDoesNot) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_StartThenStop) {
   monitor_.Start();
 
-  ProvideConnectionInfo({0, 4, 4});
-
+  ProvideConnectionInfo({0, 0, 4});
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
-}
 
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_TxPowerIndicatesProximity_RssiDoesNot) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({-10, 0, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_NeitherRssiNorTxPowerIndicatesProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({-10, 4, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_BothRssiAndTxPowerIndicateProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-
-  EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_UnknownRssi) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({BluetoothDevice::kUnknownPower, 0, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_UnknownTxPower) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({0, BluetoothDevice::kUnknownPower, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckRssi_UnknownMaxTxPower) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({0, 0, BluetoothDevice::kUnknownPower});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_RssiIndicatesProximity_TxPowerDoesNot) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 4, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_TxPowerIndicatesProximity_RssiDoesNot) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({-10, 0, 4});
-
-  EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_NeitherRssiNorTxPowerIndicatesProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({-10, 4, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_BothRssiAndTxPowerIndicateProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-
-  EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_UnknownRssi) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({BluetoothDevice::kUnknownPower, 0, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_UnknownTxPower) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({0, BluetoothDevice::kUnknownPower, 4});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_CheckTxPower_UnknownMaxTxPower) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER);
-  monitor_.Start();
-
-  ProvideConnectionInfo({0, 0, 4});
-  ProvideConnectionInfo({0, 0, BluetoothDevice::kUnknownPower});
-
-  EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
-}
-
-TEST_F(ProximityAuthProximityMonitorImplTest, ProximityState_StartThenStop) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-
-  monitor_.Start();
-  ProvideConnectionInfo({0, 0, 4});
   monitor_.Stop();
-
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_StartThenStopThenStartAgain) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-
+       IsUnlockAllowed_StartThenStopThenStartAgain) {
   monitor_.Start();
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2, 4, 4});
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
   monitor_.Stop();
 
   // Restarting the monitor should immediately reset the proximity state, rather
   // than building on the previous rolling average.
   monitor_.Start();
-  ProvideConnectionInfo({0, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 1, 4, 4});
 
-  EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_RemoteDeviceRemainsInProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-
+       IsUnlockAllowed_RemoteDeviceRemainsInProximity) {
   monitor_.Start();
-  ProvideConnectionInfo({0, 4, 4});
-  ProvideConnectionInfo({-1, 4, 4});
-  ProvideConnectionInfo({0, 4, 4});
-  ProvideConnectionInfo({-2, 4, 4});
-  ProvideConnectionInfo({-1, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2 + 1, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2 - 1, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2 + 2, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold / 2 - 3, 4, 4});
 
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 
   // Brief drops in RSSI should be handled by weighted averaging.
-  ProvideConnectionInfo({-10, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 5, 4, 4});
 
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_RemoteDeviceLeavesProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+       IsUnlockAllowed_RemoteDeviceLeavesProximity) {
   monitor_.Start();
 
   // Start with a device in proximity.
   ProvideConnectionInfo({0, 4, 4});
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 
   // Simulate readings for the remote device leaving proximity.
   ProvideConnectionInfo({-1, 4, 4});
   ProvideConnectionInfo({-4, 4, 4});
   ProvideConnectionInfo({0, 4, 4});
   ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-8, 4, 4});
   ProvideConnectionInfo({-15, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
-  ProvideConnectionInfo({-10, 4, 4});
+  ProvideConnectionInfo({-20, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 10, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
+  ProvideConnectionInfo({kRssiThreshold - 20, 4, 4});
 
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_RemoteDeviceEntersProximity) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+       IsUnlockAllowed_RemoteDeviceEntersProximity) {
   monitor_.Start();
 
-  // Start with a device in proximity.
-  ProvideConnectionInfo({-20, 4, 4});
+  // Start with a device out of proximity.
+  ProvideConnectionInfo({2 * kRssiThreshold, 4, 4});
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 
   // Simulate readings for the remote device entering proximity.
   ProvideConnectionInfo({-15, 4, 4});
@@ -448,18 +259,15 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideConnectionInfo({0, 4, 4});
 
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_DeviceNotKnownToAdapter) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+       IsUnlockAllowed_DeviceNotKnownToAdapter) {
   monitor_.Start();
 
   // Start with the device known to the adapter and in proximity.
   ProvideConnectionInfo({0, 4, 4});
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 
   // Simulate it being forgotten.
   ON_CALL(*bluetooth_adapter_, GetDevice(kBluetoothAddress))
@@ -468,18 +276,15 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   RunPendingTasks();
 
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_DeviceNotConnected) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
+       IsUnlockAllowed_DeviceNotConnected) {
   monitor_.Start();
 
   // Start with the device connected and in proximity.
   ProvideConnectionInfo({0, 4, 4});
   EXPECT_TRUE(monitor_.IsUnlockAllowed());
-  EXPECT_TRUE(monitor_.IsInRssiRange());
 
   // Simulate it disconnecting.
   ON_CALL(remote_bluetooth_device_, IsConnected()).WillByDefault(Return(false));
@@ -487,19 +292,14 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   RunPendingTasks();
 
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
-       ProximityState_ConnectionInfoReceivedAfterStopping) {
-  monitor_.SetStrategy(ProximityMonitor::Strategy::CHECK_RSSI);
-
+       IsUnlockAllowed_ConnectionInfoReceivedAfterStopping) {
   monitor_.Start();
   monitor_.Stop();
   ProvideConnectionInfo({0, 4, 4});
-
   EXPECT_FALSE(monitor_.IsUnlockAllowed());
-  EXPECT_FALSE(monitor_.IsInRssiRange());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
@@ -516,10 +316,6 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -6, 1);
   histogram_tester.ExpectUniqueSample(
-      "EasyUnlock.AuthProximity.TransmitPowerDelta", -1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "EasyUnlock.AuthProximity.TimeSinceLastZeroRssi", 304, 1);
-  histogram_tester.ExpectUniqueSample(
       "EasyUnlock.AuthProximity.RemoteDeviceModelHash",
       1881443083 /* hash of "LGE Nexus 5" */, 1);
 }
@@ -533,20 +329,18 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   monitor_.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -100, 1);
-  histogram_tester.ExpectUniqueSample(
-      "EasyUnlock.AuthProximity.TransmitPowerDelta", 50, 1);
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_UnknownValues) {
-  // Note: A device without a recorded name will have its Bluetooth address as
-  // its name.
+  // Note: A device without a recorded name will have "Unknown" as its name.
   cryptauth::RemoteDevice unnamed_remote_device(
-      kRemoteDeviceUserId, kBluetoothAddress, kRemoteDevicePublicKey,
+      kRemoteDeviceUserId, "" /* name */, kRemoteDevicePublicKey,
       kBluetoothAddress, kPersistentSymmetricKey, std::string());
+  cryptauth::FakeConnection connection(unnamed_remote_device);
 
   std::unique_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
-  ProximityMonitorImpl monitor(unnamed_remote_device, std::move(clock));
+  ProximityMonitorImpl monitor(&connection, std::move(clock));
   monitor.AddObserver(&observer_);
   monitor.Start();
   ProvideConnectionInfo({127, 127, 127});
@@ -555,11 +349,6 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   monitor.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       127, 1);
-  histogram_tester.ExpectUniqueSample(
-      "EasyUnlock.AuthProximity.TransmitPowerDelta", 127, 1);
-  histogram_tester.ExpectUniqueSample(
-      "EasyUnlock.AuthProximity.TimeSinceLastZeroRssi",
-      base::TimeDelta::FromSeconds(10).InMilliseconds(), 1);
   histogram_tester.ExpectUniqueSample(
       "EasyUnlock.AuthProximity.RemoteDeviceModelHash",
       -1808066424 /* hash of "Unknown" */, 1);

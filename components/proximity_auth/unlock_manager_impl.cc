@@ -141,7 +141,6 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
 
   life_cycle_ = life_cycle;
   if (life_cycle_) {
-    proximity_monitor_ = CreateProximityMonitor(life_cycle->GetRemoteDevice());
     SetWakingUpState(true);
   } else {
     proximity_monitor_.reset();
@@ -156,8 +155,12 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
                << static_cast<int>(state);
 
   remote_screenlock_state_.reset();
-  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED)
+  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
+    DCHECK(life_cycle_->GetConnection());
+    DCHECK(GetMessenger());
+    proximity_monitor_ = CreateProximityMonitor(life_cycle_->GetConnection());
     GetMessenger()->AddObserver(this);
+  }
 
   if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     SetWakingUpState(false);
@@ -320,9 +323,9 @@ void UnlockManagerImpl::OnAuthAttempted(
 }
 
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::Connection* connection) {
   return base::MakeUnique<ProximityMonitorImpl>(
-      remote_device, base::WrapUnique(new base::DefaultTickClock()));
+      connection, base::WrapUnique(new base::DefaultTickClock()));
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {
@@ -356,7 +359,10 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
       RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     return ScreenlockState::PHONE_NOT_AUTHENTICATED;
 
-  if (is_waking_up_)
+  if (is_waking_up_ ||
+      life_cycle_->GetState() == RemoteDeviceLifeCycle::State::AUTHENTICATING ||
+      life_cycle_->GetState() ==
+          RemoteDeviceLifeCycle::State::FINDING_CONNECTION)
     return ScreenlockState::BLUETOOTH_CONNECTING;
 
   if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
@@ -370,8 +376,7 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   // If the RSSI is too low, then the remote device is nowhere near the local
   // device. This message should take priority over messages about screen lock
   // states.
-  if (!proximity_monitor_->IsUnlockAllowed() &&
-      !proximity_monitor_->IsInRssiRange())
+  if (!proximity_monitor_->IsUnlockAllowed())
     return ScreenlockState::RSSI_TOO_LOW;
 
   if (remote_screenlock_state_) {
@@ -380,11 +385,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
         return ScreenlockState::PHONE_NOT_LOCKABLE;
 
       case RemoteScreenlockState::LOCKED:
-        if (proximity_monitor_->GetStrategy() ==
-                ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER &&
-            !proximity_monitor_->IsUnlockAllowed()) {
-          return ScreenlockState::PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
-        }
         return ScreenlockState::PHONE_LOCKED;
 
       case RemoteScreenlockState::UNKNOWN:
@@ -394,18 +394,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
         // Handled by the code below.
         break;
     }
-  }
-
-  if (!proximity_monitor_->IsUnlockAllowed()) {
-    ProximityMonitor::Strategy strategy = proximity_monitor_->GetStrategy();
-    if (strategy != ProximityMonitor::Strategy::CHECK_TRANSMIT_POWER) {
-      // CHECK_RSSI should have been handled above, and no other states should
-      // prevent unlocking.
-      PA_LOG(ERROR) << "[Unlock] Invalid ProximityMonitor strategy: "
-                    << static_cast<int>(strategy);
-      return ScreenlockState::NO_PHONE;
-    }
-    return ScreenlockState::TX_POWER_TOO_HIGH;
   }
 
   return ScreenlockState::NO_PHONE;

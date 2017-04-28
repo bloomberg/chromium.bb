@@ -44,6 +44,7 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
   cryptauth::SecureContext* GetSecureContext() const override;
+  cryptauth::Connection* GetConnection() const override;
 
   // Exposed for testing.
   cryptauth::Connection* connection() { return connection_.get(); }

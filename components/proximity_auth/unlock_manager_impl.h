@@ -52,10 +52,10 @@ class UnlockManagerImpl : public UnlockManager,
       ScreenlockBridge::LockHandler::AuthType auth_type) override;
 
  protected:
-  // Creates a ProximityMonitor instance for the given |remote_device|.
+  // Creates a ProximityMonitor instance for the given |connection|.
   // Exposed for testing.
   virtual std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
-      const cryptauth::RemoteDevice& remote_device);
+      cryptauth::Connection* connection);
 
  private:
   // The possible lock screen states for the remote device.

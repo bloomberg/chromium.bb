@@ -41,6 +41,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // RemoteDeviceLifeCycle:
   void Start() override;
   cryptauth::RemoteDevice GetRemoteDevice() const override;
+  cryptauth::Connection* GetConnection() const override;
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
