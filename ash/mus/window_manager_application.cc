@@ -38,6 +38,11 @@ namespace mus {
 WindowManagerApplication::WindowManagerApplication() {}
 
 WindowManagerApplication::~WindowManagerApplication() {
+  // Verify that we created a WindowManager before attempting to tear everything
+  // down. In some fast running tests OnStart may never have been called.
+  if (!window_manager_.get())
+    return;
+
   // Destroy the WindowManager while still valid. This way we ensure
   // OnWillDestroyRootWindowController() is called (if it hasn't been already).
   window_manager_.reset();
