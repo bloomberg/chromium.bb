@@ -992,7 +992,7 @@ void DrawingBuffer::ResolveAndBindForReadAndDraw() {
 void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
   DCHECK(state_restorer_);
   state_restorer_->SetFramebufferBindingDirty();
-  if (WantExplicitResolve() && !contents_change_resolved_) {
+  if (WantExplicitResolve()) {
     state_restorer_->SetClearStateDirty();
     gl_->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, multisample_fbo_);
     gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, fbo_);
@@ -1025,7 +1025,7 @@ void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
 }
 
 void DrawingBuffer::ResolveIfNeeded() {
-  if (anti_aliasing_mode_ != kNone)
+  if (anti_aliasing_mode_ != kNone && !contents_change_resolved_)
     ResolveMultisampleFramebufferInternal();
   contents_change_resolved_ = true;
 }
