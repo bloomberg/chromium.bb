@@ -30,7 +30,7 @@
                     assert_equals(event.target, mediaKeySession1);
 
                     // No keys added yet.
-                    verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [], unexpected: [key1, key2] });
+                    verifyKeyStatuses(mediaKeySession1.keyStatuses, []);
 
                     // Add key1 to session1.
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(key1, rawKey1)));
@@ -46,7 +46,8 @@
 
                     // Check that keyStatuses contains the expected key1 only.
                     dumpKeyStatuses(mediaKeySession1.keyStatuses);
-                    verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [key1], unexpected: [key2] });
+                    verifyKeyStatuses(mediaKeySession1.keyStatuses,
+                        [ { keyId: key1, status: 'usable' } ]);
 
                     // Now trigger a message event on session2.
                     mediaKeySession2.generateRequest(initDataType, initData).catch(function(error) {
@@ -60,10 +61,11 @@
                     assert_equals(event.target, mediaKeySession2);
 
                     // session2 has no keys added yet.
-                    verifyKeyStatuses(mediaKeySession2.keyStatuses, { expected: [], unexpected: [key1, key2] });
+                    verifyKeyStatuses(mediaKeySession2.keyStatuses, []);
 
                     // session1 should still have 1 key.
-                    verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [key1], unexpected: [key2] });
+                    verifyKeyStatuses(mediaKeySession1.keyStatuses,
+                        [ { keyId: key1, status: 'usable' } ]);
 
                     // Add key2 to session2.
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(key2, rawKey2)));
@@ -79,10 +81,12 @@
 
                     // Check that keyStatuses contains the expected key2 only.
                     dumpKeyStatuses(mediaKeySession2.keyStatuses);
-                    verifyKeyStatuses(mediaKeySession2.keyStatuses, { expected: [key2], unexpected: [key1] });
+                    verifyKeyStatuses(mediaKeySession2.keyStatuses,
+                        [ { keyId: key2, status: 'usable' } ]);
 
                     // session1 should still have 1 key.
-                    verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [key1], unexpected: [key2] });
+                    verifyKeyStatuses(mediaKeySession1.keyStatuses,
+                        [ { keyId: key1, status: 'usable' } ]);
 
                     test.done();
                 }
@@ -96,8 +100,8 @@
                     mediaKeySession2 = mediaKeys.createSession();
 
                     // There should be no keys defined on either session.
-                    verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [], unexpected: [key1, key2] });
-                    verifyKeyStatuses(mediaKeySession2.keyStatuses, { expected: [], unexpected: [key1, key2] });
+                    verifyKeyStatuses(mediaKeySession1.keyStatuses, []);
+                    verifyKeyStatuses(mediaKeySession2.keyStatuses, []);
 
                     // Bind all the event handlers now.
                     waitForEventAndRunStep('message', mediaKeySession1, processMessage1, test);

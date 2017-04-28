@@ -34,12 +34,12 @@
                 }).then(function() {
                     // After update() the session should have 1 usable key.
                     verifyKeyStatuses(mediaKeySession.keyStatuses,
-                        { expected: [keyId], unexpected: [] }, 'usable');
+                        [ { keyId: keyId, status: 'usable' } ]);
                     return mediaKeySession.remove();
                 }).then(function() {
                     // After remove() all keys should be 'released'.
                     verifyKeyStatuses(mediaKeySession.keyStatuses,
-                        { expected: [keyId], unexpected: [] }, 'released');
+                        [ { keyId: keyId, status: 'released' } ]);
                     // After remove() the session expiry should be NaN.
                     // ClearKey doesn't change set expiry times, but check
                     // anyway.
@@ -47,8 +47,7 @@
                     return mediaKeySession.close();
                 }).then(function() {
                     // After close() there should be no keys.
-                    verifyKeyStatuses(mediaKeySession.keyStatuses,
-                        { expected: [], unexpected: [keyId] });
+                    verifyKeyStatuses(mediaKeySession.keyStatuses, []);
                 });
 
             }, 'Test MediaKeySession remove() function on temporary sessions');
