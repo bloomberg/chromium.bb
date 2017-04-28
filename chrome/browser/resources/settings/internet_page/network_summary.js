@@ -286,6 +286,7 @@ Polymer({
     // Complete list of states by type.
     /** @type {!NetworkStateListObject} */ var newNetworkStateLists = {
       Ethernet: [],
+      Tether: [],
       WiFi: [],
       Cellular: [],
       WiMAX: [],
@@ -302,9 +303,7 @@ Polymer({
           firstConnectedNetwork = networkState;
         }
       }
-      if (newNetworkStateLists.hasOwnProperty(type)) {
-        newNetworkStateLists[type].push(networkState);
-      }
+      newNetworkStateLists[type].push(networkState);
     }, this);
 
     this.defaultNetwork = firstConnectedNetwork;
@@ -323,7 +322,7 @@ Polymer({
     this.activeNetworkIds_ = new Set;
     var orderedDeviceTypes = [
       CrOnc.Type.ETHERNET, CrOnc.Type.WI_FI, CrOnc.Type.CELLULAR,
-      CrOnc.Type.WI_MAX, CrOnc.Type.VPN
+      CrOnc.Type.TETHER, CrOnc.Type.WI_MAX, CrOnc.Type.VPN
     ];
     for (var i = 0; i < orderedDeviceTypes.length; ++i) {
       var type = orderedDeviceTypes[i];

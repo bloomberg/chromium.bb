@@ -157,6 +157,9 @@ Polymer({
       value =
           CrOnc.getActiveValue(/** @type {!CrOnc.ManagedProperty} */ (value));
     }
+    var customValue = this.getCustomPropertyValue_(key, value);
+    if (customValue)
+      return customValue;
     if (typeof value == 'number' || typeof value == 'boolean')
       return value.toString();
     assert(typeof value == 'string');
@@ -167,5 +170,42 @@ Polymer({
     if (this.i18nExists(oncKey))
       return this.i18n(oncKey);
     return valueStr;
+  },
+
+  /**
+   * @param {string} key The property key.
+   * @param {*} value The property value.
+   * @return {string} The text to display for the property value. If the key
+   *     does not correspond to a custom property, an empty string is returned.
+   */
+  getCustomPropertyValue_: function(key, value) {
+    if (key == 'Tether.BatteryPercentage') {
+      assert(typeof value == 'number');
+      return this.i18n('OncTether-BatteryPercentage_Value', value.toString());
+    }
+
+    if (key == 'Tether.SignalStrength') {
+      assert(typeof value == 'number');
+      // Possible |signalStrength| values should be 0, 25, 50, 75, and 100. Add
+      // <= checks for robustness.
+      if (value <= 24)
+        return this.i18n('OncTether-SignalStrength_Weak');
+      if (value <= 49)
+        return this.i18n('OncTether-SignalStrength_Okay');
+      if (value <= 74)
+        return this.i18n('OncTether-SignalStrength_Good');
+      if (value <= 99)
+        return this.i18n('OncTether-SignalStrength_Strong');
+      return this.i18n('OncTether-SignalStrength_VeryStrong');
+    }
+
+    if (key == 'Tether.Carrier') {
+      assert(typeof value == 'string');
+      return (!value || value == 'unknown-carrier')
+          ? this.i18n('tetherUnknownCarrier')
+          : value;
+    }
+
+    return '';
   },
 });

@@ -22,6 +22,7 @@
  * @type {{
  *   OncTypeCellular: string,
  *   OncTypeEthernet: string,
+ *   OncTypeTether: string,
  *   OncTypeVPN: string,
  *   OncTypeWiFi: string,
  *   OncTypeWiMAX: string,
@@ -211,7 +212,7 @@ CrOnc.getActiveValue = function(property) {
 };
 
 /**
- * Return the acitve value for a managed or unmanaged string property.
+ * Return the active value for a managed or unmanaged string property.
  * @param {!CrOnc.ManagedProperty|string|undefined} property
  * @return {string}
  */
@@ -308,6 +309,8 @@ CrOnc.getSignalStrength = function(properties) {
   var type = properties.Type;
   if (type == CrOnc.Type.CELLULAR && properties.Cellular)
     return properties.Cellular.SignalStrength || 0;
+  if (type == CrOnc.Type.TETHER && properties.Tether)
+    return properties.Tether.SignalStrength || 0;
   if (type == CrOnc.Type.WI_FI && properties.WiFi)
     return properties.WiFi.SignalStrength || 0;
   if (type == CrOnc.Type.WI_MAX && properties.WiMAX)

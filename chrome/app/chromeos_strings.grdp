@@ -3880,6 +3880,9 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
     Ethernet
   </message>
+  <message name="IDS_NETWORK_TYPE_TETHER" desc="The tether network type.">
+    Tether
+  </message>
   <message name="IDS_NETWORK_TYPE_WIFI" desc="The wifi network type.">
     Wi-Fi
   </message>

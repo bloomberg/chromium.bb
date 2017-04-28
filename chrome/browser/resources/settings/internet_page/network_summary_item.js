@@ -188,6 +188,8 @@ Polymer({
     if (!this.enableToggleIsVisible_(deviceState))
       return '';
     switch (deviceState.Type) {
+      case CrOnc.Type.TETHER:
+        return this.i18n('internetToggleTetherA11yLabel');
       case CrOnc.Type.CELLULAR:
         return this.i18n('internetToggleMobileA11yLabel');
       case CrOnc.Type.WI_FI:
@@ -214,7 +216,8 @@ Polymer({
    */
   shouldShowList_: function() {
     var minlen = (this.deviceState.Type == CrOnc.Type.WI_FI ||
-                  this.deviceState.Type == CrOnc.Type.VPN) ?
+                  this.deviceState.Type == CrOnc.Type.VPN ||
+                  this.deviceState.Type == CrOnc.Type.TETHER) ?
         1 :
         2;
     return this.networkStateList.length >= minlen;
