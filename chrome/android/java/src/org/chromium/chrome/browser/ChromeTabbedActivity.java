@@ -453,7 +453,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @SuppressLint("NewApi")
     private boolean shouldDestroyIncognitoProfile() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
-        if (VrShellDelegate.isInVr()) return false; // VR uses an incognito profile for rendering.
 
         Context context = ContextUtils.getApplicationContext();
         ActivityManager manager =
@@ -1985,12 +1984,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public void onExitVr() {
         super.onExitVr();
         mControlContainer.setVisibility(View.VISIBLE);
-
-        // We prevent the incognito profile from being destroyed while in VR, so upon exiting VR we
-        // should destroy it if necessary.
-        if (shouldDestroyIncognitoProfile()) {
-            Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
-        }
     }
 
     /**
