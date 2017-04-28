@@ -216,12 +216,6 @@ test("libaddressinput_unittests") {
     "src/cpp/test/validation_task_test.cc",
   ]
 
-  if (is_ios) {
-    # TODO(rouslan): This tests uses ASSERT_DEATH which is not supported on
-    # iOS. Re-enable once http://crbug.com/595645 is fixed.
-    sources -= [ "src/cpp/test/address_data_test.cc" ]
-  }
-
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":internal_config",
