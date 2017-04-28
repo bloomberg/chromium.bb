@@ -241,6 +241,7 @@ bool IDBRequest::ShouldEnqueueEvent() const {
 
 void IDBRequest::OnError(DOMException* error) {
   IDB_TRACE("IDBRequest::onError()");
+  ClearPutOperationBlobs();
   if (!ShouldEnqueueEvent())
     return;
 
@@ -289,6 +290,7 @@ void IDBRequest::OnSuccess(std::unique_ptr<WebIDBCursor> backend,
 
 void IDBRequest::OnSuccess(IDBKey* idb_key) {
   IDB_TRACE("IDBRequest::onSuccess(IDBKey)");
+  ClearPutOperationBlobs();
   if (!ShouldEnqueueEvent())
     return;
 
@@ -360,6 +362,7 @@ void IDBRequest::OnSuccess() {
 void IDBRequest::OnSuccessInternal(IDBAny* result) {
   DCHECK(GetExecutionContext());
   DCHECK(!pending_cursor_);
+  DCHECK(transit_blob_handles_.IsEmpty());
   SetResult(result);
   EnqueueEvent(Event::Create(EventTypeNames::success));
 }

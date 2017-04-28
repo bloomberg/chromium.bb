@@ -506,6 +506,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   serialized_value->ToWireBytes(wire_bytes);
   RefPtr<SharedBuffer> value_buffer = SharedBuffer::AdoptVector(wire_bytes);
 
+  request->StorePutOperationBlobs(serialized_value->BlobDataHandles());
+
   BackendDB()->Put(transaction_->Id(), Id(), WebData(value_buffer), blob_info,
                    key, static_cast<WebIDBPutMode>(put_mode),
                    request->CreateWebCallbacks().release(), index_ids,

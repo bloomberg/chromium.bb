@@ -29,6 +29,8 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
+#include <memory>
+
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -43,10 +45,10 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashMap.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include <memory>
 
 namespace blink {
 
@@ -141,6 +143,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   IDBCursor* GetResultCursor() const;
 
+  void StorePutOperationBlobs(
+      HashMap<String, RefPtr<BlobDataHandle>> blob_handles) {
+    transit_blob_handles_ = std::move(blob_handles);
+  }
+
  protected:
   IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
   void EnqueueEvent(Event*);
@@ -168,6 +175,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void AckReceivedBlobs(const IDBValue*);
   void AckReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
 
+  void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
+
   Member<IDBAny> source_;
   Member<IDBAny> result_;
   Member<DOMException> error_;
@@ -186,6 +195,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   Member<IDBKey> cursor_key_;
   Member<IDBKey> cursor_primary_key_;
   RefPtr<IDBValue> cursor_value_;
+
+  HashMap<String, RefPtr<BlobDataHandle>> transit_blob_handles_;
 
   bool did_fire_upgrade_needed_event_ = false;
   bool prevent_propagation_ = false;
