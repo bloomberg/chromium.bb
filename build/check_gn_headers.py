@@ -76,7 +76,12 @@ def ParseGNProjectJSON(gn):
   all_headers = set()
 
   for _target, properties in gn['targets'].iteritems():
-    for f in properties.get('sources', []):
+    sources = properties.get('sources', [])
+    public = properties.get('public', [])
+    # Exclude '"public": "*"'.
+    if type(public) is list:
+      sources += public
+    for f in sources:
       if f.endswith('.h') or f.endswith('.hh'):
         if f.startswith('//'):
           f = f[2:]  # Strip the '//' prefix.
