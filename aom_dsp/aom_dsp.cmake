@@ -147,7 +147,6 @@ set(AOM_DSP_COMMON_INTRIN_DSPR2
     "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_vert_dspr2.c")
 
 set(AOM_DSP_COMMON_INTRIN_MSA
-    "${AOM_ROOT}/aom_dsp/mips/add_noise_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_horiz_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_vert_msa.c"
