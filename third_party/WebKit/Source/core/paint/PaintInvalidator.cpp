@@ -510,8 +510,9 @@ void PaintInvalidator::InvalidatePaint(const LayoutObject& object,
 
 void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {
   for (auto target : pending_delayed_paint_invalidations_) {
-    target->GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-        kPaintInvalidationDelayedFull);
+    target->GetMutableForPainting()
+        .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+            kPaintInvalidationDelayedFull);
   }
 }
 

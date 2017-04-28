@@ -6,6 +6,8 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,6 +22,15 @@ class PaintInvalidationTest : public ::testing::WithParamInterface<bool>,
   PaintInvalidationTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
         RenderingTest(SingleChildLocalFrameClient::Create()) {}
+
+ protected:
+  const RasterInvalidationTracking* GetRasterInvalidationTracking() const {
+    // TODO(wangxianzhu): Test SPv2.
+    return GetLayoutView()
+        .Layer()
+        ->GraphicsLayerBacking()
+        ->GetRasterInvalidationTracking();
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(All, PaintInvalidationTest, ::testing::Bool());
@@ -152,6 +163,43 @@ TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
   EXPECT_TRUE(fixed_layer.NeedsRepaint());
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
+
+TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
+  EnableCompositing();
+  SetBodyInnerHTML(
+      "<style>body { margin: 0 }</style>"
+      "<div style='height: 4000px'></div>"
+      "<div id='target' style='width: 100px; height: 100px; background: blue'>"
+      "</div>");
+
+  auto* target = GetLayoutObjectByElementId("target");
+  target->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+      kPaintInvalidationDelayedFull);
+  EXPECT_EQ(kPaintInvalidationDelayedFull,
+            target->FullPaintInvalidationReason());
+  EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
+
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, GetRasterInvalidationTracking());
+  EXPECT_EQ(kPaintInvalidationDelayedFull,
+            target->FullPaintInvalidationReason());
+  EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  // Scroll target into view.
+  GetDocument().domWindow()->scrollTo(0, 4000);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto& raster_invalidations =
+      GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(1u, raster_invalidations.size());
+  EXPECT_EQ(kPaintInvalidationNone, target->FullPaintInvalidationReason());
+  EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);
+  EXPECT_EQ(kPaintInvalidationFull, raster_invalidations[0].reason);
+  EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+};
 
 }  // namespace
 

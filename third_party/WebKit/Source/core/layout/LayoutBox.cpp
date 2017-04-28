@@ -1756,7 +1756,7 @@ void LayoutBox::PaintMask(const PaintInfo& paint_info,
 }
 
 void LayoutBox::ImageChanged(WrappedImagePtr image, const IntRect*) {
-  // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border
+  // TODO(chrishtr): support kPaintInvalidationDelayedFull for animated border
   // images.
   if ((StyleRef().BorderImage().GetImage() &&
        StyleRef().BorderImage().GetImage()->Data() == image) ||
@@ -1878,14 +1878,11 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
     return;
 
   // Do regular full paint invalidation if the object with
-  // PaintInvalidationDelayedFull is onscreen.
-  if (IntersectsVisibleViewport()) {
-    // Conservatively assume the delayed paint invalidation was caused by
-    // background image change.
-    SetBackgroundChangedSinceLastPaintInvalidation();
-    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-        kPaintInvalidationFull);
-  }
+  // kPaintInvalidationDelayedFull is onscreen.
+  // Conservatively assume the delayed paint invalidation was caused by
+  // background image change.
+  SetBackgroundChangedSinceLastPaintInvalidation();
+  SetShouldDoFullPaintInvalidationWithoutGeometryChange(kPaintInvalidationFull);
 }
 
 PaintInvalidationReason LayoutBox::InvalidatePaint(
