@@ -53,11 +53,15 @@ OneGoogleBarService::OneGoogleBarService(
 OneGoogleBarService::~OneGoogleBarService() = default;
 
 void OneGoogleBarService::Shutdown() {
+  for (auto& observer : observers_) {
+    observer.OnOneGoogleBarServiceShuttingDown();
+  }
+
   signin_observer_.reset();
 }
 
 void OneGoogleBarService::Refresh() {
-  fetcher_->Fetch(base::BindOnce(&OneGoogleBarService::SetOneGoogleBarData,
+  fetcher_->Fetch(base::BindOnce(&OneGoogleBarService::OneGoogleBarDataFetched,
                                  base::Unretained(this)));
 }
 
@@ -72,6 +76,16 @@ void OneGoogleBarService::RemoveObserver(
 
 void OneGoogleBarService::SigninStatusChanged() {
   SetOneGoogleBarData(base::nullopt);
+}
+
+void OneGoogleBarService::OneGoogleBarDataFetched(
+    const base::Optional<OneGoogleBarData>& data) {
+  SetOneGoogleBarData(data);
+  if (!data) {
+    for (auto& observer : observers_) {
+      observer.OnOneGoogleBarFetchFailed();
+    }
+  }
 }
 
 void OneGoogleBarService::SetOneGoogleBarData(

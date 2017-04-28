@@ -2,13 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
@@ -38,6 +52,14 @@
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace {
+
+content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  return browser->tab_strip_model()->GetActiveWebContents();
+}
 
 // Switches the browser language to French, and returns true iff successful.
 bool SwitchToFrench() {
@@ -81,12 +103,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, SimpleJavascriptTests) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   bool success = false;
@@ -99,12 +116,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   FocusOmnibox();
 
   // Open an NTP.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Check that the embeddedSearch API is available.
   bool result = false;
@@ -155,12 +167,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FakeboxRedirectsToOmnibox) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   // This is required to make the mouse events we send below arrive at the right
@@ -246,12 +253,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), ntp_url(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), ntp_url());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   content::DOMMessageQueue msg_queue;
@@ -328,15 +330,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   FocusOmnibox();
 
   // Open a new tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_tab =
+      OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
 
   // Verify that the NTP is in French.
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
 }
 
@@ -368,12 +365,7 @@ class LocalNTPSmokeTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, GoogleNTPLoadsWithoutError) {
   // Open a new blank tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
   // Attach a console observer, listening for any message ("*" pattern).
@@ -394,12 +386,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, NonGoogleNTPLoadsWithoutError) {
   SetUserSelectedDefaultSearchProvider("https://www.example.com");
 
   // Open a new blank tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
   // Attach a console observer, listening for any message ("*" pattern).
@@ -423,12 +410,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, FrenchGoogleNTPLoadsWithoutError) {
   }
 
   // Open a new blank tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
   // Attach a console observer, listening for any message ("*" pattern).
@@ -445,4 +427,127 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSmokeTest, FrenchGoogleNTPLoadsWithoutError) {
 
   // We shouldn't have gotten any console error messages.
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+}
+
+// A simple fake implementation of OneGoogleBarFetcher that immediately returns
+// a pre-configured OneGoogleBarData, which is null by default.
+class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
+ public:
+  void Fetch(OneGoogleCallback callback) override {
+    std::move(callback).Run(one_google_bar_data_);
+  }
+
+  void set_one_google_bar_data(
+      const base::Optional<OneGoogleBarData>& one_google_bar_data) {
+    one_google_bar_data_ = one_google_bar_data;
+  }
+
+ private:
+  base::Optional<OneGoogleBarData> one_google_bar_data_;
+};
+
+// TODO(treib): This inherits from InstantTestBase only for GetBoolFromJS, which
+// should just be a global helper somewhere.
+class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest,
+                                      public InstantTestBase {
+ public:
+  LocalNTPOneGoogleBarSmokeTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* cmdline) override {
+    cmdline->AppendSwitchASCII(switches::kEnableFeatures,
+                               "UseGoogleLocalNtp,OneGoogleBarOnLocalNtp");
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::Bind(&LocalNTPOneGoogleBarSmokeTest::
+                               OnWillCreateBrowserContextServices,
+                           base::Unretained(this)));
+  }
+
+  FakeOneGoogleBarFetcher* one_google_bar_fetcher() {
+    return static_cast<FakeOneGoogleBarFetcher*>(
+        OneGoogleBarServiceFactory::GetForProfile(browser()->profile())
+            ->fetcher_for_testing());
+  }
+
+ private:
+  static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
+      content::BrowserContext* context) {
+    SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
+        Profile::FromBrowserContext(context));
+    return base::MakeUnique<OneGoogleBarService>(
+        signin_manager, base::MakeUnique<FakeOneGoogleBarFetcher>());
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    OneGoogleBarServiceFactory::GetInstance()->SetTestingFactory(
+        context, &LocalNTPOneGoogleBarSmokeTest::CreateOneGoogleBarService);
+  }
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
+                       NTPLoadsWithoutErrorOnNetworkFailure) {
+  // Open a new blank tab.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Attach a console observer, listening for any message ("*" pattern).
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            active_tab->GetController().GetVisibleEntry()->GetURL());
+
+  // We shouldn't have gotten any console error messages.
+  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
+                       NTPLoadsWithOneGoogleBar) {
+  OneGoogleBarData data;
+  data.bar_html = "<div id='thebar'></div>";
+  data.in_head_script = "window.inHeadRan = true;";
+  data.after_bar_script = "window.afterBarRan = true;";
+  data.end_of_body_script = "console.log('ogb-done');";
+  one_google_bar_fetcher()->set_one_google_bar_data(data);
+
+  // Open a new blank tab.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Attach a console observer, listening for the "ogb-done" message, which
+  // indicates that the OGB has finished loading.
+  content::ConsoleObserverDelegate console_observer(active_tab, "ogb-done");
+  active_tab->SetDelegate(&console_observer);
+
+  // Navigate to the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            active_tab->GetController().GetVisibleEntry()->GetURL());
+  // Make sure the OGB is finished loading.
+  console_observer.Wait();
+
+  EXPECT_EQ("ogb-done", console_observer.message());
+
+  bool in_head_ran = false;
+  ASSERT_TRUE(GetBoolFromJS(active_tab, "!!window.inHeadRan", &in_head_ran));
+  EXPECT_TRUE(in_head_ran);
+  bool after_bar_ran = false;
+  ASSERT_TRUE(
+      GetBoolFromJS(active_tab, "!!window.afterBarRan", &after_bar_ran));
+  EXPECT_TRUE(after_bar_ran);
 }

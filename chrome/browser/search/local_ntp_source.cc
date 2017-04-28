@@ -4,11 +4,11 @@
 
 #include "chrome/browser/search/local_ntp_source.h"
 
-#include <stddef.h>
-
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -16,8 +16,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -43,12 +47,20 @@
 
 namespace {
 
+base::Feature kOneGoogleBarOnLocalNtpFeature{"OneGoogleBarOnLocalNtp",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
 const char kConfigDataFilename[] = "config.js";
 const char kThemeCSSFilename[] = "theme.css";
 const char kMainHtmlFilename[] = "local-ntp.html";
+const char kOneGoogleBarScriptFilename[] = "one-google.js";
+const char kOneGoogleBarInHeadStyleFilename[] = "one-google/in-head.css";
+const char kOneGoogleBarInHeadScriptFilename[] = "one-google/in-head.js";
+const char kOneGoogleBarAfterBarScriptFilename[] = "one-google/after-bar.js";
+const char kOneGoogleBarEndOfBodyScriptFilename[] = "one-google/end-of-body.js";
 
 const struct Resource{
   const char* filename;
@@ -63,6 +75,11 @@ const struct Resource{
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/close_4_button.png", IDR_CLOSE_4_BUTTON, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
+    {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
+    {kOneGoogleBarInHeadStyleFilename, kLocalResource, "text/css"},
+    {kOneGoogleBarInHeadScriptFilename, kLocalResource, "text/javascript"},
+    {kOneGoogleBarAfterBarScriptFilename, kLocalResource, "text/javascript"},
+    {kOneGoogleBarEndOfBodyScriptFilename, kLocalResource, "text/javascript"},
 };
 
 // Strips any query parameters from the specified path.
@@ -160,6 +177,16 @@ bool DefaultSearchProviderIsGoogleImpl(
                               SEARCH_ENGINE_GOOGLE);
 }
 
+std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
+    const OneGoogleBarData& og) {
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  // Only provide the html parts here. The js and css are injected separately
+  // via <script src=...> and <link rel="stylesheet" href=...>.
+  result->SetString("html", og.bar_html);
+  result->SetString("end_of_body_html", og.end_of_body_html);
+  return result;
+}
+
 }  // namespace
 
 class LocalNtpSource::GoogleSearchProviderTracker
@@ -205,10 +232,22 @@ class LocalNtpSource::GoogleSearchProviderTracker
 
 LocalNtpSource::LocalNtpSource(Profile* profile)
     : profile_(profile),
+      one_google_bar_service_(nullptr),
+      one_google_bar_service_observer_(this),
       default_search_provider_is_google_(false),
       default_search_provider_is_google_io_thread_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (base::FeatureList::IsEnabled(kOneGoogleBarOnLocalNtpFeature)) {
+    one_google_bar_service_ =
+        OneGoogleBarServiceFactory::GetForProfile(profile_);
+  }
+
+  // |one_google_bar_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (one_google_bar_service_)
+    one_google_bar_service_observer_.Add(one_google_bar_service_);
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -244,6 +283,46 @@ void LocalNtpSource::StartDataRequest(
   if (stripped_path == kThemeCSSFilename) {
     std::string theme_css = GetThemeCSS(profile_);
     callback.Run(base::RefCountedString::TakeString(&theme_css));
+    return;
+  }
+
+  if (base::StartsWith(stripped_path, "one-google",
+                       base::CompareCase::SENSITIVE)) {
+    if (!one_google_bar_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+
+    const base::Optional<OneGoogleBarData>& data =
+        one_google_bar_service_->one_google_bar_data();
+
+    // The OneGoogleBar injector helper.
+    if (stripped_path == kOneGoogleBarScriptFilename) {
+      one_google_callbacks_.push_back(callback);
+
+      // If there already is (cached) OGB data, serve it immediately.
+      if (data.has_value())
+        ServeOneGoogleBar(*data);
+
+      // In any case, request a refresh.
+      one_google_bar_service_->Refresh();
+    } else {
+      // The actual OneGoogleBar sources.
+      std::string result;
+      if (data.has_value()) {
+        if (stripped_path == kOneGoogleBarInHeadStyleFilename) {
+          result = data->in_head_style;
+        } else if (stripped_path == kOneGoogleBarInHeadScriptFilename) {
+          result = data->in_head_script;
+        } else if (stripped_path == kOneGoogleBarAfterBarScriptFilename) {
+          result = data->after_bar_script;
+        } else if (stripped_path == kOneGoogleBarEndOfBodyScriptFilename) {
+          result = data->end_of_body_script;
+        }
+      }
+      callback.Run(base::RefCountedString::TakeString(&result));
+    }
+
     return;
   }
 
@@ -343,15 +422,63 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
          GetIntegritySha256Value(
              GetConfigData(default_search_provider_is_google_io_thread_)) +
          "' "
-         "'sha256-g38WaUaxnOIWY7E2LtLZ5ff9r5sn1dBj80jevt/kmx0=';";
+         "'sha256-ROPmcormZEipZzy3Ff+o345FFrhHWsAZjBpGIyZzCYY=';";
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Allow embedding of most visited iframes.
+  if (one_google_bar_service_) {
+    // Allow embedding of the most visited iframe, as well as the account
+    // switcher and the notifications dropdown from the One Google Bar.
+    // TODO(treib): Figure out a way to also allow staging instances.
+    return base::StringPrintf(
+        "child-src %s https://accounts.google.com/ https://docs.google.com "
+        "https://notifications.google.com;",
+        chrome::kChromeSearchMostVisitedUrl);
+  }
+  // Allow embedding of the most visited iframe.
   return base::StringPrintf("child-src %s;",
                             chrome::kChromeSearchMostVisitedUrl);
+}
+
+void LocalNtpSource::OnOneGoogleBarDataChanged() {
+  const base::Optional<OneGoogleBarData>& data =
+      one_google_bar_service_->one_google_bar_data();
+  if (data.has_value())
+    ServeOneGoogleBar(*data);
+  else
+    ServeNullOneGoogleBar();
+}
+
+void LocalNtpSource::OnOneGoogleBarFetchFailed() {
+  ServeNullOneGoogleBar();
+}
+
+void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
+  one_google_bar_service_observer_.RemoveAll();
+  one_google_bar_service_ = nullptr;
+}
+
+void LocalNtpSource::ServeOneGoogleBar(const OneGoogleBarData& data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (one_google_callbacks_.empty())
+    return;
+
+  std::string json;
+  base::JSONWriter::Write(*ConvertOGBDataToDict(data), &json);
+  for (auto& callback : one_google_callbacks_) {
+    std::string data = "var og = " + json + ";";
+    callback.Run(base::RefCountedString::TakeString(&data));
+  }
+  one_google_callbacks_.clear();
+}
+
+void LocalNtpSource::ServeNullOneGoogleBar() {
+  for (auto& callback : one_google_callbacks_)
+    callback.Run(nullptr);
+  one_google_callbacks_.clear();
 }
 
 void LocalNtpSource::DefaultSearchProviderIsGoogleChanged(bool is_google) {

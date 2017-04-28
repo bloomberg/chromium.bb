@@ -42,10 +42,14 @@ class OneGoogleBarService : public KeyedService {
   void AddObserver(OneGoogleBarServiceObserver* observer);
   void RemoveObserver(OneGoogleBarServiceObserver* observer);
 
+  OneGoogleBarFetcher* fetcher_for_testing() { return fetcher_.get(); }
+
  private:
   class SigninObserver;
 
   void SigninStatusChanged();
+
+  void OneGoogleBarDataFetched(const base::Optional<OneGoogleBarData>& data);
 
   void SetOneGoogleBarData(const base::Optional<OneGoogleBarData>& data);
 

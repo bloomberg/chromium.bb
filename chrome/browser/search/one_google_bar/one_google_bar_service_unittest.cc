@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Eq;
+using testing::InSequence;
 using testing::StrictMock;
 
 class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
@@ -46,6 +47,7 @@ class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
 class MockOneGoogleBarServiceObserver : public OneGoogleBarServiceObserver {
  public:
   MOCK_METHOD0(OnOneGoogleBarDataChanged, void());
+  MOCK_METHOD0(OnOneGoogleBarFetchFailed, void());
 };
 
 class OneGoogleBarServiceTest : public testing::Test {
@@ -105,14 +107,18 @@ TEST_F(OneGoogleBarServiceTest, RefreshesOnRequest) {
 }
 
 TEST_F(OneGoogleBarServiceTest, NotifiesObserverOnChanges) {
+  InSequence s;
+
   ASSERT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
   StrictMock<MockOneGoogleBarServiceObserver> observer;
   service()->AddObserver(&observer);
 
-  // Empty result from a fetch doesn't change anything (it's already empty), so
-  // should not result in a notification.
+  // Empty result from a fetch should result in a "fetch failed" notification.
+  // However, the actual data doesn't change anything (it's already empty), so
+  // it should not result in a "data changed".
   service()->Refresh();
+  EXPECT_CALL(observer, OnOneGoogleBarFetchFailed());
   fetcher()->RespondToAllCallbacks(base::nullopt);
 
   // Non-empty response should result in a notification.
@@ -139,6 +145,7 @@ TEST_F(OneGoogleBarServiceTest, NotifiesObserverOnChanges) {
   // Finally, an empty response should result in a notification now.
   service()->Refresh();
   EXPECT_CALL(observer, OnOneGoogleBarDataChanged());
+  EXPECT_CALL(observer, OnOneGoogleBarFetchFailed());
   fetcher()->RespondToAllCallbacks(base::nullopt);
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
