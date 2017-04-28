@@ -316,6 +316,10 @@ NavigationRequest::NavigationRequest(
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
       may_transfer_(may_transfer) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
+  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
+                           "frame_tree_node",
+                           frame_tree_node_->frame_tree_node_id(), "url",
+                           common_params_.url.possibly_invalid_spec());
 
   // Sanitize the referrer.
   common_params_.referrer =
@@ -360,11 +364,14 @@ NavigationRequest::NavigationRequest(
 }
 
 NavigationRequest::~NavigationRequest() {
+  TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
 }
 
 void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "BeginNavigation");
   state_ = STARTED;
   RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
 
@@ -390,6 +397,8 @@ void NavigationRequest::BeginNavigation() {
 
   // There is no need to make a network request for this navigation, so commit
   // it immediately.
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "ResponseStarted");
   state_ = RESPONSE_STARTED;
 
   // Select an appropriate RenderFrameHost.
@@ -402,6 +411,13 @@ void NavigationRequest::BeginNavigation() {
   navigation_handle_->ReadyToCommitNavigation(render_frame_host);
 
   CommitNavigation();
+}
+
+void NavigationRequest::SetWaitingForRendererResponse() {
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "WaitingForRendererResponse");
+  DCHECK(state_ == NOT_STARTED);
+  state_ = WAITING_FOR_RENDERER_RESPONSE;
 }
 
 void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
@@ -516,6 +532,8 @@ void NavigationRequest::OnResponseStarted(
     bool is_stream) {
   DCHECK(state_ == STARTED);
   DCHECK(response);
+  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
+                               "OnResponseStarted");
   state_ = RESPONSE_STARTED;
 
   // Check if the response should be sent to a renderer.
@@ -596,6 +614,8 @@ void NavigationRequest::OnResponseStarted(
 void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
                                         int net_error) {
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
+  TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
+                               "OnRequestFailed", "error", net_error);
   state_ = FAILED;
   navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
 

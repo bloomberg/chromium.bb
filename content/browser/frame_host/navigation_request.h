@@ -134,11 +134,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   bool may_transfer() const { return may_transfer_; }
 
-  void SetWaitingForRendererResponse() {
-    DCHECK(state_ == NOT_STARTED);
-    state_ = WAITING_FOR_RENDERER_RESPONSE;
-  }
-
   AssociatedSiteInstanceType associated_site_instance_type() const {
     return associated_site_instance_type_;
   }
@@ -149,6 +144,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationHandleImpl* navigation_handle() const {
     return navigation_handle_.get();
   }
+
+  void SetWaitingForRendererResponse();
 
   // Creates a NavigationHandle. This should be called after any previous
   // NavigationRequest for the FrameTreeNode has been destroyed.
