@@ -1106,6 +1106,10 @@ component("base") {
     }
   }
 
+  if (!is_mac && is_posix) {
+    sources += [ "memory/shared_memory_handle_posix.cc" ]
+  }
+
   all_dependent_configs = []
   defines = []
   data = []

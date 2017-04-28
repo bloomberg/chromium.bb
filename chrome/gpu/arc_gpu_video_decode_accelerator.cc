@@ -296,7 +296,8 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
       }
       CreateInputRecord(bitstream_buffer_id, index, metadata.timestamp);
       vda_->Decode(media::BitstreamBuffer(
-          bitstream_buffer_id, base::SharedMemoryHandle(dup_fd, true),
+          bitstream_buffer_id,
+          base::SharedMemoryHandle(base::FileDescriptor(dup_fd, true)),
           metadata.bytes_used, input_info->offset));
       break;
     }

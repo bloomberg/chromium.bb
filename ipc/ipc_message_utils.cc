@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,10 +27,6 @@
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
-
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-#include "base/memory/shared_memory_handle.h"
-#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "ipc/mach_port_mac.h"
@@ -647,7 +644,6 @@ bool ParamTraits<base::FileDescriptor>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &valid))
     return false;
 
-  // TODO(morrita): Seems like this should return false.
   if (!valid)
     return true;
 
@@ -780,6 +776,69 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
   LogParam(p.GetHandle(), l);
   l->append(" needs brokering: ");
   LogParam(p.NeedsBrokering(), l);
+}
+#elif defined(OS_POSIX)
+void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* sizer,
+                                                    const param_type& p) {
+  GetParamSize(sizer, p.IsValid());
+  if (p.IsValid())
+    sizer->AddAttachment();
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
+                                                  const param_type& p) {
+  const bool valid = p.IsValid();
+  WriteParam(m, valid);
+
+  if (!valid)
+    return;
+
+  if (p.OwnershipPassesToIPC()) {
+    if (!m->WriteAttachment(new internal::PlatformFileAttachment(
+            base::ScopedFD(p.GetHandle()))))
+      NOTREACHED();
+  } else {
+    if (!m->WriteAttachment(
+            new internal::PlatformFileAttachment(p.GetHandle())))
+      NOTREACHED();
+  }
+}
+
+bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
+                                                 base::PickleIterator* iter,
+                                                 param_type* r) {
+  *r = base::SharedMemoryHandle();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+
+  if (!valid)
+    return true;
+
+  scoped_refptr<base::Pickle::Attachment> attachment;
+  if (!m->ReadAttachment(iter, &attachment))
+    return false;
+
+  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
+      MessageAttachment::Type::PLATFORM_FILE) {
+    return false;
+  }
+
+  *r = base::SharedMemoryHandle(base::FileDescriptor(
+      static_cast<internal::PlatformFileAttachment*>(attachment.get())
+          ->TakePlatformFile(),
+      true));
+  return true;
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
+                                                std::string* l) {
+  if (p.OwnershipPassesToIPC()) {
+    l->append(base::StringPrintf("FD(%d auto-close)", p.GetHandle()));
+  } else {
+    l->append(base::StringPrintf("FD(%d)", p.GetHandle()));
+  }
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 

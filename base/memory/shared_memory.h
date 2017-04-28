@@ -307,7 +307,8 @@ class BASE_EXPORT SharedMemory {
 
   int readonly_mapped_file_;
 #elif defined(OS_POSIX)
-  int                mapped_file_;
+  // The OS primitive that backs the shared memory region.
+  SharedMemoryHandle shm_;
   int                readonly_mapped_file_;
 #endif
   size_t             mapped_size_;

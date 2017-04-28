@@ -221,7 +221,7 @@ TEST(SharedMemoryTest, CloseNoUnmap) {
   memory.Close();
 
   EXPECT_EQ(ptr, memory.memory());
-  EXPECT_EQ(SharedMemory::NULLHandle(), memory.handle());
+  EXPECT_TRUE(!memory.handle().IsValid());
 
   for (size_t i = 0; i < kDataSize; i++) {
     EXPECT_EQ('G', ptr[i]);

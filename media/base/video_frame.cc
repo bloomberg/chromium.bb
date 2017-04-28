@@ -712,13 +712,13 @@ VideoFrame::mailbox_holder(size_t texture_index) const {
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
   DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(shared_memory_handle_ != base::SharedMemory::NULLHandle());
+  DCHECK(shared_memory_handle_.IsValid());
   return shared_memory_handle_;
 }
 
 size_t VideoFrame::shared_memory_offset() const {
   DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(shared_memory_handle_ != base::SharedMemory::NULLHandle());
+  DCHECK(shared_memory_handle_.IsValid());
   return shared_memory_offset_;
 }
 

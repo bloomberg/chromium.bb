@@ -66,22 +66,15 @@ ScopedSharedBufferHandle WrapSharedMemoryHandle(
     const base::SharedMemoryHandle& memory_handle,
     size_t size,
     bool read_only) {
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
-  if (memory_handle.fd == base::kInvalidPlatformFile)
-    return ScopedSharedBufferHandle();
-#else
   if (!memory_handle.IsValid())
     return ScopedSharedBufferHandle();
-#endif
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(MojoPlatformHandle);
   platform_handle.type = kPlatformSharedBufferHandleType;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   platform_handle.value =
       static_cast<uint64_t>(memory_handle.GetMemoryObject());
-#elif defined(OS_POSIX)
-  platform_handle.value = PlatformHandleValueFromPlatformFile(memory_handle.fd);
-#elif defined(OS_WIN)
+#else
   platform_handle.value =
       PlatformHandleValueFromPlatformFile(memory_handle.GetHandle());
 #endif
@@ -129,7 +122,7 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
 #elif defined(OS_POSIX)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
   *memory_handle = base::SharedMemoryHandle(
-      static_cast<int>(platform_handle.value), false);
+      base::FileDescriptor(static_cast<int>(platform_handle.value), false));
 #elif defined(OS_WIN)
   CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE);
   *memory_handle = base::SharedMemoryHandle(
