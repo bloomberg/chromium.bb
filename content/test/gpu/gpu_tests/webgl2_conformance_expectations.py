@@ -65,6 +65,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win', 'd3d11'], bug=644740)
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
+        ['win', 'd3d11'], bug=705865)
     self.Fail('deqp/functional/gles3/sync.html', ['win', 'd3d11'], bug=676848)
 
     # Win / NVidia
