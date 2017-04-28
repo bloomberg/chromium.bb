@@ -69,8 +69,7 @@ class LifoWriteScheduler : public WriteScheduler<StreamIdType> {
   }
 
   bool ShouldYield(StreamIdType stream_id) const override {
-    // stream_id is not necessary to be on the ready list.
-    return stream_id < *ready_streams_.rbegin();
+    return !ready_streams_.empty() && stream_id < *ready_streams_.rbegin();
   }
 
   void MarkStreamReady(StreamIdType stream_id, bool /*add_to_front*/) override;
@@ -106,6 +105,7 @@ void LifoWriteScheduler<StreamIdType>::UnregisterStream(
     return;
   }
   registered_streams_.erase(stream_id);
+  ready_streams_.erase(stream_id);
 }
 
 template <typename StreamIdType>
@@ -161,7 +161,7 @@ void LifoWriteScheduler<StreamIdType>::MarkStreamReady(StreamIdType stream_id,
     return;
   }
   if (ready_streams_.find(stream_id) != ready_streams_.end()) {
-    SPDY_BUG << "Stream already exists in the list";
+    VLOG(1) << "Stream already exists in the list";
     return;
   }
   ready_streams_.insert(stream_id);
@@ -172,7 +172,7 @@ void LifoWriteScheduler<StreamIdType>::MarkStreamNotReady(
     StreamIdType stream_id) {
   auto it = ready_streams_.find(stream_id);
   if (it == ready_streams_.end()) {
-    SPDY_BUG << "Try to remove a stream that is not on list";
+    VLOG(1) << "Try to remove a stream that is not on list";
     return;
   }
   ready_streams_.erase(it);
