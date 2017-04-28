@@ -73,17 +73,6 @@ void InstantController::InstantSupportChanged(
   ResetInstantTab();
 }
 
-void InstantController::InstantSupportDetermined(
-    const content::WebContents* contents,
-    bool supports_instant) {
-  DCHECK(IsContentsFrom(instant_tab_.get(), contents));
-
-  if (!supports_instant) {
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                    instant_tab_.release());
-  }
-}
-
 void InstantController::InstantTabAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
@@ -95,7 +84,7 @@ void InstantController::InstantTabAboutToNavigateMainFrame(
 }
 
 void InstantController::ResetInstantTab() {
-  if (!search_mode_.is_origin_default()) {
+  if (search_mode_.is_origin_ntp()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
       instant_tab_.reset(new InstantTab(this, active_tab));

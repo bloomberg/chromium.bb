@@ -14,8 +14,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_tab.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/search/search_types.h"
 
 class BrowserInstantController;
@@ -88,8 +88,6 @@ class InstantController : public InstantTab::Delegate {
   // Overridden from InstantTab::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
   // the RenderViewHost being created which is not always true. Fix this.
-  void InstantSupportDetermined(const content::WebContents* contents,
-                                bool supports_instant) override;
   void InstantTabAboutToNavigateMainFrame(const content::WebContents* contents,
                                           const GURL& url) override;
 
