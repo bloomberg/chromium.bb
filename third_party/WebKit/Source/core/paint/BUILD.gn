@@ -172,6 +172,8 @@ blink_core_sources("paint") {
     "ScrollbarManager.h",
     "ScrollbarPainter.cpp",
     "ScrollbarPainter.h",
+    "TableCellPaintInvalidator.cpp",
+    "TableCellPaintInvalidator.h",
     "TableCellPainter.cpp",
     "TableCellPainter.h",
     "TablePaintInvalidator.cpp",
