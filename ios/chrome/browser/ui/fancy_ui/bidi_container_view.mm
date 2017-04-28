@@ -7,7 +7,23 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 
-@interface BidiContainerView ()
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace ios {
+namespace rtl {
+enum AdjustSubviewsForRTLType {
+  ADJUST_FRAME_AND_AUTOROTATION_MASK_FOR_ALL_SUBVIEWS,
+  ADJUST_FRAME_FOR_UPDATED_SUBVIEWS
+};
+}  // namespace rtl
+}  // namespace ios
+
+@interface BidiContainerView () {
+  ios::rtl::AdjustSubviewsForRTLType adjustSubviewsType_;
+  NSMutableSet* subviewsToBeAdjustedForRTL_;
+}
 // Changes the autoresizing mask by mirroring it horizontally so that the RTL
 // layout is bind to oposite sites than LRT one.
 + (UIViewAutoresizing)mirrorAutoresizingMask:
@@ -71,7 +87,7 @@
   if (!base::i18n::IsRTL())
     return;
   if (!subviewsToBeAdjustedForRTL_)
-    subviewsToBeAdjustedForRTL_.reset([[NSMutableSet alloc] init]);
+    subviewsToBeAdjustedForRTL_ = [[NSMutableSet alloc] init];
   [subviewsToBeAdjustedForRTL_ addObject:subview];
 }
 
