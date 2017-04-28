@@ -27,6 +27,8 @@ class ContentFaviconDriver
       public content::WebContentsUserData<ContentFaviconDriver>,
       public FaviconDriverImpl {
  public:
+  ~ContentFaviconDriver() override;
+
   static void CreateForWebContents(content::WebContents* web_contents,
                                    FaviconService* favicon_service,
                                    history::HistoryService* history_service,
@@ -52,7 +54,6 @@ class ContentFaviconDriver
                        FaviconService* favicon_service,
                        history::HistoryService* history_service,
                        bookmarks::BookmarkModel* bookmark_model);
-  ~ContentFaviconDriver() override;
 
  private:
   friend class content::WebContentsUserData<ContentFaviconDriver>;
