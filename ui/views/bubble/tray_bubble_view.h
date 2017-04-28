@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
@@ -83,7 +84,8 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     int max_height;
     bool can_activate;
     bool close_on_deactivate;
-    SkColor bg_color;
+    // If not provided, the bg color will be derived from the NativeTheme.
+    base::Optional<SkColor> bg_color;
   };
 
   // Constructs and returns a TrayBubbleView. |init_params| may be modified.
