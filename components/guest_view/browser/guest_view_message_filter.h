@@ -23,7 +23,6 @@ class BrowserContext;
 }
 
 namespace guest_view {
-class GuestViewBase;
 class GuestViewManager;
 
 // This class filters out incoming GuestView-specific IPC messages from the
@@ -74,8 +73,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
                                const base::DictionaryValue& params);
   void OnViewCreated(int view_instance_id, const std::string& view_type);
   void OnViewGarbageCollected(int view_instance_id);
-
-  void WillAttachCallback(GuestViewBase* guest);
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewMessageFilter);
 };

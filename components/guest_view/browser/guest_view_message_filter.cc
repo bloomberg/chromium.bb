@@ -144,7 +144,8 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
 
   guest->WillAttach(
       owner_web_contents, element_instance_id, false,
-      base::Bind(&GuestViewMessageFilter::WillAttachCallback, this, guest));
+      base::Bind(&GuestViewBase::DidAttach,
+                 guest->weak_ptr_factory_.GetWeakPtr(), MSG_ROUTING_NONE));
 
   // Attach this inner WebContents |guest_web_contents| to the outer
   // WebContents |owner_web_contents|. The outer WebContents's
@@ -153,10 +154,6 @@ void GuestViewMessageFilter::OnAttachToEmbedderFrame(
   // which depend on the WebViewGuest being initialized which happens above.
   guest_web_contents->AttachToOuterWebContentsFrame(owner_web_contents,
                                                     embedder_frame);
-}
-
-void GuestViewMessageFilter::WillAttachCallback(GuestViewBase* guest) {
-  guest->DidAttach(MSG_ROUTING_NONE);
 }
 
 }  // namespace guest_view
