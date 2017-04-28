@@ -159,10 +159,11 @@ VREyeParameters* VRDisplay::getEyeParameters(const String& which_eye) {
 }
 
 int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
+  DVLOG(2) << __FUNCTION__;
   Document* doc = this->GetDocument();
   if (!doc)
     return 0;
-  pending_raf_ = true;
+  pending_vrdisplay_raf_ = true;
   if (!vr_v_sync_provider_.is_bound()) {
     ConnectVSyncProvider();
   } else if (!display_blurred_ && !pending_vsync_) {
@@ -175,12 +176,14 @@ int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
 }
 
 void VRDisplay::cancelAnimationFrame(int id) {
+  DVLOG(2) << __FUNCTION__;
   if (!scripted_animation_controller_)
     return;
   scripted_animation_controller_->CancelCallback(id);
 }
 
 void VRDisplay::OnBlur() {
+  DVLOG(1) << __FUNCTION__;
   display_blurred_ = true;
   vr_v_sync_provider_.reset();
   navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
@@ -188,6 +191,7 @@ void VRDisplay::OnBlur() {
 }
 
 void VRDisplay::OnFocus() {
+  DVLOG(1) << __FUNCTION__;
   display_blurred_ = false;
   ConnectVSyncProvider();
   navigator_vr_->EnqueueVREvent(VRDisplayEvent::Create(
@@ -207,6 +211,7 @@ void ReportPresentationResult(PresentationResult result) {
 
 ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
                                         const HeapVector<VRLayer>& layers) {
+  DVLOG(1) << __FUNCTION__;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   UseCounter::Count(execution_context, UseCounter::kVRRequestPresent);
   if (!execution_context->IsSecureContext()) {
@@ -349,6 +354,7 @@ void VRDisplay::OnPresentComplete(bool success) {
 }
 
 ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
+  DVLOG(1) << __FUNCTION__;
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -426,6 +432,16 @@ void VRDisplay::BeginPresent() {
     resolver->Resolve();
   }
   OnPresentChange();
+
+  // For GVR, we shut down normal vsync processing during VR presentation.
+  // Run window.rAF once manually so that applications get a chance to
+  // schedule a VRDisplay.rAF in case they do so only while presenting.
+  if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
+    double timestamp = WTF::MonotonicallyIncreasingTime();
+    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
+                                   WrapWeakPersistent(this), timestamp));
+  }
 }
 
 // Need to close service if exists and then free rendering context.
@@ -642,6 +658,7 @@ Document* VRDisplay::GetDocument() {
 }
 
 void VRDisplay::OnPresentChange() {
+  DVLOG(1) << __FUNCTION__ << ": is_presenting_=" << is_presenting_;
   if (is_presenting_ && !is_valid_device_for_presenting_) {
     DVLOG(1) << __FUNCTION__ << ": device not valid, not sending event";
     return;
@@ -710,23 +727,48 @@ void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
   auto page = doc->GetPage();
   if (!page)
     return;
+
+  bool had_pending_vrdisplay_raf = pending_vrdisplay_raf_;
   // TODO(klausw): update timestamp based on scheduling delay?
   page->Animator().ServiceScriptedAnimations(timestamp);
+
+  if (had_pending_vrdisplay_raf != pending_vrdisplay_raf_) {
+    DVLOG(1) << __FUNCTION__
+             << ": window.rAF fallback successfully scheduled VRDisplay.rAF";
+  }
+
+  if (!pending_vrdisplay_raf_) {
+    // There wasn't any call to vrDisplay.rAF, so we will not be getting new
+    // frames from now on unless the application schedules one down the road in
+    // reaction to a separate event or timeout. TODO(klausw,crbug.com/716087):
+    // do something more useful here?
+    DVLOG(1) << __FUNCTION__
+             << ": no scheduled VRDisplay.requestAnimationFrame, presentation "
+                "broken?";
+  }
 }
 
 void VRDisplay::ProcessScheduledAnimations(double timestamp) {
+  DVLOG(2) << __FUNCTION__;
   // Check if we still have a valid context, the animation controller
   // or document may have disappeared since we scheduled this.
   Document* doc = this->GetDocument();
-  if (!doc || display_blurred_ || !scripted_animation_controller_)
+  if (!doc || display_blurred_) {
+    DVLOG(2) << __FUNCTION__ << ": early exit, doc=" << doc
+             << " display_blurred_=" << display_blurred_;
     return;
+  }
 
   TRACE_EVENT1("gpu", "VRDisplay::OnVSync", "frame", vr_frame_id_);
 
-  AutoReset<bool> animating(&in_animation_frame_, true);
-  pending_raf_ = false;
-
-  scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
+  if (pending_vrdisplay_raf_ && scripted_animation_controller_) {
+    // Run the callback, making sure that in_animation_frame_ is only
+    // true for the vrDisplay rAF and not for a legacy window rAF
+    // that may be called later.
+    AutoReset<bool> animating(&in_animation_frame_, true);
+    pending_vrdisplay_raf_ = false;
+    scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
+  }
 
   // For GVR, we shut down normal vsync processing during VR presentation.
   // Trigger any callbacks on window.rAF manually so that they run after
@@ -742,6 +784,7 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
                         mojo::common::mojom::blink::TimeDeltaPtr time,
                         int16_t frame_id,
                         device::mojom::blink::VRVSyncProvider::Status error) {
+  DVLOG(2) << __FUNCTION__;
   v_sync_connection_failed_ = false;
   switch (error) {
     case device::mojom::blink::VRVSyncProvider::Status::SUCCESS:
@@ -785,7 +828,7 @@ void VRDisplay::ConnectVSyncProvider() {
   display_->GetVRVSyncProvider(mojo::MakeRequest(&vr_v_sync_provider_));
   vr_v_sync_provider_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&VRDisplay::OnVSyncConnectionError, WrapWeakPersistent(this))));
-  if (pending_raf_ && !display_blurred_) {
+  if (pending_vrdisplay_raf_ && !display_blurred_) {
     pending_vsync_ = true;
     vr_v_sync_provider_->GetVSync(ConvertToBaseCallback(
         WTF::Bind(&VRDisplay::OnVSync, WrapWeakPersistent(this))));
@@ -834,6 +877,7 @@ bool VRDisplay::HasPendingActivity() const {
 
 void VRDisplay::FocusChanged() {
   // TODO(mthiesse): Blur/focus the display.
+  DVLOG(1) << __FUNCTION__;
   vr_v_sync_provider_.reset();
   ConnectVSyncProvider();
 }
