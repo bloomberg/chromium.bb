@@ -132,6 +132,11 @@ void CastCdm::OnSessionKeysChange(const std::string& session_id,
     player_tracker_impl_->NotifyNewKey();
 }
 
+void CastCdm::OnSessionExpirationUpdate(const std::string& session_id,
+                                        base::Time new_expiry_time) {
+  session_expiration_update_cb_.Run(session_id, new_expiry_time);
+}
+
 void CastCdm::KeyIdAndKeyPairsToInfo(const ::media::KeyIdAndKeyPairs& keys,
                                      ::media::CdmKeysInfo* keys_info) {
   DCHECK(keys_info);
