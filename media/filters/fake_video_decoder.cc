@@ -10,10 +10,12 @@
 
 namespace media {
 
-FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
+FakeVideoDecoder::FakeVideoDecoder(const std::string& decoder_name,
+                                   int decoding_delay,
                                    int max_parallel_decoding_requests,
                                    const BytesDecodedCB& bytes_decoded_cb)
-    : decoding_delay_(decoding_delay),
+    : decoder_name_(decoder_name),
+      decoding_delay_(decoding_delay),
       max_parallel_decoding_requests_(max_parallel_decoding_requests),
       bytes_decoded_cb_(bytes_decoded_cb),
       state_(STATE_UNINITIALIZED),
@@ -47,7 +49,7 @@ void FakeVideoDecoder::EnableEncryptedConfigSupport() {
 }
 
 std::string FakeVideoDecoder::GetDisplayName() const {
-  return "FakeVideoDecoder";
+  return decoder_name_;
 }
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
