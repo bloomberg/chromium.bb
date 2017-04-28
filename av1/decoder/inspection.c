@@ -14,6 +14,9 @@
 #if CONFIG_CDEF
 #include "av1/common/cdef.h"
 #endif
+#if CONFIG_CFL
+#include "av1/common/cfl.h"
+#endif
 
 void ifd_init(insp_frame_data *fd, int frame_width, int frame_height) {
   fd->mi_cols = ALIGN_POWER_OF_TWO(frame_width, 3) >> MI_SIZE_LOG2;
@@ -96,6 +99,17 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->cdef_strength =
           cm->cdef_strengths[mbmi->cdef_strength] % CLPF_STRENGTHS;
       mi->cdef_strength += mi->cdef_strength == 3;
+#endif
+#if CONFIG_CFL
+      if (mbmi->uv_mode == DC_PRED) {
+        mi->cfl_alpha_ind = mbmi->cfl_alpha_ind;
+        mi->cfl_alpha_sign_u = mbmi->cfl_alpha_signs[CFL_PRED_U];
+        mi->cfl_alpha_sign_v = mbmi->cfl_alpha_signs[CFL_PRED_V];
+      } else {
+        mi->cfl_alpha_ind = 0;
+        mi->cfl_alpha_sign_u = 0;
+        mi->cfl_alpha_sign_v = 0;
+      }
 #endif
     }
   }

@@ -56,7 +56,8 @@ typedef enum {
   REFERENCE_FRAME_LAYER = 1 << 8,
   MOTION_VECTORS_LAYER = 1 << 9,
   UV_MODE_LAYER = 1 << 10,
-  ALL_LAYERS = (1 << 11) - 1
+  CFL_LAYER = 1 << 11,
+  ALL_LAYERS = (1 << 12) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -86,6 +87,10 @@ static const arg_def_t dump_skip_arg = ARG_DEF("s", "skip", 0, "Dump Skip");
 static const arg_def_t dump_filter_arg =
     ARG_DEF("f", "filter", 0, "Dump Filter");
 static const arg_def_t dump_cdef_arg = ARG_DEF("c", "cdef", 0, "Dump CDEF");
+#if CONFIG_CFL
+static const arg_def_t dump_cfl_arg =
+    ARG_DEF("cfl", "chroma_from_luma", 0, "Dump Chroma from Luma Alphas");
+#endif
 static const arg_def_t dump_reference_frame_arg =
     ARG_DEF("r", "referenceFrame", 0, "Dump Reference Frame");
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
@@ -105,6 +110,9 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_filter_arg,
 #if CONFIG_CDEF
                                         &dump_cdef_arg,
+#endif
+#if CONFIG_CFL
+                                        &dump_cfl_arg,
 #endif
                                         &dump_reference_frame_arg,
                                         &dump_motion_vectors_arg,
@@ -489,6 +497,16 @@ void inspect(void *pbi, void *data) {
                           offsetof(insp_mi_data, cdef_strength));
   }
 #endif
+#if CONFIG_CFL
+  if (layers & CFL_LAYER) {
+    buf += put_block_info(buf, NULL, "cfl_alpha_ind",
+                          offsetof(insp_mi_data, cfl_alpha_ind));
+    buf += put_block_info(buf, NULL, "cfl_alpha_sign_u",
+                          offsetof(insp_mi_data, cfl_alpha_sign_u));
+    buf += put_block_info(buf, NULL, "cfl_alpha_sign_v",
+                          offsetof(insp_mi_data, cfl_alpha_sign_v));
+  }
+#endif
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
@@ -620,6 +638,10 @@ static void parse_args(char **argv) {
 #if CONFIG_CDEF
     else if (arg_match(&arg, &dump_cdef_arg, argi))
       layers |= CDEF_LAYER;
+#endif
+#if CONFIG_CFL
+    else if (arg_match(&arg, &dump_cfl_arg, argi))
+      layers |= CFL_LAYER;
 #endif
     else if (arg_match(&arg, &dump_reference_frame_arg, argi))
       layers |= REFERENCE_FRAME_LAYER;

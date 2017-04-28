@@ -49,6 +49,11 @@ struct insp_mi_data {
   int8_t cdef_level;
   int8_t cdef_strength;
 #endif
+#if CONFIG_CFL
+  int8_t cfl_alpha_ind;
+  int8_t cfl_alpha_sign_u;
+  int8_t cfl_alpha_sign_v;
+#endif
 };
 
 typedef struct insp_frame_data insp_frame_data;
