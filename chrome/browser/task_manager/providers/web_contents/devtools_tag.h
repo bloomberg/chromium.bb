@@ -14,6 +14,8 @@ namespace task_manager {
 // Defines a concrete UserData type for WebContents owned by DevToolsWindow.
 class DevToolsTag : public WebContentsTag {
  public:
+  ~DevToolsTag() override;
+
   // task_manager::WebContentsTag:
   DevToolsTask* CreateTask() const override;
 
@@ -21,7 +23,6 @@ class DevToolsTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit DevToolsTag(content::WebContents* web_contents);
-  ~DevToolsTag() override;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsTag);
 };

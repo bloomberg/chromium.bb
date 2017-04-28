@@ -14,6 +14,8 @@ namespace task_manager {
 // Defines a concrete UserData type for WebContents owned by extensions.
 class ExtensionTag : public WebContentsTag {
  public:
+  ~ExtensionTag() override;
+
   // task_manager::WebContentsTag:
   ExtensionTask* CreateTask() const override;
 
@@ -22,7 +24,6 @@ class ExtensionTag : public WebContentsTag {
 
   ExtensionTag(content::WebContents* web_contents,
                const extensions::ViewType view_type);
-  ~ExtensionTag() override;
 
   // The ViewType of the extension WebContents this tag is attached to.
   const extensions::ViewType view_type_;

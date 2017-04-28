@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_manager/web_contents_tags.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/web_contents/background_contents_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/devtools_tag.h"
@@ -32,13 +34,14 @@ namespace {
 // |WebContentsTagsManager|.
 // Note: This will fail if |contents| is already tagged by |tag|.
 void TagWebContents(content::WebContents* contents,
-                    WebContentsTag* tag,
+                    std::unique_ptr<WebContentsTag> tag,
                     void* tag_key) {
   DCHECK(contents);
   DCHECK(tag);
   DCHECK(WebContentsTag::FromWebContents(contents) == nullptr);
-  contents->SetUserData(tag_key, tag);
-  WebContentsTagsManager::GetInstance()->AddTag(tag);
+  WebContentsTag* tag_ptr = tag.get();
+  contents->SetUserData(tag_key, std::move(tag));
+  WebContentsTagsManager::GetInstance()->AddTag(tag_ptr);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -67,10 +70,10 @@ void WebContentsTags::CreateForBackgroundContents(
     BackgroundContents* background_contents) {
 #if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
-    TagWebContents(
-        web_contents,
-        new BackgroundContentsTag(web_contents, background_contents),
-        WebContentsTag::kTagKey);
+    TagWebContents(web_contents,
+                   base::WrapUnique(new BackgroundContentsTag(
+                       web_contents, background_contents)),
+                   WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)
 }
@@ -81,7 +84,7 @@ void WebContentsTags::CreateForDevToolsContents(
 #if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
-                   new DevToolsTag(web_contents),
+                   base::WrapUnique(new DevToolsTag(web_contents)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)
@@ -93,7 +96,7 @@ void WebContentsTags::CreateForPrerenderContents(
 #if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
-                   new PrerenderTag(web_contents),
+                   base::WrapUnique(new PrerenderTag(web_contents)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)
@@ -104,7 +107,7 @@ void WebContentsTags::CreateForTabContents(content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
-                   new TabContentsTag(web_contents),
+                   base::WrapUnique(new TabContentsTag(web_contents)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)
@@ -116,7 +119,7 @@ void WebContentsTags::CreateForPrintingContents(
 #if !defined(OS_ANDROID) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
-                   new PrintingTag(web_contents),
+                   base::WrapUnique(new PrintingTag(web_contents)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -128,8 +131,7 @@ void WebContentsTags::CreateForGuestContents(
 #if !defined(OS_ANDROID)
   DCHECK(guest_view::GuestViewBase::IsGuest(web_contents));
   if (!WebContentsTag::FromWebContents(web_contents)) {
-    TagWebContents(web_contents,
-                   new GuestTag(web_contents),
+    TagWebContents(web_contents, base::WrapUnique(new GuestTag(web_contents)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)
@@ -143,7 +145,7 @@ void WebContentsTags::CreateForExtension(content::WebContents* web_contents,
 
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents,
-                   new ExtensionTag(web_contents, view_type),
+                   base::WrapUnique(new ExtensionTag(web_contents, view_type)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID) && BUILDFLAG(ENABLE_EXTENSIONS)
