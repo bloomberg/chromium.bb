@@ -159,6 +159,14 @@ class MockOfflinePageModel : public StubOfflinePageModel {
         base::Bind(save_page_callback_, SavePageResult::SUCCESS, 123456));
   }
 
+  void CompleteSavingAsAlreadyExists() {
+    DCHECK(mock_saving_);
+    mock_saving_ = false;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(save_page_callback_,
+                              SavePageResult::ALREADY_EXISTS, 123456));
+  }
+
   bool mock_saving() const { return mock_saving_; }
 
  private:
@@ -403,6 +411,29 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSaveSuccessful) {
   EXPECT_TRUE(SaveInProgress());
 
   model()->CompleteSavingAsSuccess();
+  PumpLoop();
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
+  EXPECT_FALSE(loader()->IsLoaded());
+  EXPECT_FALSE(SaveInProgress());
+}
+
+TEST_F(PrerenderingOfflinerTest, LoadAndSavePageAlreadyExists) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_EQ(Offliner::RequestStatus::UNKNOWN, request_status());
+
+  loader()->CompleteLoadingAsLoaded();
+  PumpLoop();
+  EXPECT_FALSE(completion_callback_called());
+  EXPECT_TRUE(loader()->IsLoaded());
+  EXPECT_TRUE(SaveInProgress());
+
+  model()->CompleteSavingAsAlreadyExists();
   PumpLoop();
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
