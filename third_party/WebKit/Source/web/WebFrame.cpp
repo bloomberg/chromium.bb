@@ -4,8 +4,10 @@
 
 #include "public/web/WebFrame.h"
 
+#include <algorithm>
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/HTMLNames.h"
+#include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
@@ -22,7 +24,6 @@
 #include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -39,6 +40,16 @@ bool WebFrame::Swap(WebFrame* frame) {
   // written.
   if (!old_frame->PrepareForCommit())
     return false;
+
+  // If there is a local parent, it might incorrectly declare itself complete
+  // during the detach phase of this swap. Suppress its completion until swap is
+  // over, at which point its completion will be correctly dependent on its
+  // newly swapped-in child.
+  std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
+      parent_ && parent_->IsWebLocalFrame()
+          ? IncrementLoadEventDelayCount::Create(
+                *ToWebLocalFrameImpl(parent_)->GetFrame()->GetDocument())
+          : nullptr;
 
   if (parent_) {
     if (parent_->first_child_ == this)
