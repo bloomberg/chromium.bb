@@ -3320,7 +3320,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
   overwritten_configs = {
       'amd64-generic-chromium-pfq': {
-          'disk_layout': '2gb-rootfs',
           'useflags': [],
       },
 

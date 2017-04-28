@@ -1467,8 +1467,7 @@
         "boards": [
             "amd64-generic"
         ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "2gb-rootfs"
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
