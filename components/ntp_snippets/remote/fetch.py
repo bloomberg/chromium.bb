@@ -195,9 +195,9 @@ def Authenticate(args, headers, client_id, client_secret):
   creds.apply(headers)
 
 
-def PrintShortResponse(r):
+def PrintShortResponse(j):
   now = datetime.datetime.now()
-  for category in r.json()["categories"]:
+  for category in j["categories"]:
     print("%s: " % category["localizedTitle"])
     for suggestion in category["suggestions"]:
       attribution = suggestion["attribution"]
