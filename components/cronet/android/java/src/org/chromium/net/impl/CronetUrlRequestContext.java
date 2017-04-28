@@ -140,7 +140,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     /** Holds CertVerifier data. */
     private String mCertVerifierData;
 
-    private ConditionVariable mStopNetLogCompleted;
+    private volatile ConditionVariable mStopNetLogCompleted;
 
     /**
      * True if a NetLog observer is active.
@@ -295,9 +295,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 return;
             }
             checkHaveAdapter();
+            mStopNetLogCompleted = new ConditionVariable();
             nativeStopNetLog(mUrlRequestContextAdapter);
             mIsLogging = false;
-            mStopNetLogCompleted = new ConditionVariable();
         }
         mStopNetLogCompleted.block();
     }
