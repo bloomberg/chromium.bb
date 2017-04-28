@@ -193,6 +193,14 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
 
+// |YES| if the google landing toolbar can show the forward arrow, cached and
+// pushed into the header view.
+@property(nonatomic, assign) BOOL canGoForward;
+
+// |YES| if the google landing toolbar can show the back arrow, cached and
+// pushed into the header view.
+@property(nonatomic, assign) BOOL canGoBack;
+
 // iPhone landscape uses a slightly different layout for the doodle and search
 // field frame. Returns the proper frame from |frames| based on orientation,
 // centered in the view.
@@ -263,6 +271,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize maximumMostVisitedSitesShown = _maximumMostVisitedSitesShown;
 @synthesize tabCount = _tabCount;
+@synthesize canGoForward = _canGoForward;
+@synthesize canGoBack = _canGoBack;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 
 - (void)loadView {
@@ -1000,6 +1010,8 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
         // hidden.
         [_headerView addToolbarWithDataSource:self.dataSource];
         [_headerView setToolbarTabCount:self.tabCount];
+        [_headerView setCanGoForward:self.canGoForward];
+        [_headerView setCanGoBack:self.canGoBack];
       }
       [_supplementaryViews addObject:_headerView];
     }
@@ -1494,4 +1506,13 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
   [_headerView setToolbarTabCount:self.tabCount];
 }
 
+- (void)setCanGoForward:(BOOL)canGoForward {
+  _canGoForward = canGoForward;
+  [_headerView setCanGoForward:self.canGoForward];
+}
+
+- (void)setCanGoBack:(BOOL)canGoBack {
+  _canGoBack = canGoBack;
+  [_headerView setCanGoBack:self.canGoBack];
+}
 @end

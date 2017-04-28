@@ -13,10 +13,9 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -44,22 +43,28 @@ enum {
   base::scoped_nsobject<UIButton> _backButton;
   base::scoped_nsobject<UIButton> _forwardButton;
   base::scoped_nsobject<UIButton> _omniboxFocuser;
-  id<WebToolbarDelegate> _delegate;
 
-  // Delegate to focus and blur the omnibox.
-  base::WeakNSProtocol<id<OmniboxFocuser>> _focuser;
+  base::WeakNSProtocol<id<GoogleLandingDataSource>> _dataSource;
 }
+
+// |YES| if the google landing toolbar can show the forward arrow.
+@property(nonatomic, assign) BOOL canGoForward;
+
+// |YES| if the google landing toolbar can show the back arrow.
+@property(nonatomic, assign) BOOL canGoBack;
 
 @end
 
 @implementation NewTabPageToolbarController
 
-- (instancetype)initWithToolbarDelegate:(id<WebToolbarDelegate>)delegate
-                                focuser:(id<OmniboxFocuser>)focuser {
+@synthesize canGoForward = _canGoForward;
+@synthesize canGoBack = _canGoBack;
+
+- (instancetype)initWithToolbarDataSource:
+    (id<GoogleLandingDataSource>)dataSource {
   self = [super initWithStyle:ToolbarControllerStyleLightMode];
   if (self) {
-    _delegate = delegate;
-    _focuser.reset(focuser);
+    _dataSource.reset(dataSource);
     [self.backgroundView setHidden:YES];
 
     CGFloat boundingWidth = self.view.bounds.size.width;
@@ -205,21 +210,18 @@ enum {
 - (void)hideViewsForNewTabPage:(BOOL)hide {
   [super hideViewsForNewTabPage:hide];
   // Show the back/forward buttons if there is forward history.
-  ToolbarModelIOS* toolbarModelIOS = [_delegate toolbarModelIOS];
-  if (toolbarModelIOS) {
-    BOOL forwardEnabled = toolbarModelIOS->CanGoForward();
-    [_backButton setHidden:!forwardEnabled && hide];
-    [_backButton setEnabled:toolbarModelIOS->CanGoBack()];
-    [_forwardButton setHidden:!forwardEnabled && hide];
-  }
+  BOOL forwardEnabled = self.canGoForward;
+  [_backButton setHidden:!forwardEnabled && hide];
+  [_backButton setEnabled:self.canGoBack];
+  [_forwardButton setHidden:!forwardEnabled && hide];
 }
 
 - (void)focusOmnibox:(id)sender {
-  [_focuser focusFakebox];
+  [_dataSource focusFakebox];
 }
 
 - (IBAction)stackButtonTouchDown:(id)sender {
-  [_delegate prepareToEnterTabSwitcher:self];
+  [_dataSource prepareToEnterTabSwitcher:self];
 }
 
 @end

@@ -42,6 +42,13 @@
 
 // Updates the toolbar tab count;
 - (void)setToolbarTabCount:(int)tabCount;
+
+// |YES| if the toolbar can show the forward arrow.
+- (void)setCanGoForward:(BOOL)canGoForward;
+
+// |YES| if the toolbar can show the back arrow.
+- (void)setCanGoBack:(BOOL)canGoBack;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_HEADER_VIEW_H_
