@@ -324,14 +324,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return (creation_flags_ & WAS_INSTALLED_BY_OEM) != 0;
   }
 
-  // Type-related queries.
+  // Type-related queries. These are all mutually exclusive.
+  //
+  // The differences between the types of Extension are documented here:
+  // https://chromium.googlesource.com/chromium/src/+/HEAD/extensions/docs/extension_and_app_types.md
+  bool is_platform_app() const;         // aka "V2 app", "V2 packaged app"
+  bool is_hosted_app() const;           // Hosted app (or bookmark app)
+  bool is_legacy_packaged_app() const;  // aka "V1 packaged app"
+  bool is_extension() const;            // Regular browser extension, not an app
+  bool is_shared_module() const;        // Shared module
+  bool is_theme() const;                // Theme
+
+  // True if this is a platform app, hosted app, or legacy packaged app.
   bool is_app() const;
-  bool is_platform_app() const;
-  bool is_hosted_app() const;
-  bool is_legacy_packaged_app() const;
-  bool is_extension() const;
-  bool is_shared_module() const;
-  bool is_theme() const;
 
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
