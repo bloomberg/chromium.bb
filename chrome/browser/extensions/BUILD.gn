@@ -849,7 +849,6 @@ static_library("extensions") {
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/proximity_auth",
-    "//components/proximity_auth/ble",
     "//components/proximity_auth/logging",
     "//components/proxy_config",
     "//components/rappor",
