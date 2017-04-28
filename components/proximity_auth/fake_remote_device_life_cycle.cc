@@ -22,6 +22,10 @@ cryptauth::RemoteDevice FakeRemoteDeviceLifeCycle::GetRemoteDevice() const {
   return remote_device_;
 }
 
+cryptauth::Connection* FakeRemoteDeviceLifeCycle::GetConnection() const {
+  return connection_;
+}
+
 RemoteDeviceLifeCycle::State FakeRemoteDeviceLifeCycle::GetState() const {
   return state_;
 }

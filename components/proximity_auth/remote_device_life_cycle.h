@@ -6,6 +6,7 @@
 #define COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_LIFE_CYCLE_H
 
 #include "base/macros.h"
+#include "components/cryptauth/connection.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace proximity_auth {
@@ -56,6 +57,9 @@ class RemoteDeviceLifeCycle {
 
   // Returns the RemoteDevice instance that this life cycle manages.
   virtual cryptauth::RemoteDevice GetRemoteDevice() const = 0;
+
+  // Returns the current Connection, or null if the device is not yet connected.
+  virtual cryptauth::Connection* GetConnection() const = 0;
 
   // Returns the current state of in the life cycle.
   virtual State GetState() const = 0;

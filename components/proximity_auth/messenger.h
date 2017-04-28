@@ -42,6 +42,11 @@ class Messenger {
   // Returns the SecureContext instance used by the messenger. Ownership of the
   // SecureContext is not passed.
   virtual cryptauth::SecureContext* GetSecureContext() const = 0;
+
+  // Returns the underlying raw connection. Note that you should use
+  // |GetSecureContext()| instead if you want to send and receive messages
+  // securely.
+  virtual cryptauth::Connection* GetConnection() const = 0;
 };
 
 }  // namespace proximity_auth

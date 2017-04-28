@@ -154,6 +154,10 @@ cryptauth::SecureContext* MessengerImpl::GetSecureContext() const {
   return secure_context_.get();
 }
 
+cryptauth::Connection* MessengerImpl::GetConnection() const {
+  return connection_.get();
+}
+
 MessengerImpl::PendingMessage::PendingMessage() {}
 
 MessengerImpl::PendingMessage::PendingMessage(

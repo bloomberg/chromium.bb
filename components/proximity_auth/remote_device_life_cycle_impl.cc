@@ -62,6 +62,14 @@ cryptauth::RemoteDevice RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
   return remote_device_;
 }
 
+cryptauth::Connection* RemoteDeviceLifeCycleImpl::GetConnection() const {
+  if (connection_)
+    return connection_.get();
+  if (messenger_)
+    return messenger_->GetConnection();
+  return nullptr;
+}
+
 RemoteDeviceLifeCycle::State RemoteDeviceLifeCycleImpl::GetState() const {
   return state_;
 }
