@@ -268,6 +268,10 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     base::Thread::Options options;
 #if defined(OS_WIN)
     options.message_loop_type = base::MessageLoop::TYPE_UI;
+#elif defined(USE_OZONE)
+    // Some ozone platforms (e.g. drm) expects to be able to watch a file
+    // handler from this thread. So use the IO type message loop here.
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
 #endif
     rendering_thread_.StartWithOptions(options);
 
