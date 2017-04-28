@@ -1255,6 +1255,8 @@ static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
 #if !CONFIG_ADAPT_SCAN
   else if (eob <= 10)
     aom_idct16x16_10_add(input, dest, stride);
+  else if (eob <= 38)
+    aom_idct16x16_38_add(input, dest, stride);
 #endif
   else
     aom_idct16x16_256_add(input, dest, stride);

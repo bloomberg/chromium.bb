@@ -62,8 +62,10 @@ set(AOM_DSP_COMMON_INTRIN_SSE4_1
 
 set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c")
+    "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c"
+    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_avx2.c"
+    "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
+    "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
 
 set(AOM_DSP_COMMON_ASM_NEON
     "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
@@ -282,6 +284,9 @@ if (CONFIG_ENCODERS)
   set(AOM_DSP_ENCODER_ASM_SSE4_1 "${AOM_ROOT}/aom_dsp/x86/sad_sse4.asm")
 
   set(AOM_DSP_ENCODER_INTRIN_AVX2
+      "${AOM_ROOT}/aom_dsp/x86/fwd_dct32x32_impl_avx2.h"
+      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
+      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.h"
       "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"

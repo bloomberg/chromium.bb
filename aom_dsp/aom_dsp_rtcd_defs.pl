@@ -437,15 +437,16 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/aom_idct8x8_1_add sse2/;
 
     add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_256_add sse2/;
+    specialize qw/aom_idct16x16_256_add sse2 avx2/;
 
     add_proto qw/void aom_idct16x16_38_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
+    specialize qw/aom_idct16x16_38_add avx2/;
 
     add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_10_add sse2/;
+    specialize qw/aom_idct16x16_10_add sse2 avx2/;
 
     add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_1_add sse2/;
+    specialize qw/aom_idct16x16_1_add sse2 avx2/;
 
     add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct32x32_1024_add sse2 ssse3/;
@@ -482,15 +483,16 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/aom_idct8x8_12_add sse2 ssse3 neon dspr2 msa/;
 
     add_proto qw/void aom_idct16x16_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_1_add sse2 neon dspr2 msa/;
+    specialize qw/aom_idct16x16_1_add sse2 avx2 neon dspr2 msa/;
 
     add_proto qw/void aom_idct16x16_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_256_add sse2 neon dspr2 msa/;
+    specialize qw/aom_idct16x16_256_add sse2 avx2 neon dspr2 msa/;
 
     add_proto qw/void aom_idct16x16_38_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
+    specialize qw/aom_idct16x16_38_add avx2/;
 
     add_proto qw/void aom_idct16x16_10_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-    specialize qw/aom_idct16x16_10_add sse2 neon dspr2 msa/;
+    specialize qw/aom_idct16x16_10_add sse2 avx2 neon dspr2 msa/;
 
     add_proto qw/void aom_idct32x32_1024_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_idct32x32_1024_add sse2 ssse3 neon dspr2 msa/;

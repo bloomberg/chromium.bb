@@ -418,6 +418,22 @@ INSTANTIATE_TEST_CASE_P(SSSE3, PartialIDctTest,
                         ::testing::ValuesIn(ssse3_partial_idct_tests));
 #endif  // HAVE_SSSE3
 
+#if HAVE_AVX2
+const PartialInvTxfmParam avx2_partial_idct_tests[] = {
+  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
+             &wrapper<aom_idct16x16_256_add_avx2>, TX_16X16, 256, 8, 1),
+  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
+             &wrapper<aom_idct16x16_38_add_avx2>, TX_16X16, 38, 8, 1),
+  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
+             &wrapper<aom_idct16x16_10_add_avx2>, TX_16X16, 10, 8, 1),
+  make_tuple(&aom_fdct16x16_c, &wrapper<aom_idct16x16_256_add_c>,
+             &wrapper<aom_idct16x16_1_add_avx2>, TX_16X16, 1, 8, 1),
+};
+
+INSTANTIATE_TEST_CASE_P(AVX2, PartialIDctTest,
+                        ::testing::ValuesIn(avx2_partial_idct_tests));
+#endif  // HAVE_AVX2
+
 #if HAVE_DSPR2 && !CONFIG_HIGHBITDEPTH
 const PartialInvTxfmParam dspr2_partial_idct_tests[] = {
   make_tuple(&aom_fdct32x32_c, &wrapper<aom_idct32x32_1024_add_c>,
