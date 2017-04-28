@@ -39,6 +39,9 @@ class Script;
 class ResourceFetcher;
 class ScriptResource;
 
+class Modulator;
+class ModulePendingScriptTreeClient;
+
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                                  public PendingScriptClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
@@ -75,7 +78,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   String ScriptContent() const;
 
   // Creates a PendingScript for external script whose fetch is started in
-  // FetchClassicScript().
+  // FetchClassicScript()/FetchModuleScriptTree().
   PendingScript* CreatePendingScript();
 
   // Returns false if and only if execution was blocked.
@@ -150,6 +153,12 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                           CrossOriginAttributeValue,
                           SecurityOrigin*,
                           const String& encoding);
+  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
+  void FetchModuleScriptTree(const KURL&,
+                             Modulator*,
+                             const String& nonce,
+                             ParserDisposition,
+                             WebURLRequest::FetchCredentialsMode);
 
   bool DoExecuteScript(const Script*);
 
@@ -184,9 +193,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   // https://html.spec.whatwg.org/#concept-script-type
   // "It is determined when the script is prepared"
-  // TODO(hiroshige): Currently |script_type_| is set but ignored, and
-  // thus is handled as if it is a classic script even if type is "module"
-  // and module scripts is enabled.
   ScriptType script_type_ = ScriptType::kClassic;
 
   // https://html.spec.whatwg.org/#concept-script-external
@@ -219,6 +225,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   DocumentWriteIntervention document_write_intervention_;
 
   Member<PendingScript> pending_script_;
+  Member<ModulePendingScriptTreeClient> module_tree_client_;
 };
 
 }  // namespace blink

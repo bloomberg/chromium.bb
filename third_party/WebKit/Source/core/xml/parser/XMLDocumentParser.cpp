@@ -452,6 +452,7 @@ void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
   ScriptLoader* script_loader =
       ScriptElementBase::FromElementIfPossible(e)->Loader();
   DCHECK(script_loader);
+  CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 
   if (error_occurred) {
     script_loader->DispatchErrorEvent();
@@ -1112,9 +1113,16 @@ void XMLDocumentParser::EndElementNs() {
   DCHECK(!pending_script_);
   requesting_script_ = true;
 
-  if (script_loader->PrepareScript(
-          script_start_position_,
-          ScriptLoader::kAllowLegacyTypeInTypeAttribute)) {
+  bool success = script_loader->PrepareScript(
+      script_start_position_, ScriptLoader::kAllowLegacyTypeInTypeAttribute);
+
+  if (script_loader->GetScriptType() != ScriptType::kClassic) {
+    // XMLDocumentParser does not support a module script, and thus ignores it.
+    success = false;
+    VLOG(0) << "Module scripts in XML documents are not supported.";
+  }
+
+  if (success) {
     // FIXME: Script execution should be shared between
     // the libxml2 and Qt XMLDocumentParser implementations.
 
