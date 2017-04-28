@@ -87,7 +87,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
                                rect.Size(), op);
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
-                 ->BoxDecorationBreak() == kBoxDecorationBreakClone) {
+                 ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer, rect,

@@ -339,7 +339,7 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
     if (!line_box_list->FirstLineBox()->IsConstructed() &&
         !GetLineLayoutItem().IsInlineElementContinuation()) {
       if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
-          kBoxDecorationBreakClone)
+          EBoxDecorationBreak::kClone)
         include_left_edge = include_right_edge = true;
       else if (ltr && line_box_list->FirstLineBox() == this)
         include_left_edge = true;
@@ -368,7 +368,7 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
       // (4) The decoration break is set to clone therefore there will be
       //     borders on every sides.
       if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
-          kBoxDecorationBreakClone) {
+          EBoxDecorationBreak::kClone) {
         include_left_edge = include_right_edge = true;
       } else if (ltr) {
         if (!NextLineBox() && ((last_line || is_last_object_on_line) &&
