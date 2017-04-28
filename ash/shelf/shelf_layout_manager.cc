@@ -864,6 +864,22 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
   return show_shelf_region_in_screen;
 }
 
+bool ShelfLayoutManager::HasVisibleWindow() const {
+  WmWindow* root =
+      WmWindow::Get(shelf_widget_->GetNativeWindow())->GetRootWindow();
+  const std::vector<WmWindow*> windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  // Process the window list and check if there are any visible windows.
+  // Ignore app list windows that may be animating to hide after dismissal.
+  for (auto* window : windows) {
+    if (window->IsVisible() && !IsAppListWindow(window) &&
+        root->Contains(window)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
   if (visibility_state != SHELF_AUTO_HIDE || !wm_shelf_->IsShelfInitialized())
@@ -887,25 +903,8 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
        shelf_widget_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
-  const int64_t shelf_display_id =
-      WmWindow::Get(shelf_widget_->GetNativeWindow())
-          ->GetDisplayNearestWindow()
-          .id();
-  const std::vector<WmWindow*> windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-  // Process the window list and check if there are any visible windows.
-  // Ignore app list windows that may be animating to hide after dismissal.
-  bool visible_window = false;
-  for (size_t i = 0; i < windows.size(); ++i) {
-    if (windows[i] && windows[i]->IsVisible() && !IsAppListWindow(windows[i]) &&
-        !windows[i]->GetWindowState()->IsMinimized() &&
-        windows[i]->GetDisplayNearestWindow().id() == shelf_display_id) {
-      visible_window = true;
-      break;
-    }
-  }
   // If there are no visible windows do not hide the shelf.
-  if (!visible_window)
+  if (!HasVisibleWindow())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
@@ -1128,12 +1127,15 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   // When in fullscreen and the shelf is forced to be auto hidden, the auto hide
   // behavior affects neither the visibility state nor the auto hide state. Set
   // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
-  // hide state to |gesture_drag_auto_hide_state_|.
+  // hide state to |gesture_drag_auto_hide_state_|. Only change the auto-hide
+  // behavior if there is at least one window visible.
   gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  if (wm_shelf_->auto_hide_behavior() != new_auto_hide_behavior)
+  if (wm_shelf_->auto_hide_behavior() != new_auto_hide_behavior &&
+      HasVisibleWindow()) {
     wm_shelf_->SetAutoHideBehavior(new_auto_hide_behavior);
-  else
+  } else {
     UpdateVisibilityState();
+  }
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
