@@ -68,6 +68,7 @@ static_library("common") {
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
+    "chrome_isolated_world_ids.h",
     "chrome_result_codes.h",
     "chrome_utility_messages.h",
     "common_message_generator.cc",
@@ -118,6 +119,7 @@ static_library("common") {
     "pause_tabs_field_trial.h",
     "pref_names_util.cc",
     "pref_names_util.h",
+    "prerender_messages.h",
     "prerender_types.h",
     "profiling.cc",
     "profiling.h",
@@ -245,6 +247,7 @@ static_library("common") {
     sources += [
       "cast_messages.cc",
       "cast_messages.h",
+      "extensions/api/automation_api_constants.h",
       "extensions/api/commands/commands_handler.cc",
       "extensions/api/commands/commands_handler.h",
       "extensions/api/extension_action/action_info.cc",
@@ -435,6 +438,7 @@ static_library("common") {
       "importer/profile_import_process_param_traits.cc",
       "importer/profile_import_process_param_traits.h",
       "importer/profile_import_process_param_traits_macros.h",
+      "importer/pstore_declarations.h",
       "importer/safari_importer_utils.h",
       "importer/safari_importer_utils.mm",
     ]
