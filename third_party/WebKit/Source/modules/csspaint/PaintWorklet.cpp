@@ -23,8 +23,7 @@ PaintWorklet::PaintWorklet(LocalFrame* frame)
           frame->GetDocument()->Url(),
           frame->GetDocument()->UserAgent(),
           frame->GetDocument()->GetSecurityOrigin(),
-          ToIsolate(frame->GetDocument()),
-          this)) {}
+          ToIsolate(frame->GetDocument()))) {}
 
 PaintWorklet::~PaintWorklet() {}
 
