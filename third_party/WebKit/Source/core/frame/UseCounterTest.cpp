@@ -114,13 +114,7 @@ void HistogramBasicTest(const std::string& histogram,
   }
 }
 
-// Failing on Android: crbug.com/667913
-#if OS(ANDROID)
-#define MAYBE_RecordingFeatures DISABLED_RecordingFeatures
-#else
-#define MAYBE_RecordingFeatures RecordingFeatures
-#endif
-TEST(UseCounterTest, MAYBE_RecordingFeatures) {
+TEST(UseCounterTest, RecordingFeatures) {
   UseCounter use_counter;
   HistogramBasicTest<UseCounter::Feature>(
       kFeaturesHistogramName, kLegacyFeaturesHistogramName,
@@ -175,13 +169,7 @@ TEST(UseCounterTest, RecordingAnimatedCSSProperties) {
       "https://dummysite.com/", 1 /* page visit bucket */);
 }
 
-// Failing on Android: crbug.com/667913
-#if OS(ANDROID)
-#define MAYBE_SVGImageContextFeatures DISABLED_SVGImageContextFeatures
-#else
-#define MAYBE_SVGImageContextFeatures SVGImageContextFeatures
-#endif
-TEST(UseCounterTest, MAYBE_SVGImageContextFeatures) {
+TEST(UseCounterTest, SVGImageContextFeatures) {
   UseCounter use_counter(UseCounter::kSVGImageContext);
   HistogramBasicTest<UseCounter::Feature>(
       kSVGFeaturesHistogramName, kLegacyFeaturesHistogramName,
@@ -238,13 +226,7 @@ TEST(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       1 /* page visit bucket */);
 }
 
-// Failing on Android: crbug.com/667913
-#if OS(ANDROID)
-#define MAYBE_InspectorDisablesMeasurement DISABLED_InspectorDisablesMeasurement
-#else
-#define MAYBE_InspectorDisablesMeasurement InspectorDisablesMeasurement
-#endif
-TEST(UseCounterTest, MAYBE_InspectorDisablesMeasurement) {
+TEST(UseCounterTest, InspectorDisablesMeasurement) {
   UseCounter use_counter;
   HistogramTester histogram_tester;
 
@@ -311,13 +293,7 @@ void ExpectHistograms(const HistogramTester& histogram_tester,
                                     visits_count + property_count);
 }
 
-// Failing on Android: crbug.com/667913
-#if OS(ANDROID)
-#define MAYBE_MutedDocuments DISABLED_MutedDocuments
-#else
-#define MAYBE_MutedDocuments MutedDocuments
-#endif
-TEST(UseCounterTest, MAYBE_MutedDocuments) {
+TEST(UseCounterTest, MutedDocuments) {
   UseCounter use_counter;
   HistogramTester histogram_tester;
 
