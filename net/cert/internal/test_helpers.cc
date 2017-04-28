@@ -136,6 +136,7 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
   bool has_result = false;
   bool has_errors = false;
   bool has_key_purpose = false;
+  bool has_trust_anchor = false;
 
   PEMTokenizer pem_tokenizer(file_data, pem_headers);
   while (pem_tokenizer.GetNext()) {
@@ -143,6 +144,7 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
     const std::string& block_data = pem_tokenizer.data();
 
     if (block_type == kCertificateHeader) {
+      ASSERT_FALSE(has_trust_anchor) << "Trust anchor must appear last";
       CertErrors errors;
       ASSERT_TRUE(net::ParsedCertificate::CreateAndAddToVector(
           bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
@@ -152,7 +154,7 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
           << errors.ToDebugString();
     } else if (block_type == kTrustAnchorUnconstrained ||
                block_type == kTrustAnchorConstrained) {
-      ASSERT_FALSE(test->trust_anchor) << "Duplicate trust anchor";
+      ASSERT_FALSE(has_trust_anchor) << "Duplicate trust anchor";
       CertErrors errors;
       scoped_refptr<ParsedCertificate> root = net::ParsedCertificate::Create(
           bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
@@ -160,11 +162,12 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
               block_data.size(), nullptr)),
           {}, &errors);
       ASSERT_TRUE(root) << errors.ToDebugString();
-      test->trust_anchor =
-          block_type == kTrustAnchorUnconstrained
-              ? TrustAnchor::CreateFromCertificateNoConstraints(std::move(root))
-              : TrustAnchor::CreateFromCertificateWithConstraints(
-                    std::move(root));
+      test->chain.push_back(std::move(root));
+      test->last_cert_trust =
+          (block_type == kTrustAnchorUnconstrained)
+              ? CertificateTrust::ForTrustAnchor()
+              : CertificateTrust::ForTrustAnchorEnforcingConstraints();
+      has_trust_anchor = true;
     } else if (block_type == kTimeHeader) {
       ASSERT_FALSE(has_time) << "Duplicate " << kTimeHeader;
       has_time = true;
@@ -197,7 +200,7 @@ void ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
 
   ASSERT_TRUE(has_time);
   ASSERT_TRUE(has_result);
-  ASSERT_TRUE(test->trust_anchor);
+  ASSERT_TRUE(has_trust_anchor);
   ASSERT_TRUE(has_key_purpose);
 }
 

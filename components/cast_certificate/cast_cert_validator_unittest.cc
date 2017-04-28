@@ -95,15 +95,11 @@ void RunTest(TestResult expected_result,
 
       if (trust_store_dependency == TRUST_STORE_FROM_TEST_FILE_UNCONSTRAINED) {
         // This is a test-only mode where anchor constraints are not enforced.
-        trust_store->AddTrustAnchor(
-            net::TrustAnchor::CreateFromCertificateNoConstraints(
-                std::move(root)));
+        trust_store->AddTrustAnchor(std::move(root));
       } else {
-        // This is the regular mode used by the TrustAnchors for the built-in
-        // Cast store.
-        trust_store->AddTrustAnchor(
-            net::TrustAnchor::CreateFromCertificateWithConstraints(
-                std::move(root)));
+        // Add a trust anchor and enforce constraints on it (regular mode for
+        // built-in Cast roots).
+        trust_store->AddTrustAnchorWithConstraints(std::move(root));
       }
     }
   }
