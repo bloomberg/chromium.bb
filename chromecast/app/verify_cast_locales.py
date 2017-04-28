@@ -10,10 +10,10 @@ import sys
 
 CAST_LOCALES = [
     'am', 'ar', 'bg', 'bn', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US',
-    'es-419', 'es', 'et', 'fa', 'fake-bidi', 'fi', 'fil', 'fr', 'gu', 'he',
-    'hi', 'hr', 'hu', 'id', 'it', 'ja', 'kn', 'ko', 'lt', 'lv', 'ml', 'mr',
-    'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sl', 'sr',
-    'sv', 'sw', 'ta', 'te', 'th', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'
+    'es-419', 'es', 'et', 'fa', 'fi', 'fil', 'fr', 'gu', 'he', 'hi', 'hr', 'hu',
+    'id', 'it', 'ja', 'kn', 'ko', 'lt', 'lv', 'ml', 'mr', 'ms', 'nb', 'nl',
+    'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'sw', 'ta',
+    'te', 'th', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW'
 ]
 
 SUCCESS_RETURN_CODE = 0
