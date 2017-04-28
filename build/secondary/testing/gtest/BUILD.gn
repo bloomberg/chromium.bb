@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Chromium's GN configuration for gtest now lives at testing/gtest/BUILD.gn.
-#
-# This configuration is left in the tree because it is pulled by V8 and PDFium,
-# and will be removed as soon as the projects switch off of it.
-#
-# Details at http://crbug.com/630705 and http://crrev.com/2779193002
-
 import("//build_overrides/gtest.gni")
 
 config("gtest_config") {
