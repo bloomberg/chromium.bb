@@ -1945,6 +1945,9 @@ test("browser_tests") {
         deps += [ ":test_support_applist_ash" ]
       }
     }
+    if (use_aura) {
+      sources += [ "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc" ]
+    }
     if (use_aura || toolkit_views) {
       deps += [ "//ui/events:test_support" ]
     }

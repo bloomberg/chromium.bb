@@ -34,6 +34,14 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(Widget* widget) {
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
   if (!focus_client_) {
+    // Note: On Chrome OS, there's exactly one root window per screen,
+    // it's the same as ash::Shell::Get()->GetPrimaryRootWindow() when
+    // there's only one screen. Observing the root window allows us to
+    // detect any time a window is added or removed.
+    //
+    // TODO(dmazzoni): Explicitly observe each root window on Chrome OS
+    // and track as root windows are added and removed.
+    // http://crbug.com/713278
     aura::Window* root_window = window->GetRootWindow();
     if (root_window) {
       focus_client_ = aura::client::GetFocusClient(root_window);
@@ -124,6 +132,12 @@ void AXAuraObjCache::OnFocusedViewChanged() {
     view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
+void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
+                               ui::AXEvent event_type) {
+  if (delegate_)
+    delegate_->OnEvent(aura_obj, event_type);
+}
+
 AXAuraObjCache::AXAuraObjCache()
     : current_id_(1),
       focus_client_(nullptr),
@@ -179,6 +193,15 @@ void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
 
 void AXAuraObjCache::OnWindowDestroying(aura::Window* window) {
   focus_client_ = nullptr;
+}
+
+void AXAuraObjCache::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  aura::Window* window = params.target;
+  if (window->parent()) {
+    delegate_->OnEvent(GetOrCreate(window->parent()),
+                       ui::AX_EVENT_CHILDREN_CHANGED);
+  }
 }
 
 template <typename AuraViewWrapper, typename AuraView>
