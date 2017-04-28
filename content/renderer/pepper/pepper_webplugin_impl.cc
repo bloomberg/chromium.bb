@@ -183,7 +183,9 @@ v8::Local<v8::Object> PepperWebPluginImpl::V8ScriptableObject(
 }
 
 void PepperWebPluginImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
-  if (!instance_->FlashIsFullscreenOrPending())
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_ && !instance_->FlashIsFullscreenOrPending())
     instance_->Paint(canvas, plugin_rect_, rect);
 }
 
@@ -200,7 +202,10 @@ void PepperWebPluginImpl::UpdateGeometry(
 
 void PepperWebPluginImpl::UpdateFocus(bool focused,
                                       blink::WebFocusType focus_type) {
-  instance_->SetWebKitFocus(focused);
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->SetWebKitFocus(focused);
 }
 
 void PepperWebPluginImpl::UpdateVisibility(bool visible) {}
@@ -208,7 +213,9 @@ void PepperWebPluginImpl::UpdateVisibility(bool visible) {}
 blink::WebInputEventResult PepperWebPluginImpl::HandleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& cursor_info) {
-  if (instance_->FlashIsFullscreenOrPending())
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_ || instance_->FlashIsFullscreenOrPending())
     return blink::WebInputEventResult::kNotHandled;
   return instance_->HandleInputEvent(event, &cursor_info)
              ? blink::WebInputEventResult::kHandledApplication
@@ -217,11 +224,19 @@ blink::WebInputEventResult PepperWebPluginImpl::HandleInputEvent(
 
 void PepperWebPluginImpl::DidReceiveResponse(
     const blink::WebURLResponse& response) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return;
   DCHECK(!instance_->document_loader());
   instance_->HandleDocumentLoad(response);
 }
 
 void PepperWebPluginImpl::DidReceiveData(const char* data, int data_length) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return;
   blink::WebAssociatedURLLoaderClient* document_loader =
       instance_->document_loader();
   if (document_loader)
@@ -229,6 +244,10 @@ void PepperWebPluginImpl::DidReceiveData(const char* data, int data_length) {
 }
 
 void PepperWebPluginImpl::DidFinishLoading() {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return;
   blink::WebAssociatedURLLoaderClient* document_loader =
       instance_->document_loader();
   if (document_loader)
@@ -236,6 +255,10 @@ void PepperWebPluginImpl::DidFinishLoading() {
 }
 
 void PepperWebPluginImpl::DidFailLoading(const blink::WebURLError& error) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return;
   blink::WebAssociatedURLLoaderClient* document_loader =
       instance_->document_loader();
   if (document_loader)
@@ -247,62 +270,113 @@ bool PepperWebPluginImpl::HasSelection() const {
 }
 
 WebString PepperWebPluginImpl::SelectionAsText() const {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return WebString();
   return WebString::FromUTF16(instance_->GetSelectedText(false));
 }
 
 WebString PepperWebPluginImpl::SelectionAsMarkup() const {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return WebString();
   return WebString::FromUTF16(instance_->GetSelectedText(true));
 }
 
 WebURL PepperWebPluginImpl::LinkAtPosition(const WebPoint& position) const {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return GURL();
   return GURL(instance_->GetLinkAtPosition(position));
 }
 
 bool PepperWebPluginImpl::StartFind(const blink::WebString& search_text,
                                     bool case_sensitive,
                                     int identifier) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
   return instance_->StartFind(search_text.Utf8(), case_sensitive, identifier);
 }
 
 void PepperWebPluginImpl::SelectFindResult(bool forward, int identifier) {
-  instance_->SelectFindResult(forward, identifier);
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->SelectFindResult(forward, identifier);
 }
 
 void PepperWebPluginImpl::StopFind() {
-  instance_->StopFind();
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->StopFind();
 }
 
 bool PepperWebPluginImpl::SupportsPaginatedPrint() {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
   return instance_->SupportsPrintInterface();
 }
 
 bool PepperWebPluginImpl::IsPrintScalingDisabled() {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
   return instance_->IsPrintScalingDisabled();
 }
 
 int PepperWebPluginImpl::PrintBegin(const WebPrintParams& print_params) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return 0;
   return instance_->PrintBegin(print_params);
 }
 
 void PepperWebPluginImpl::PrintPage(int page_number, blink::WebCanvas* canvas) {
-  instance_->PrintPage(page_number, canvas);
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->PrintPage(page_number, canvas);
 }
 
 void PepperWebPluginImpl::PrintEnd() {
-  instance_->PrintEnd();
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->PrintEnd();
 }
 
 bool PepperWebPluginImpl::GetPrintPresetOptionsFromDocument(
     blink::WebPrintPresetOptions* preset_options) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
   return instance_->GetPrintPresetOptionsFromDocument(preset_options);
 }
 
 bool PepperWebPluginImpl::CanRotateView() {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (!instance_)
+    return false;
   return instance_->CanRotateView();
 }
 
 void PepperWebPluginImpl::RotateView(RotationType type) {
-  instance_->RotateView(type);
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See: crbug.com/715747.
+  if (instance_)
+    instance_->RotateView(type);
 }
 
 bool PepperWebPluginImpl::IsPlaceholder() {
