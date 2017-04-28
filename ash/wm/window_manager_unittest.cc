@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -347,6 +348,45 @@ TEST_F(WindowManagerTest, ActivateOnMouse) {
     generator.ClickLeftButton();
     EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
   }
+}
+
+// Tests that Set window property |kActivateOnPointerKey| to false could
+// properly ignore pointer window activation.
+TEST_F(WindowManagerTest, ActivateOnPointerWindowProperty) {
+  // Create two test windows, window1 and window2.
+  aura::test::TestWindowDelegate wd;
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
+  std::unique_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithDelegate(&wd, -2, gfx::Rect(70, 70, 50, 50)));
+
+  // Activate window1.
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+
+  // Set window2 not pointer activatable.
+  w2->SetProperty(aura::client::kActivateOnPointerKey, false);
+  // Mouse click on window2.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w2.get());
+  generator.ClickLeftButton();
+  // Window2 should not become active.
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Gesture a tap at window2.
+  generator.GestureTapAt(w2->bounds().CenterPoint());
+  // Window2 should not become active.
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Set window2 now pointer activatable.
+  w2->SetProperty(aura::client::kActivateOnPointerKey, true);
+  // Mouse click on window2.
+  generator.ClickLeftButton();
+  // Window2 should become active.
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
 }
 
 TEST_F(WindowManagerTest, PanelActivation) {

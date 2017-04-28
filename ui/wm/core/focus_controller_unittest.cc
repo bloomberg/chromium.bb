@@ -335,9 +335,11 @@ class TestFocusRules : public BaseFocusRules {
         CanFocusOrActivate(window) || window->Contains(focus_restriction_);
     return can_activate ? BaseFocusRules::CanActivateWindow(window) : false;
   }
-  bool CanFocusWindow(aura::Window* window) const override {
-    return CanFocusOrActivate(window) ?
-        BaseFocusRules::CanFocusWindow(window) : false;
+  bool CanFocusWindow(aura::Window* window,
+                      const ui::Event* event) const override {
+    return CanFocusOrActivate(window)
+               ? BaseFocusRules::CanFocusWindow(window, event)
+               : false;
   }
   aura::Window* GetActivatableWindow(aura::Window* window) const override {
     return BaseFocusRules::GetActivatableWindow(
