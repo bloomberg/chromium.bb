@@ -54,6 +54,8 @@ class FeatureEngagementTrackerImplAndroid
       const base::android::JavaParamRef<jstring>& jfeature);
   virtual void Dismissed(JNIEnv* env,
                          const base::android::JavaRef<jobject>& jobj);
+  virtual bool IsInitialized(JNIEnv* env,
+                             const base::android::JavaRef<jobject>& jobj);
   virtual void AddOnInitializedCallback(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj,

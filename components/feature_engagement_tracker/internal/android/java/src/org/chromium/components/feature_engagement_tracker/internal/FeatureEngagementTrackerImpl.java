@@ -48,6 +48,12 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
     }
 
     @Override
+    public boolean isInitialized() {
+        assert mNativePtr != 0;
+        return nativeIsInitialized(mNativePtr);
+    }
+
+    @Override
     public void addOnInitializedCallback(Callback<Boolean> callback) {
         assert mNativePtr != 0;
         nativeAddOnInitializedCallback(mNativePtr, callback);
@@ -69,6 +75,7 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
     private native boolean nativeShouldTriggerHelpUI(
             long nativeFeatureEngagementTrackerImplAndroid, String feature);
     private native void nativeDismissed(long nativeFeatureEngagementTrackerImplAndroid);
+    private native boolean nativeIsInitialized(long nativeFeatureEngagementTrackerImplAndroid);
     private native void nativeAddOnInitializedCallback(
             long nativeFeatureEngagementTrackerImplAndroid, Callback<Boolean> callback);
 }
