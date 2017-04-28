@@ -1252,6 +1252,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
 
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserControlsState,
@@ -2133,11 +2134,6 @@ void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,
     webview()->PerformMediaPlayerAction(action, location);
 }
 
-void RenderViewImpl::OnOrientationChange() {
-  if (webview() && webview()->MainFrame()->IsWebLocalFrame())
-    webview()->MainFrame()->ToWebLocalFrame()->SendOrientationChangeEvent();
-}
-
 void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
                                       const WebPluginAction& action) {
   if (webview())
@@ -2276,6 +2272,14 @@ void RenderViewImpl::OnPageWasShown() {
                              : blink::kWebPageVisibilityStateVisible;
     webview()->SetVisibilityState(visibilityState, false);
   }
+}
+
+void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
+  // This IPC only updates the screen info on RenderViews that have a remote
+  // main frame. For local main frames, the ScreenInfo is updated in
+  // ViewMsg_Resize.
+  if (!main_render_frame_)
+    screen_info_ = screen_info;
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {

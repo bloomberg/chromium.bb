@@ -530,21 +530,24 @@ void LocalDOMWindow::Reset() {
 
 void LocalDOMWindow::SendOrientationChangeEvent() {
   ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
-  ASSERT(GetFrame()->IsMainFrame());
+  DCHECK(GetFrame()->IsLocalRoot());
 
   // Before dispatching the event, build a list of all frames in the page
   // to send the event to, to mitigate side effects from event handlers
   // potentially interfering with others.
-  HeapVector<Member<Frame>> frames;
-  for (Frame* f = GetFrame(); f; f = f->Tree().TraverseNext())
-    frames.push_back(f);
+  HeapVector<Member<LocalFrame>> frames;
+  frames.push_back(GetFrame());
+  for (size_t i = 0; i < frames.size(); i++) {
+    for (Frame* child = frames[i]->Tree().FirstChild(); child;
+         child = child->Tree().NextSibling()) {
+      if (child->IsLocalFrame())
+        frames.push_back(ToLocalFrame(child));
+    }
+  }
 
-  for (size_t i = 0; i < frames.size(); ++i) {
-    if (!frames[i]->IsLocalFrame())
-      continue;
-    ToLocalFrame(frames[i].Get())
-        ->DomWindow()
-        ->DispatchEvent(Event::Create(EventTypeNames::orientationchange));
+  for (LocalFrame* frame : frames) {
+    frame->DomWindow()->DispatchEvent(
+        Event::Create(EventTypeNames::orientationchange));
   }
 }
 

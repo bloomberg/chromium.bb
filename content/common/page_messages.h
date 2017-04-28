@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/page_message_enums.h"
+#include "content/public/common/screen_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -44,6 +45,10 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetHistoryOffsetAndLength,
                     int /* history_length */)
 
 IPC_MESSAGE_ROUTED1(PageMsg_AudioStateChanged, bool /* is_audio_playing */)
+
+// Sent to OOPIF renderers when the main frame's ScreenInfo changes.
+IPC_MESSAGE_ROUTED1(PageMsg_UpdateScreenInfo,
+                    content::ScreenInfo /* screen_info */)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

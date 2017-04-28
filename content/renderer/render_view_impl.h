@@ -395,7 +395,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnResize(const ResizeParams& params) override;
   void OnSetFocus(bool enable) override;
   GURL GetURLForGraphicsContext3D() override;
-  void OnOrientationChange() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void OnDeviceScaleFactorChanged() override;
@@ -567,6 +566,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetZoomLevel(PageMsg_SetZoomLevel_Command command, double zoom_level);
   void OnPageWasHidden();
   void OnPageWasShown();
+  void OnUpdateScreenInfo(const ScreenInfo& screen_info);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
