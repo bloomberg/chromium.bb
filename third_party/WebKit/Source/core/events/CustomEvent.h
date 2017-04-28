@@ -26,13 +26,13 @@
 #ifndef CustomEvent_h
 #define CustomEvent_h
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
 #include "core/events/CustomEventInit.h"
 #include "core/events/Event.h"
 
 namespace blink {
-
-class SerializedScriptValue;
 
 class CORE_EXPORT CustomEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -42,35 +42,34 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   static CustomEvent* Create() { return new CustomEvent; }
 
-  static CustomEvent* Create(const AtomicString& type,
+  static CustomEvent* Create(ScriptState* script_state,
+                             const AtomicString& type,
                              const CustomEventInit& initializer) {
-    return new CustomEvent(type, initializer);
+    return new CustomEvent(script_state, type, initializer);
   }
 
-  void initCustomEvent(const AtomicString& type,
+  void initCustomEvent(ScriptState*,
+                       const AtomicString& type,
                        bool can_bubble,
                        bool cancelable,
                        const ScriptValue& detail);
-  void initCustomEvent(const AtomicString& type,
-                       bool can_bubble,
-                       bool cancelable,
-                       PassRefPtr<SerializedScriptValue>);
 
   const AtomicString& InterfaceName() const override;
 
-  SerializedScriptValue* SerializedDetail() { return serialized_detail_.Get(); }
-  void SetSerializedDetail(
-      PassRefPtr<SerializedScriptValue> serialized_detail) {
-    serialized_detail_ = std::move(serialized_detail);
-  }
+  ScriptValue detail(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
 
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
  private:
   CustomEvent();
-  CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
+  CustomEvent(ScriptState*,
+              const AtomicString& type,
+              const CustomEventInit& initializer);
 
-  RefPtr<SerializedScriptValue> serialized_detail_;
+  RefPtr<DOMWrapperWorld> world_;
+  TraceWrapperV8Reference<v8::Value> detail_;
 };
 
 }  // namespace blink
