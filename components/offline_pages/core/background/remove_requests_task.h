@@ -38,7 +38,6 @@ class RemoveRequestsTask : public Task {
   // Store that this task updates.
   RequestQueueStore* store_;
   // Request IDs to be updated.
-  // TODO(fgorski): perhaps convert to unique_ptr to a vector.
   std::vector<int64_t> request_ids_;
   // Callback to complete the task.
   RequestQueueStore::UpdateCallback callback_;
