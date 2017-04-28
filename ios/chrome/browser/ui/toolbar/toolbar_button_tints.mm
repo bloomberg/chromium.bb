@@ -6,6 +6,10 @@
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace toolbar {
 
 // The colors used to tint the buttons in the toolbar.

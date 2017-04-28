@@ -13,7 +13,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -44,6 +43,7 @@
 #import "ios/chrome/browser/ui/keyboard/hardware_keyboard_watcher.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
@@ -71,6 +71,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 using ios::material::TimingFunction;
@@ -242,23 +246,23 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                                    OmniboxPopupPositioner,
                                    ToolbarFrameDelegate> {
   // Top-level view for web content.
-  base::scoped_nsobject<UIView> _webToolbar;
-  base::scoped_nsobject<UIButton> _backButton;
-  base::scoped_nsobject<UIButton> _forwardButton;
-  base::scoped_nsobject<UIButton> _reloadButton;
-  base::scoped_nsobject<UIButton> _stopButton;
-  base::scoped_nsobject<UIButton> _starButton;
-  base::scoped_nsobject<UIButton> _voiceSearchButton;
-  base::scoped_nsobject<OmniboxTextFieldIOS> _omniBox;
-  base::scoped_nsobject<UIButton> _cancelButton;
-  base::scoped_nsobject<UIView> _keyBoardAccessoryView;
-  base::scoped_nsobject<UIButton> _keyboardVoiceSearchButton;
+  UIView* _webToolbar;
+  UIButton* _backButton;
+  UIButton* _forwardButton;
+  UIButton* _reloadButton;
+  UIButton* _stopButton;
+  UIButton* _starButton;
+  UIButton* _voiceSearchButton;
+  OmniboxTextFieldIOS* _omniBox;
+  UIButton* _cancelButton;
+  UIView* _keyBoardAccessoryView;
+  UIButton* _keyboardVoiceSearchButton;
   // Progress bar used to show what fraction of the page has loaded.
-  base::scoped_nsobject<MDCProgressView> _determinateProgressView;
-  base::scoped_nsobject<UIImageView> _omniboxBackground;
+  MDCProgressView* _determinateProgressView;
+  UIImageView* _omniboxBackground;
   BOOL _prerenderAnimating;
-  base::scoped_nsobject<UIImageView> _incognitoIcon;
-  base::scoped_nsobject<UIView> _clippingView;
+  UIImageView* _incognitoIcon;
+  UIView* _clippingView;
 
   std::unique_ptr<LocationBarController> _locationBar;
   BOOL _initialLayoutComplete;
@@ -280,21 +284,21 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   ToolbarButtonMode _forwardButtonMode;
 
   // Keeps track of last known trait collection used by the subviews.
-  base::scoped_nsobject<UITraitCollection> _lastKnownTraitCollection;
+  UITraitCollection* _lastKnownTraitCollection;
 
   // A snapshot of the current toolbar view. Only valid for phone, will be nil
   // if on tablet.
-  base::scoped_nsobject<UIImage> _snapshot;
+  UIImage* _snapshot;
   // A hash of the state of the toolbar when the snapshot was taken.
   uint32_t _snapshotHash;
 
   // View controller for displaying tab history when the user long presses the
   // back or forward button. nil if not visible.
-  base::scoped_nsobject<TabHistoryPopupController> _tabHistoryPopupController;
+  TabHistoryPopupController* _tabHistoryPopupController;
 
   // Hardware keyboard watcher, to detect the type of keyboard currently
   // attached.
-  base::scoped_nsobject<HardwareKeyboardWatcher> _hardwareKeyboardWatcher;
+  HardwareKeyboardWatcher* _hardwareKeyboardWatcher;
 
   // The current browser state.
   ios::ChromeBrowserState* _browserState;  // weak
@@ -395,19 +399,19 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
   // Note that |_webToolbar| gets its frame set to -specificControlArea later in
   // this method.
-  _webToolbar.reset([[UIView alloc]
-      initWithFrame:LayoutRectGetRect(kWebToolbarFrame[idiom])]);
+  _webToolbar =
+      [[UIView alloc] initWithFrame:LayoutRectGetRect(kWebToolbarFrame[idiom])];
   UIColor* textColor =
       _incognito
           ? [UIColor whiteColor]
           : [UIColor colorWithWhite:0 alpha:[MDCTypography body1FontOpacity]];
   UIColor* tintColor = _incognito ? textColor : nil;
   CGRect omniboxRect = LayoutRectGetRect(kOmniboxFrame[idiom]);
-  _omniBox.reset([[OmniboxTextFieldIOS alloc]
-      initWithFrame:omniboxRect
-               font:[MDCTypography subheadFont]
-          textColor:textColor
-          tintColor:tintColor]);
+  _omniBox =
+      [[OmniboxTextFieldIOS alloc] initWithFrame:omniboxRect
+                                            font:[MDCTypography subheadFont]
+                                       textColor:textColor
+                                       tintColor:tintColor];
   if (_incognito) {
     [_omniBox setIncognito:YES];
     [_omniBox
@@ -421,15 +425,15 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                           alpha:1.0];
     [_omniBox setPlaceholderTextColor:placeholderTextColor];
   }
-  _backButton.reset([[UIButton alloc]
-      initWithFrame:LayoutRectGetRect(kBackButtonFrame[idiom])]);
+  _backButton = [[UIButton alloc]
+      initWithFrame:LayoutRectGetRect(kBackButtonFrame[idiom])];
   [_backButton setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                                    UIViewAutoresizingFlexibleTopMargin |
                                    UIViewAutoresizingFlexibleBottomMargin];
   // Note that the forward button gets repositioned when -layoutOmnibox is
   // called.
-  _forwardButton.reset([[UIButton alloc]
-      initWithFrame:LayoutRectGetRect(kForwardButtonFrame[idiom])]);
+  _forwardButton = [[UIButton alloc]
+      initWithFrame:LayoutRectGetRect(kForwardButtonFrame[idiom])];
   [_forwardButton
       setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                           UIViewAutoresizingFlexibleBottomMargin];
@@ -439,7 +443,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   // _omniboxBackground needs to be added under _omniBox so as not to cover up
   // _omniBox.
-  _omniboxBackground.reset([[UIImageView alloc] initWithFrame:omniboxRect]);
+  _omniboxBackground = [[UIImageView alloc] initWithFrame:omniboxRect];
   [_omniboxBackground
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleBottomMargin];
@@ -451,7 +455,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [_forwardButton setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -7, 0, 0)];
     CGRect clippingFrame =
         RectShiftedUpAndResizedForStatusBar(kToolbarFrame[idiom]);
-    _clippingView.reset([[UIView alloc] initWithFrame:clippingFrame]);
+    _clippingView = [[UIView alloc] initWithFrame:clippingFrame];
     [_clippingView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleBottomMargin];
     [_clippingView setClipsToBounds:YES];
@@ -471,8 +475,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
           setBackgroundColor:
               [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
                                 alpha:1.0]];
-      _incognitoIcon.reset([[UIImageView alloc]
-          initWithImage:[UIImage imageNamed:@"incognito_marker_typing"]]);
+      _incognitoIcon = [[UIImageView alloc]
+          initWithImage:[UIImage imageNamed:@"incognito_marker_typing"]];
       [_incognitoIcon setAlpha:0];
       [_incognitoIcon
           setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin()];
@@ -489,22 +493,22 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (idiom == IPAD_IDIOM) {
     // Note that the reload button gets repositioned when -layoutOmnibox is
     // called.
-    _reloadButton.reset([[UIButton alloc]
-        initWithFrame:LayoutRectGetRect(kStopReloadButtonFrame)]);
+    _reloadButton = [[UIButton alloc]
+        initWithFrame:LayoutRectGetRect(kStopReloadButtonFrame)];
     [_reloadButton
         setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                             UIViewAutoresizingFlexibleBottomMargin];
-    _stopButton.reset([[UIButton alloc]
-        initWithFrame:LayoutRectGetRect(kStopReloadButtonFrame)]);
+    _stopButton = [[UIButton alloc]
+        initWithFrame:LayoutRectGetRect(kStopReloadButtonFrame)];
     [_stopButton
         setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                             UIViewAutoresizingFlexibleBottomMargin];
-    _starButton.reset(
-        [[UIButton alloc] initWithFrame:LayoutRectGetRect(kStarButtonFrame)]);
+    _starButton =
+        [[UIButton alloc] initWithFrame:LayoutRectGetRect(kStarButtonFrame)];
     [_starButton setAutoresizingMask:UIViewAutoresizingFlexibleBottomMargin |
                                      UIViewAutoresizingFlexibleLeadingMargin()];
-    _voiceSearchButton.reset([[UIButton alloc]
-        initWithFrame:LayoutRectGetRect(kVoiceSearchButtonFrame)]);
+    _voiceSearchButton = [[UIButton alloc]
+        initWithFrame:LayoutRectGetRect(kVoiceSearchButtonFrame)];
     [_voiceSearchButton
         setAutoresizingMask:UIViewAutoresizingFlexibleBottomMargin |
                             UIViewAutoresizingFlexibleLeadingMargin()];
@@ -551,15 +555,15 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   _backButtonMode = ToolbarButtonModeNormal;
   _forwardButtonMode = ToolbarButtonModeNormal;
-  base::scoped_nsobject<UILongPressGestureRecognizer> backLongPress(
+  UILongPressGestureRecognizer* backLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
-                  action:@selector(handleLongPress:)]);
+                  action:@selector(handleLongPress:)];
   [_backButton addGestureRecognizer:backLongPress];
-  base::scoped_nsobject<UILongPressGestureRecognizer> forwardLongPress(
+  UILongPressGestureRecognizer* forwardLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
-                  action:@selector(handleLongPress:)]);
+                  action:@selector(handleLongPress:)];
   [_forwardButton addGestureRecognizer:forwardLongPress];
 
   // TODO(leng):  Consider moving this to a pak file as well.  For now,
@@ -607,8 +611,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     CGFloat progressWidth = self.view.frame.size.width;
     CGFloat progressHeight = 0;
     progressHeight = kMaterialProgressBarHeight;
-    _determinateProgressView.reset([[MDCProgressView alloc] init]);
-    _determinateProgressView.get().hidden = YES;
+    _determinateProgressView = [[MDCProgressView alloc] init];
+    _determinateProgressView.hidden = YES;
     [_determinateProgressView
         setProgressTintColor:[MDCPalette cr_bluePalette].tint500];
     [_determinateProgressView
@@ -672,7 +676,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [_tabHistoryPopupController setDelegate:nil];
-  [super dealloc];
 }
 
 #pragma mark -
@@ -746,17 +749,19 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 - (void)showPrerenderingAnimation {
   _prerenderAnimating = YES;
+  __weak MDCProgressView* weakDeterminateProgressView =
+      _determinateProgressView;
   [_determinateProgressView setProgress:0];
   [_determinateProgressView setHidden:NO
                              animated:YES
                            completion:^(BOOL finished) {
-                             [_determinateProgressView
+                             [weakDeterminateProgressView
                                  setProgress:1
                                     animated:YES
                                   completion:^(BOOL finished) {
-                                    [_determinateProgressView setHidden:YES
-                                                               animated:YES
-                                                             completion:nil];
+                                    [weakDeterminateProgressView setHidden:YES
+                                                                  animated:YES
+                                                                completion:nil];
                                   }];
                            }];
 }
@@ -786,11 +791,11 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (UIView*)bookmarkButtonView {
-  return _starButton.get();
+  return _starButton;
 }
 
 - (CGRect)visibleOmniboxFrame {
-  CGRect frame = _omniboxBackground.get().frame;
+  CGRect frame = _omniboxBackground.frame;
   frame = [self.view.superview convertRect:frame
                                   fromView:[_omniboxBackground superview]];
   // Account for the omnibox background image transparent sides.
@@ -802,7 +807,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     return nil;
   // Below call will be no-op if cached snapshot is valid.
   [self updateSnapshotWithWidth:width forced:YES];
-  return [[_snapshot retain] autorelease];
+  return _snapshot;
 }
 
 - (void)showTabHistoryPopupInView:(UIView*)view
@@ -824,10 +829,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                                CGRectGetMaxY(buttonBounds));
   CGPoint convertedOrigin =
       [view convertPoint:origin fromView:historyButton.imageView];
-  _tabHistoryPopupController.reset([[TabHistoryPopupController alloc]
-      initWithOrigin:convertedOrigin
-          parentView:view
-               items:items]);
+  _tabHistoryPopupController =
+      [[TabHistoryPopupController alloc] initWithOrigin:convertedOrigin
+                                             parentView:view
+                                                  items:items];
   [_tabHistoryPopupController setDelegate:self];
 
   // Fade in the popup and notify observers.
@@ -844,7 +849,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)dismissTabHistoryPopup {
   if (!_tabHistoryPopupController)
     return;
-  TabHistoryPopupController* tempTHPC = _tabHistoryPopupController.get();
+  TabHistoryPopupController* tempTHPC = _tabHistoryPopupController;
   [tempTHPC containerView].userInteractionEnabled = NO;
   [tempTHPC dismissAnimatedWithCompletion:^{
     // Unpress the back/forward button by restoring the normal and
@@ -856,7 +861,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }];
   // reset _tabHistoryPopupController to prevent -applicationDidEnterBackground
   // from posting another kTabHistoryPopupWillHideNotification.
-  _tabHistoryPopupController.reset();
+  _tabHistoryPopupController = nil;
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTabHistoryPopupWillHideNotification
@@ -875,9 +880,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  _lastKnownTraitCollection.reset([[UITraitCollection
-      traitCollectionWithTraitsFromCollections:@[ self.view.traitCollection ]]
-      retain]);
+  _lastKnownTraitCollection = [UITraitCollection
+      traitCollectionWithTraitsFromCollections:@[ self.view.traitCollection ]];
   if (IsIPadIdiom()) {
     // Update toolbar accessory views.
     BOOL isCompactTabletView = IsCompactTablet(self.view);
@@ -889,7 +893,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
     // Update keyboard accessory views.
     BOOL hidden = [_keyboardVoiceSearchButton isHidden];
-    _keyBoardAccessoryView.reset();
+    _keyBoardAccessoryView = nil;
     [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
     [_keyboardVoiceSearchButton setHidden:hidden];
     if ([_omniBox isFirstResponder]) {
@@ -910,7 +914,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     // Dismiss the tab history popup without animation.
     [self setImagesForNavButton:_backButton withTabHistoryVisible:NO];
     [self setImagesForNavButton:_forwardButton withTabHistoryVisible:NO];
-    _tabHistoryPopupController.reset(nil);
+    _tabHistoryPopupController = nil;
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabHistoryPopupWillHideNotification
                       object:nil];
@@ -929,7 +933,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
       hasDisabledImage:hasDisabledImage
          synchronously:synchronously];
 
-  if (button != _starButton.get())
+  if (button != _starButton)
     return;
   // The star button behaves slightly differently.  It uses the pressed
   // image for its selected state as well as its pressed state.
@@ -954,19 +958,19 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (IBAction)recordUserMetrics:(id)sender {
-  if (sender == _backButton.get()) {
+  if (sender == _backButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarBack"));
-  } else if (sender == _forwardButton.get()) {
+  } else if (sender == _forwardButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarForward"));
-  } else if (sender == _reloadButton.get()) {
+  } else if (sender == _reloadButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarReload"));
-  } else if (sender == _stopButton.get()) {
+  } else if (sender == _stopButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarStop"));
-  } else if (sender == _voiceSearchButton.get()) {
+  } else if (sender == _voiceSearchButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarVoiceSearch"));
-  } else if (sender == _keyboardVoiceSearchButton.get()) {
+  } else if (sender == _keyboardVoiceSearchButton) {
     base::RecordAction(UserMetricsAction("MobileCustomRowVoiceSearch"));
-  } else if (sender == _starButton.get()) {
+  } else if (sender == _starButton) {
     base::RecordAction(UserMetricsAction("MobileToolbarToggleBookmark"));
   } else {
     [super recordUserMetrics:sender];
@@ -991,17 +995,17 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (int)imageEnumForButton:(UIButton*)button {
-  if (button == _voiceSearchButton.get())
+  if (button == _voiceSearchButton)
     return _isTTSPlaying ? WebToolbarButtonNameTTS : WebToolbarButtonNameVoice;
-  if (button == _starButton.get())
+  if (button == _starButton)
     return WebToolbarButtonNameStar;
-  if (button == _stopButton.get())
+  if (button == _stopButton)
     return WebToolbarButtonNameStop;
-  if (button == _reloadButton.get())
+  if (button == _reloadButton)
     return WebToolbarButtonNameReload;
-  if (button == _backButton.get())
+  if (button == _backButton)
     return WebToolbarButtonNameBack;
-  if (button == _forwardButton.get())
+  if (button == _forwardButton)
     return WebToolbarButtonNameForward;
   return [super imageEnumForButton:button];
 }
@@ -1310,7 +1314,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   // Hide the voice search button once the user starts editing the omnibox but
   // show it if the omnibox is empty.
   bool isEditingOrEmpty = _locationBar->GetLocationEntry()->IsEditingOrEmpty();
-  BOOL editingAndNotEmpty = isEditingOrEmpty && _omniBox.get().text.length != 0;
+  BOOL editingAndNotEmpty = isEditingOrEmpty && _omniBox.text.length != 0;
   // If the voice search button is visible but about to be hidden (i.e.
   // the omnibox is no longer empty) then this is the first omnibox text so
   // record a user action.
@@ -1474,7 +1478,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (UIButton*)cancelButton {
   if (_cancelButton)
     return _cancelButton;
-  _cancelButton.reset([[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
   NSString* collapseName = _incognito ? @"collapse_incognito" : @"collapse";
   [_cancelButton setImage:[UIImage imageNamed:collapseName]
                  forState:UIControlStateNormal];
@@ -1630,15 +1634,17 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     // disappeared.
 
     if (!_prerenderAnimating) {
+      __weak MDCProgressView* weakDeterminateProgressView =
+          _determinateProgressView;
       // Calling -completeAndHide while a prerender animation is in progress
       // will result in hiding the progress bar before the animation is
       // complete.
       [_determinateProgressView setProgress:1
                                    animated:YES
                                  completion:^(BOOL finished) {
-                                   [_determinateProgressView setHidden:YES
-                                                              animated:YES
-                                                            completion:nil];
+                                   [weakDeterminateProgressView setHidden:YES
+                                                                 animated:YES
+                                                               completion:nil];
                                  }];
     }
     CGFloat delay = _unitTesting ? 0 : kLoadCompleteHideProgressBarDelay;
@@ -1703,13 +1709,13 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (gesture.state != UIGestureRecognizerStateBegan)
     return;
 
-  if (gesture.view == _backButton.get()) {
-    base::scoped_nsobject<GenericChromeCommand> command(
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_BACK_HISTORY]);
+  if (gesture.view == _backButton) {
+    GenericChromeCommand* command =
+        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_BACK_HISTORY];
     [_backButton chromeExecuteCommand:command];
-  } else if (gesture.view == _forwardButton.get()) {
-    base::scoped_nsobject<GenericChromeCommand> command(
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_FORWARD_HISTORY]);
+  } else if (gesture.view == _forwardButton) {
+    GenericChromeCommand* command =
+        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_FORWARD_HISTORY];
     [_forwardButton chromeExecuteCommand:command];
   }
 }
@@ -1724,10 +1730,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (!isBackButton && newMode == _forwardButtonMode)
     return;
 
-  base::scoped_nsobject<UIImage> normalImage(
-      [[button imageForState:UIControlStateNormal] retain]);
-  base::scoped_nsobject<UIImage> highlightedImage(
-      [[button imageForState:UIControlStateHighlighted] retain]);
+  UIImage* normalImage = [button imageForState:UIControlStateNormal];
+  UIImage* highlightedImage = [button imageForState:UIControlStateHighlighted];
   [button setImage:highlightedImage forState:UIControlStateNormal];
   [button setImage:normalImage forState:UIControlStateHighlighted];
   if (isBackButton)
@@ -1870,9 +1874,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   CGFloat height = isTablet ? kViewHeightTablet : kViewHeightPhone;
   CGRect frame = CGRectMake(0.0, 0.0, width, height);
 
-  _keyBoardAccessoryView.reset([[KeyboardAccessoryView alloc]
-       initWithFrame:frame
-      inputViewStyle:UIInputViewStyleKeyboard]);
+  _keyBoardAccessoryView =
+      [[KeyboardAccessoryView alloc] initWithFrame:frame
+                                    inputViewStyle:UIInputViewStyleKeyboard];
   [_keyBoardAccessoryView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 
   NSArray* buttonTitles =
@@ -1890,8 +1894,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (indent < kButtonInset)
     indent = kButtonInset;
   CGRect parentViewRect = CGRectMake(indent, 0.0, totalWidth, height);
-  base::scoped_nsobject<UIView> parentView(
-      [[UIView alloc] initWithFrame:parentViewRect]);
+  UIView* parentView = [[UIView alloc] initWithFrame:parentViewRect];
   [parentView setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin |
                                   UIViewAutoresizingFlexibleRightMargin];
   [_keyBoardAccessoryView addSubview:parentView];
@@ -1909,8 +1912,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   // Create the voice search button and add it to _keyBoardAccessoryView over
   // the text buttons.
-  _keyboardVoiceSearchButton.reset(
-      [[UIButton buttonWithType:UIButtonTypeCustom] retain]);
+  _keyboardVoiceSearchButton = [UIButton buttonWithType:UIButtonTypeCustom];
   [_keyboardVoiceSearchButton
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   [_keyboardVoiceSearchButton setTag:IDC_VOICE_SEARCH];
@@ -1952,8 +1954,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [_keyBoardAccessoryView addSubview:_keyboardVoiceSearchButton];
 
   // Reset the external keyboard watcher.
-  _hardwareKeyboardWatcher.reset([[HardwareKeyboardWatcher alloc]
-      initWithAccessoryView:_keyBoardAccessoryView]);
+  _hardwareKeyboardWatcher = [[HardwareKeyboardWatcher alloc]
+      initWithAccessoryView:_keyBoardAccessoryView];
 
   return _keyBoardAccessoryView;
 }
@@ -1968,8 +1970,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   // Use a GenericChromeCommand because |sender| already has a tag set for a
   // different command.
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH];
   [sender chromeExecuteCommand:command];
 }
 
@@ -2472,7 +2474,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     return;
   }
   // If the snapshot is valid, don't redraw.
-  if (_snapshot.get() && _snapshotHash == [self snapshotHashWithWidth:width])
+  if (_snapshot && _snapshotHash == [self snapshotHashWithWidth:width])
     return;
 
   // Don't update the snapshot while the progress bar is moving, or while the
@@ -2497,7 +2499,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   UIGraphicsBeginImageContextWithOptions(frame.size, NO, 0.0);
   [[self view].layer renderInContext:UIGraphicsGetCurrentContext()];
-  _snapshot.reset([UIGraphicsGetImageFromCurrentImageContext() retain]);
+  _snapshot = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
 
   // In the past, when the current tab was prerendered, taking a snapshot
@@ -2572,7 +2574,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (OmniboxTextFieldIOS*)omnibox {
-  return _omniBox.get();
+  return _omniBox;
 }
 
 @end
