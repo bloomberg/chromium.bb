@@ -75,6 +75,11 @@ void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
   NOTREACHED();
 }
 
+void DummyModulator::FetchDescendantsForInlineScript(ModuleScript*,
+                                                     ModuleTreeClient*) {
+  NOTREACHED();
+}
+
 ModuleScript* DummyModulator::GetFetchedModuleScript(const KURL&) {
   NOTREACHED();
   return nullptr;

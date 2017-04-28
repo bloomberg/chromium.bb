@@ -2334,18 +2334,12 @@ crbug.com/490015 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simpl
 # This test fails with the stable release mode.
 crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
-# Failing because of module-related implementation/test issues and
-# lack of inline module script support.
+# Failing because of module-related implementation/test issues.
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Failure ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/imports.html [ Failure Crash ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/execorder.html [ Failure Timeout ]
+crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/execorder.html [ Pass Timeout ]
 crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-1.html [ Failure Crash ]
-
-# Inline module scripts are not yet supported.
-crbug.com/715369 external/wpt/html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html [ Failure ]
-crbug.com/715369 fast/dom/HTMLScriptElement/module-script.html [ Failure ]
-crbug.com/715369 virtual/sharedarraybuffer/fast/dom/HTMLScriptElement/module-script.html [ Failure ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be

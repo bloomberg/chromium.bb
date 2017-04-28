@@ -87,6 +87,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                            ModuleGraphLevel,
                            SingleModuleClient*) = 0;
 
+  virtual void FetchDescendantsForInlineScript(ModuleScript*,
+                                               ModuleTreeClient*) = 0;
+
   // Synchronously retrieves a single module script from existing module map
   // entry.
   // Note: returns nullptr if the module map entry is still "fetching".

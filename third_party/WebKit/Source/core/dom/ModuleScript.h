@@ -79,16 +79,19 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                const KURL& base_url,
                const String& nonce,
                ParserDisposition parser_state,
-               WebURLRequest::FetchCredentialsMode credentials_mode)
+               WebURLRequest::FetchCredentialsMode credentials_mode,
+               const String& source_text)
       : settings_object_(settings_object),
         record_(record),
         base_url_(base_url),
         instantiation_error_(this),
         nonce_(nonce),
         parser_state_(parser_state),
-        credentials_mode_(credentials_mode) {}
+        credentials_mode_(credentials_mode),
+        source_text_(source_text) {}
 
-  static ModuleScript* CreateInternal(Modulator*,
+  static ModuleScript* CreateInternal(const String& source_text,
+                                      Modulator*,
                                       ScriptModule,
                                       const KURL& base_url,
                                       const String& nonce,
@@ -142,6 +145,9 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-credentials-mode
   const WebURLRequest::FetchCredentialsMode credentials_mode_;
+
+  // For CSP check.
+  const String source_text_;
 };
 
 }  // namespace blink

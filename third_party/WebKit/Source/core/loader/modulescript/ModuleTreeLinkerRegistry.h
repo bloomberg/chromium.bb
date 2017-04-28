@@ -16,6 +16,7 @@ class ModuleScriptFetchRequest;
 class ModuleTreeClient;
 class ModuleTreeLinker;
 enum class ModuleGraphLevel;
+class ModuleScript;
 
 // ModuleTreeLinkerRegistry keeps active ModuleTreeLinkers alive.
 class CORE_EXPORT ModuleTreeLinkerRegistry
@@ -31,6 +32,9 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
                           ModuleGraphLevel,
                           Modulator*,
                           ModuleTreeClient*);
+  ModuleTreeLinker* FetchDescendantsForInlineScript(ModuleScript*,
+                                                    Modulator*,
+                                                    ModuleTreeClient*);
 
  private:
   ModuleTreeLinkerRegistry() = default;
