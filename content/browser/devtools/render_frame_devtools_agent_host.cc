@@ -762,7 +762,7 @@ void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
   if (session())
     protocol::TargetHandler::FromSession(session())->UpdateFrames();
 
-  if (IsBrowserSideNavigationEnabled())
+  if (IsBrowserSideNavigationEnabled() && !current_frame_crashed_)
     return;
 
   DCHECK(!pending_ || pending_->host() != old_host);
