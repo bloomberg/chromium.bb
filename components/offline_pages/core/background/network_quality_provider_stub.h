@@ -23,7 +23,7 @@ class NetworkQualityProviderStub
   static NetworkQualityProviderStub* GetUserData(
       base::SupportsUserData* supports_user_data);
   static void SetUserData(base::SupportsUserData* supports_user_data,
-                          NetworkQualityProviderStub* stub);
+                          std::unique_ptr<NetworkQualityProviderStub> stub);
 
   net::EffectiveConnectionType GetEffectiveConnectionType() const override;
 

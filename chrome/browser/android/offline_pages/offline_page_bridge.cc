@@ -16,6 +16,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
@@ -242,7 +243,8 @@ static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(
       offline_page_model->GetUserData(kOfflinePageBridgeKey));
   if (!bridge) {
     bridge = new OfflinePageBridge(env, profile, offline_page_model);
-    offline_page_model->SetUserData(kOfflinePageBridgeKey, bridge);
+    offline_page_model->SetUserData(kOfflinePageBridgeKey,
+                                    base::WrapUnique(bridge));
   }
 
   return ScopedJavaLocalRef<jobject>(bridge->java_ref());

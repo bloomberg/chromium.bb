@@ -492,7 +492,8 @@ static jlong Init(JNIEnv* env,
     adapter = new DownloadUIAdapter(
         offline_page_model, request_coordinator,
         base::MakeUnique<DownloadUIAdapterDelegate>(offline_page_model));
-    DownloadUIAdapter::AttachToOfflinePageModel(adapter, offline_page_model);
+    DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
+                                                offline_page_model);
   }
 
   return reinterpret_cast<jlong>(

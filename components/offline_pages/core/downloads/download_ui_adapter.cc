@@ -32,11 +32,12 @@ DownloadUIAdapter* DownloadUIAdapter::FromOfflinePageModel(
 }
 
 // static
-void DownloadUIAdapter::AttachToOfflinePageModel(DownloadUIAdapter* adapter,
-                                                 OfflinePageModel* model) {
+void DownloadUIAdapter::AttachToOfflinePageModel(
+    std::unique_ptr<DownloadUIAdapter> adapter,
+    OfflinePageModel* model) {
   DCHECK(adapter);
   DCHECK(model);
-  model->SetUserData(kDownloadUIAdapterKey, adapter);
+  model->SetUserData(kDownloadUIAdapterKey, std::move(adapter));
 }
 
 DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page,

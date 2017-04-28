@@ -83,8 +83,9 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   ~DownloadUIAdapter() override;
 
   static DownloadUIAdapter* FromOfflinePageModel(OfflinePageModel* model);
-  static void AttachToOfflinePageModel(DownloadUIAdapter* adapter,
-                                       OfflinePageModel* model);
+  static void AttachToOfflinePageModel(
+      std::unique_ptr<DownloadUIAdapter> adapter,
+      OfflinePageModel* model);
 
   // This adapter is potentially shared by UI elements, each of which adds
   // itself as an observer.

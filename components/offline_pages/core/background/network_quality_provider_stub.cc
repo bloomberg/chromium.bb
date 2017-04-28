@@ -24,10 +24,10 @@ NetworkQualityProviderStub* NetworkQualityProviderStub::GetUserData(
 // static
 void NetworkQualityProviderStub::SetUserData(
     base::SupportsUserData* supports_user_data,
-    NetworkQualityProviderStub* stub) {
+    std::unique_ptr<NetworkQualityProviderStub> stub) {
   DCHECK(supports_user_data);
   DCHECK(stub);
-  supports_user_data->SetUserData(&kOfflineNQPKey, stub);
+  supports_user_data->SetUserData(&kOfflineNQPKey, std::move(stub));
 }
 
 void NetworkQualityProviderStub::AddEffectiveConnectionTypeObserver(

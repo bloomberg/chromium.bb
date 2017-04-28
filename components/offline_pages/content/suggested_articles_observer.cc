@@ -76,11 +76,8 @@ void SuggestedArticlesObserver::ObserveContentSuggestionsService(
   auto suggestions_observer = base::MakeUnique<SuggestedArticlesObserver>(
       browser_context, base::MakeUnique<DefaultDelegate>(service));
   service->AddObserver(suggestions_observer.get());
-  service->SetUserData(
-      &kOfflinePageSuggestedArticlesObserverUserDataKey,
-      // Note that |service| will take ownership of suggestions_observer
-      // despite accepting a raw pointer.
-      suggestions_observer.release());
+  service->SetUserData(&kOfflinePageSuggestedArticlesObserverUserDataKey,
+                       std::move(suggestions_observer));
 }
 
 SuggestedArticlesObserver::SuggestedArticlesObserver(

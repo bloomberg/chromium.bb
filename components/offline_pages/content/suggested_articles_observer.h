@@ -28,7 +28,7 @@ namespace offline_pages {
 // specifically.
 class SuggestedArticlesObserver
     : public ntp_snippets::ContentSuggestionsService::Observer,
-      base::SupportsUserData::Data {
+      public base::SupportsUserData::Data {
  public:
   // Delegate exists to allow for dependency injection in unit tests.
   // SuggestedArticlesObserver implements its own delegate, |DefaultDelegate| in
