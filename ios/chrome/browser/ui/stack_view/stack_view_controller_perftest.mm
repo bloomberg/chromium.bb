@@ -20,6 +20,10 @@
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // These tests measure the performance of opening the stack view controller on
 // an iPhone. On an iPad, the tests do not run, as the iPad does not use the
 // stack view controller.
@@ -53,7 +57,7 @@
   BOOL dismissAnimationEnded_;
   BOOL preloadCardViewsEnded_;
  @public
-  BrowserViewController* bvc_;  // weak
+  __weak BrowserViewController* bvc_;
 }
 
 - (void)reinitialize;
@@ -166,8 +170,8 @@ class StackViewControllerPerfTest : public PerfTestWithBVC {
     reuse_svc_ = false;
 
     // The testing delegate will receive stack view animation notifications.
-    delegate_.reset([[StackViewControllerPerfTestDelegate alloc]
-        initWithBrowserViewController:bvc_]);
+    delegate_ = [[StackViewControllerPerfTestDelegate alloc]
+        initWithBrowserViewController:bvc_];
   }
   void TearDown() override {
     // Opening a StackViewController is done only on iPhones, not on iPads.
@@ -180,8 +184,8 @@ class StackViewControllerPerfTest : public PerfTestWithBVC {
 
  protected:
   // Stack view controller & delegate.
-  base::scoped_nsobject<StackViewControllerPerfTestDelegate> delegate_;
-  base::scoped_nsobject<StackViewController> view_controller_;
+  StackViewControllerPerfTestDelegate* delegate_;
+  StackViewController* view_controller_;
 
   int current_url_index_;
   BOOL reuse_svc_;
@@ -286,15 +290,15 @@ void StackViewControllerPerfTest::MainControllerShowTabSwitcher() {
   // which will cache the first snapshot for the tab and reuse it instead of
   // regenerating a new one each time.
   [currentTab setSnapshotCoalescingEnabled:YES];
-  base::ScopedClosureRunner runner(base::BindBlock(^{
+  base::ScopedClosureRunner runner(base::BindBlockArc(^{
     [currentTab setSnapshotCoalescingEnabled:NO];
   }));
 
   if (!view_controller_) {
-    view_controller_.reset([[StackViewController alloc]
-        initWithMainTabModel:tab_model_
-                 otrTabModel:otr_tab_model_
-              activeTabModel:tab_model_]);
+    view_controller_ =
+        [[StackViewController alloc] initWithMainTabModel:tab_model_
+                                              otrTabModel:otr_tab_model_
+                                           activeTabModel:tab_model_];
   } else {
     [view_controller_ restoreInternalStateWithMainTabModel:tab_model_
                                                otrTabModel:otr_tab_model_
@@ -305,7 +309,7 @@ void StackViewControllerPerfTest::MainControllerShowTabSwitcher() {
   // The only addition to the function for testing.
   [view_controller_ setTestDelegate:delegate_];
 
-  [bvc_ presentViewController:view_controller_.get()
+  [bvc_ presentViewController:view_controller_
                      animated:NO
                    completion:^{
                      [view_controller_ showWithSelectedTabAnimation];
@@ -330,7 +334,7 @@ base::TimeDelta StackViewControllerPerfTest::CloseStackView() {
 
   [view_controller_ dismissViewControllerAnimated:NO completion:nil];
   if (!reuse_svc_)
-    view_controller_.reset();
+    view_controller_ = nil;
 
   base::TimeDelta closeTime = base::Time::NowFromSystemTime() - startTime;
 
