@@ -2008,7 +2008,6 @@
     'ios': ['ios-reviews@chromium.org'],
     'ios_chrome': ['ios-reviews+chrome@chromium.org',
                    'pkl@chromium.org',
-                   'sdefresne+watch@chromium.org',
                    'noyau+watch@chromium.org',
                    'marq+watch@chromium.org'],
     'ios_clean': ['ios-reviews+clean@chromium.org',
