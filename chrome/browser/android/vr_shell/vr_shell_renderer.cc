@@ -608,14 +608,19 @@ void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
 
   glGenTextures(VrControllerModel::STATE_COUNT, texture_handles_.data());
   for (int i = 0; i < VrControllerModel::STATE_COUNT; i++) {
+    sk_sp<SkImage> texture = model->GetTexture(i);
+    SkPixmap pixmap;
+    if (!texture->peekPixels(&pixmap)) {
+      LOG(ERROR) << "Failed to read controller texture pixels";
+      continue;
+    }
     glBindTexture(GL_TEXTURE_2D, texture_handles_[i]);
-    const SkBitmap* bitmap = model->GetTexture(i);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap->width(), bitmap->height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->getPixels());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pixmap.width(), pixmap.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, pixmap.addr());
   }
 
   const gltf::Accessor* accessor = model->PositionAccessor();

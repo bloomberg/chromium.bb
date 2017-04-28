@@ -8,7 +8,8 @@
 #include <memory>
 
 #include "chrome/browser/android/vr_shell/gltf_asset.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace vr_shell {
@@ -24,19 +25,6 @@ class VrControllerModel {
     STATE_COUNT,
   };
 
-  // TODO(acondor): Remove these hardcoded paths once VrShell resources
-  // are delivered through component updater.
-  static constexpr char const kComponentName[] = "VrShell";
-  static constexpr char const kDefaultVersion[] = "0";
-
-  static constexpr char const kModelsDirectory[] = "models";
-  static constexpr char const kModelFilename[] = "controller.gltf";
-  static constexpr char const kTexturesDirectory[] = "tex";
-  static constexpr char const* kTextureFilenames[] = {
-      "ddcontroller_idle.png", "ddcontroller_touchpad.png",
-      "ddcontroller_app.png", "ddcontroller_system.png",
-  };
-
   explicit VrControllerModel(
       std::unique_ptr<gltf::Asset> gltf_asset,
       std::vector<std::unique_ptr<gltf::Buffer>> buffers);
@@ -50,14 +38,16 @@ class VrControllerModel {
   const gltf::Accessor* IndicesAccessor() const;
   const gltf::Accessor* PositionAccessor() const;
   const gltf::Accessor* TextureCoordinateAccessor() const;
-  void SetTexture(int state, std::unique_ptr<SkBitmap> bitmap);
-  const SkBitmap* GetTexture(int state) const;
+  void SetBaseTexture(sk_sp<SkImage> image);
+  void SetTexturePatch(int state, sk_sp<SkImage> image);
+  sk_sp<SkImage> GetTexture(int state) const;
 
   static std::unique_ptr<VrControllerModel> LoadFromComponent();
 
  private:
   std::unique_ptr<gltf::Asset> gltf_asset_;
-  std::vector<std::unique_ptr<SkBitmap>> texture_bitmaps_;
+  sk_sp<SkImage> base_texture_;
+  sk_sp<SkImage> patches_[STATE_COUNT];
   std::vector<std::unique_ptr<gltf::Buffer>> buffers_;
 
   const char* Buffer() const;
