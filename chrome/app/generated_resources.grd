@@ -1960,6 +1960,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
                    desc="Customization label for the new tab button in the touch bar.">
           New Tab
         </message>
+        <message name="IDS_TOUCH_BAR_EXIT_FULLSCREEN" desc="Text for the exit fullscreen button in the touch bar.">
+        Exit Full Screen
+        </message>
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
