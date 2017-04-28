@@ -849,7 +849,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)dismissTabHistoryPopup {
   if (!_tabHistoryPopupController)
     return;
-  __block TabHistoryPopupController* tempTHPC = _tabHistoryPopupController;
+  TabHistoryPopupController* tempTHPC = _tabHistoryPopupController;
   [tempTHPC containerView].userInteractionEnabled = NO;
   [tempTHPC dismissAnimatedWithCompletion:^{
     // Unpress the back/forward button by restoring the normal and
@@ -857,7 +857,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [self setImagesForNavButton:_backButton withTabHistoryVisible:NO];
     [self setImagesForNavButton:_forwardButton withTabHistoryVisible:NO];
     // Reference tempTHPC so the block retains it.
-    tempTHPC = nil;
+    [tempTHPC self];
   }];
   // reset _tabHistoryPopupController to prevent -applicationDidEnterBackground
   // from posting another kTabHistoryPopupWillHideNotification.
