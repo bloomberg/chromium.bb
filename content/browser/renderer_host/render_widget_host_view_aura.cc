@@ -396,6 +396,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host_, this, this)),
+      frame_sink_id_(host_->AllocateFrameSinkId(is_guest_view_hack_)),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -1932,16 +1933,13 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
   if (IsMus())
     return;
 
-  cc::FrameSinkId frame_sink_id =
-      host_->AllocateFrameSinkId(is_guest_view_hack_);
-
   // Tests may set |delegated_frame_host_client_|.
   if (!delegated_frame_host_client_) {
     delegated_frame_host_client_ =
         base::MakeUnique<DelegatedFrameHostClientAura>(this);
   }
   delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
-      frame_sink_id, delegated_frame_host_client_.get());
+      frame_sink_id_, delegated_frame_host_client_.get());
   if (renderer_compositor_frame_sink_) {
     delegated_frame_host_->DidCreateNewRendererCompositorFrameSink(
         renderer_compositor_frame_sink_);
@@ -2282,8 +2280,7 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
 }
 
 cc::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
-  return delegated_frame_host_ ? delegated_frame_host_->GetFrameSinkId()
-                               : cc::FrameSinkId();
+  return frame_sink_id_;
 }
 
 cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
