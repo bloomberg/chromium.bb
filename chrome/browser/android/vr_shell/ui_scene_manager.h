@@ -26,9 +26,13 @@ class UiSceneManager {
   void SetWebVRMode(bool web_vr);
 
  private:
+  void CreateSecurityWarnings();
+  void CreateContentQuad();
+  void CreateBackground();
+
   void ConfigureSecurityWarnings();
   void OnSecurityWarningTimer();
-  void OnGLInitialized();
+  int AllocateId();
 
   UiScene* scene_;
 
@@ -39,6 +43,10 @@ class UiSceneManager {
 
   bool web_vr_mode_ = false;
   bool secure_origin_ = false;
+
+  int next_available_id_ = 1;
+
+  std::vector<UiElement*> browser_ui_elements_;
 
   base::OneShotTimer security_warning_timer_;
 

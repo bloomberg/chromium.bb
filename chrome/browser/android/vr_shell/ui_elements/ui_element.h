@@ -113,9 +113,6 @@ struct UiElement : public WorldRectangle {
   // Valid IDs are non-negative.
   int id = -1;
 
-  // Name string for debugging and testing purposes.
-  std::string name;
-
   // If a non-negative parent ID is specified, applicable transformations
   // are applied relative to the parent, rather than absolutely.
   int parent_id = -1;
