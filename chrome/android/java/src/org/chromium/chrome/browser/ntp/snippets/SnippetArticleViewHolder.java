@@ -233,21 +233,39 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         final int verticalStyle = mUiConfig.getCurrentDisplayStyle().vertical;
         final int layout = mCategoryInfo.getCardLayout();
 
+        boolean showHeadline = shouldShowHeadline();
         boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
         boolean showThumbnail = shouldShowThumbnail(horizontalStyle, verticalStyle, layout);
 
+        mHeadlineTextView.setVisibility(showHeadline ? View.VISIBLE : View.GONE);
         mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
 
-        // If we aren't showing the article snippet, reduce the top margin for publisher text.
-        ViewGroup.MarginLayoutParams params =
+        ViewGroup.MarginLayoutParams publisherBarParams =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
 
-        params.topMargin = mPublisherBar.getResources().getDimensionPixelSize(showDescription
-                        ? R.dimen.snippets_publisher_margin_top_with_article_snippet
-                        : R.dimen.snippets_publisher_margin_top_without_article_snippet);
-        ApiCompatibilityUtils.setMarginEnd(params, showThumbnail ? mThumbnailFootprintPx : 0);
-        mPublisherBar.setLayoutParams(params);
+        if (showDescription) {
+            publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
+                    R.dimen.snippets_publisher_margin_top_with_article_snippet);
+        } else if (showHeadline) {
+            // When we show a headline and not a description, we reduce the top margin of the
+            // publisher bar.
+            publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
+                    R.dimen.snippets_publisher_margin_top_without_article_snippet);
+        } else {
+            // When there is no headline and no description, we remove the top margin of the
+            // publisher bar.
+            publisherBarParams.topMargin = 0;
+        }
+
+        ApiCompatibilityUtils.setMarginEnd(
+                publisherBarParams, showThumbnail ? mThumbnailFootprintPx : 0);
+        mPublisherBar.setLayoutParams(publisherBarParams);
+    }
+
+    /** If the title is empty (or contains only whitespace characters), we do not show it. */
+    private boolean shouldShowHeadline() {
+        return !mArticle.mTitle.trim().isEmpty();
     }
 
     private boolean shouldShowDescription(int horizontalStyle, int verticalStyle, int layout) {
