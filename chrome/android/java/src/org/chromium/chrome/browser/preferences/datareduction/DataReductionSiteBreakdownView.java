@@ -59,6 +59,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         mDataUsedTitle.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                DataReductionProxyUma.dataReductionProxyUIAction(
+                        DataReductionProxyUma.ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_USED);
                 setTextViewUnsortedAttributes(mDataSavedTitle);
                 setTextViewSortedAttributes(mDataUsedTitle);
                 Collections.sort(mDataUseItems, new DataUsedComparator());
@@ -69,6 +71,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         mDataSavedTitle.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                DataReductionProxyUma.dataReductionProxyUIAction(
+                        DataReductionProxyUma.ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_SAVED);
                 setTextViewUnsortedAttributes(mDataUsedTitle);
                 setTextViewSortedAttributes(mDataSavedTitle);
                 Collections.sort(mDataUseItems, new DataSavedComparator());
@@ -86,7 +90,14 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         setTextViewUnsortedAttributes(mDataUsedTitle);
         setTextViewSortedAttributes(mDataSavedTitle);
         Collections.sort(items, new DataSavedComparator());
-        updateSiteBreakdown();
+        if (mDataUseItems.size() == 0) {
+            setVisibility(GONE);
+        } else {
+            setVisibility(VISIBLE);
+            updateSiteBreakdown();
+            DataReductionProxyUma.dataReductionProxyUIAction(
+                    DataReductionProxyUma.ACTION_SITE_BREAKDOWN_DISPLAYED);
+        }
     }
 
     private void setTextViewSortedAttributes(TextView textView) {
@@ -153,12 +164,6 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
      * Update the site breakdown to display the data use items.
      */
     private void updateSiteBreakdown() {
-        if (mDataUseItems.size() == 0) {
-            setVisibility(GONE);
-            return;
-        }
-
-        setVisibility(VISIBLE);
         // Remove all old rows except the header.
         mTableLayout.removeViews(1, mTableLayout.getChildCount() - 1);
 
@@ -211,6 +216,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             row.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    DataReductionProxyUma.dataReductionProxyUIAction(
+                            DataReductionProxyUma.ACTION_SITE_BREAKDOWN_EXPANDED);
                     mNumDataUseItemsToDisplay += NUM_DATA_USE_ITEMS_TO_ADD;
                     updateSiteBreakdown();
                 }

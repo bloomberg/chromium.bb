@@ -154,7 +154,7 @@ public class DataReductionStatsPreference extends Preference {
         mDataReductionBreakdownView =
                 (DataReductionSiteBreakdownView) view.findViewById(R.id.breakdown);
         forceLayoutGravityOfGraphLabels();
-        updateReductionStatistics();
+        if (mOriginalNetworkStatsHistory == null) updateReductionStatistics();
         setDetailText();
 
         mChartDataUsageView = (ChartDataUsageView) view.findViewById(R.id.chart);
