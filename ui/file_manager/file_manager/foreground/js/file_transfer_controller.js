@@ -548,6 +548,15 @@ FileTransferController.prototype.paste =
   var shareEntries;
   var taskId = this.fileOperationManager_.generateTaskId();
 
+  var item = new ProgressCenterItem();
+  item.id = taskId;
+  if (toMove) {
+    item.message = strf('MOVE_ITEMS_REMAINING', sourceURLs.length);
+  } else {
+    item.message = strf('COPY_ITEMS_REMAINING', sourceURLs.length);
+  }
+  this.progressCenter_.updateItem(item);
+
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
       .then(
           /**
