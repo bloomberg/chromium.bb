@@ -155,12 +155,6 @@ class Parameter(object):
             self.type = param_decl
             self.name = build_param_name(self.type)
 
-        self.value = self.name
-        self.is_prp = re.match(r"PassRefPtr<", param_decl) is not None
-        if self.is_prp:
-            self.name = "prp" + self.name[0].upper() + self.name[1:]
-            self.inner_type = re.match(r"PassRefPtr<(.+)>", param_decl).group(1)
-
         if self.type[-1] == "*" and "char" not in self.type:
             self.member_type = "Member<%s>" % self.type[:-1]
         else:
@@ -168,8 +162,7 @@ class Parameter(object):
 
 
 def build_param_name(param_type):
-    base_name = re.match(r"(const |PassRefPtr<)?(\w*)", param_type).group(2)
-    return "param" + base_name
+    return "param" + re.match(r"(const |RefPtr<)?(\w*)", param_type).group(2)
 
 
 def load_config(file_name):
