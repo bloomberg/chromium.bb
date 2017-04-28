@@ -27,6 +27,7 @@
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
@@ -742,6 +743,8 @@ void LocationBarViewMac::UpdateAccessibilityView(
     LocationBarDecoration* decoration) {
   if (!decoration->IsVisible())
     return;
+  // This uses |frame| instead of |bounds| because the accessibility views are
+  // parented to the toolbar.
   NSRect apparent_frame =
       [[field_ cell] frameForDecoration:decoration inFrame:[field_ frame]];
 
@@ -766,9 +769,13 @@ void LocationBarViewMac::UpdateAccessibilityView(
   // before the button preceding the omnibox in the key view order. This
   // threshold is just a guess.
   DCHECK_LT(left_index, 10);
-  if (left_index != -1)
-    real_frame.origin.x = [field_ frame].origin.x - left_index - 1;
-
+  if (left_index != -1) {
+    CGFloat delta = left_index + 1;
+    real_frame.origin.x =
+        cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+            ? NSMaxX([field_ frame]) + delta - NSWidth(real_frame)
+            : NSMinX([field_ frame]) - delta;
+  }
   decoration->UpdateAccessibilityView(apparent_frame);
   [decoration->GetAccessibilityView() setFrame:real_frame];
   [decoration->GetAccessibilityView() setNeedsDisplayInRect:apparent_frame];
