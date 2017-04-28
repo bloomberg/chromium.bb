@@ -159,10 +159,6 @@ bool RunningOnWOW64() {
 
 namespace {
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-content::ZygoteHandle g_nacl_zygote;
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
 // NOTE: changes to this class need to be reviewed by the security team.
 class NaClSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
@@ -332,14 +328,6 @@ void NaClProcessHost::EarlyStartup() {
   }
   NaClBrowser::GetDelegate()->SetDebugPatterns(nacl_debug_mask);
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// static
-void NaClProcessHost::EarlyZygoteLaunch() {
-  DCHECK(!g_nacl_zygote);
-  g_nacl_zygote = content::CreateZygote();
-}
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 void NaClProcessHost::Launch(
     NaClHostMessageFilter* nacl_host_message_filter,

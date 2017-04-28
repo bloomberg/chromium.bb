@@ -177,6 +177,7 @@
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 
 #if !defined(OS_ANDROID)
+#include "content/browser/zygote_host/zygote_communication_linux.h"
 #include "content/public/browser/zygote_handle_linux.h"
 #endif  // !defined(OS_ANDROID)
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -229,7 +230,11 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
   // Tickle the zygote host so it forks now.
   ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
   *GetGenericZygote() = CreateZygote();
-  RenderProcessHostImpl::EarlyZygoteLaunch();
+  // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
+  // proxy. It is currently done this way due to concerns about race
+  // conditions.
+  ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
+      (*GetGenericZygote())->GetSandboxStatus());
 }
 #endif
 

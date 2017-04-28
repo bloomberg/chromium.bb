@@ -224,8 +224,6 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "content/browser/zygote_host/zygote_communication_linux.h"
-#include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/public/browser/zygote_handle_linux.h"
 #endif  // defined(OS_POSIX)
 
@@ -382,12 +380,6 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
   }
   return map;
 }
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-// This static member variable holds the zygote communication information for
-// the renderer.
-ZygoteHandle g_render_zygote;
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class RendererSandboxedProcessLauncherDelegate
@@ -694,18 +686,6 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
 void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
   g_max_renderer_count_override = count;
 }
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-// static
-void RenderProcessHostImpl::EarlyZygoteLaunch() {
-  DCHECK(!g_render_zygote);
-  // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
-  // proxy. It is currently done this way due to concerns about race
-  // conditions.
-  ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
-      (*GetGenericZygote())->GetSandboxStatus());
-}
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 RenderProcessHostImpl::RenderProcessHostImpl(
     BrowserContext* browser_context,
