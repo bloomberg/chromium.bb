@@ -17,6 +17,7 @@ include_rules = [
   "+components/web_contents_delegate_android",
   "+components/web_restrictions",
   "+content/public/android/java",
+  "+device/geolocation/android/java",
   "+services/service_manager/public/java",
 ]
 
