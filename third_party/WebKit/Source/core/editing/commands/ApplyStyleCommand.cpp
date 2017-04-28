@@ -199,6 +199,8 @@ Position ApplyStyleCommand::EndPosition() {
 }
 
 void ApplyStyleCommand::DoApply(EditingState* editing_state) {
+  DCHECK(StartPosition().IsNotNull());
+  DCHECK(EndPosition().IsNotNull());
   switch (property_level_) {
     case kPropertyDefault: {
       // Apply the block-centric properties of the style.
