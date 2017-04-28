@@ -373,8 +373,20 @@ bool BrowserTestBase::UsingSoftwareGL() const {
 }
 
 void BrowserTestBase::InitializeNetworkProcess() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService))
+  const testing::TestInfo* const test_info =
+      testing::UnitTest::GetInstance()->current_test_info();
+  bool network_service = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNetworkService);
+  // ProcessTransferAfterError is the only browser test which needs to modify
+  // the host rules (when not using the network service).
+  if (network_service ||
+      std::string(test_info->name()) != "ProcessTransferAfterError") {
+    // TODO(jam): enable this once all access to host_resolver() is in
+    // SetUpOnMainThread or before. http://crbug.com/713847
+    // host_resolver()->DisableModifications();
+  }
+
+  if (!network_service)
     return;
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
@@ -401,10 +413,6 @@ void BrowserTestBase::InitializeNetworkProcess() {
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
   network_service_test->AddRules(std::move(mojo_rules));
-
-  // TODO(jam): enable this once all access to host_resolver() is in
-  // SetUpOnMainThread or before. http://crbug.com/713847
-  // host_resolver()->DisableModifications();
 }
 
 }  // namespace content
