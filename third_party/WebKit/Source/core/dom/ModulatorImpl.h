@@ -61,6 +61,7 @@ class ModulatorImpl final : public Modulator {
                              const String& url_str,
                              AccessControlStatus) override;
   ScriptValue InstantiateModule(ScriptModule) override;
+  ScriptValue GetInstantiationError(const ModuleScript*) override;
   Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
   void ExecuteModule(const ModuleScript*) override;
 
