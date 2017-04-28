@@ -20,19 +20,4 @@ interface Catalog {
   // Returns the entry(ies) for applications that export to the caller the
   // specified capability.
   GetEntriesProvidingCapability(string capability) => (array<Entry> entries);
-
-  // Returns the entry(ies) for applications that can consume content of the
-  // specified MIME type.
-  GetEntriesConsumingMIMEType(string mime_type) => (array<Entry> entries);
-
-  // Returns the entry(ies) for applications that can handle links with the
-  // specified scheme.
-  GetEntriesSupportingScheme(string protocol_scheme) => (array<Entry> entries);
-};
-
-// A control interface which may be exposed to privileged services.
-interface CatalogControl {
-  // Overrides the manifest path for a specific service named |name|.
-  [Sync]
-  OverrideManifestPath(string name, mojo.common.mojom.FilePath path) => ();
 };

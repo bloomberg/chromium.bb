@@ -102,16 +102,4 @@ void Instance::GetEntriesProvidingCapability(
   callback.Run(std::move(entries));
 }
 
-void Instance::GetEntriesConsumingMIMEType(
-    const std::string& mime_type,
-    const GetEntriesConsumingMIMETypeCallback& callback) {
-  // TODO(beng): implement.
-}
-
-void Instance::GetEntriesSupportingScheme(
-    const std::string& scheme,
-    const GetEntriesSupportingSchemeCallback& callback) {
-  // TODO(beng): implement.
-}
-
 }  // namespace catalog
