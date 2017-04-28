@@ -80,6 +80,23 @@ enum FieldTypeGroupForMetrics {
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
+std::string PreviousSaveCreditCardPromptUserDecisionToString(
+    int previous_save_credit_card_prompt_user_decision) {
+  DCHECK_LT(previous_save_credit_card_prompt_user_decision,
+            prefs::NUM_PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISIONS);
+  std::string previous_response;
+  if (previous_save_credit_card_prompt_user_decision ==
+      prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED)
+    previous_response = ".PreviouslyAccepted";
+  else if (previous_save_credit_card_prompt_user_decision ==
+           prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED)
+    previous_response = ".PreviouslyDenied";
+  else
+    DCHECK_EQ(previous_save_credit_card_prompt_user_decision,
+              prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
+  return previous_response;
+}
+
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -298,16 +315,18 @@ void AutofillMetrics::LogCardUploadDecisionMetric(
 }
 
 // static
-void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric,
-                                                 bool is_uploading) {
+void AutofillMetrics::LogCreditCardInfoBarMetric(
+    InfoBarMetric metric,
+    bool is_uploading,
+    int previous_save_credit_card_prompt_user_decision) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
-  if (is_uploading) {
-    UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar.Server", metric,
-                              NUM_INFO_BAR_METRICS);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar.Local", metric,
-                              NUM_INFO_BAR_METRICS);
-  }
+
+  std::string destination = is_uploading ? ".Server" : ".Local";
+  LogUMAHistogramEnumeration(
+      "Autofill.CreditCardInfoBar" + destination +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_INFO_BAR_METRICS);
 }
 
 // static
@@ -318,15 +337,19 @@ void AutofillMetrics::LogCreditCardFillingInfoBarMetric(InfoBarMetric metric) {
 }
 
 // static
-void AutofillMetrics::LogSaveCardPromptMetric(SaveCardPromptMetric metric,
-                                              bool is_uploading,
-                                              bool is_reshow) {
+void AutofillMetrics::LogSaveCardPromptMetric(
+    SaveCardPromptMetric metric,
+    bool is_uploading,
+    bool is_reshow,
+    int previous_save_credit_card_prompt_user_decision) {
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
   LogUMAHistogramEnumeration(
-      "Autofill.SaveCreditCardPrompt" + destination + show, metric,
-      NUM_SAVE_CARD_PROMPT_METRICS);
+      "Autofill.SaveCreditCardPrompt" + destination + show +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_SAVE_CARD_PROMPT_METRICS);
 }
 
 // static

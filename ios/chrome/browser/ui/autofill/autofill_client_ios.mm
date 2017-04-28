@@ -118,7 +118,7 @@ void AutofillClientIOS::ConfirmSaveCreditCardLocally(
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
-          callback)));
+          callback, GetPrefs())));
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -128,7 +128,7 @@ void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
-          true, card, std::move(legal_message), callback)));
+          true, card, std::move(legal_message), callback, GetPrefs())));
 }
 
 void AutofillClientIOS::ConfirmCreditCardFillAssist(

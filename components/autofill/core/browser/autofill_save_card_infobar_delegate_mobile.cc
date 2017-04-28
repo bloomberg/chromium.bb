@@ -11,9 +11,11 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -25,10 +27,12 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    const base::Closure& save_card_callback)
+    const base::Closure& save_card_callback,
+    PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
       save_card_callback_(save_card_callback),
+      pref_service_(pref_service),
       had_user_interaction_(false),
 #if defined(OS_IOS)
       // TODO(jdonnelly): Use credit card issuer images on iOS.
@@ -42,8 +46,10 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
   if (legal_message)
     LegalMessageLine::Parse(*legal_message, &legal_messages_);
 
-  AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN,
-                                              upload_);
+  AutofillMetrics::LogCreditCardInfoBarMetric(
+      AutofillMetrics::INFOBAR_SHOWN, upload_,
+      pref_service_->GetInteger(
+          prefs::kAutofillAcceptSaveCreditCardPromptState));
 }
 
 AutofillSaveCardInfoBarDelegateMobile::
@@ -120,7 +126,15 @@ void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
     AutofillMetrics::InfoBarMetric user_action) {
   DCHECK(!had_user_interaction_);
 
-  AutofillMetrics::LogCreditCardInfoBarMetric(user_action, upload_);
+  AutofillMetrics::LogCreditCardInfoBarMetric(
+      user_action, upload_,
+      pref_service_->GetInteger(
+          prefs::kAutofillAcceptSaveCreditCardPromptState));
+  pref_service_->SetInteger(
+      prefs::kAutofillAcceptSaveCreditCardPromptState,
+      user_action == AutofillMetrics::INFOBAR_ACCEPTED
+          ? prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED
+          : prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED);
   had_user_interaction_ = true;
 }
 

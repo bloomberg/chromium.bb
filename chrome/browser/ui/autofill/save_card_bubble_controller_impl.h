@@ -14,6 +14,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class PrefService;
+
 namespace autofill {
 
 // Implementation of per-tab class to control the save credit card bubble and
@@ -92,6 +94,9 @@ class SaveCardBubbleControllerImpl
 
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view_;
+
+  // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|.
+  PrefService* pref_service_;
 
   // Callback to run if user presses Save button in the bubble.
   // If save_card_callback_.is_null() is true then no bubble is available to
