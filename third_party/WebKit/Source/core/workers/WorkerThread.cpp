@@ -174,12 +174,6 @@ void WorkerThread::WillProcessTask() {
 
   // No tasks should get executed after we have closed.
   DCHECK(!GlobalScope()->IsClosing());
-
-  if (IsForciblyTerminated()) {
-    // The script has been terminated forcibly, which means we need to
-    // ask objects in the thread to stop working as soon as possible.
-    PrepareForShutdownOnWorkerThread();
-  }
 }
 
 void WorkerThread::DidProcessTask() {
@@ -191,6 +185,10 @@ void WorkerThread::DidProcessTask() {
     GetWorkerReportingProxy().DidCloseWorkerGlobalScope();
 
     // Stop further worker tasks to run after this point.
+    PrepareForShutdownOnWorkerThread();
+  } else if (IsForciblyTerminated()) {
+    // The script has been terminated forcibly, which means we need to
+    // ask objects in the thread to stop working as soon as possible.
     PrepareForShutdownOnWorkerThread();
   }
 }
