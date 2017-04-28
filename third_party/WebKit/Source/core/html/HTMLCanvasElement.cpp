@@ -953,7 +953,8 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
     OpacityMode opacity_mode) {
   if (ShouldUseDisplayList()) {
     auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
-        Size(), opacity_mode, context_->color_params());
+        Size(), RecordingImageBufferSurface::kAllowFallback, opacity_mode,
+        context_->color_params());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);

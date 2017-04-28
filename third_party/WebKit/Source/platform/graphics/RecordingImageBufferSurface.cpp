@@ -20,9 +20,11 @@ namespace blink {
 
 RecordingImageBufferSurface::RecordingImageBufferSurface(
     const IntSize& size,
+    AllowFallback allow_fallback,
     OpacityMode opacity_mode,
     const CanvasColorParams& color_params)
     : ImageBufferSurface(size, opacity_mode, color_params),
+      allow_fallback_(allow_fallback),
       image_buffer_(0),
       current_frame_pixel_count_(0),
       previous_frame_pixel_count_(0),
@@ -77,6 +79,7 @@ bool RecordingImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
 
 void RecordingImageBufferSurface::FallBackToRasterCanvas(
     FallbackReason reason) {
+  DCHECK(allow_fallback_ == kAllowFallback);
   CHECK(reason != kFallbackReasonUnknown);
 
   if (fallback_surface_) {
@@ -315,8 +318,9 @@ bool RecordingImageBufferSurface::FinalizeFrameInternal(
     return false;
   }
 
-  if (current_frame_->getRecordingCanvas()->getSaveCount() - 1 >
-      ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
+  if (allow_fallback_ == kAllowFallback &&
+      current_frame_->getRecordingCanvas()->getSaveCount() - 1 >
+          ExpensiveCanvasHeuristicParameters::kExpensiveRecordingStackDepth) {
     // (getSaveCount() decremented to account  for the intial recording canvas
     // save frame.)
     *fallback_reason = kFallbackReasonRunawayStateStack;
