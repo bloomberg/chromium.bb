@@ -49,10 +49,6 @@ class InstantController : public InstantTab::Delegate {
   // Instant search results page.
   void ActiveTabChanged();
 
-  // Used by BrowserInstantController to notify InstantController about the
-  // instant support change event for the active web contents.
-  void InstantSupportChanged(InstantSupportState instant_support);
-
   // Resets list of debug events.
   void ClearDebugEvents();
 

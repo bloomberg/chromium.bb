@@ -62,17 +62,6 @@ void InstantController::ClearDebugEvents() {
   debug_events_.clear();
 }
 
-void InstantController::InstantSupportChanged(
-    InstantSupportState instant_support) {
-  // Handle INSTANT_SUPPORT_YES here because InstantTab is not hooked up to the
-  // active tab. Search model changed listener in InstantTab will handle other
-  // cases.
-  if (instant_support != INSTANT_SUPPORT_YES)
-    return;
-
-  ResetInstantTab();
-}
-
 void InstantController::InstantTabAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
@@ -80,6 +69,7 @@ void InstantController::InstantTabAboutToNavigateMainFrame(
 
   // The Instant tab navigated.  Send it the data it needs to display
   // properly.
+  // TODO(treib): Doesn't seem to be necessary. crbug.com/627747
   UpdateInfoForInstantTab();
 }
 
@@ -97,13 +87,11 @@ void InstantController::ResetInstantTab() {
 }
 
 void InstantController::UpdateInfoForInstantTab() {
-  if (instant_tab_) {
-    // Update theme details.
-    InstantService* instant_service = GetInstantService();
-    if (instant_service) {
-      instant_service->UpdateThemeInfo();
-      instant_service->UpdateMostVisitedItemsInfo();
-    }
+  DCHECK(instant_tab_);
+  InstantService* instant_service = GetInstantService();
+  if (instant_service) {
+    instant_service->UpdateThemeInfo();
+    instant_service->UpdateMostVisitedItemsInfo();
   }
 }
 
