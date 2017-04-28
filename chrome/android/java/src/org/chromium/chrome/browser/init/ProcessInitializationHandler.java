@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.device.geolocation.LocationProviderFactory;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.PhotoPickerListener;
@@ -131,6 +132,9 @@ public class ProcessInitializationHandler {
         UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
                 new UuidBasedUniqueIdentificationGenerator(
                         application, SESSIONS_UUID_PREF_KEY), false);
+
+        // Indicate that we can use the GMS location provider.
+        LocationProviderFactory.useGmsCoreLocationProvider();
     }
 
     /**

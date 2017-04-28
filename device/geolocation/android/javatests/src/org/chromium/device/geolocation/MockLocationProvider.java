@@ -4,6 +4,7 @@
 
 package org.chromium.device.geolocation;
 
+import android.location.Location;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -77,7 +78,9 @@ public class MockLocationProvider implements LocationProviderFactory.LocationPro
     }
 
     private void newLocation() {
-        LocationProviderAdapter.newLocationAvailable(
-                0, 0, System.currentTimeMillis() / 1000.0, false, 0, true, 0.5, false, 0, false, 0);
+        Location location = new Location("MockLocationProvider");
+        location.setTime(System.currentTimeMillis());
+        location.setAccuracy(0.5f);
+        LocationProviderAdapter.onNewLocationAvailable(location);
     }
 };
