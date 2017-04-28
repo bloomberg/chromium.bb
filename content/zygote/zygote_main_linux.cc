@@ -617,10 +617,15 @@ bool ZygoteMain(
 
   if (using_layer1_sandbox) {
     // Let the ZygoteHost know we're booting up.
-    CHECK(base::UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
-                                          kZygoteBootMessage,
-                                          sizeof(kZygoteBootMessage),
-                                          std::vector<int>()));
+    if (!base::UnixDomainSocket::SendMsg(
+            kZygoteSocketPairFd, kZygoteBootMessage, sizeof(kZygoteBootMessage),
+            std::vector<int>())) {
+      // This is not a CHECK failure because the browser process could either
+      // crash or quickly exit while the zygote is starting. In either case a
+      // zygote crash is not useful. http://crbug.com/692227
+      PLOG(ERROR) << "Failed sending zygote boot message";
+      _exit(1);
+    }
   }
 
   VLOG(1) << "ZygoteMain: initializing " << fork_delegates.size()
