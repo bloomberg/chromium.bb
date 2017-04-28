@@ -44,6 +44,10 @@ gfx::FontList UiTexture::GetFontList(int size, base::string16 text) {
   gfx::Font default_font(kDefaultFontFamily, size);
   std::vector<gfx::Font> fonts{default_font};
 
+  std::set<wchar_t> characters;
+  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
+    characters.insert(it.get());
+  }
   // TODO(acondor): Obtain fallback fonts with gfx::GetFallbackFonts
   // (which is not implemented for android yet) in order to avoid
   // querying per character.
@@ -51,10 +55,10 @@ gfx::FontList UiTexture::GetFontList(int size, base::string16 text) {
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
   std::set<std::string> names;
   // TODO(acondor): Query BrowserProcess to obtain the application locale.
-  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
+  for (wchar_t character : characters) {
     sk_sp<SkTypeface> tf(font_mgr->matchFamilyStyleCharacter(
-        default_font.GetFontName().c_str(), SkFontStyle(), nullptr, 0,
-        it.get()));
+        kDefaultFontFamily, SkFontStyle(), nullptr, 0, character));
+
     // TODO(acondor): How should we handle no matching font?
     if (!tf)
       continue;
