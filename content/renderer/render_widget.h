@@ -573,7 +573,7 @@ class CONTENT_EXPORT RenderWidget
 
   virtual void OnSetDeviceScaleFactor(float device_scale_factor);
 
-  virtual void OnOrientationChange();
+  void OnOrientationChange();
 
   // Override points to notify derived classes that a paint has happened.
   // DidInitiatePaint happens when that has completed, and subsequent rendering

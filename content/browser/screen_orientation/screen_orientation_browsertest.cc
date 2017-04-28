@@ -7,7 +7,11 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/page_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -20,7 +24,9 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
+#include "net/dns/mock_host_resolver.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/display/screen.h"
 
 namespace content {
 
@@ -29,12 +35,16 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   ScreenOrientationBrowserTest() {
   }
 
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
  protected:
   void SendFakeScreenOrientation(unsigned angle, const std::string& strType) {
-    RenderWidgetHost* rwh = shell()->web_contents()->GetRenderWidgetHostView()
-        ->GetRenderWidgetHost();
+    RenderWidgetHost* main_frame_rwh =
+        web_contents()->GetMainFrame()->GetRenderWidgetHost();
     ScreenInfo screen_info;
-    rwh->GetScreenInfo(&screen_info);
+    main_frame_rwh->GetScreenInfo(&screen_info);
     screen_info.orientation_angle = angle;
 
     ScreenOrientationValues type = SCREEN_ORIENTATION_VALUES_DEFAULT;
@@ -57,7 +67,36 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     params.top_controls_height = 0.f;
     params.browser_controls_shrink_blink_size = false;
     params.is_fullscreen_granted = false;
-    rwh->Send(new ViewMsg_Resize(rwh->GetRoutingID(), params));
+
+    std::set<RenderWidgetHost*> rwhs;
+    for (RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
+      if (rfh == web_contents()->GetMainFrame())
+        continue;
+
+      rwhs.insert(static_cast<RenderFrameHostImpl*>(rfh)
+                      ->frame_tree_node()
+                      ->render_manager()
+                      ->GetRenderWidgetHostView()
+                      ->GetRenderWidgetHost());
+    }
+
+    // This simulates what the browser process does when the screen orientation
+    // is changed:
+    // 1. The top-level frame is resized and a ViweMsg_Resize is sent to the
+    // top-level frame.
+    main_frame_rwh->Send(
+        new ViewMsg_Resize(main_frame_rwh->GetRoutingID(), params));
+
+    // 2. The WebContents sends a PageMsg_UpdateScreenInfo to all the renderers
+    // involved in the FrameTree.
+    web_contents()->GetFrameTree()->root()->render_manager()->SendPageMessage(
+        new PageMsg_UpdateScreenInfo(MSG_ROUTING_NONE, screen_info), nullptr);
+
+    // 3. When the top-level frame gets the ViewMsg_Resize, it'll dispatch a
+    // FrameHostMsg_FrameRectsChanged IPC that causes the remote subframes to
+    // receive the ViewMsg_Resize from the browser.
+    for (auto* rwh : rwhs)
+      rwh->Send(new ViewMsg_Resize(rwh->GetRoutingID(), params));
   }
 
   int GetOrientationAngle() {
@@ -97,6 +136,24 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationBrowserTest);
+};
+
+class ScreenOrientationOOPIFBrowserTest : public ScreenOrientationBrowserTest {
+ public:
+  ScreenOrientationOOPIFBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationOOPIFBrowserTest);
 };
 
 // This test doesn't work on MacOS X but the reason is mostly because it is not
@@ -244,5 +301,58 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationLockDisabledBrowserTest,
   }
 }
 #endif // defined(OS_ANDROID)
+
+IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest, ScreenOrientation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+#if USE_AURA || defined(OS_ANDROID)
+  WaitForResizeComplete(shell()->web_contents());
+#endif  // USE_AURA || defined(OS_ANDROID)
+
+  std::string types[] = {"portrait-primary", "portrait-secondary",
+                         "landscape-primary", "landscape-secondary"};
+
+  int angle = GetOrientationAngle();
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  MainThreadFrameObserver root_observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  MainThreadFrameObserver child_observer(
+      child->current_frame_host()->GetRenderWidgetHost());
+  for (int i = 0; i < 4; ++i) {
+    angle = (angle + 90) % 360;
+    SendFakeScreenOrientation(angle, types[i]);
+
+    root_observer.Wait();
+    child_observer.Wait();
+
+    int orientation_angle;
+    std::string orientation_type;
+
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(
+        root->current_frame_host(),
+        "window.domAutomationController.send(screen.orientation.angle)",
+        &orientation_angle));
+    EXPECT_EQ(angle, orientation_angle);
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(
+        child->current_frame_host(),
+        "window.domAutomationController.send(screen.orientation.angle)",
+        &orientation_angle));
+    EXPECT_EQ(angle, orientation_angle);
+
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        root->current_frame_host(),
+        "window.domAutomationController.send(screen.orientation.type)",
+        &orientation_type));
+    EXPECT_EQ(types[i], orientation_type);
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child->current_frame_host(),
+        "window.domAutomationController.send(screen.orientation.type)",
+        &orientation_type));
+    EXPECT_EQ(types[i], orientation_type);
+  }
+}
 
 } // namespace content
