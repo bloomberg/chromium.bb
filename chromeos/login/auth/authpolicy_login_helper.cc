@@ -32,7 +32,7 @@ base::ScopedFD GetDataReadPipe(const std::string& data) {
 
 void AuthCallbackDoNothing(
     authpolicy::ErrorType /* error */,
-    const authpolicy::ActiveDirectoryAccountData& /* account_data */) {
+    const authpolicy::ActiveDirectoryAccountInfo& /* account_info */) {
   // Do nothing.
 }
 
@@ -85,8 +85,8 @@ void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
 void AuthPolicyLoginHelper::OnAuthCallback(
     AuthCallback callback,
     authpolicy::ErrorType error,
-    const authpolicy::ActiveDirectoryAccountData& account_data) {
-  std::move(callback).Run(error, account_data);
+    const authpolicy::ActiveDirectoryAccountInfo& account_info) {
+  std::move(callback).Run(error, account_info);
 }
 
 AuthPolicyLoginHelper::~AuthPolicyLoginHelper() {}

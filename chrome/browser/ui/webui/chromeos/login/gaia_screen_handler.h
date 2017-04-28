@@ -21,7 +21,7 @@
 class AccountId;
 
 namespace authpolicy {
-class ActiveDirectoryAccountData;
+class ActiveDirectoryAccountInfo;
 }
 
 namespace chromeos {
@@ -147,7 +147,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void DoAdAuth(const std::string& username,
                 const Key& key,
                 authpolicy::ErrorType error,
-                const authpolicy::ActiveDirectoryAccountData& account_data);
+                const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
   // Callback for writing password into pipe.
   void OnPasswordPipeReady(const std::string& username,

@@ -747,7 +747,7 @@ proto_library("cryptohome_signkey_proto") {
 
 proto_library("authpolicy_proto") {
   sources = [
-    "//third_party/cros_system_api/dbus/authpolicy/active_directory_account_data.proto",
+    "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
   ]
 
   proto_out_dir = "chromeos/dbus/authpolicy"

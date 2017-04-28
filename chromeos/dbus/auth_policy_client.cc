@@ -33,6 +33,26 @@ authpolicy::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
   return static_cast<authpolicy::ErrorType>(int_error);
 }
 
+authpolicy::ErrorType GetErrorAndProto(
+    dbus::Response* response,
+    google::protobuf::MessageLite* protobuf) {
+  if (!response) {
+    DLOG(ERROR) << "Auth: Failed to  call to authpolicy";
+    return authpolicy::ERROR_DBUS_FAILURE;
+  }
+  dbus::MessageReader reader(response);
+  const authpolicy::ErrorType error(GetErrorFromReader(&reader));
+
+  if (error != authpolicy::ERROR_NONE)
+    return error;
+
+  if (!reader.PopArrayOfBytesAsProto(protobuf)) {
+    DLOG(ERROR) << "Failed to parse protobuf.";
+    return authpolicy::ERROR_DBUS_FAILURE;
+  }
+  return authpolicy::ERROR_NONE;
+}
+
 class AuthPolicyClientImpl : public AuthPolicyClient {
  public:
   AuthPolicyClientImpl() : weak_ptr_factory_(this) {}
@@ -69,6 +89,18 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     proxy_->CallMethod(
         &method_call, kSlowDbusTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleAuthCallback,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+  }
+
+  void GetUserStatus(const std::string& object_guid,
+                     GetUserStatusCallback callback) override {
+    dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
+                                 authpolicy::kAuthPolicyGetUserStatus);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(object_guid);
+    proxy_->CallMethod(
+        &method_call, kSlowDbusTimeoutMilliseconds,
+        base::Bind(&AuthPolicyClientImpl::HandleGetUserStatusCallback,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   }
 
@@ -127,21 +159,16 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
   }
 
   void HandleAuthCallback(AuthCallback callback, dbus::Response* response) {
-    authpolicy::ActiveDirectoryAccountData account_data;
-    if (!response) {
-      DLOG(ERROR) << "Auth: Failed to  call to authpolicy";
-      std::move(callback).Run(authpolicy::ERROR_DBUS_FAILURE, account_data);
-      return;
-    }
-    dbus::MessageReader reader(response);
-    const authpolicy::ErrorType error(GetErrorFromReader(&reader));
-    if (!reader.PopArrayOfBytesAsProto(&account_data)) {
-      DLOG(ERROR) << "Failed to parse protobuf.";
-      std::move(callback).Run(authpolicy::ErrorType::ERROR_DBUS_FAILURE,
-                              account_data);
-      return;
-    }
-    std::move(callback).Run(error, account_data);
+    authpolicy::ActiveDirectoryAccountInfo account_info;
+    authpolicy::ErrorType error(GetErrorAndProto(response, &account_info));
+    std::move(callback).Run(error, account_info);
+  }
+
+  void HandleGetUserStatusCallback(GetUserStatusCallback callback,
+                                   dbus::Response* response) {
+    authpolicy::ActiveDirectoryUserStatus user_status;
+    authpolicy::ErrorType error(GetErrorAndProto(response, &user_status));
+    std::move(callback).Run(error, user_status);
   }
 
   dbus::Bus* bus_ = nullptr;

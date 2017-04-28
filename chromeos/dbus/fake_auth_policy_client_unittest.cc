@@ -110,9 +110,9 @@ TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByObjectGUID) {
       kCorrectUserName, kObjectGUID, /* password_fd */ -1,
       base::Bind(
           [](authpolicy::ErrorType error,
-             const authpolicy::ActiveDirectoryAccountData& account_data) {
+             const authpolicy::ActiveDirectoryAccountInfo& account_info) {
             EXPECT_EQ(authpolicy::ERROR_NONE, error);
-            EXPECT_EQ(kObjectGUID, account_data.account_id());
+            EXPECT_EQ(kObjectGUID, account_info.account_id());
           }));
 }
 
@@ -126,7 +126,7 @@ TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
   authpolicy_client()->AuthenticateUser(
       kCorrectUserName, std::string() /* object_guid */, /* password_fd */ -1,
       base::Bind([](authpolicy::ErrorType error,
-                    const authpolicy::ActiveDirectoryAccountData&) {
+                    const authpolicy::ActiveDirectoryAccountInfo&) {
         EXPECT_EQ(authpolicy::ERROR_DBUS_FAILURE, error);
       }));
   authpolicy_client()->RefreshDevicePolicy(

@@ -540,15 +540,15 @@ void GaiaScreenHandler::DoAdAuth(
     const std::string& username,
     const Key& key,
     authpolicy::ErrorType error,
-    const authpolicy::ActiveDirectoryAccountData& account_data) {
+    const authpolicy::ActiveDirectoryAccountInfo& account_info) {
   switch (error) {
     case authpolicy::ERROR_NONE: {
-      DCHECK(account_data.has_account_id() &&
-             !account_data.account_id().empty());
+      DCHECK(account_info.has_account_id() &&
+             !account_info.account_id().empty());
       const AccountId account_id(GetAccountId(
-          username, account_data.account_id(), AccountType::ACTIVE_DIRECTORY));
-      Delegate()->SetDisplayAndGivenName(account_data.display_name(),
-                                         account_data.given_name());
+          username, account_info.account_id(), AccountType::ACTIVE_DIRECTORY));
+      Delegate()->SetDisplayAndGivenName(account_info.display_name(),
+                                         account_info.given_name());
       UserContext user_context(account_id);
       user_context.SetKey(key);
       user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
