@@ -350,6 +350,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private VrShellDelegate(ChromeActivity activity, VrClassesWrapper wrapper) {
         mActivity = activity;
         mVrClassesWrapper = wrapper;
+        // If an activity isn't resumed at the point, it must have been paused.
+        mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         updateVrSupportLevel();
         mNativeVrShellDelegate = nativeInit();
         Choreographer choreographer = Choreographer.getInstance();
@@ -375,6 +377,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 break;
             case ActivityState.PAUSED:
                 if (activity == mActivity) pauseVr();
+                // Other activities should only pause while we're paused due to Android lifecycle.
+                assert mPaused;
                 break;
             case ActivityState.RESUMED:
                 assert !mInVr;
