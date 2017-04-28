@@ -92,6 +92,9 @@ var privateHelpers = {
                                                       : properties.Name);
     assertEq(expectedBatteryPercentage, properties.Tether.BatteryPercentage);
     assertEq(expectedCarrier, properties.Tether.Carrier);
+    // TODO(khorimoto): Add the expected value as a parameter once it can be set
+    // via the Tether component.
+    assertFalse(properties.Tether.HasConnectedToHost);
     assertEq(expectedSignalStrength, properties.Tether.SignalStrength);
   }
 };

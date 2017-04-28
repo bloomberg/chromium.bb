@@ -531,6 +531,9 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   tether_network_state->set_connectable(true);
   tether_network_state->set_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
+  // TODO(khorimoto): Add this field as a parameter to this function and set it
+  // accordingly from the Tether component.
+  tether_network_state->set_tether_has_connected_to_host(false);
   tether_network_state->set_signal_strength(signal_strength);
 
   tether_network_list_.push_back(std::move(tether_network_state));

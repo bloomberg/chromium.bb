@@ -114,6 +114,12 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   }
   const std::string& carrier() const { return carrier_; }
   void set_carrier(const std::string& carrier) { carrier_ = carrier; }
+  bool tether_has_connected_to_host() const {
+    return tether_has_connected_to_host_;
+  }
+  void set_tether_has_connected_to_host(bool tether_has_connected_to_host) {
+    tether_has_connected_to_host_ = tether_has_connected_to_host;
+  }
   const std::string& tether_guid() const { return tether_guid_; }
   void set_tether_guid(const std::string& guid) { tether_guid_ = guid; }
 
@@ -229,6 +235,12 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Tether properties.
   std::string carrier_;
   int battery_percentage_;
+  // Whether the current device has already connected to the tether host device
+  // providing the hotspot corresponding to this NetworkState.
+  // Note: this means that the current device has already connected to the
+  // tether host, but it does not necessarily mean that the current device has
+  // connected to the Tether network corresponding to this NetworkState.
+  bool tether_has_connected_to_host_;
 
   // TODO(pneubeck): Remove this once (Managed)NetworkConfigurationHandler
   // provides proxy configuration. crbug.com/241775

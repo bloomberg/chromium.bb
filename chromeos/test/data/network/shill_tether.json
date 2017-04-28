@@ -3,5 +3,6 @@
   "Name": "Tether Network",
   "Tether.BatteryPercentage": 85,
   "Tether.Carrier": "Project Fi",
+  "Tether.HasConnectedToHost": true,
   "Tether.SignalStrength": 75
 }

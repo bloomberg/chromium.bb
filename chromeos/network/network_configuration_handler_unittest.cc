@@ -366,6 +366,9 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
       NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
 
   std::string kTetherGuid = "TetherGuid";
+  // TODO(khorimoto): Pass a has_connected_to_host parameter to this function
+  // and verify that it is present in the JSON below. Currently, it is hard-
+  // coded to false.
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid, "TetherNetworkName", "TetherNetworkCarrier",
       100 /* battery_percentage */, 100 /* signal_strength */);
@@ -380,6 +383,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
       "\"State\": \"\",\n   "
       "\"Tether.BatteryPercentage\": 100,\n   "
       "\"Tether.Carrier\": \"TetherNetworkCarrier\",\n   "
+      "\"Tether.HasConnectedToHost\": false,\n   "
       "\"Tether.SignalStrength\": 100,\n   "
       "\"Type\": \"wifi-tether\"\n"
       "}\n";

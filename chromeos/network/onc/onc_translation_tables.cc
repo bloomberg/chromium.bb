@@ -114,6 +114,7 @@ const FieldTranslationEntry vpn_fields[] = {
 const FieldTranslationEntry tether_fields[] = {
     {::onc::tether::kBatteryPercentage, kTetherBatteryPercentage},
     {::onc::tether::kCarrier, kTetherCarrier},
+    {::onc::tether::kHasConnectedToHost, kTetherHasConnectedToHost},
     {::onc::tether::kSignalStrength, kTetherSignalStrength},
     {NULL}};
 
