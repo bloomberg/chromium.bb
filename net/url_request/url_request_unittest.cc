@@ -6639,9 +6639,11 @@ class TestReportingService : public ReportingService {
     std::string header_value;
   };
 
-  ~TestReportingService() override {}
-
   const std::vector<Header>& headers() { return headers_; }
+
+  // ReportingService implementation:
+
+  ~TestReportingService() override {}
 
   void QueueReport(const GURL& url,
                    const std::string& group,

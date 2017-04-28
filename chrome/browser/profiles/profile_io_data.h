@@ -81,6 +81,7 @@ class CTVerifier;
 class HttpTransactionFactory;
 class ProxyConfigService;
 class ProxyService;
+class ReportingService;
 class ReportSender;
 class SSLConfigService;
 class TransportSecurityPersister;
@@ -283,6 +284,8 @@ class ProfileIOData {
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(std::unique_ptr<net::URLRequestJobFactory> job_factory);
+    void SetReportingService(
+        std::unique_ptr<net::ReportingService> reporting_service);
 
    private:
     ~AppRequestContext() override;
@@ -292,6 +295,7 @@ class ProfileIOData {
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
+    std::unique_ptr<net::ReportingService> reporting_service_;
   };
 
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy

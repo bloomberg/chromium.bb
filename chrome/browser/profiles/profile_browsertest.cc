@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -48,6 +49,7 @@
 #include "extensions/common/value_builder.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/reporting/reporting_feature.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -550,11 +552,15 @@ void CompareURLRequestContexts(
       main_context_getter->GetURLRequestContext();
 
   // Check that the URLRequestContexts are different and that their
-  // ChannelIDServices and CookieStores are different.
+  // ChannelIDServices, CookieStores, and ReportingServices are different.
   EXPECT_NE(extension_context, main_context);
   EXPECT_NE(extension_context->channel_id_service(),
             main_context->channel_id_service());
   EXPECT_NE(extension_context->cookie_store(), main_context->cookie_store());
+  if (extension_context->reporting_service()) {
+    EXPECT_NE(extension_context->reporting_service(),
+              main_context->reporting_service());
+  }
 
   // Check that the ChannelIDService in the HttpNetworkSession is the same as
   // the one directly on the URLRequestContext.
@@ -576,6 +582,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kReporting);
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
@@ -612,6 +621,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kReporting);
 
   MockProfileDelegate delegate;
   EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));

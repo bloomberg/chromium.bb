@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
+#include "net/base/test_completion_callback.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_policy.h"
@@ -50,10 +51,12 @@ TEST_F(ReportingPersisterTest, DISABLED_Test) {
                      kGroup_,
                      tick_clock()->NowTicks() + base::TimeDelta::FromDays(1));
 
-  // TODO: Actually trigger persistence, once it's possible.
+  // TODO: Actually save data, once it's possible.
 
   SimulateRestart(/* delta= */ base::TimeDelta::FromHours(1),
                   /* delta_ticks= */ base::TimeDelta::FromHours(-3));
+
+  // TODO: Actually load data, once it's possible.
 
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
@@ -75,6 +78,8 @@ TEST_F(ReportingPersisterTest, DISABLED_Test) {
                 base::TimeDelta::FromHours(1),
             client->expires);
 }
+
+// TODO(juliatuttle): Test asynchronous behavior.
 
 }  // namespace
 }  // namespace net

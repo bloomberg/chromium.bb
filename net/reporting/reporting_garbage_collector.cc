@@ -40,17 +40,15 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
 
   // ReportingObserver implementation:
   void OnCacheUpdated() override {
-    if (!timer_->IsRunning())
-      StartTimer();
-  }
+    if (timer_->IsRunning())
+      return;
 
- private:
-  void StartTimer() {
     timer_->Start(FROM_HERE, context_->policy().garbage_collection_interval,
                   base::Bind(&ReportingGarbageCollectorImpl::CollectGarbage,
                              base::Unretained(this)));
   }
 
+ private:
   void CollectGarbage() {
     base::TimeTicks now = context_->tick_clock()->NowTicks();
     const ReportingPolicy& policy = context_->policy();
