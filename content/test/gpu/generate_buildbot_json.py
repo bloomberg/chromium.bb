@@ -64,19 +64,11 @@ WATERFALL = {
   'type': Types.GPU,
 
   'builders': {
-    'GPU Win Builder' : {
-      # TODO(machenbach): Remove additional browser_tests here and on several
-      # release bots below when http://crbug.com/714976 is resolved.
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Win Builder' : {},
     'GPU Win Builder (dbg)' : {},
-    'GPU Mac Builder' : {
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Mac Builder' : {},
     'GPU Mac Builder (dbg)' : {},
-    'GPU Linux Builder' : {
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Linux Builder' : {},
     'GPU Linux Builder (dbg)' : {},
    },
 
@@ -179,23 +171,13 @@ FYI_WATERFALL = {
   'type': Types.GPU_FYI,
 
   'builders': {
-    'GPU Win Builder' : {
-      # TODO(machenbach): Remove additional browser_tests here and on several
-      # release bots below when http://crbug.com/714976 is resolved.
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Win Builder' : {},
     'GPU Win Builder (dbg)' : {},
-    'GPU Win x64 Builder' : {
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Win x64 Builder' : {},
     'GPU Win x64 Builder (dbg)' : {},
-    'GPU Mac Builder' : {
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Mac Builder' : {},
     'GPU Mac Builder (dbg)' : {},
-    'GPU Linux Builder' : {
-      'additional_compile_targets' : [ "browser_tests" ],
-    },
+    'GPU Linux Builder' : {},
     'GPU Linux Builder (dbg)' : {},
     'Linux ChromiumOS Builder' : {
       'additional_compile_targets' : [ "All" ]
