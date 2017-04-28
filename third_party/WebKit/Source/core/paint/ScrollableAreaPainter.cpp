@@ -70,48 +70,54 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
 void ScrollableAreaPainter::DrawPlatformResizerImage(
     GraphicsContext& context,
     IntRect resizer_corner_rect) {
-  float old_device_scale_factor =
-      blink::DeviceScaleFactorDeprecated(GetScrollableArea().Box().GetFrame());
-  // |blink::deviceScaleFactor| returns different values between MAC (2 or 1)
-  // and other platforms (always 1). For this reason we cannot hardcode the
-  // value of 1 in the call for |windowToViewportScalar|. Since zoom-for-dsf is
-  // disabled on MAC, |windowToViewportScalar| will be a no-op on it.
-  float device_scale_factor =
-      GetScrollableArea().GetChromeClient()->WindowToViewportScalar(
-          old_device_scale_factor);
-
-  RefPtr<Image> resize_corner_image;
-  IntSize corner_resizer_size;
-  if (device_scale_factor >= 2) {
-    DEFINE_STATIC_REF(Image, resize_corner_image_hi_res,
-                      (Image::LoadPlatformResource("textAreaResizeCorner@2x")));
-    resize_corner_image = resize_corner_image_hi_res;
-    corner_resizer_size = resize_corner_image->Size();
-    if (old_device_scale_factor >= 2)
-      corner_resizer_size.Scale(0.5f);
-  } else {
-    DEFINE_STATIC_REF(Image, resize_corner_image_lo_res,
-                      (Image::LoadPlatformResource("textAreaResizeCorner")));
-    resize_corner_image = resize_corner_image_lo_res;
-    corner_resizer_size = resize_corner_image->Size();
-  }
-
+  IntPoint points[4];
+  bool on_left = false;
   if (GetScrollableArea()
           .Box()
           .ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-    context.Save();
-    context.Translate(resizer_corner_rect.X() + corner_resizer_size.Width(),
-                      resizer_corner_rect.Y() + resizer_corner_rect.Height() -
-                          corner_resizer_size.Height());
-    context.Scale(-1.0, 1.0);
-    context.DrawImage(resize_corner_image.Get(),
-                      IntRect(IntPoint(), corner_resizer_size));
-    context.Restore();
-    return;
+    on_left = true;
+    points[0].SetX(resizer_corner_rect.X() + 1);
+    points[1].SetX(resizer_corner_rect.X() + resizer_corner_rect.Width() -
+                   resizer_corner_rect.Width() / 2);
+    points[2].SetX(points[0].X());
+    points[3].SetX(resizer_corner_rect.X() + resizer_corner_rect.Width() -
+                   resizer_corner_rect.Width() * 3 / 4);
+  } else {
+    points[0].SetX(resizer_corner_rect.X() + resizer_corner_rect.Width() - 1);
+    points[1].SetX(resizer_corner_rect.X() + resizer_corner_rect.Width() / 2);
+    points[2].SetX(points[0].X());
+    points[3].SetX(resizer_corner_rect.X() +
+                   resizer_corner_rect.Width() * 3 / 4);
   }
-  IntRect image_rect(resizer_corner_rect.MaxXMaxYCorner() - corner_resizer_size,
-                     corner_resizer_size);
-  context.DrawImage(resize_corner_image.Get(), image_rect);
+  points[0].SetY(resizer_corner_rect.Y() + resizer_corner_rect.Height() / 2);
+  points[1].SetY(resizer_corner_rect.Y() + resizer_corner_rect.Height() - 1);
+  points[2].SetY(resizer_corner_rect.Y() +
+                 resizer_corner_rect.Height() * 3 / 4);
+  points[3].SetY(points[1].Y());
+
+  PaintFlags paint_flags;
+  paint_flags.setStyle(PaintFlags::kStroke_Style);
+  paint_flags.setStrokeWidth(1);
+
+  SkPath line_path;
+
+  // Draw a dark line, to ensure contrast against a light background
+  line_path.moveTo(points[0].X(), points[0].Y());
+  line_path.lineTo(points[1].X(), points[1].Y());
+  line_path.moveTo(points[2].X(), points[2].Y());
+  line_path.lineTo(points[3].X(), points[3].Y());
+  paint_flags.setARGB(153, 0, 0, 0);
+  context.DrawPath(line_path, paint_flags);
+
+  // Draw a light line one pixel below the light line,
+  // to ensure contrast against a dark background
+  line_path.rewind();
+  line_path.moveTo(points[0].X(), points[0].Y() + 1);
+  line_path.lineTo(points[1].X() + (on_left ? -1 : 1), points[1].Y());
+  line_path.moveTo(points[2].X(), points[2].Y() + 1);
+  line_path.lineTo(points[3].X() + (on_left ? -1 : 1), points[3].Y());
+  paint_flags.setARGB(153, 255, 255, 255);
+  context.DrawPath(line_path, paint_flags);
 }
 
 void ScrollableAreaPainter::PaintOverflowControls(
