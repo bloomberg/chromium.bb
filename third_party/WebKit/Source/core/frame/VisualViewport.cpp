@@ -856,7 +856,7 @@ String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   } else if (graphics_layer == root_transform_layer_.get()) {
     name = "Root Transform Layer";
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   return name;

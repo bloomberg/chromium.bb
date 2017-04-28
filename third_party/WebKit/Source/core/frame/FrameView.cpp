@@ -4120,7 +4120,7 @@ void FrameView::UpdateScrollOffset(const ScrollOffset& offset,
 
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // Don't scroll the FrameView!
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   scroll_offset_ = offset;

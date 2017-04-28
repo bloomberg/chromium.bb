@@ -1093,11 +1093,11 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
 
     case CSSPropertyInvalid:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

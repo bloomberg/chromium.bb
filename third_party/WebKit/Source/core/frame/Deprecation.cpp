@@ -39,7 +39,7 @@ const char* milestoneString(Milestone milestone) {
       return "M62, around October 2017";
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
