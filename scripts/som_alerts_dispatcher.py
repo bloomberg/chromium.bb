@@ -126,6 +126,8 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
                                      constants.BUILDER_STATUS_SKIPPED])
   ABORTED_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
                                        constants.BUILDER_STATUS_FORGIVEN])
+  NO_LOG_RETRY_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
+                                     constants.BUILDER_STATUS_ABORTED])
   if (stage['build_id'] != build['id'] or
       stage['status'] in STAGE_IGNORE_STATUSES):
     return None
@@ -152,7 +154,13 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
         annotation['stdoutStream'].get('name')):
       path = '%s/+/%s' % (prefix, annotation['stdoutStream']['name'])
       try:
-        logs = logdog_client.GetLines(buildinfo['project'], path)
+        # If either the build or stage is reporting as being inflight,
+        # LogDog might still be waiting for logs so don't wait unnecesarily
+        # for them.
+        retry = (build['status'] not in NO_LOG_RETRY_STATUSES and
+                 stage['status'] not in NO_LOG_RETRY_STATUSES)
+        logs = logdog_client.GetLines(buildinfo['project'], path,
+                                      allow_retries=retry)
         classification = classifier.ClassifyFailure(stage['name'], logs)
         for c in classification or []:
           notes.append('Classification: %s' % (c))

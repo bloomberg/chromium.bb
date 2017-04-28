@@ -91,7 +91,7 @@ class LogdogClient(prpc.PRPCClient):
     return self.SendRequest('prpc/logdog.Logs', 'Get', body, dryrun=dryrun)
 
   def LogsGetChunked(self, project, path, index=0, log_count=0,
-                     chunk_bytes=0, dryrun=False):
+                     chunk_bytes=0, allow_retries=True, dryrun=False):
     """Logdog Logs.Get wrapper to request logs in chunks.
 
     Args:
@@ -101,12 +101,13 @@ class LogdogClient(prpc.PRPCClient):
       log_count: The maximum number of logs to return.
       chunk_bytes: A suggested maximum number of bytes to return per chunk.
                    At least one full log line will be returned with each chunk.
+      allow_retries: Whether or not retries should be attempted.
       dryrun: Whether a dryrun.
 
     Returns:
       Generator of Logs.Get response protobufs, one per chunk.
     """
-    retry_count = 3
+    retry_count = 3 if allow_retries else 0
     terminal_index = None
     while True:
       # Retrieve the next chunk.
@@ -166,7 +167,7 @@ class LogdogClient(prpc.PRPCClient):
           yield '%s%s' % (line.get('value', ''), line['delimiter'])
 
   def GetLines(self, project, path, index=0, log_count=0, chunk_bytes=0,
-               dryrun=False):
+               allow_retries=True, dryrun=False):
     """Retrieve a Logdog stream as lines of text.
 
     Args:
@@ -176,6 +177,7 @@ class LogdogClient(prpc.PRPCClient):
       log_count: The maximum number of logs to return.
       chunk_bytes: A suggested maximum number of bytes to retrieve from the
                    server each time.
+      allow_retries: Whether or not retries should be attempted.
       dryrun: Whether a dryrun.
 
     Returns:
@@ -183,7 +185,9 @@ class LogdogClient(prpc.PRPCClient):
     """
     for resp in self.LogsGetChunked(project, path, index=index,
                                     log_count=log_count,
-                                    chunk_bytes=chunk_bytes, dryrun=dryrun):
+                                    chunk_bytes=chunk_bytes,
+                                    allow_retries=allow_retries,
+                                    dryrun=dryrun):
       for line in self.ExtractLines(resp):
         yield line
 
