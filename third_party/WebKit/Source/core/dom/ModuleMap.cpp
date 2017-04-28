@@ -6,7 +6,6 @@
 
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
-#include "core/dom/ScriptModuleResolver.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "platform/WebTaskRunner.h"
@@ -89,11 +88,6 @@ void ModuleMap::Entry::NotifyNewSingleModuleFinished(
   CHECK(is_fetching_);
   module_script_ = module_script;
   is_fetching_ = false;
-
-  if (module_script_) {
-    map_->GetModulator()->GetScriptModuleResolver()->RegisterModuleScript(
-        module_script_);
-  }
 
   for (const auto& client : clients_) {
     DispatchFinishedNotificationAsync(client);
