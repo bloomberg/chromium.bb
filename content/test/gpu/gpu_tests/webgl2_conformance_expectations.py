@@ -218,6 +218,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Mac only.
 
+    # Regressions in 10.12.4.
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
+        ['sierra'], bug=705865)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['sierra'], bug=705865)
+
     # Fails on all GPU types.
     self.Flaky('conformance/context/context-release-upon-reload.html',
         ['mac'], bug=713829)
@@ -278,6 +284,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'no-over-optimization-on-uniform-array-12.html',
         ['mac', ('nvidia', 0xfe9)], bug=684903)
 
+    self.Fail('deqp/functional/gles3/draw/random.html',
+        ['sierra', ('nvidia', 0xfe9)], bug=716652)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
