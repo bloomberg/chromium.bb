@@ -179,7 +179,9 @@ message SyncEntity {
   // always positive and indentifies the revision of the item data being sent
   // to the client.
   // Present in both GetUpdatesResponse and CommitMessage.
-  required int64 version = 4;
+  // WARNING: This field used to be required before M60. Any client before this
+  // will fail to deserialize if this field is missing.
+  optional int64 version = 4;
 
   // Last modification time (in java time milliseconds)
   // Present in both GetUpdatesResponse and CommitMessage.
@@ -197,7 +199,9 @@ message SyncEntity {
   //   depended on the uniqueness of the property since November 2009; it was
   //   removed from Chromium by http://codereview.chromium.org/371029 .
   // Present in both GetUpdatesResponse and CommitMessage.
-  required string name = 7;
+  // WARNING: This field used to be required before M60. Any client before this
+  // will fail to deserialize if this field is missing.
+  optional string name = 7;
 
   // The name of this item.  Same as |name|.
   // |non_unique_name| should take precedence over the |name| value if both
@@ -963,15 +967,6 @@ message UserIdentification {
 message AuthenticateResponse {
   // Optional only for backward compatibility.
   optional UserIdentification user = 1;
-};
-
-message ThrottleParameters {
-  // Deprecated. Remove this from the server side.
-  required int32 min_measure_payload_size = 1;
-  required double target_utilization = 2;
-  required double measure_interval_max = 3;
-  required double measure_interval_min = 4;
-  required double observation_window = 5;
 };
 
 message ClientToServerResponse {
