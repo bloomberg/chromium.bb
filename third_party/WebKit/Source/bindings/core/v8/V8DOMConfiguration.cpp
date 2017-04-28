@@ -73,14 +73,14 @@ void InstallAttributeInternal(
     instance_template->SetNativeDataProperty(
         name, getter, setter, data,
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(), v8::DEFAULT);
+        v8::Local<v8::AccessorSignature>());
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnPrototype) {
     prototype_template->SetNativeDataProperty(
         name, getter, setter, data,
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(), v8::DEFAULT);
+        v8::Local<v8::AccessorSignature>());
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInterface)
@@ -254,13 +254,13 @@ void InstallAccessorInternal(
         V8DOMConfiguration::kOnInstance) {
       instance_or_template->SetAccessorProperty(
           name, getter, setter,
-          static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
+          static_cast<v8::PropertyAttribute>(accessor.attribute));
     }
     if (accessor.property_location_configuration &
         V8DOMConfiguration::kOnPrototype) {
       prototype_or_template->SetAccessorProperty(
           name, getter, setter,
-          static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
+          static_cast<v8::PropertyAttribute>(accessor.attribute));
     }
   }
   if (accessor.property_location_configuration &
@@ -278,7 +278,7 @@ void InstallAccessorInternal(
             1);
     interface_or_template->SetAccessorProperty(
         name, getter, setter,
-        static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
+        static_cast<v8::PropertyAttribute>(accessor.attribute));
   }
 }
 
