@@ -14,7 +14,20 @@ bool GenericDocumentMarkerListImpl::IsEmpty() const {
 }
 
 void GenericDocumentMarkerListImpl::Add(DocumentMarker* marker) {
-  DocumentMarkerListEditor::AddMarker(&markers_, marker);
+  switch (marker->GetType()) {
+    case DocumentMarker::kSpelling:
+    case DocumentMarker::kGrammar:
+      DocumentMarkerListEditor::AddMarkerAndMergeOverlapping(&markers_, marker);
+      return;
+    case DocumentMarker::kTextMatch:
+    case DocumentMarker::kComposition:
+      DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
+                                                                   marker);
+      return;
+  }
+
+  NOTREACHED() << "Unhanded marker type: " << marker->GetType();
+  return;
 }
 
 void GenericDocumentMarkerListImpl::Clear() {
