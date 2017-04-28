@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -294,10 +295,10 @@ class HostProcess : public ConfigWatcher::Delegate,
   void OnPolicyUpdate(std::unique_ptr<base::DictionaryValue> policies);
   void OnPolicyError();
   void ReportPolicyErrorAndRestartHost();
-  void ApplyHostDomainPolicy();
+  void ApplyHostDomainListPolicy();
   void ApplyUsernamePolicy();
-  bool OnClientDomainPolicyUpdate(base::DictionaryValue* policies);
-  bool OnHostDomainPolicyUpdate(base::DictionaryValue* policies);
+  bool OnClientDomainListPolicyUpdate(base::DictionaryValue* policies);
+  bool OnHostDomainListPolicyUpdate(base::DictionaryValue* policies);
   bool OnUsernamePolicyUpdate(base::DictionaryValue* policies);
   bool OnNatPolicyUpdate(base::DictionaryValue* policies);
   bool OnRelayPolicyUpdate(base::DictionaryValue* policies);
@@ -375,8 +376,8 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_ = POLICY_INITIALIZING;
-  std::string client_domain_;
-  std::string host_domain_;
+  std::vector<std::string> client_domain_list_;
+  std::vector<std::string> host_domain_list_;
   bool host_username_match_required_ = false;
   bool allow_nat_traversal_ = true;
   bool allow_relay_ = true;
@@ -591,7 +592,7 @@ void HostProcess::OnConfigUpdated(
   } else if (state_ == HOST_STARTED) {
     // Reapply policies that could be affected by a new config.
     DCHECK_EQ(policy_state_, POLICY_LOADED);
-    ApplyHostDomainPolicy();
+    ApplyHostDomainListPolicy();
     ApplyUsernamePolicy();
 
     // TODO(sergeyu): Here we assume that PIN is the only part of the config
@@ -724,7 +725,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_, pin_hash_, pairing_registry);
+        client_domain_list_, pin_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -748,7 +749,7 @@ void HostProcess::CreateAuthenticatorFactory() {
                                       context_->url_request_context_getter());
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_, token_validator_factory);
+        client_domain_list_, token_validator_factory);
   }
 
 #if defined(OS_POSIX)
@@ -1019,8 +1020,8 @@ void HostProcess::OnPolicyUpdate(
   }
 
   bool restart_required = false;
-  restart_required |= OnClientDomainPolicyUpdate(policies.get());
-  restart_required |= OnHostDomainPolicyUpdate(policies.get());
+  restart_required |= OnClientDomainListPolicyUpdate(policies.get());
+  restart_required |= OnHostDomainListPolicyUpdate(policies.get());
   restart_required |= OnCurtainPolicyUpdate(policies.get());
   // Note: UsernamePolicyUpdate must run after OnCurtainPolicyUpdate.
   restart_required |= OnUsernamePolicyUpdate(policies.get());
@@ -1069,13 +1070,14 @@ void HostProcess::ReportPolicyErrorAndRestartHost() {
   RestartHost(kHostOfflineReasonPolicyReadError);
 }
 
-void HostProcess::ApplyHostDomainPolicy() {
+void HostProcess::ApplyHostDomainListPolicy() {
   if (state_ != HOST_STARTED)
     return;
 
-  HOST_LOG << "Policy sets host domain: " << host_domain_;
+  HOST_LOG << "Policy sets host domains: "
+           << base::JoinString(host_domain_list_, ", ");
 
-  if (!host_domain_.empty()) {
+  if (!host_domain_list_.empty()) {
     // If the user does not have a Google email, their client JID will not be
     // based on their email. In that case, the username/host domain policies
     // would be meaningless, since there is no way to check that the JID
@@ -1086,32 +1088,55 @@ void HostProcess::ApplyHostDomainPolicy() {
       ShutdownHost(kInvalidHostDomainExitCode);
     }
 
-    if (!base::EndsWith(host_owner_, std::string("@") + host_domain_,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
+    bool matched = false;
+    for (const std::string& domain : host_domain_list_) {
+      if (base::EndsWith(host_owner_, std::string("@") + domain,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+        matched = true;
+      }
+    }
+    if (!matched) {
       LOG(ERROR) << "The host domain does not match the policy.";
       ShutdownHost(kInvalidHostDomainExitCode);
     }
   }
 }
 
-bool HostProcess::OnHostDomainPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnHostDomainListPolicyUpdate(
+    base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!policies->GetString(policy::key::kRemoteAccessHostDomain,
-                           &host_domain_)) {
+  const base::ListValue* list;
+  if (!policies->GetList(policy::key::kRemoteAccessHostDomainList, &list)) {
     return false;
   }
 
-  ApplyHostDomainPolicy();
+  host_domain_list_.clear();
+  for (const auto& value : *list) {
+    host_domain_list_.push_back(value.GetString());
+  }
+
+  ApplyHostDomainListPolicy();
   return false;
 }
 
-bool HostProcess::OnClientDomainPolicyUpdate(base::DictionaryValue* policies) {
+bool HostProcess::OnClientDomainListPolicyUpdate(
+    base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  return policies->GetString(policy::key::kRemoteAccessHostClientDomain,
-                             &client_domain_);
+  const base::ListValue* list;
+  if (!policies->GetList(policy::key::kRemoteAccessHostClientDomainList,
+                         &list)) {
+    return false;
+  }
+
+  client_domain_list_.clear();
+  for (const auto& value : *list) {
+    client_domain_list_.push_back(value.GetString());
+  }
+
+  return true;
 }
 
 void HostProcess::ApplyUsernamePolicy() {
@@ -1121,7 +1146,7 @@ void HostProcess::ApplyUsernamePolicy() {
   if (host_username_match_required_) {
     HOST_LOG << "Policy requires host username match.";
 
-    // See comment in ApplyHostDomainPolicy.
+    // See comment in ApplyHostDomainListPolicy.
     if (host_owner_ != host_owner_email_) {
       LOG(ERROR) << "The username and host domain policies cannot be enabled "
                  << "for accounts with a non-Google email.";
@@ -1496,7 +1521,7 @@ void HostProcess::StartHost() {
 
   CreateAuthenticatorFactory();
 
-  ApplyHostDomainPolicy();
+  ApplyHostDomainListPolicy();
   ApplyUsernamePolicy();
 }
 

@@ -181,8 +181,10 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
   default_values_->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
   default_values_->SetBoolean(key::kRemoteAccessHostMatchUsername, false);
-  default_values_->SetString(key::kRemoteAccessHostClientDomain, std::string());
-  default_values_->SetString(key::kRemoteAccessHostDomain, std::string());
+  default_values_->Set(key::kRemoteAccessHostClientDomainList,
+                       base::MakeUnique<base::ListValue>());
+  default_values_->Set(key::kRemoteAccessHostDomainList,
+                       base::MakeUnique<base::ListValue>());
   default_values_->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
                              kDefaultHostTalkGadgetPrefix);
   default_values_->SetString(key::kRemoteAccessHostTokenUrl, std::string());
@@ -232,10 +234,42 @@ bool PolicyWatcher::NormalizePolicies(base::DictionaryValue* policy_dict) {
       LOG(WARNING) << "Unknown (unrecognized or unsupported) policy: " << path
                    << ": " << error;
     }
+    HandleDeprecatedPolicies(policy_dict);
     return true;
   } else {
     LOG(ERROR) << "Invalid policy contents: " << path << ": " << error;
     return false;
+  }
+}
+
+void PolicyWatcher::HandleDeprecatedPolicies(base::DictionaryValue* dict) {
+  // RemoteAccessHostDomain
+  if (dict->HasKey(policy::key::kRemoteAccessHostDomain)) {
+    if (!dict->HasKey(policy::key::kRemoteAccessHostDomainList)) {
+      std::string domain;
+      dict->GetString(policy::key::kRemoteAccessHostDomain, &domain);
+      if (!domain.empty()) {
+        auto list = base::MakeUnique<base::ListValue>();
+        list->AppendString(domain);
+        dict->Set(policy::key::kRemoteAccessHostDomainList, std::move(list));
+      }
+    }
+    dict->Remove(policy::key::kRemoteAccessHostDomain, nullptr);
+  }
+
+  // RemoteAccessHostClientDomain
+  if (dict->HasKey(policy::key::kRemoteAccessHostClientDomain)) {
+    if (!dict->HasKey(policy::key::kRemoteAccessHostClientDomainList)) {
+      std::string domain;
+      dict->GetString(policy::key::kRemoteAccessHostClientDomain, &domain);
+      if (!domain.empty()) {
+        auto list = base::MakeUnique<base::ListValue>();
+        list->AppendString(domain);
+        dict->Set(policy::key::kRemoteAccessHostClientDomainList,
+                  std::move(list));
+      }
+    }
+    dict->Remove(policy::key::kRemoteAccessHostClientDomain, nullptr);
   }
 }
 

@@ -27,7 +27,7 @@ Me2MeHostAuthenticatorFactory::CreateWithPin(
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& required_client_domain,
+    std::vector<std::string> required_client_domain_list,
     const std::string& pin_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   std::unique_ptr<Me2MeHostAuthenticatorFactory> result(
@@ -36,7 +36,7 @@ Me2MeHostAuthenticatorFactory::CreateWithPin(
   result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
-  result->required_client_domain_ = required_client_domain;
+  result->required_client_domain_list_ = std::move(required_client_domain_list);
   result->pin_hash_ = pin_hash;
   result->pairing_registry_ = pairing_registry;
   return std::move(result);
@@ -50,7 +50,7 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& required_client_domain,
+    std::vector<std::string> required_client_domain_list,
     scoped_refptr<TokenValidatorFactory> token_validator_factory) {
   std::unique_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
@@ -58,7 +58,7 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
-  result->required_client_domain_ = required_client_domain;
+  result->required_client_domain_list_ = std::move(required_client_domain_list);
   result->token_validator_factory_ = token_validator_factory;
   return std::move(result);
 }
@@ -101,19 +101,25 @@ Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   }
 
   // If necessary, verify that the client's jid belongs to the correct domain.
-  if (!required_client_domain_.empty()) {
+  if (!required_client_domain_list_.empty()) {
     std::string client_username = remote_jid;
     size_t pos = client_username.find('/');
     if (pos != std::string::npos) {
       client_username.replace(pos, std::string::npos, "");
     }
-    if (!base::EndsWith(client_username,
-                        std::string("@") + required_client_domain_,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
+    bool matched = false;
+    for (const std::string& domain : required_client_domain_list_) {
+      if (base::EndsWith(client_username, std::string("@") + domain,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
-                 << ": Domain mismatch.";
-      return base::WrapUnique(
-          new RejectingAuthenticator(Authenticator::INVALID_ACCOUNT));
+                 << ": Domain not allowed.";
+      return base::MakeUnique<RejectingAuthenticator>(
+          Authenticator::INVALID_ACCOUNT);
     }
   }
 

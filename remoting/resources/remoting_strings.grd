@@ -962,7 +962,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
                name="IDS_OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS" formatter_data="android_java">
         Host is configured with invalid OAuth credentials.
       </message>
-      <message desc="Error message indicating that the host is offline, because the host is owned by a user from a domain different than the domain mandated by RemoteAccessHostDomain policy."
+      <message desc="Error message indicating that the host is offline, because the host is owned by a user from a domain different than the domain mandated by RemoteAccessHostDomainList policy."
                name="IDS_OFFLINE_REASON_INVALID_HOST_DOMAIN" formatter_data="android_java">
         Invalid host owner domain.
       </message>

@@ -221,6 +221,9 @@
   "RemoteAccessHostClientDomain": {
   },
 
+  "RemoteAccessHostClientDomainList": {
+  },
+
   "RemoteAccessHostFirewallTraversal": {
   },
 
@@ -228,6 +231,9 @@
   },
 
   "RemoteAccessHostDomain": {
+  },
+
+  "RemoteAccessHostDomainList": {
   },
 
   "RemoteAccessHostTalkGadgetPrefix": {
