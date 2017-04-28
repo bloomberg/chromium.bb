@@ -267,6 +267,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     dictionary->SetIntegerWithoutPathExpansion(kTetherBatteryPercentage,
                                                battery_percentage());
     dictionary->SetStringWithoutPathExpansion(kTetherCarrier, carrier());
+    dictionary->SetBooleanWithoutPathExpansion(kTetherHasConnectedToHost,
+                                               tether_has_connected_to_host());
     dictionary->SetIntegerWithoutPathExpansion(kTetherSignalStrength,
                                                signal_strength());
   }

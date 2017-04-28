@@ -583,6 +583,7 @@ namespace networkingPrivate {
   dictionary TetherProperties {
     long? BatteryPercentage;
     DOMString? Carrier;
+    boolean HasConnectedToHost;
     long? SignalStrength;
   };
 

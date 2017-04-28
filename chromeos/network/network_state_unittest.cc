@@ -262,6 +262,7 @@ TEST_F(NetworkStateTest, TetherProperties) {
   network_state_.set_type(kTypeTether);
   network_state_.set_carrier("Project Fi");
   network_state_.set_battery_percentage(85);
+  network_state_.set_tether_has_connected_to_host(true);
   network_state_.set_signal_strength(75);
 
   base::DictionaryValue dictionary;
@@ -276,6 +277,11 @@ TEST_F(NetworkStateTest, TetherProperties) {
   EXPECT_TRUE(dictionary.GetIntegerWithoutPathExpansion(
       kTetherBatteryPercentage, &battery_percentage));
   EXPECT_EQ(85, battery_percentage);
+
+  bool tether_has_connected_to_host;
+  EXPECT_TRUE(dictionary.GetBooleanWithoutPathExpansion(
+      kTetherHasConnectedToHost, &tether_has_connected_to_host));
+  EXPECT_TRUE(tether_has_connected_to_host);
 
   std::string carrier;
   EXPECT_TRUE(

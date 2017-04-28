@@ -767,6 +767,7 @@ chrome.networkingPrivate.EthernetStateProperties;
  * @typedef {{
  *   BatteryPercentage: (number|undefined),
  *   Carrier: (string|undefined),
+ *   HasConnectedToHost: boolean,
  *   SignalStrength: (number|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-TetherProperties

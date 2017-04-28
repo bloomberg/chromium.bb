@@ -172,6 +172,7 @@ const OncFieldSignature tether_fields[] = {{NULL}};
 const OncFieldSignature tether_with_state_fields[] = {
     {::onc::tether::kBatteryPercentage, &kIntegerSignature},
     {::onc::tether::kCarrier, &kStringSignature},
+    {::onc::tether::kHasConnectedToHost, &kBoolSignature},
     {::onc::tether::kSignalStrength, &kIntegerSignature},
     {NULL}};
 

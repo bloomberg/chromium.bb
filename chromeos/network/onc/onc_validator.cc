@@ -1008,19 +1008,19 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 bool Validator::ValidateTether(base::DictionaryValue* result) {
   using namespace ::onc::tether;
 
-  int batteryPercentage;
+  int battery_percentage;
   if (!result->GetIntegerWithoutPathExpansion(kBatteryPercentage,
-                                              &batteryPercentage) ||
-      batteryPercentage < 0 || batteryPercentage > 100) {
+                                              &battery_percentage) ||
+      battery_percentage < 0 || battery_percentage > 100) {
     // Battery percentage must be present and within [0, 100].
     error_or_warning_found_ = true;
     return false;
   }
 
-  int signalStrength;
+  int signal_strength;
   if (!result->GetIntegerWithoutPathExpansion(kSignalStrength,
-                                              &signalStrength) ||
-      signalStrength < 0 || signalStrength > 100) {
+                                              &signal_strength) ||
+      signal_strength < 0 || signal_strength > 100) {
     // Signal strength must be present and within [0, 100].
     error_or_warning_found_ = true;
     return false;
@@ -1034,8 +1034,12 @@ bool Validator::ValidateTether(base::DictionaryValue* result) {
     return false;
   }
 
-  // No required fields.
-  return true;
+  bool all_required_exist = RequireField(*result, kHasConnectedToHost);
+  if (!all_required_exist) {
+    error_or_warning_found_ = true;
+  }
+
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 std::string Validator::MessageHeader() {

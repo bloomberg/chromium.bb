@@ -20,6 +20,7 @@ CHROMEOS_EXPORT extern const char kTypeTether[];
 // Properties associated with tether networks.
 CHROMEOS_EXPORT extern const char kTetherBatteryPercentage[];
 CHROMEOS_EXPORT extern const char kTetherCarrier[];
+CHROMEOS_EXPORT extern const char kTetherHasConnectedToHost[];
 CHROMEOS_EXPORT extern const char kTetherSignalStrength[];
 
 // The device path used for the tether DeviceState.

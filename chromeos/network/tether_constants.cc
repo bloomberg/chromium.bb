@@ -9,6 +9,7 @@ namespace chromeos {
 const char kTypeTether[] = "wifi-tether";
 const char kTetherBatteryPercentage[] = "Tether.BatteryPercentage";
 const char kTetherCarrier[] = "Tether.Carrier";
+const char kTetherHasConnectedToHost[] = "Tether.HasConnectedToHost";
 const char kTetherSignalStrength[] = "Tether.SignalStrength";
 const char kTetherDevicePath[] = "tether-device-path";
 const char kTetherDeviceName[] = "tether-name";

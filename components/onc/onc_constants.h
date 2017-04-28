@@ -222,6 +222,7 @@ ONC_EXPORT extern const char k8021X[];
 namespace tether {
 ONC_EXPORT extern const char kBatteryPercentage[];
 ONC_EXPORT extern const char kCarrier[];
+ONC_EXPORT extern const char kHasConnectedToHost[];
 ONC_EXPORT extern const char kSignalStrength[];
 }  // namespace tether
 

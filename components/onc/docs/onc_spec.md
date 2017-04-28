@@ -1456,6 +1456,12 @@ a phone.
     * The name of the cellular carrier when the hotspot is provided by a
       cellular connection.
 
+* **HasConnectedToHost**
+    * (read-only) - **boolean**
+    * If *true*, the current device has already connected to a Tether network
+      created by the same external device which is providing this Tether
+      network.
+
 * **SignalStrength**
     * (optional, read-only) - **integer**
     * The current signal strength for the hotspot's connection in the range

@@ -4,6 +4,7 @@
   "Tether": {
     "BatteryPercentage": 85,
     "Carrier": "Project Fi",
+    "HasConnectedToHost": true,
     "SignalStrength": 75
   }
 }

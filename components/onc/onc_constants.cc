@@ -197,6 +197,7 @@ const char k8021X[] = "8021X";
 namespace tether {
 const char kBatteryPercentage[] = "BatteryPercentage";
 const char kCarrier[] = "Carrier";
+const char kHasConnectedToHost[] = "HasConnectedToHost";
 const char kSignalStrength[] = "SignalStrength";
 }  // namespace tether
 
