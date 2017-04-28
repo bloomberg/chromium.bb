@@ -55,6 +55,8 @@ class DummyModulator : public Modulator {
   ScriptValue GetInstantiationError(const ModuleScript*) override;
   Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
   void ExecuteModule(const ModuleScript*) override;
+
+  Member<ScriptModuleResolver> resolver_;
 };
 
 }  // namespace blink

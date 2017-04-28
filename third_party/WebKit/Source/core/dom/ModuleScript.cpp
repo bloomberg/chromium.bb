@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/dom/ScriptModuleResolver.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -51,8 +52,14 @@ ModuleScript* ModuleScript::CreateInternal(
   // Step 10. Set script's parser state to the parser state.
   // Step 11. Set script's credentials mode to the credentials mode provided.
   // Step 12. Return script.
-  return new ModuleScript(modulator, result, base_url, nonce, parser_state,
-                          credentials_mode);
+  ModuleScript* module_script = new ModuleScript(
+      modulator, result, base_url, nonce, parser_state, credentials_mode);
+
+  // Step 5, a part of ParseModule(): Passing script as the last parameter
+  // here ensures result.[[HostDefined]] will be script.
+  modulator->GetScriptModuleResolver()->RegisterModuleScript(module_script);
+
+  return module_script;
 }
 
 ModuleScript* ModuleScript::CreateForTest(
