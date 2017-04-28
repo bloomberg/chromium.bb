@@ -216,11 +216,6 @@ if (CONFIG_HIGHBITDEPTH)
       ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
 
-  set(AOM_AV1_ENCODER_INTRIN_NEON
-      ${AOM_AV1_ENCODER_INTRIN_NEON}
-      "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
-      "${AOM_ROOT}/av1/encoder/arm/neon/error_neon.c")
-
   set(AOM_AV1_ENCODER_INTRIN_SSE4_1
       ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
@@ -228,8 +223,13 @@ if (CONFIG_HIGHBITDEPTH)
 else ()
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
+      "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
       "${AOM_ROOT}/av1/common/arm/neon/iht4x4_add_neon.c"
       "${AOM_ROOT}/av1/common/arm/neon/iht8x8_add_neon.c")
+
+  set(AOM_AV1_ENCODER_INTRIN_NEON
+      ${AOM_AV1_ENCODER_INTRIN_NEON}
+      "${AOM_ROOT}/av1/encoder/arm/neon/error_neon.c")
 endif ()
 
 if (CONFIG_CDEF)
