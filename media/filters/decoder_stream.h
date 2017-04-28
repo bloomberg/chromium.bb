@@ -106,10 +106,17 @@ class MEDIA_EXPORT DecoderStream {
   // Allows callers to register for notification of config changes; this is
   // called immediately after receiving the 'kConfigChanged' status from the
   // DemuxerStream, before any action is taken to handle the config change.
-  typedef base::Closure ConfigChangeObserverCB;
+  using ConfigChangeObserverCB = base::Closure;
   void set_config_change_observer(
-      const ConfigChangeObserverCB& config_change_observer) {
+      ConfigChangeObserverCB config_change_observer) {
     config_change_observer_cb_ = config_change_observer;
+  }
+
+  // Allows tests to keep track the currently selected decoder.
+  using DecoderChangeObserverCB = base::RepeatingCallback<void(Decoder*)>;
+  void set_decoder_change_observer_for_testing(
+      DecoderChangeObserverCB decoder_change_observer_cb) {
+    decoder_change_observer_cb_ = std::move(decoder_change_observer_cb);
   }
 
   int get_pending_buffers_size_for_testing() const {
@@ -207,6 +214,7 @@ class MEDIA_EXPORT DecoderStream {
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   ConfigChangeObserverCB config_change_observer_cb_;
+  DecoderChangeObserverCB decoder_change_observer_cb_;
 
   // An end-of-stream buffer has been sent for decoding, no more buffers should
   // be sent for decoding until it completes.

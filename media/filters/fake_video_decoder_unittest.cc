@@ -32,6 +32,7 @@ class FakeVideoDecoderTest
  public:
   FakeVideoDecoderTest()
       : decoder_(new FakeVideoDecoder(
+            "FakeVideoDecoder",
             GetParam().decoding_delay,
             GetParam().max_decode_requests,
             base::Bind(&FakeVideoDecoderTest::OnBytesDecoded,
@@ -276,9 +277,10 @@ TEST_P(FakeVideoDecoderTest, Read_DecodingDelay) {
 }
 
 TEST_P(FakeVideoDecoderTest, Read_ZeroDelay) {
-  decoder_.reset(new FakeVideoDecoder(
-      0, 1, base::Bind(&FakeVideoDecoderTest::OnBytesDecoded,
-                       base::Unretained(this))));
+  decoder_.reset(
+      new FakeVideoDecoder("FakeVideoDecoder", 0, 1,
+                           base::Bind(&FakeVideoDecoderTest::OnBytesDecoded,
+                                      base::Unretained(this))));
   Initialize();
 
   while (num_input_buffers_ < kTotalBuffers) {

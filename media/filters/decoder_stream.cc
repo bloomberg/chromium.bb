@@ -289,6 +289,8 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     decrypting_demuxer_stream_ = std::move(decrypting_demuxer_stream);
     stream_ = decrypting_demuxer_stream_.get();
   }
+  if (decoder_change_observer_cb_)
+    decoder_change_observer_cb_.Run(decoder_.get());
 
   // TODO(tguilbert): crbug.com/603713 support config changes on decoder reinit.
   if (received_config_change_during_reinit_) {

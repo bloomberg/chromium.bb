@@ -34,7 +34,8 @@ class FakeVideoDecoder : public VideoDecoder {
   // Constructs an object with a decoding delay of |decoding_delay| frames.
   // |bytes_decoded_cb| is called after each decode. The sum of the byte
   // count over all calls will be equal to total_bytes_decoded().
-  FakeVideoDecoder(int decoding_delay,
+  FakeVideoDecoder(const std::string& decoder_name,
+                   int decoding_delay,
                    int max_parallel_decoding_requests,
                    const BytesDecodedCB& bytes_decoded_cb);
   ~FakeVideoDecoder() override;
@@ -98,6 +99,7 @@ class FakeVideoDecoder : public VideoDecoder {
 
   base::ThreadChecker thread_checker_;
 
+  const std::string decoder_name_;
   const size_t decoding_delay_;
   const int max_parallel_decoding_requests_;
   BytesDecodedCB bytes_decoded_cb_;
