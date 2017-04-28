@@ -500,7 +500,8 @@ class Directory {
                                 AttachmentIdList* ids);
 
   // For new entry creation only.
-  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
+  bool InsertEntry(BaseWriteTransaction* trans,
+                   std::unique_ptr<EntryKernel> entry);
 
   // Update the attachment index for |metahandle| removing it from the index
   // under |old_metadata| entries and add it under |new_metadata| entries.
@@ -557,7 +558,7 @@ class Directory {
 
   bool InsertEntry(const ScopedKernelLock& lock,
                    BaseWriteTransaction* trans,
-                   EntryKernel* entry);
+                   std::unique_ptr<EntryKernel> entry);
 
   // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
   void RemoveFromAttachmentIndex(

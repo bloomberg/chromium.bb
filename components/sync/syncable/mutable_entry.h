@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -26,11 +27,6 @@ class WriteTransaction;
 // A mutable meta entry.  Changes get committed to the database when the
 // WriteTransaction is destroyed.
 class MutableEntry : public ModelNeutralMutableEntry {
-  void Init(WriteTransaction* trans,
-            ModelType model_type,
-            const Id& parent_id,
-            const std::string& name);
-
  public:
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
   MutableEntry(WriteTransaction* trans,
@@ -77,6 +73,12 @@ class MutableEntry : public ModelNeutralMutableEntry {
       const sync_pb::AttachmentIdProto& attachment_id);
 
  private:
+  static std::unique_ptr<EntryKernel> CreateEntryKernel(
+      WriteTransaction* trans,
+      ModelType model_type,
+      const Id& parent_id,
+      const std::string& name);
+
   // Kind of redundant. We should reduce the number of pointers
   // floating around if at all possible. Could we store this in Directory?
   // Scope: Set on construction, never changed after that.

@@ -354,47 +354,50 @@ int Directory::GetPositionIndex(BaseTransaction* trans,
   return std::distance(siblings->begin(), it);
 }
 
-bool Directory::InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry) {
+bool Directory::InsertEntry(BaseWriteTransaction* trans,
+                            std::unique_ptr<EntryKernel> entry) {
   ScopedKernelLock lock(this);
-  return InsertEntry(lock, trans, entry);
+  return InsertEntry(lock, trans, std::move(entry));
 }
 
 bool Directory::InsertEntry(const ScopedKernelLock& lock,
                             BaseWriteTransaction* trans,
-                            EntryKernel* entry) {
+                            std::unique_ptr<EntryKernel> entry) {
   if (!SyncAssert(nullptr != entry, FROM_HERE, "Entry is null", trans))
     return false;
+  EntryKernel* entry_ptr = entry.get();
 
   static const char error[] = "Entry already in memory index.";
 
   if (!SyncAssert(kernel_->metahandles_map
-                      .insert(std::make_pair(entry->ref(META_HANDLE),
-                                             base::WrapUnique(entry)))
+                      .insert(std::make_pair(entry_ptr->ref(META_HANDLE),
+                                             std::move(entry)))
                       .second,
                   FROM_HERE, error, trans)) {
     return false;
   }
   if (!SyncAssert(
-          kernel_->ids_map.insert(std::make_pair(entry->ref(ID).value(), entry))
+          kernel_->ids_map
+              .insert(std::make_pair(entry_ptr->ref(ID).value(), entry_ptr))
               .second,
           FROM_HERE, error, trans)) {
     return false;
   }
-  if (ParentChildIndex::ShouldInclude(entry)) {
-    if (!SyncAssert(kernel_->parent_child_index.Insert(entry), FROM_HERE, error,
-                    trans)) {
+  if (ParentChildIndex::ShouldInclude(entry_ptr)) {
+    if (!SyncAssert(kernel_->parent_child_index.Insert(entry_ptr), FROM_HERE,
+                    error, trans)) {
       return false;
     }
   }
-  AddToAttachmentIndex(lock, entry->ref(META_HANDLE),
-                       entry->ref(ATTACHMENT_METADATA));
+  AddToAttachmentIndex(lock, entry_ptr->ref(META_HANDLE),
+                       entry_ptr->ref(ATTACHMENT_METADATA));
 
   // Should NEVER be created with a client tag or server tag.
-  if (!SyncAssert(entry->ref(UNIQUE_SERVER_TAG).empty(), FROM_HERE,
+  if (!SyncAssert(entry_ptr->ref(UNIQUE_SERVER_TAG).empty(), FROM_HERE,
                   "Server tag should be empty", trans)) {
     return false;
   }
-  if (!SyncAssert(entry->ref(UNIQUE_CLIENT_TAG).empty(), FROM_HERE,
+  if (!SyncAssert(entry_ptr->ref(UNIQUE_CLIENT_TAG).empty(), FROM_HERE,
                   "Client tag should be empty", trans))
     return false;
 
@@ -617,17 +620,14 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
        ++i) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
-    EntryKernel* entry =
-        (found == kernel_->metahandles_map.end() ? nullptr
-                                                 : found->second.get());
-    if (entry && SafeToPurgeFromMemory(&trans, entry)) {
+    if (found != kernel_->metahandles_map.end() &&
+        SafeToPurgeFromMemory(&trans, found->second.get())) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
-      std::unique_ptr<EntryKernel> unique_entry = std::move(found->second);
+      std::unique_ptr<EntryKernel> entry = std::move(found->second);
 
       size_t num_erased = 0;
-      num_erased = kernel_->metahandles_map.erase(entry->ref(META_HANDLE));
-      DCHECK_EQ(1u, num_erased);
+      kernel_->metahandles_map.erase(found);
       num_erased = kernel_->ids_map.erase(entry->ref(ID).value());
       DCHECK_EQ(1u, num_erased);
       if (!entry->ref(UNIQUE_SERVER_TAG).empty()) {
@@ -640,8 +640,8 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
             kernel_->client_tags_map.erase(entry->ref(UNIQUE_CLIENT_TAG));
         DCHECK_EQ(1u, num_erased);
       }
-      if (!SyncAssert(!kernel_->parent_child_index.Contains(entry), FROM_HERE,
-                      "Deleted entry still present", (&trans)))
+      if (!SyncAssert(!kernel_->parent_child_index.Contains(entry.get()),
+                      FROM_HERE, "Deleted entry still present", (&trans)))
         return false;
       RemoveFromAttachmentIndex(lock, entry->ref(META_HANDLE),
                                 entry->ref(ATTACHMENT_METADATA));
@@ -710,16 +710,17 @@ void Directory::UnapplyEntry(EntryKernel* entry) {
 
 void Directory::DeleteEntry(const ScopedKernelLock& lock,
                             bool save_to_journal,
-                            EntryKernel* entry,
+                            EntryKernel* entry_ptr,
                             OwnedEntryKernelSet* entries_to_journal) {
-  int64_t handle = entry->ref(META_HANDLE);
-  ModelType server_type =
-      GetModelTypeFromSpecifics(entry->ref(SERVER_SPECIFICS));
+  int64_t handle = entry_ptr->ref(META_HANDLE);
 
   kernel_->metahandles_to_purge.insert(handle);
 
-  std::unique_ptr<EntryKernel> entry_ptr =
+  std::unique_ptr<EntryKernel> entry =
       std::move(kernel_->metahandles_map[handle]);
+
+  ModelType server_type =
+      GetModelTypeFromSpecifics(entry->ref(SERVER_SPECIFICS));
 
   size_t num_erased = 0;
   num_erased = kernel_->metahandles_map.erase(handle);
@@ -730,8 +731,8 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
   DCHECK_EQ(entry->ref(IS_UNSYNCED), num_erased > 0);
   num_erased = kernel_->unapplied_update_metahandles[server_type].erase(handle);
   DCHECK_EQ(entry->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
-  if (kernel_->parent_child_index.Contains(entry))
-    kernel_->parent_child_index.Remove(entry);
+  if (kernel_->parent_child_index.Contains(entry.get()))
+    kernel_->parent_child_index.Remove(entry.get());
 
   if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
     num_erased = kernel_->client_tags_map.erase(entry->ref(UNIQUE_CLIENT_TAG));
@@ -744,7 +745,7 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
   RemoveFromAttachmentIndex(lock, handle, entry->ref(ATTACHMENT_METADATA));
 
   if (save_to_journal) {
-    entries_to_journal->insert(std::move(entry_ptr));
+    entries_to_journal->insert(std::move(entry));
   }
 }
 
