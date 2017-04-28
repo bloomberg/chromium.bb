@@ -31,6 +31,7 @@
 #ifndef WorkerGlobalScopePerformance_h
 #define WorkerGlobalScopePerformance_h
 
+#include "core/CoreExport.h"
 #include "core/timing/WorkerPerformance.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
@@ -40,7 +41,7 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerGlobalScopePerformance final
+class CORE_EXPORT WorkerGlobalScopePerformance final
     : public GarbageCollected<WorkerGlobalScopePerformance>,
       public Supplement<WorkerGlobalScope> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);

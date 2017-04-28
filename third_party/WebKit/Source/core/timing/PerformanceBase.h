@@ -76,7 +76,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   static DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(
       double time_origin,
-      double monotonic_time);
+      double monotonic_time,
+      bool allow_negative_value);
 
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to

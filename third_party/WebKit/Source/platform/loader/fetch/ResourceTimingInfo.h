@@ -104,15 +104,22 @@ class PLATFORM_EXPORT ResourceTimingInfo
       redirect.SetResourceLoadTiming(nullptr);
   }
 
+  // The timestamps in PerformanceResourceTiming are measured relative from the
+  // time origin. In most cases these timestamps must be positive value, so we
+  // use 0 for invalid negative values. But the timestamps for Service Worker
+  // navigation preload requests may be negative, because these requests may
+  // be started before the service worker started. We set this flag true, to
+  // support such case.
+  void SetNegativeAllowed(bool negative_allowed) {
+    negative_allowed_ = negative_allowed;
+  }
+  bool NegativeAllowed() const { return negative_allowed_; }
+
  private:
   ResourceTimingInfo(const AtomicString& type,
                      const double time,
                      bool is_main_resource)
-      : type_(type),
-        initial_time_(time),
-        transfer_size_(0),
-        is_main_resource_(is_main_resource),
-        has_cross_origin_redirect_(false) {}
+      : type_(type), initial_time_(time), is_main_resource_(is_main_resource) {}
 
   AtomicString type_;
   AtomicString original_timing_allow_origin_;
@@ -121,9 +128,10 @@ class PLATFORM_EXPORT ResourceTimingInfo
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;
-  long long transfer_size_;
+  long long transfer_size_ = 0;
   bool is_main_resource_;
-  bool has_cross_origin_redirect_;
+  bool has_cross_origin_redirect_ = false;
+  bool negative_allowed_ = false;
 };
 
 struct CrossThreadResourceTimingInfoData {
@@ -142,6 +150,7 @@ struct CrossThreadResourceTimingInfoData {
   Vector<std::unique_ptr<CrossThreadResourceResponseData>> redirect_chain_;
   long long transfer_size_;
   bool is_main_resource_;
+  bool negative_allowed_;
 };
 
 template <>

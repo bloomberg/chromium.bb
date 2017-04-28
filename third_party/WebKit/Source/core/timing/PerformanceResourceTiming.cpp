@@ -46,14 +46,16 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     double last_redirect_end_time,
     bool allow_timing_details,
     bool allow_redirect_details)
-    : PerformanceEntry(
-          info.InitialURL().GetString(),
-          "resource",
-          PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(time_origin,
-                                                              start_time),
-          PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-              time_origin,
-              info.LoadFinishTime())),
+    : PerformanceEntry(info.InitialURL().GetString(),
+                       "resource",
+                       PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+                           time_origin,
+                           start_time,
+                           info.NegativeAllowed()),
+                       PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+                           time_origin,
+                           info.LoadFinishTime(),
+                           info.NegativeAllowed())),
       initiator_type_(info.InitiatorType()),
       time_origin_(time_origin),
       timing_(info.FinalResponse().GetResourceLoadTiming()),
@@ -64,7 +66,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       decoded_body_size_(info.FinalResponse().DecodedBodyLength()),
       did_reuse_connection_(info.FinalResponse().ConnectionReused()),
       allow_timing_details_(allow_timing_details),
-      allow_redirect_details_(allow_redirect_details) {}
+      allow_redirect_details_(allow_redirect_details),
+      allow_negative_value_(info.NegativeAllowed()) {}
 
 // This constructor is for PerformanceNavigationTiming.
 PerformanceResourceTiming::PerformanceResourceTiming(const String& name,
@@ -109,7 +112,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
     return 0.0;
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerStart());
+      time_origin_, timing->WorkerStart(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
@@ -118,7 +121,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
     return 0.0;
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerReady());
+      time_origin_, timing->WorkerReady(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::redirectStart() const {
@@ -136,7 +139,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::redirectEnd() const {
     return 0.0;
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, last_redirect_end_time_);
+      time_origin_, last_redirect_end_time_, allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
@@ -146,7 +149,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
 
   if (last_redirect_end_time_) {
     return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-        time_origin_, timing->RequestTime());
+        time_origin_, timing->RequestTime(), allow_negative_value_);
   }
 
   if (DOMHighResTimeStamp worker_ready_time = WorkerReady())
@@ -163,7 +166,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupStart() const {
     return fetchStart();
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DnsStart());
+      time_origin_, timing->DnsStart(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
@@ -173,8 +176,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
   if (!timing || timing->DnsEnd() == 0.0)
     return domainLookupStart();
 
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(time_origin_,
-                                                             timing->DnsEnd());
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, timing->DnsEnd(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
@@ -190,8 +193,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
   if (timing->DnsEnd() > 0.0)
     connect_start = timing->DnsEnd();
 
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(time_origin_,
-                                                             connect_start);
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, connect_start, allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
@@ -203,7 +206,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
     return connectStart();
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ConnectEnd());
+      time_origin_, timing->ConnectEnd(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
@@ -215,7 +218,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
     return 0.0;
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->SslStart());
+      time_origin_, timing->SslStart(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::requestStart() const {
@@ -226,7 +229,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::requestStart() const {
     return connectEnd();
 
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->SendStart());
+      time_origin_, timing->SendStart(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
@@ -239,15 +242,15 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
   // FIXME: This number isn't exactly correct. See the notes in
   // PerformanceTiming::responseStart().
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ReceiveHeadersEnd());
+      time_origin_, timing->ReceiveHeadersEnd(), allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
   if (!finish_time_)
     return responseStart();
 
-  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(time_origin_,
-                                                             finish_time_);
+  return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
+      time_origin_, finish_time_, allow_negative_value_);
 }
 
 unsigned long long PerformanceResourceTiming::transferSize() const {

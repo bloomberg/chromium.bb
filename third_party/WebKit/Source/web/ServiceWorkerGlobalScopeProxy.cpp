@@ -72,6 +72,7 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
@@ -278,7 +279,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
       script_state, EventTypeNames::fetch, event_init, respond_with_observer,
       wait_until_observer, navigation_preload_sent);
   if (navigation_preload_sent) {
-    // Keep |fetchEvent| until onNavigationPreloadResponse() or
+    // Keep |fetchEvent| until OnNavigationPreloadComplete() or
     // onNavigationPreloadError() will be called.
     pending_preload_fetch_events_.insert(fetch_event_id, fetch_event);
   }
@@ -296,7 +297,9 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
     int fetch_event_id,
     std::unique_ptr<WebURLResponse> response,
     std::unique_ptr<WebDataConsumerHandle> data_consume_handle) {
-  FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
+  auto it = pending_preload_fetch_events_.find(fetch_event_id);
+  DCHECK(it != pending_preload_fetch_events_.end());
+  FetchEvent* fetch_event = it->value.Get();
   DCHECK(fetch_event);
   fetch_event->OnNavigationPreloadResponse(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
@@ -307,9 +310,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
     int fetch_event_id,
     std::unique_ptr<WebServiceWorkerError> error) {
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
-  // This method may be called after onNavigationPreloadResponse() was called.
-  if (!fetch_event)
-    return;
+  DCHECK(fetch_event);
   // Display an unsanitized console message.
   if (!error->unsanitized_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
@@ -320,6 +321,19 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
   fetch_event->OnNavigationPreloadError(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
       std::move(error));
+}
+
+void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
+    int fetch_event_id,
+    double completion_time,
+    int64_t encoded_data_length,
+    int64_t encoded_body_length,
+    int64_t decoded_body_length) {
+  FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
+  DCHECK(fetch_event);
+  fetch_event->OnNavigationPreloadComplete(
+      WorkerGlobalScope(), completion_time, encoded_data_length,
+      encoded_body_length, decoded_body_length);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(

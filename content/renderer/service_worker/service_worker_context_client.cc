@@ -421,7 +421,10 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                         nullptr);
     // This will delete |this|.
-    client->OnNavigationPreloadComplete(fetch_event_id_);
+    client->OnNavigationPreloadComplete(
+        fetch_event_id_, response_head.response_start,
+        response_head.encoded_data_length, 0 /* encoded_body_length */,
+        0 /* decoded_body_length */);
   }
 
   void OnDataDownloaded(int64_t data_length,
@@ -484,7 +487,9 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                                           nullptr);
     }
     // This will delete |this|.
-    client->OnNavigationPreloadComplete(fetch_event_id_);
+    client->OnNavigationPreloadComplete(
+        fetch_event_id_, status.completion_time, status.encoded_data_length,
+        status.encoded_body_length, status.decoded_body_length);
   }
 
  private:
@@ -1636,7 +1641,14 @@ void ServiceWorkerContextClient::OnNavigationPreloadError(
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadComplete(
-    int fetch_event_id) {
+    int fetch_event_id,
+    base::TimeTicks completion_time,
+    int64_t encoded_data_length,
+    int64_t encoded_body_length,
+    int64_t decoded_body_length) {
+  proxy_->OnNavigationPreloadComplete(
+      fetch_event_id, (completion_time - base::TimeTicks()).InSecondsF(),
+      encoded_data_length, encoded_body_length, decoded_body_length);
   context_->preload_requests.Remove(fetch_event_id);
 }
 
