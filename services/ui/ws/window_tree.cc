@@ -384,7 +384,7 @@ bool WindowTree::NewWindow(
   DVLOG(3) << "new window client=" << id_
            << " window_id=" << client_window_id.id;
   if (!IsValidIdForNewWindow(client_window_id)) {
-    DVLOG(1) << "new window failed, id is not valid for client";
+    DVLOG(1) << "NewWindow failed (id is not valid for client)";
     return false;
   }
   const WindowId window_id = GenerateNewWindowId();
@@ -408,23 +408,23 @@ bool WindowTree::AddWindow(const ClientWindowId& parent_id,
            << " client child window_id= " << child_id.id << " global window_id="
            << (child ? WindowIdToTransportId(child->id()) : 0);
   if (!parent) {
-    DVLOG(1) << "add failed, no parent";
+    DVLOG(1) << "AddWindow failed (no parent)";
     return false;
   }
   if (!child) {
-    DVLOG(1) << "add failed, no child";
+    DVLOG(1) << "AddWindow failed (no child)";
     return false;
   }
   if (child->parent() == parent) {
-    DVLOG(1) << "add failed, already has parent";
+    DVLOG(1) << "AddWindow failed (already has parent)";
     return false;
   }
   if (child->Contains(parent)) {
-    DVLOG(1) << "add failed, child contains parent";
+    DVLOG(1) << "AddWindow failed (child contains parent)";
     return false;
   }
   if (!access_policy_->CanAddWindow(parent, child)) {
-    DVLOG(1) << "add failed, access policy denied add";
+    DVLOG(1) << "AddWindow failed (access denied)";
     return false;
   }
   Operation op(this, window_server_, OperationType::ADD_WINDOW);
@@ -539,11 +539,11 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
            << " client window_id= " << window_id.id << " global window_id="
            << (window ? WindowIdToTransportId(window->id()) : 0);
   if (!window) {
-    DVLOG(1) << "SetWindowVisibility failure, no window";
+    DVLOG(1) << "SetWindowVisibility failed (no window)";
     return false;
   }
   if (!access_policy_->CanChangeWindowVisibility(window)) {
-    DVLOG(1) << "SetWindowVisibility failure, access policy denied change";
+    DVLOG(1) << "SetWindowVisibility failed (access policy denied change)";
     return false;
   }
   if (window->visible() == visible)
@@ -569,25 +569,25 @@ bool WindowTree::SetFocus(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   ServerWindow* currently_focused = window_server_->GetFocusedWindow();
   if (!currently_focused && !window) {
-    DVLOG(1) << "SetFocus failure, no focused window to clear.";
+    DVLOG(1) << "SetFocus failed (no focused window to clear)";
     return false;
   }
 
   Display* display = GetDisplay(window);
   if (window && (!display || !window->can_focus() || !window->IsDrawn())) {
-    DVLOG(1) << "SetFocus failure, window cannot be focused.";
+    DVLOG(1) << "SetFocus failed (window cannot be focused)";
     return false;
   }
 
   if (!access_policy_->CanSetFocus(window)) {
-    DVLOG(1) << "SetFocus failure, blocked by access policy.";
+    DVLOG(1) << "SetFocus failed (blocked by access policy)";
     return false;
   }
 
   Operation op(this, window_server_, OperationType::SET_FOCUS);
   bool success = window_server_->SetFocusedWindow(window);
   if (!success) {
-    DVLOG(1) << "SetFocus failure, could not SetFocusedWindow.";
+    DVLOG(1) << "SetFocus failed (could not SetFocusedWindow)";
   }
   return success;
 }
@@ -670,12 +670,14 @@ void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   if (window) {
     Display* display = GetDisplay(window);
-    if (display)
+    if (display) {
       display->AddActivationParent(window);
-    else
-      DVLOG(1) << "AddActivationParent window not associated with display";
+    } else {
+      DVLOG(1) << "AddActivationParent failed "
+               << "(window not associated with display)";
+    }
   } else {
-    DVLOG(1) << "AddActivationParent supplied invalid window id";
+    DVLOG(1) << "AddActivationParent failed (invalid window id)";
   }
 }
 
@@ -1047,26 +1049,26 @@ bool WindowTree::CanReorderWindow(const ServerWindow* window,
                                   const ServerWindow* relative_window,
                                   mojom::OrderDirection direction) const {
   if (!window) {
-    DVLOG(1) << "reorder failing: invalid window";
+    DVLOG(1) << "CanReorderWindow failed (invalid window)";
     return false;
   }
   if (!relative_window) {
-    DVLOG(1) << "reorder failing: invalid relative window";
+    DVLOG(1) << "CanReorderWindow failed (invalid relative window)";
     return false;
   }
 
   if (!window->parent()) {
-    DVLOG(1) << "reorder failing: no parent";
+    DVLOG(1) << "CanReorderWindow failed (no parent)";
     return false;
   }
 
   if (window->parent() != relative_window->parent()) {
-    DVLOG(1) << "reorder failing: parents differ";
+    DVLOG(1) << "CanReorderWindow failed (parents differ)";
     return false;
   }
 
   if (!access_policy_->CanReorderWindow(window, relative_window, direction)) {
-    DVLOG(1) << "reorder failing: access policy denied";
+    DVLOG(1) << "CanReorderWindow failed (access policy denied)";
     return false;
   }
 
@@ -1078,7 +1080,7 @@ bool WindowTree::CanReorderWindow(const ServerWindow* window,
       children.begin();
   if ((direction == mojom::OrderDirection::ABOVE && child_i == target_i + 1) ||
       (direction == mojom::OrderDirection::BELOW && child_i + 1 == target_i)) {
-    DVLOG(1) << "reorder failing: already in position";
+    DVLOG(1) << "CanReorderWindow failed (already in position)";
     return false;
   }
 
@@ -1424,11 +1426,14 @@ void WindowTree::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
            << " client window_id= " << window_id << " global window_id="
            << (window ? WindowIdToTransportId(window->id()) : 0);
   if (!window) {
-    DVLOG(1) << "remove failing, invalid window id=" << change_id;
+    DVLOG(1) << "RemoveWindowFromParent failed (invalid window id=" << change_id
+             << ")";
   } else if (!window->parent()) {
-    DVLOG(1) << "remove failing, no parent id=" << change_id;
+    DVLOG(1) << "RemoveWindowFromParent failed (no parent id=" << change_id
+             << ")";
   } else if (!access_policy_->CanRemoveWindowFromParent(window)) {
-    DVLOG(1) << "remove failing, access policy disallowed id=" << change_id;
+    DVLOG(1) << "RemoveWindowFromParent failed (access policy disallowed id="
+             << change_id << ")";
   } else {
     success = true;
     Operation op(this, window_server_,
@@ -1550,13 +1555,20 @@ void WindowTree::SetWindowBounds(
            << " global window_id="
            << (window ? WindowIdToTransportId(window->id()) : 0)
            << " bounds=" << bounds.ToString();
+
+  if (!window) {
+    DVLOG(1) << "SetWindowBounds failed (invalid window id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
   // Only the owner of the window can change the bounds.
-  bool success = window && access_policy_->CanSetWindowBounds(window);
+  bool success = access_policy_->CanSetWindowBounds(window);
   if (success) {
     Operation op(this, window_server_, OperationType::SET_WINDOW_BOUNDS);
     window->SetBounds(bounds, local_surface_id);
   } else {
-    DVLOG(1) << "Failed to set bounds on window.";
+    DVLOG(1) << "SetWindowBounds failed (access denied)";
   }
   client()->OnChangeCompleted(change_id, success);
 }
@@ -1611,10 +1623,14 @@ void WindowTree::AttachCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  const bool success =
-      window && access_policy_->CanSetWindowCompositorFrameSink(window);
+  if (!window) {
+    DVLOG(1) << "AttachCompositorFrameSink failed (invalid window id)";
+    return;
+  }
+
+  const bool success = access_policy_->CanSetWindowCompositorFrameSink(window);
   if (!success) {
-    DVLOG(1) << "request to AttachCompositorFrameSink failed";
+    DVLOG(1) << "AttachCompositorFrameSink failed (access denied)";
     return;
   }
   window->CreateCompositorFrameSink(std::move(compositor_frame_sink),
@@ -1695,11 +1711,11 @@ void WindowTree::SetClientArea(Id transport_window_id,
            << " insets=" << insets.top() << " " << insets.left() << " "
            << insets.bottom() << " " << insets.right();
   if (!window) {
-    DVLOG(1) << "SetClientArea failed, no window";
+    DVLOG(1) << "SetClientArea failed (invalid window id)";
     return;
   }
   if (!access_policy_->CanSetClientArea(window)) {
-    DVLOG(1) << "SetClientArea failed, access denied";
+    DVLOG(1) << "SetClientArea failed (access denied)";
     return;
   }
 
@@ -1712,8 +1728,13 @@ void WindowTree::SetHitTestMask(Id transport_window_id,
                                 const base::Optional<gfx::Rect>& mask) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (!window || !access_policy_->CanSetHitTestMask(window)) {
-    DVLOG(1) << "SetHitTestMask failed";
+  if (!window) {
+    DVLOG(1) << "SetHitTestMask failed (invalid window id)";
+    return;
+  }
+
+  if (!access_policy_->CanSetHitTestMask(window)) {
+    DVLOG(1) << "SetHitTestMask failed (access denied)";
     return;
   }
 
@@ -1725,8 +1746,13 @@ void WindowTree::SetHitTestMask(Id transport_window_id,
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  if (!window || !access_policy_->CanSetAcceptDrops(window)) {
-    DVLOG(1) << "SetAcceptsDrops failed";
+  if (!window) {
+    DVLOG(1) << "SetCanAcceptDrops failed (invalid window id)";
+    return;
+  }
+
+  if (!access_policy_->CanSetAcceptDrops(window)) {
+    DVLOG(1) << "SetAcceptsDrops failed (access denied)";
     return;
   }
 
@@ -1750,7 +1776,7 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (!window) {
-    DVLOG(1) << "SetCanFocus failed (invalid id)";
+    DVLOG(1) << "SetCanFocus failed (invalid window id)";
     return;
   }
 
@@ -1762,6 +1788,8 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
                                                      can_focus);
   } else if (access_policy_->CanSetFocus(window)) {
     window->set_can_focus(can_focus);
+  } else {
+    DVLOG(1) << "SetCanFocus failed (access denied)";
   }
 }
 
@@ -1975,7 +2003,7 @@ void WindowTree::PerformDragDrop(
   if (!success || !ShouldRouteToWindowManager(window)) {
     // We need to fail this move loop change, otherwise the client will just be
     // waiting for |change_id|.
-    DVLOG(1) << "PerformDragDrop failed (access denied).";
+    DVLOG(1) << "PerformDragDrop failed (access denied)";
     client()->OnPerformDragDropCompleted(change_id, false,
                                          mojom::kDropEffectNone);
     return;
@@ -1984,7 +2012,7 @@ void WindowTree::PerformDragDrop(
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
   if (!display_root) {
     // The window isn't parented. There's nothing to do.
-    DVLOG(1) << "PerformDragDrop failed (window unparented).";
+    DVLOG(1) << "PerformDragDrop failed (window unparented)";
     client()->OnPerformDragDropCompleted(change_id, false,
                                          mojom::kDropEffectNone);
     return;
@@ -1993,7 +2021,7 @@ void WindowTree::PerformDragDrop(
   if (window_server_->in_move_loop() || window_server_->in_drag_loop()) {
     // Either the window manager is servicing a window drag or we're servicing
     // a drag and drop operation. We can't start a second drag.
-    DVLOG(1) << "PerformDragDrop failed (already performing a drag).";
+    DVLOG(1) << "PerformDragDrop failed (already performing a drag)";
     client()->OnPerformDragDropCompleted(change_id, false,
                                          mojom::kDropEffectNone);
     return;
@@ -2048,7 +2076,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   if (!success || !ShouldRouteToWindowManager(window)) {
     // We need to fail this move loop change, otherwise the client will just be
     // waiting for |change_id|.
-    DVLOG(1) << "PerformWindowMove failed (access denied).";
+    DVLOG(1) << "PerformWindowMove failed (access denied)";
     OnChangeCompleted(change_id, false);
     return;
   }
@@ -2056,7 +2084,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
   if (!display_root) {
     // The window isn't parented. There's nothing to do.
-    DVLOG(1) << "PerformWindowMove failed (window unparented).";
+    DVLOG(1) << "PerformWindowMove failed (window unparented)";
     OnChangeCompleted(change_id, false);
     return;
   }
@@ -2064,7 +2092,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
   if (window_server_->in_move_loop() || window_server_->in_drag_loop()) {
     // Either the window manager is servicing a window drag or we're servicing
     // a drag and drop operation. We can't start a second drag.
-    DVLOG(1) << "PerformWindowMove failed (already performing a drag).";
+    DVLOG(1) << "PerformWindowMove failed (already performing a drag)";
     OnChangeCompleted(change_id, false);
     return;
   }
@@ -2087,9 +2115,14 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
 
 void WindowTree::CancelWindowMove(Id window_id) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  bool success = window && access_policy_->CanInitiateMoveLoop(window);
+  if (!window) {
+    DVLOG(1) << "CancelWindowMove failed (invalid window id)";
+    return;
+  }
+
+  bool success = access_policy_->CanInitiateMoveLoop(window);
   if (!success) {
-    DVLOG(1) << "CancelWindowMove failed (no window / access denied)";
+    DVLOG(1) << "CancelWindowMove failed (access denied)";
     return;
   }
 
@@ -2139,15 +2172,18 @@ void WindowTree::AddActivationParent(Id transport_window_id) {
 void WindowTree::RemoveActivationParent(Id transport_window_id) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (window) {
-    Display* display = GetDisplay(window);
-    if (display)
-      display->RemoveActivationParent(window);
-    else
-      DVLOG(1) << "RemoveActivationParent window not associated with display";
-  } else {
-    DVLOG(1) << "RemoveActivationParent supplied invalid window id";
+  if (!window) {
+    DVLOG(1) << "RemoveActivationParent failed (invalid window id)";
+    return;
   }
+
+  Display* display = GetDisplay(window);
+  if (!display) {
+    DVLOG(1) << "RemoveActivationParent window not associated with display";
+    return;
+  }
+
+  display->RemoveActivationParent(window);
 }
 
 void WindowTree::ActivateNextWindow() {
@@ -2178,11 +2214,12 @@ void WindowTree::SetExtendedHitArea(Id window_id, const gfx::Insets& hit_area) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   // Extended hit test region should only be set by the owner of the window.
   if (!window) {
-    DVLOG(1) << "SetExtendedHitArea supplied unknown window";
+    DVLOG(1) << "SetExtendedHitArea failed (invalid window id)";
     return;
   }
   if (window->id().client_id != id_) {
-    DVLOG(1) << "SetExtendedHitArea supplied window that client does not own";
+    DVLOG(1) << "SetExtendedHitArea failed (supplied window that client does "
+             << "not own)";
     return;
   }
   window->set_extended_hit_test_region(hit_area);
@@ -2262,11 +2299,12 @@ void WindowTree::WmSetNonClientCursor(uint32_t window_id,
                                       ui::CursorData cursor) {
   DCHECK(window_manager_state_);
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  if (window) {
-    window->SetNonClientCursor(std::move(cursor));
-  } else {
-    DVLOG(1) << "trying to update non-client cursor of invalid window";
+  if (!window) {
+    DVLOG(1) << "WmSetNonClientCursor failed (invalid window id)";
+    return;
   }
+
+  window->SetNonClientCursor(std::move(cursor));
 }
 
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
@@ -2274,7 +2312,7 @@ void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   if (window && window->id().client_id != id_) {
-    DVLOG(1) << "OnWmCreatedTopLevelWindow supplied invalid window id";
+    DVLOG(1) << "OnWmCreatedTopLevelWindow failed (invalid window id)";
     window_server_->WindowManagerSentBogusMessage();
     window = nullptr;
   }
@@ -2291,7 +2329,7 @@ void WindowTree::OnAcceleratorAck(uint32_t event_id,
   DVLOG(3) << "OnAcceleratorAck client=" << id_;
   if (event_ack_id_ == 0 || event_id != event_ack_id_ ||
       !accelerator_ack_callback_) {
-    DVLOG(1) << "OnAcceleratorAck supplied invalid event_id";
+    DVLOG(1) << "OnAcceleratorAck failed (invalid event id)";
     window_server_->WindowManagerSentBogusMessage();
     return;
   }
