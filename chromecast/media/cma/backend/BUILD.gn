@@ -29,19 +29,18 @@ source_set("backend") {
 
   if (is_android) {
     if (is_cast_using_cma_backend) {
-      # TODO(tsunghung): use the real implementation when it's done.
-      deps += [ ":default" ]
+      deps += [ "//chromecast/media/cma/backend/android:cast_media_android" ]
     } else {
-      deps += [ ":cast_media_android" ]
+      deps += [ ":cast_media_android_dummy" ]
     }
   } else {
     deps += [ ":libcast_media_1.0" ]
   }
 }
 
-source_set("cast_media_android") {
+source_set("cast_media_android_dummy") {
   sources = [
-    "cast_media_android.cc",
+    "cast_media_android_dummy.cc",
   ]
   deps = [
     "//base",
