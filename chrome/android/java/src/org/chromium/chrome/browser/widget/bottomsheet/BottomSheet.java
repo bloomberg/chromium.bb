@@ -1065,6 +1065,14 @@ public class BottomSheet
     }
 
     /**
+     * Removes an observer to the bottom sheet.
+     * @param observer The observer to remove.
+     */
+    public void removeObserver(BottomSheetObserver observer) {
+        mObservers.removeObserver(observer);
+    }
+
+    /**
      * Gets the target state of the sheet based on the sheet's height and velocity.
      * @param sheetHeight The current height of the sheet.
      * @param yVelocity The current Y velocity of the sheet. This is only used for determining the
