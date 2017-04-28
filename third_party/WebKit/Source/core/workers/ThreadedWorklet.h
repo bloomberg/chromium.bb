@@ -34,7 +34,7 @@ class CORE_EXPORT ThreadedWorklet : public Worklet,
   virtual bool IsInitialized() const = 0;
 
   // Worklet
-  ScriptPromise addModule(ScriptState*, const String& url) final;
+  ScriptPromise addModule(ScriptState*, const String& module_url) final;
 
   // WorkletScriptLoader::Client
   void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,

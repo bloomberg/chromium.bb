@@ -7,11 +7,11 @@
 
 #include "core/CoreExport.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class ScriptSourceCode;
+class WorkletPendingTasks;
 
 // A proxy to talk to the worklet global scope. The global scope may exist in
 // the main thread or on a different thread.
@@ -21,8 +21,8 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
 
   // Runs the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
-  virtual void FetchAndInvokeScript(int32_t request_id,
-                                    const KURL& script_url) {}
+  virtual void FetchAndInvokeScript(const KURL& module_url_record,
+                                    WorkletPendingTasks*) {}
 
   // Evaluates the given script source code. This should be called only for
   // threaded worklets that still use classic script loading.

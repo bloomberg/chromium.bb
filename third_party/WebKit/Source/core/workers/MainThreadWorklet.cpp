@@ -11,27 +11,17 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
+#include "core/workers/WorkletPendingTasks.h"
 #include "platform/wtf/WTF.h"
 
 namespace blink {
 
-namespace {
+MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {}
 
-int32_t GetNextRequestId() {
-  DCHECK(IsMainThread());
-  static int32_t next_request_id = 1;
-  CHECK_LT(next_request_id, std::numeric_limits<int32_t>::max());
-  return next_request_id++;
-}
-
-}  // namespace
-
-MainThreadWorklet::MainThreadWorklet(LocalFrame* frame) : Worklet(frame) {
-  DCHECK(resolver_map_.IsEmpty());
-}
-
+// Implementation of the "addModule(moduleURL, options)" algorithm:
+// https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
-                                           const String& url) {
+                                           const String& module_url) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
@@ -39,44 +29,44 @@ ScriptPromise MainThreadWorklet::addModule(ScriptState* script_state,
                                            "This frame is already detached"));
   }
 
-  KURL script_url = GetExecutionContext()->CompleteURL(url);
-  if (!script_url.IsValid()) {
+  KURL module_url_record = GetExecutionContext()->CompleteURL(module_url);
+  if (!module_url_record.IsValid()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(
-                          kSyntaxError, "'" + url + "' is not a valid URL."));
+        script_state,
+        DOMException::Create(kSyntaxError,
+                             "'" + module_url + "' is not a valid URL."));
   }
 
-  int32_t request_id = GetNextRequestId();
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  resolver_map_.Set(request_id, resolver);
-  GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(request_id, script_url);
-  return promise;
-}
 
-void MainThreadWorklet::DidFetchAndInvokeScript(int32_t request_id,
-                                                bool success) {
-  DCHECK(IsMainThread());
-  ScriptPromiseResolver* resolver = resolver_map_.at(request_id);
-  if (!resolver)
-    return;
-  resolver_map_.erase(request_id);
-  if (!success) {
-    resolver->Reject(DOMException::Create(kNetworkError));
-    return;
-  }
-  resolver->Resolve();
+  // Step 11: "Let pendingTaskStruct be a new pending tasks struct with counter
+  // initialized to the length of worklet's WorkletGlobalScopes."
+  // TODO(nhiroki): Introduce the concept of "worklet's WorkletGlobalScopes" and
+  // use the length of it here.
+  constexpr int number_of_global_scopes = 1;
+  WorkletPendingTasks* pending_tasks =
+      new WorkletPendingTasks(number_of_global_scopes, resolver);
+
+  // Step 12: "For each workletGlobalScope in the worklet's
+  // WorkletGlobalScopes, queue a task on the workletGlobalScope to fetch and
+  // invoke a worklet script given workletGlobalScope, moduleURLRecord,
+  // moduleResponsesMap, credentialOptions, outsideSettings, pendingTaskStruct,
+  // and promise."
+  // TODO(nhiroki): Pass the remaining parameters (e.g., credentialOptions).
+  // TODO(nhiroki): Queue a task instead of executing this here.
+  GetWorkletGlobalScopeProxy()->FetchAndInvokeScript(module_url_record,
+                                                     pending_tasks);
+  return promise;
 }
 
 void MainThreadWorklet::ContextDestroyed(ExecutionContext* execution_context) {
   DCHECK(IsMainThread());
-  resolver_map_.clear();
   GetWorkletGlobalScopeProxy()->TerminateWorkletGlobalScope();
   Worklet::ContextDestroyed(execution_context);
 }
 
 DEFINE_TRACE(MainThreadWorklet) {
-  visitor->Trace(resolver_map_);
   Worklet::Trace(visitor);
 }
 

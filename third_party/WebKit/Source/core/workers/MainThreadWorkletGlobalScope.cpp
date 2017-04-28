@@ -19,11 +19,9 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
     PassRefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate,
-    WorkletObjectProxy* object_proxy)
+    v8::Isolate* isolate)
     : WorkletGlobalScope(url, user_agent, std::move(security_origin), isolate),
-      ContextClient(frame),
-      object_proxy_(object_proxy) {}
+      ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
@@ -48,16 +46,23 @@ WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   return nullptr;
 }
 
+// Implementation of the first half of the "fetch and invoke a worklet script"
+// algorithm:
+// https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
 void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
-    int32_t request_id,
-    const KURL& script_url) {
+    const KURL& module_url_record,
+    WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
+  // Step 1: "Let insideSettings be the workletGlobalScope's associated
+  // environment settings object."
+  // Step 2: "Let script by the result of fetch a worklet script given
+  // moduleURLRecord, moduleResponsesMap, credentialOptions, outsideSettings,
+  // and insideSettings when it asynchronously completes."
   // TODO(nhiroki): Replace this with module script loading.
   WorkletScriptLoader* script_loader =
       WorkletScriptLoader::Create(GetFrame()->GetDocument()->Fetcher(), this);
-  script_loader->set_request_id(request_id);
-  loader_set_.insert(script_loader);
-  script_loader->FetchScript(script_url);
+  loader_map_.Set(script_loader, pending_tasks);
+  script_loader->FetchScript(module_url_record);
 }
 
 void MainThreadWorkletGlobalScope::EvaluateScript(
@@ -67,22 +72,47 @@ void MainThreadWorkletGlobalScope::EvaluateScript(
   NOTREACHED();
 }
 
+// TODO(nhiroki): Add tests for termination.
 void MainThreadWorkletGlobalScope::TerminateWorkletGlobalScope() {
-  for (const auto& script_loader : loader_set_)
+  for (auto it = loader_map_.begin(); it != loader_map_.end();) {
+    WorkletScriptLoader* script_loader = it->key;
+    // Cancel() eventually calls NotifyWorkletScriptLoadingFinished() and
+    // removes |it| from |loader_map_|, so increment it in advance.
+    ++it;
     script_loader->Cancel();
+  }
   Dispose();
 }
 
+// Implementation of the second half of the "fetch and invoke a worklet script"
+// algorithm:
+// https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
 void MainThreadWorkletGlobalScope::NotifyWorkletScriptLoadingFinished(
     WorkletScriptLoader* script_loader,
     const ScriptSourceCode& source_code) {
   DCHECK(IsMainThread());
-  int32_t request_id = script_loader->request_id();
-  loader_set_.erase(script_loader);
-  bool success = script_loader->WasScriptLoadSuccessful();
-  if (success)
-    ScriptController()->Evaluate(source_code);
-  object_proxy_->DidFetchAndInvokeScript(request_id, success);
+  auto it = loader_map_.find(script_loader);
+  DCHECK(it != loader_map_.end());
+  WorkletPendingTasks* pending_tasks = it->value;
+  loader_map_.erase(it);
+
+  if (!script_loader->WasScriptLoadSuccessful()) {
+    // Step 3: "If script is null, then queue a task on outsideSettings's
+    // responsible event loop to run these steps:"
+    // The steps are implemented in WorkletPendingTasks::Abort().
+    // TODO(nhiroki): Queue a task instead of executing this here.
+    pending_tasks->Abort();
+    return;
+  }
+
+  // Step 4: "Run a module script given script."
+  ScriptController()->Evaluate(source_code);
+
+  // Step 5: "Queue a task on outsideSettings's responsible event loop to run
+  // these steps:"
+  // The steps are implemented in WorkletPendingTasks::DecrementCounter().
+  // TODO(nhiroki): Queue a task instead of executing this here.
+  pending_tasks->DecrementCounter();
 }
 
 void MainThreadWorkletGlobalScope::AddConsoleMessage(
@@ -95,8 +125,7 @@ void MainThreadWorkletGlobalScope::ExceptionThrown(ErrorEvent* event) {
 }
 
 DEFINE_TRACE(MainThreadWorkletGlobalScope) {
-  visitor->Trace(loader_set_);
-  visitor->Trace(object_proxy_);
+  visitor->Trace(loader_map_);
   WorkletGlobalScope::Trace(visitor);
   ContextClient::Trace(visitor);
 }

@@ -54,9 +54,6 @@ class WorkletScriptLoader final
   // after Client::notifyWorkletScriptLoadingFinished() is called.
   bool WasScriptLoadSuccessful() const;
 
-  void set_request_id(int32_t request_id) { request_id_ = request_id; }
-  int32_t request_id() const { return request_id_; }
-
   DECLARE_TRACE();
 
  private:
@@ -68,10 +65,6 @@ class WorkletScriptLoader final
 
   Member<ResourceFetcher> fetcher_;
   Member<Client> client_;
-
-  // The client of this loader can freely use this field to identify a fetch
-  // request.
-  int32_t request_id_ = -1;
 
   bool was_script_load_successful_ = false;
   bool was_script_load_complete_ = false;

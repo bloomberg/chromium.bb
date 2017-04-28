@@ -11,7 +11,7 @@
 #include "core/loader/WorkletScriptLoader.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
-#include "core/workers/WorkletObjectProxy.h"
+#include "core/workers/WorkletPendingTasks.h"
 
 namespace blink {
 
@@ -31,8 +31,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
                                const KURL&,
                                const String& user_agent,
                                PassRefPtr<SecurityOrigin>,
-                               v8::Isolate*,
-                               WorkletObjectProxy*);
+                               v8::Isolate*);
   ~MainThreadWorkletGlobalScope() override;
   bool IsMainThreadWorkletGlobalScope() const final { return true; }
 
@@ -42,7 +41,8 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   WorkerThread* GetThread() const final;
 
   // WorkletGlobalScopeProxy
-  void FetchAndInvokeScript(int32_t request_id, const KURL& script_url) final;
+  void FetchAndInvokeScript(const KURL& module_url_record,
+                            WorkletPendingTasks*) final;
   void EvaluateScript(const ScriptSourceCode&) final;
   void TerminateWorkletGlobalScope() final;
 
@@ -57,9 +57,8 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  HeapHashSet<Member<WorkletScriptLoader>> loader_set_;
-
-  Member<WorkletObjectProxy> object_proxy_;
+  HeapHashMap<Member<WorkletScriptLoader>, Member<WorkletPendingTasks>>
+      loader_map_;
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,

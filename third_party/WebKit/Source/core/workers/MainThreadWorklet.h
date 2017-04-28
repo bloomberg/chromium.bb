@@ -9,7 +9,6 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
-#include "core/workers/WorkletObjectProxy.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -20,8 +19,7 @@ class LocalFrame;
 // TODO(nhiroki): This is a temporary class to support module loading for main
 // thread worklets. This and ThreadedWorklet will be merged into the base
 // Worklet class once threaded worklets are ready to use module loading.
-class CORE_EXPORT MainThreadWorklet : public Worklet,
-                                      public WorkletObjectProxy {
+class CORE_EXPORT MainThreadWorklet : public Worklet {
   USING_GARBAGE_COLLECTED_MIXIN(MainThreadWorklet);
   WTF_MAKE_NONCOPYABLE(MainThreadWorklet);
 
@@ -29,22 +27,15 @@ class CORE_EXPORT MainThreadWorklet : public Worklet,
   virtual ~MainThreadWorklet() = default;
 
   // Worklet
-  ScriptPromise addModule(ScriptState*, const String& url) final;
+  ScriptPromise addModule(ScriptState*, const String& module_url) final;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) final;
-
-  // WorkletObjectProxy
-  void DidFetchAndInvokeScript(int32_t request_id, bool success) final;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit MainThreadWorklet(LocalFrame*);
-
- private:
-  HeapHashMap<int32_t /* request_id */, Member<ScriptPromiseResolver>>
-      resolver_map_;
 };
 
 }  // namespace blink
