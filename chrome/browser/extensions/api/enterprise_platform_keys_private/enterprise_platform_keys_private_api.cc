@@ -141,7 +141,7 @@ bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
 }
 
 bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+  if (!chromeos::ProfileHelper::Get()->GetUserByProfile(profile_)) {
     // Only allow remote attestation for apps that were force-installed on the
     // login/signin screen.
     // TODO(drcrash): Use a separate device-wide policy for the API.
@@ -340,7 +340,7 @@ void EPKPChallengeMachineKey::Run(
   }
 
   // Check whether the user is managed unless the signin profile is used.
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile_) &&
+  if (chromeos::ProfileHelper::Get()->GetUserByProfile(profile_) &&
       !IsUserAffiliated()) {
     callback_.Run(false, kUserNotManaged);
     return;
@@ -443,6 +443,8 @@ const char EPKPChallengeUserKey::kKeyRegistrationFailedError[] =
     "Key registration failed.";
 const char EPKPChallengeUserKey::kUserPolicyDisabledError[] =
     "Remote attestation is not enabled for your account.";
+const char EPKPChallengeUserKey::kUserKeyNotAvailable[] =
+    "User keys cannot be challenged in this profile.";
 
 const char EPKPChallengeUserKey::kKeyName[] = "attest-ent-user";
 
@@ -476,6 +478,12 @@ void EPKPChallengeUserKey::Run(scoped_refptr<UIThreadExtensionFunction> caller,
   callback_ = callback;
   profile_ = ChromeExtensionFunctionDetails(caller.get()).GetProfile();
   extension_ = scoped_refptr<const Extension>(caller->extension());
+
+  // Check if user keys are available in this profile.
+  if (!chromeos::ProfileHelper::Get()->GetUserByProfile(profile_)) {
+    callback_.Run(false, EPKPChallengeUserKey::kUserKeyNotAvailable);
+    return;
+  }
 
   // Check if RA is enabled in the user policy.
   if (!IsRemoteAttestationEnabledForUser()) {
