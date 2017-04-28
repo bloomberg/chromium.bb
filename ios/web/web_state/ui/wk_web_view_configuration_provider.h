@@ -22,6 +22,8 @@ class BrowserState;
 // main thread.
 class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
  public:
+  ~WKWebViewConfigurationProvider() override;
+
   // Returns a provider for the given |browser_state|. Lazily attaches one if it
   // does not exist. |browser_state| can not be null.
   static web::WKWebViewConfigurationProvider& FromBrowserState(
@@ -47,7 +49,6 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
  private:
   explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
-  ~WKWebViewConfigurationProvider() override;
 
   base::scoped_nsobject<WKWebViewConfiguration> configuration_;
   base::scoped_nsobject<CRWWKScriptMessageRouter> router_;

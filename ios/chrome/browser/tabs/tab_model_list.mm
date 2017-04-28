@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -54,10 +55,9 @@ TabModelList* TabModelList::GetForBrowserState(
   TabModelList* tab_model_list =
       static_cast<TabModelList*>(browser_state->GetUserData(&kTabModelListKey));
   if (!tab_model_list && create) {
-    // The ownership of TabModelList is transfered to base::SupportsUserData
-    // via the SetUserData call (should take a std::unique_ptr<>).
     tab_model_list = new TabModelList;
-    browser_state->SetUserData(&kTabModelListKey, tab_model_list);
+    browser_state->SetUserData(&kTabModelListKey,
+                               base::WrapUnique(tab_model_list));
   }
   return tab_model_list;
 }

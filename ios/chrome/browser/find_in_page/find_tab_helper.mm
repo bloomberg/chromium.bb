@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 
+#include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 
@@ -19,8 +20,8 @@ void FindTabHelper::CreateForWebState(
     id<FindInPageControllerDelegate> controller_delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           new FindTabHelper(web_state, controller_delegate));
+    web_state->SetUserData(UserDataKey(), base::WrapUnique(new FindTabHelper(
+                                              web_state, controller_delegate)));
   }
 }
 

@@ -23,6 +23,8 @@ typedef void (^FindInPageCompletionBlock)(FindInPageModel*);
 class FindTabHelper : public web::WebStateObserver,
                       public web::WebStateUserData<FindTabHelper> {
  public:
+  ~FindTabHelper() override;
+
   enum FindDirection {
     FORWARD,
     REVERSE,
@@ -75,7 +77,6 @@ class FindTabHelper : public web::WebStateObserver,
 
   FindTabHelper(web::WebState* web_state,
                 id<FindInPageControllerDelegate> controller_delegate);
-  ~FindTabHelper() override;
 
   // web::WebStateObserver.
   void NavigationItemCommitted(

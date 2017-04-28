@@ -5,6 +5,7 @@
 #include "ios/web/public/browser_state.h"
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "ios/web/active_state_manager_impl.h"
 #include "ios/web/public/certificate_policy_cache.h"
@@ -40,11 +41,9 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
     BrowserState* browser_state) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   if (!browser_state->GetUserData(kCertificatePolicyCacheKeyName)) {
-    CertificatePolicyCacheHandle* cert_cache_service_handle =
-        new CertificatePolicyCacheHandle(new CertificatePolicyCache());
-
     browser_state->SetUserData(kCertificatePolicyCacheKeyName,
-                               cert_cache_service_handle);
+                               base::MakeUnique<CertificatePolicyCacheHandle>(
+                                   new CertificatePolicyCache()));
   }
 
   CertificatePolicyCacheHandle* handle =
@@ -71,7 +70,7 @@ ActiveStateManager* BrowserState::GetActiveStateManager(
   if (!active_state_manager) {
     active_state_manager = new ActiveStateManagerImpl(browser_state);
     browser_state->SetUserData(kActiveStateManagerKeyName,
-                               active_state_manager);
+                               base::WrapUnique(active_state_manager));
   }
   return active_state_manager;
 }
@@ -81,7 +80,8 @@ BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {
   // a base::SupportsUserData to a BrowserState. Moreover, since the factories
   // may be passed a content::BrowserContext instead of a BrowserState, attach
   // an empty object to this via a private key.
-  SetUserData(kBrowserStateIdentifierKey, new SupportsUserData::Data);
+  SetUserData(kBrowserStateIdentifierKey,
+              base::MakeUnique<SupportsUserData::Data>());
 }
 
 BrowserState::~BrowserState() {

@@ -9,6 +9,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -38,7 +39,7 @@ WKWebViewConfigurationProvider::FromBrowserState(BrowserState* browser_state) {
   if (!browser_state->GetUserData(kWKWebViewConfigProviderKeyName)) {
     browser_state->SetUserData(
         kWKWebViewConfigProviderKeyName,
-        new WKWebViewConfigurationProvider(browser_state));
+        base::WrapUnique(new WKWebViewConfigurationProvider(browser_state)));
   }
   return *(static_cast<WKWebViewConfigurationProvider*>(
       browser_state->GetUserData(kWKWebViewConfigProviderKeyName)));

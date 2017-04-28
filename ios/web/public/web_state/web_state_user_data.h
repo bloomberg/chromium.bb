@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -35,7 +36,7 @@ class WebStateUserData : public base::SupportsUserData::Data {
   static void CreateForWebState(WebState* web_state) {
     DCHECK(web_state);
     if (!FromWebState(web_state))
-      web_state->SetUserData(UserDataKey(), new T(web_state));
+      web_state->SetUserData(UserDataKey(), base::WrapUnique(new T(web_state)));
   }
 
   // Retrieves the instance of type T that was attached to the specified

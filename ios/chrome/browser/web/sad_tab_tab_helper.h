@@ -16,6 +16,8 @@
 class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
                         public web::WebStateObserver {
  public:
+  ~SadTabTabHelper() override;
+
   // Creates a SadTabTabHelper and attaches it to a specific web_state object,
   // a delegate object controls presentation.
   static void CreateForWebState(web::WebState* web_state,
@@ -26,8 +28,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // providing a delegate.
   SadTabTabHelper(web::WebState* web_state,
                   id<SadTabTabHelperDelegate> delegate);
-
-  ~SadTabTabHelper() override;
 
   // Presents a new SadTabView via the web_state object.
   void PresentSadTab();
