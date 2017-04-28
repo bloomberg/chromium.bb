@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://www.khronos.org/registry/typedarray/specs/latest/#ARRAYBUFFER
+// http://www.ecma-international.org/ecma-262/6.0/#sec-arraybuffer-constructor
 
 [
     ImplementedAs=DOMArrayBuffer,
