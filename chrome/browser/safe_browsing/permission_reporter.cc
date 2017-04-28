@@ -144,11 +144,8 @@ std::size_t PermissionAndOriginHash::operator()(
 }
 
 PermissionReporter::PermissionReporter(net::URLRequestContext* request_context)
-    : PermissionReporter(
-          base::MakeUnique<net::ReportSender>(
-              request_context,
-              net::ReportSender::CookiesPreference::DO_NOT_SEND_COOKIES),
-          base::WrapUnique(new base::DefaultClock)) {}
+    : PermissionReporter(base::MakeUnique<net::ReportSender>(request_context),
+                         base::WrapUnique(new base::DefaultClock)) {}
 
 PermissionReporter::PermissionReporter(
     std::unique_ptr<net::ReportSender> report_sender,

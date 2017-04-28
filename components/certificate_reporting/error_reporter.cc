@@ -100,15 +100,12 @@ bool EncryptSerializedReport(const uint8_t* server_public_key,
 
 }  // namespace
 
-ErrorReporter::ErrorReporter(
-    net::URLRequestContext* request_context,
-    const GURL& upload_url,
-    net::ReportSender::CookiesPreference cookies_preference)
+ErrorReporter::ErrorReporter(net::URLRequestContext* request_context,
+                             const GURL& upload_url)
     : ErrorReporter(upload_url,
                     kServerPublicKey,
                     kServerPublicKeyVersion,
-                    base::MakeUnique<net::ReportSender>(request_context,
-                                                        cookies_preference)) {}
+                    base::MakeUnique<net::ReportSender>(request_context)) {}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,

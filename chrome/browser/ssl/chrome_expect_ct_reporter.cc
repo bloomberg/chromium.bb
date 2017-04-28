@@ -116,9 +116,7 @@ void RecordUMAOnFailure(const GURL& report_uri,
 
 ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
-    : report_sender_(
-          new net::ReportSender(request_context,
-                                net::ReportSender::DO_NOT_SEND_COOKIES)) {}
+    : report_sender_(new net::ReportSender(request_context)) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 
