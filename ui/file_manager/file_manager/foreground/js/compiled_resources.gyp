@@ -163,6 +163,7 @@
           './main_window_component.js',
           './volume_manager_wrapper.js',
           './web_store_utils.js',
+          './webui_command_extender.js',
           './metadata/byte_reader.js',
         ],
         'externs': [

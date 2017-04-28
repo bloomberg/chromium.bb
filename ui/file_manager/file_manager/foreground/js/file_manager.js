@@ -616,17 +616,14 @@ FileManager.prototype = /** @struct */ {
       return;
 
     this.fileTransferController_ = new FileTransferController(
-        assert(this.document_),
-        assert(this.ui_.listContainer),
-        assert(this.ui_.directoryTree),
-        this.ui_.multiProfileShareDialog,
+        assert(this.document_), assert(this.ui_.listContainer),
+        assert(this.ui_.directoryTree), this.ui_.multiProfileShareDialog,
         assert(this.fileBrowserBackground_.progressCenter),
-        assert(this.fileOperationManager_),
-        assert(this.metadataModel_),
-        assert(this.thumbnailModel_),
-        assert(this.directoryModel_),
-        assert(this.volumeManager_),
-        assert(this.selectionHandler_));
+        assert(this.fileOperationManager_), assert(this.metadataModel_),
+        assert(this.thumbnailModel_), assert(this.directoryModel_),
+        assert(this.volumeManager_), assert(this.selectionHandler_),
+        CommandUtil.shouldShowMenuItemForEntry.bind(
+            null, assert(this.volumeManager_)));
   };
 
   /**

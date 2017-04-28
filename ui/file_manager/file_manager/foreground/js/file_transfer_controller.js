@@ -29,89 +29,79 @@ var FileAsyncData;
  * @param {!DirectoryModel} directoryModel Directory model instance.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
+ * @param {function((!Entry|!FakeEntry)): boolean} shouldShowCommandFor
  * @struct
  * @constructor
  */
-function FileTransferController(doc,
-                                listContainer,
-                                directoryTree,
-                                multiProfileShareDialog,
-                                progressCenter,
-                                fileOperationManager,
-                                metadataModel,
-                                thumbnailModel,
-                                directoryModel,
-                                volumeManager,
-                                selectionHandler) {
+function FileTransferController(
+    doc, listContainer, directoryTree, multiProfileShareDialog, progressCenter,
+    fileOperationManager, metadataModel, thumbnailModel, directoryModel,
+    volumeManager, selectionHandler, shouldShowCommandFor) {
   /**
-   * @type {!Document}
-   * @private
+   * @private {!Document}
    * @const
    */
   this.document_ = doc;
 
   /**
-   * @type {!ListContainer}
-   * @private
+   * @private {!ListContainer}
    * @const
    */
   this.listContainer_ = listContainer;
 
   /**
-   * @type {!FileOperationManager}
-   * @private
+   * @private {!FileOperationManager}
    * @const
    */
   this.fileOperationManager_ = fileOperationManager;
 
   /**
-   * @type {!MetadataModel}
-   * @private
+   * @private {!MetadataModel}
    * @const
    */
   this.metadataModel_ = metadataModel;
 
   /**
-   * @type {!ThumbnailModel}
-   * @private
+   * @private {!ThumbnailModel}
    * @const
    */
   this.thumbnailModel_ = thumbnailModel;
 
   /**
-   * @type {!DirectoryModel}
-   * @private
+   * @private {!DirectoryModel}
    * @const
    */
   this.directoryModel_ = directoryModel;
 
   /**
-   * @type {!VolumeManagerWrapper}
-   * @private
+   * @private {!VolumeManagerWrapper}
    * @const
    */
   this.volumeManager_ = volumeManager;
 
   /**
-   * @type {!FileSelectionHandler}
-   * @private
+   * @private {!FileSelectionHandler}
    * @const
    */
   this.selectionHandler_ = selectionHandler;
 
   /**
-   * @type {!MultiProfileShareDialog}
-   * @private
+   * @private {!MultiProfileShareDialog}
    * @const
    */
   this.multiProfileShareDialog_ = multiProfileShareDialog;
 
   /**
-   * @type {!ProgressCenter}
-   * @private
+   * @private {!ProgressCenter}
    * @const
    */
   this.progressCenter_ = progressCenter;
+
+  /**
+   * @private {function((!Entry|!FakeEntry)): boolean}
+   * @const
+   */
+  this.shouldShowCommandFor_ = shouldShowCommandFor;
 
   /**
    * The array of pending task ID.
@@ -122,37 +112,32 @@ function FileTransferController(doc,
   /**
    * Promise to be fulfilled with the thumbnail image of selected file in drag
    * operation. Used if only one element is selected.
-   * @type {Promise}
-   * @private
+   * @private {Promise}
    */
   this.preloadedThumbnailImagePromise_ = null;
 
   /**
    * File objects for selected files.
    *
-   * @type {Object<FileAsyncData>}
-   * @private
+   * @private {Object<FileAsyncData>}
    */
   this.selectedAsyncData_ = {};
 
   /**
    * Drag selector.
-   * @type {DragSelector}
-   * @private
+   * @private {DragSelector}
    */
   this.dragSelector_ = new DragSelector();
 
   /**
    * Whether a user is touching the device or not.
-   * @type {boolean}
-   * @private
+   * @private {boolean}
    */
   this.touching_ = false;
 
   /**
    * Count of the SourceNotFound error.
-   * @type {number}
-   * @private
+   * @private {number}
    */
   this.sourceNotFoundErrorCount_ = 0;
 
@@ -169,32 +154,28 @@ function FileTransferController(doc,
   this.cutCommand_ = queryRequiredElement('command#cut', this.document_);
 
   /**
-   * @type {DirectoryEntry}
-   * @private
+   * @private {DirectoryEntry}
    */
   this.destinationEntry_ = null;
 
   /**
-   * @type {EventTarget}
-   * @private
+   * @private {EventTarget}
    */
   this.lastEnteredTarget_ = null;
 
   /**
-   * @type {Element}
-   * @private
+   * @private {Element}
    */
   this.dropTarget_ = null;
 
   /**
    * The element for showing a label while dragging files.
-   * @type {Element}
-   * @private
+   * @private {Element}
    */
   this.dropLabel_ = null;
 
   /**
-   * @type {number}
+   * @private {number}
    */
   this.navigateTimer_ = 0;
 
@@ -1120,8 +1101,7 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
     if (!selectedItem)
       return false;
 
-    if (!CommandUtil.shouldShowMenuItemForEntry(
-        this.volumeManager_, selectedItem.entry)) {
+    if (!this.shouldShowCommandFor_(selectedItem.entry)) {
       command.setHidden(true);
       return false;
     }

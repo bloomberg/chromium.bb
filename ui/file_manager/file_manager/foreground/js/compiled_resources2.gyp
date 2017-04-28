@@ -115,6 +115,10 @@
       'includes': ['../../../compile_js2.gypi'],
     },
     {
+      'target_name': 'drop_effect_and_label',
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
       'target_name': 'elements_importer',
       'dependencies': [
         '<(EXTERNS_GYP):metrics_private',
@@ -176,23 +180,25 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'file_transfer_controller',
-#      'dependencies': [
-#        # TODO(oka): Depend on externs/ instead of background/.
-#        '../../background/js/compiled_resources2.gyp:file_operation_manager',
-#        '../../background/js/compiled_resources2.gyp:progress_center',
-#        'directory_model',
-#        'file_selection',
-#        'metadata/compiled_resources2.gyp:metadata_model',
-#        'metadata/compiled_resources2.gyp:thumbnail_model',
-#        'ui/compiled_resources2.gyp:directory_tree',
-#        'ui/compiled_resources2.gyp:list_container',
-#        'ui/compiled_resources2.gyp:multi_profile_share_dialog',
-#        'volume_manager_wrapper',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_transfer_controller',
+      'dependencies': [
+        # TODO(oka): Depend on externs/ instead of background/.
+        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../background/js/compiled_resources2.gyp:progress_center',
+        'directory_model',
+        'drop_effect_and_label',
+        'file_selection',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'metadata/compiled_resources2.gyp:thumbnail_model',
+        'ui/compiled_resources2.gyp:directory_tree',
+        'ui/compiled_resources2.gyp:list_container',
+        'ui/compiled_resources2.gyp:multi_profile_share_dialog',
+        'volume_manager_wrapper',
+        'webui_command_extender',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_watcher',
       'dependencies': [
@@ -473,6 +479,14 @@
       'target_name': 'web_store_utils',
       'dependencies': [
         'constants',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'webui_command_extender',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
