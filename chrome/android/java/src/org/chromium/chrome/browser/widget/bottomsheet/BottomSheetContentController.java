@@ -245,7 +245,7 @@ public class BottomSheetContentController extends BottomNavigationView
 
     private void updateVisuals(boolean isIncognitoTabModelSelected) {
         setBackgroundResource(isIncognitoTabModelSelected ? R.color.incognito_primary_color
-                                                          : R.color.appbar_background);
+                                                          : R.color.default_primary_color);
 
         ColorStateList tint = ApiCompatibilityUtils.getColorStateList(getResources(),
                 isIncognitoTabModelSelected ? R.color.bottom_nav_tint_incognito

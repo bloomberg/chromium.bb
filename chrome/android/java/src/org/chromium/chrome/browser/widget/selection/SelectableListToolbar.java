@@ -177,8 +177,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         if (mDrawerLayout != null) initActionBarDrawerToggle();
 
-        normalBackgroundColorResId = normalBackgroundColorResId != null ? normalBackgroundColorResId
-                : R.color.appbar_background;
+        normalBackgroundColorResId = normalBackgroundColorResId != null
+                ? normalBackgroundColorResId
+                : R.color.default_primary_color;
         mNormalBackgroundColor =
                 ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
         setBackgroundColor(mNormalBackgroundColor);
