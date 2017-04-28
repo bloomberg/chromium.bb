@@ -204,6 +204,7 @@ class InspectorOverlayAgent final
   bool omit_tooltip_;
   TaskRunnerTimer<InspectorOverlayAgent> timer_;
   bool suspended_;
+  bool disposed_;
   bool show_reloading_blanket_;
   bool in_layout_;
   bool needs_update_;

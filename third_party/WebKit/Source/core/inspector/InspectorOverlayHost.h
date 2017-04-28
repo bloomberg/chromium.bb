@@ -52,6 +52,7 @@ class CORE_EXPORT InspectorOverlayHost final
 
   void resume();
   void stepOver();
+  void ClearListener();
 
  private:
   Member<Listener> listener_;

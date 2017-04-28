@@ -43,6 +43,10 @@ void InspectorOverlayHost::stepOver() {
     listener_->OverlaySteppedOver();
 }
 
+void InspectorOverlayHost::ClearListener() {
+  listener_.Clear();
+}
+
 DEFINE_TRACE(InspectorOverlayHost) {
   visitor->Trace(listener_);
 }
