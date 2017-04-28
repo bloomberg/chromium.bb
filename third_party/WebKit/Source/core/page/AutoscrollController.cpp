@@ -76,8 +76,6 @@ void AutoscrollController::StartAutoscrollForSelection(
   // it's already active.
   if (autoscroll_type_ != kNoAutoscroll)
     return;
-  if (layout_object)
-    layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint();
   LayoutBox* scrollable = LayoutBox::FindAutoscrollable(layout_object);
   if (!scrollable)
     scrollable =

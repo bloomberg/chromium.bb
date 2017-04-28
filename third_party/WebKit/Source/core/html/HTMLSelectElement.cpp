@@ -1518,9 +1518,13 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event* event) {
         !mouse_event->ButtonDown())
       return;
 
-    if (Page* page = GetDocument().GetPage())
+    if (LayoutObject* object = GetLayoutObject())
+      object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint();
+
+    if (Page* page = GetDocument().GetPage()) {
       page->GetAutoscrollController().StartAutoscrollForSelection(
           GetLayoutObject());
+    }
     // Mousedown didn't happen in this element.
     if (last_on_change_selection_.IsEmpty())
       return;
