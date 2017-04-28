@@ -106,6 +106,7 @@ void test_clpf(int w, int h, int depth, int iterations,
   int bits, level, count, damp = 0, boundary = 0;
 
   assert(size >= w + 16 && size >= h + 16);
+  assert(depth >= 8);
 
   // Test every combination of:
   // * Input with up to <depth> bits of noise
