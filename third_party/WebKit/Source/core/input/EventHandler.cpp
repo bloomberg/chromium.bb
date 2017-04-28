@@ -118,6 +118,26 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
          isHTMLInputElement(ToShadowRoot(target_node)->host());
 }
 
+bool ShouldShowIBeamForNode(const Node* node, const HitTestResult& result) {
+  if (!node)
+    return false;
+
+  bool layout_object_selectable = false;
+  if (LayoutObject* layout_object = node->GetLayoutObject()) {
+    PaintLayer* layer = layout_object->EnclosingLayer();
+    if (layer->GetScrollableArea() &&
+        layer->GetScrollableArea()->IsPointInResizeControl(
+            result.RoundedPointInMainFrame(), kResizerForPointer)) {
+      return false;
+    }
+
+    layout_object_selectable =
+        layout_object->IsText() && node->CanStartSelection();
+  }
+
+  return HasEditableStyle(*node) || layout_object_selectable;
+}
+
 }  // namespace
 
 using namespace HTMLNames;
@@ -537,26 +557,16 @@ OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
     return PointerCursor();
   }
 
-  bool editable = (node && HasEditableStyle(*node));
-
   const bool is_over_link =
       !GetSelectionController().MouseDownMayStartSelect() &&
       result.IsOverLink();
   if (UseHandCursor(node, is_over_link))
     return HandCursor();
 
-  bool in_resizer = false;
-  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
-  if (layout_object && frame_->View()) {
-    PaintLayer* layer = layout_object->EnclosingLayer();
-    in_resizer = layer->GetScrollableArea() &&
-                 layer->GetScrollableArea()->IsPointInResizeControl(
-                     result.RoundedPointInMainFrame(), kResizerForPointer);
-  }
-
   // During selection, use an I-beam no matter what we're over.
   // If a drag may be starting or we're capturing mouse events for a particular
-  // node, don't treat this as a selection.
+  // node, don't treat this as a selection. Note calling
+  // ComputeVisibleSelectionInDOMTreeDeprecated may update layout.
   if (mouse_event_manager_->MousePressed() &&
       GetSelectionController().MouseDownMayStartSelect() &&
       !mouse_event_manager_->MouseDownMayStartDrag() &&
@@ -567,9 +577,7 @@ OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
     return i_beam;
   }
 
-  if ((editable || (layout_object && layout_object->IsText() &&
-                    node->CanStartSelection())) &&
-      !in_resizer && !result.GetScrollbar())
+  if (ShouldShowIBeamForNode(node, result))
     return i_beam;
   return PointerCursor();
 }
