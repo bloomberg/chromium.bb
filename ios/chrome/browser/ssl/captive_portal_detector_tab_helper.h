@@ -19,13 +19,13 @@ class WebState;
 class CaptivePortalDetectorTabHelper
     : public web::WebStateUserData<CaptivePortalDetectorTabHelper> {
  public:
+  ~CaptivePortalDetectorTabHelper() override;
+
   explicit CaptivePortalDetectorTabHelper(web::WebState* web_state);
 
   captive_portal::CaptivePortalDetector* detector();
 
  private:
-  ~CaptivePortalDetectorTabHelper() override;
-
   // The underlying CaptivePortalDetector.
   std::unique_ptr<captive_portal::CaptivePortalDetector> detector_;
 

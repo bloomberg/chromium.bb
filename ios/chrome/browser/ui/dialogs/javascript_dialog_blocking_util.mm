@@ -7,6 +7,7 @@
 #import <objc/runtime.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
@@ -53,7 +54,7 @@ class JavaScriptDialogBlockingStateWrapper
   explicit JavaScriptDialogBlockingStateWrapper(web::WebState* web_state)
       : state_(nullptr) {
     DCHECK(web_state);
-    web_state->SetUserData(kBlockingStateKey, this);
+    web_state->SetUserData(kBlockingStateKey, base::WrapUnique(this));
   }
 };
 

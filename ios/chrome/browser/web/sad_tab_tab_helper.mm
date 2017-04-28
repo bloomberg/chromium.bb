@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
@@ -30,8 +31,8 @@ void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
                                         id<SadTabTabHelperDelegate> delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           new SadTabTabHelper(web_state, delegate));
+    web_state->SetUserData(UserDataKey(), base::WrapUnique(new SadTabTabHelper(
+                                              web_state, delegate)));
   }
 }
 

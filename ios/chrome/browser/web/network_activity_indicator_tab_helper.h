@@ -20,11 +20,12 @@ class NetworkActivityIndicatorTabHelper
     : public web::WebStateObserver,
       public web::WebStateUserData<NetworkActivityIndicatorTabHelper> {
  public:
+  ~NetworkActivityIndicatorTabHelper() override;
+
   static void CreateForWebState(web::WebState* web_state, NSString* tab_id);
 
  private:
   NetworkActivityIndicatorTabHelper(web::WebState* web_state, NSString* tab_id);
-  ~NetworkActivityIndicatorTabHelper() override;
 
   // web::WebStateObserver overrides:
   void DidStartLoading() override;

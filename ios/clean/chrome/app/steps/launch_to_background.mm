@@ -78,7 +78,7 @@ const char kChromeMainKey[] = "chrome_main";
   // Create and persist an IOSChromeMain instance.
   state.persistentState->SetUserData(
       kChromeMainKey,
-      new ChromeMainContainer(base::MakeUnique<IOSChromeMain>()));
+      base::MakeUnique<ChromeMainContainer>(base::MakeUnique<IOSChromeMain>()));
 
   // Add a step to the termination steps of |state| that will stop and remove
   // the IOSChromeMain instance.

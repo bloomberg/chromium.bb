@@ -47,7 +47,7 @@ class ReadingListWebStateObserverUserDataWrapper
           base::MakeUnique<ReadingListWebStateObserverUserDataWrapper>(
               web_state, reading_list_model);
       wrapper = newDataWrapper.get();
-      web_state->SetUserData(kObserverKey, newDataWrapper.release());
+      web_state->SetUserData(kObserverKey, std::move(newDataWrapper));
     }
     return wrapper;
   }

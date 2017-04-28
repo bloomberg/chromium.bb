@@ -36,6 +36,8 @@ class WebViewTranslateClient
       public web::WebStateObserver,
       public web::WebStateUserData<WebViewTranslateClient> {
  public:
+  ~WebViewTranslateClient() override;
+
   // Sets the delegate passed by the embedder.
   // |delegate| is assumed to outlive this WebViewTranslateClient.
   void set_translate_delegate(id<CWVTranslateDelegate> delegate) {
@@ -47,7 +49,6 @@ class WebViewTranslateClient
 
   // The lifetime of WebViewTranslateClient is managed by WebStateUserData.
   explicit WebViewTranslateClient(web::WebState* web_state);
-  ~WebViewTranslateClient() override;
 
   // TranslateClient implementation.
   translate::TranslateDriver* GetTranslateDriver() override;

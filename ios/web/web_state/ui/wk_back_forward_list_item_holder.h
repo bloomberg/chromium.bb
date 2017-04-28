@@ -23,6 +23,8 @@ class NavigationItem;
 // thus needs to be preserved (e.g., WKNavigationType, MIME type).
 class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
  public:
+  ~WKBackForwardListItemHolder() override;
+
   // Returns the WKBackForwardListItemHolder for the NavigationItem |item|.
   // Lazily attaches one if it does not exist. |item| cannot be null.
   static web::WKBackForwardListItemHolder* FromNavigationItem(
@@ -56,7 +58,6 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
 
  private:
   WKBackForwardListItemHolder();
-  ~WKBackForwardListItemHolder() override;
 
   // Weak pointer to a WKBackForwardListItem. Becomes nil if the parent
   // WKBackForwardList is deallocated.

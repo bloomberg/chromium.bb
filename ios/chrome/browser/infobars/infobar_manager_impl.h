@@ -27,6 +27,8 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
                            public web::WebStateObserver,
                            public web::WebStateUserData<InfoBarManagerImpl> {
  public:
+  ~InfoBarManagerImpl() override;
+
   // This function must only be called on infobars that are owned by an
   // InfoBarManagerImpl instance (or not owned at all, in which case this
   // returns null).
@@ -36,7 +38,6 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
   friend class web::WebStateUserData<InfoBarManagerImpl>;
 
   explicit InfoBarManagerImpl(web::WebState* web_state);
-  ~InfoBarManagerImpl() override;
 
   // InfoBarManager implementation.
   int GetActiveEntryID() override;
