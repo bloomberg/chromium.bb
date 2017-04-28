@@ -26,7 +26,7 @@ trusted = common.TrustAnchor(root, constrained=True)
 time = common.DEFAULT_TIME
 key_purpose = common.KEY_PURPOSE_SERVER_AUTH
 verify_result = False
-errors = """----- Certificate i=2 -----
+errors = """----- Certificate i=2 (CN=Root) -----
 ERROR: The extended key usage does not include server auth
 
 """

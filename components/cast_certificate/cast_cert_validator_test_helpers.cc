@@ -93,9 +93,7 @@ std::unique_ptr<net::TrustStoreInMemory> CreateTrustStoreFromFile(
     scoped_refptr<net::ParsedCertificate> cert(net::ParsedCertificate::Create(
         net::x509_util::CreateCryptoBuffer(trusted_root), {}, &errors));
     EXPECT_TRUE(cert) << errors.ToDebugString();
-    scoped_refptr<net::TrustAnchor> anchor =
-        net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
-    trust_store->AddTrustAnchor(std::move(anchor));
+    trust_store->AddTrustAnchorWithConstraints(cert);
   }
   return trust_store;
 }

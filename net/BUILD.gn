@@ -557,8 +557,6 @@ component("net") {
       "cert/ct_signed_certificate_timestamp_log_param.h",
       "cert/ev_root_ca_metadata.cc",
       "cert/ev_root_ca_metadata.h",
-      "cert/internal/cert_issuer_source_nss.cc",
-      "cert/internal/cert_issuer_source_nss.h",
       "cert/internal/system_trust_store.cc",
       "cert/internal/system_trust_store.h",
       "cert/internal/trust_store_mac.cc",
@@ -1813,8 +1811,6 @@ component("net") {
     if (!use_nss_certs) {
       sources -= [
         "cert/cert_database_nss.cc",
-        "cert/internal/cert_issuer_source_nss.cc",
-        "cert/internal/cert_issuer_source_nss.h",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
         "cert/known_roots_nss.cc",
@@ -4227,7 +4223,6 @@ test("net_unittests") {
     "cert/ct_serialization_unittest.cc",
     "cert/ev_root_ca_metadata_unittest.cc",
     "cert/internal/cert_issuer_source_aia_unittest.cc",
-    "cert/internal/cert_issuer_source_nss_unittest.cc",
     "cert/internal/cert_issuer_source_static_unittest.cc",
     "cert/internal/cert_issuer_source_sync_unittest.h",
     "cert/internal/certificate_policies_unittest.cc",
@@ -4987,7 +4982,6 @@ test("net_unittests") {
 
   if (!use_nss_certs) {
     sources -= [
-      "cert/internal/cert_issuer_source_nss_unittest.cc",
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "ssl/client_cert_store_nss_unittest.cc",

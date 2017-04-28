@@ -74,9 +74,7 @@ class CastTrustStore {
                                                            &errors);
     CHECK(cert) << errors.ToDebugString();
     // Enforce pathlen constraints and policies defined on the root certificate.
-    scoped_refptr<net::TrustAnchor> anchor =
-        net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
-    store_.AddTrustAnchor(std::move(anchor));
+    store_.AddTrustAnchorWithConstraints(std::move(cert));
   }
 
   net::TrustStoreInMemory store_;

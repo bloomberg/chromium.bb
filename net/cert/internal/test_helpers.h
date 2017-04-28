@@ -86,8 +86,8 @@ struct VerifyCertChainTest {
   // The chain of certificates (with the zero-th being the target).
   ParsedCertificateList chain;
 
-  // The trust anchor to use when verifying the chain.
-  scoped_refptr<TrustAnchor> trust_anchor;
+  // Details on the trustedness of the last certificate.
+  CertificateTrust last_cert_trust;
 
   // The time to use when verifying the chain.
   der::GeneralizedTime time;
