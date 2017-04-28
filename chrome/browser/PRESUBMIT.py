@@ -21,7 +21,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def _RunHistogramChecks(input_api, output_api, histogram_name):
   try:
-    # Setup sys.path so that we can call histrogram code
+    # Setup sys.path so that we can call histograms code.
     import sys
     original_sys_path = sys.path
     sys.path = sys.path + [input_api.os_path.join(
