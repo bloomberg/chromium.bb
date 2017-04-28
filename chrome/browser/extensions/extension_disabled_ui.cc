@@ -52,10 +52,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-using extensions::Extension;
-using extensions::PermissionMessage;
-using extensions::PermissionMessages;
-
 namespace {
 
 static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
@@ -64,11 +60,12 @@ static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
 
 // ExtensionDisabledGlobalError -----------------------------------------------
 
-class ExtensionDisabledGlobalError
-    : public GlobalErrorWithStandardBubble,
-      public content::NotificationObserver,
-      public extensions::ExtensionUninstallDialog::Delegate,
-      public extensions::ExtensionRegistryObserver {
+namespace extensions {
+
+class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
+                                     public content::NotificationObserver,
+                                     public ExtensionUninstallDialog::Delegate,
+                                     public ExtensionRegistryObserver {
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
                                const Extension* extension,
@@ -106,7 +103,7 @@ class ExtensionDisabledGlobalError
   // ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
-  void OnShutdown(extensions::ExtensionRegistry* registry) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
 
   void RemoveGlobalError();
 
@@ -124,15 +121,15 @@ class ExtensionDisabledGlobalError
   };
   UserResponse user_response_;
 
-  std::unique_ptr<extensions::ExtensionUninstallDialog> uninstall_dialog_;
+  std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   // Helper to get menu command ID assigned for this extension's error.
-  extensions::ExtensionInstallErrorMenuItemIdProvider id_provider_;
+  ExtensionInstallErrorMenuItemIdProvider id_provider_;
 
   content::NotificationRegistrar registrar_;
 
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver> registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
 };
 
 // TODO(yoz): create error at startup for disabled extensions.
@@ -148,18 +145,13 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       user_response_(IGNORED),
       registry_observer_(this) {
   if (icon_.IsEmpty()) {
-    icon_ = gfx::Image(
-        gfx::ImageSkiaOperations::CreateResizedImage(
-            extension_->is_app() ?
-                extensions::util::GetDefaultAppIcon() :
-                extensions::util::GetDefaultExtensionIcon(),
-            skia::ImageOperations::RESIZE_BEST,
-            gfx::Size(kIconSize, kIconSize)));
+    icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
+        extension_->is_app() ? util::GetDefaultAppIcon()
+                             : util::GetDefaultExtensionIcon(),
+        skia::ImageOperations::RESIZE_BEST, gfx::Size(kIconSize, kIconSize)));
   }
-  registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(service->profile()));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_REMOVED,
+  registry_observer_.Add(ExtensionRegistry::Get(service->profile()));
+  registrar_.Add(this, NOTIFICATION_EXTENSION_REMOVED,
                  content::Source<Profile>(service->profile()));
 }
 
@@ -215,8 +207,15 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
 std::vector<base::string16>
 ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
+
+  std::unique_ptr<const PermissionSet> granted_permissions =
+      ExtensionPrefs::Get(service_->GetBrowserContext())
+          ->GetGrantedPermissions(extension_->id());
+
   PermissionMessages permission_warnings =
-      extension_->permissions_data()->GetPermissionMessages();
+      extension_->permissions_data()->GetNewPermissionMessages(
+          *granted_permissions);
+
   if (is_remote_install_) {
     if (!permission_warnings.empty())
       messages.push_back(
@@ -224,12 +223,8 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   } else {
     // TODO(treib): If NeedCustodianApprovalForPermissionIncrease, add an extra
     // message for supervised users. crbug.com/461261
-    messages.push_back(l10n_util::GetStringFUTF16(
-        extension_->is_app() ? IDS_APP_DISABLED_ERROR_LABEL
-                             : IDS_EXTENSION_DISABLED_ERROR_LABEL,
-        base::UTF8ToUTF16(extension_->name())));
-    messages.push_back(l10n_util::GetStringUTF16(
-        IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
+    messages.push_back(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_DISABLED_ERROR_LABEL));
   }
   for (const PermissionMessage& msg : permission_warnings) {
     messages.push_back(l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE,
@@ -239,8 +234,7 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
-  if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile())) {
+  if (util::IsExtensionSupervised(extension_, service_->profile())) {
     // TODO(treib): Probably use a new string here once we get UX design.
     // For now, just use "OK". crbug.com/461261
     return l10n_util::GetStringUTF16(IDS_OK);
@@ -251,18 +245,18 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
             ? IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_APP
             : IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON_EXTENSION);
   }
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON);
+  return l10n_util::GetStringUTF16(
+      IDS_EXTENSION_PROMPT_PERMISSIONS_ACCEPT_BUTTON);
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
-  if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile())) {
+  if (util::IsExtensionSupervised(extension_, service_->profile())) {
     // The supervised user can't approve the update, and hence there is no
     // "cancel" button. Return an empty string such that the "cancel" button
     // is not shown in the dialog.
     return base::string16();
   }
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
 }
 
 void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
@@ -283,8 +277,7 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  if (extensions::util::IsExtensionSupervised(extension_,
-                                              service_->profile())) {
+  if (util::IsExtensionSupervised(extension_, service_->profile())) {
     return;
   }
   user_response_ = REENABLE;
@@ -300,19 +293,17 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
   // For custodian-installed extensions, this button should not exist because
   // there is only an "OK" button.
   // Supervised users may never remove custodian-installed extensions.
-  DCHECK(!extensions::util::IsExtensionSupervised(extension_,
-                                                  service_->profile()));
-  uninstall_dialog_.reset(extensions::ExtensionUninstallDialog::Create(
+  DCHECK(!util::IsExtensionSupervised(extension_, service_->profile()));
+  uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
       service_->profile(), browser->window()->GetNativeWindow(), this));
   user_response_ = UNINSTALL;
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
-                     uninstall_dialog_->AsWeakPtr(), extension_,
-                     extensions::UNINSTALL_REASON_EXTENSION_DISABLED,
-                     extensions::UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
+      FROM_HERE, base::Bind(&ExtensionUninstallDialog::ConfirmUninstall,
+                            uninstall_dialog_->AsWeakPtr(), extension_,
+                            UNINSTALL_REASON_EXTENSION_DISABLED,
+                            UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
@@ -341,7 +332,7 @@ void ExtensionDisabledGlobalError::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   // The error is invalidated if the extension has been loaded or removed.
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_REMOVED, type);
+  DCHECK_EQ(NOTIFICATION_EXTENSION_REMOVED, type);
   const Extension* extension = content::Details<const Extension>(details).ptr();
   if (extension != extension_)
     return;
@@ -356,9 +347,8 @@ void ExtensionDisabledGlobalError::OnExtensionLoaded(
   RemoveGlobalError();
 }
 
-void ExtensionDisabledGlobalError::OnShutdown(
-    extensions::ExtensionRegistry* registry) {
-  DCHECK_EQ(extensions::ExtensionRegistry::Get(service_->profile()), registry);
+void ExtensionDisabledGlobalError::OnShutdown(ExtensionRegistry* registry) {
+  DCHECK_EQ(ExtensionRegistry::Get(service_->profile()), registry);
   registry_observer_.RemoveAll();
 }
 
@@ -374,8 +364,6 @@ void ExtensionDisabledGlobalError::RemoveGlobalError() {
 }
 
 // Globals --------------------------------------------------------------------
-
-namespace extensions {
 
 void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
                                        const std::string& extension_id,
@@ -394,7 +382,7 @@ void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
 void AddExtensionDisabledError(ExtensionService* service,
                                const Extension* extension,
                                bool is_remote_install) {
-  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
+  ExtensionResource image = IconsInfo::GetIconResource(
       extension, kIconSize, ExtensionIconSet::MATCH_BIGGER);
   gfx::Size size(kIconSize, kIconSize);
   ImageLoader::Get(service->profile())

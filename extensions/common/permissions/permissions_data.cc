@@ -297,6 +297,19 @@ PermissionMessages PermissionsData::GetPermissionMessages() const {
           *active_permissions_unsafe_, manifest_type_));
 }
 
+PermissionMessages PermissionsData::GetNewPermissionMessages(
+    const PermissionSet& granted_permissions) const {
+  base::AutoLock auto_lock(runtime_lock_);
+
+  std::unique_ptr<const PermissionSet> new_permissions =
+      PermissionSet::CreateDifference(*active_permissions_unsafe_,
+                                      granted_permissions);
+
+  return PermissionMessageProvider::Get()->GetPermissionMessages(
+      PermissionMessageProvider::Get()->GetAllPermissionIDs(*new_permissions,
+                                                            manifest_type_));
+}
+
 bool PermissionsData::HasWithheldImpliedAllHosts() const {
   base::AutoLock auto_lock(runtime_lock_);
   // Since we currently only withhold all_hosts, it's sufficient to check

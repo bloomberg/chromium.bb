@@ -3539,13 +3539,10 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
 
       <!-- Extension/App disabled notification -->
       <message name="IDS_EXTENSION_DISABLED_ERROR_LABEL" desc="Text displayed when an extension was disabled due to a new upgrade requiring an explicit permission check from the user.">
-        The newest version of the extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" requires more permissions, so it has been disabled.
-      </message>
-      <message name="IDS_APP_DISABLED_ERROR_LABEL" desc="Text displayed when an app was disabled due to a new upgrade requiring an explicit permission check from the user.">
-        The newest version of the app "<ph name="APP_NAME">$1<ex>Pandora</ex></ph>" requires more permissions, so it has been disabled.
+        To re-enable it, accept the new permissions:
       </message>
       <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
-        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> requires new permissions
+        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> is disabled
       </message>
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
         Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented.
@@ -4722,6 +4719,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON" desc="Text for the allow button on the extension permissions prompt">
         Allow
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_ACCEPT_BUTTON" desc="Text for the accept permissions button on the extension permissions prompt">
+        Accept permissions
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON" desc="Text for the deny button on the extension permissions prompt">
         Deny
