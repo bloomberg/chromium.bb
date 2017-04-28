@@ -69,6 +69,7 @@ class BluetoothLowEnergyConnectionFinder
  protected:
   BluetoothLowEnergyConnectionFinder(
       const cryptauth::RemoteDevice remote_device,
+      const std::string& service_uuid,
       const std::vector<cryptauth::BeaconSeed>& beacon_seeds,
       std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
       cryptauth::BluetoothThrottler* bluetooth_throttler);
@@ -77,6 +78,9 @@ class BluetoothLowEnergyConnectionFinder
   // |device_address|. Exposed for testing.
   virtual std::unique_ptr<cryptauth::Connection> CreateConnection(
       const std::string& device_address);
+
+  // Checks if |device| is advertising the right EID.
+  virtual bool IsRightDevice(device::BluetoothDevice* device);
 
  private:
   // Callback to be called when the Bluetooth adapter is initialized.
@@ -99,10 +103,6 @@ class BluetoothLowEnergyConnectionFinder
   // Stops the discovery session given by |discovery_session_|.
   void StopDiscoverySession();
 
-  // Checks if |device| is the right device: (i) has the adversement data or
-  // (ii) is paired and is the same as |remote_device|.
-  bool IsRightDevice(device::BluetoothDevice* device);
-
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionAsync();
 
@@ -114,6 +114,9 @@ class BluetoothLowEnergyConnectionFinder
   // remote device should advertise |remote_service_uuid_| and
   // |advertised_name_|.
   cryptauth::RemoteDevice remote_device_;
+
+  // The UUID of the service used by the Weave socket.
+  std::string service_uuid_;
 
   // The BeaconSeeds of the |remote_device|.
   std::vector<cryptauth::BeaconSeed> beacon_seeds_;

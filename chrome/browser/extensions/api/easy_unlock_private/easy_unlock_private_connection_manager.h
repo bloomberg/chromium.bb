@@ -47,11 +47,11 @@ class EasyUnlockPrivateConnectionManager
   // |connection_id| is valid.
   bool Disconnect(const Extension* extension, int connection_id);
 
-  // Sends |payload| through the connection with |connection_id|. Returns true
-  // if |connection_id| is valid.
+  // Sends |message_body| through the connection with |connection_id|. Returns
+  // true if |connection_id| is valid.
   bool SendMessage(const Extension* extension,
                    int connection_id,
-                   const std::string& payload);
+                   const std::string& message_body);
 
   // Returns the Bluetooth address of the device connected with a given
   // |connection_id|, and an empty string if |connection_id| was not found.

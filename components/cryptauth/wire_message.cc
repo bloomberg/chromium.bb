@@ -20,8 +20,11 @@
 // The wire messages have a simple format:
 // [ message version ] [ body length ] [ JSON body ]
 //       1 byte            2 bytes      body length
-// The JSON body contains two fields: an optional permit_id field and a required
-// data field.
+// When sending encrypted messages, the JSON body contains two fields: an
+// optional |permit_id| field and a required |payload| field.
+//
+// For non-encrypted messages, the message itself is the JSON body, and it
+// doesn't have a |payload| field.
 
 namespace cryptauth {
 namespace {
@@ -104,8 +107,14 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
   DCHECK(success);
 
   std::string payload_base64;
-  if (!body->GetString(kPayloadKey, &payload_base64) ||
-      payload_base64.empty()) {
+  if (!body->GetString(kPayloadKey, &payload_base64)) {
+    // The body is a valid JSON, but it doesn't contain a |payload| field. It
+    // must be a non-encrypted message.
+    return base::WrapUnique(
+        new WireMessage(serialized_message.substr(kHeaderLength)));
+  }
+
+  if (payload_base64.empty()) {
     PA_LOG(WARNING) << "Error: Missing payload.";
     return nullptr;
   }
@@ -127,24 +136,29 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
 }
 
 std::string WireMessage::Serialize() const {
-  if (payload_.empty()) {
-    PA_LOG(ERROR) << "Failed to serialize empty wire message.";
-    return std::string();
-  }
-
-  // Create JSON body containing permit id and payload.
-  base::DictionaryValue body;
-
-  std::string base64_payload;
-  base::Base64UrlEncode(payload_, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                        &base64_payload);
-  body.SetString(kPayloadKey, base64_payload);
-  body.SetString(kFeatureKey, feature_);
-
   std::string json_body;
-  if (!base::JSONWriter::Write(body, &json_body)) {
-    PA_LOG(ERROR) << "Failed to convert WireMessage body to JSON: " << body;
-    return std::string();
+  if (body_.empty()) {
+    if (payload_.empty()) {
+      PA_LOG(ERROR) << "Failed to serialize empty wire message.";
+      return std::string();
+    }
+
+    // Create JSON body containing permit id and payload.
+    base::DictionaryValue body;
+
+    std::string base64_payload;
+    base::Base64UrlEncode(payload_,
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &base64_payload);
+    body.SetString(kPayloadKey, base64_payload);
+    body.SetString(kFeatureKey, feature_);
+
+    if (!base::JSONWriter::Write(body, &json_body)) {
+      PA_LOG(ERROR) << "Failed to convert WireMessage body to JSON: " << body;
+      return std::string();
+    }
+  } else {
+    json_body = body_;
   }
 
   // Create header containing version and payload size.
@@ -169,5 +183,7 @@ std::string WireMessage::Serialize() const {
 
 WireMessage::WireMessage(const std::string& payload, const std::string& feature)
     : payload_(payload), feature_(feature) {}
+
+WireMessage::WireMessage(const std::string& body) : body_(body) {}
 
 }  // namespace cryptauth
