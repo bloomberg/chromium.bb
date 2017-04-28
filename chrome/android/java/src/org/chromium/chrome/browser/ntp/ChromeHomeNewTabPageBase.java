@@ -38,7 +38,6 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
     @Nullable
     final LayoutManagerChrome mLayoutManager;
     final BottomSheet mBottomSheet;
-    final View mFadingBackgroundView;
     final String mTitle;
 
     private boolean mShowOverviewOnClose;
@@ -59,7 +58,6 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         mTab = tab;
         mTabModelSelector = tabModelSelector;
         mLayoutManager = layoutManager;
-        mFadingBackgroundView = mTab.getActivity().getFadingBackgroundView();
         mBottomSheet = mTab.getActivity().getBottomSheet();
         mTitle = context.getResources().getString(R.string.button_new_tab);
 
@@ -89,7 +87,7 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
 
             @Override
             public void onHidden(Tab tab) {
-                mFadingBackgroundView.setEnabled(true);
+                mTab.getActivity().getFadingBackgroundView().setEnabled(true);
                 if (!mTab.isClosing()) mShowOverviewOnClose = false;
             }
 
@@ -142,7 +140,7 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
     public void destroy() {
         // The next tab will be selected before this one is destroyed. If the currently selected
         // tab is a Chrome Home new tab page, the FadingBackgroundView should not be enabled.
-        mFadingBackgroundView.setEnabled(
+        mTab.getActivity().getFadingBackgroundView().setEnabled(
                 !isTabChromeHomeNewTabPage(mTabModelSelector.getCurrentTab()));
 
         if (mLayoutManager != null) {
@@ -152,7 +150,9 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
     }
 
     private void onNewTabPageShown() {
-        mFadingBackgroundView.setEnabled(false);
+        if (mTab.getActivity().getFadingBackgroundView() != null) {
+            mTab.getActivity().getFadingBackgroundView().setEnabled(false);
+        }
 
         // This method may be called when an NTP is selected due to the user switching tab models.
         // In this case, we do not want the bottom sheet to open. Unfortunately, without observing
