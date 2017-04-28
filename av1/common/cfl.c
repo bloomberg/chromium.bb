@@ -30,14 +30,14 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm, int subsampling_x,
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
 void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
-  const struct macroblockd_plane *const pd_cb = &xd->plane[AOM_PLANE_U];
-  const struct macroblockd_plane *const pd_cr = &xd->plane[AOM_PLANE_V];
+  const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
+  const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
 
-  const uint8_t *const dst_cb = pd_cb->dst.buf;
-  const uint8_t *const dst_cr = pd_cr->dst.buf;
+  const uint8_t *const dst_u = pd_u->dst.buf;
+  const uint8_t *const dst_v = pd_v->dst.buf;
 
-  const int dst_cb_stride = pd_cb->dst.stride;
-  const int dst_cr_stride = pd_cr->dst.stride;
+  const int dst_u_stride = pd_u->dst.stride;
+  const int dst_v_stride = pd_v->dst.stride;
 
   const int block_width = (plane_bsize != BLOCK_INVALID)
                               ? block_size_wide[plane_bsize]
@@ -45,10 +45,12 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
   const int block_height = (plane_bsize != BLOCK_INVALID)
                                ? block_size_high[plane_bsize]
                                : tx_size_high[tx_size];
+
+  // Number of pixel on the top and left borders.
   const int num_pel = block_width + block_height;
 
-  int sum_cb = 0;
-  int sum_cr = 0;
+  int sum_u = 0;
+  int sum_v = 0;
 
   // Match behavior of build_intra_predictors (reconintra.c) at superblock
   // boundaries:
@@ -63,26 +65,26 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
   // TODO(ltrudeau) replace this with DC_PRED assembly
   if (xd->up_available && xd->mb_to_right_edge >= 0) {
     for (int i = 0; i < block_width; i++) {
-      sum_cb += dst_cb[-dst_cb_stride + i];
-      sum_cr += dst_cr[-dst_cr_stride + i];
+      sum_u += dst_u[-dst_u_stride + i];
+      sum_v += dst_v[-dst_v_stride + i];
     }
   } else {
-    sum_cb = block_width * 127;
-    sum_cr = block_width * 127;
+    sum_u = block_width * 127;
+    sum_v = block_width * 127;
   }
 
   if (xd->left_available && xd->mb_to_bottom_edge >= 0) {
     for (int i = 0; i < block_height; i++) {
-      sum_cb += dst_cb[i * dst_cb_stride - 1];
-      sum_cr += dst_cr[i * dst_cr_stride - 1];
+      sum_u += dst_u[i * dst_u_stride - 1];
+      sum_v += dst_v[i * dst_v_stride - 1];
     }
   } else {
-    sum_cb += block_height * 129;
-    sum_cr += block_height * 129;
+    sum_u += block_height * 129;
+    sum_v += block_height * 129;
   }
 
-  xd->cfl->dc_pred[CFL_PRED_U] = (sum_cb + (num_pel >> 1)) / num_pel;
-  xd->cfl->dc_pred[CFL_PRED_V] = (sum_cr + (num_pel >> 1)) / num_pel;
+  xd->cfl->dc_pred[CFL_PRED_U] = (sum_u + (num_pel >> 1)) / num_pel;
+  xd->cfl->dc_pred[CFL_PRED_V] = (sum_v + (num_pel >> 1)) / num_pel;
 }
 
 // Predict the current transform block using CfL.
