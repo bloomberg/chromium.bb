@@ -88,9 +88,17 @@ FilterEffect* FilterEffect::InputEffect(unsigned number) const {
   return input_effects_.at(number).Get();
 }
 
-void FilterEffect::ClearResult() {
+void FilterEffect::DisposeImageFilters() {
   for (int i = 0; i < 4; i++)
     image_filters_[i] = nullptr;
+}
+
+void FilterEffect::DisposeImageFiltersRecursive() {
+  if (!HasImageFilter())
+    return;
+  DisposeImageFilters();
+  for (auto& effect : input_effects_)
+    effect->DisposeImageFiltersRecursive();
 }
 
 Color FilterEffect::AdaptColorToOperatingColorSpace(const Color& device_color) {

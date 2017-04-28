@@ -56,7 +56,8 @@ class PLATFORM_EXPORT FilterEffect
   virtual ~FilterEffect();
   DECLARE_VIRTUAL_TRACE();
 
-  void ClearResult();
+  void DisposeImageFilters();
+  void DisposeImageFiltersRecursive();
 
   FilterEffectVector& InputEffects() { return input_effects_; }
   FilterEffect* InputEffect(unsigned) const;
