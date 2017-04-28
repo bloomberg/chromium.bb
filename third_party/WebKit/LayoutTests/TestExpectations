@@ -2925,6 +2925,12 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001a.html [ Failure Pass ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 
+crbug.com/713732 fast/dom/Window/dom-access-from-closure-iframe.html [ NeedsManualRebaseline ]
+crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ NeedsManualRebaseline ]
+crbug.com/713732 fast/dom/Window/dom-access-from-closure-window.html [ NeedsManualRebaseline ]
+crbug.com/713732 http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
+crbug.com/713732 virtual/mojo-loading/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
+
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
