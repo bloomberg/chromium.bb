@@ -43,12 +43,6 @@ class Instance : public service_manager::mojom::Resolver,
   void GetEntriesProvidingCapability(
       const std::string& capability,
       const GetEntriesProvidingCapabilityCallback& callback) override;
-  void GetEntriesConsumingMIMEType(
-      const std::string& mime_type,
-      const GetEntriesConsumingMIMETypeCallback& callback) override;
-  void GetEntriesSupportingScheme(
-      const std::string& scheme,
-      const GetEntriesSupportingSchemeCallback& callback) override;
 
   mojo::BindingSet<service_manager::mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
