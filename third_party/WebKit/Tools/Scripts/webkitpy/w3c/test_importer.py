@@ -67,7 +67,7 @@ class TestImporter(object):
 
         # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
         # is merged into web-platform-tests (crbug.com/706118).
-        temp_repo_path = self.finder.path_from_webkit_base(dest_dir_name)
+        temp_repo_path = self.finder.path_from_layout_tests(dest_dir_name)
         _log.info('Cloning repo: %s', repo_url)
         _log.info('Local path: %s', temp_repo_path)
         self.run(['git', 'clone', repo_url, temp_repo_path])
@@ -139,8 +139,9 @@ class TestImporter(object):
             _log.warning('Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
             return False
 
-        if self.fs.exists(self.finder.path_from_webkit_base(WPT_DEST_NAME)):
-            _log.warning('WebKit/%s exists; aborting.', WPT_DEST_NAME)
+        temp_repo_path = self.finder.path_from_layout_tests(WPT_DEST_NAME)
+        if self.fs.exists(temp_repo_path):
+            _log.warning('%s exists; aborting.', temp_repo_path)
             return False
 
         return True
@@ -162,7 +163,7 @@ class TestImporter(object):
 
     def clean_up_temp_repo(self, temp_repo_path):
         _log.info('Deleting temp repo directory %s.', temp_repo_path)
-        self.rmtree(temp_repo_path)
+        self.fs.rmtree(temp_repo_path)
 
     def _copy_resources(self):
         """Copies resources from wpt to LayoutTests/resources.
@@ -248,7 +249,7 @@ class TestImporter(object):
             basename != 'OWNERS')
         files_to_delete = self.fs.files_under(dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
-            self.remove('LayoutTests', 'external', subpath)
+            self.remove(self.finder.path_from_layout_tests('external', subpath))
 
     def _commit_changes(self, commit_message):
         _log.info('Committing changes.')
@@ -286,7 +287,7 @@ class TestImporter(object):
     def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):
         _log.debug('Running command: %s', ' '.join(cmd))
 
-        cwd = cwd or self.finder.webkit_base()
+        cwd = cwd or self.finder.path_from_layout_tests()
         proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, stdin=self.executive.PIPE, cwd=cwd)
         out, err = proc.communicate(stdin)
         if proc.returncode or self.verbose:
@@ -311,15 +312,9 @@ class TestImporter(object):
         _log.debug('cp %s %s', source, destination)
         self.fs.copyfile(source, destination)
 
-    def remove(self, *comps):
-        dest = self.finder.path_from_webkit_base(*comps)
+    def remove(self, dest):
         _log.debug('rm %s', dest)
         self.fs.remove(dest)
-
-    def rmtree(self, *comps):
-        dest = self.finder.path_from_webkit_base(*comps)
-        _log.debug('rm -fr %s', dest)
-        self.fs.rmtree(dest)
 
     def do_auto_update(self):
         """Attempts to upload a CL, make any required adjustments, and commit.

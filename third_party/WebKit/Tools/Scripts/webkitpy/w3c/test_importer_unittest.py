@@ -25,11 +25,11 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
-            'INFO: Local path: /mock-checkout/third_party/WebKit/wpt\n',
+            'INFO: Local path: /mock-checkout/third_party/WebKit/LayoutTests/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
             'INFO:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
             'INFO: Aborting import to prevent clobbering these commits.\n',
-            'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/wpt.\n',
+            'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/LayoutTests/wpt.\n',
         ])
 
     def test_update_test_expectations(self):
