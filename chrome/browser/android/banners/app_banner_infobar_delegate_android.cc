@@ -303,11 +303,10 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // If the WebAPK is installed and the "Open" button is clicked, open the
-  // WebAPK.
+  // WebAPK. Do not send a BannerAccepted message.
   if (install_state_ == INSTALLED) {
     Java_AppBannerInfoBarDelegateAndroid_openWebApk(env, java_delegate_);
     webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN);
-    SendBannerAccepted();
     return true;
   }
 

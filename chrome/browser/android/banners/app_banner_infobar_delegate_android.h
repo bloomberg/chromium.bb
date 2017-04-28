@@ -122,6 +122,10 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // Returns false if this delegate is for a WebAPK and was triggered from the
   // A2HS menu item. Otherwise returns true.
   bool TriggeredFromBanner() const;
+
+  // Called when the user accepts the banner to install the app. (Not called
+  // when the "Open" button is pressed on the banner that is shown after
+  // installation for WebAPK banners.)
   void SendBannerAccepted();
   void OnWebApkInstallFinished(WebApkInstallResult result,
                                bool relax_updates,
