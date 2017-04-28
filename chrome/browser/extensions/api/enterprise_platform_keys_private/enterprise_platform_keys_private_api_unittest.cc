@@ -409,8 +409,9 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
  protected:
   static const char kArgs[];
 
-  EPKPChallengeUserKeyTest()
-      : EPKPChallengeKeyTestBase(ProfileType::USER_PROFILE),
+  explicit EPKPChallengeUserKeyTest(
+      ProfileType profile_type = ProfileType::USER_PROFILE)
+      : EPKPChallengeKeyTestBase(profile_type),
         impl_(&mock_cryptohome_client_,
               &mock_async_method_caller_,
               &mock_attestation_flow_,
@@ -423,8 +424,10 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
   void SetUp() override {
     EPKPChallengeKeyTestBase::SetUp();
 
-    // Set the user preferences.
-    prefs_->SetBoolean(prefs::kAttestationEnabled, true);
+    if (profile_type_ == ProfileType::USER_PROFILE) {
+      // Set the user preferences.
+      prefs_->SetBoolean(prefs::kAttestationEnabled, true);
+    }
   }
 
   // Returns an error string for the given code.
@@ -575,6 +578,19 @@ TEST_F(EPKPChallengeUserKeyTest, AttestationPreparedDbusFailed) {
           chromeos::DBUS_METHOD_CALL_FAILURE, true)));
 
   EXPECT_EQ(GetCertificateError(kDBusError),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+class EPKPChallengeUserKeySigninProfileTest : public EPKPChallengeUserKeyTest {
+ protected:
+  EPKPChallengeUserKeySigninProfileTest()
+      : EPKPChallengeUserKeyTest(ProfileType::SIGNIN_PROFILE) {}
+};
+
+TEST_F(EPKPChallengeUserKeySigninProfileTest, UserKeyNotAvailable) {
+  settings_helper_.SetBoolean(chromeos::kDeviceAttestationEnabled, false);
+
+  EXPECT_EQ(EPKPChallengeUserKey::kUserKeyNotAvailable,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 

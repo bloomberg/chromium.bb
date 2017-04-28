@@ -209,6 +209,7 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
  public:
   static const char kGetCertificateFailedError[];
   static const char kKeyRegistrationFailedError[];
+  static const char kUserKeyNotAvailable[];
   static const char kUserPolicyDisabledError[];
 
   EPKPChallengeUserKey();
