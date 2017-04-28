@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 
 namespace gfx {
@@ -21,7 +22,7 @@ class RootWindowTransformer;
 
 // A helper class to handle ash specific feature that requires
 // transforming a root window (such as rotation, UI zooming).
-class TransformerHelper {
+class ASH_EXPORT TransformerHelper {
  public:
   explicit TransformerHelper(AshWindowTreeHost* ash_host);
   ~TransformerHelper();

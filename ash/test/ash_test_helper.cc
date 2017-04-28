@@ -240,7 +240,8 @@ void AshTestHelper::TearDown() {
     dbus_thread_manager_initialized_ = false;
   }
 
-  ui::TerminateContextFactoryForTests();
+  if (config_ == Config::CLASSIC)
+    ui::TerminateContextFactoryForTests();
 
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
@@ -308,7 +309,7 @@ void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
 }
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
-  if (config_ == Config::CLASSIC)
+  if (config_ != Config::MASH)
     return Shell::Get()->display_manager()->GetSecondaryDisplay();
 
   std::vector<RootWindowController*> roots = GetRootsOrderedByDisplayId();
@@ -319,10 +320,12 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
 
 void AshTestHelper::CreateMashWindowManager() {
   CHECK(config_ != Config::CLASSIC);
-  window_manager_app_ = base::MakeUnique<mus::WindowManagerApplication>();
+  const bool show_primary_root_on_connect = false;
+  window_manager_app_ = base::MakeUnique<mus::WindowManagerApplication>(
+      show_primary_root_on_connect);
 
   window_manager_app_->window_manager_.reset(
-      new mus::WindowManager(nullptr, config_));
+      new mus::WindowManager(nullptr, config_, show_primary_root_on_connect));
   window_manager_app_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
   window_manager_app_->window_manager()
@@ -345,8 +348,12 @@ void AshTestHelper::CreateMashWindowManager() {
       window_manager_app_->window_manager()->window_tree_client();
   window_tree_client_private_ =
       base::MakeUnique<aura::WindowTreeClientPrivate>(window_tree_client);
-  int next_x = 0;
-  CreateRootWindowController("800x600", &next_x);
+  if (config_ == Config::MUS) {
+    window_tree_client_private_->CallOnConnect();
+  } else {
+    int next_x = 0;
+    CreateRootWindowController("800x600", &next_x);
+  }
 
   // Make sure the NetworkHandler didn't get turned on, see above comment as to
   // why the NetworkHandler should not be running.

@@ -10,6 +10,7 @@
 #include "ash/mus/network_connect_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -35,7 +36,13 @@
 namespace ash {
 namespace mus {
 
-WindowManagerApplication::WindowManagerApplication() {}
+WindowManagerApplication::WindowManagerApplication(
+    bool show_primary_host_on_connect,
+    Config ash_config,
+    std::unique_ptr<ash::ShellDelegate> shell_delegate)
+    : show_primary_host_on_connect_(show_primary_host_on_connect),
+      shell_delegate_(std::move(shell_delegate)),
+      ash_config_(ash_config) {}
 
 WindowManagerApplication::~WindowManagerApplication() {
   // Verify that we created a WindowManager before attempting to tear everything
@@ -60,6 +67,10 @@ WindowManagerApplication::~WindowManagerApplication() {
   ShutdownComponents();
 }
 
+service_manager::Connector* WindowManagerApplication::GetConnector() {
+  return context() ? context()->connector() : nullptr;
+}
+
 void WindowManagerApplication::InitWindowManager(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
@@ -77,7 +88,8 @@ void WindowManagerApplication::InitWindowManager(
   statistics_provider_->SetMachineStatistic("initial_locale", "en-US");
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 
-  window_manager_->Init(std::move(window_tree_client), blocking_pool);
+  window_manager_->Init(std::move(window_tree_client), blocking_pool,
+                        std::move(shell_delegate_));
 }
 
 void WindowManagerApplication::InitializeComponents(bool init_network_handler) {
@@ -122,15 +134,18 @@ void WindowManagerApplication::OnStart() {
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
       views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
-  window_manager_ =
-      base::MakeUnique<WindowManager>(context()->connector(), Config::MASH);
+  window_manager_ = base::MakeUnique<WindowManager>(
+      context()->connector(), ash_config_, show_primary_host_on_connect_);
 
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
       base::MakeUnique<aura::WindowTreeClient>(
           context()->connector(), window_manager_.get(), window_manager_.get());
-  window_tree_client->ConnectAsWindowManager();
+  const bool automatically_create_display_roots =
+      window_manager_->config() == Config::MASH;
+  window_tree_client->ConnectAsWindowManager(
+      automatically_create_display_roots);
 
   const size_t kMaxNumberThreads = 3u;  // Matches that of content.
   const char kThreadNamePrefix[] = "MashBlocking";

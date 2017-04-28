@@ -154,6 +154,7 @@
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
@@ -171,16 +172,6 @@
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
-
-#if defined(USE_X11)
-#include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/display/types/native_display_delegate.h"
-#include "ui/ozone/public/ozone_platform.h"
-#endif
 
 namespace ash {
 
@@ -579,9 +570,10 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
   // state on ShellPortClassic. http://crbug.com/671246.
 
+  gpu_support_.reset(shell_delegate_->CreateGPUSupport());
+
   // Don't use Shell::GetAshConfig() as |instance_| has not yet been set.
   if (shell_port_->GetAshConfig() != Config::MASH) {
-    gpu_support_.reset(shell_delegate_->CreateGPUSupport());
     display_manager_.reset(ScreenAsh::CreateDisplayManager());
     window_tree_host_manager_.reset(new WindowTreeHostManager);
     user_metrics_recorder_.reset(new UserMetricsRecorder);
@@ -846,24 +838,20 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   shell_delegate_->PreInit();
-  bool display_initialized = true;
-  if (config == Config::CLASSIC) {
-    // TODO: decide if this needs to be made to work in Config::MUS.
-    // http://crbug.com/705595.
-    display_initialized = display_manager_->InitFromCommandLine();
-
+  // TODO(sky): remove MASH from here.
+  bool display_initialized =
+      (config == Config::MASH || display_manager_->InitFromCommandLine());
+  if (config == Config::MUS && !display_initialized) {
+    // Run display configuration off device in mus mode.
+    display_manager_->set_configure_displays(true);
+    display_configurator_->set_configure_display(true);
+  }
+  if (config != Config::MASH) {
+    // TODO(sky): should work in mash too.
     display_configuration_controller_.reset(new DisplayConfigurationController(
         display_manager_.get(), window_tree_host_manager_.get()));
-
-#if defined(USE_OZONE)
-    display_configurator_->Init(
-        ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
-        !gpu_support_->IsPanelFittingDisabled());
-#elif defined(USE_X11)
-    display_configurator_->Init(
-        base::MakeUnique<display::NativeDisplayDelegateX11>(),
-        !gpu_support_->IsPanelFittingDisabled());
-#endif
+    display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
+                                !gpu_support_->IsPanelFittingDisabled());
   }
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
@@ -874,7 +862,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   AddShellObserver(projecting_observer_.get());
 
-  if (!display_initialized && chromeos::IsRunningAsSystemCompositor()) {
+  // TODO(sky): once simplified display management is enabled for mash
+  // config == Config::MUS should be config != Config::CLASSIC.
+  if (!display_initialized &&
+      (config == Config::MUS || chromeos::IsRunningAsSystemCompositor())) {
     display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
         display_configurator_.get(), display_manager_.get());
 
@@ -1057,7 +1048,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  if (config != Config::MASH) {
+  // TODO(sky): needs to to work for mus too.
+  if (config == Config::CLASSIC) {
     touch_transformer_controller_.reset(new AshTouchTransformController(
         display_configurator_.get(), display_manager_.get()));
   }

@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_controller.h"
@@ -23,6 +25,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace ash {
 namespace mus {
@@ -73,19 +76,26 @@ void WmTestBase::UpdateDisplay(const std::string& display_spec) {
 }
 
 aura::Window* WmTestBase::GetPrimaryRootWindow() {
-  std::vector<RootWindowController*> roots =
-      test_helper_->GetRootsOrderedByDisplayId();
-  DCHECK(!roots.empty());
-  return roots[0]->GetRootWindow();
+  return Shell::Get()->GetPrimaryRootWindow();
 }
 
 aura::Window* WmTestBase::GetSecondaryRootWindow() {
+  if (Shell::GetAshConfig() == Config::MUS) {
+    return Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+        GetSecondaryDisplay().id());
+  }
+
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? nullptr : roots[1]->GetRootWindow();
 }
 
 display::Display WmTestBase::GetPrimaryDisplay() {
+  if (Shell::GetAshConfig() == Config::MUS) {
+    return display::Screen::GetScreen()->GetDisplayNearestWindow(
+        Shell::Get()->GetPrimaryRootWindow());
+  }
+
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
@@ -93,6 +103,9 @@ display::Display WmTestBase::GetPrimaryDisplay() {
 }
 
 display::Display WmTestBase::GetSecondaryDisplay() {
+  if (Shell::GetAshConfig() == Config::MUS)
+    return Shell::Get()->display_manager()->GetSecondaryDisplay();
+
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   return roots.size() < 2 ? display::Display()

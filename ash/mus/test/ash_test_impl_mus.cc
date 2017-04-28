@@ -6,10 +6,12 @@
 
 #include "ash/test/ash_test.h"
 #include "ash/wm_window.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
+#include "ui/display/display_switches.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -40,6 +42,13 @@ AshTestImplMus::AshTestImplMus()
 AshTestImplMus::~AshTestImplMus() {}
 
 void AshTestImplMus::SetUp() {
+  // This matches what AshTestBase does.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kHostWindowBounds)) {
+    command_line->AppendSwitchASCII(::switches::kHostWindowBounds,
+                                    "1+1-800x600");
+  }
+
   wm_test_base_->SetUp();
 }
 

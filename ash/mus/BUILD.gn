@@ -20,6 +20,8 @@ source_set("lib") {
     "accelerators/accelerator_ids.h",
     "accessibility_delegate_mus.cc",
     "accessibility_delegate_mus.h",
+    "ash_window_tree_host_mus.cc",
+    "ash_window_tree_host_mus.h",
     "bridge/immersive_handler_factory_mus.cc",
     "bridge/immersive_handler_factory_mus.h",
     "bridge/shell_port_mash.cc",

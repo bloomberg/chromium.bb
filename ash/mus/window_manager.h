@@ -68,7 +68,11 @@ class WmTestHelper;
 class WindowManager : public aura::WindowManagerDelegate,
                       public aura::WindowTreeClientDelegate {
  public:
-  WindowManager(service_manager::Connector* connector, Config config);
+  // Set |show_primary_host_on_connect| to true if the initial display should
+  // be made visible.  Generally tests should use false, other places use true.
+  WindowManager(service_manager::Connector* connector,
+                Config config,
+                bool show_primary_host_on_connect);
   ~WindowManager() override;
 
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
@@ -201,6 +205,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   display::mojom::DisplayControllerPtr display_controller_;
 
   const Config config_;
+
+  const bool show_primary_host_on_connect_;
 
   base::OnceClosure lost_connection_callback_;
 

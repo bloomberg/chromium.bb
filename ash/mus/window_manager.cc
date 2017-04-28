@@ -75,9 +75,11 @@ struct WindowManager::DragState {
 
 // TODO: need to register OSExchangeDataProviderMus. http://crbug.com/665077.
 WindowManager::WindowManager(service_manager::Connector* connector,
-                             Config config)
+                             Config config,
+                             bool show_primary_host_on_connect)
     : connector_(connector),
       config_(config),
+      show_primary_host_on_connect_(show_primary_host_on_connect),
       wm_state_(base::MakeUnique<::wm::WMState>()),
       property_converter_(base::MakeUnique<aura::PropertyConverter>()) {
   property_converter_->RegisterProperty(
@@ -122,12 +124,14 @@ void WindowManager::Init(
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
-  // |connector_| will be null in some tests.
-  if (connector_)
-    connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
-
-  screen_ = base::MakeUnique<ScreenMus>(display_controller_.get());
-  display::Screen::SetScreenInstance(screen_.get());
+  // TODO(sky): remove and use MUS code.
+  if (config_ == Config::MASH) {
+    // |connector_| is null in some tests.
+    if (connector_)
+      connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
+    screen_ = base::MakeUnique<ScreenMus>(display_controller_.get());
+    display::Screen::SetScreenInstance(screen_.get());
+  }
 
   pointer_watcher_event_router_ =
       base::MakeUnique<views::PointerWatcherEventRouter>(
@@ -229,10 +233,10 @@ void WindowManager::CreateShell(
   DCHECK(!created_shell_);
   created_shell_ = true;
   ShellInitParams init_params;
-  ShellPortMash* shell_port =
-      new ShellPortMash(WmWindow::Get(window_tree_host->window()), this,
-                        pointer_watcher_event_router_.get(),
-                        create_session_state_delegate_stub_for_test_);
+  ShellPortMash* shell_port = new ShellPortMash(
+      window_tree_host ? WmWindow::Get(window_tree_host->window()) : nullptr,
+      this, pointer_watcher_event_router_.get(),
+      create_session_state_delegate_stub_for_test_);
   // Shell::CreateInstance() takes ownership of ShellDelegate.
   init_params.delegate = shell_delegate_ ? shell_delegate_.release()
                                          : new ShellDelegateMus(connector_);
@@ -336,7 +340,14 @@ void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
   ash::Shell::set_window_manager_client(client);
 }
 
-void WindowManager::OnWmConnected() {}
+void WindowManager::OnWmConnected() {
+  if (config_ != Config::MUS)
+    return;
+
+  CreateShell(nullptr);
+  if (show_primary_host_on_connect_)
+    Shell::GetPrimaryRootWindow()->GetHost()->Show();
+}
 
 void WindowManager::OnWmSetBounds(aura::Window* window,
                                   const gfx::Rect& bounds) {

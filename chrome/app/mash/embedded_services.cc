@@ -31,8 +31,11 @@
 std::unique_ptr<service_manager::Service> CreateEmbeddedMashService(
     const std::string& service_name) {
 #if defined(OS_CHROMEOS)
-  if (service_name == ash::mojom::kServiceName)
-    return base::MakeUnique<ash::mus::WindowManagerApplication>();
+  if (service_name == ash::mojom::kServiceName) {
+    const bool show_primary_host_on_connect = true;
+    return base::WrapUnique(
+        new ash::mus::WindowManagerApplication(show_primary_host_on_connect));
+  }
   if (service_name == "accessibility_autoclick")
     return base::MakeUnique<ash::autoclick::AutoclickApplication>();
   if (service_name == "touch_hud")

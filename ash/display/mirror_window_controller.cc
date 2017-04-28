@@ -173,13 +173,20 @@ void MirrorWindowController::UpdateWindow(
         mirroring_host_info_map_.end()) {
       AshWindowTreeHostInitParams init_params;
       init_params.initial_bounds = display_info.bounds_in_native();
+      init_params.display_id = display_info.id();
+      init_params.device_scale_factor = display_info.device_scale_factor();
+      init_params.ui_scale_factor = display_info.configured_ui_scale();
       MirroringHostInfo* host_info = new MirroringHostInfo;
       host_info->ash_host = AshWindowTreeHost::Create(init_params);
       mirroring_host_info_map_[display_info.id()] = host_info;
 
       aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
-      host->SetSharedInputMethod(
-          Shell::Get()->window_tree_host_manager()->input_method());
+      // TODO: Config::MUS should not install an InputMethod.
+      // http://crbug.com/706913
+      if (!host->has_input_method()) {
+        host->SetSharedInputMethod(
+            Shell::Get()->window_tree_host_manager()->input_method());
+      }
       host->window()->SetName(
           base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
       host->compositor()->SetBackgroundColor(SK_ColorBLACK);
@@ -222,13 +229,17 @@ void MirrorWindowController::UpdateWindow(
       mirror_window->Show();
       if (reflector_) {
         reflector_->AddMirroringLayer(mirror_window->layer());
-      } else {
+      } else if (aura::Env::GetInstance()->context_factory_private()) {
         reflector_ =
             aura::Env::GetInstance()
                 ->context_factory_private()
                 ->CreateReflector(
                     Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
                     mirror_window->layer());
+      } else {
+        // TODO: Config::MUS needs to support reflector.
+        // http://crbug.com/601869.
+        NOTIMPLEMENTED();
       }
     } else {
       AshWindowTreeHost* ash_host =
@@ -294,7 +305,10 @@ void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
       if (info->mirror_window_host_size == host->GetBoundsInPixels().size())
         return;
       info->mirror_window_host_size = host->GetBoundsInPixels().size();
-      reflector_->OnMirroringCompositorResized();
+      // TODO: |reflector_| should always be non-null here, but isn't in MUS
+      // yet because of http://crbug.com/601869.
+      if (reflector_)
+        reflector_->OnMirroringCompositorResized();
       // No need to update the transformer as new transformer is already set
       // in UpdateWindow.
       Shell::Get()
@@ -362,7 +376,10 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info,
   host->RemoveObserver(Shell::Get()->window_tree_host_manager());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
-  reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
+  // TODO: |reflector_| should always be non-null here, but isn't in MUS yet
+  // because of http://crbug.com/601869.
+  if (reflector_)
+    reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
 
   // EventProcessor may be accessed after this call if the mirroring window
   // was deleted as a result of input event (e.g. shortcut), so don't delete

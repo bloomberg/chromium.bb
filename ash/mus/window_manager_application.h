@@ -10,7 +10,9 @@
 #include <memory>
 #include <set>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
+#include "ash/shell_delegate.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -33,11 +35,16 @@ class ScopedFakeStatisticsProvider;
 }
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace views {
 class AuraInit;
 }
 
 namespace ash {
+
 namespace test {
 class AshTestHelper;
 }
@@ -49,10 +56,18 @@ class WindowManager;
 // Hosts the window manager and the ash system user interface for mash.
 class WindowManagerApplication : public service_manager::Service {
  public:
-  WindowManagerApplication();
+  // If |observer| is non-null it is added to the WindowManager once created.
+  // See WindowManager's constructor for details of
+  // |show_primary_host_on_connect|.
+  explicit WindowManagerApplication(
+      bool show_primary_host_on_connect,
+      Config ash_config = Config::MASH,
+      std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
   ~WindowManagerApplication() override;
 
   WindowManager* window_manager() { return window_manager_.get(); }
+
+  service_manager::Connector* GetConnector();
 
  private:
   friend class ash::test::AshTestHelper;
@@ -75,6 +90,8 @@ class WindowManagerApplication : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  const bool show_primary_host_on_connect_;
+
   tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
@@ -89,6 +106,10 @@ class WindowManagerApplication : public service_manager::Service {
       statistics_provider_;
 
   service_manager::BinderRegistry registry_;
+
+  std::unique_ptr<ShellDelegate> shell_delegate_;
+
+  const Config ash_config_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
