@@ -345,14 +345,10 @@ function headersToArray(headers) {
   // iterable.
   ['content-length', 'content-type', 'x-serviceworker-serverheader'].forEach(
     function(name) {
-      for (var value of headers.getAll(name))
-        ret.push([name, value]);
+      for (var header of headers){
+        ret.push(header);
+      }
     });
-
-  // Original code:
-  // for (var header of headers) {
-  //   ret.push(header);
-  // }
 
   return ret;
 }

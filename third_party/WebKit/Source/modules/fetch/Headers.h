@@ -46,7 +46,6 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
   void append(const String& name, const String& value, ExceptionState&);
   void remove(const String& key, ExceptionState&);
   String get(const String& key, ExceptionState&);
-  Vector<String> getAll(const String& key, ExceptionState&);
   bool has(const String& key, ExceptionState&);
   void set(const String& key, const String& value, ExceptionState&);
 

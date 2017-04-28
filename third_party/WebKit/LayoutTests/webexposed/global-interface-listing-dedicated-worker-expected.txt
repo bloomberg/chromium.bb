@@ -458,7 +458,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method entries
 [Worker]     method forEach
 [Worker]     method get
-[Worker]     method getAll
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method set

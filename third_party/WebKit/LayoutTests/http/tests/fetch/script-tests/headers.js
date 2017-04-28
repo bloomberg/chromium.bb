@@ -128,8 +128,8 @@ test(function() {
       assert_equals(headersObject, headers);
     }, thisObject);
 
-    // 'append()', 'getAll()'
-    var allValues = headers.getAll('X-Fetch-Test');
+    // 'append()'
+    var allValues = headers.get('X-Fetch-Test').split(', ');
     assert_equals(allValues.length, 1);
     assert_equals(size(headers), 4);
     headers.append('X-FETCH-TEST', 'response test field - append');
@@ -138,13 +138,13 @@ test(function() {
     assert_equals(headers.get('X-FETCH-Test'),
                   'response test field - updated, response test field - append',
                   'the value of the first header added should be returned.');
-    allValues = headers.getAll('X-FETch-TEST');
+    allValues = headers.get('X-FETch-TEST').split(', ');
     assert_equals(allValues.length, 2);
     assert_equals(allValues[0], 'response test field - updated');
     assert_equals(allValues[1], 'response test field - append');
     headers.set('X-FETch-Test', 'response test field - set');
     assert_equals(size(headers), 5, 'the second header should be deleted');
-    allValues = headers.getAll('X-Fetch-Test');
+    allValues = headers.get('X-Fetch-Test').split(', ');
     assert_equals(allValues.length, 1, 'the second header should be deleted');
     assert_equals(allValues[0], 'response test field - set');
     headers.append('X-Fetch-TEST', 'response test field - append');
@@ -157,16 +157,16 @@ test(function() {
     assert_equals(size(headers), 2, 'headers size should match');
     assert_equals(headers.get('a'), 'b');
     assert_equals(headers.get('c'), 'd, e');
-    assert_equals(headers.getAll('c')[0], 'd');
-    assert_equals(headers.getAll('c')[1], 'e');
+    assert_equals(headers.get('c').split(', ')[0], 'd');
+    assert_equals(headers.get('c').split(', ')[1], 'e');
 
     // new Headers with Headers
     var headers2 = new Headers(headers);
     assert_equals(size(headers2), 2, 'headers size should match');
     assert_equals(headers2.get('a'), 'b');
     assert_equals(headers2.get('c'), 'd, e');
-    assert_equals(headers2.getAll('c')[0], 'd');
-    assert_equals(headers2.getAll('c')[1], 'e');
+    assert_equals(headers2.get('c').split(', ')[0], 'd');
+    assert_equals(headers2.get('c').split(', ')[1], 'e');
     headers.set('a', 'x');
     assert_equals(headers.get('a'), 'x');
     assert_equals(headers2.get('a'), 'b');
