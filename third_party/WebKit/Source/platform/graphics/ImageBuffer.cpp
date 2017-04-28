@@ -501,8 +501,8 @@ void ImageBuffer::DisableAcceleration() {
   // Create and configure a recording (unaccelerated) surface.
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::WrapUnique(new RecordingImageBufferSurface(
-          surface_->size(), surface_->GetOpacityMode(),
-          surface_->color_params()));
+          surface_->size(), RecordingImageBufferSurface::kAllowFallback,
+          surface_->GetOpacityMode(), surface_->color_params()));
   SetSurface(std::move(surface));
 }
 
