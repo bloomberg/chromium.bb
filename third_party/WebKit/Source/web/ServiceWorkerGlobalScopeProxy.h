@@ -130,6 +130,11 @@ class ServiceWorkerGlobalScopeProxy final
   void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) override;
+  void OnNavigationPreloadComplete(int fetch_event_id,
+                                   double completion_time,
+                                   int64_t encoded_data_length,
+                                   int64_t encoded_body_length,
+                                   int64_t decoded_body_length) override;
 
   // WorkerReportingProxy overrides:
   void CountFeature(UseCounter::Feature) override;

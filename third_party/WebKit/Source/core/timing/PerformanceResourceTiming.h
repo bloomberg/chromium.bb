@@ -121,6 +121,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   bool did_reuse_connection_;
   bool allow_timing_details_;
   bool allow_redirect_details_;
+  bool allow_negative_value_;
 };
 
 }  // namespace blink

@@ -505,15 +505,17 @@ double PerformanceBase::ClampTimeResolution(double time_seconds) {
   return floor(time_seconds / kResolutionSeconds) * kResolutionSeconds;
 }
 
+// static
 DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
     double time_origin,
-    double monotonic_time) {
+    double monotonic_time,
+    bool allow_negative_value) {
   // Avoid exposing raw platform timestamps.
   if (!monotonic_time || !time_origin)
     return 0.0;
 
   double time_in_seconds = monotonic_time - time_origin;
-  if (time_in_seconds < 0)
+  if (time_in_seconds < 0 && !allow_negative_value)
     return 0.0;
   return ConvertSecondsToDOMHighResTimeStamp(
       ClampTimeResolution(time_in_seconds));
@@ -521,7 +523,8 @@ DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
 
 DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
     double monotonic_time) const {
-  return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time);
+  return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time,
+                                            false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceBase::now() const {

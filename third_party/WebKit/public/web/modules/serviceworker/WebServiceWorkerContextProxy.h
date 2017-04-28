@@ -125,6 +125,11 @@ class WebServiceWorkerContextProxy {
   virtual void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) = 0;
+  virtual void OnNavigationPreloadComplete(int fetch_event_id,
+                                           double completion_time,
+                                           int64_t encoded_data_length,
+                                           int64_t encoded_body_length,
+                                           int64_t decoded_body_length) = 0;
 };
 
 }  // namespace blink

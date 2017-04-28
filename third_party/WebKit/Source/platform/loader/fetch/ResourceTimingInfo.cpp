@@ -22,6 +22,7 @@ PassRefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
   for (auto& response_data : data->redirect_chain_)
     info->redirect_chain_.push_back(ResourceResponse(response_data.get()));
   info->transfer_size_ = data->transfer_size_;
+  info->negative_allowed_ = data->negative_allowed_;
   return info.Release();
 }
 
@@ -40,6 +41,7 @@ ResourceTimingInfo::CopyData() const {
     data->redirect_chain_.push_back(response.CopyData());
   data->transfer_size_ = transfer_size_;
   data->is_main_resource_ = is_main_resource_;
+  data->negative_allowed_ = negative_allowed_;
   return data;
 }
 

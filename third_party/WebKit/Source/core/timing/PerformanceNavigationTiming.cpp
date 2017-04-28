@@ -133,7 +133,8 @@ DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventStart() const {
       !timing->HasSameOriginAsPreviousDocument())
     return 0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->UnloadEventStart());
+      time_origin_, timing->UnloadEventStart(),
+      false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventEnd() const {
@@ -144,7 +145,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventEnd() const {
       !timing->HasSameOriginAsPreviousDocument())
     return 0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->UnloadEventEnd());
+      time_origin_, timing->UnloadEventEnd(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domInteractive() const {
@@ -152,7 +153,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domInteractive() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DomInteractive());
+      time_origin_, timing->DomInteractive(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventStart()
@@ -161,7 +162,8 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventStart()
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DomContentLoadedEventStart());
+      time_origin_, timing->DomContentLoadedEventStart(),
+      false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventEnd()
@@ -170,7 +172,8 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventEnd()
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DomContentLoadedEventEnd());
+      time_origin_, timing->DomContentLoadedEventEnd(),
+      false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::domComplete() const {
@@ -178,7 +181,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::domComplete() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DomComplete());
+      time_origin_, timing->DomComplete(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::loadEventStart() const {
@@ -186,7 +189,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventStart() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->LoadEventStart());
+      time_origin_, timing->LoadEventStart(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
@@ -194,7 +197,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->LoadEventEnd());
+      time_origin_, timing->LoadEventEnd(), false /* allow_negative_value */);
 }
 
 AtomicString PerformanceNavigationTiming::type() const {
@@ -219,7 +222,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::redirectStart() const {
   if (!allow_redirect_details || !timing)
     return 0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->RedirectStart());
+      time_origin_, timing->RedirectStart(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::redirectEnd() const {
@@ -228,7 +231,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::redirectEnd() const {
   if (!allow_redirect_details || !timing)
     return 0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->RedirectEnd());
+      time_origin_, timing->RedirectEnd(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::fetchStart() const {
@@ -236,7 +239,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::fetchStart() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->FetchStart());
+      time_origin_, timing->FetchStart(), false /* allow_negative_value */);
 }
 
 DOMHighResTimeStamp PerformanceNavigationTiming::responseEnd() const {
@@ -244,7 +247,7 @@ DOMHighResTimeStamp PerformanceNavigationTiming::responseEnd() const {
   if (!timing)
     return 0.0;
   return PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ResponseEnd());
+      time_origin_, timing->ResponseEnd(), false /* allow_negative_value */);
 }
 
 // Overriding PerformanceEntry's attributes.
