@@ -11,14 +11,14 @@ import android.test.InstrumentationTestCase;
 
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.signin.test.util.SimpleFuture;
 
 /**
  * Test class for {@link AccountManagerHelper}.
  */
 public class AccountManagerHelperTest extends InstrumentationTestCase {
-    private MockAccountManager mAccountManager;
+    private FakeAccountManagerDelegate mDelegate;
     private AccountManagerHelper mHelper;
 
     @Override
@@ -26,8 +26,8 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         super.setUp();
 
         Context context = getInstrumentation().getTargetContext();
-        mAccountManager = new MockAccountManager(context, context);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
+        mDelegate = new FakeAccountManagerDelegate(context);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(context, mDelegate);
         mHelper = AccountManagerHelper.get();
     }
 
@@ -62,7 +62,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
                 AccountHolder.builder(account).password(password).alwaysAccept(true);
-        mAccountManager.addAccountHolderExplicitly(accountHolder.build());
+        mDelegate.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }
 

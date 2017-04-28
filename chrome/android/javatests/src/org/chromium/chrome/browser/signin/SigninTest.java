@@ -39,7 +39,7 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
  * These tests cover the sign in flow for both consumer and managed accounts. They also verify
  * the state of the browser while signed in, and any changes when signing out.
  *
- * The accounts used to sign in are mocked by a MockAccountManager.
+ * The accounts used to sign in are mocked by a FakeAccountManagerDelegate.
  */
 public class SigninTest extends ChromeTabbedActivityTestBase {
 

@@ -20,7 +20,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -29,15 +29,13 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OAuth2TokenServiceTest {
     private AdvancedMockContext mContext;
-    private MockAccountManager mAccountManager;
+    private FakeAccountManagerDelegate mAccountManager;
 
     @Before
     public void setUp() throws Exception {
-        // Mock out the account manager on the device.
         mContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
-        mAccountManager = new MockAccountManager(
-                mContext, InstrumentationRegistry.getInstrumentation().getContext());
+        mAccountManager = new FakeAccountManagerDelegate(mContext);
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
     }
 

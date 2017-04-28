@@ -26,7 +26,7 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerHelper;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
 public class FeatureUtilitiesTest {
     private IntentTestMockContext mContextWithSpeech;
     private IntentTestMockContext mContextWithoutSpeech;
-    private MockAuthenticationAccountManager mAccountManager;
+    private FakeAuthenticationAccountManager mAccountManager;
     private AdvancedMockContext mAccountTestingContext;
     private Account mTestAccount;
 
@@ -105,13 +105,12 @@ public class FeatureUtilitiesTest {
         }
     }
 
-    private static class MockAuthenticationAccountManager extends MockAccountManager {
-
+    private static class FakeAuthenticationAccountManager extends FakeAccountManagerDelegate {
         private final String mAccountType;
 
-        public MockAuthenticationAccountManager(Context localContext, Context testContext,
-                String accountType, Account... accounts) {
-            super(localContext, testContext, accounts);
+        public FakeAuthenticationAccountManager(
+                Context localContext, String accountType, Account... accounts) {
+            super(localContext, accounts);
             mAccountType = accountType;
         }
 
@@ -151,13 +150,11 @@ public class FeatureUtilitiesTest {
     }
 
     private void setUpAccount(final String accountType) {
-        mAccountManager = new MockAuthenticationAccountManager(mAccountTestingContext,
-                InstrumentationRegistry.getInstrumentation().getContext(), accountType,
-                mTestAccount);
+        mAccountManager = new FakeAuthenticationAccountManager(
+                mAccountTestingContext, accountType, mTestAccount);
 
         AccountManagerHelper.overrideAccountManagerHelperForTests(
-                mAccountTestingContext,
-                mAccountManager);
+                mAccountTestingContext, mAccountManager);
     }
 
     @Test

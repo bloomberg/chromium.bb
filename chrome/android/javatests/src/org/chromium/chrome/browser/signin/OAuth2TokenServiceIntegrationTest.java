@@ -27,7 +27,7 @@ import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.concurrent.Callable;
@@ -56,7 +56,7 @@ public class OAuth2TokenServiceIntegrationTest {
 
     private AdvancedMockContext mContext;
     private OAuth2TokenService mOAuth2TokenService;
-    private MockAccountManager mAccountManager;
+    private FakeAccountManagerDelegate mAccountManager;
     private TestObserver mObserver;
     private ChromeSigninController mChromeSigninController;
 
@@ -70,8 +70,7 @@ public class OAuth2TokenServiceIntegrationTest {
         // be initialized beforehand.
         mContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
-        mAccountManager = new MockAccountManager(
-                mContext, InstrumentationRegistry.getInstrumentation().getContext());
+        mAccountManager = new FakeAccountManagerDelegate(mContext);
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
 
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
