@@ -13,7 +13,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace extensions {
 

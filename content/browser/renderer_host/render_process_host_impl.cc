@@ -1004,10 +1004,12 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   // Establish a ServiceManager connection for the new render service instance.
   pending_connection_.reset(new mojo::edk::PendingProcessConnection);
-  child_connection_.reset(new ChildConnection(
+  service_manager::Identity child_identity(
       mojom::kRendererServiceName,
-      base::StringPrintf("%d_%d", id_, instance_id_++),
-      pending_connection_.get(), connector, io_task_runner));
+      BrowserContext::GetServiceUserIdFor(GetBrowserContext()),
+      base::StringPrintf("%d_%d", id_, instance_id_++));
+  child_connection_.reset(new ChildConnection(
+      child_identity, pending_connection_.get(), connector, io_task_runner));
 
   // Send an interface request to bootstrap the IPC::Channel. Note that this
   // request will happily sit on the pipe until the process is launched and

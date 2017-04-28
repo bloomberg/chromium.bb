@@ -60,7 +60,7 @@
 #include "net/android/network_library.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -551,8 +551,8 @@ std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
   return base::JSONReader::Read(manifest_contents);
 }
 
-void AwContentBrowserClient::RegisterRenderFrameMojoInterfaces(
-    service_manager::InterfaceRegistry* registry,
+void AwContentBrowserClient::ExposeInterfacesToFrame(
+    service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   registry->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,

@@ -640,8 +640,7 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
 
-service_manager::InterfaceRegistry*
-RenderFrameHostImpl::GetInterfaceRegistry() {
+service_manager::BinderRegistry* RenderFrameHostImpl::GetInterfaceRegistry() {
   return interface_registry_.get();
 }
 
@@ -2658,8 +2657,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-  GetContentClient()->browser()->RegisterRenderFrameMojoInterfaces(
-      GetInterfaceRegistry(), this);
+  GetContentClient()->browser()->ExposeInterfacesToFrame(GetInterfaceRegistry(),
+                                                         this);
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -3004,8 +3003,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
     return;
 
   associated_registry_ = base::MakeUnique<AssociatedInterfaceRegistryImpl>();
-  interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
-      mojom::kNavigation_FrameSpec);
+  interface_registry_ = base::MakeUnique<service_manager::BinderRegistry>();
 
   auto make_binding = [](RenderFrameHostImpl* impl,
                          mojom::FrameHostAssociatedRequest request) {
@@ -3332,8 +3330,6 @@ bool RenderFrameHostImpl::HasSelection() {
 void RenderFrameHostImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest interfaces) {
   service_manager::Identity child_identity = GetProcess()->GetChildIdentity();
-  child_identity.set_user_id(
-      BrowserContext::GetServiceUserIdFor(GetProcess()->GetBrowserContext()));
   service_manager::Connector* connector =
       BrowserContext::GetConnectorFor(GetProcess()->GetBrowserContext());
   connector->FilterInterfaces(
@@ -3642,7 +3638,8 @@ void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (interface_registry_.get()) {
-    interface_registry_->BindInterface(interface_name,
+    interface_registry_->BindInterface(GetProcess()->GetChildIdentity(),
+                                       interface_name,
                                        std::move(interface_pipe));
   }
 }

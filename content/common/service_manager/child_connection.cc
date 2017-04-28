@@ -115,15 +115,12 @@ class ChildConnection::IOThreadContext
 };
 
 ChildConnection::ChildConnection(
-    const std::string& service_name,
-    const std::string& instance_id,
+    const service_manager::Identity& child_identity,
     mojo::edk::PendingProcessConnection* process_connection,
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : context_(new IOThreadContext),
-      child_identity_(service_name,
-                      service_manager::mojom::kInheritUserID,
-                      instance_id),
+      child_identity_(child_identity),
       weak_factory_(this) {
   context_->Initialize(child_identity_, connector,
                        process_connection->CreateMessagePipe(&service_token_),

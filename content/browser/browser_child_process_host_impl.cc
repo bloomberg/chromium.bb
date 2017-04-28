@@ -165,9 +165,11 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   if (!service_name.empty()) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    service_manager::Identity child_identity(
+        service_name, service_manager::mojom::kInheritUserID,
+        base::StringPrintf("%d", data_.id));
     child_connection_.reset(
-        new ChildConnection(service_name, base::StringPrintf("%d", data_.id),
-                            pending_connection_.get(),
+        new ChildConnection(child_identity, pending_connection_.get(),
                             ServiceManagerContext::GetConnectorForIOThread(),
                             base::ThreadTaskRunnerHandle::Get()));
   }

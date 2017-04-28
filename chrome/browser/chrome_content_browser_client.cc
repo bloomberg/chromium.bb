@@ -3158,8 +3158,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 #endif  // defined(ENABLE_MOJO_MEDIA)
 }
 
-void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
-    service_manager::InterfaceRegistry* registry,
+void ChromeContentBrowserClient::ExposeInterfacesToFrame(
+    service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   if (base::FeatureList::IsEnabled(features::kWebUsb)
 #if BUILDFLAG(ENABLE_EXTENSIONS)

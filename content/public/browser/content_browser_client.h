@@ -672,8 +672,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows to register browser Mojo interfaces exposed through the
   // RenderFrameHost.
-  virtual void RegisterRenderFrameMojoInterfaces(
-      service_manager::InterfaceRegistry* registry,
+  virtual void ExposeInterfacesToFrame(
+      service_manager::BinderRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
   // (Currently called only from GPUProcessHost, move somewhere more central).

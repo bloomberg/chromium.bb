@@ -184,8 +184,11 @@ class RenderThreadImplBrowserTest : public testing::Test {
     InitializeMojo();
     shell_context_.reset(new TestServiceManagerContext);
     mojo::edk::PendingProcessConnection process_connection;
+    service_manager::Identity child_identity(
+        mojom::kRendererServiceName, service_manager::mojom::kInheritUserID,
+        "test");
     child_connection_.reset(new ChildConnection(
-        mojom::kRendererServiceName, "test", &process_connection,
+        child_identity, &process_connection,
         ServiceManagerConnection::GetForProcess()->GetConnector(),
         io_task_runner));
 
