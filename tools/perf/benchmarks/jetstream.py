@@ -75,8 +75,6 @@ class _JetstreamMeasurement(legacy_page_test.LegacyPageTest):
     results.AddSummaryValue(list_of_scalar_values.ListOfScalarValues(
         None, 'Score', 'score', all_scores))
 
-
-@benchmark.Disabled('android')
 @benchmark.Owner(emails=['bmeurer@chromium.org', 'mvstanton@chromium.org'])
 class Jetstream(perf_benchmark.PerfBenchmark):
   test = _JetstreamMeasurement
