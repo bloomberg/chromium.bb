@@ -36,6 +36,8 @@ DEFINE_TRACE(FilterData) {
 
 void FilterData::Dispose() {
   node_map = nullptr;
+  if (last_effect)
+    last_effect->DisposeImageFiltersRecursive();
   last_effect = nullptr;
 }
 
@@ -45,8 +47,8 @@ LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
 LayoutSVGResourceFilter::~LayoutSVGResourceFilter() {}
 
 void LayoutSVGResourceFilter::DisposeFilterMap() {
-  for (auto& filter : filter_)
-    filter.value->Dispose();
+  for (auto& entry : filter_)
+    entry.value->Dispose();
   filter_.clear();
 }
 
@@ -76,9 +78,12 @@ void LayoutSVGResourceFilter::RemoveClientFromCache(
     bool mark_for_invalidation) {
   DCHECK(client);
 
-  bool filter_cached = filter_.Contains(client);
-  if (filter_cached)
-    filter_.erase(client);
+  auto entry = filter_.find(client);
+  bool filter_cached = entry != filter_.end();
+  if (filter_cached) {
+    entry->value->Dispose();
+    filter_.erase(entry);
+  }
 
   // If the filter has a cached subtree, invalidate the associated display item.
   if (mark_for_invalidation && filter_cached)

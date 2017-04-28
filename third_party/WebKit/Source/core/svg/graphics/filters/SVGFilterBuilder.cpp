@@ -93,7 +93,7 @@ void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
   if (!effect->HasImageFilter())
     return;
 
-  effect->ClearResult();
+  effect->DisposeImageFilters();
 
   FilterEffectSet& effect_references = this->EffectReferences(effect);
   for (FilterEffect* effect_reference : effect_references)
