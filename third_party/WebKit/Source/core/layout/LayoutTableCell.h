@@ -35,10 +35,10 @@
 
 namespace blink {
 
-static const unsigned kUnsetColumnIndex = 0x1FFFFFFF;
-static const unsigned kMaxColumnIndex = 0x1FFFFFFE;  // 536,870,910
-
-enum IncludeBorderColorOrNot { kDoNotIncludeBorderColor, kIncludeBorderColor };
+#define BITS_OF_ABSOLUTE_COLUMN_INDEX 27
+static const unsigned kUnsetColumnIndex =
+    (1u << BITS_OF_ABSOLUTE_COLUMN_INDEX) - 1;
+static const unsigned kMaxColumnIndex = kUnsetColumnIndex - 1;
 
 class SubtreeLayoutScope;
 
@@ -327,7 +327,11 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   bool UsesCompositedCellDisplayItemClients() const;
   const CollapsedBorderValues* GetCollapsedBorderValues() const {
+    DCHECK(collapsed_border_values_valid_);
     return collapsed_border_values_.get();
+  }
+  void InvalidateCollapsedBorderValues() {
+    collapsed_border_values_valid_ = false;
   }
 
   LayoutRect DebugRect() const override;
@@ -409,16 +413,14 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // See also https://code.google.com/p/chromium/issues/detail?id=128227 for
   // some history.
   //
-  // Those functions are called when the cache (m_collapsedBorders) is
-  // invalidated on LayoutTable.
-  CollapsedBorderValue ComputeCollapsedStartBorder(
-      IncludeBorderColorOrNot = kIncludeBorderColor) const;
-  CollapsedBorderValue ComputeCollapsedEndBorder(
-      IncludeBorderColorOrNot = kIncludeBorderColor) const;
-  CollapsedBorderValue ComputeCollapsedBeforeBorder(
-      IncludeBorderColorOrNot = kIncludeBorderColor) const;
-  CollapsedBorderValue ComputeCollapsedAfterBorder(
-      IncludeBorderColorOrNot = kIncludeBorderColor) const;
+  // Those functions are called during UpdateCollapsedBorderValues().
+  inline CSSPropertyID ResolveBorderProperty(CSSPropertyID) const;
+  CollapsedBorderValue ComputeCollapsedStartBorder() const;
+  CollapsedBorderValue ComputeCollapsedEndBorder() const;
+  CollapsedBorderValue ComputeCollapsedBeforeBorder() const;
+  CollapsedBorderValue ComputeCollapsedAfterBorder() const;
+
+  void UpdateCollapsedBorderValues() const;
 
   Length LogicalWidthFromColumns(LayoutTableCol* first_col_for_this_cell,
                                  Length width_from_style) const;
@@ -431,12 +433,22 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void NextSibling() const = delete;
   void PreviousSibling() const = delete;
 
+  unsigned absolute_column_index_ : BITS_OF_ABSOLUTE_COLUMN_INDEX;
+
+  // When adding or removing bits here, we should also adjust
+  // BITS_OF_ABSOLUTE_COLUMN_INDEX to use remaining bits of a 32-bit word.
   // Note MSVC will only pack members if they have identical types, hence we use
   // unsigned instead of bool here.
-  unsigned absolute_column_index_ : 29;
   unsigned cell_width_changed_ : 1;
   unsigned has_col_span_ : 1;
   unsigned has_row_span_ : 1;
+
+  // This is set when collapsed_border_values_ needs recalculation.
+  mutable unsigned collapsed_border_values_valid_ : 1;
+  // This is set by UpdateCollapsedBorderValues() if the newly calculated
+  // collapsed borders are visually different from the previous values.
+  mutable unsigned collapsed_borders_visually_changed_ : 1;
+  mutable std::unique_ptr<CollapsedBorderValues> collapsed_border_values_;
 
   // The intrinsic padding.
   // See class comment for what they are.
@@ -445,8 +457,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // because we don't do fractional arithmetic on tables.
   int intrinsic_padding_before_;
   int intrinsic_padding_after_;
-
-  std::unique_ptr<CollapsedBorderValues> collapsed_border_values_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCell, IsTableCell());

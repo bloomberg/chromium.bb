@@ -416,6 +416,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return collapsed_borders_;
   }
   void InvalidateCollapsedBorders();
+  void InvalidateCollapsedBordersForAllCellsIfNeeded();
 
   bool HasSections() const { return Header() || Footer() || FirstBody(); }
 
@@ -588,6 +589,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // field.
   CollapsedBorderValues collapsed_borders_;
   bool collapsed_borders_valid_ : 1;
+  bool needs_invalidate_collapsed_borders_for_all_cells_ : 1;
 
   mutable bool has_col_elements_ : 1;
   mutable bool needs_section_recalc_ : 1;
