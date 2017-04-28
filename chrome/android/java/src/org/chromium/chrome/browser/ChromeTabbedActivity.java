@@ -2038,4 +2038,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
         return false;
     }
+
+    @Override
+    public boolean supportsFullscreenActivity() {
+        return true;
+    }
 }

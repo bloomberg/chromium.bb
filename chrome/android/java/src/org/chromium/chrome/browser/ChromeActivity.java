@@ -2162,4 +2162,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * in this call, including showing 2D UI that was hidden.
      */
     public void onExitVr() {}
+
+    /**
+     * Whether this Activity supports moving a {@link Tab} to the
+     * {@link FullscreenWebContentsActivity} when it enters fullscreen.
+     */
+    public boolean supportsFullscreenActivity() {
+        return false;
+    }
 }
