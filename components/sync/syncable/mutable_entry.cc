@@ -4,7 +4,7 @@
 
 #include "components/sync/syncable/mutable_entry.h"
 
-#include <memory>
+#include <utility>
 
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
@@ -19,55 +19,19 @@ using std::string;
 namespace syncer {
 namespace syncable {
 
-void MutableEntry::Init(WriteTransaction* trans,
-                        ModelType model_type,
-                        const Id& parent_id,
-                        const string& name) {
-  std::unique_ptr<EntryKernel> kernel(new EntryKernel);
-  kernel_ = nullptr;
-
-  kernel->put(ID, trans->directory_->NextId());
-  kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
-  kernel->mark_dirty(&trans->directory_->kernel()->dirty_metahandles);
-  kernel->put(NON_UNIQUE_NAME, name);
-  const base::Time& now = base::Time::Now();
-  kernel->put(CTIME, now);
-  kernel->put(MTIME, now);
-  // We match the database defaults here
-  kernel->put(BASE_VERSION, CHANGES_VERSION);
-
-  if (!parent_id.IsNull()) {
-    kernel->put(PARENT_ID, parent_id);
-  }
-
-  // Normally the SPECIFICS setting code is wrapped in logic to deal with
-  // unknown fields and encryption.  Since all we want to do here is ensure that
-  // GetModelType() returns a correct value from the very beginning, these
-  // few lines are sufficient.
-  sync_pb::EntitySpecifics specifics;
-  AddDefaultFieldValue(model_type, &specifics);
-  kernel->put(SPECIFICS, specifics);
-
-  // Because this entry is new, it was originally deleted.
-  kernel->put(IS_DEL, true);
-  trans->TrackChangesTo(kernel.get());
-  kernel->put(IS_DEL, false);
-
-  // Now swap the pointers.
-  kernel_ = kernel.release();
-}
-
 MutableEntry::MutableEntry(WriteTransaction* trans,
                            Create,
                            ModelType model_type,
                            const string& name)
     : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
-  Init(trans, model_type, Id(), name);
+  std::unique_ptr<EntryKernel> kernel =
+      CreateEntryKernel(trans, model_type, Id(), name);
+  kernel_ = kernel.get();
   // We need to have a valid position ready before we can index the item.
   DCHECK_NE(BOOKMARKS, model_type);
   DCHECK(!ShouldMaintainPosition());
 
-  bool result = trans->directory()->InsertEntry(trans, kernel_);
+  bool result = trans->directory()->InsertEntry(trans, std::move(kernel));
   DCHECK(result);
 }
 
@@ -77,7 +41,9 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
                            const Id& parent_id,
                            const string& name)
     : ModelNeutralMutableEntry(trans), write_transaction_(trans) {
-  Init(trans, model_type, parent_id, name);
+  std::unique_ptr<EntryKernel> kernel =
+      CreateEntryKernel(trans, model_type, parent_id, name);
+  kernel_ = kernel.get();
   // We need to have a valid position ready before we can index the item.
   if (model_type == BOOKMARKS) {
     // Base the tag off of our cache-guid and local "c-" style ID.
@@ -89,7 +55,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans,
     DCHECK(!ShouldMaintainPosition());
   }
 
-  bool result = trans->directory()->InsertEntry(trans, kernel_);
+  bool result = trans->directory()->InsertEntry(trans, std::move(kernel));
   DCHECK(result);
 }
 
@@ -301,6 +267,43 @@ void MutableEntry::MarkAttachmentAsOnServer(
   kernel_->put(ATTACHMENT_METADATA, attachment_metadata);
   MarkDirty();
   MarkForSyncing(this);
+}
+
+// static
+std::unique_ptr<EntryKernel> MutableEntry::CreateEntryKernel(
+    WriteTransaction* trans,
+    ModelType model_type,
+    const Id& parent_id,
+    const string& name) {
+  std::unique_ptr<EntryKernel> kernel(new EntryKernel);
+
+  kernel->put(ID, trans->directory_->NextId());
+  kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
+  kernel->mark_dirty(&trans->directory_->kernel()->dirty_metahandles);
+  kernel->put(NON_UNIQUE_NAME, name);
+  const base::Time& now = base::Time::Now();
+  kernel->put(CTIME, now);
+  kernel->put(MTIME, now);
+  // We match the database defaults here
+  kernel->put(BASE_VERSION, CHANGES_VERSION);
+
+  if (!parent_id.IsNull()) {
+    kernel->put(PARENT_ID, parent_id);
+  }
+
+  // Normally the SPECIFICS setting code is wrapped in logic to deal with
+  // unknown fields and encryption.  Since all we want to do here is ensure that
+  // GetModelType() returns a correct value from the very beginning, these
+  // few lines are sufficient.
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(model_type, &specifics);
+  kernel->put(SPECIFICS, specifics);
+
+  // Because this entry is new, it was originally deleted.
+  kernel->put(IS_DEL, true);
+  trans->TrackChangesTo(kernel.get());
+  kernel->put(IS_DEL, false);
+  return kernel;
 }
 
 // This function sets only the flags needed to get this entry to sync.

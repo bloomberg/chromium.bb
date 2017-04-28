@@ -5,6 +5,7 @@
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 
 #include <memory>
+#include <utility>
 
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
@@ -37,12 +38,12 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
   kernel->put(IS_DEL, true);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
-  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
+  kernel_ = kernel.get();
+  if (!trans->directory()->InsertEntry(trans, std::move(kernel))) {
+    kernel_ = nullptr;
     return;  // Failed inserting.
   }
-  trans->TrackChangesTo(kernel.get());
-
-  kernel_ = kernel.release();
+  trans->TrackChangesTo(kernel_);
 }
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
@@ -74,14 +75,13 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
   kernel->put(IS_DIR, true);
 
   kernel->mark_dirty(&trans->directory()->kernel()->dirty_metahandles);
+  kernel_ = kernel.get();
 
-  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
+  if (!trans->directory()->InsertEntry(trans, std::move(kernel))) {
+    kernel_ = nullptr;
     return;  // Failed inserting.
   }
-
-  trans->TrackChangesTo(kernel.get());
-
-  kernel_ = kernel.release();
+  trans->TrackChangesTo(kernel_);
 }
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
