@@ -1731,6 +1731,7 @@ source_set("unit_tests") {
     "session_length_limiter_unittest.cc",
     "settings/cros_settings_unittest.cc",
     "settings/device_oauth2_token_service_unittest.cc",
+    "settings/device_settings_cache_unittest.cc",
     "settings/device_settings_provider_unittest.cc",
     "settings/device_settings_service_unittest.cc",
     "settings/install_attributes_unittest.cc",

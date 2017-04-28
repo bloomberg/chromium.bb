@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 
-#include "chrome/browser/chromeos/chromeos/policy/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/testing_pref_service.h"
@@ -16,14 +16,14 @@ namespace chromeos {
 
 class DeviceSettingsCacheTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // prepare some data.
     policy_.set_policy_type("google/chromeos/device");
     em::ChromeDeviceSettingsProto pol;
     pol.mutable_allow_new_users()->set_allow_new_users(false);
     policy_.set_policy_value(pol.SerializeAsString());
 
-    device_settings_cache::RegisterPrefs(&local_state_);
+    device_settings_cache::RegisterPrefs(local_state_.registry());
   }
 
   TestingPrefServiceSimple local_state_;
