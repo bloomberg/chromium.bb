@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -52,7 +53,7 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
 
     if (count == NULL) {
       count = new UrlRequestAuthAttemptsData();
-      request->SetUserData(kAuthAttemptsKey, count);
+      request->SetUserData(kAuthAttemptsKey, base::WrapUnique(count));
     }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

@@ -135,8 +135,9 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
 
 void BrowserViewRenderer::RegisterWithWebContents(
     content::WebContents* web_contents) {
-  web_contents->SetUserData(kBrowserViewRendererUserDataKey,
-                            new BrowserViewRendererUserData(this));
+  web_contents->SetUserData(
+      kBrowserViewRendererUserDataKey,
+      base::MakeUnique<BrowserViewRendererUserData>(this));
 }
 
 void BrowserViewRenderer::TrimMemory() {

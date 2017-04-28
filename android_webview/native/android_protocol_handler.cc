@@ -41,7 +41,7 @@ void* kPreviouslyFailedKey = &kPreviouslyFailedKey;
 
 void MarkRequestAsFailed(net::URLRequest* request) {
   request->SetUserData(kPreviouslyFailedKey,
-                       new base::SupportsUserData::Data());
+                       base::MakeUnique<base::SupportsUserData::Data>());
 }
 
 bool HasRequestPreviouslyFailed(net::URLRequest* request) {

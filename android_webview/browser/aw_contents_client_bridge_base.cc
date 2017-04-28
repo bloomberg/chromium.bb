@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,7 +45,7 @@ void AwContentsClientBridgeBase::Associate(
     WebContents* web_contents,
     AwContentsClientBridgeBase* handler) {
   web_contents->SetUserData(kAwContentsClientBridgeBase,
-                            new UserData(handler));
+                            base::MakeUnique<UserData>(handler));
 }
 
 // static

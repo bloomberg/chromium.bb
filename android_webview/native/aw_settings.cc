@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -80,7 +81,7 @@ AwSettings::AwSettings(JNIEnv* env,
       renderer_prefs_initialized_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
-                            new AwSettingsUserData(this));
+                            base::MakeUnique<AwSettingsUserData>(this));
 }
 
 AwSettings::~AwSettings() {

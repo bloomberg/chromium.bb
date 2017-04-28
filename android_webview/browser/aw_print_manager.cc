@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,7 +21,7 @@ AwPrintManager* AwPrintManager::CreateForWebContents(
     const PrintManager::PdfWritingDoneCallback& callback) {
   AwPrintManager* print_manager =
       new AwPrintManager(contents, settings, file_descriptor, callback);
-  contents->SetUserData(UserDataKey(), print_manager);
+  contents->SetUserData(UserDataKey(), base::WrapUnique(print_manager));
   return print_manager;
 }
 
