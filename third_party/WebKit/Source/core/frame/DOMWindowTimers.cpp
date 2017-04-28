@@ -72,7 +72,7 @@ static bool IsAllowed(ScriptState* script_state,
       return false;
     return true;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

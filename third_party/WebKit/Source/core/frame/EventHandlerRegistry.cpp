@@ -243,7 +243,7 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
       break;
 #endif
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }
@@ -302,7 +302,7 @@ void EventHandlerRegistry::DocumentDetached(Document& document) {
         // DOMWindows may outlive their documents, so we shouldn't remove their
         // handlers here.
       } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
       }
     }
     for (size_t i = 0; i < targets_to_remove.size(); ++i)

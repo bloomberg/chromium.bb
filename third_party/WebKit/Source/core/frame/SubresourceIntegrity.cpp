@@ -90,7 +90,7 @@ HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
       length = WTF_ARRAY_LENGTH(kWeakerThanSha512);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   };
 
   for (size_t i = 0; i < length; i++) {

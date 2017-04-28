@@ -246,7 +246,7 @@ class CORE_EXPORT VisualViewport final
 
   // GraphicsLayerClient implementation.
   bool NeedsRepaint(const GraphicsLayer&) const {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return true;
   }
   IntRect ComputeInterestRect(const GraphicsLayer*, const IntRect&) const;

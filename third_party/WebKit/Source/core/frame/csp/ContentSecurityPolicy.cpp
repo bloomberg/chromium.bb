@@ -145,7 +145,7 @@ static UseCounter::Feature GetUseCounterType(
     case kContentSecurityPolicyHeaderTypeReport:
       return UseCounter::kContentSecurityPolicyReportOnly;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return UseCounter::kNumberOfFeatures;
 }
 
@@ -866,7 +866,7 @@ bool ContentSecurityPolicy::AllowRequest(
     case WebURLRequest::kRequestContextUnspecified:
       return true;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return true;
 }
 
