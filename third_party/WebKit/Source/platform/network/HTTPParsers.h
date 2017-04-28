@@ -47,13 +47,6 @@ namespace blink {
 class Suborigin;
 class ResourceResponse;
 
-typedef enum {
-  kContentDispositionNone,
-  kContentDispositionInline,
-  kContentDispositionAttachment,
-  kContentDispositionOther
-} ContentDispositionType;
-
 enum ContentTypeOptionsDisposition {
   kContentTypeOptionsNone,
   kContentTypeOptionsNosniff
@@ -88,7 +81,7 @@ struct CacheControlHeader {
         max_age(0.0) {}
 };
 
-PLATFORM_EXPORT ContentDispositionType GetContentDispositionType(const String&);
+PLATFORM_EXPORT bool IsContentDispositionAttachment(const String&);
 PLATFORM_EXPORT bool IsValidHTTPHeaderValue(const String&);
 PLATFORM_EXPORT bool IsValidHTTPFieldContentRFC7230(const String&);
 // Checks whether the given string conforms to the |token| ABNF production

@@ -32,6 +32,7 @@
 
 #include "platform/network/HTTPParsers.h"
 
+#include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "platform/json/JSONParser.h"
@@ -267,37 +268,10 @@ bool IsValidHTTPToken(const String& characters) {
   return true;
 }
 
-ContentDispositionType GetContentDispositionType(
-    const String& content_disposition) {
-  if (content_disposition.IsEmpty())
-    return kContentDispositionNone;
-
-  Vector<String> parameters;
-  content_disposition.Split(';', parameters);
-
-  if (parameters.IsEmpty())
-    return kContentDispositionNone;
-
-  String disposition_type = parameters[0];
-  disposition_type.StripWhiteSpace();
-
-  if (DeprecatedEqualIgnoringCase(disposition_type, "inline"))
-    return kContentDispositionInline;
-
-  // Some broken sites just send bogus headers like
-  //
-  //   Content-Disposition: ; filename="file"
-  //   Content-Disposition: filename="file"
-  //   Content-Disposition: name="file"
-  //
-  // without a disposition token... screen those out.
-  if (!IsValidHTTPToken(disposition_type))
-    return kContentDispositionNone;
-
-  // We have a content-disposition of "attachment" or unknown.
-  // RFC 2183, section 2.8 says that an unknown disposition
-  // value should be treated as "attachment"
-  return kContentDispositionAttachment;
+bool IsContentDispositionAttachment(const String& content_disposition) {
+  CString cstring(content_disposition.Utf8());
+  std::string string(cstring.data(), cstring.length());
+  return net::HttpContentDisposition(string, std::string()).is_attachment();
 }
 
 bool ParseHTTPRefresh(const String& refresh,

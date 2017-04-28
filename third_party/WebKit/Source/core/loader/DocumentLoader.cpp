@@ -507,8 +507,8 @@ bool DocumentLoader::ShouldContinueForResponse() const {
     return false;
   }
 
-  if (GetContentDispositionType(response_.HttpHeaderField(
-          HTTPNames::Content_Disposition)) == kContentDispositionAttachment) {
+  if (IsContentDispositionAttachment(
+          response_.HttpHeaderField(HTTPNames::Content_Disposition))) {
     // The server wants us to download instead of replacing the page contents.
     // Downloading is handled by the embedder, but we still get the initial
     // response so that we can ignore it and clean up properly.
