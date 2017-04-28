@@ -55,6 +55,7 @@ class MockDoodleObserver : public DoodleService::Observer {
  public:
   MOCK_METHOD1(OnDoodleConfigUpdated,
                void(const base::Optional<DoodleConfig>&));
+  MOCK_METHOD1(OnDoodleConfigRevalidated, void(bool));
 };
 
 DoodleConfig CreateConfig(DoodleType type) {
@@ -309,7 +310,7 @@ TEST_F(DoodleServiceTest, CallsObserverOnConfigUpdated) {
   service()->RemoveObserver(&observer);
 }
 
-TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
+TEST_F(DoodleServiceTest, CallsObserverIfConfigRevalidatedByNetworkRequest) {
   // Load some doodle config.
   service()->Refresh();
   DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
@@ -317,18 +318,44 @@ TEST_F(DoodleServiceTest, DoesNotCallObserverIfConfigEquivalent) {
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
 
-  // Register an observer and request a refresh.
+  // Let some time pass (more than the refresh interval).
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(16));
+
+  // Register an observer and request a refresh after refresh intervall passed.
   StrictMock<MockDoodleObserver> observer;
+  EXPECT_CALL(observer, OnDoodleConfigRevalidated(Eq(/*from_cache=*/false)));
   service()->AddObserver(&observer);
   service()->Refresh();
   ASSERT_THAT(fetcher()->num_pending_callbacks(), Eq(1u));
 
   // Serve the request with an equivalent doodle config. The observer should
-  // *not* get notified.
+  // get notified about a (non-cached) revalidation.
   DoodleConfig equivalent_config = CreateConfig(DoodleType::SIMPLE);
   DCHECK(config == equivalent_config);
   fetcher()->ServeAllCallbacks(
       DoodleState::AVAILABLE, base::TimeDelta::FromHours(1), equivalent_config);
+
+  // Remove the observer before the service gets destroyed.
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(DoodleServiceTest, CallsObserverIfConfigRevalidatedByCache) {
+  // Create a service with the default refresh interval.
+  RecreateService(/*min_refresh_interval=*/base::nullopt);
+
+  // Load some doodle config.
+  service()->Refresh();
+  DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
+                               base::TimeDelta::FromHours(1), config);
+  ASSERT_THAT(service()->config(), Eq(config));
+
+  // Register an observer and request a refresh within refresh intervall.
+  StrictMock<MockDoodleObserver> observer;
+  EXPECT_CALL(observer, OnDoodleConfigRevalidated(Eq(/*from_cache=*/true)));
+  service()->AddObserver(&observer);
+  service()->Refresh();
+  ASSERT_THAT(fetcher()->num_pending_callbacks(), Eq(0u));
 
   // Remove the observer before the service gets destroyed.
   service()->RemoveObserver(&observer);
@@ -364,12 +391,14 @@ TEST_F(DoodleServiceTest, DisregardsAlreadyExpiredConfigs) {
   StrictMock<MockDoodleObserver> observer;
   service()->AddObserver(&observer);
 
+  // If there was no config and an expired config is loaded, not having a config
+  // must be revalidated.
   ASSERT_THAT(service()->config(), Eq(base::nullopt));
 
-  // Load an already-expired config. This should have no effect; in particular
-  // no call to the observer.
+  // Load an already-expired config.
   service()->Refresh();
   DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
+  EXPECT_CALL(observer, OnDoodleConfigRevalidated(Eq(/*from_cache=*/false)));
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromSeconds(0), config);
   EXPECT_THAT(service()->config(), Eq(base::nullopt));

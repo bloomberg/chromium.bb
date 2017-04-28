@@ -87,6 +87,9 @@ void DoodleService::Refresh() {
   if (time_since_fetch < min_refresh_interval_) {
     RecordDownloadMetrics(OUTCOME_REFRESH_INTERVAL_NOT_PASSED,
                           base::TimeDelta());
+    for (auto& observer : observers_) {
+      observer.OnDoodleConfigRevalidated(/*from_cache=*/true);
+    }
     return;
   }
   fetcher_->FetchDoodle(base::BindOnce(&DoodleService::DoodleFetched,
@@ -192,7 +195,6 @@ DoodleService::DownloadOutcome DoodleService::HandleNewConfig(
   DownloadOutcome outcome =
       DetermineDownloadOutcome(cached_config_, new_config, state, expired);
 
-  // If the config changed, update our cache and notify observers.
   // Note that this checks both for existence changes as well as changes of the
   // configs themselves.
   if (cached_config_ != new_config) {
@@ -200,6 +202,10 @@ DoodleService::DownloadOutcome DoodleService::HandleNewConfig(
 
     for (auto& observer : observers_) {
       observer.OnDoodleConfigUpdated(cached_config_);
+    }
+  } else {
+    for (auto& observer : observers_) {
+      observer.OnDoodleConfigRevalidated(/*from_cache=*/false);
     }
   }
 

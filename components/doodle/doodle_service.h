@@ -27,6 +27,7 @@ class DoodleService : public KeyedService {
  public:
   class Observer {
    public:
+    virtual void OnDoodleConfigRevalidated(bool from_cache) = 0;
     virtual void OnDoodleConfigUpdated(const base::Optional<DoodleConfig>&) = 0;
   };
 
@@ -57,8 +58,8 @@ class DoodleService : public KeyedService {
   void RemoveObserver(Observer* observer);
 
   // Requests an asynchronous refresh of the DoodleConfig from the network.
-  // After the update completes, the observers will be notified only if the
-  // config changed.
+  // After the update completes, the observers will be notified whether the
+  // config changed or active config remains valid.
   void Refresh();
 
  private:
