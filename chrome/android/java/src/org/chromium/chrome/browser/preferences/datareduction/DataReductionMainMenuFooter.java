@@ -46,6 +46,9 @@ public class DataReductionMainMenuFooter extends FrameLayout implements View.OnC
         TextView itemSummary = (TextView) findViewById(R.id.menu_item_summary);
 
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+            DataReductionProxyUma.dataReductionProxyUIAction(
+                    DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_ON);
+
             String dataSaved = Formatter.formatShortFileSize(getContext(),
                     DataReductionProxySettings.getInstance()
                             .getContentLengthSavedInHistorySummary());
@@ -65,6 +68,9 @@ public class DataReductionMainMenuFooter extends FrameLayout implements View.OnC
                     getContext().getResources(), R.color.light_active_color);
             itemText.setTextColor(lightActiveColor);
         } else {
+            DataReductionProxyUma.dataReductionProxyUIAction(
+                    DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);
+
             itemText.setText(R.string.data_reduction_title);
             itemSummary.setText(R.string.text_off);
 
