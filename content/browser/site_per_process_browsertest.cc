@@ -9724,6 +9724,54 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_EQ(0UL, root->child_at(2)->effective_container_policy().size());
 }
 
+// Check that out-of-process frames correctly calculate the container policy in
+// the renderer when navigating cross-origin. The policy should be unchanged
+// when modified dynamically in the parent frame. When the frame is navigated,
+// the new renderer should have the correct container policy.
+//
+// TODO(iclelland): Once there is a proper JS inspection API from the renderer,
+// use that to check the policy. Until then, we test webkitFullscreenEnabled,
+// which conveniently just returns the result of calling isFeatureEnabled on
+// the fullscreen feature. Since there are no HTTP header policies involved,
+// this verifies the presence of the container policy in the iframe.
+// https://crbug.com/703703
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       ContainerPolicyCrossOriginNavigation) {
+  WebContentsImpl* contents = web_contents();
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+
+  // Helper to check if a frame is allowed to go fullscreen on the renderer
+  // side.
+  auto is_fullscreen_allowed = [](FrameTreeNode* ftn) {
+    bool fullscreen_allowed = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        ftn,
+        "window.domAutomationController.send(document.webkitFullscreenEnabled)",
+        &fullscreen_allowed));
+    return fullscreen_allowed;
+  };
+
+  // Load a page with an <iframe> without allowFullscreen.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b)")));
+
+  // Dynamically enable fullscreen for the subframe and check that the
+  // fullscreen property was updated on the FrameTreeNode.
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-0').allowFullscreen='true'"));
+
+  // No change is expected to the container policy for dynamic modification of
+  // a loaded frame.
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)));
+
+  // Cross-site navigation should update the container policy in the new render
+  // frame.
+  NavigateFrameToURL(root->child_at(0),
+                     embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)));
+}
+
 // Test that dynamic updates to iframe sandbox attribute correctly set the
 // replicated container policy.
 IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
