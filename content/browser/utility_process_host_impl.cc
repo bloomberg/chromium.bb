@@ -54,12 +54,6 @@
 
 namespace content {
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-namespace {
-ZygoteHandle g_utility_zygote;
-}  // namespace
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
 // NOTE: changes to this class need to be reviewed by the security team.
 class UtilitySandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
@@ -236,14 +230,6 @@ void UtilityProcessHostImpl::BindInterface(
 void UtilityProcessHostImpl::SetName(const base::string16& name) {
   name_ = name;
 }
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-// static
-void UtilityProcessHostImpl::EarlyZygoteLaunch() {
-  DCHECK(!g_utility_zygote);
-  g_utility_zygote = CreateZygote();
-}
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 bool UtilityProcessHostImpl::StartProcess() {
   if (started_)
