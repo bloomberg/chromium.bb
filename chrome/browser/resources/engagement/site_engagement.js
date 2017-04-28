@@ -120,7 +120,7 @@ define('main', [
      */
     function handleBaseScoreChange(origin, e) {
       var baseScoreInput = e.target;
-      uiHandler.setSiteEngagementScoreForUrl(origin, baseScoreInput.value);
+      uiHandler.setSiteEngagementBaseScoreForUrl(origin, baseScoreInput.value);
       baseScoreInput.barCellRef.style.width = (baseScoreInput.value * 4) + 'px';
       baseScoreInput.blur();
       enableAutoupdate();
@@ -195,8 +195,6 @@ define('main', [
 
         engagementTableBody.appendChild(createRow(info));
       });
-
-      resolvePageIsPopulated();
     }
 
     /**
@@ -207,6 +205,7 @@ define('main', [
       uiHandler.getSiteEngagementDetails().then((response) => {
         info = response.info;
         renderTable(info);
+        resolvePageIsPopulated();
       });
     };
 
