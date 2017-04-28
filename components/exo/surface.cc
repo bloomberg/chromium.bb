@@ -108,7 +108,9 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   bool CanFocus() override { return true; }
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {}
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+    surface_->SetDeviceScaleFactor(device_scale_factor);
+  }
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
@@ -403,6 +405,10 @@ void Surface::SetAlpha(float alpha) {
   TRACE_EVENT1("exo", "Surface::SetAlpha", "alpha", alpha);
 
   pending_state_.alpha = alpha;
+}
+
+void Surface::SetDeviceScaleFactor(float device_scale_factor) {
+  device_scale_factor_ = device_scale_factor;
 }
 
 void Surface::Commit() {
@@ -847,6 +853,7 @@ void Surface::UpdateSurface(bool full_damage) {
     current_begin_frame_ack_.has_damage = true;
   }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
+  frame.metadata.device_scale_factor = device_scale_factor_;
 
   if (current_resource_.id) {
     // Texture quad is only needed if buffer is not fully transparent.
