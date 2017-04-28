@@ -74,8 +74,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     cert_request_info_ = new net::SSLCertRequestInfo;
     cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
-    cert_request_info_->client_certs.push_back(client_cert_1_);
-    cert_request_info_->client_certs.push_back(client_cert_2_);
+    client_certs_.push_back(client_cert_1_);
+    client_certs_.push_back(client_cert_2_);
   }
 
   void SetUpOnMainThread() override {
@@ -92,7 +92,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents());
     selector_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        auth_requestor_->cert_request_info_, auth_requestor_->CreateDelegate());
+        auth_requestor_->cert_request_info_, client_certs_,
+        auth_requestor_->CreateDelegate());
     selector_->Init();
     selector_->Show();
 
@@ -142,6 +143,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
   scoped_refptr<net::X509Certificate> client_cert_1_;
   scoped_refptr<net::X509Certificate> client_cert_2_;
+  net::CertificateList client_certs_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_;
   // The selector will be deleted when a cert is selected or the tab is closed.
@@ -159,13 +161,13 @@ class SSLClientCertificateSelectorMultiTabTest
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
     cert_request_info_1_->host_and_port = net::HostPortPair("bar", 123);
-    cert_request_info_1_->client_certs.push_back(client_cert_1_);
-    cert_request_info_1_->client_certs.push_back(client_cert_2_);
+    client_certs_1_.push_back(client_cert_1_);
+    client_certs_1_.push_back(client_cert_2_);
 
     cert_request_info_2_ = new net::SSLCertRequestInfo;
     cert_request_info_2_->host_and_port = net::HostPortPair("bar", 123);
-    cert_request_info_2_->client_certs.push_back(client_cert_1_);
-    cert_request_info_2_->client_certs.push_back(client_cert_2_);
+    client_certs_2_.push_back(client_cert_1_);
+    client_certs_2_.push_back(client_cert_2_);
   }
 
   void SetUpOnMainThread() override {
@@ -182,13 +184,13 @@ class SSLClientCertificateSelectorMultiTabTest
 
     selector_1_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetWebContentsAt(1),
-        auth_requestor_1_->cert_request_info_,
+        auth_requestor_1_->cert_request_info_, client_certs_1_,
         auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
     selector_2_ = new SSLClientCertificateSelector(
         browser()->tab_strip_model()->GetWebContentsAt(2),
-        auth_requestor_2_->cert_request_info_,
+        auth_requestor_2_->cert_request_info_, client_certs_2_,
         auth_requestor_2_->CreateDelegate());
     selector_2_->Init();
     selector_2_->Show();
@@ -231,6 +233,8 @@ class SSLClientCertificateSelectorMultiTabTest
   net::URLRequest* url_request_2_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_1_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_2_;
+  net::CertificateList client_certs_1_;
+  net::CertificateList client_certs_2_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_1_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_2_;
   SSLClientCertificateSelector* selector_1_;
@@ -245,8 +249,8 @@ class SSLClientCertificateSelectorMultiProfileTest
 
     cert_request_info_1_ = new net::SSLCertRequestInfo;
     cert_request_info_1_->host_and_port = net::HostPortPair("foo", 123);
-    cert_request_info_1_->client_certs.push_back(client_cert_1_);
-    cert_request_info_1_->client_certs.push_back(client_cert_2_);
+    client_certs_1_.push_back(client_cert_1_);
+    client_certs_1_.push_back(client_cert_2_);
   }
 
   void SetUpOnMainThread() override {
@@ -258,7 +262,7 @@ class SSLClientCertificateSelectorMultiProfileTest
 
     selector_1_ = new SSLClientCertificateSelector(
         browser_1_->tab_strip_model()->GetActiveWebContents(),
-        auth_requestor_1_->cert_request_info_,
+        auth_requestor_1_->cert_request_info_, client_certs_1_,
         auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
@@ -298,6 +302,7 @@ class SSLClientCertificateSelectorMultiProfileTest
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_1_;
   net::URLRequest* url_request_1_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_1_;
+  net::CertificateList client_certs_1_;
   scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_1_;
   SSLClientCertificateSelector* selector_1_;
 };

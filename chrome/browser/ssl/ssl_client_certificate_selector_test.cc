@@ -13,11 +13,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/request_priority.h"
-#include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -36,19 +33,8 @@ SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
-  base::FilePath certs_dir = net::GetTestCertsDirectory();
-
-  mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
-  ASSERT_TRUE(mit_davidben_cert_.get());
-
-  foaf_me_chromium_test_cert_ = net::ImportCertFromFile(
-      certs_dir, "foaf.me.chromium-test-cert.der");
-  ASSERT_TRUE(foaf_me_chromium_test_cert_.get());
-
   cert_request_info_ = new net::SSLCertRequestInfo;
   cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
-  cert_request_info_->client_certs.push_back(mit_davidben_cert_);
-  cert_request_info_->client_certs.push_back(foaf_me_chromium_test_cert_);
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {

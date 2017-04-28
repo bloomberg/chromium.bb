@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "net/cert/x509_certificate.h"
 
 namespace content {
 class ClientCertificateDelegate;
@@ -21,12 +22,14 @@ class SSLCertRequestInfo;
 namespace chrome {
 
 // Opens a constrained SSL client certificate selection dialog under |parent|,
-// offering certificates from |cert_request_info|. When the user has made a
-// selection, the dialog will report back to |delegate|. If the dialog is
-// closed with no selection, |delegate| will simply be destroyed.
+// offering certificates in |client_certs| for the host specified by
+// |cert_request_info|. When the user has made a selection, the dialog will
+// report back to |delegate|. If the dialog is closed with no selection,
+// |delegate| will simply be destroyed.
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate);
 
 }  // namespace chrome

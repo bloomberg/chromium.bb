@@ -38,8 +38,6 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::URLRequest* url_request_;
 
-  scoped_refptr<net::X509Certificate> mit_davidben_cert_;
-  scoped_refptr<net::X509Certificate> foaf_me_chromium_test_cert_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   scoped_refptr<testing::StrictMock<SSLClientAuthRequestorMock> >
       auth_requestor_;

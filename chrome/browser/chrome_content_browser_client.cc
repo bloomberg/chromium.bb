@@ -2385,6 +2385,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -2412,12 +2413,10 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       base::DictionaryValue* filter_dict =
           static_cast<base::DictionaryValue*>(filter.get());
 
-      const std::vector<scoped_refptr<net::X509Certificate> >&
-          all_client_certs = cert_request_info->client_certs;
-      for (size_t i = 0; i < all_client_certs.size(); ++i) {
-        if (CertMatchesFilter(*all_client_certs[i].get(), *filter_dict)) {
+      for (size_t i = 0; i < client_certs.size(); ++i) {
+        if (CertMatchesFilter(*client_certs[i].get(), *filter_dict)) {
           // Use the first certificate that is matched by the filter.
-          delegate->ContinueWithCertificate(all_client_certs[i].get());
+          delegate->ContinueWithCertificate(client_certs[i].get());
           return;
         }
       }
@@ -2427,6 +2426,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   }
 
   chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,
+                                           std::move(client_certs),
                                            std::move(delegate));
 }
 

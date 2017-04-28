@@ -204,6 +204,7 @@ bool RegisterSSLClientCertificateRequestAndroid(JNIEnv* env) {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList unused_client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(contents)
       ->GetViewAndroid()->GetWindowAndroid();

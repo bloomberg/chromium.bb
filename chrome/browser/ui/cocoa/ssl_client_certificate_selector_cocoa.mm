@@ -81,6 +81,7 @@ namespace chrome {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
+    net::CertificateList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -101,7 +102,7 @@ void ShowSSLClientCertificateSelector(
           initWithBrowserContext:contents->GetBrowserContext()
                  certRequestInfo:cert_request_info
                         delegate:std::move(delegate)];
-  [selector displayForWebContents:contents];
+  [selector displayForWebContents:contents clientCerts:std::move(client_certs)];
 }
 
 }  // namespace chrome
@@ -202,22 +203,23 @@ void ClearTableViewDataSourcesIfNeeded(NSWindow*) {}
   }
 }
 
-- (void)displayForWebContents:(content::WebContents*)webContents {
+- (void)displayForWebContents:(content::WebContents*)webContents
+                  clientCerts:(net::CertificateList)inputClientCerts {
   // Create an array of CFIdentityRefs for the certificates:
-  size_t numCerts = observer_->cert_request_info()->client_certs.size();
+  size_t numCerts = inputClientCerts.size();
   identities_.reset(CFArrayCreateMutable(
       kCFAllocatorDefault, numCerts, &kCFTypeArrayCallBacks));
   for (size_t i = 0; i < numCerts; ++i) {
     base::ScopedCFTypeRef<SecCertificateRef> cert(
         net::x509_util::CreateSecCertificateFromX509Certificate(
-            observer_->cert_request_info()->client_certs[i].get()));
+            inputClientCerts[i].get()));
     if (!cert)
       continue;
     SecIdentityRef identity;
     if (SecIdentityCreateWithCertificate(NULL, cert, &identity) == noErr) {
       CFArrayAppendValue(identities_, identity);
       CFRelease(identity);
-      certificates_.push_back(observer_->cert_request_info()->client_certs[i]);
+      certificates_.push_back(inputClientCerts[i]);
     }
   }
 

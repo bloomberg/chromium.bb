@@ -19,6 +19,9 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "net/cert/x509_certificate.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
@@ -56,8 +59,45 @@ class TestClientCertificateDelegate
 
 }  // namespace
 
-typedef SSLClientCertificateSelectorTestBase
-    SSLClientCertificateSelectorCocoaTest;
+class SSLClientCertificateSelectorCocoaTest
+    : public SSLClientCertificateSelectorTestBase {
+ public:
+  ~SSLClientCertificateSelectorCocoaTest() override;
+
+  // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override;
+
+  net::CertificateList GetTestCertificateList();
+
+ private:
+  scoped_refptr<net::X509Certificate> mit_davidben_cert_;
+  scoped_refptr<net::X509Certificate> foaf_me_chromium_test_cert_;
+  net::CertificateList client_cert_list_;
+};
+
+SSLClientCertificateSelectorCocoaTest::
+    ~SSLClientCertificateSelectorCocoaTest() = default;
+
+void SSLClientCertificateSelectorCocoaTest::SetUpInProcessBrowserTestFixture() {
+  SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture();
+
+  base::FilePath certs_dir = net::GetTestCertsDirectory();
+
+  mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
+  ASSERT_TRUE(mit_davidben_cert_.get());
+
+  foaf_me_chromium_test_cert_ =
+      net::ImportCertFromFile(certs_dir, "foaf.me.chromium-test-cert.der");
+  ASSERT_TRUE(foaf_me_chromium_test_cert_.get());
+
+  client_cert_list_.push_back(mit_davidben_cert_);
+  client_cert_list_.push_back(foaf_me_chromium_test_cert_);
+}
+
+net::CertificateList
+SSLClientCertificateSelectorCocoaTest::GetTestCertificateList() {
+  return client_cert_list_;
+}
 
 // Flaky on 10.7; crbug.com/313243
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
@@ -77,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
              certRequestInfo:auth_requestor_->cert_request_info_.get()
                     delegate:base::WrapUnique(new TestClientCertificateDelegate(
                                  &destroyed))];
-  [selector displayForWebContents:web_contents];
+  [selector displayForWebContents:web_contents
+                      clientCerts:GetTestCertificateList()];
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE([selector panel]);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -101,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
              certRequestInfo:auth_requestor_->cert_request_info_.get()
                     delegate:base::WrapUnique(
                                  new TestClientCertificateDelegate(nullptr))];
-  [selector displayForWebContents:web_contents];
+  [selector displayForWebContents:web_contents
+                      clientCerts:GetTestCertificateList()];
   content::RunAllPendingInMessageLoop();
 
   NSWindow* sheetWindow = [[selector overlayWindow] attachedSheet];
@@ -148,7 +190,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest,
             initWithBrowserContext:web_contents->GetBrowserContext()
                    certRequestInfo:auth_requestor_->cert_request_info_.get()
                           delegate:nil];
-    [selector displayForWebContents:web_contents];
+    [selector displayForWebContents:web_contents
+                        clientCerts:GetTestCertificateList()];
     content::RunAllPendingInMessageLoop();
 
     selector.wasDeallocated = &selector_was_deallocated;
