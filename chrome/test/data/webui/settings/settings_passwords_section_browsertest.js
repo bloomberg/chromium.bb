@@ -444,10 +444,27 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       clickRemoveButton();
     });
 
+    test('verifyFederatedPassword', function() {
+      var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', 0);
+      item.federationText = 'with chromium.org';
+      var passwordDialog = createPasswordDialog(item);
+
+      Polymer.dom.flush();
+
+      assertEquals(item.federationText,
+                   passwordDialog.$.passwordInput.value);
+      // Text should be readable.
+      assertEquals('text',
+                   passwordDialog.$.passwordInput.type);
+      assertTrue(passwordDialog.$.showPasswordButton.hidden);
+    });
+
     test('showSavedPassword', function() {
       var PASSWORD = 'bAn@n@5';
       var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
       var passwordDialog = createPasswordDialog(item);
+
+      assertFalse(passwordDialog.$.showPasswordButton.hidden);
 
       passwordDialog.password = PASSWORD;
       passwordDialog.showPassword = true;
@@ -459,6 +476,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       // Password should be visible.
       assertEquals('text',
                    passwordDialog.$.passwordInput.type);
+      assertFalse(passwordDialog.$.showPasswordButton.hidden);
     });
 
     // Test will timeout if event is not received.
