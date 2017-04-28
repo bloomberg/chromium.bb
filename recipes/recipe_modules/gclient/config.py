@@ -121,14 +121,14 @@ def chromium_bare(c):
   s.name = 'src'
   s.url = ChromiumSrcURL(c)
   s.custom_vars = {}
-  m = c.got_revision_mapping
-  m['src'] = 'got_revision'
-  m['src/native_client'] = 'got_nacl_revision'
-  m['src/tools/swarming_client'] = 'got_swarming_client_revision'
-  m['src/v8'] = 'got_v8_revision'
-  m['src/third_party/angle'] = 'got_angle_revision'
-  m['src/third_party/webrtc'] = 'got_webrtc_revision'
-  m['src/buildtools'] = 'got_buildtools_revision'
+  m = c.got_revision_reverse_mapping
+  m['got_revision'] = 'src'
+  m['got_nacl_revision'] = 'src/native_client'
+  m['got_swarming_client_revision'] = 'src/tools/swarming_client'
+  m['got_v8_revision'] = 'src/v8'
+  m['got_angle_revision'] = 'src/third_party/angle'
+  m['got_webrtc_revision'] = 'src/third_party/webrtc'
+  m['got_buildtools_revision'] = 'src/buildtools'
 
   p = c.parent_got_revision_mapping
   p['parent_got_revision'] = None
@@ -175,7 +175,8 @@ def android_bare(c):
   # We inherit from chromium_bare to get the got_revision mapping.
   # NOTE: We don't set a specific got_revision mapping for src/repo.
   del c.solutions[0]
-  c.got_revision_mapping['src'] = 'got_src_revision'
+  c.got_revision_reverse_mapping['got_src_revision'] = 'src'
+  del c.got_revision_reverse_mapping['got_revision']
   s = c.solutions.add()
   s.deps_file = '.DEPS.git'
 
@@ -233,8 +234,10 @@ def ios(c):
 @config_ctx(includes=['chromium'])
 def show_v8_revision(c):
   # Have the V8 revision appear in the web UI instead of Chromium's.
-  c.got_revision_mapping['src'] = 'got_cr_revision'
-  c.got_revision_mapping['src/v8'] = 'got_revision'
+  c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
+  c.got_revision_reverse_mapping['got_revision'] = 'src/v8'
+  # TODO(machenbach): Retain old behavior for now  and switch in separate CL.
+  del c.got_revision_reverse_mapping['got_v8_revision']
   # Needed to get the testers to properly sync the right revision.
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
 
@@ -389,14 +392,14 @@ def chromium_skia(c):
   del c.solutions[0].custom_deps
   c.revisions['src/third_party/skia'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
-  c.got_revision_mapping['src'] = 'got_chromium_revision'
-  c.got_revision_mapping['src/third_party/skia'] = 'got_revision'
+  c.got_revision_reverse_mapping['got_chromium_revision'] = 'src'
+  c.got_revision_reverse_mapping['got_revision'] = 'src/third_party/skia'
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
 
 @config_ctx(includes=['chromium'])
 def chromium_webrtc(c):
-  c.got_revision_mapping['src/third_party/libvpx/source'] = (
-      'got_libvpx_revision')
+  c.got_revision_reverse_mapping['got_libvpx_revision'] = (
+      'src/third_party/libvpx/source')
 
 @config_ctx(includes=['chromium_webrtc'])
 def chromium_webrtc_tot(c):
@@ -412,8 +415,10 @@ def chromium_webrtc_tot(c):
   # Have the WebRTC revision appear in the web UI instead of Chromium's.
   # This is also important for set_component_rev to work, since got_revision
   # will become a WebRTC revision instead of Chromium.
-  c.got_revision_mapping['src'] = 'got_cr_revision'
-  c.got_revision_mapping['src/third_party/webrtc'] = 'got_revision'
+  c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
+  c.got_revision_reverse_mapping['got_revision'] = 'src/third_party/webrtc'
+  # TODO(machenbach): Retain old behavior for now and switch in separate CL.
+  del c.got_revision_reverse_mapping['got_webrtc_revision']
 
   # Needed to get the testers to properly sync the right revision.
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
