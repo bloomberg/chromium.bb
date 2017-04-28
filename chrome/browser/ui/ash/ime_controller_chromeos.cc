@@ -10,6 +10,12 @@
 bool ImeController::CanCycleIme() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
+  DCHECK(manager);
+  if (!manager->GetActiveIMEState()) {
+    LOG(WARNING) << "Cannot cycle through input methods as they are not "
+                    "initialized yet.";
+    return false;
+  }
   return manager->GetActiveIMEState()->CanCycleInputMethod();
 }
 
@@ -28,6 +34,12 @@ void ImeController::HandlePreviousIme() {
 bool ImeController::CanSwitchIme(const ui::Accelerator& accelerator) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
+  DCHECK(manager);
+  if (!manager->GetActiveIMEState()) {
+    LOG(WARNING) << "Cannot switch input methods as they are not "
+                    "initialized yet.";
+    return false;
+  }
   return manager->GetActiveIMEState()->CanSwitchInputMethod(accelerator);
 }
 
