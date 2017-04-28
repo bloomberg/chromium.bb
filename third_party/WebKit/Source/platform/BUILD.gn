@@ -2207,6 +2207,11 @@ source_set("unit_tests") {
 
     # TODO(toyoshim): Remove Platform dependency and move to loader/BUILD.gn
     "loader/fetch/ResourceResponseTest.cpp",
+
+    # TODO(hongchan): Platform::Current()->CreateThread() returns nullptr
+    # without adding the test file into this section. Remove platform dependency
+    # when creating a valid thread becomes possible in the Blink unit test.
+    "audio/PushPullFIFOMultithreadTest.cpp",
   ]
 
   configs += [
