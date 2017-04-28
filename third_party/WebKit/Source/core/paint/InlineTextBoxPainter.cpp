@@ -1088,7 +1088,7 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
           PaintCompositionUnderline(paint_info.context, box_origin, underline);
       } break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 }

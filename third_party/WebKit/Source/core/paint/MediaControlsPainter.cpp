@@ -68,7 +68,7 @@ static Image* PlatformResource(const char* name) {
     g_media_control_image_map->Set(name, image);
     return image;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -548,7 +548,7 @@ bool MediaControlsPainter::PaintMediaCastButton(const LayoutObject& object,
     case kMediaOverlayCastOffButton:
       return PaintMediaButton(paint_info.context, rect, media_overlay_cast_off);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }

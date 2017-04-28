@@ -850,7 +850,7 @@ void BoxBorderPainter::PaintSide(GraphicsContext& context,
       break;
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

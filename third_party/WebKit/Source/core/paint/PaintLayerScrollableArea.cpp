@@ -1163,7 +1163,7 @@ IntSize PaintLayerScrollableArea::ScrollbarOffset(
         (Box().Size().Height() - Box().BorderBottom() - scrollbar.Height())
             .ToInt());
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return IntSize();
 }
 

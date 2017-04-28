@@ -35,7 +35,7 @@ static inline void PaintSymbol(GraphicsContext& context,
       context.FillRect(marker);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }
