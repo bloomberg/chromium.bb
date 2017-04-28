@@ -696,6 +696,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
               'tex-3d-r16f-red-float.html', ['linux'], bug=679695)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgb16f-rgb-float.html', ['linux'], bug=715696)
 
     # Linux Multi-vendor failures.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
