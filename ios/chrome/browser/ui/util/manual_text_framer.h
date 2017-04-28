@@ -29,7 +29,7 @@
 
 // The TextFrame created by |-frameText|.  Will be nil before |-frameText| is
 // called.
-@property(nonatomic, readonly) id<TextFrame> textFrame;
+@property(strong, nonatomic, readonly) id<TextFrame> textFrame;
 
 @end
 

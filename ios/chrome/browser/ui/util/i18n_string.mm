@@ -8,6 +8,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* AdjustStringForLocaleDirection(NSString* text) {
   base::string16 converted_text = base::SysNSStringToUTF16(text);
   bool has_changed =
@@ -15,5 +19,5 @@ NSString* AdjustStringForLocaleDirection(NSString* text) {
   if (has_changed) {
     return base::SysUTF16ToNSString(converted_text);
   }
-  return [[text copy] autorelease];
+  return [text copy];
 }

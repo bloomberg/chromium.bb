@@ -6,9 +6,12 @@
 
 #import <objc/runtime.h>
 
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/util/label_observer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // They key under which to associate the line height with the label.
@@ -57,15 +60,14 @@ CGFloat GetAssociatedLineHeight(UILabel* label) {
   if (!self.text.length || !self.attributedText.string.length)
     return;
 
-  base::scoped_nsobject<NSMutableAttributedString> newString(
-      [self.attributedText mutableCopy]);
+  NSMutableAttributedString* newString = [self.attributedText mutableCopy];
   DCHECK([newString length]);
   NSParagraphStyle* style = [newString attribute:NSParagraphStyleAttributeName
                                          atIndex:0
                                   effectiveRange:nullptr];
   if (!style)
     style = [NSParagraphStyle defaultParagraphStyle];
-  base::scoped_nsobject<NSMutableParagraphStyle> newStyle([style mutableCopy]);
+  NSMutableParagraphStyle* newStyle = [style mutableCopy];
   [newStyle setMinimumLineHeight:lineHeight];
   [newStyle setMaximumLineHeight:lineHeight];
   [newString addAttribute:NSParagraphStyleAttributeName

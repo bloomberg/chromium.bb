@@ -11,38 +11,41 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/manual_text_framer.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
 
-@interface CoreTextRegionMapper () {
-  // Backing object for property of the same name.
-  base::scoped_nsprotocol<id<TextFrame>> _textFrame;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface CoreTextRegionMapper ()
 
 // The TextFrame used to calculate rects.
-@property(nonatomic, readonly) id<TextFrame> textFrame;
+@property(strong, nonatomic, readonly) id<TextFrame> textFrame;
 
 @end
 
 @implementation CoreTextRegionMapper
+
+@synthesize textFrame = _textFrame;
+
 - (instancetype)initWithAttributedString:(NSAttributedString*)string
                                   bounds:(CGRect)bounds {
   if ((self = [super init])) {
     base::ScopedCFTypeRef<CTFrameRef> ctFrame =
         core_text_util::CreateTextFrameForStringInBounds(string, bounds);
-    base::scoped_nsobject<ManualTextFramer> framer(
-        [[ManualTextFramer alloc] initWithString:string inBounds:bounds]);
+    ManualTextFramer* framer =
+        [[ManualTextFramer alloc] initWithString:string inBounds:bounds];
     [framer frameText];
     if (core_text_util::IsTextFrameValid(ctFrame, framer, string)) {
-      _textFrame.reset([[CoreTextTextFrame alloc] initWithString:string
-                                                          bounds:bounds
-                                                           frame:ctFrame]);
+      _textFrame = [[CoreTextTextFrame alloc] initWithString:string
+                                                      bounds:bounds
+                                                       frame:ctFrame];
     } else {
       // Use ManualTextFramer if |ctFrame| is invalid.
-      _textFrame.reset([[framer textFrame] retain]);
+      _textFrame = [framer textFrame];
     }
     DCHECK(self.textFrame);
   }
@@ -52,10 +55,6 @@
 - (instancetype)init {
   NOTREACHED();
   return nil;
-}
-
-- (id<TextFrame>)textFrame {
-  return _textFrame.get();
 }
 
 - (NSArray*)rectsForRange:(NSRange)range {

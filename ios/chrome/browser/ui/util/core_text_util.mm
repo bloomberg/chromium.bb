@@ -8,10 +8,13 @@
 
 #include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/util/manual_text_framer.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
 #import "ios/chrome/browser/ui/util/unicode_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace core_text_util {
 
@@ -26,11 +29,11 @@ CFRange GetValidRangeForTextFrame(CTFrameRef text_frame,
   bool is_rtl =
       GetEffectiveWritingDirection(string) == NSWritingDirectionRightToLeft;
   for (id line_id in base::mac::CFToNSCast(CTFrameGetLines(text_frame))) {
-    CTLineRef line = static_cast<CTLineRef>(line_id);
+    CTLineRef line = (__bridge CTLineRef)(line_id);
     NSArray* runs = base::mac::CFToNSCast(CTLineGetGlyphRuns(line));
     NSInteger run_idx = is_rtl ? runs.count - 1 : 0;
     while (run_idx >= 0 && run_idx < static_cast<NSInteger>(runs.count)) {
-      CTRunRef run = static_cast<CTRunRef>(runs[run_idx]);
+      CTRunRef run = (__bridge CTRunRef)(runs[run_idx]);
       CFRange run_range = CTRunGetStringRange(run);
       if (run_range.location == range.location + range.length)
         range.length += run_range.length;
