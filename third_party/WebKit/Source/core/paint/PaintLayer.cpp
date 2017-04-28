@@ -855,6 +855,11 @@ void PaintLayer::UpdateLayerPosition() {
 #endif
 }
 
+void PaintLayer::UpdateScrollingAfterLayout() {
+  if (GetLayoutObject().HasOverflowClip())
+    scrollable_area_->UpdateAfterLayout();
+}
+
 TransformationMatrix PaintLayer::PerspectiveTransform() const {
   if (!GetLayoutObject().HasTransformRelatedProperty())
     return TransformationMatrix();

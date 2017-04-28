@@ -287,8 +287,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // invalidating paint.
   void ContentChanged(ContentChangeType);
 
-  void UpdateLayerPosition();
+  void UpdateScrollingAfterLayout();
 
+  void UpdateLayerPosition();
   void UpdateLayerPositionsAfterLayout();
   void UpdateLayerPositionsAfterOverflowScroll();
 

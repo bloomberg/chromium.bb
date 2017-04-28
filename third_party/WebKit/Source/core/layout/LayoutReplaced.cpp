@@ -89,7 +89,7 @@ void LayoutReplaced::UpdateLayout() {
 
   overflow_.reset();
   AddVisualEffectOverflow();
-  UpdateLayerTransformAfterLayout();
+  UpdateAfterLayout();
   InvalidateBackgroundObscurationStatus();
 
   ClearNeedsLayout();

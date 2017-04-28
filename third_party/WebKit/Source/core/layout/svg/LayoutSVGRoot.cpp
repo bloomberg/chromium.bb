@@ -207,7 +207,7 @@ void LayoutSVGRoot::UpdateLayout() {
     AddContentsVisualOverflow(EnclosingLayoutRect(content_visual_rect));
   }
 
-  UpdateLayerTransformAfterLayout();
+  UpdateAfterLayout();
   has_box_decoration_background_ = IsDocumentElement()
                                        ? StyleRef().HasBoxDecorationBackground()
                                        : HasBoxDecorationBackground();

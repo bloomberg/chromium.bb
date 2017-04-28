@@ -484,8 +484,6 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   descendants_with_floats_marked_for_layout_ = false;
 
-  UpdateLayerTransformAfterLayout();
-
   UpdateAfterLayout();
 
   if (isHTMLDialogElement(GetNode()) && IsOutOfFlowPositioned())
