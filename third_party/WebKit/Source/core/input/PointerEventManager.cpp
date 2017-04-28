@@ -520,6 +520,10 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     }
   }
 
+  if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
+      mouse_event.pointer_type == WebPointerProperties::PointerType::kPen) {
+    pointer_event_factory_.Remove(pointer_event->pointerId());
+  }
   return result;
 }
 
