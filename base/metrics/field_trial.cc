@@ -414,7 +414,8 @@ FieldTrial::FieldTrial(const std::string& trial_name,
       ref_(FieldTrialList::FieldTrialAllocator::kReferenceNull) {
   DCHECK_GT(total_probability, 0);
   DCHECK(!trial_name_.empty());
-  DCHECK(!default_group_name_.empty());
+  DCHECK(!default_group_name_.empty())
+      << "Trial " << trial_name << " is missing a default group name.";
 }
 
 FieldTrial::~FieldTrial() {}
