@@ -1636,11 +1636,6 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x, int plane,
                                             BLOCK_SIZE plane_bsize) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_Y) {
-    mbmi->cfl_alpha_ind = 0;
-    mbmi->cfl_alpha_signs[CFL_PRED_U] = CFL_SIGN_POS;
-    mbmi->cfl_alpha_signs[CFL_PRED_V] = CFL_SIGN_POS;
-  }
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_U) {
 #if !CONFIG_EC_ADAPT

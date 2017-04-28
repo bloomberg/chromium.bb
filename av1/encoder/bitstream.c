@@ -1691,17 +1691,23 @@ static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
 }
 
 #if CONFIG_CFL
-static void write_cfl_alphas(FRAME_CONTEXT *const frame_ctx, const int ind,
+static void write_cfl_alphas(FRAME_CONTEXT *const frame_ctx, int skip, int ind,
                              const CFL_SIGN_TYPE signs[CFL_SIGNS],
                              aom_writer *w) {
-  // Write a symbol representing a combination of alpha Cb and alpha Cr.
-  aom_write_symbol(w, ind, frame_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE);
+  if (skip) {
+    assert(ind == 0);
+    assert(signs[CFL_PRED_U] == CFL_SIGN_POS);
+    assert(signs[CFL_PRED_V] == CFL_SIGN_POS);
+  } else {
+    // Write a symbol representing a combination of alpha Cb and alpha Cr.
+    aom_write_symbol(w, ind, frame_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE);
 
-  // Signs are only signaled for nonzero codes.
-  if (cfl_alpha_codes[ind][CFL_PRED_U] != 0)
-    aom_write_bit(w, signs[CFL_PRED_U]);
-  if (cfl_alpha_codes[ind][CFL_PRED_V] != 0)
-    aom_write_bit(w, signs[CFL_PRED_V]);
+    // Signs are only signaled for nonzero codes.
+    if (cfl_alpha_codes[ind][CFL_PRED_U] != 0)
+      aom_write_bit(w, signs[CFL_PRED_U]);
+    if (cfl_alpha_codes[ind][CFL_PRED_V] != 0)
+      aom_write_bit(w, signs[CFL_PRED_V]);
+  }
 }
 #endif
 
@@ -2181,24 +2187,22 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y))
+                          xd->plane[1].subsampling_y)) {
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
 #else  // !CONFIG_CB4X4
   write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
-  if (mbmi->uv_mode == DC_PRED) {
-    if (mbmi->skip) {
-      assert(mbmi->cfl_alpha_ind == 0);
-      assert(mbmi->cfl_alpha_signs[CFL_PRED_U] == CFL_SIGN_POS);
-      assert(mbmi->cfl_alpha_signs[CFL_PRED_V] == CFL_SIGN_POS);
-    } else {
-      write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_ind, mbmi->cfl_alpha_signs, w);
+    if (mbmi->uv_mode == DC_PRED) {
+      write_cfl_alphas(ec_ctx, mbmi->skip, mbmi->cfl_alpha_ind,
+                       mbmi->cfl_alpha_signs, w);
     }
-  }
 #endif
 
+#if CONFIG_CB4X4
+  }
+#endif
 #if CONFIG_EXT_INTRA
   write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA

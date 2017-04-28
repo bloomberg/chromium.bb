@@ -208,33 +208,27 @@ static PREDICTION_MODE read_intra_mode_uv(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_CFL
-static int read_cfl_alphas(
-#if CONFIG_EC_ADAPT
-    MACROBLOCKD *xd,
-#elif CONFIG_EC_MULTISYMBOL
-    AV1_COMMON *cm,
-#endif
-    aom_reader *r, CFL_SIGN_TYPE signs[CFL_PRED_PLANES]) {
+static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r, int skip,
+                           CFL_SIGN_TYPE signs_out[CFL_PRED_PLANES]) {
+  if (skip) {
+    signs_out[CFL_PRED_U] = CFL_SIGN_POS;
+    signs_out[CFL_PRED_V] = CFL_SIGN_POS;
+    return 0;
+  } else {
+    const int ind = aom_read_symbol(r, ec_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE,
+                                    "cfl:alpha");
+    // Signs are only coded for nonzero values
+    // sign == 0 implies negative alpha
+    // sign == 1 implies positive alpha
+    signs_out[CFL_PRED_U] = (cfl_alpha_codes[ind][CFL_PRED_U] != 0.0)
+                                ? aom_read_bit(r, "cfl:sign")
+                                : CFL_SIGN_POS;
+    signs_out[CFL_PRED_V] = (cfl_alpha_codes[ind][CFL_PRED_V] != 0.0)
+                                ? aom_read_bit(r, "cfl:sign")
+                                : CFL_SIGN_POS;
 
-#if CONFIG_EC_ADAPT
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#elif CONFIG_EC_MULTISYMBOL
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
-
-  const int ind =
-      aom_read_symbol(r, ec_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE, "cfl:alpha");
-  // Signs are only coded for nonzero values
-  // sign == 0 implies negative alpha
-  // sign == 1 implies positive alpha
-  signs[CFL_PRED_U] = (cfl_alpha_codes[ind][CFL_PRED_U] != 0.0)
-                          ? aom_read_bit(r, "cfl:sign")
-                          : CFL_SIGN_POS;
-  signs[CFL_PRED_V] = (cfl_alpha_codes[ind][CFL_PRED_V] != 0.0)
-                          ? aom_read_bit(r, "cfl:sign")
-                          : CFL_SIGN_POS;
-
-  return ind;
+    return ind;
+  }
 }
 #endif
 
@@ -1121,28 +1115,26 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
 #if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y))
+                          xd->plane[1].subsampling_y)) {
     mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #else
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #endif
 
 #if CONFIG_CFL
-  // TODO(ltrudeau) support PALETTE
-  if (mbmi->uv_mode == DC_PRED) {
-    if (mbmi->skip) {
-      mbmi->cfl_alpha_ind = 0;
-      mbmi->cfl_alpha_signs[CFL_PRED_U] = CFL_SIGN_POS;
-      mbmi->cfl_alpha_signs[CFL_PRED_V] = CFL_SIGN_POS;
-    } else {
+    // TODO(ltrudeau) support PALETTE
+    if (mbmi->uv_mode == DC_PRED) {
       mbmi->cfl_alpha_ind = read_cfl_alphas(
 #if CONFIG_EC_ADAPT
-          xd,
+          xd->tile_ctx,
 #elif CONFIG_EC_MULTISYMBOL
-          cm,
-#endif
-          r, mbmi->cfl_alpha_signs);
+          cm->fc,
+#endif  // CONFIG_EC_ADAPT
+          r, mbmi->skip, mbmi->cfl_alpha_signs);
     }
+#endif  // CONFIG_CFL
+
+#if CONFIG_CB4X4
   }
 #endif
 
