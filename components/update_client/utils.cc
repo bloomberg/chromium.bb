@@ -95,6 +95,9 @@ std::string GetServicePack() {
 
 }  // namespace
 
+// Builds a protocol message. The protocol versions so far are:
+// * Version 3.1: it changes how the run actions are serialized.
+// * Version 3.0: it is the version implemented by the desktop updaters.
 std::string BuildProtocolRequest(
     const std::string& prod_id,
     const std::string& browser_version,
@@ -107,7 +110,7 @@ std::string BuildProtocolRequest(
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-      "<request protocol=\"3.0\" ");
+      "<request protocol=\"3.1\" ");
 
   if (!additional_attributes.empty())
     base::StringAppendF(&request, "%s ", additional_attributes.c_str());

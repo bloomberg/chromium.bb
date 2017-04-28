@@ -205,7 +205,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   // Sanity check the request.
   const auto request = post_interceptor_->GetRequests()[0];
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
-                              "request protocol=\"3.0\" extra=\"params\""));
+                              "request protocol=\"3.1\" extra=\"params\""));
   // The request must not contain any "dlpref" in the default case.
   EXPECT_EQ(string::npos, request.find(" dlpref=\""));
   EXPECT_NE(
@@ -232,6 +232,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_EQ(
       GURL("http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx"),
       component->crx_urls_.front());
+
+  EXPECT_STREQ("this", component->action_run_.c_str());
 
 #if (OS_WIN)
   EXPECT_NE(string::npos, request.find(" domainjoined="));
@@ -533,6 +535,33 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
                               std::string("<app appid=\"") + kUpdateItemId +
                               "\" version=\"0.9\">"
                               "<updatecheck/>"));
+}
+
+TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"),
+      test_file("updatecheck_reply_noupdate.xml")));
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  auto& component = components[kUpdateItemId];
+
+  update_checker_->CheckForUpdates(
+      std::vector<std::string>{kUpdateItemId}, components, "", true,
+      base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                 base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
+      << post_interceptor_->GetRequestsAsString();
+  ASSERT_EQ(1, post_interceptor_->GetCount())
+      << post_interceptor_->GetRequestsAsString();
+
+  EXPECT_EQ(0, error_);
+  EXPECT_STREQ("this", component->action_run_.c_str());
 }
 
 }  // namespace update_client

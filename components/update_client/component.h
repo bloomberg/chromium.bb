@@ -134,6 +134,7 @@ class Component {
 
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, SendPing);
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, RequiresEncryption);
+  FRIEND_TEST_ALL_PREFIXES(UpdateCheckerTest, NoUpdateActionRun);
   FRIEND_TEST_ALL_PREFIXES(UpdateCheckerTest, UpdateCheckCupError);
   FRIEND_TEST_ALL_PREFIXES(UpdateCheckerTest, UpdateCheckError);
   FRIEND_TEST_ALL_PREFIXES(UpdateCheckerTest, UpdateCheckInvalidAp);
@@ -394,6 +395,9 @@ class Component {
   base::Version next_version_;
   std::string previous_fp_;
   std::string next_fp_;
+
+  // Contains the file name of the payload to run.
+  std::string action_run_;
 
   // True if the update check response for this component includes an update.
   bool is_update_available_ = false;

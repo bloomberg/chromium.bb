@@ -72,12 +72,12 @@ class UpdateResponse {
         // Attributes for the full update.
         std::string name;
         std::string hash_sha256;
-        int size;
+        int size = 0;
 
         // Attributes for the differential update.
         std::string namediff;
         std::string hashdiff_sha256;
-        int sizediff;
+        int sizediff = 0;
       };
 
       Manifest();
@@ -113,6 +113,10 @@ class UpdateResponse {
     static const char kCohort[];
     static const char kCohortHint[];
     static const char kCohortName[];
+
+    // Contains the run action returned by the server as part of an update
+    // check response.
+    std::string action_run;
   };
 
   static const int kNoDaystart = -1;
@@ -122,9 +126,10 @@ class UpdateResponse {
     ~Results();
 
     // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
-    int daystart_elapsed_seconds;
+    int daystart_elapsed_seconds = kNoDaystart;
+
     // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
-    int daystart_elapsed_days;
+    int daystart_elapsed_days = kNoDaystart;
     std::vector<Result> list;
   };
 
