@@ -2066,7 +2066,7 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   if (!pagination_strut) {
     LayoutUnit page_logical_height =
         PageLogicalHeightForOffset(row_object.LogicalTop());
-    if (page_logical_height && Table()->Header() &&
+    if (page_logical_height && Table()->Header() && Table()->Header() != this &&
         Table()->RowOffsetFromRepeatingHeader()) {
       offset_from_top_of_page =
           page_logical_height -
