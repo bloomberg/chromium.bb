@@ -8,4 +8,7 @@ mojom("interfaces") {
   sources = [
     "chrome_prompt.mojom",
   ]
+  deps = [
+    "//mojo/common:common_custom_types",
+  ]
 }
