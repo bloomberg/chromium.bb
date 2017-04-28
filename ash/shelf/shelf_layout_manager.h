@@ -261,6 +261,9 @@ class ASH_EXPORT ShelfLayoutManager
   // two displays.
   gfx::Rect GetAutoHideShowShelfRegionInScreen() const;
 
+  // Returns true if at least one window is visible.
+  bool HasVisibleWindow() const;
+
   // Returns the AutoHideState. This value is determined from the shelf and
   // tray.
   ShelfAutoHideState CalculateAutoHideState(

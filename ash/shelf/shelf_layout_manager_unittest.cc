@@ -550,10 +550,11 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 
-  // Close actually, otherwise further event may be affected since widget
+  // Minimize actually, otherwise further event may be affected since widget
   // is fullscreen status.
-  widget->Close();
+  widget->Minimize();
   RunAllPendingInMessageLoop();
+  EXPECT_FALSE(layout_manager->HasVisibleWindow());
 
   // The shelf should be shown because there are no more visible windows.
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -570,6 +571,62 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
+  // Swipe-down to hide. This should have no effect because there are no visible
+  // windows.
+  end = start + delta;
+  generator.GestureScrollSequenceWithCallback(
+      start, end, kTimeDelta, kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
+  widget->Restore();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(layout_manager->HasVisibleWindow());
+
+  // Swipe up on the shelf. This should show the shelf and disable auto-hide
+  // since there is one visible window.
+  end = below_start - delta;
+  generator.GestureScrollSequenceWithCallback(
+      below_start, end, kTimeDelta, kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  widget->Close();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(layout_manager->HasVisibleWindow());
+
+  // Swipe-up to hide. This should have no effect because there are no visible
+  // windows.
+  generator.GestureScrollSequenceWithCallback(
+      below_start, end, kTimeDelta, kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
+  // Swipe-down to hide. This should have no effect because there are no visible
+  // windows.
+  end = start + delta;
+  generator.GestureScrollSequenceWithCallback(
+      start, end, kTimeDelta, kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 }
 
 // Makes sure SetVisible updates work area and widget appropriately.
