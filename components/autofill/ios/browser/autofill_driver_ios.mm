@@ -4,6 +4,7 @@
 
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
@@ -27,8 +28,8 @@ void AutofillDriverIOS::CreateForWebStateAndDelegate(
 
   web_state->SetUserData(
       UserDataKey(),
-      new AutofillDriverIOS(web_state, client, bridge, app_locale,
-                            enable_download_manager));
+      base::WrapUnique(new AutofillDriverIOS(
+          web_state, client, bridge, app_locale, enable_download_manager)));
 }
 
 AutofillDriverIOS::AutofillDriverIOS(

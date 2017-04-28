@@ -72,8 +72,8 @@ void AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(),
-      new AutofillProfileSyncableService(webdata_backend, app_locale));
+      UserDataKey(), base::WrapUnique(new AutofillProfileSyncableService(
+                         webdata_backend, app_locale)));
 }
 
 // static
