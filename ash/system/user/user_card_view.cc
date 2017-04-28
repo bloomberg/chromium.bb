@@ -292,7 +292,8 @@ UserCardView::UserCardView(LoginStatus login_status, int user_index)
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+  set_background(views::Background::CreateThemedSolidBackground(
+      this, ui::NativeTheme::kColorId_BubbleBackground));
 
   Shell::Get()->media_controller()->AddObserver(this);
 

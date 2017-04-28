@@ -36,10 +36,8 @@ constexpr int kTitleBottomSpacing = 13;
 SadTabView::SadTabView(content::WebContents* web_contents,
                        chrome::SadTabKind kind)
     : SadTab(web_contents, kind) {
-  // Set the background color.
-  set_background(
-      views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
+  set_background(views::Background::CreateThemedSolidBackground(
+      this, ui::NativeTheme::kColorId_DialogBackground));
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -61,7 +59,7 @@ SadTabView::SadTabView(content::WebContents* web_contents,
   layout->StartRow(0, column_set_id);
   layout->AddView(image, 2, 1);
 
-  title_ = CreateLabel(l10n_util::GetStringUTF16(GetTitle()));
+  title_ = new views::Label(l10n_util::GetStringUTF16(GetTitle()));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetFontList(rb.GetFontList(ui::ResourceBundle::LargeFont));
   title_->SetMultiLine(true);
@@ -70,13 +68,10 @@ SadTabView::SadTabView(content::WebContents* web_contents,
                               views::kPanelVerticalSpacing);
   layout->AddView(title_, 2, 1);
 
-  const SkColor text_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-
-  message_ = CreateLabel(l10n_util::GetStringUTF16(GetMessage()));
+  message_ = new views::Label(l10n_util::GetStringUTF16(GetMessage()));
 
   message_->SetMultiLine(true);
-  message_->SetEnabledColor(text_color);
+  message_->SetEnabled(false);
   message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_->SetLineHeight(views::kPanelSubVerticalSpacing);
 
@@ -86,8 +81,8 @@ SadTabView::SadTabView(content::WebContents* web_contents,
 
   action_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(GetButtonTitle()));
-  help_link_ =
-      CreateLink(l10n_util::GetStringUTF16(GetHelpLinkTitle()), text_color);
+  help_link_ = new views::Link(l10n_util::GetStringUTF16(GetHelpLinkTitle()));
+  help_link_->set_listener(this);
   layout->StartRowWithPadding(0, column_set_id, 0,
                               views::kPanelVerticalSpacing);
   layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
@@ -148,21 +143,6 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
     painted_ = true;
   }
   View::OnPaint(canvas);
-}
-
-views::Label* SadTabView::CreateLabel(const base::string16& text) {
-  views::Label* label = new views::Label(text);
-  label->SetBackgroundColor(background()->get_color());
-  return label;
-}
-
-views::Link* SadTabView::CreateLink(const base::string16& text,
-                                    const SkColor& color) {
-  views::Link* link = new views::Link(text);
-  link->SetBackgroundColor(background()->get_color());
-  link->SetEnabledColor(color);
-  link->set_listener(this);
-  return link;
 }
 
 namespace chrome {

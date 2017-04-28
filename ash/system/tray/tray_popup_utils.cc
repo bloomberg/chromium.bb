@@ -21,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -227,9 +228,8 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
   // Frequently the label will paint to a layer that's non-opaque, so subpixel
   // rendering won't work unless we explicitly set a background. See
   // crbug.com/686363
-  label->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
-  label->SetBackgroundColor(kBackgroundColor);
+  label->set_background(views::Background::CreateThemedSolidBackground(
+      label, ui::NativeTheme::kColorId_BubbleBackground));
   return label;
 }
 
@@ -288,8 +288,8 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::CustomButton* button) {
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->set_id(VIEW_ID_STICKY_HEADER);
-  view->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+  view->set_background(views::Background::CreateThemedSolidBackground(
+      view, ui::NativeTheme::kColorId_BubbleBackground));
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
   view->SetPaintToLayer();

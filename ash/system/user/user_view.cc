@@ -37,6 +37,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -73,8 +74,7 @@ bool IsMultiProfileSupportedAndUserActive() {
 }
 
 // Creates the view shown in the user switcher popup ("AddUserMenuOption").
-views::View* CreateAddUserView(AddUserSessionPolicy policy,
-                               views::ButtonListener* listener) {
+views::View* CreateAddUserView(AddUserSessionPolicy policy) {
   auto* view = new views::View;
   const int icon_padding = (kMenuButtonSize - kMenuIconSize) / 2;
   auto* layout =
@@ -82,8 +82,8 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
                            kTrayPopupLabelHorizontalPadding + icon_padding);
   layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
   view->SetLayoutManager(layout);
-  view->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+  view->set_background(views::Background::CreateThemedSolidBackground(
+      view, ui::NativeTheme::kColorId_BubbleBackground));
 
   int message_id = 0;
   switch (policy) {
@@ -124,13 +124,6 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy,
   view->SetBorder(views::CreateEmptyBorder(vertical_padding, icon_padding,
                                            vertical_padding,
                                            kTrayPopupLabelHorizontalPadding));
-  if (policy == AddUserSessionPolicy::ALLOWED) {
-    auto* button =
-        new ButtonFromView(view, listener, TrayPopupInkDropStyle::INSET_BOUNDS);
-    button->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
-    return button;
-  }
 
   return view;
 }
@@ -228,11 +221,11 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login) : owner_(owner) {
 }
 
 UserView::~UserView() {
-  RemoveAddUserMenuOption();
+  HideUserDropdownWidget();
 }
 
 TrayUser::TestState UserView::GetStateForTest() const {
-  if (add_menu_option_)
+  if (user_dropdown_widget_)
     return add_user_enabled_ ? TrayUser::ACTIVE : TrayUser::ACTIVE_BUT_DISABLED;
 
   // If the container is the user card view itself, there's no ButtonFromView
@@ -257,13 +250,13 @@ int UserView::GetHeightForWidth(int width) const {
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
-    RemoveAddUserMenuOption();
+    HideUserDropdownWidget();
     Shell::Get()->system_tray_controller()->SignOut();
   } else if (sender == user_card_container_ &&
              IsMultiProfileSupportedAndUserActive()) {
-    ToggleAddUserMenuOption();
-  } else if (add_menu_option_ &&
-             sender->GetWidget() == add_menu_option_.get()) {
+    ToggleUserDropdownWidget();
+  } else if (user_dropdown_widget_ &&
+             sender->GetWidget() == user_dropdown_widget_.get()) {
     DCHECK_EQ(Shell::Get()->session_controller()->NumberOfLoggedInUsers(),
               sender->parent()->child_count() - 1);
     const int index_in_add_menu = sender->parent()->GetIndexOf(sender);
@@ -275,7 +268,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
       const int user_index = index_in_add_menu;
       SwitchUser(user_index);
     }
-    RemoveAddUserMenuOption();
+    HideUserDropdownWidget();
     owner_->system_tray()->CloseSystemBubble();
   } else {
     NOTREACHED();
@@ -284,7 +277,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
 void UserView::OnWillChangeFocus(View* focused_before, View* focused_now) {
   if (focused_now)
-    RemoveAddUserMenuOption();
+    HideUserDropdownWidget();
 }
 
 void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
@@ -314,16 +307,16 @@ void UserView::AddUserCard(LoginStatus login) {
   AddChildViewAt(user_card_container_, 0);
 }
 
-void UserView::ToggleAddUserMenuOption() {
-  if (add_menu_option_) {
-    RemoveAddUserMenuOption();
+void UserView::ToggleUserDropdownWidget() {
+  if (user_dropdown_widget_) {
+    HideUserDropdownWidget();
     return;
   }
 
   // Note: We do not need to install a global event handler to delete this
   // item since it will destroyed automatically before the menu / user menu item
   // gets destroyed..
-  add_menu_option_.reset(new views::Widget);
+  user_dropdown_widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_MENU;
   params.keep_on_top = true;
@@ -334,9 +327,9 @@ void UserView::ToggleAddUserMenuOption() {
   WmWindow::Get(GetWidget()->GetNativeWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          add_menu_option_.get(), kShellWindowId_DragImageAndTooltipContainer,
-          &params);
-  add_menu_option_->Init(params);
+          user_dropdown_widget_.get(),
+          kShellWindowId_DragImageAndTooltipContainer, &params);
+  user_dropdown_widget_->Init(params);
 
   const SessionController* const session_controller =
       Shell::Get()->session_controller();
@@ -352,48 +345,63 @@ void UserView::ToggleAddUserMenuOption() {
   int row_height = bounds.height();
 
   views::View* container = new UserDropdownWidgetContents(
-      base::Bind(&UserView::RemoveAddUserMenuOption, base::Unretained(this)));
+      base::Bind(&UserView::HideUserDropdownWidget, base::Unretained(this)));
+  views::View* add_user_view = CreateAddUserView(add_user_policy);
+  const SkColor bg_color = add_user_view->background()->get_color();
   container->SetBorder(views::CreatePaddedBorder(
-      views::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth, kBackgroundColor),
+      views::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth, bg_color),
       gfx::Insets(row_height, 0, 0, 0)));
+
+  // Create the contents aside from the empty window through which the active
+  // user is seen.
   views::View* user_dropdown_padding = new views::View();
   user_dropdown_padding->SetBorder(views::CreateSolidSidedBorder(
-      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0,
-      kBackgroundColor));
+      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0, bg_color));
   user_dropdown_padding->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(kSeparatorWidth);
-  separator->SetColor(color_utils::GetResultingPaintColor(kMenuSeparatorColor,
-                                                          kBackgroundColor));
+  separator->SetColor(
+      color_utils::GetResultingPaintColor(kMenuSeparatorColor, bg_color));
   const int separator_horizontal_padding =
       (kTrayPopupItemMinStartWidth - kTrayItemSize) / 2;
-  separator->SetBorder(views::CreateSolidSidedBorder(
-      0, separator_horizontal_padding, 0, separator_horizontal_padding,
-      kBackgroundColor));
+  separator->SetBorder(
+      views::CreateSolidSidedBorder(0, separator_horizontal_padding, 0,
+                                    separator_horizontal_padding, bg_color));
   user_dropdown_padding->AddChildView(separator);
 
+  // Add other logged in users.
   for (int i = 1; i < session_controller->NumberOfLoggedInUsers(); ++i) {
     user_dropdown_padding->AddChildView(
         new ButtonFromView(new UserCardView(LoginStatus::USER, i), this,
                            TrayPopupInkDropStyle::INSET_BOUNDS));
   }
 
-  user_dropdown_padding->AddChildView(CreateAddUserView(add_user_policy, this));
+  // Add the "add user" option or the "can't add another user" message.
+  if (add_user_enabled_) {
+    auto* button = new ButtonFromView(add_user_view, this,
+                                      TrayPopupInkDropStyle::INSET_BOUNDS);
+    button->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
+    user_dropdown_padding->AddChildView(button);
+  } else {
+    user_dropdown_padding->AddChildView(add_user_view);
+  }
+
   container->AddChildView(user_dropdown_padding);
   container->SetLayoutManager(new views::FillLayout());
-  add_menu_option_->SetContentsView(container);
+  user_dropdown_widget_->SetContentsView(container);
 
   bounds.set_height(container->GetPreferredSize().height());
-  add_menu_option_->SetBounds(bounds);
+  user_dropdown_widget_->SetBounds(bounds);
 
   // Suppress the appearance of the collective capture icon while the dropdown
   // is open (the icon will appear in the specific user rows).
   user_card_view_->SetSuppressCaptureIcon(true);
 
   // Show the content.
-  add_menu_option_->SetAlwaysOnTop(true);
-  add_menu_option_->Show();
+  user_dropdown_widget_->SetAlwaysOnTop(true);
+  user_dropdown_widget_->Show();
 
   // Install a listener to focus changes so that we can remove the card when
   // the focus gets changed. When called through the destruction of the bubble,
@@ -402,15 +410,15 @@ void UserView::ToggleAddUserMenuOption() {
   focus_manager_->AddFocusChangeListener(this);
 }
 
-void UserView::RemoveAddUserMenuOption() {
-  if (!add_menu_option_)
+void UserView::HideUserDropdownWidget() {
+  if (!user_dropdown_widget_)
     return;
   focus_manager_->RemoveFocusChangeListener(this);
   focus_manager_ = nullptr;
   if (user_card_container_->GetFocusManager())
     user_card_container_->GetFocusManager()->ClearFocus();
   user_card_view_->SetSuppressCaptureIcon(false);
-  add_menu_option_.reset();
+  user_dropdown_widget_.reset();
 }
 
 }  // namespace tray
