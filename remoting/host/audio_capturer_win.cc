@@ -7,6 +7,7 @@
 #include <avrt.h>
 #include <mmreg.h>
 #include <mmsystem.h>
+#include <objbase.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -124,7 +125,7 @@ bool AudioCapturerWin::Initialize() {
   hr = mm_device_->Activate(__uuidof(IAudioClient),
                             CLSCTX_ALL,
                             nullptr,
-                            audio_client_.ReceiveVoid());
+                            &audio_client_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioClient. Error " << hr;
     return false;
@@ -219,8 +220,7 @@ bool AudioCapturerWin::Initialize() {
   }
 
   // Get an IAudioCaptureClient.
-  hr = audio_client_->GetService(__uuidof(IAudioCaptureClient),
-                                 audio_capture_client_.ReceiveVoid());
+  hr = audio_client_->GetService(IID_PPV_ARGS(&audio_capture_client_));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioCaptureClient. Error " << hr;
     return false;
@@ -236,7 +236,7 @@ bool AudioCapturerWin::Initialize() {
   // Initialize IAudioEndpointVolume.
   // TODO(zijiehe): Do we need to control per process volume?
   hr = mm_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr,
-                            audio_volume_.ReceiveVoid());
+                            &audio_volume_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get an IAudioEndpointVolume. Error " << hr;
     return false;

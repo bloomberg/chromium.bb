@@ -137,11 +137,11 @@ HRESULT GetGit(ScopedComPtr<IGlobalInterfaceTable>* git) {
 }
 
 // Retrieves an interface pointer from the process GIT for a given |cookie|.
-template <typename T>
-HRESULT GetInterfaceFromGit(const ScopedComPtr<IGlobalInterfaceTable>& git,
+HRESULT GetInterfaceFromGit(IGlobalInterfaceTable* git,
                             DWORD cookie,
-                            ScopedComPtr<T>* p) {
-  return git->GetInterfaceFromGlobal(cookie, IID_PPV_ARGS(p));
+                            REFIID riid,
+                            void** ppv) {
+  return git->GetInterfaceFromGlobal(cookie, riid, ppv);
 }
 
 // Registers an interface pointer in GIT and returns its corresponding |cookie|.
@@ -843,12 +843,13 @@ HRESULT BackgroundDownloader::UpdateInterfacePointers() {
     return hr;
 
   bits_manager_ = nullptr;
-  hr = GetInterfaceFromGit(git, git_cookie_bits_manager_, &bits_manager_);
+  hr = GetInterfaceFromGit(git.Get(), git_cookie_bits_manager_,
+                           IID_PPV_ARGS(&bits_manager_));
   if (FAILED(hr))
     return hr;
 
   job_ = nullptr;
-  hr = GetInterfaceFromGit(git, git_cookie_job_, &job_);
+  hr = GetInterfaceFromGit(git.Get(), git_cookie_job_, IID_PPV_ARGS(&job_));
   if (FAILED(hr))
     return hr;
 

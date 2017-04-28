@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_angle_util_win.h"
 
+#include <objbase.h>
+
 #include "base/trace_event/trace_event.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -99,7 +101,7 @@ base::win::ScopedComPtr<IDCompositionDevice2> QueryDirectCompositionDevice(
 
   UINT data_size = sizeof(dcomp_device.Get());
   HRESULT hr = d3d11_device->GetPrivateData(kDirectCompositionGUID, &data_size,
-                                            dcomp_device.ReceiveVoid());
+                                            &dcomp_device);
   if (SUCCEEDED(hr) && dcomp_device)
     return dcomp_device;
 

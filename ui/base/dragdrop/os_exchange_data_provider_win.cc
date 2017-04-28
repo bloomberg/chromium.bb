@@ -4,6 +4,7 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
+#include <objbase.h>
 #include <objidl.h>
 #include <shlobj.h>
 #include <shobjidl.h>
@@ -583,7 +584,7 @@ void OSExchangeDataProviderWin::SetDragImage(
 
   base::win::ScopedComPtr<IDragSourceHelper> helper;
   HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
-                                IID_IDragSourceHelper, helper.ReceiveVoid());
+                                IID_PPV_ARGS(&helper));
   if (!SUCCEEDED(rv))
     return;
 

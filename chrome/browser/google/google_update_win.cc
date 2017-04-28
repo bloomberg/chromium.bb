@@ -195,7 +195,8 @@ HRESULT CreateGoogleUpdate3WebClass(
 
   ConfigureProxyBlanket(class_factory.Get());
 
-  return class_factory->CreateInstance(nullptr, IID_PPV_ARGS(google_update));
+  return class_factory->CreateInstance(nullptr,
+                                       IID_PPV_ARGS(google_update->Receive()));
 }
 
 // UpdateCheckDriver -----------------------------------------------------------
