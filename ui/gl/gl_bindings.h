@@ -335,6 +335,15 @@
 #define GL_CONTEXT_LOST_KHR               0x0507
 #endif /* GL_KHR_robustness */
 
+#ifndef GL_EXT_texture_norm16
+#define GL_EXT_texture_norm16 1
+#define GL_R16_EXT 0x822A
+#define GL_RG16_EXT 0x822C
+#define GL_RGBA16_EXT 0x805B
+#define GL_RGB16_EXT 0x8054
+#define GL_RGB16_SNORM_EXT 0x8F9A
+#endif /* GL_EXT_texture_norm16 */
+
 #ifndef GL_EXT_texture_rg
 #define GL_EXT_texture_rg 1
 #define GL_RED_EXT 0x1903

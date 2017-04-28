@@ -28,6 +28,10 @@ namespace gfx {
 class RectF;
 }
 
+namespace gpu {
+struct Capabilities;
+}
+
 namespace media {
 
 // TODO(enne): rename to PaintCanvasVideoRenderer
@@ -103,13 +107,19 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
-  // Converts unsigned 16-bit value to target |format| for Y16 format and
-  // calls WebGL texImage2D.
-  // |level|, |internal_format|, |format|, |type| are WebGL texImage2D
-  // parameters.
+  // Calls texImage2D where the texture image data source is the contents of
+  // |video_frame|. Texture |texture| needs to be created and bound to |target|
+  // before this call and the binding is active upon return.
+  // This is an optimization of WebGL |video_frame| TexImage2D implementation
+  // for specific combinations of |video_frame| and |texture| formats; e.g. if
+  // |frame format| is Y16, optimizes conversion of normalized 16-bit content
+  // and calls texImage2D to |texture|. |level|, |internal_format|, |format| and
+  // |type| are WebGL texImage2D parameters.
   // Returns false if there is no implementation for given parameters.
   static bool TexImage2D(unsigned target,
+                         unsigned texture,
                          gpu::gles2::GLES2Interface* gl,
+                         const gpu::Capabilities& gpu_capabilities,
                          VideoFrame* video_frame,
                          int level,
                          int internalformat,
@@ -118,10 +128,13 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
                          bool flip_y,
                          bool premultiply_alpha);
 
-  // Converts unsigned 16-bit value to target |format| for Y16 format and
-  // calls WebGL texSubImage2D.
-  // |level|, |format|, |type|, |xoffset| and |yoffset| are texSubImage2D
-  // parameters.
+  // Calls texSubImage2D where the texture image data source is the contents of
+  // |video_frame|.
+  // This is an optimization of WebGL |video_frame| TexSubImage2D implementation
+  // for specific combinations of |video_frame| and texture |format| and |type|;
+  // e.g. if |frame format| is Y16, converts unsigned 16-bit value to target
+  // |format| and calls WebGL texSubImage2D. |level|, |format|, |type|,
+  // |xoffset| and |yoffset| are texSubImage2D parameters.
   // Returns false if there is no implementation for given parameters.
   static bool TexSubImage2D(unsigned target,
                             gpu::gles2::GLES2Interface* gl,

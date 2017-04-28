@@ -226,13 +226,14 @@ class WebMediaPlayer {
   // The method is wrapping calls to glTexImage2D, glTexSubImage2D,
   // glTexImage3D and glTexSubImage3D and parameters have the same name and
   // meaning.
-  // Texture needs to be created and bound to active texture unit before this
-  // call. In addition, TexSubImage2D and TexSubImage3D require that previous
-  // TexImage2D and TexSubImage3D calls, respectivelly, defined the texture
-  // content.
+  // Texture |texture| needs to be created and bound to active texture unit
+  // before this call. In addition, TexSubImage2D and TexSubImage3D require that
+  // previous TexImage2D and TexSubImage3D calls, respectively, defined the
+  // texture content.
   virtual bool TexImageImpl(TexImageFunctionID function_id,
                             unsigned target,
                             gpu::gles2::GLES2Interface* gl,
+                            unsigned texture,
                             int level,
                             int internalformat,
                             unsigned format,

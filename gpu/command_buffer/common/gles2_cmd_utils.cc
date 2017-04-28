@@ -1471,6 +1471,7 @@ void GLES2Util::GetColorFormatComponentSizes(
     case GL_R16F:
     case GL_R16UI:
     case GL_R16I:
+    case GL_R16_EXT:
       *r = 16;
       break;
     case GL_R32F:
@@ -1765,6 +1766,8 @@ uint32_t GLES2Util::ConvertToSizedFormat(uint32_t format, uint32_t type) {
           return GL_R16F;
         case GL_FLOAT:
           return GL_R32F;
+        case GL_UNSIGNED_SHORT:
+          return GL_R16_EXT;
         default:
           NOTREACHED();
           break;

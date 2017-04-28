@@ -143,6 +143,7 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
       sourceFormatIndex = S_FORMAT_LUMINANCE_ALPHA;
       break;
     case GL_RED:
+    case GL_R16_EXT:
       sourceFormatIndex = S_FORMAT_RED;
       break;
     case GL_RGB:

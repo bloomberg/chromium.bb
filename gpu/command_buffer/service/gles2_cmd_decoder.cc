@@ -3794,6 +3794,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.blend_equation_advanced_coherent =
       feature_info_->feature_flags().blend_equation_advanced_coherent;
   caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
+  caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
   caps.texture_half_float_linear =
       feature_info_->feature_flags().enable_texture_half_float_linear;
   caps.color_buffer_half_float_rgba =
@@ -16597,6 +16598,7 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
       break;
   }
 
+  // TODO(aleksandar.stojiljkovic): Use sized internal formats: crbug.com/628064
   bool valid_source_format =
       source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
       source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
@@ -16606,7 +16608,8 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
       source_internal_format == GL_BGRA_EXT ||
       source_internal_format == GL_BGRA8_EXT ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
-      source_internal_format == GL_RGB_YCBCR_422_CHROMIUM;
+      source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
+      source_internal_format == GL_R16_EXT;
   if (!valid_source_format) {
     std::string msg = "invalid source internal format " +
         GLES2Util::GetStringEnum(source_internal_format);

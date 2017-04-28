@@ -14,6 +14,7 @@
 #include "cc/paint/paint_image.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
@@ -577,7 +578,7 @@ void FlipAndConvertY16(const VideoFrame* video_frame,
           *out_row++ = *row++ / 65535.f;
         continue;
       }
-      // For other formats, hit NOTREACHED bellow.
+      // For other formats, hit NOTREACHED below.
     } else if (type == GL_UNSIGNED_BYTE) {
       // We take the upper 8 bits of 16-bit data and convert it as luminance to
       // ARGB.  We loose the precision here, but it is important not to render
@@ -638,6 +639,38 @@ bool TexImageHelper(VideoFrame* frame,
   FlipAndConvertY16(frame, (*temp_buffer)->writable_data(), format, type,
                     flip_y, output_row_bytes);
   return true;
+}
+
+// Upload the |frame| data to temporary texture of |temp_format|,
+// |temp_internalformat| and |temp_type| and then copy intermediate texture
+// subimage to destination |texture|. The destination |texture| is bound to the
+// |target| before the call.
+void TextureSubImageUsingIntermediate(unsigned target,
+                                      unsigned texture,
+                                      gpu::gles2::GLES2Interface* gl,
+                                      VideoFrame* frame,
+                                      int temp_internalformat,
+                                      unsigned temp_format,
+                                      unsigned temp_type,
+                                      int level,
+                                      int xoffset,
+                                      int yoffset,
+                                      bool flip_y,
+                                      bool premultiply_alpha) {
+  unsigned temp_texture = 0;
+  gl->GenTextures(1, &temp_texture);
+  gl->BindTexture(target, temp_texture);
+  gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  gl->TexImage2D(target, 0, temp_internalformat, frame->visible_rect().width(),
+                 frame->visible_rect().height(), 0, temp_format, temp_type,
+                 frame->visible_data(0));
+  gl->BindTexture(target, texture);
+  gl->CopySubTextureCHROMIUM(temp_texture, 0, target, texture, level, 0, 0,
+                             xoffset, yoffset, frame->visible_rect().width(),
+                             frame->visible_rect().height(), flip_y,
+                             premultiply_alpha, false);
+  gl->DeleteTextures(1, &temp_texture);
 }
 
 }  // anonymous namespace
@@ -929,18 +962,45 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   return true;
 }
 
-bool SkCanvasVideoRenderer::TexImage2D(unsigned target,
-                                       gpu::gles2::GLES2Interface* gl,
-                                       VideoFrame* frame,
-                                       int level,
-                                       int internalformat,
-                                       unsigned format,
-                                       unsigned type,
-                                       bool flip_y,
-                                       bool premultiply_alpha) {
+bool SkCanvasVideoRenderer::TexImage2D(
+    unsigned target,
+    unsigned texture,
+    gpu::gles2::GLES2Interface* gl,
+    const gpu::Capabilities& gpu_capabilities,
+    VideoFrame* frame,
+    int level,
+    int internalformat,
+    unsigned format,
+    unsigned type,
+    bool flip_y,
+    bool premultiply_alpha) {
   DCHECK(frame);
   DCHECK(!frame->HasTextures());
 
+  // Note: CopyTextureCHROMIUM uses mediump for color computation. Don't use
+  // it if the precision would lead to data loss when converting 16-bit
+  // normalized to float. medium_float.precision > 15 means that the approach
+  // below is not used on Android, where the extension EXT_texture_norm16 is
+  // not widely supported. It is used on Windows, Linux and OSX.
+  // Android support is not required for now because Tango depth camera already
+  // provides floating point data (projected point cloud). See crbug.com/674440.
+  if (gpu_capabilities.texture_norm16 &&
+      gpu_capabilities.fragment_shader_precisions.medium_float.precision > 15 &&
+      target == GL_TEXTURE_2D &&
+      (type == GL_FLOAT || type == GL_UNSIGNED_BYTE)) {
+    // TODO(aleksandar.stojiljkovic): Extend the approach to TexSubImage2D
+    // implementation and other types. See https://crbug.com/624436.
+
+    // Allocate the destination texture.
+    gl->TexImage2D(target, level, internalformat, frame->visible_rect().width(),
+                   frame->visible_rect().height(), 0, format, type, nullptr);
+    // We use sized internal format GL_R16_EXT instead of unsized GL_RED.
+    // See angleproject:1952
+    TextureSubImageUsingIntermediate(target, texture, gl, frame, GL_R16_EXT,
+                                     GL_RED, GL_UNSIGNED_SHORT, level, 0, 0,
+                                     flip_y, premultiply_alpha);
+    return true;
+  }
   scoped_refptr<DataBuffer> temp_buffer;
   if (!TexImageHelper(frame, format, type, flip_y, &temp_buffer))
     return false;

@@ -334,6 +334,7 @@ bool HTMLVideoElement::TexImageImpl(
     WebMediaPlayer::TexImageFunctionID function_id,
     GLenum target,
     gpu::gles2::GLES2Interface* gl,
+    GLuint texture,
     GLint level,
     GLint internalformat,
     GLenum format,
@@ -346,8 +347,8 @@ bool HTMLVideoElement::TexImageImpl(
   if (!GetWebMediaPlayer())
     return false;
   return GetWebMediaPlayer()->TexImageImpl(
-      function_id, target, gl, level, internalformat, format, type, xoffset,
-      yoffset, zoffset, flip_y, premultiply_alpha);
+      function_id, target, gl, texture, level, internalformat, format, type,
+      xoffset, yoffset, zoffset, flip_y, premultiply_alpha);
 }
 
 bool HTMLVideoElement::HasAvailableVideoFrame() const {

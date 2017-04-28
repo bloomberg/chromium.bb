@@ -86,6 +86,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool blend_equation_advanced = false;
     bool blend_equation_advanced_coherent = false;
     bool ext_texture_rg = false;
+    bool ext_texture_norm16 = false;
     bool chromium_image_ycbcr_420v = false;
     bool chromium_image_ycbcr_422 = false;
     bool emulate_primitive_restart_fixed_index = false;

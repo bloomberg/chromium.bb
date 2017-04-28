@@ -608,6 +608,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
 bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
                                     unsigned target,
                                     gpu::gles2::GLES2Interface* gl,
+                                    unsigned int texture,
                                     int level,
                                     int internalformat,
                                     unsigned format,
@@ -629,9 +630,14 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   }
 
   if (functionID == kTexImage2D) {
+    auto* provider =
+        RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+    // GPU Process crashed.
+    if (!provider)
+      return false;
     return media::SkCanvasVideoRenderer::TexImage2D(
-        target, gl, video_frame.get(), level, internalformat, format, type,
-        flip_y, premultiply_alpha);
+        target, texture, gl, provider->ContextCapabilities(), video_frame.get(),
+        level, internalformat, format, type, flip_y, premultiply_alpha);
   } else if (functionID == kTexSubImage2D) {
     return media::SkCanvasVideoRenderer::TexSubImage2D(
         target, gl, video_frame.get(), level, format, type, xoffset, yoffset,

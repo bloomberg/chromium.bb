@@ -216,6 +216,9 @@ class FormatTypeValidator {
         // Exposed by GL_APPLE_texture_format_BGRA8888 and
         // GL_EXT_texture_format_BGRA8888
         {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
+
+        // Exposed by GL_EXT_texture_norm16
+        {GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT},
     };
 
     static const FormatType kSupportedFormatTypesES2Only[] = {

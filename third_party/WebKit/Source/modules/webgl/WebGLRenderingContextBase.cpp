@@ -5272,7 +5272,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
         this, unpack_flip_y_ || unpack_premultiply_alpha_);
     if (video->TexImageImpl(
             static_cast<WebMediaPlayer::TexImageFunctionID>(function_id),
-            target, ContextGL(), level,
+            target, ContextGL(), texture->Object(), level,
             ConvertTexInternalFormat(internalformat, type), format, type,
             xoffset, yoffset, zoffset, unpack_flip_y_,
             unpack_premultiply_alpha_ &&
