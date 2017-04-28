@@ -133,19 +133,19 @@ public class CustomTabActivity extends ChromeActivity {
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
         private final CustomTabsConnection mConnection;
         private final CustomTabsSessionToken mSession;
-        private final Tab mTab;
+        private final WebContents mWebContents;
 
         public PageLoadMetricsObserver(CustomTabsConnection connection,
                 CustomTabsSessionToken session, Tab tab) {
             mConnection = connection;
             mSession = session;
-            mTab = tab;
+            mWebContents = tab.getWebContents();
         }
 
         @Override
         public void onFirstContentfulPaint(
                 WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
-            if (webContents != mTab.getWebContents()) return;
+            if (webContents != mWebContents) return;
 
             mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
                     navigationStartTick, firstContentfulPaintMs);
@@ -154,7 +154,7 @@ public class CustomTabActivity extends ChromeActivity {
         @Override
         public void onLoadEventStart(
                 WebContents webContents, long navigationStartTick, long loadEventStartMs) {
-            if (webContents != mTab.getWebContents()) return;
+            if (webContents != mWebContents) return;
 
             mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
                     navigationStartTick, loadEventStartMs);
