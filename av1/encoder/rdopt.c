@@ -3397,30 +3397,36 @@ static const uint8_t gradient_to_angle_bin[2][7][16] = {
 
 static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
   0, 2, 6, 0, 4, 3, 5, 7, 1, 0,
+#if CONFIG_ALT_INTRA
+  0,
+#endif  // CONFIG_ALT_INTRA
 };
 
 static void angle_estimation(const uint8_t *src, int src_stride, int rows,
-                             int cols, uint8_t *directional_mode_skip_mask) {
-  int i, r, c, index, dx, dy, temp, sn, remd, quot;
+                             int cols, BLOCK_SIZE bsize,
+                             uint8_t *directional_mode_skip_mask) {
+  memset(directional_mode_skip_mask, 0,
+         INTRA_MODES * sizeof(*directional_mode_skip_mask));
+  // Sub-8x8 blocks do not use extra directions.
+  if (bsize < BLOCK_8X8) return;
   uint64_t hist[DIRECTIONAL_MODES];
-  uint64_t hist_sum = 0;
-
   memset(hist, 0, DIRECTIONAL_MODES * sizeof(hist[0]));
   src += src_stride;
+  int r, c, dx, dy;
   for (r = 1; r < rows; ++r) {
     for (c = 1; c < cols; ++c) {
       dx = src[c] - src[c - 1];
       dy = src[c] - src[c - src_stride];
-      temp = dx * dx + dy * dy;
+      int index;
+      const int temp = dx * dx + dy * dy;
       if (dy == 0) {
         index = 2;
       } else {
-        sn = (dx > 0) ^ (dy > 0);
+        const int sn = (dx > 0) ^ (dy > 0);
         dx = abs(dx);
         dy = abs(dy);
-        remd = dx % dy;
-        quot = dx / dy;
-        remd = remd * 16 / dy;
+        const int remd = (dx % dy) * 16 / dy;
+        const int quot = dx / dy;
         index = gradient_to_angle_bin[sn][AOMMIN(quot, 6)][AOMMIN(remd, 15)];
       }
       hist[index] += temp;
@@ -3428,9 +3434,11 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
     src += src_stride;
   }
 
+  int i;
+  uint64_t hist_sum = 0;
   for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
   for (i = 0; i < INTRA_MODES; ++i) {
-    if (i != DC_PRED && i != TM_PRED) {
+    if (av1_is_directional_mode(i, bsize)) {
       const uint8_t angle_bin = mode_to_angle_bin[i];
       uint64_t score = 2 * hist[angle_bin];
       int weight = 2;
@@ -3450,29 +3458,31 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
 
 #if CONFIG_HIGHBITDEPTH
 static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
-                                    int rows, int cols,
+                                    int rows, int cols, BLOCK_SIZE bsize,
                                     uint8_t *directional_mode_skip_mask) {
-  int i, r, c, index, dx, dy, temp, sn, remd, quot;
-  uint64_t hist[DIRECTIONAL_MODES];
-  uint64_t hist_sum = 0;
+  memset(directional_mode_skip_mask, 0,
+         INTRA_MODES * sizeof(*directional_mode_skip_mask));
+  // Sub-8x8 blocks do not use extra directions.
+  if (bsize < BLOCK_8X8) return;
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-
+  uint64_t hist[DIRECTIONAL_MODES];
   memset(hist, 0, DIRECTIONAL_MODES * sizeof(hist[0]));
   src += src_stride;
+  int r, c, dx, dy;
   for (r = 1; r < rows; ++r) {
     for (c = 1; c < cols; ++c) {
       dx = src[c] - src[c - 1];
       dy = src[c] - src[c - src_stride];
-      temp = dx * dx + dy * dy;
+      int index;
+      const int temp = dx * dx + dy * dy;
       if (dy == 0) {
         index = 2;
       } else {
-        sn = (dx > 0) ^ (dy > 0);
+        const int sn = (dx > 0) ^ (dy > 0);
         dx = abs(dx);
         dy = abs(dy);
-        remd = dx % dy;
-        quot = dx / dy;
-        remd = remd * 16 / dy;
+        const int remd = (dx % dy) * 16 / dy;
+        const int quot = dx / dy;
         index = gradient_to_angle_bin[sn][AOMMIN(quot, 6)][AOMMIN(remd, 15)];
       }
       hist[index] += temp;
@@ -3480,9 +3490,11 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
     src += src_stride;
   }
 
+  int i;
+  uint64_t hist_sum = 0;
   for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
   for (i = 0; i < INTRA_MODES; ++i) {
-    if (i != DC_PRED && i != TM_PRED) {
+    if (av1_is_directional_mode(i, bsize)) {
       const uint8_t angle_bin = mode_to_angle_bin[i];
       uint64_t score = 2 * hist[angle_bin];
       int weight = 2;
@@ -3554,15 +3566,14 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_EXT_INTRA
   mbmi->angle_delta[0] = 0;
-  memset(directional_mode_skip_mask, 0,
-         sizeof(directional_mode_skip_mask[0]) * INTRA_MODES);
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    highbd_angle_estimation(src, src_stride, rows, cols,
+    highbd_angle_estimation(src, src_stride, rows, cols, bsize,
                             directional_mode_skip_mask);
   else
 #endif  // CONFIG_HIGHBITDEPTH
-    angle_estimation(src, src_stride, rows, cols, directional_mode_skip_mask);
+    angle_estimation(src, src_stride, rows, cols, bsize,
+                     directional_mode_skip_mask);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
@@ -9616,11 +9627,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 #endif  // CONFIG_PALETTE
 
-#if CONFIG_EXT_INTRA
-  memset(directional_mode_skip_mask, 0,
-         sizeof(directional_mode_skip_mask[0]) * INTRA_MODES);
-#endif  // CONFIG_EXT_INTRA
-
   estimate_ref_frame_costs(cm, xd, segment_id, ref_costs_single, ref_costs_comp,
                            &comp_mode_p);
 
@@ -10078,11 +10084,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           const uint8_t *src = x->plane[0].src.buf;
 #if CONFIG_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-            highbd_angle_estimation(src, src_stride, rows, cols,
+            highbd_angle_estimation(src, src_stride, rows, cols, bsize,
                                     directional_mode_skip_mask);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            angle_estimation(src, src_stride, rows, cols,
+            angle_estimation(src, src_stride, rows, cols, bsize,
                              directional_mode_skip_mask);
           angle_stats_ready = 1;
         }
