@@ -38,6 +38,7 @@ class CC_EXPORT PictureLayerImpl
   ~PictureLayerImpl() override;
 
   Layer::LayerMaskType mask_type() const { return mask_type_; }
+  void SetLayerMaskType(Layer::LayerMaskType type);
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
@@ -150,7 +151,7 @@ class CC_EXPORT PictureLayerImpl
 
   bool was_screen_space_transform_animating_;
   bool only_used_low_res_last_append_quads_;
-  const Layer::LayerMaskType mask_type_;
+  Layer::LayerMaskType mask_type_;
 
   bool nearest_neighbor_;
   bool use_transformed_rasterization_;

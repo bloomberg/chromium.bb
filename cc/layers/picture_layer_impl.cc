@@ -120,6 +120,17 @@ PictureLayerImpl::~PictureLayerImpl() {
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
 }
 
+void PictureLayerImpl::SetLayerMaskType(Layer::LayerMaskType mask_type) {
+  if (mask_type_ == mask_type)
+    return;
+  // It is expected that a layer can never change from being a mask to not being
+  // one and vice versa. Only changes that make mask layer single <-> multi are
+  // expected.
+  DCHECK(mask_type_ != Layer::LayerMaskType::NOT_MASK &&
+         mask_type != Layer::LayerMaskType::NOT_MASK);
+  mask_type_ = mask_type;
+}
+
 const char* PictureLayerImpl::LayerTypeAsString() const {
   return "cc::PictureLayerImpl";
 }
@@ -131,10 +142,10 @@ std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  DCHECK_EQ(layer_impl->mask_type_, mask_type_);
 
   LayerImpl::PushPropertiesTo(base_layer);
 
+  layer_impl->SetLayerMaskType(mask_type());
   // Twin relationships should never change once established.
   DCHECK(!twin_layer_ || twin_layer_ == layer_impl);
   DCHECK(!twin_layer_ || layer_impl->twin_layer_ == this);
