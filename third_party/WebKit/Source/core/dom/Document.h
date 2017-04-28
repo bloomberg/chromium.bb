@@ -1268,11 +1268,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   NthIndexCache* GetNthIndexCache() const { return nth_index_cache_; }
 
-  bool IsSecureContext(
-      String& error_message,
-      const SecureContextCheck = kStandardSecureContextCheck) const override;
-  bool IsSecureContext(
-      const SecureContextCheck = kStandardSecureContextCheck) const override;
+  bool IsSecureContext(String& error_message) const override;
+  bool IsSecureContext() const override;
 
   ClientHintsPreferences& GetClientHintsPreferences() {
     return client_hints_preferences_;
@@ -1395,8 +1392,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ChildTypeAllowed(NodeType) const final;
   Node* cloneNode(bool deep, ExceptionState&) final;
   void CloneDataFromDocument(const Document&);
-  bool IsSecureContextImpl(
-      const SecureContextCheck privilige_context_check) const;
+  bool IsSecureContextImpl() const;
 
   ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;
 

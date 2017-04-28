@@ -3898,8 +3898,7 @@ void Document::CloneDataFromDocument(const Document& other) {
   SetMimeType(other.contentType());
 }
 
-bool Document::IsSecureContextImpl(
-    const SecureContextCheck privilege_context_check) const {
+bool Document::IsSecureContextImpl() const {
   // There may be exceptions for the secure context check defined for certain
   // schemes. The exceptions are applied only to the special scheme and to
   // sandboxed URLs from those origins, but *not* to any children.
@@ -3935,17 +3934,15 @@ bool Document::IsSecureContextImpl(
           GetSecurityOrigin()->Protocol()))
     return true;
 
-  if (privilege_context_check == kStandardSecureContextCheck) {
-    if (!frame_)
-      return true;
-    Frame* parent = frame_->Tree().Parent();
-    while (parent) {
-      if (!parent->GetSecurityContext()
-               ->GetSecurityOrigin()
-               ->IsPotentiallyTrustworthy())
-        return false;
-      parent = parent->Tree().Parent();
-    }
+  if (!frame_)
+    return true;
+  Frame* parent = frame_->Tree().Parent();
+  while (parent) {
+    if (!parent->GetSecurityContext()
+             ->GetSecurityOrigin()
+             ->IsPotentiallyTrustworthy())
+      return false;
+    parent = parent->Tree().Parent();
   }
   return true;
 }
@@ -6529,19 +6526,16 @@ void Document::PlatformColorsChanged() {
   GetStyleEngine().PlatformColorsChanged();
 }
 
-bool Document::IsSecureContext(
-    String& error_message,
-    const SecureContextCheck privilege_context_check) const {
-  if (!IsSecureContext(privilege_context_check)) {
+bool Document::IsSecureContext(String& error_message) const {
+  if (!IsSecureContext()) {
     error_message = SecurityOrigin::IsPotentiallyTrustworthyErrorMessage();
     return false;
   }
   return true;
 }
 
-bool Document::IsSecureContext(
-    const SecureContextCheck privilege_context_check) const {
-  bool is_secure = IsSecureContextImpl(privilege_context_check);
+bool Document::IsSecureContext() const {
+  bool is_secure = IsSecureContextImpl();
   if (GetSandboxFlags() != kSandboxNone) {
     UseCounter::Count(
         *this, is_secure

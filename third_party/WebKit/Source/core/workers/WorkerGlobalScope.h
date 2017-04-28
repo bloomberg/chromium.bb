@@ -99,7 +99,7 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerNavigator* navigator() const;
   void close();
   bool isSecureContextForBindings() const {
-    return ExecutionContext::IsSecureContext(kStandardSecureContextCheck);
+    return ExecutionContext::IsSecureContext();
   }
 
   String origin() const;
@@ -133,9 +133,7 @@ class CORE_EXPORT WorkerGlobalScope
   SecurityContext& GetSecurityContext() final { return *this; }
   void AddConsoleMessage(ConsoleMessage*) final;
   WorkerEventQueue* GetEventQueue() const final;
-  bool IsSecureContext(
-      String& error_message,
-      const SecureContextCheck = kStandardSecureContextCheck) const override;
+  bool IsSecureContext(String& error_message) const override;
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;

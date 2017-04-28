@@ -1435,7 +1435,6 @@ class CORE_EXPORT UseCounter {
     kFetchResponseConstructionWithStream = 1826,
     kLocationOrigin = 1827,
     kDocumentOrigin = 1828,
-    kSubtleCryptoOnlyStrictSecureContextCheckFailed = 1829,
     kCanvas2DFilter = 1830,
     kCanvas2DImageSmoothingQuality = 1831,
     kCanvasToBlob = 1832,

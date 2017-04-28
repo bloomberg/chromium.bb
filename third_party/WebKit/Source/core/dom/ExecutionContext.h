@@ -68,14 +68,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
  public:
   DECLARE_VIRTUAL_TRACE();
 
-  // Used to specify whether |isSecureContext| should walk the
-  // ancestor tree to decide whether to restrict usage of a powerful
-  // feature.
-  enum SecureContextCheck {
-    kStandardSecureContextCheck,
-    kWebCryptoSecureContextCheck
-  };
-
   static ExecutionContext* From(const ScriptState*);
 
   virtual bool IsDocument() const { return false; }
@@ -172,11 +164,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   // Decides whether this context is privileged, as described in
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
-  virtual bool IsSecureContext(
-      String& error_message,
-      const SecureContextCheck = kStandardSecureContextCheck) const = 0;
-  virtual bool IsSecureContext(
-      const SecureContextCheck = kStandardSecureContextCheck) const;
+  virtual bool IsSecureContext(String& error_message) const = 0;
+  virtual bool IsSecureContext() const;
 
   virtual String OutgoingReferrer() const;
   // Parses a comma-separated list of referrer policy tokens, and sets

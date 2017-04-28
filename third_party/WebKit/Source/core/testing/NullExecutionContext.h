@@ -50,9 +50,7 @@ class NullExecutionContext final
   void ExceptionThrown(ErrorEvent*) override {}
 
   void SetIsSecureContext(bool);
-  bool IsSecureContext(
-      String& error_message,
-      const SecureContextCheck = kStandardSecureContextCheck) const override;
+  bool IsSecureContext(String& error_message) const override;
 
   void SetUpSecurityContext();
 
