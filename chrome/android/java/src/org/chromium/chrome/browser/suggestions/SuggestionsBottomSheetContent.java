@@ -89,7 +89,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         activity.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened() {
-                mRecyclerView.scrollTo(0, 0);
+                mRecyclerView.scrollToPosition(0);
 
                 // TODO(https://crbug.com/689962) Ensure this call does not discard all suggestions
                 // every time the sheet is opened.
