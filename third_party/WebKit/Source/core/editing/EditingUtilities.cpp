@@ -2112,7 +2112,7 @@ const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
       FirstEphemeralRangeOf(node.GetDocument()
                                 .GetFrame()
                                 ->Selection()
-                                .ComputeVisibleSelectionInDOMTreeDeprecated());
+                                .ComputeVisibleSelectionInDOMTree());
   if (range.IsNull())
     return nullptr;
   return new StaticRangeVector(1, StaticRange::Create(range));
