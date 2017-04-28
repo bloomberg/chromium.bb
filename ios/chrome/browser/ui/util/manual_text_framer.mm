@@ -9,10 +9,13 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
 #import "ios/chrome/browser/ui/util/unicode_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // NOTE: When RTL text is laid out into glyph runs, the glyphs appear in the
 // visual order in which they appear on screen.  In other words, the glyphs are
@@ -70,8 +73,8 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 // A TextFrame implementation that is manually created by ManualTextFramer.
 @interface ManualTextFrame : NSObject<TextFrame> {
   // Backing objects for properties of the same name.
-  base::scoped_nsobject<NSAttributedString> _string;
-  base::scoped_nsobject<NSMutableArray> _lines;
+  NSAttributedString* _string;
+  NSMutableArray* _lines;
 }
 
 // Designated initializer.
@@ -99,9 +102,9 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
                       inBounds:(CGRect)bounds {
   if ((self = [super init])) {
     DCHECK(string.string.length);
-    _string.reset([string retain]);
+    _string = string;
     _bounds = bounds;
-    _lines.reset([[NSMutableArray alloc] init]);
+    _lines = [[NSMutableArray alloc] init];
   }
   return self;
 }
@@ -109,11 +112,11 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 #pragma mark Accessors
 
 - (NSAttributedString*)string {
-  return _string.get();
+  return _string;
 }
 
 - (NSArray*)lines {
-  return _lines.get();
+  return _lines;
 }
 
 #pragma mark Private
@@ -121,10 +124,9 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 - (void)addFramedLineWithLine:(CTLineRef)line
                   stringRange:(NSRange)stringRange
                        origin:(CGPoint)origin {
-  base::scoped_nsobject<FramedLine> framedLine([[FramedLine alloc]
-      initWithLine:line
-       stringRange:stringRange
-            origin:origin]);
+  FramedLine* framedLine = [[FramedLine alloc] initWithLine:line
+                                                stringRange:stringRange
+                                                     origin:origin];
   [_lines addObject:framedLine];
 }
 
@@ -132,14 +134,10 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 
 #pragma mark - ManualTextFramer Private Interface
 
-@interface ManualTextFramer () {
-  // Backing objects for properties of the same name.
-  base::scoped_nsobject<NSAttributedString> _string;
-  base::scoped_nsobject<ManualTextFrame> _manualTextFrame;
-}
+@interface ManualTextFramer ()
 
 // The string passed upon initialization.
-@property(nonatomic, readonly) NSAttributedString* string;
+@property(strong, nonatomic, readonly) NSAttributedString* string;
 
 // The bounds passed upon initialization.
 @property(nonatomic, readonly) CGRect bounds;
@@ -151,7 +149,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 @property(nonatomic, assign) CGFloat remainingHeight;
 
 // The text frame constructed by |-frameText|.
-@property(nonatomic, readonly) ManualTextFrame* manualTextFrame;
+@property(strong, nonatomic, readonly) ManualTextFrame* manualTextFrame;
 
 // Creates a ManualTextFrame and assigns it to |_manualTextFrame|.  Returns YES
 // if a new text frame was successfully created.
@@ -167,7 +165,6 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 @interface ParagraphFramer : ManualTextFramer {
   // Backing objects for properties of the same name.
   base::ScopedCFTypeRef<CTLineRef> _line;
-  base::scoped_nsobject<NSCharacterSet> _lineEndSet;
 }
 
 // The CTLine created from |string|.
@@ -179,7 +176,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 // Character set containing characters that are appropriate for line endings.
 // These characters include whitespaces and newlines (denoting a word boundary),
 // in addition to line-ending characters like hyphens, em dashes, and en dashes.
-@property(nonatomic, readonly) NSCharacterSet* lineEndSet;
+@property(strong, nonatomic, readonly) NSCharacterSet* lineEndSet;
 
 // The index of the current run that is being framed.  Setting |runIdx| also
 // updates |currentRun| and |currentGlyphCount|.
@@ -271,6 +268,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 @synthesize currentLineWidth = _currentLineWidth;
 @synthesize currentWhitespaceWidth = _currentWhitespaceWidth;
 @synthesize isRTL = _isRTL;
+@synthesize lineEndSet = _lineEndSet;
 
 - (instancetype)initWithString:(NSAttributedString*)string
                       inBounds:(CGRect)bounds {
@@ -343,7 +341,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
     NSMutableCharacterSet* lineEndSet =
         [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
     [lineEndSet addCharactersInString:@"-\u2013\u2014"];
-    _lineEndSet.reset([lineEndSet retain]);
+    _lineEndSet = lineEndSet;
   }
   return _lineEndSet;
 }
@@ -353,7 +351,7 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
   self.framedGlyphCount = 0;
   if ([self runIdxIsValid:runIdx]) {
     NSArray* runs = base::mac::CFToNSCast(CTLineGetGlyphRuns(self.line));
-    _currentRun = static_cast<CTRunRef>(runs[_runIdx]);
+    _currentRun = (__bridge CTRunRef)(runs[_runIdx]);
     _currentGlyphCount = CTRunGetGlyphCount(self.currentRun);
   } else {
     _currentRun = nullptr;
@@ -562,12 +560,14 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 @synthesize bounds = _bounds;
 @synthesize boundingWidth = _boundingWidth;
 @synthesize remainingHeight = _remainingHeight;
+@synthesize string = _string;
+@synthesize manualTextFrame = _manualTextFrame;
 
 - (instancetype)initWithString:(NSAttributedString*)string
                       inBounds:(CGRect)bounds {
   if ((self = [super init])) {
     DCHECK(string.string.length);
-    _string.reset([string retain]);
+    _string = string;
     _bounds = bounds;
     _boundingWidth = CGRectGetWidth(bounds);
     _remainingHeight = CGRectGetHeight(bounds);
@@ -586,9 +586,9 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
     // variables for the top-level ManualTextFramer.
     CGRect remainingBounds =
         CGRectMake(0, 0, self.boundingWidth, self.remainingHeight);
-    base::scoped_nsobject<ParagraphFramer> framer([[ParagraphFramer alloc]
-        initWithString:paragraph
-              inBounds:remainingBounds]);
+    ParagraphFramer* framer =
+        [[ParagraphFramer alloc] initWithString:paragraph
+                                       inBounds:remainingBounds];
     [framer frameText];
     id<TextFrame> frame = [framer textFrame];
     DCHECK(frame);
@@ -611,16 +611,8 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 
 #pragma mark Accessors
 
-- (NSAttributedString*)string {
-  return _string.get();
-}
-
-- (ManualTextFrame*)manualTextFrame {
-  return _manualTextFrame.get();
-}
-
 - (id<TextFrame>)textFrame {
-  return _manualTextFrame.get();
+  return _manualTextFrame;
 }
 
 #pragma mark Private
@@ -628,8 +620,8 @@ NSArray* GetParagraphStringsForString(NSAttributedString* string) {
 - (BOOL)setupManualTextFrame {
   if (_manualTextFrame)
     return NO;
-  _manualTextFrame.reset([[ManualTextFrame alloc] initWithString:self.string
-                                                        inBounds:self.bounds]);
+  _manualTextFrame =
+      [[ManualTextFrame alloc] initWithString:self.string inBounds:self.bounds];
   return YES;
 }
 

@@ -6,10 +6,11 @@
 
 #import <objc/runtime.h>
 
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The key under which LabelObservers are associated with their labels.
@@ -26,11 +27,11 @@ NSString* GetStringValue(id value) {
 
 @interface LabelObserver () {
   // The label being observed.
-  base::WeakNSObject<UILabel> _label;
+  __weak UILabel* _label;
   // Arrays used to store registered actions.
-  base::scoped_nsobject<NSMutableArray> _styleActions;
-  base::scoped_nsobject<NSMutableArray> _layoutActions;
-  base::scoped_nsobject<NSMutableArray> _textActions;
+  NSMutableArray* _styleActions;
+  NSMutableArray* _layoutActions;
+  NSMutableArray* _textActions;
 }
 
 // Whether or not observer actions are currently being executed.  This is used
@@ -89,7 +90,7 @@ static NSSet* textKeys;
 - (instancetype)initWithLabel:(UILabel*)label {
   if ((self = [super init])) {
     DCHECK(label);
-    _label.reset(label);
+    _label = label;
     [self resetLabelAttributes];
   }
   return self;
@@ -98,7 +99,6 @@ static NSSet* textKeys;
 - (void)dealloc {
   objc_setAssociatedObject(_label, kLabelObserverKey, nil,
                            OBJC_ASSOCIATION_ASSIGN);
-  [super dealloc];
 }
 
 #pragma mark - Public interface
@@ -111,7 +111,6 @@ static NSSet* textKeys;
     observer = [[LabelObserver alloc] initWithLabel:label];
     objc_setAssociatedObject(label, kLabelObserverKey, observer,
                              OBJC_ASSOCIATION_ASSIGN);
-    [observer autorelease];
   }
   return observer;
 }
@@ -136,24 +135,24 @@ static NSSet* textKeys;
 - (void)addStyleChangedAction:(LabelObserverAction)action {
   DCHECK(action);
   if (!_styleActions)
-    _styleActions.reset([[NSMutableArray alloc] init]);
-  base::mac::ScopedBlock<LabelObserverAction> actionCopy([action copy]);
+    _styleActions = [[NSMutableArray alloc] init];
+  LabelObserverAction actionCopy = [action copy];
   [_styleActions addObject:actionCopy];
 }
 
 - (void)addLayoutChangedAction:(LabelObserverAction)action {
   DCHECK(action);
   if (!_layoutActions)
-    _layoutActions.reset([[NSMutableArray alloc] init]);
-  base::mac::ScopedBlock<LabelObserverAction> actionCopy([action copy]);
+    _layoutActions = [[NSMutableArray alloc] init];
+  LabelObserverAction actionCopy = [action copy];
   [_layoutActions addObject:actionCopy];
 }
 
 - (void)addTextChangedAction:(LabelObserverAction)action {
   DCHECK(action);
   if (!_textActions)
-    _textActions.reset([[NSMutableArray alloc] init]);
-  base::mac::ScopedBlock<LabelObserverAction> actionCopy([action copy]);
+    _textActions = [[NSMutableArray alloc] init];
+  LabelObserverAction actionCopy = [action copy];
   [_textActions addObject:actionCopy];
 }
 
@@ -190,8 +189,8 @@ static NSSet* textKeys;
       [NSMutableDictionary dictionaryWithCapacity:styleKeys.count];
   for (NSString* property in styleKeys)
     labelStyle[property] = [_label valueForKey:property];
-  base::scoped_nsobject<NSAttributedString> attributedText(
-      [[NSAttributedString alloc] initWithString:[_label text]]);
+  NSAttributedString* attributedText =
+      [[NSAttributedString alloc] initWithString:[_label text]];
   [_label setAttributedText:attributedText];
   for (NSString* property in styleKeys)
     [_label setValue:labelStyle[property] forKey:property];
@@ -204,7 +203,7 @@ static NSSet* textKeys;
   if (self.respondingToKVO)
     return;
   self.respondingToKVO = YES;
-  DCHECK_EQ(object, _label.get());
+  DCHECK_EQ(object, _label);
   if ([styleKeys containsObject:key]) {
     [self performActions:_styleActions];
   } else if ([layoutKeys containsObject:key]) {

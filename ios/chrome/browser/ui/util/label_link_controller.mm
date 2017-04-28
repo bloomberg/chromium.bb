@@ -8,11 +8,8 @@
 #include <vector>
 
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/label_observer.h"
@@ -21,14 +18,15 @@
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 #pragma mark - LinkLayout
 
 // Object encapsulating the range of a link and the frames corresponding with
 // that range.
-@interface LinkLayout : NSObject {
-  // Backing objects for properties of same name.
-  base::scoped_nsobject<NSArray> _frames;
-}
+@interface LinkLayout : NSObject
 
 // Designated initializer.
 - (instancetype)initWithRange:(NSRange)range NS_DESIGNATED_INITIALIZER;
@@ -38,13 +36,14 @@
 @property(nonatomic, readonly) NSRange range;
 
 // The frames calculated for |_range|.
-@property(nonatomic, retain) NSArray* frames;
+@property(nonatomic, strong) NSArray* frames;
 
 @end
 
 @implementation LinkLayout
 
 @synthesize range = _range;
+@synthesize frames = _frames;
 
 - (instancetype)initWithRange:(NSRange)range {
   if ((self = [super init])) {
@@ -55,31 +54,21 @@
   return self;
 }
 
-#pragma mark - Accessors
-
-- (void)setFrames:(NSArray*)frames {
-  _frames.reset([frames retain]);
-}
-
-- (NSArray*)frames {
-  return _frames.get();
-}
-
 @end
 
 #pragma mark - LabelLinkController
 
 @interface LabelLinkController ()
 // Private property exposed publically in testing interface.
-@property(nonatomic, assign) Class textMapperClass;
+@property(nonatomic, unsafe_unretained) Class textMapperClass;
 
 // The original attributed text set on the label.  This may be different from
 // the label's |attributedText| property, as additional style attributes may be
 // introduced for links.
-@property(nonatomic, readonly) NSAttributedString* originalLabelText;
+@property(nonatomic, strong, readonly) NSAttributedString* originalLabelText;
 
 // The array of TransparentLinkButtons inserted above the label.
-@property(nonatomic, readonly) NSArray* linkButtons;
+@property(nonatomic, strong, readonly) NSMutableArray* linkButtons;
 
 // Adds LabelObserverActions to the LabelObserver corresponding to |_label|.
 - (void)addLabelObserverActions;
@@ -132,73 +121,63 @@
 
 @implementation LabelLinkController {
   // Ivars immutable for the lifetime of the object.
-  base::mac::ScopedBlock<ProceduralBlockWithURL> _action;
-  base::scoped_nsobject<UILabel> _label;
-  base::scoped_nsobject<UITapGestureRecognizer> _linkTapRecognizer;
-
-  // Ivas backing properties.
-  base::scoped_nsobject<UIColor> _linkColor;
-  base::scoped_nsobject<UIFont> _linkFont;
+  ProceduralBlockWithURL _action;
+  UILabel* _label;
+  UITapGestureRecognizer* _linkTapRecognizer;
 
   // Ivars that reset when label text changes.
-  base::scoped_nsobject<NSMutableDictionary> _layoutsForURLs;
-  base::scoped_nsobject<NSAttributedString> _originalLabelText;
+  NSMutableDictionary* _layoutsForURLs;
   CGRect _lastLabelFrame;
 
   // Ivars that reset when text or bounds change.
-  base::scoped_nsprotocol<id<TextRegionMapper>> _textMapper;
+  id<TextRegionMapper> _textMapper;
 
   // Internal tracking.
   BOOL _justUpdatedStyles;
-  base::scoped_nsobject<NSMutableArray> _linkButtons;
-  base::scoped_nsobject<LabelObserver> _labelObserver;
+  LabelObserver* _labelObserver;
 }
 
 @synthesize showTapAreas = _showTapAreas;
 @synthesize textMapperClass = _textMapperClass;
 @synthesize linkUnderlineStyle = _linkUnderlineStyle;
+@synthesize linkButtons = _linkButtons;
+@synthesize originalLabelText = _originalLabelText;
+@synthesize linkFont = _linkFont;
+@synthesize linkColor = _linkColor;
 
 - (instancetype)initWithLabel:(UILabel*)label
                        action:(ProceduralBlockWithURL)action {
   if ((self = [super init])) {
     DCHECK(label);
-    _label.reset([label retain]);
-    _action.reset(action, base::scoped_policy::RETAIN);
+    _label = label;
+    _action = [action copy];
     _linkUnderlineStyle = NSUnderlineStyleNone;
     [self reset];
 
-    _labelObserver.reset([[LabelObserver observerForLabel:_label] retain]);
+    _labelObserver = [LabelObserver observerForLabel:_label];
     [_labelObserver startObserving];
     [self addLabelObserverActions];
 
     self.textMapperClass = [CoreTextRegionMapper class];
-    _linkButtons.reset([[NSMutableArray alloc] init]);
+    _linkButtons = [[NSMutableArray alloc] init];
   }
   return self;
 }
 
-- (NSAttributedString*)originalLabelText {
-  return _originalLabelText.get();
-}
-
-- (NSArray*)linkButtons {
-  return _linkButtons.get();
-}
-
 - (void)addLabelObserverActions {
-  base::WeakNSObject<LabelLinkController> weakSelf(self);
+  __weak LabelLinkController* weakSelf = self;
   [_labelObserver addStyleChangedAction:^(UILabel* label) {
     // One of the style properties has been changed, which will silently
     // update the label's attributedText.
     if (!weakSelf)
       return;
-    base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
+    LabelLinkController* strongSelf = weakSelf;
     [strongSelf labelStyleInvalidated];
   }];
   [_labelObserver addTextChangedAction:^(UILabel* label) {
     if (!weakSelf)
       return;
-    base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
+    LabelLinkController* strongSelf = weakSelf;
     NSString* originalText = [[strongSelf originalLabelText] string];
     if ([label.text isEqualToString:originalText]) {
       // The actual text of the label didn't change, so this was a change to
@@ -212,7 +191,7 @@
   [_labelObserver addLayoutChangedAction:^(UILabel* label) {
     if (!weakSelf)
       return;
-    base::scoped_nsobject<LabelLinkController> strongSelf([weakSelf retain]);
+    LabelLinkController* strongSelf = weakSelf;
     [strongSelf labelLayoutInvalidated];
     NSArray* linkButtons = [strongSelf linkButtons];
     // If this layout change corresponds to |label|'s moving to a new superview,
@@ -226,26 +205,20 @@
 - (void)dealloc {
   [self clearTapButtons];
   [_labelObserver stopObserving];
-  [super dealloc];
 }
 
 - (void)addLinkWithRange:(NSRange)range url:(GURL)url {
   DCHECK(url.is_valid());
   if (!_layoutsForURLs)
-    _layoutsForURLs.reset([[NSMutableDictionary alloc] init]);
+    _layoutsForURLs = [[NSMutableDictionary alloc] init];
   NSURL* key = net::NSURLWithGURL(url);
-  base::scoped_nsobject<LinkLayout> layout(
-      [[LinkLayout alloc] initWithRange:range]);
+  LinkLayout* layout = [[LinkLayout alloc] initWithRange:range];
   [_layoutsForURLs setObject:layout forKey:key];
   [self updateStyles];
 }
 
-- (UIColor*)linkColor {
-  return _linkColor.get();
-}
-
 - (void)setLinkColor:(UIColor*)linkColor {
-  _linkColor.reset([linkColor copy]);
+  _linkColor = [linkColor copy];
   [self updateStyles];
 }
 
@@ -254,18 +227,14 @@
   [self updateStyles];
 }
 
-- (UIFont*)linkFont {
-  return _linkFont.get();
-}
-
 - (void)setLinkFont:(UIFont*)linkFont {
-  _linkFont.reset([linkFont retain]);
+  _linkFont = linkFont;
   [self updateStyles];
 }
 
 - (void)setShowTapAreas:(BOOL)showTapAreas {
 #ifndef NDEBUG
-  for (TransparentLinkButton* button in _linkButtons.get()) {
+  for (TransparentLinkButton* button in _linkButtons) {
     button.debug = showTapAreas;
   }
 #endif  // NDEBUG
@@ -275,14 +244,14 @@
 #pragma mark - internal methods
 
 - (void)reset {
-  _originalLabelText.reset([[_label attributedText] copy]);
-  _textMapper.reset();
+  _originalLabelText = [[_label attributedText] copy];
+  _textMapper = nil;
   _lastLabelFrame = CGRectZero;
-  _layoutsForURLs.reset();
+  _layoutsForURLs = nil;
 }
 
 - (void)labelLayoutInvalidated {
-  _textMapper.reset();
+  _textMapper = nil;
   [self updateTapRects];
 }
 
@@ -297,7 +266,7 @@
     // prevents proper style updates after successive label format changes.
     _justUpdatedStyles = NO;
   } else if (![_originalLabelText isEqual:[_label attributedText]]) {
-    _originalLabelText.reset([[_label attributedText] copy]);
+    _originalLabelText = [[_label attributedText] copy];
     [self updateStyles];
   }
   _lastLabelFrame = CGRectZero;
@@ -308,8 +277,8 @@
   if (![_layoutsForURLs count])
     return;
 
-  __block base::scoped_nsobject<NSMutableAttributedString> labelText(
-      [_originalLabelText mutableCopy]);
+  __block NSMutableAttributedString* labelText =
+      [_originalLabelText mutableCopy];
   [_layoutsForURLs enumerateKeysAndObjectsUsingBlock:^(
                        NSURL* key, LinkLayout* layout, BOOL* stop) {
     if (_linkColor) {
@@ -330,7 +299,7 @@
   }];
   _justUpdatedStyles = YES;
   [_label setAttributedText:labelText];
-  _textMapper.reset();
+  _textMapper = nil;
 }
 
 - (void)updateTapRects {
@@ -352,7 +321,7 @@
     [self resetTextMapper];
 
   for (LinkLayout* layout in [_layoutsForURLs allValues]) {
-    base::scoped_nsobject<NSMutableArray> frames([[NSMutableArray alloc] init]);
+    NSMutableArray* frames = [[NSMutableArray alloc] init];
     NSArray* rects = [_textMapper rectsForRange:layout.range];
     for (NSUInteger rectIdx = 0; rectIdx < [rects count]; ++rectIdx) {
       CGRect frame = [rects[rectIdx] CGRectValue];
@@ -366,13 +335,13 @@
 
 - (void)resetTextMapper {
   DCHECK([self.textMapperClass conformsToProtocol:@protocol(TextRegionMapper)]);
-  _textMapper.reset([[self.textMapperClass alloc]
+  _textMapper = [[self.textMapperClass alloc]
       initWithAttributedString:[_label attributedText]
-                        bounds:[_label bounds]]);
+                        bounds:[_label bounds]];
 }
 
 - (void)clearTapButtons {
-  for (TransparentLinkButton* button in _linkButtons.get()) {
+  for (TransparentLinkButton* button in _linkButtons) {
     [button removeFromSuperview];
   }
   [_linkButtons removeAllObjects];
@@ -388,7 +357,7 @@
     // superview, repatriate them.
     if (base::mac::ObjCCast<TransparentLinkButton>(_linkButtons[0]).superview !=
         [_label superview]) {
-      for (TransparentLinkButton* button in _linkButtons.get()) {
+      for (TransparentLinkButton* button in _linkButtons) {
         CGRect newFrame =
             [[_label superview] convertRect:button.frame fromView:button];
         [[_label superview] insertSubview:button aboveSubview:_label];
@@ -426,7 +395,7 @@
 - (void)linkButtonTapped:(id)sender {
   TransparentLinkButton* button =
       base::mac::ObjCCast<TransparentLinkButton>(sender);
-  _action.get()(button.URL);
+  _action(button.URL);
 }
 
 #pragma mark - Test facilitators
@@ -443,7 +412,7 @@
     for (NSValue* frameValue in layout.frames) {
       CGRect frame = [frameValue CGRectValue];
       if (CGRectContainsPoint(frame, point)) {
-        _action.get()(net::GURLWithNSURL(key));
+        _action(net::GURLWithNSURL(key));
         *stop = YES;
         break;
       }

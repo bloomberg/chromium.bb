@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/ui/util/snapshot_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace snapshot_util {
 
 UIView* GenerateSnapshot(UIView* view) {
@@ -16,7 +20,7 @@ UIView* GenerateSnapshot(UIView* view) {
     [view.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage* screenshot = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    snapshot = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+    snapshot = [[UIView alloc] initWithFrame:CGRectZero];
     snapshot.layer.contents = static_cast<id>(screenshot.CGImage);
   }
   return snapshot;

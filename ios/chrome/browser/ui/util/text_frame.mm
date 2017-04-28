@@ -6,13 +6,16 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - FramedLine
 
 @implementation FramedLine {
   // Backing object for property of the same name.
-  base::scoped_nsprotocol<id> _line;
+  id _line;
 }
 
 @synthesize stringRange = _stringRange;
@@ -27,11 +30,10 @@
     // locations, but its length should be equal to |stringRange|.
     NSRange lineRange;
     if (!base::mac::CFRangeToNSRange(CTLineGetStringRange(line), &lineRange)) {
-      [self release];
       return nil;
     }
     DCHECK_EQ(lineRange.length, stringRange.length);
-    _line.reset([static_cast<id>(line) retain]);
+    _line = (__bridge id)(line);
     _stringRange = stringRange;
     _origin = origin;
   }
@@ -40,7 +42,7 @@
 
 - (NSString*)description {
   return [NSString stringWithFormat:@"%@ line:%@, stringRange:%@, origin:%@",
-                                    [super description], _line.get(),
+                                    [super description], _line,
                                     NSStringFromRange(_stringRange),
                                     NSStringFromCGPoint(_origin)];
 }
@@ -59,7 +61,7 @@
 #pragma mark Accessors
 
 - (CTLineRef)line {
-  return static_cast<CTLineRef>(_line.get());
+  return (__bridge CTLineRef)(_line);
 }
 
 @end
@@ -68,9 +70,9 @@
 
 @interface CoreTextTextFrame () {
   // Backing object for property of the same name.
-  base::scoped_nsobject<NSAttributedString> _string;
-  base::scoped_nsprotocol<id> _frame;
-  base::scoped_nsobject<NSMutableArray> _lines;
+  NSAttributedString* _string;
+  id _frame;
+  NSMutableArray* _lines;
 }
 
 // The CTFrameRef passed on initializaton.
@@ -90,10 +92,10 @@
                          frame:(CTFrameRef)frame {
   if ((self = [super self])) {
     DCHECK(string.string.length);
-    _string.reset([string retain]);
+    _string = string;
     _bounds = bounds;
     DCHECK(frame);
-    _frame.reset([static_cast<id>(frame) retain]);
+    _frame = (__bridge id)(frame);
   }
   return self;
 }
@@ -101,7 +103,7 @@
 #pragma mark Accessors
 
 - (NSAttributedString*)string {
-  return _string.get();
+  return _string;
 }
 
 - (NSRange)framedRange {
@@ -115,11 +117,11 @@
 - (NSArray*)lines {
   if (!_lines)
     [self createFramedLines];
-  return _lines.get();
+  return _lines;
 }
 
 - (CTFrameRef)frame {
-  return static_cast<CTFrameRef>(_frame.get());
+  return (__bridge CTFrameRef)(_frame);
 }
 
 #pragma mark Private
@@ -128,17 +130,17 @@
   NSArray* lines = base::mac::CFToNSCast(CTFrameGetLines(self.frame));
   CGPoint origins[lines.count];
   CTFrameGetLineOrigins(self.frame, CFRangeMake(0, 0), origins);
-  _lines.reset([[NSMutableArray alloc] initWithCapacity:lines.count]);
+  _lines = [[NSMutableArray alloc] initWithCapacity:lines.count];
   for (NSUInteger line_idx = 0; line_idx < lines.count; ++line_idx) {
-    CTLineRef line = static_cast<CTLineRef>(lines[line_idx]);
+    CTLineRef line = (__bridge CTLineRef)(lines[line_idx]);
     NSRange stringRange;
     CFRange cfStringRange = CTLineGetStringRange(line);
     if (!base::mac::CFRangeToNSRange(cfStringRange, &stringRange))
       break;
-    base::scoped_nsobject<FramedLine> framedLine([[FramedLine alloc]
-        initWithLine:line
-         stringRange:stringRange
-              origin:origins[line_idx]]);
+    FramedLine* framedLine =
+        [[FramedLine alloc] initWithLine:line
+                             stringRange:stringRange
+                                  origin:origins[line_idx]];
     [_lines addObject:framedLine];
   }
 }

@@ -35,7 +35,7 @@ class GURL;
 
 // Sets the link color for any defined links, updating the controlled label's
 // attributed text accordingly.
-@property(nonatomic, assign) UIColor* linkColor;
+@property(nonatomic, copy) UIColor* linkColor;
 
 // Sets the link underline style for any defined links, updating the controlled
 // label's attributed text accordingly.
@@ -43,7 +43,7 @@ class GURL;
 
 // Sets the link font for any defined links, updating the controlled label's
 // attributed text accordingly.
-@property(nonatomic, retain) UIFont* linkFont;
+@property(nonatomic, strong) UIFont* linkFont;
 
 // Creates a new controller for |label|, keeping a strong reference. |action| is
 // the block called for any tapped link.

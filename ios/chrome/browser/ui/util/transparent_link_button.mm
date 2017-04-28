@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/util/transparent_link_button.h"
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #import "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Minimum tap area dimension, as specified by Apple guidelines.
 const CGFloat kLinkTapAreaMinimum = 44.0;
@@ -21,19 +23,14 @@ const CGFloat kHighlightViewCornerRadius = 2.0;
 const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 }
 
-@interface TransparentLinkButton () {
-  // Backing objects for properties of the same name.
-  base::scoped_nsobject<UIView> _highlightView;
-  base::WeakNSObject<TransparentLinkButton> _previousLinkButton;
-  base::WeakNSObject<TransparentLinkButton> _nextLinkButton;
-}
+@interface TransparentLinkButton ()
 
 // The link frame passed upon initialization.
 @property(nonatomic, readonly) CGRect linkFrame;
 
 // Semi-transparent overlay that is shown to highlight the link text when the
 // button's highlight state is set to YES.
-@property(nonatomic, readonly) UIView* highlightView;
+@property(nonatomic, strong, readonly) UIView* highlightView;
 
 // Links that span multiple lines require more than one TransparentLinkButton.
 // These properties are used to populate the highlight state from one button to
@@ -65,6 +62,9 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 @synthesize URL = _URL;
 @synthesize debug = _debug;
 @synthesize linkFrame = _linkFrame;
+@synthesize highlightView = _highlightView;
+@synthesize previousLinkButton = _previousLinkButton;
+@synthesize nextLinkButton = _nextLinkButton;
 
 - (instancetype)initWithLinkFrame:(CGRect)linkFrame URL:(const GURL&)URL {
   CGFloat linkHeightExpansion =
@@ -91,22 +91,6 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 
 #pragma mark - Accessors
 
-- (void)setPreviousLinkButton:(TransparentLinkButton*)previousLinkButton {
-  _previousLinkButton.reset(previousLinkButton);
-}
-
-- (TransparentLinkButton*)previousLinkButton {
-  return _previousLinkButton.get();
-}
-
-- (void)setNextLinkButton:(TransparentLinkButton*)nextLinkButton {
-  _nextLinkButton.reset(nextLinkButton);
-}
-
-- (TransparentLinkButton*)nextLinkButton {
-  return _nextLinkButton.get();
-}
-
 - (void)setDebug:(BOOL)debug {
   _debug = debug;
   self.layer.borderWidth = _debug ? 1.0 : 0.0;
@@ -121,7 +105,7 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
     CGRect linkFrame =
         [self convertRect:self.linkFrame fromView:self.superview];
     linkFrame = CGRectInset(linkFrame, -kHighlightViewCornerRadius, 0);
-    _highlightView.reset([[UIView alloc] initWithFrame:linkFrame]);
+    _highlightView = [[UIView alloc] initWithFrame:linkFrame];
     [_highlightView
         setBackgroundColor:[UIColor
                                colorWithWhite:0.0
@@ -130,7 +114,7 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
     [_highlightView setClipsToBounds:YES];
     [self addSubview:_highlightView];
   }
-  return _highlightView.get();
+  return _highlightView;
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
@@ -148,12 +132,12 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
               accessibilityLabel:(NSString*)label {
   if (!linkFrames.count)
     return @[];
-  base::scoped_nsobject<NSMutableArray> buttons(
-      [[NSMutableArray alloc] initWithCapacity:linkFrames.count]);
+  NSMutableArray* buttons =
+      [[NSMutableArray alloc] initWithCapacity:linkFrames.count];
   for (NSValue* linkFrameValue in linkFrames) {
     CGRect linkFrame = [linkFrameValue CGRectValue];
-    base::scoped_nsobject<TransparentLinkButton> button(
-        [[TransparentLinkButton alloc] initWithLinkFrame:linkFrame URL:URL]);
+    TransparentLinkButton* button =
+        [[TransparentLinkButton alloc] initWithLinkFrame:linkFrame URL:URL];
     TransparentLinkButton* previousButton = [buttons lastObject];
     previousButton.nextLinkButton = button;
     [button setPreviousLinkButton:previousButton];
