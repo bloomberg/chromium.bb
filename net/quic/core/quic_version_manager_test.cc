@@ -16,6 +16,7 @@ namespace {
 
 TEST(QuicVersionManagerTest, QuicVersionManager) {
   QuicFlagSaver flags;
+  FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
   QuicVersionManager manager(AllSupportedVersions());
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
@@ -30,7 +31,7 @@ TEST(QuicVersionManagerTest, QuicVersionManager) {
   EXPECT_EQ(QUIC_VERSION_36, manager.GetSupportedVersions()[2]);
   EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[3]);
 
-  FLAGS_quic_enable_version_39 = true;
+  FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
             manager.GetSupportedVersions());
   ASSERT_EQ(5u, manager.GetSupportedVersions().size());

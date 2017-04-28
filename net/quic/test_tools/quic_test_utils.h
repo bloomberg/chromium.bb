@@ -310,6 +310,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
                void(const QuicVersion& version));
   MOCK_METHOD0(OnConfigNegotiated, void());
   MOCK_METHOD0(PostProcessAfterData, void());
+  MOCK_METHOD0(OnAckNeedsRetransmittableFrame, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicConnectionVisitor);

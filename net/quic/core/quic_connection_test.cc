@@ -36,6 +36,7 @@
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -43,6 +44,7 @@ using testing::AnyNumber;
 using testing::AtLeast;
 using testing::DoAll;
 using testing::InSequence;
+using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::NiceMock;
 using testing::Ref;
@@ -387,6 +389,10 @@ class TestPacketWriter : public QuicPacketWriter {
 
   const std::vector<QuicPingFrame>& ping_frames() const {
     return framer_.ping_frames();
+  }
+
+  const std::vector<QuicWindowUpdateFrame>& window_update_frames() const {
+    return framer_.window_update_frames();
   }
 
   const std::vector<QuicPaddingFrame>& padding_frames() const {
@@ -1499,6 +1505,9 @@ TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
 }
 
 TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
+  if (connection_.version() > QUIC_VERSION_38) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   SendStreamDataToPeer(1, "foo", 0, NO_FIN, nullptr);
@@ -1515,6 +1524,54 @@ TEST_P(QuicConnectionTest, 20AcksCausesAckSend) {
   // The 20th ack packet will cause an ack to be sent.
   ProcessAckPacket(&frame);
   EXPECT_EQ(2u, writer_->packets_write_attempts());
+}
+
+TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
+  if (connection_.version() <= QUIC_VERSION_38) {
+    return;
+  }
+
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(99);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(19);
+  // Receives packets 1 - 39.
+  for (size_t i = 1; i <= 39; ++i) {
+    ProcessDataPacket(i);
+  }
+  // Receiving Packet 40 causes 20th ack to send. Session is informed and adds
+  // WINDOW_UPDATE.
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame())
+      .WillOnce(
+          Invoke(testing::CreateFunctor(&QuicConnection::SendWindowUpdate,
+                                        base::Unretained(&connection_), 0, 0)));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_EQ(0u, writer_->window_update_frames().size());
+  ProcessDataPacket(40);
+  EXPECT_EQ(1u, writer_->window_update_frames().size());
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(9);
+  // Receives packets 41 - 59.
+  for (size_t i = 41; i <= 59; ++i) {
+    ProcessDataPacket(i);
+  }
+  // Send a packet containing stream frame.
+  SendStreamDataToPeer(1, "bar", 3, NO_FIN, nullptr);
+
+  // Session will not be informed until receiving another 20 packets.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(19);
+  for (size_t i = 60; i <= 98; ++i) {
+    ProcessDataPacket(i);
+    EXPECT_EQ(0u, writer_->window_update_frames().size());
+  }
+  // Session does not add a retransmittable frame.
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_EQ(0u, writer_->ping_frames().size());
+  ProcessDataPacket(99);
+  EXPECT_EQ(0u, writer_->window_update_frames().size());
+  // A ping frame will be added.
+  EXPECT_EQ(1u, writer_->ping_frames().size());
 }
 
 TEST_P(QuicConnectionTest, LeastUnackedLower) {
@@ -1571,6 +1628,7 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
 
 TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   // Miss 99 of every 100 packets for 5500 packets.
   for (QuicPacketNumber i = 1; i < kMaxTrackedPackets + 500; i += 100) {
     ProcessPacket(i);
@@ -3687,6 +3745,7 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
 
   const size_t kMinRttMs = 40;
@@ -3742,6 +3801,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
 
@@ -3798,6 +3858,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
 
@@ -3862,6 +3923,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
 
@@ -3943,6 +4005,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
@@ -4009,6 +4072,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
 
 TEST_P(QuicConnectionTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
+  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
@@ -4342,7 +4406,6 @@ TEST_P(QuicConnectionTest, PublicReset) {
       GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
-  header.rejected_packet_number = 10101;
   std::unique_ptr<QuicEncryptedPacket> packet(
       framer_.BuildPublicResetPacket(header));
   std::unique_ptr<QuicReceivedPacket> received(
