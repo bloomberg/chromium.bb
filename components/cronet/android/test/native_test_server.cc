@@ -313,15 +313,6 @@ ScopedJavaLocalRef<jstring> GetHostPort(JNIEnv* env,
   return base::android::ConvertUTF8ToJavaString(env, host_port);
 }
 
-jboolean IsDataReductionProxySupported(JNIEnv* env,
-                                       const JavaParamRef<jclass>& jcaller) {
-#if defined(DATA_REDUCTION_PROXY_SUPPORT)
-  return JNI_TRUE;
-#else
-  return JNI_FALSE;
-#endif
-}
-
 bool RegisterNativeTestServer(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

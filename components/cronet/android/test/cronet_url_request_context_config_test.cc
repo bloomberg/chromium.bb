@@ -42,12 +42,8 @@ static void VerifyUrlRequestContextConfig(
   CHECK_EQ(config->cert_verifier_data, "test_cert_verifier_data");
   CHECK_EQ(config->http_cache, URLRequestContextConfig::HttpCacheType::MEMORY);
   CHECK_EQ(config->http_cache_max_size, 54321);
-  CHECK_EQ(config->data_reduction_proxy_key, "abcd");
   CHECK_EQ(config->user_agent, "efgh");
   CHECK_EQ(config->experimental_options, "ijkl");
-  CHECK_EQ(config->data_reduction_primary_proxy, "mnop");
-  CHECK_EQ(config->data_reduction_fallback_proxy, "qrst");
-  CHECK_EQ(config->data_reduction_secure_proxy_check_url, "uvwx");
   CHECK_EQ(config->storage_path,
            base::android::ConvertJavaStringToUTF8(env, jstorage_path));
 }

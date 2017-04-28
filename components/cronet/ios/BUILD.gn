@@ -14,10 +14,6 @@ import("//url/features.gni")
 
 assert(!is_component_build, "Cronet requires static library build.")
 
-declare_args() {
-  cronet_enable_data_reduction_proxy_support = false
-}
-
 process_version("cronet_version_header") {
   template_file = "//components/cronet/version.h.in"
   sources = [

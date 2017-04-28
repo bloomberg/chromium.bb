@@ -339,10 +339,6 @@ URLRequestContextConfig::URLRequestContextConfig(
     const std::string& storage_path,
     const std::string& user_agent,
     const std::string& experimental_options,
-    const std::string& data_reduction_proxy_key,
-    const std::string& data_reduction_primary_proxy,
-    const std::string& data_reduction_fallback_proxy,
-    const std::string& data_reduction_secure_proxy_check_url,
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
     bool enable_network_quality_estimator,
     bool bypass_public_key_pinning_for_local_trust_anchors,
@@ -358,11 +354,6 @@ URLRequestContextConfig::URLRequestContextConfig(
       storage_path(storage_path),
       user_agent(user_agent),
       experimental_options(experimental_options),
-      data_reduction_proxy_key(data_reduction_proxy_key),
-      data_reduction_primary_proxy(data_reduction_primary_proxy),
-      data_reduction_fallback_proxy(data_reduction_fallback_proxy),
-      data_reduction_secure_proxy_check_url(
-          data_reduction_secure_proxy_check_url),
       mock_cert_verifier(std::move(mock_cert_verifier)),
       enable_network_quality_estimator(enable_network_quality_estimator),
       bypass_public_key_pinning_for_local_trust_anchors(
@@ -425,9 +416,7 @@ URLRequestContextConfigBuilder::Build() {
   return base::MakeUnique<URLRequestContextConfig>(
       enable_quic, quic_user_agent_id, enable_spdy, enable_sdch, enable_brotli,
       http_cache, http_cache_max_size, load_disable_cache, storage_path,
-      user_agent, experimental_options, data_reduction_proxy_key,
-      data_reduction_primary_proxy, data_reduction_fallback_proxy,
-      data_reduction_secure_proxy_check_url, std::move(mock_cert_verifier),
+      user_agent, experimental_options, std::move(mock_cert_verifier),
       enable_network_quality_estimator,
       bypass_public_key_pinning_for_local_trust_anchors, cert_verifier_data);
 }

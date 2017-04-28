@@ -91,10 +91,6 @@ public final class NativeTestServer {
         return nativeGetHostPort();
     }
 
-    public static boolean isDataReductionProxySupported() {
-        return nativeIsDataReductionProxySupported();
-    }
-
     private static native boolean nativeStartNativeTestServer(String filePath, String testDataDir);
     private static native void nativeShutdownNativeTestServer();
     private static native String nativeGetEchoBodyURL();
@@ -106,5 +102,4 @@ public final class NativeTestServer {
     private static native String nativeGetExabyteResponseURL();
     private static native String nativeGetHostPort();
     private static native int nativeGetPort();
-    private static native boolean nativeIsDataReductionProxySupported();
 }

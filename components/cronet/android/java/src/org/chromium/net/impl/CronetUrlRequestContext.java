@@ -187,10 +187,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         final long urlRequestContextConfig = nativeCreateRequestContextConfig(
                 builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
                 builder.getDefaultQuicUserAgentId(), builder.http2Enabled(), builder.sdchEnabled(),
-                builder.brotliEnabled(), builder.dataReductionProxyKey(),
-                builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
-                builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
-                builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
+                builder.brotliEnabled(), builder.cacheDisabled(), builder.httpCacheMode(),
+                builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
                 builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled(),
                 builder.certVerifierData());
@@ -679,9 +677,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     // Native methods are implemented in cronet_url_request_context_adapter.cc.
     private static native long nativeCreateRequestContextConfig(String userAgent,
             String storagePath, boolean quicEnabled, String quicUserAgentId, boolean http2Enabled,
-            boolean sdchEnabled, boolean brotliEnabled, String dataReductionProxyKey,
-            String dataReductionProxyPrimaryProxy, String dataReductionProxyFallbackProxy,
-            String dataReductionProxySecureProxyCheckUrl, boolean disableCache, int httpCacheMode,
+            boolean sdchEnabled, boolean brotliEnabled, boolean disableCache, int httpCacheMode,
             long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier,
             boolean enableNetworkQualityEstimator,
             boolean bypassPublicKeyPinningForLocalTrustAnchors, String certVerifierData);

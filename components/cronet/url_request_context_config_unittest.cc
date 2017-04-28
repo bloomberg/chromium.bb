@@ -55,14 +55,6 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       "\"MAP * 127.0.0.1\"},"
       // See http://crbug.com/696569.
       "\"disable_ipv6_on_wifi\":true}",
-      // Data reduction proxy key.
-      "",
-      // Data reduction proxy.
-      "",
-      // Fallback data reduction proxy.
-      "",
-      // Data reduction proxy secure proxy check URL.
-      "",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -144,14 +136,6 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       // JSON encoded experimental options.
       "{\"QUIC\":{\"migrate_sessions_on_network_change\":true,"
       "\"migrate_sessions_early\":true}}",
-      // Data reduction proxy key.
-      "",
-      // Data reduction proxy.
-      "",
-      // Fallback data reduction proxy.
-      "",
-      // Data reduction proxy secure proxy check URL.
-      "",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.

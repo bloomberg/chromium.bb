@@ -139,37 +139,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
         }
 
         /**
-         * Overrides
-         * <a href="https://developer.chrome.com/multidevice/data-compression">
-         * Data Reduction Proxy</a> configuration parameters with a primary
-         * proxy name, fallback proxy name, and a secure proxy check URL. Proxies
-         * are specified as [scheme://]host[:port]. Used for testing.
-         * @param primaryProxy the primary data reduction proxy to use.
-         * @param fallbackProxy a fallback data reduction proxy to use.
-         * @param secureProxyCheckUrl a URL to fetch to determine if using a secure
-         * proxy is allowed.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder setDataReductionProxyOptions(
-                String primaryProxy, String fallbackProxy, String secureProxyCheckUrl) {
-            mBuilderDelegate.setDataReductionProxyOptions(
-                    primaryProxy, fallbackProxy, secureProxyCheckUrl);
-            return this;
-        }
-
-        /**
-         * Enables
-         * <a href="https://developer.chrome.com/multidevice/data-compression">Data
-         * Reduction Proxy</a>. Defaults to disabled.
-         * @param key key to use when authenticating with the proxy.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder enableDataReductionProxy(String key) {
-            mBuilderDelegate.enableDataReductionProxy(key);
-            return this;
-        }
-
-        /**
          * Sets experimental options to be used in Cronet.
          *
          * @param options JSON formatted experimental options.
