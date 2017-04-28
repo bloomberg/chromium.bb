@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_SRT_PROMPT_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_SRT_PROMPT_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_
+#define CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_
 
 #include <memory>
 
@@ -15,26 +15,27 @@
 class Browser;
 
 namespace safe_browsing {
-class SRTPromptController;
+class ChromeCleanerDialogController;
 }
 
 // A modal dialog asking the user if they want to remove harmful software from
 // their computers by running the Chrome Cleanup tool.
 //
 // The strings and icons used in the dialog are provided by a
-// |SRTPromptController| object, which will also receive information about how
-// the user interacts with the dialog. The controller object owns itself and
-// will delete itself once it has received information about the user's
-// interaction with the dialog. See the |SRTPromptController| class's
-// description for more details.
-class SRTPromptDialog : public views::DialogDelegateView,
-                        public views::ButtonListener {
+// |ChromeCleanerDialogController| object, which will also receive information
+// about how the user interacts with the dialog. The controller object owns
+// itself and will delete itself once it has received information about the
+// user's interaction with the dialog. See the |ChromeCleanerDialogController|
+// class's description for more details.
+class ChromeCleanerDialog : public views::DialogDelegateView,
+                            public views::ButtonListener {
  public:
   // The |controller| object manages its own lifetime and is not owned by
-  // |SRTPromptDialog|. See the description of the |SRTPromptController| class
-  // for details.
-  explicit SRTPromptDialog(safe_browsing::SRTPromptController* controller);
-  ~SRTPromptDialog() override;
+  // |ChromeCleanerDialog|. See the description of the
+  // |ChromeCleanerDialogController| class for details.
+  explicit ChromeCleanerDialog(
+      safe_browsing::ChromeCleanerDialogController* controller);
+  ~ChromeCleanerDialog() override;
 
   void Show(Browser* browser);
 
@@ -62,11 +63,11 @@ class SRTPromptDialog : public views::DialogDelegateView,
   Browser* browser_;
   // The pointer will be set to nullptr once the controller has been notified of
   // user interaction since the controller can delete itself after that point.
-  safe_browsing::SRTPromptController* controller_;
+  safe_browsing::ChromeCleanerDialogController* controller_;
 
   views::LabelButton* advanced_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(SRTPromptDialog);
+  DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialog);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_SRT_PROMPT_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_H_

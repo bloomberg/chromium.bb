@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/srt_prompt_controller.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner_dialog_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
 
@@ -22,45 +22,45 @@ constexpr char kAdvancedButtonLabel[] = "Advanced";
 
 }  // namespace
 
-SRTPromptController::SRTPromptController() {}
+ChromeCleanerDialogController::ChromeCleanerDialogController() {}
 
-SRTPromptController::~SRTPromptController() = default;
+ChromeCleanerDialogController::~ChromeCleanerDialogController() = default;
 
-base::string16 SRTPromptController::GetWindowTitle() const {
+base::string16 ChromeCleanerDialogController::GetWindowTitle() const {
   return base::UTF8ToUTF16(kWindowTitle);
 }
 
-base::string16 SRTPromptController::GetMainText() const {
+base::string16 ChromeCleanerDialogController::GetMainText() const {
   return base::UTF8ToUTF16(kMainText);
 }
 
-base::string16 SRTPromptController::GetAcceptButtonLabel() const {
+base::string16 ChromeCleanerDialogController::GetAcceptButtonLabel() const {
   return base::UTF8ToUTF16(kAcceptButtonLabel);
 }
 
-base::string16 SRTPromptController::GetAdvancedButtonLabel() const {
+base::string16 ChromeCleanerDialogController::GetAdvancedButtonLabel() const {
   return base::UTF8ToUTF16(kAdvancedButtonLabel);
 }
 
-void SRTPromptController::DialogShown() {}
+void ChromeCleanerDialogController::DialogShown() {}
 
-void SRTPromptController::Accept() {
+void ChromeCleanerDialogController::Accept() {
   OnInteractionDone();
 }
 
-void SRTPromptController::Cancel() {
+void ChromeCleanerDialogController::Cancel() {
   OnInteractionDone();
 }
 
-void SRTPromptController::Close() {
+void ChromeCleanerDialogController::Close() {
   OnInteractionDone();
 }
 
-void SRTPromptController::AdvancedButtonClicked() {
+void ChromeCleanerDialogController::AdvancedButtonClicked() {
   OnInteractionDone();
 }
 
-void SRTPromptController::OnInteractionDone() {
+void ChromeCleanerDialogController::OnInteractionDone() {
   delete this;
 }
 

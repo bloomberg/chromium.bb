@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/srt_prompt_dialog.h"
+#include "chrome/browser/ui/views/chrome_cleaner_dialog.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/safe_browsing/srt_prompt_controller.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner_dialog_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,9 +21,10 @@
 
 namespace chrome {
 
-void ShowSRTPrompt(Browser* browser,
-                   safe_browsing::SRTPromptController* controller) {
-  SRTPromptDialog* dialog = new SRTPromptDialog(controller);
+void ShowChromeCleanerPrompt(
+    Browser* browser,
+    safe_browsing::ChromeCleanerDialogController* controller) {
+  ChromeCleanerDialog* dialog = new ChromeCleanerDialog(controller);
   dialog->Show(browser);
 }
 
@@ -34,9 +35,10 @@ constexpr int kDialogWidth = 448;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// SRTPromptDialog
+// ChromeCleanerDialog
 
-SRTPromptDialog::SRTPromptDialog(safe_browsing::SRTPromptController* controller)
+ChromeCleanerDialog::ChromeCleanerDialog(
+    safe_browsing::ChromeCleanerDialogController* controller)
     : browser_(nullptr),
       controller_(controller),
       advanced_button_(
@@ -56,14 +58,14 @@ SRTPromptDialog::SRTPromptDialog(safe_browsing::SRTPromptController* controller)
   advanced_button_->SetStyle(views::Button::STYLE_BUTTON);
 }
 
-SRTPromptDialog::~SRTPromptDialog() {
+ChromeCleanerDialog::~ChromeCleanerDialog() {
   // Make sure the controller is correctly notified in case the dialog widget is
   // closed by some other means than the dialog buttons.
   if (controller_)
     controller_->Cancel();
 }
 
-void SRTPromptDialog::Show(Browser* browser) {
+void ChromeCleanerDialog::Show(Browser* browser) {
   DCHECK(browser);
   DCHECK(!browser_);
   DCHECK(controller_);
@@ -77,24 +79,24 @@ void SRTPromptDialog::Show(Browser* browser) {
 
 // DialogModel overrides.
 
-bool SRTPromptDialog::ShouldDefaultButtonBeBlue() const {
+bool ChromeCleanerDialog::ShouldDefaultButtonBeBlue() const {
   return true;
 }
 
 // WidgetDelegate overrides.
 
-ui::ModalType SRTPromptDialog::GetModalType() const {
+ui::ModalType ChromeCleanerDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-base::string16 SRTPromptDialog::GetWindowTitle() const {
+base::string16 ChromeCleanerDialog::GetWindowTitle() const {
   DCHECK(controller_);
   return controller_->GetWindowTitle();
 }
 
 // DialogDelegate overrides.
 
-base::string16 SRTPromptDialog::GetDialogButtonLabel(
+base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
   DCHECK(controller_);
@@ -104,11 +106,11 @@ base::string16 SRTPromptDialog::GetDialogButtonLabel(
              : DialogDelegate::GetDialogButtonLabel(button);
 }
 
-views::View* SRTPromptDialog::CreateExtraView() {
+views::View* ChromeCleanerDialog::CreateExtraView() {
   return advanced_button_;
 }
 
-bool SRTPromptDialog::Accept() {
+bool ChromeCleanerDialog::Accept() {
   if (controller_) {
     controller_->Accept();
     controller_ = nullptr;
@@ -116,7 +118,7 @@ bool SRTPromptDialog::Accept() {
   return true;
 }
 
-bool SRTPromptDialog::Cancel() {
+bool ChromeCleanerDialog::Cancel() {
   if (controller_) {
     controller_->Cancel();
     controller_ = nullptr;
@@ -124,7 +126,7 @@ bool SRTPromptDialog::Cancel() {
   return true;
 }
 
-bool SRTPromptDialog::Close() {
+bool ChromeCleanerDialog::Close() {
   if (controller_) {
     controller_->Close();
     controller_ = nullptr;
@@ -134,14 +136,14 @@ bool SRTPromptDialog::Close() {
 
 // View overrides.
 
-gfx::Size SRTPromptDialog::GetPreferredSize() const {
+gfx::Size ChromeCleanerDialog::GetPreferredSize() const {
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }
 
 // views::ButtonListener overrides.
 
-void SRTPromptDialog::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
+void ChromeCleanerDialog::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
   DCHECK_EQ(sender, advanced_button_);
   DCHECK(browser_);
 
