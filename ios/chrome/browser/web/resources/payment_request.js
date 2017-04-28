@@ -230,20 +230,21 @@ var SerializedPaymentResponse;
 
   /**
    * Handles invocation of updateWith() on the updateEvent object. Updates the
-   * payment details when the |updateWithPromise| is resolved. Throws an error
-   * if |updateWithPromise| is not a valid instance of Promise or if it fulfills
-   * with an invalid instance of window.PaymentDetails.
-   * @param {?Promise<?window.PaymentDetails|undefined>|undefined}
-   *     updateWithPromise
+   * payment details. Throws an error if |detailsOrPromise| is not a valid
+   * instance of window.PaymentDetails or it is a promise that does not fulfill
+   * with a valid one.
+   * @param {!Promise<!window.PaymentDetails>|!window.PaymentDetails}
+   *     detailsOrPromise
    */
-  __gCrWeb['paymentRequestManager'].updateWith = function(updateWithPromise) {
-    // Check to see |updateWithPromise| is an instance of Promise.
-    if (!updateWithPromise || !(updateWithPromise.then instanceof Function) ||
-        !(updateWithPromise.catch instanceof Function)) {
-      throw new TypeError('An instance of Promise must be provided');
+  __gCrWeb['paymentRequestManager'].updateWith = function(detailsOrPromise) {
+    // if |detailsOrPromise| is not an instance of a Promise, wrap it in a
+    // Promise that fulfills with |detailsOrPromise|.
+    if (!detailsOrPromise || !(detailsOrPromise.then instanceof Function) ||
+        !(detailsOrPromise.catch instanceof Function)) {
+      detailsOrPromise = Promise.resolve(detailsOrPromise);
     }
 
-    updateWithPromise
+    detailsOrPromise
         .then(function(paymentDetails) {
           if (!paymentDetails)
             throw new TypeError(
