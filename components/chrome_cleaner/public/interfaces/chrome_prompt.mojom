@@ -4,6 +4,8 @@
 
 module chrome_cleaner.mojom;
 
+import "mojo/common/file_path.mojom";
+
 // The behaviours that have been observed for a given UwS.
 struct ObservedBehaviours {
   bool ad_injector;
@@ -27,7 +29,7 @@ struct UwS {
 
   // List of fully-qualified paths of the files that will be deleted by the
   // Chrome Cleanup Tool for this unwanted software.
-  array<string> files_to_delete;
+  array<mojo.common.mojom.FilePath> files_to_delete;
 };
 
 // Indicates if elevation will be required for cleanup.
