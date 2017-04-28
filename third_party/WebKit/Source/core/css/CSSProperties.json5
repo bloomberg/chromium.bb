@@ -1394,10 +1394,6 @@
       alias_for: "offset-distance",
     },
     {
-      name: "motion-rotation",
-      alias_for: "offset-rotation",
-    },
-    {
       name: "object-fit",
       type_name: "ObjectFit",
     },
