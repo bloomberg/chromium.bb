@@ -28,7 +28,8 @@ class WM_EXPORT BaseFocusRules : public FocusRules {
   // Overridden from FocusRules:
   bool IsToplevelWindow(aura::Window* window) const override;
   bool CanActivateWindow(aura::Window* window) const override;
-  bool CanFocusWindow(aura::Window* window) const override;
+  bool CanFocusWindow(aura::Window* window,
+                      const ui::Event* event) const override;
   aura::Window* GetToplevelWindow(aura::Window* window) const override;
   aura::Window* GetActivatableWindow(aura::Window* window) const override;
   aura::Window* GetFocusableWindow(aura::Window* window) const override;

@@ -32,6 +32,7 @@ namespace client {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(
      bool, kAccessibilityFocusFallsbackToWidgetKey, true);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kActivateOnPointerKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAlwaysOnTopKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr);

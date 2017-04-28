@@ -16,7 +16,7 @@ namespace {
 aura::Window* GetFocusedWindow(aura::Window* context) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(context);
-  return focus_client ? focus_client->GetFocusedWindow() : NULL;
+  return focus_client ? focus_client->GetFocusedWindow() : nullptr;
 }
 
 }  // namespace
@@ -24,11 +24,9 @@ aura::Window* GetFocusedWindow(aura::Window* context) {
 ////////////////////////////////////////////////////////////////////////////////
 // BaseFocusRules, protected:
 
-BaseFocusRules::BaseFocusRules() {
-}
+BaseFocusRules::BaseFocusRules() = default;
 
-BaseFocusRules::~BaseFocusRules() {
-}
+BaseFocusRules::~BaseFocusRules() = default;
 
 bool BaseFocusRules::IsWindowConsideredVisibleForActivation(
     aura::Window* window) const {
@@ -78,7 +76,8 @@ bool BaseFocusRules::CanActivateWindow(aura::Window* window) const {
   return !GetModalTransient(window);
 }
 
-bool BaseFocusRules::CanFocusWindow(aura::Window* window) const {
+bool BaseFocusRules::CanFocusWindow(aura::Window* window,
+                                    const ui::Event* event) const {
   // It is possible to focus a NULL window, it is equivalent to clearing focus.
   if (!window)
     return true;
@@ -101,7 +100,7 @@ aura::Window* BaseFocusRules::GetToplevelWindow(aura::Window* window) const {
     parent = parent->parent();
     child = child->parent();
   }
-  return NULL;
+  return nullptr;
 }
 
 aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
@@ -133,11 +132,11 @@ aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
     parent = parent->parent();
     child = child->parent();
   }
-  return NULL;
+  return nullptr;
 }
 
 aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) const {
-  if (CanFocusWindow(window))
+  if (CanFocusWindow(window, nullptr))
     return window;
 
   // |window| may be in a hierarchy that is non-activatable, in which case we
@@ -150,7 +149,7 @@ aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) const {
     if (toplevel)
       activatable = GetNextActivatableWindow(toplevel);
     if (!activatable)
-      return NULL;
+      return nullptr;
   }
 
   if (!activatable->Contains(window)) {
@@ -161,7 +160,7 @@ aura::Window* BaseFocusRules::GetFocusableWindow(aura::Window* window) const {
     return activatable->Contains(focused) ? focused : activatable;
   }
 
-  while (window && !CanFocusWindow(window))
+  while (window && !CanFocusWindow(window, nullptr))
     window = window->parent();
   return window;
 }
@@ -172,7 +171,7 @@ aura::Window* BaseFocusRules::GetNextActivatableWindow(
 
   // Can be called from the RootWindow's destruction, which has a NULL parent.
   if (!ignore->parent())
-    return NULL;
+    return nullptr;
 
   // In the basic scenarios handled by BasicFocusRules, the pool of activatable
   // windows is limited to the |ignore|'s siblings.
@@ -188,7 +187,7 @@ aura::Window* BaseFocusRules::GetNextActivatableWindow(
     if (CanActivateWindow(cur))
       return cur;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace wm
