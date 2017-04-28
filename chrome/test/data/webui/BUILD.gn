@@ -76,6 +76,7 @@ js2gtest("browser_tests_js_webui") {
     "certificate_viewer_dialog_test.js",
     "chrome_send_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
+    "engagement/site_engagement_browsertest.js",
     "extensions/cr_extensions_browsertest.js",
     "history_browsertest.js",
     "md_bookmarks/md_bookmarks_browsertest.js",
