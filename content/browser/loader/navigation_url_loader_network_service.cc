@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -26,6 +27,11 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
+
+namespace {
+static base::LazyInstance<mojom::URLLoaderFactoryPtr>::Leaky
+    g_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
+}
 
 // This function is called on the IO thread for POST/PUT requests for
 // attaching blob information to the request body.
@@ -57,8 +63,12 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   // TODO(scottmg): Maybe some of this setup should be done only once, instead
   // of every time.
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &url_loader_factory_);
+  if (g_url_loader_factory.Get().get()) {
+    url_loader_factory_ = std::move(g_url_loader_factory.Get());
+  } else {
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        mojom::kNetworkServiceName, &url_loader_factory_);
+  }
 
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = base::MakeUnique<ResourceRequest>();
@@ -105,6 +115,11 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {}
+
+void NavigationURLLoaderNetworkService::OverrideURLLoaderFactoryForTesting(
+    mojom::URLLoaderFactoryPtr url_loader_factory) {
+  g_url_loader_factory.Get() = std::move(url_loader_factory);
+}
 
 void NavigationURLLoaderNetworkService::FollowRedirect() {
   url_loader_associated_ptr_->FollowRedirect();
