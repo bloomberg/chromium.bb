@@ -41,10 +41,8 @@ class CallbackInfo : public base::SupportsUserData::Data {
 
 namespace net {
 
-ReportSender::ReportSender(URLRequestContext* request_context,
-                           CookiesPreference cookies_preference)
-    : request_context_(request_context),
-      cookies_preference_(cookies_preference) {}
+ReportSender::ReportSender(URLRequestContext* request_context)
+    : request_context_(request_context) {}
 
 ReportSender::~ReportSender() {
 }
@@ -61,12 +59,9 @@ void ReportSender::Send(const GURL& report_uri,
       &kUserDataKey,
       base::MakeUnique<CallbackInfo>(success_callback, error_callback));
 
-  int load_flags =
-      LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA;
-  if (cookies_preference_ != SEND_COOKIES) {
-    load_flags |= LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
-  }
-  url_request->SetLoadFlags(load_flags);
+  url_request->SetLoadFlags(
+      LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA |
+      LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES);
 
   HttpRequestHeaders extra_headers;
   extra_headers.SetHeader(HttpRequestHeaders::kContentType, content_type);

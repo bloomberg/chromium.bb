@@ -205,8 +205,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_SSL_PROTOCOL_ERROR);
   certificate_reporting::ErrorReporter* certificate_error_reporter =
       new certificate_reporting::ErrorReporter(
-          url_request_context_getter()->GetURLRequestContext(), kFailureURL,
-          net::ReportSender::DO_NOT_SEND_COOKIES);
+          url_request_context_getter()->GetURLRequestContext(), kFailureURL);
 
   CertificateReportingService::BoundedReportList* list =
       new CertificateReportingService::BoundedReportList(2);
@@ -296,8 +295,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_SSL_PROTOCOL_ERROR);
   certificate_reporting::ErrorReporter* certificate_error_reporter =
       new certificate_reporting::ErrorReporter(
-          url_request_context_getter()->GetURLRequestContext(), kFailureURL,
-          net::ReportSender::DO_NOT_SEND_COOKIES);
+          url_request_context_getter()->GetURLRequestContext(), kFailureURL);
 
   CertificateReportingService::BoundedReportList* list =
       new CertificateReportingService::BoundedReportList(2);

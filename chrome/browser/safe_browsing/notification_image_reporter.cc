@@ -59,9 +59,8 @@ const char NotificationImageReporter::kReportingUploadUrl[] =
 
 NotificationImageReporter::NotificationImageReporter(
     net::URLRequestContext* request_context)
-    : NotificationImageReporter(base::MakeUnique<net::ReportSender>(
-          request_context,
-          net::ReportSender::CookiesPreference::DO_NOT_SEND_COOKIES)) {}
+    : NotificationImageReporter(
+          base::MakeUnique<net::ReportSender>(request_context)) {}
 
 NotificationImageReporter::NotificationImageReporter(
     std::unique_ptr<net::ReportSender> report_sender)

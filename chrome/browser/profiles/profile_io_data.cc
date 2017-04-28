@@ -1039,8 +1039,8 @@ void ProfileIOData::Init(
               base::SequencedWorkerPool::BLOCK_SHUTDOWN),
           IsOffTheRecord()));
 
-  certificate_report_sender_.reset(new net::ReportSender(
-      main_request_context_.get(), net::ReportSender::DO_NOT_SEND_COOKIES));
+  certificate_report_sender_.reset(
+      new net::ReportSender(main_request_context_.get()));
   transport_security_state_->SetReportSender(certificate_report_sender_.get());
 
   expect_ct_reporter_.reset(

@@ -9,8 +9,7 @@
 namespace safe_browsing {
 
 MockPermissionReportSender::MockPermissionReportSender()
-    : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES),
-      number_of_reports_(0) {
+    : net::ReportSender(nullptr), number_of_reports_(0) {
   DCHECK(quit_closure_.is_null());
 }
 

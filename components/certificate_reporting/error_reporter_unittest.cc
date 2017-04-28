@@ -51,8 +51,7 @@ void SuccessCallback(bool* called) {
 // sent.
 class MockCertificateReportSender : public net::ReportSender {
  public:
-  MockCertificateReportSender()
-      : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
+  MockCertificateReportSender() : net::ReportSender(nullptr) {}
   ~MockCertificateReportSender() override {}
 
   void Send(const GURL& report_uri,
@@ -179,8 +178,7 @@ TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
 
   const GURL report_uri(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
-  ErrorReporter reporter(&context, report_uri,
-                         net::ReportSender::DO_NOT_SEND_COOKIES);
+  ErrorReporter reporter(&context, report_uri);
 
   bool error_callback_called = false;
   bool success_callback_called = false;
@@ -206,8 +204,7 @@ TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
 
   const GURL report_uri(
       net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
-  ErrorReporter reporter(&context, report_uri,
-                         net::ReportSender::DO_NOT_SEND_COOKIES);
+  ErrorReporter reporter(&context, report_uri);
 
   bool error_callback_called = false;
   bool success_callback_called = false;

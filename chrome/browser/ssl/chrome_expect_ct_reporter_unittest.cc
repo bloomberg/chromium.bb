@@ -35,8 +35,7 @@ const char kFailureHistogramName[] = "SSL.ExpectCTReportFailure2";
 // serialized report to be sent.
 class TestCertificateReportSender : public net::ReportSender {
  public:
-  TestCertificateReportSender()
-      : ReportSender(nullptr, net::ReportSender::DO_NOT_SEND_COOKIES) {}
+  TestCertificateReportSender() : ReportSender(nullptr) {}
   ~TestCertificateReportSender() override {}
 
   void Send(const GURL& report_uri,
