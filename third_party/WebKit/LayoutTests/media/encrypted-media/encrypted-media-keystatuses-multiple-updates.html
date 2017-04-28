@@ -27,7 +27,7 @@
                 function processMessage(event)
                 {
                     // No keys added yet.
-                    verifyKeyStatuses(mediaKeySession.keyStatuses, { expected: [], unexpected: [key1, key2] });
+                    verifyKeyStatuses(mediaKeySession.keyStatuses, []);
 
                     // Add key1 to the session.
                     firstEvent = true;
@@ -42,7 +42,8 @@
                     if (firstEvent) {
                         // Verify that the session only contains key1.
                         dumpKeyStatuses(mediaKeySession.keyStatuses);
-                        verifyKeyStatuses(mediaKeySession.keyStatuses, { expected: [key1], unexpected: [key2] });
+                        verifyKeyStatuses(mediaKeySession.keyStatuses,
+                            [ { keyId: key1, status: 'usable' } ]);
 
                         // Now add key2 to the session.
                         firstEvent = false;
@@ -53,7 +54,8 @@
                     } else {
                         // Verify that the session now contains key1 and key2.
                         dumpKeyStatuses(mediaKeySession.keyStatuses);
-                        verifyKeyStatuses(mediaKeySession.keyStatuses, { expected: [key1, key2] });
+                        verifyKeyStatuses(mediaKeySession.keyStatuses,
+                            [ { keyId: key1, status: 'usable' }, { keyId: key2, status: 'usable' } ]);
 
                         test.done();
                     }
