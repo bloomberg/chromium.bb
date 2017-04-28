@@ -357,6 +357,11 @@ bool IsInternalURL(const GURL& url) {
   [connectionHelpButton_ setTarget:self];
   [connectionHelpButton_ setAction:@selector(openConnectionHelp:)];
 
+  if (base::i18n::IsRTL()) {
+    securitySummaryField_.alignment = NSRightTextAlignment;
+    securityDetailsField_.alignment = NSRightTextAlignment;
+  }
+
   return securitySectionView.get();
 }
 
@@ -508,9 +513,13 @@ bool IsInternalURL(const GURL& url) {
   yPos = [self setYPositionOfView:securityDetailsField_
                                to:yPos + kSecurityParagraphSpacing];
 
-  [connectionHelpButton_ setFrameOrigin:NSMakePoint(kSectionHorizontalPadding -
-                                                        kLinkButtonXAdjustment,
-                                                    yPos)];
+  NSPoint helpOrigin =
+      NSMakePoint(kSectionHorizontalPadding - kLinkButtonXAdjustment, yPos);
+  if (base::i18n::IsRTL()) {
+    helpOrigin.x = NSWidth([contentView_ frame]) - helpOrigin.x -
+                   NSWidth(connectionHelpButton_.frame);
+  }
+  [connectionHelpButton_ setFrameOrigin:helpOrigin];
   yPos = NSMaxY([connectionHelpButton_ frame]);
 
   if (resetDecisionsButton_) {
