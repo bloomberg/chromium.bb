@@ -201,6 +201,10 @@ class CONTENT_EXPORT FrameTreeNode {
     return pending_sandbox_flags_;
   }
 
+  const ParsedFeaturePolicyHeader& pending_container_policy() const {
+    return pending_container_policy_;
+  }
+
   // Update this frame's sandbox flags.  This is used when a parent frame
   // updates sandbox flags in the <iframe> element for this frame.  These flags
   // won't take effect until next navigation.  If this frame's parent is itself

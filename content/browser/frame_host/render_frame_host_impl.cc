@@ -974,14 +974,16 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   params->previous_sibling_routing_id = previous_sibling_routing_id;
   params->replication_state = frame_tree_node()->current_replication_state();
 
-  // Normally, the replication state contains effective sandbox flags,
-  // excluding flags that were updated but have not taken effect.  However, a
-  // new RenderFrame should use the pending sandbox flags, since it is being
-  // created as part of the navigation that will commit these flags. (I.e., the
-  // RenderFrame needs to know the flags to use when initializing the new
-  // document once it commits).
+  // Normally, the replication state contains effective frame policy, excluding
+  // sandbox flags and feature policy attributes that were updated but have not
+  // taken effect. However, a new RenderFrame should use the pending frame
+  // policy, since it is being created as part of the navigation that will
+  // commit it. (I.e., the RenderFrame needs to know the policy to use when
+  // initializing the new document once it commits).
   params->replication_state.sandbox_flags =
       frame_tree_node()->pending_sandbox_flags();
+  params->replication_state.container_policy =
+      frame_tree_node()->pending_container_policy();
 
   params->frame_owner_properties =
       FrameOwnerProperties(frame_tree_node()->frame_owner_properties());
