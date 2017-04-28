@@ -73,7 +73,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         InfoBarContainer container =
                 getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
-        container.setAnimationListener(mListener);
+        container.addAnimationListener(mListener);
 
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }

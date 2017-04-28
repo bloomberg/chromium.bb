@@ -47,6 +47,8 @@ class InfoBarAndroid : public infobars::InfoBar {
   // InfoBar instead of this one.
   void ReassignJavaInfoBar(InfoBarAndroid* replacement);
 
+  int GetInfoBarIdentifier(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
   virtual void OnLinkClicked(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj) {}
   void OnButtonClicked(JNIEnv* env,

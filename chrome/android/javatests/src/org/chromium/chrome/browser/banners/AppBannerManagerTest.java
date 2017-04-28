@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -162,6 +163,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 mDoneAnimating = true;
             }
         }
+
+        @Override
+        public void notifyAllAnimationsFinished(Item frontInfoBar) {}
     }
 
     private MockAppDetailsDelegate mDetailsDelegate;
@@ -257,7 +261,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         resetEngagementForUrl(url, 10);
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         final InfobarListener listener = new InfobarListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url, PageTransition.TYPED);
         waitUntilAppDetailsRetrieved(1);
         assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
@@ -324,7 +328,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Add the animation listener in.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         final InfobarListener listener = new InfobarListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
 
         // Update engagement, then revisit the page to get the banner to appear.
         resetEngagementForUrl(url, 10);
@@ -442,7 +446,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         resetEngagementForUrl(mNativeAppUrl, 10);
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         final InfobarListener listener = new InfobarListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         new TabLoadObserver(getActivity().getActivityTab())
                 .fullyLoadUrl(mNativeAppUrl, PageTransition.TYPED);
         waitUntilAppDetailsRetrieved(1);
@@ -490,7 +494,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         resetEngagementForUrl(mWebAppUrl, 10);
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         final InfobarListener listener = new InfobarListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         new TabLoadObserver(getActivity().getActivityTab())
                 .fullyLoadUrl(mWebAppUrl, PageTransition.TYPED);
         waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);

@@ -140,6 +140,13 @@ public abstract class InfoBar implements InfoBarView {
         return false;
     }
 
+    @Override
+    @InfoBarIdentifier
+    public int getInfoBarIdentifier() {
+        if (mNativeInfoBarPtr == 0) return InfoBarIdentifier.INVALID;
+        return nativeGetInfoBarIdentifier(mNativeInfoBarPtr);
+    }
+
     /**
      * @return whether the infobar actually needed closing.
      */
@@ -200,6 +207,8 @@ public abstract class InfoBar implements InfoBarView {
     public void createContent(InfoBarLayout layout) {
     }
 
+    @InfoBarIdentifier
+    private native int nativeGetInfoBarIdentifier(long nativeInfoBarAndroid);
     private native void nativeOnLinkClicked(long nativeInfoBarAndroid);
     private native void nativeOnButtonClicked(long nativeInfoBarAndroid, int action);
     private native void nativeOnCloseButtonClicked(long nativeInfoBarAndroid);

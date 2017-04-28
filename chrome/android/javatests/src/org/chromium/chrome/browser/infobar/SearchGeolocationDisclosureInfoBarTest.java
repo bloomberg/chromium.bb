@@ -68,7 +68,7 @@ public class SearchGeolocationDisclosureInfoBarTest
         // Infobar should appear when doing the first search.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
         // Note: the number of infobars is checked immediately after the URL is loaded, unlike in
         // other infobar tests where it is checked after animations have completed. This is because
@@ -89,7 +89,7 @@ public class SearchGeolocationDisclosureInfoBarTest
         // Infobar should appear again the next day.
         SearchGeolocationDisclosureTabHelper.setDayOffsetForTesting(1);
         listener = new InfoBarTestAnimationListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
         assertEquals("Wrong infobar count after search", 1, getInfoBars().size());
         listener.addInfoBarAnimationFinished("InfoBar not added.");
@@ -102,7 +102,7 @@ public class SearchGeolocationDisclosureInfoBarTest
         // Infobar should appear again the next day.
         SearchGeolocationDisclosureTabHelper.setDayOffsetForTesting(2);
         listener = new InfoBarTestAnimationListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
         assertEquals("Wrong infobar count after search", 1, getInfoBars().size());
         listener.addInfoBarAnimationFinished("InfoBar not added.");
@@ -136,7 +136,7 @@ public class SearchGeolocationDisclosureInfoBarTest
         // Infobar should appear when doing the first search.
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
-        container.setAnimationListener(listener);
+        container.addAnimationListener(listener);
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
         assertEquals("Wrong infobar count after search", 1, getInfoBars().size());
         listener.addInfoBarAnimationFinished("InfoBar not added.");

@@ -92,7 +92,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
         InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
-        container.setAnimationListener(mListener);
+        container.addAnimationListener(mListener);
 
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
 
@@ -471,7 +471,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Swap out the WebContents and send the user somewhere so that the InfoBar gets removed.
         InfoBarTestAnimationListener removeListener = new InfoBarTestAnimationListener();
-        getActivity().getActivityTab().getInfoBarContainer().setAnimationListener(removeListener);
+        getActivity().getActivityTab().getInfoBarContainer().addAnimationListener(removeListener);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -485,7 +485,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Revisiting the original page should make the InfoBar reappear.
         InfoBarTestAnimationListener addListener = new InfoBarTestAnimationListener();
-        getActivity().getActivityTab().getInfoBarContainer().setAnimationListener(addListener);
+        getActivity().getActivityTab().getInfoBarContainer().addAnimationListener(addListener);
         loadUrl(mTestServer.getURL(GEOLOCATION_PAGE));
         addListener.addInfoBarAnimationFinished("InfoBar not added");
         assertEquals("Wrong infobar count", 1, getInfoBars().size());

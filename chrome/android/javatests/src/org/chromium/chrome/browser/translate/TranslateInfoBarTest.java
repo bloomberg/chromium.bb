@@ -56,7 +56,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
         super.setUp();
         mInfoBarContainer = getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
-        mInfoBarContainer.setAnimationListener(mListener);
+        mInfoBarContainer.addAnimationListener(mListener);
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
     }
 

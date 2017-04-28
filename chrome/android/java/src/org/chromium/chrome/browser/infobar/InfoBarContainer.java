@@ -15,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -57,6 +58,12 @@ public class InfoBarContainer extends SwipableOverlayView {
          * Notifies the subscriber when an animation is completed.
          */
         void notifyAnimationFinished(int animationType);
+
+        /**
+         * Notifies the subscriber when all animations are finished.
+         * @param frontInfoBar The frontmost infobar or {@code null} if none are showing.
+         */
+        void notifyAllAnimationsFinished(Item frontInfoBar);
     }
 
     /**
@@ -130,6 +137,9 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     private final InfoBarContainerLayout mLayout;
 
+    /** Helper class to manage showing in-product help bubbles over specific info bars. */
+    private final IPHInfoBarSupport mIPHSupport;
+
     /** Native InfoBarContainer pointer which will be set by nativeInit(). */
     private final long mNativeInfoBarContainer;
 
@@ -173,6 +183,10 @@ public class InfoBarContainer extends SwipableOverlayView {
         addView(mLayout, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
 
+        mIPHSupport = new IPHInfoBarSupport(context);
+        mLayout.addAnimationListener(mIPHSupport);
+        addObserver(mIPHSupport);
+
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
         mNativeInfoBarContainer = nativeInit();
@@ -212,8 +226,8 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     @VisibleForTesting
-    public void setAnimationListener(InfoBarAnimationListener listener) {
-        mLayout.setAnimationListener(listener);
+    public void addAnimationListener(InfoBarAnimationListener listener) {
+        mLayout.addAnimationListener(listener);
     }
 
     /**
@@ -298,6 +312,8 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     public void destroy() {
+        mLayout.removeAnimationListener(mIPHSupport);
+        removeObserver(mIPHSupport);
         mDestroyed = true;
         if (mNativeInfoBarContainer != 0) {
             nativeDestroy(mNativeInfoBarContainer);

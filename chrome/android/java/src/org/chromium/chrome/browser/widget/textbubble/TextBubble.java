@@ -249,15 +249,19 @@ public class TextBubble implements OnTouchListener {
         int spaceAboveAnchor = mAnchorRect.top - mCachedWindowRect.top - paddingY - mMarginPx;
         int spaceBelowAnchor = mCachedWindowRect.bottom - mAnchorRect.bottom - paddingY - mMarginPx;
 
-        // Position the bubble below the anchor if it fits or, if not, it's the largest space
-        // available.  This does bias the bubbles to show below the anchors if possible.
+        // Bias based on the center of the bubble and where it is on the screen.
+        boolean idealFitsBelow = idealHeight <= spaceBelowAnchor;
+        boolean idealFitsAbove = idealHeight <= spaceAboveAnchor;
+
+        // Position the bubble in the largest available space where it can fit.  This will bias the
+        // bubbles to show below the anchor if it will not fit in either place.
         boolean positionBelow =
-                idealHeight <= spaceBelowAnchor || spaceBelowAnchor >= spaceAboveAnchor;
+                (idealFitsBelow && spaceBelowAnchor >= spaceAboveAnchor) || !idealFitsAbove;
 
         // Override the ideal bubble orientation if we are trying to maintain the current one.
         if (preferCurrentOrientation && currentPositionBelow != positionBelow) {
-            if (currentPositionBelow && idealHeight <= spaceBelowAnchor) positionBelow = true;
-            if (!currentPositionBelow && idealHeight <= spaceAboveAnchor) positionBelow = false;
+            if (currentPositionBelow && idealFitsBelow) positionBelow = true;
+            if (!currentPositionBelow && idealFitsAbove) positionBelow = false;
         }
 
         int maxContentHeight = positionBelow ? spaceBelowAnchor : spaceAboveAnchor;

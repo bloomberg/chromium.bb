@@ -29,6 +29,11 @@ public final class EventConstants {
     public static final String DOWNLOAD_HOME_OPENED = "download_home_opened";
 
     /**
+     * The data saver preview infobar was shown.
+     */
+    public static final String DATA_SAVER_PREVIEW_INFOBAR_SHOWN = "data_saver_preview_opened";
+
+    /**
      * Do not instantiate.
      */
     private EventConstants() {}
