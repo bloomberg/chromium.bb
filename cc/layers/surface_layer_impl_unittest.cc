@@ -40,10 +40,10 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
   surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
 
-  LayerImplList layer_list;
+  RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       impl.root_layer_for_testing(), viewport_size, device_scale_factor,
-      &layer_list);
+      &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   {

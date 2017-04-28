@@ -108,7 +108,7 @@ class BspTreePerfTest : public LayerTreeTest {
                                 int max_texture_size,
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
-    LayerImplList update_list;
+    RenderSurfaceList update_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer_for_testing(), active_tree->DrawViewportSize(),
         host_impl->DrawTransform(), active_tree->device_scale_factor(),

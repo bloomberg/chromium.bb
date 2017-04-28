@@ -79,7 +79,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     int max_texture_size,
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
-    LayerImplList* render_surface_layer_list,
+    RenderSurfaceList* render_surface_list,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
       device_viewport_size(device_viewport_size),
@@ -95,7 +95,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       max_texture_size(max_texture_size),
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
-      render_surface_layer_list(render_surface_layer_list),
+      render_surface_list(render_surface_list),
       property_trees(property_trees) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
@@ -103,7 +103,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
-                                      LayerImplList* render_surface_layer_list)
+                                      RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputs(root_layer,
                               device_viewport_size,
                               device_transform,
@@ -117,43 +117,43 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               std::numeric_limits<int>::max() / 2,
                               true,
                               false,
-                              render_surface_layer_list,
+                              render_surface_list,
                               GetPropertyTrees(root_layer)) {
   DCHECK(root_layer);
-  DCHECK(render_surface_layer_list);
+  DCHECK(render_surface_list);
 }
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
-                                      LayerImplList* render_surface_layer_list)
+                                      RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         device_transform,
                                         1.f,
-                                        render_surface_layer_list) {}
+                                        render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
-                                      LayerImplList* render_surface_layer_list)
+                                      RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         gfx::Transform(),
                                         1.f,
-                                        render_surface_layer_list) {}
+                                        render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       float device_scale_factor,
-                                      LayerImplList* render_surface_layer_list)
+                                      RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         gfx::Transform(),
                                         device_scale_factor,
-                                        render_surface_layer_list) {}
+                                        render_surface_list) {}
 
 LayerTreeHostCommon::ScrollUpdateInfo::ScrollUpdateInfo()
     : layer_id(Layer::INVALID_ID) {}
@@ -198,13 +198,6 @@ static inline void ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(
   LayerImpl* mask_layer = surface->MaskLayer();
   if (mask_layer)
     mask_layer->set_is_drawn_render_surface_layer_list_member(false);
-}
-
-static inline void ClearIsDrawnRenderSurfaceLayerListMember(
-    LayerImplList* layer_list,
-    ScrollTree* scroll_tree) {
-  for (LayerImpl* layer : *layer_list)
-    layer->set_is_drawn_render_surface_layer_list_member(false);
 }
 
 static bool CdpPerfTracingEnabled() {
@@ -277,20 +270,81 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
-static void ComputeInitialRenderSurfaceLayerList(
+static void AddSurfaceToRenderSurfaceList(
+    RenderSurfaceImpl* render_surface,
+    RenderSurfaceList* render_surface_list,
+    PropertyTrees* property_trees) {
+  // |render_surface| must appear after its target, so first make sure its
+  // target is in the list.
+  RenderSurfaceImpl* target = render_surface->render_target();
+  bool is_root =
+      render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
+  if (!is_root && !target->is_render_surface_list_member()) {
+    AddSurfaceToRenderSurfaceList(target, render_surface_list, property_trees);
+  }
+  render_surface->ClearAccumulatedContentRect();
+  render_surface_list->push_back(render_surface);
+  render_surface->set_is_render_surface_list_member(true);
+  if (is_root) {
+    // The root surface does not contribute to any other surface, it has no
+    // target.
+    render_surface->set_contributes_to_drawn_surface(false);
+  } else {
+    bool contributes_to_drawn_surface =
+        property_trees->effect_tree.ContributesToDrawnSurface(
+            render_surface->EffectTreeIndex());
+    render_surface->set_contributes_to_drawn_surface(
+        contributes_to_drawn_surface);
+  }
+
+  draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
+                                                    render_surface);
+
+  // Ignore occlusion from outside the surface when surface contents need to be
+  // fully drawn. Layers with copy-request need to be complete.  We could be
+  // smarter about layers with filters that move pixels and exclude regions
+  // where both layers and the filters are occluded, but this seems like
+  // overkill.
+  // TODO(senorblanco): make this smarter for the SkImageFilter case (check for
+  // pixel-moving filters)
+  const FilterOperations& filters = render_surface->Filters();
+  bool is_occlusion_immune = render_surface->HasCopyRequest() ||
+                             filters.HasReferenceFilter() ||
+                             filters.HasFilterThatMovesPixels();
+  if (is_occlusion_immune) {
+    render_surface->SetNearestOcclusionImmuneAncestor(render_surface);
+  } else if (is_root) {
+    render_surface->SetNearestOcclusionImmuneAncestor(nullptr);
+  } else {
+    render_surface->SetNearestOcclusionImmuneAncestor(
+        render_surface->render_target()->nearest_occlusion_immune_ancestor());
+  }
+}
+
+static void ComputeInitialRenderSurfaceList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
-    LayerImplList* render_surface_layer_list,
+    RenderSurfaceList* render_surface_list,
     bool can_render_to_separate_surface) {
-  // Add all non-skipped surfaces to the initial render surface layer list. Add
-  // all non-skipped layers to the layer list of their target surface, and
-  // add their content rect to their target surface's accumulated content rect.
-  for (LayerImpl* layer : *layer_tree_impl) {
-    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
-    if (render_surface) {
-      render_surface->ClearLayerLists();
+  EffectTree& effect_tree = property_trees->effect_tree;
+  for (int i = EffectTree::kContentsRootNodeId;
+       i < static_cast<int>(effect_tree.size()); ++i) {
+    if (RenderSurfaceImpl* render_surface = effect_tree.GetRenderSurface(i)) {
+      render_surface->set_is_render_surface_list_member(false);
+      render_surface->reset_num_contributors();
       ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(render_surface);
     }
+  }
+
+  RenderSurfaceImpl* root_surface =
+      effect_tree.GetRenderSurface(EffectTree::kContentsRootNodeId);
+  // The root surface always gets added to the render surface  list.
+  AddSurfaceToRenderSurfaceList(root_surface, render_surface_list,
+                                property_trees);
+  // For all non-skipped layers, add their target to the render surface list if
+  // it's not already been added, and add their content rect to the target
+  // surface's accumulated content rect.
+  for (LayerImpl* layer : *layer_tree_impl) {
     layer->set_is_drawn_render_surface_layer_list_member(false);
 
     bool is_root = layer_tree_impl->IsRootLayer(layer);
@@ -300,51 +354,6 @@ static void ComputeInitialRenderSurfaceLayerList(
     if (skip_layer)
       continue;
 
-    bool render_to_separate_surface =
-        is_root || (can_render_to_separate_surface && render_surface);
-
-    if (render_to_separate_surface) {
-      DCHECK(render_surface);
-      DCHECK(layer->render_target() == render_surface);
-      render_surface->ClearAccumulatedContentRect();
-      render_surface_layer_list->push_back(layer);
-      if (is_root) {
-        // The root surface does not contribute to any other surface, it has no
-        // target.
-        render_surface->set_contributes_to_drawn_surface(false);
-      } else {
-        render_surface->render_target()->layer_list().push_back(layer);
-        bool contributes_to_drawn_surface =
-            property_trees->effect_tree.ContributesToDrawnSurface(
-                layer->effect_tree_index());
-        render_surface->set_contributes_to_drawn_surface(
-            contributes_to_drawn_surface);
-      }
-
-      draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
-                                                        render_surface);
-
-      // Ignore occlusion from outside the surface when surface contents need to
-      // be fully drawn. Layers with copy-request need to be complete.  We could
-      // be smarter about layers with filters that move pixels and exclude
-      // regions where both layers and the filters are occluded, but this seems
-      // like overkill.
-      // TODO(senorblanco): make this smarter for the SkImageFilter case (check
-      // for pixel-moving filters)
-      const FilterOperations& filters = render_surface->Filters();
-      bool is_occlusion_immune = render_surface->HasCopyRequest() ||
-                                 filters.HasReferenceFilter() ||
-                                 filters.HasFilterThatMovesPixels();
-      if (is_occlusion_immune) {
-        render_surface->SetNearestOcclusionImmuneAncestor(render_surface);
-      } else if (is_root) {
-        render_surface->SetNearestOcclusionImmuneAncestor(nullptr);
-      } else {
-        render_surface->SetNearestOcclusionImmuneAncestor(
-            render_surface->render_target()
-                ->nearest_occlusion_immune_ancestor());
-      }
-    }
     bool layer_is_drawn =
         property_trees->effect_tree.Node(layer->effect_tree_index())->is_drawn;
     bool layer_should_be_drawn = draw_property_utils::LayerNeedsUpdate(
@@ -352,24 +361,30 @@ static void ComputeInitialRenderSurfaceLayerList(
     if (!layer_should_be_drawn)
       continue;
 
+    RenderSurfaceImpl* render_target = layer->render_target();
+    if (!render_target->is_render_surface_list_member()) {
+      AddSurfaceToRenderSurfaceList(render_target, render_surface_list,
+                                    property_trees);
+    }
+
     layer->set_is_drawn_render_surface_layer_list_member(true);
-    layer->render_target()->layer_list().push_back(layer);
 
     // The layer contributes its drawable content rect to its render target.
-    layer->render_target()->AccumulateContentRectFromContributingLayer(layer);
+    render_target->AccumulateContentRectFromContributingLayer(layer);
+    render_target->increment_num_contributors();
   }
 }
 
 static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
                                        PropertyTrees* property_trees,
-                                       LayerImplList* render_surface_layer_list,
+                                       RenderSurfaceList* render_surface_list,
                                        int max_texture_size) {
   // Walk the list backwards, accumulating each surface's content rect into its
   // target's content rect.
-  for (LayerImpl* layer : base::Reversed(*render_surface_layer_list)) {
-    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
-    if (layer_tree_impl->IsRootLayer(layer)) {
-      // The root layer's surface content rect is always the entire viewport.
+  for (RenderSurfaceImpl* render_surface :
+       base::Reversed(*render_surface_list)) {
+    if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
+      // The root surface's content rect is always the entire viewport.
       render_surface->SetContentRectToViewport();
       continue;
     }
@@ -381,76 +396,76 @@ static void ComputeSurfaceContentRects(LayerTreeImpl* layer_tree_impl,
 
     // Now the render surface's content rect is calculated correctly, it could
     // contribute to its render target.
-    render_surface->render_target()
-        ->AccumulateContentRectFromContributingRenderSurface(render_surface);
+    RenderSurfaceImpl* render_target = render_surface->render_target();
+    DCHECK(render_target->is_render_surface_list_member());
+    render_target->AccumulateContentRectFromContributingRenderSurface(
+        render_surface);
+    render_target->increment_num_contributors();
   }
 }
 
-static void ComputeListOfNonEmptySurfaces(LayerTreeImpl* layer_tree_impl,
-                                          PropertyTrees* property_trees,
-                                          LayerImplList* initial_surface_list,
-                                          LayerImplList* final_surface_list) {
+static void ComputeListOfNonEmptySurfaces(
+    LayerTreeImpl* layer_tree_impl,
+    PropertyTrees* property_trees,
+    RenderSurfaceList* initial_surface_list,
+    RenderSurfaceList* final_surface_list) {
   // Walk the initial surface list forwards. The root surface and each
   // surface with a non-empty content rect go into the final render surface
   // layer list. Surfaces with empty content rects or whose target isn't in
   // the final list do not get added to the final list.
-  for (LayerImpl* layer : *initial_surface_list) {
-    bool is_root = layer_tree_impl->IsRootLayer(layer);
-    RenderSurfaceImpl* surface = layer->GetRenderSurface();
+  bool removed_surface = false;
+  for (RenderSurfaceImpl* surface : *initial_surface_list) {
+    bool is_root =
+        surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
     RenderSurfaceImpl* target_surface = surface->render_target();
     if (!is_root && (surface->content_rect().IsEmpty() ||
-                     target_surface->layer_list().empty())) {
-      ClearIsDrawnRenderSurfaceLayerListMember(&surface->layer_list(),
-                                               &property_trees->scroll_tree);
-      surface->ClearLayerLists();
-      LayerImplList& target_list = target_surface->layer_list();
-      auto it = std::find(target_list.begin(), target_list.end(), layer);
-      if (it != target_list.end()) {
-        target_list.erase(it);
-        // This surface has an empty content rect. If its target's layer list
-        // had no other layers, then its target would also have had an empty
-        // content rect, meaning it would have been removed and had its layer
-        // list cleared when we visited it, unless the target surface is the
-        // root surface.
-        DCHECK(!target_surface->layer_list().empty() ||
-               target_surface->render_target() == target_surface);
-      }
+                     !target_surface->is_render_surface_list_member())) {
+      surface->set_is_render_surface_list_member(false);
+      removed_surface = true;
+      target_surface->decrement_num_contributors();
       continue;
     }
     SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(surface, property_trees);
-    final_surface_list->push_back(layer);
+    final_surface_list->push_back(surface);
+  }
+  if (removed_surface) {
+    for (LayerImpl* layer : *layer_tree_impl) {
+      if (layer->is_drawn_render_surface_layer_list_member()) {
+        RenderSurfaceImpl* render_target = layer->render_target();
+        if (!render_target->is_render_surface_list_member()) {
+          layer->set_is_drawn_render_surface_layer_list_member(false);
+          render_target->decrement_num_contributors();
+        }
+      }
+    }
   }
 }
 
 static void CalculateRenderSurfaceLayerList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
-    LayerImplList* render_surface_layer_list,
+    RenderSurfaceList* render_surface_list,
     const bool can_render_to_separate_surface,
     const int max_texture_size) {
-  // This calculates top level Render Surface Layer List, and Layer List for all
-  // Render Surfaces.
-  // |render_surface_layer_list| is the top level RenderSurfaceLayerList.
+  RenderSurfaceList initial_render_surface_list;
 
-  LayerImplList initial_render_surface_list;
-
-  // First compute an RSLL that might include surfaces that later turn out to
+  // First compute a list that might include surfaces that later turn out to
   // have an empty content rect. After surface content rects are computed,
-  // produce a final RSLL that omits empty surfaces.
-  ComputeInitialRenderSurfaceLayerList(layer_tree_impl, property_trees,
-                                       &initial_render_surface_list,
-                                       can_render_to_separate_surface);
+  // produce a final list that omits empty surfaces.
+  ComputeInitialRenderSurfaceList(layer_tree_impl, property_trees,
+                                  &initial_render_surface_list,
+                                  can_render_to_separate_surface);
   ComputeSurfaceContentRects(layer_tree_impl, property_trees,
                              &initial_render_surface_list, max_texture_size);
   ComputeListOfNonEmptySurfaces(layer_tree_impl, property_trees,
                                 &initial_render_surface_list,
-                                render_surface_layer_list);
+                                render_surface_list);
 }
 
 void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
     PropertyTreeOption property_tree_option) {
-  inputs->render_surface_layer_list->clear();
+  inputs->render_surface_list->clear();
 
   const bool should_measure_property_tree_performance =
       property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED;
@@ -545,7 +560,7 @@ void CalculateDrawPropertiesInternal(
 
   CalculateRenderSurfaceLayerList(
       inputs->root_layer->layer_tree_impl(), inputs->property_trees,
-      inputs->render_surface_layer_list, inputs->can_render_to_separate_surface,
+      inputs->render_surface_list, inputs->can_render_to_separate_surface,
       inputs->max_texture_size);
 
   if (should_measure_property_tree_performance) {

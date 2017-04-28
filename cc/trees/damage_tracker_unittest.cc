@@ -27,14 +27,14 @@ namespace {
 
 void ExecuteCalculateDrawProperties(LayerImpl* root,
                                     float device_scale_factor,
-                                    LayerImplList* render_surface_layer_list) {
+                                    RenderSurfaceList* render_surface_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
   //               persist across multiple calls to this function.
-  ASSERT_FALSE(render_surface_layer_list->size());
+  ASSERT_FALSE(render_surface_list->size());
 
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), device_scale_factor, render_surface_layer_list);
+      root, root->bounds(), device_scale_factor, render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(root->GetRenderSurface());
 }
@@ -53,12 +53,12 @@ void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
   //   3. resetting all update_rects and property_changed flags for all layers
   //      and surfaces.
 
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 &render_surface_layer_list);
+                                 &render_surface_list);
 
   DamageTracker::UpdateDamageTracking(root->layer_tree_impl(),
-                                      render_surface_layer_list);
+                                      render_surface_list);
 
   root->layer_tree_impl()->ResetAllChangeTracking();
 }
@@ -174,13 +174,14 @@ class DamageTrackerTest : public testing::Test {
 
 TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
   // Sanity check that the simple test tree will actually produce the expected
-  // render surfaces and layer lists.
+  // render surfaces.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->test_properties()->children[0];
 
-  EXPECT_EQ(2u, root->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(1, root->GetRenderSurface()->layer_list()[0]->id());
-  EXPECT_EQ(2, root->GetRenderSurface()->layer_list()[1]->id());
+  EXPECT_EQ(2, root->GetRenderSurface()->num_contributors());
+  EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
 
   gfx::Rect root_damage_rect;
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -191,7 +192,7 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
 
 TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
   // Sanity check that the complex test tree will actually produce the expected
-  // render surfaces and layer lists.
+  // render surfaces.
 
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
 
@@ -208,8 +209,8 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
 
   ASSERT_TRUE(child1->GetRenderSurface());
   EXPECT_FALSE(child2->GetRenderSurface());
-  EXPECT_EQ(3u, root->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(2u, child1->GetRenderSurface()->layer_list().size());
+  EXPECT_EQ(3, root->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(2, child1->GetRenderSurface()->num_contributors());
 
   // The render surface for child1 only has a content_rect that encloses
   // grand_child1 and grand_child2, because child1 does not draw content.
@@ -379,7 +380,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   root->layer_tree_impl()->SetOpacityMutated(child->element_id(), 0.5f);
   EmulateDrawingOneFrame(root);
 
-  ASSERT_EQ(2u, root->GetRenderSurface()->layer_list().size());
+  ASSERT_EQ(2, root->GetRenderSurface()->num_contributors());
 
   // Damage should be the entire child layer in target_surface space.
   gfx::Rect expected_rect = gfx::Rect(100, 100, 30, 30);
@@ -868,7 +869,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
 
   // Sanity check - all 3 layers should be on the same render surface; render
   // surfaces are tested elsewhere.
-  ASSERT_EQ(3u, root->GetRenderSurface()->layer_list().size());
+  ASSERT_EQ(3, root->GetRenderSurface()->num_contributors());
 
   gfx::Rect root_damage_rect;
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -928,7 +929,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
 
   // Sanity check - all 3 layers should be on the same render surface; render
   // surfaces are tested elsewhere.
-  ASSERT_EQ(3u, root->GetRenderSurface()->layer_list().size());
+  ASSERT_EQ(3, root->GetRenderSurface()->num_contributors());
 
   gfx::Rect root_damage_rect;
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -1109,7 +1110,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
 
   // Sanity check that there is only one surface now.
   ASSERT_FALSE(child1->GetRenderSurface());
-  ASSERT_EQ(4u, root->GetRenderSurface()->layer_list().size());
+  ASSERT_EQ(4, root->GetRenderSurface()->num_contributors());
 
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
@@ -1137,8 +1138,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
 
   // Sanity check that there is a new surface now.
   ASSERT_TRUE(child1->GetRenderSurface());
-  EXPECT_EQ(3u, root->GetRenderSurface()->layer_list().size());
-  EXPECT_EQ(2u, child1->GetRenderSurface()->layer_list().size());
+  EXPECT_EQ(3, root->GetRenderSurface()->num_contributors());
+  EXPECT_EQ(2, child1->GetRenderSurface()->num_contributors());
 
   EXPECT_TRUE(
       child1->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(
@@ -1508,14 +1509,14 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 &render_surface_layer_list);
+                                 &render_surface_list);
   // Avoid the descendant-only property change path that skips unioning damage
   // from descendant layers.
   child1->GetRenderSurface()->NoteAncestorPropertyChanged();
   DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
-                                      render_surface_layer_list);
+                                      render_surface_list);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1.
@@ -1542,11 +1543,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   grandchild2->AddDamageRect(gfx::Rect(grandchild1->bounds()));
 
   // Recompute all damage / properties.
-  render_surface_layer_list.clear();
+  render_surface_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 &render_surface_layer_list);
+                                 &render_surface_list);
   DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
-                                      render_surface_layer_list);
+                                      render_surface_list);
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.
@@ -1592,14 +1593,14 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  LayerImplList render_surface_layer_list;
+  RenderSurfaceList render_surface_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 &render_surface_layer_list);
+                                 &render_surface_list);
   // Avoid the descendant-only property change path that skips unioning damage
   // from descendant layers.
   child1->GetRenderSurface()->NoteAncestorPropertyChanged();
   DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
-                                      render_surface_layer_list);
+                                      render_surface_list);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1.
@@ -1626,11 +1627,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   grandchild2->AddDamageRect(gfx::Rect(grandchild1->bounds()));
 
   // Recompute all damage / properties.
-  render_surface_layer_list.clear();
+  render_surface_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 &render_surface_layer_list);
+                                 &render_surface_list);
   DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
-                                      render_surface_layer_list);
+                                      render_surface_list);
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.

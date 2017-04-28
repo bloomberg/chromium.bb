@@ -67,7 +67,7 @@ class DebugRectHistory {
   void SaveDebugRectsForCurrentFrame(
       LayerTreeImpl* tree_impl,
       LayerImpl* hud_layer,
-      const LayerImplList& render_surface_layer_list,
+      const RenderSurfaceList& render_surface_list,
       const LayerTreeDebugState& debug_state);
 
   const std::vector<DebugRect>& debug_rects() { return debug_rects_; }
@@ -76,10 +76,9 @@ class DebugRectHistory {
   DebugRectHistory();
 
   void SavePaintRects(LayerTreeImpl* tree_impl);
-  void SavePropertyChangedRects(const LayerImplList& render_surface_layer_list,
-                                LayerImpl* hud_layer);
-  void SaveSurfaceDamageRects(const LayerImplList& render_surface_layer_list);
-  void SaveScreenSpaceRects(const LayerImplList& render_surface_layer_list);
+  void SavePropertyChangedRects(LayerTreeImpl* tree_impl, LayerImpl* hud_layer);
+  void SaveSurfaceDamageRects(const RenderSurfaceList& render_surface_list);
+  void SaveScreenSpaceRects(const RenderSurfaceList& render_surface_list);
   void SaveTouchEventHandlerRects(LayerTreeImpl* layer);
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
   void SaveWheelEventHandlerRects(LayerTreeImpl* tree_impl);

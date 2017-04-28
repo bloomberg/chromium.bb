@@ -2586,14 +2586,13 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     impl->PrepareToDraw(&frame_data);
     impl->DidDrawAllLayers(frame_data);
 
-    const LayerImplList& render_surface_layer_list =
-        *frame_data.render_surface_layer_list;
+    const RenderSurfaceList& render_surface_list =
+        *frame_data.render_surface_list;
 
     // Both layers should be drawing into the root render surface.
-    ASSERT_EQ(1u, render_surface_layer_list.size());
-    ASSERT_EQ(root->GetRenderSurface(),
-              render_surface_layer_list[0]->GetRenderSurface());
-    ASSERT_EQ(2u, root->GetRenderSurface()->layer_list().size());
+    ASSERT_EQ(1u, render_surface_list.size());
+    ASSERT_EQ(root->GetRenderSurface(), render_surface_list[0]);
+    ASSERT_EQ(2, root->GetRenderSurface()->num_contributors());
 
     // The root render surface is the size of the viewport.
     EXPECT_EQ(gfx::Rect(0, 0, 60, 60),
