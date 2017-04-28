@@ -70,8 +70,7 @@ class CC_EXPORT VideoFrameExternalResources {
 
 // VideoResourceUpdater is used by the video system to produce frame content as
 // resources consumable by the compositor.
-class CC_EXPORT VideoResourceUpdater
-    : public base::SupportsWeakPtr<VideoResourceUpdater> {
+class CC_EXPORT VideoResourceUpdater {
  public:
   VideoResourceUpdater(ContextProvider* context_provider,
                        ResourceProvider* resource_provider,
@@ -184,6 +183,8 @@ class CC_EXPORT VideoResourceUpdater
   // Recycle resources so that we can reduce the number of allocations and
   // data transfers.
   ResourceList all_resources_;
+
+  base::WeakPtrFactory<VideoResourceUpdater> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoResourceUpdater);
 };
