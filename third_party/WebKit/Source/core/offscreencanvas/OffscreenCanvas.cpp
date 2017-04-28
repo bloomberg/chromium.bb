@@ -19,6 +19,7 @@
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/MathExtras.h"
 #include "public/platform/Platform.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -240,6 +241,8 @@ ScriptPromise OffscreenCanvas::Commit(RefPtr<StaticBitmapImage> image,
                                       bool is_web_gl_software_rendering,
                                       ScriptState* script_state,
                                       ExceptionState& exception_state) {
+  TRACE_EVENT0("blink", "OffscreenCanvas::Commit");
+
   if (!HasPlaceholderCanvas()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
@@ -286,12 +289,14 @@ void OffscreenCanvas::FinalizeFrame() {
 
 void OffscreenCanvas::DoCommit(RefPtr<StaticBitmapImage> image,
                                bool is_web_gl_software_rendering) {
+  TRACE_EVENT0("blink", "OffscreenCanvas::DoCommit");
   double commit_start_time = WTF::MonotonicallyIncreasingTime();
   GetOrCreateFrameDispatcher()->DispatchFrame(
       std::move(image), commit_start_time, is_web_gl_software_rendering);
 }
 
 void OffscreenCanvas::BeginFrame() {
+  TRACE_EVENT0("blink", "OffscreenCanvas::BeginFrame");
   if (current_frame_) {
     // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
     // CompositorFrame activation.
@@ -304,6 +309,7 @@ void OffscreenCanvas::BeginFrame() {
   } else if (commit_promise_resolver_) {
     commit_promise_resolver_->Resolve();
     commit_promise_resolver_.Clear();
+
     // We need to tell parent frame to stop sending signals on begin frame to
     // avoid overhead once we resolve the promise.
     GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(false);
