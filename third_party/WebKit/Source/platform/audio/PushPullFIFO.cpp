@@ -19,21 +19,18 @@ const unsigned kMaxMessagesToLog = 100;
 const size_t PushPullFIFO::kMaxFIFOLength = 65536;
 
 PushPullFIFO::PushPullFIFO(unsigned number_of_channels, size_t fifo_length)
-    : fifo_length_(fifo_length),
-      frames_available_(0),
-      index_read_(0),
-      index_write_(0),
-      overflow_count_(0),
-      underflow_count_(0) {
+    : fifo_length_(fifo_length) {
   CHECK_LE(fifo_length_, kMaxFIFOLength);
   fifo_bus_ = AudioBus::Create(number_of_channels, fifo_length_);
 }
 
 PushPullFIFO::~PushPullFIFO() {}
 
-// Push the data from |inputBus| to FIFO. The size of push is determined by
-// the length of |inputBus|.
+// Push the data from |input_bus| to FIFO. The size of push is determined by
+// the length of |input_bus|.
 void PushPullFIFO::Push(const AudioBus* input_bus) {
+  MutexLocker locker(lock_);
+
   CHECK(input_bus);
   CHECK_EQ(input_bus->length(), AudioUtilities::kRenderQuantumFrames);
   SECURITY_CHECK(input_bus->length() <= fifo_length_);
@@ -61,8 +58,8 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
   // Update the write index; wrap it around if necessary.
   index_write_ = (index_write_ + input_bus_length) % fifo_length_;
 
-  // In case of overflow, move the |indexRead| to the updated |indexWrite| to
-  // avoid reading overwritten frames by the next pull.
+  // In case of overflow, move the |index_read_| to the updated |index_write_|
+  // to avoid reading overwritten frames by the next pull.
   if (input_bus_length > fifo_length_ - frames_available_) {
     index_read_ = index_write_;
     if (++overflow_count_ < kMaxMessagesToLog) {
@@ -80,16 +77,18 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
   DCHECK_EQ((index_read_ + frames_available_) % fifo_length_, index_write_);
 }
 
-// Pull the data out of FIFO to |outputBus|. If remaining frame in the FIFO
+// Pull the data out of FIFO to |output_bus|. If remaining frame in the FIFO
 // is less than the frames to pull, provides remaining frame plus the silence.
-void PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
+size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
+  MutexLocker locker(lock_);
+
 #if OS(ANDROID)
   if (!output_bus) {
     // Log when outputBus or FIFO object is invalid. (crbug.com/692423)
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
                  << ">] |outputBus| is invalid.";
     // Silently return to avoid crash.
-    return;
+    return 0;
   }
 
   // The following checks are in place to catch the inexplicable crash.
@@ -110,6 +109,7 @@ void PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
                  << " >= " << fifo_length_ << ")";
   }
 #endif
+
   CHECK(output_bus);
   SECURITY_CHECK(frames_requested <= output_bus->length());
   SECURITY_CHECK(frames_requested <= fifo_length_);
@@ -162,10 +162,16 @@ void PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
   // Update the number of frames in FIFO.
   frames_available_ -= frames_to_fill;
   DCHECK_EQ((index_read_ + frames_available_) % fifo_length_, index_write_);
+
+  // |frames_requested > frames_available_| means the frames in FIFO is not
+  // enough to fulfill the requested frames from the audio device.
+  return frames_requested > frames_available_
+      ? frames_requested - frames_available_
+      : 0;
 }
 
 const PushPullFIFOStateForTest PushPullFIFO::GetStateForTest() const {
-  return {length(),     NumberOfChannels(), FramesAvailable(), index_read_,
+  return {length(),     NumberOfChannels(), frames_available_, index_read_,
           index_write_, overflow_count_,    underflow_count_};
 }
 

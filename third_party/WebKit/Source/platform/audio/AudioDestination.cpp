@@ -29,7 +29,9 @@
 #include "platform/audio/AudioDestination.h"
 
 #include <memory>
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/PushPullFIFO.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -37,6 +39,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebThread.h"
 
 namespace blink {
 
@@ -64,14 +67,16 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    PassRefPtr<SecurityOrigin> security_origin)
     : number_of_output_channels_(number_of_output_channels),
       is_playing_(false),
-      callback_(callback),
+      rendering_thread_(WTF::WrapUnique(
+          Platform::Current()->CreateThread("WebAudio Rendering Thread"))),
+      fifo_(WTF::WrapUnique(
+          new PushPullFIFO(number_of_output_channels, kFIFOSize))),
       output_bus_(AudioBus::Create(number_of_output_channels,
                                    AudioUtilities::kRenderQuantumFrames,
                                    false)),
       render_bus_(AudioBus::Create(number_of_output_channels,
                                    AudioUtilities::kRenderQuantumFrames)),
-      fifo_(WTF::WrapUnique(
-          new PushPullFIFO(number_of_output_channels, kFIFOSize))),
+      callback_(callback),
       frames_elapsed_(0) {
   // Create WebAudioDevice. blink::WebAudioDevice is designed to support the
   // local input (e.g. loopback from OS audio system), but Chromium's media
@@ -97,6 +102,9 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
                               double delay,
                               double delay_timestamp,
                               size_t prior_frames_skipped) {
+  // This method is called by AudioDeviceThread.
+  DCHECK(!IsRenderingThread());
+
   CHECK_EQ(destination_data.size(), number_of_output_channels_);
   CHECK_EQ(number_of_frames, callback_buffer_size_);
 
@@ -106,25 +114,36 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   if (!fifo_ || fifo_->length() < number_of_frames)
     return;
 
-  frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
-  double output_position =
-      frames_elapsed_ / static_cast<double>(web_audio_device_->SampleRate()) -
-      delay;
-  output_position_.position = output_position;
-  output_position_.timestamp = delay_timestamp;
-  output_position_received_timestamp_ = base::TimeTicks::Now();
-
   // Associate the destination data array with the output bus then fill the
   // FIFO.
   for (unsigned i = 0; i < number_of_output_channels_; ++i)
     output_bus_->SetChannelMemory(i, destination_data[i], number_of_frames);
 
-  // Number of frames to render via WebAudio graph. |framesToRender > 0| means
-  // the frames in FIFO is not enough to fulfill the requested frames from the
-  // audio device.
-  size_t frames_to_render = number_of_frames > fifo_->FramesAvailable()
-                                ? number_of_frames - fifo_->FramesAvailable()
-                                : 0;
+  size_t frames_to_render = fifo_->Pull(output_bus_.Get(), number_of_frames);
+
+  rendering_thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&AudioDestination::RequestRenderOnWebThread,
+                      CrossThreadUnretained(this),
+                      number_of_frames, frames_to_render,
+                      delay, delay_timestamp, prior_frames_skipped));
+}
+
+void AudioDestination::RequestRenderOnWebThread(size_t frames_requested,
+                                                size_t frames_to_render,
+                                                double delay,
+                                                double delay_timestamp,
+                                                size_t prior_frames_skipped) {
+  // This method is called by WebThread.
+  DCHECK(IsRenderingThread());
+
+  frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
+  AudioIOPosition output_position;
+  output_position.position =
+      frames_elapsed_ / static_cast<double>(web_audio_device_->SampleRate()) -
+      delay;
+  output_position.timestamp = delay_timestamp;
+  base::TimeTicks received_timestamp = base::TimeTicks::Now();
 
   for (size_t pushed_frames = 0; pushed_frames < frames_to_render;
        pushed_frames += AudioUtilities::kRenderQuantumFrames) {
@@ -132,27 +151,23 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
     // we do not want output position to get stuck so we promote it
     // using the elapsed time from the moment it was initially obtained.
     if (callback_buffer_size_ > AudioUtilities::kRenderQuantumFrames * 2) {
-      double delta =
-          (base::TimeTicks::Now() - output_position_received_timestamp_)
-              .InSecondsF();
-      output_position_.position += delta;
-      output_position_.timestamp += delta;
+      double delta = (base::TimeTicks::Now() - received_timestamp).InSecondsF();
+      output_position.position += delta;
+      output_position.timestamp += delta;
     }
 
     // Some implementations give only rough estimation of |delay| so
     // we might have negative estimation |outputPosition| value.
-    if (output_position_.position < 0.0)
-      output_position_.position = 0.0;
+    if (output_position.position < 0.0)
+      output_position.position = 0.0;
 
     // Process WebAudio graph and push the rendered output to FIFO.
     callback_.Render(nullptr, render_bus_.Get(),
-                     AudioUtilities::kRenderQuantumFrames, output_position_);
+                     AudioUtilities::kRenderQuantumFrames, output_position);
     fifo_->Push(render_bus_.Get());
   }
 
-  fifo_->Pull(output_bus_.Get(), number_of_frames);
-
-  frames_elapsed_ += number_of_frames;
+  frames_elapsed_ += frames_requested;
 }
 
 void AudioDestination::Start() {
@@ -202,6 +217,11 @@ bool AudioDestination::CheckBufferSize() {
       callback_buffer_size_ + AudioUtilities::kRenderQuantumFrames <= kFIFOSize;
   DCHECK(is_buffer_size_valid);
   return is_buffer_size_valid;
+}
+
+bool AudioDestination::IsRenderingThread() {
+  return static_cast<ThreadIdentifier>(rendering_thread_->ThreadId()) ==
+         CurrentThread();
 }
 
 }  // namespace blink
