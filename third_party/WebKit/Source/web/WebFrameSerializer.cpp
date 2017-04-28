@@ -87,6 +87,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
  public:
   explicit MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&);
+  ~MHTMLFrameSerializerDelegate() override;
   bool ShouldIgnoreElement(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool RewriteLink(const Element&, String& rewritten_link) override;
@@ -105,11 +106,20 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
                                                 Vector<Attribute>*);
 
   WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
+  bool popup_overlays_skipped_;
 };
 
 MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate)
-    : web_delegate_(web_delegate) {}
+    : web_delegate_(web_delegate), popup_overlays_skipped_(false) {}
+
+MHTMLFrameSerializerDelegate::~MHTMLFrameSerializerDelegate() {
+  if (web_delegate_.RemovePopupOverlay()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PageSerialization.MhtmlGeneration.PopupOverlaySkipped",
+        popup_overlays_skipped_);
+  }
+}
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
   if (ShouldIgnoreHiddenElement(element))
@@ -169,6 +179,8 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnorePopupOverlayElement(
   // The z-index should be greater than the threshold.
   if (box->Style()->ZIndex() < kPopupOverlayZIndexThreshold)
     return false;
+
+  popup_overlays_skipped_ = true;
 
   return true;
 }
