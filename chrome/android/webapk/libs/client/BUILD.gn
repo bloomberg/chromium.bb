@@ -30,7 +30,7 @@ java_cpp_template("runtime_library_version_java") {
   ]
   defines = [
     "CURRENT_RUNTIME_DEX_VERSION_VALUE=$runtime_library_version",
-    "CURRENT_SHELL_APK_VERSION_VALUE=$expected_shell_apk_version",
+    "CURRENT_SHELL_APK_VERSION_VALUE=$shell_apk_version",
   ]
 }
 
