@@ -226,9 +226,13 @@ void LogoBridge::GetCurrentLogo(JNIEnv* env,
   if (doodle_service_) {
     j_logo_observer_.Reset(j_logo_observer);
 
-    // Immediately hand out any current cached config.
-    DoodleConfigReceived(doodle_service_->config(), /*from_cache=*/true);
-    // Also request a refresh, in case something changed.
+    // Hand out any current cached config.
+    if (doodle_service_->config().has_value()) {
+      FetchDoodleImage(doodle_service_->config().value(), /*from_cache=*/true);
+    }
+    // Also request a refresh, in case something changed. Depending on whether a
+    // newer config was available, either |OnDoodleConfigUpdated| or
+    // |OnDoodleConfigRevalidated| are called.
     doodle_service_->Refresh();
   } else {
     // |observer| is deleted in LogoObserverAndroid::OnObserverRemoved().
@@ -246,26 +250,40 @@ void LogoBridge::GetAnimatedLogo(JNIEnv* env,
   animated_logo_fetcher_->Start(env, url, j_callback);
 }
 
+void LogoBridge::OnDoodleConfigRevalidated(bool from_cache) {
+  if (j_logo_observer_.is_null()) {
+    return;
+  }
+  // If an existing config got re-validated, there's nothing to do - the UI is
+  // already in the correct state. However, we do tell the UI when we validate
+  // that there really isn't a Doodle. This is needed for metrics tracking.
+  if (!doodle_service_->config().has_value()) {
+    NotifyNoLogoAvailable(from_cache);
+  }
+}
+
 void LogoBridge::OnDoodleConfigUpdated(
     const base::Optional<doodle::DoodleConfig>& maybe_doodle_config) {
   if (j_logo_observer_.is_null()) {
     return;
   }
-  DoodleConfigReceived(maybe_doodle_config, /*from_cache=*/false);
-}
-
-void LogoBridge::DoodleConfigReceived(
-    const base::Optional<doodle::DoodleConfig>& maybe_doodle_config,
-    bool from_cache) {
-  DCHECK(!j_logo_observer_.is_null());
-
   if (!maybe_doodle_config.has_value()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_LogoObserver_onLogoAvailable(
-        env, j_logo_observer_, ScopedJavaLocalRef<jobject>(), from_cache);
+    NotifyNoLogoAvailable(/*from_cache=*/false);
     return;
   }
-  const doodle::DoodleConfig& doodle_config = maybe_doodle_config.value();
+  FetchDoodleImage(maybe_doodle_config.value(), /*from_cache=*/false);
+}
+
+void LogoBridge::NotifyNoLogoAvailable(bool from_cache) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_LogoObserver_onLogoAvailable(env, j_logo_observer_,
+                                    ScopedJavaLocalRef<jobject>(), from_cache);
+}
+
+void LogoBridge::FetchDoodleImage(const doodle::DoodleConfig& doodle_config,
+                                  bool from_cache) {
+  DCHECK(!j_logo_observer_.is_null());
+
   // If there is a CTA image, that means the main image is animated. Show the
   // non-animated CTA image first, and load the animated one only when the
   // user requests it.
