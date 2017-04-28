@@ -49,7 +49,7 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
 
 void PasswordReuseDetectionManager::OnReuseFound(
     const base::string16& password,
-    const std::string& saved_domain,
+    const std::string& legitimate_domain,
     int saved_passwords,
     int number_matches) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -57,7 +57,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
-                      saved_domain);
+                      legitimate_domain);
   }
 
   metrics_util::LogPasswordReuse(

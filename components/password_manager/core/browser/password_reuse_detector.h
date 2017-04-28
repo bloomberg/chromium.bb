@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_REUSE_DETECTOR_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_REUSE_DETECTOR_H_
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <set>
@@ -12,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -43,7 +45,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   void OnLoginsChanged(const PasswordStoreChangeList& changes);
 
   // Checks that some suffix of |input| equals to a password saved on another
-  // registry controlled domain than |domain|.
+  // registry controlled domain than |domain| or to a sync password.
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
   // thread on which this method is called.
   // |consumer| should not be null.
@@ -62,6 +64,18 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Add password from |form| to |passwords_|.
   void AddPassword(const autofill::PasswordForm& form);
 
+  // Returns true iff a reuse of a sync password is found. If reuse is found it
+  // is reported to |consumer|.
+  bool CheckSyncPasswordReuse(const base::string16& input,
+                              const std::string& domain,
+                              PasswordReuseDetectorConsumer* consumer);
+
+  // Returns true iff a reuse of a saved password is found. If reuse is found it
+  // is reported to |consumer|.
+  bool CheckSavedPasswordReuse(const base::string16& input,
+                               const std::string& domain,
+                               PasswordReuseDetectorConsumer* consumer);
+
   // Returns the iterator to |passwords_| that corresponds to the longest key in
   // |passwords_| that is a suffix of |input|. Returns passwords_.end() in case
   // when no key in |passwords_| is a prefix of |input|.
@@ -76,6 +90,8 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // Number of passwords in |passwords_|, each password is calculated the number
   // of times how many different sites it's saved on.
   int saved_passwords_ = 0;
+
+  base::Optional<uint64_t> sync_password_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };
