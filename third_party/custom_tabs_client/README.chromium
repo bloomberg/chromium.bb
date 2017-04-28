@@ -13,4 +13,7 @@ customization, callback setup, pre-warming and pre-fetching, and lifecycle
 management. Also inside demos there is another application that launches
 custom tabs in different modes.
 
+The example applicaton also presents how to use Browser Actions, including
+creating request intent and adding custom items.
+
 Local Modifications: none

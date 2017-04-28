@@ -43,6 +43,8 @@ android_library("custom_tabs_client_shared_java") {
 
 android_library("custom_tabs_support_java") {
   java_files = [
+    "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionsIntent.java",
+    "src/customtabs/src/android/support/customtabs/browseractions/BrowserActionItem.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsClient.java",
     "src/customtabs/src/android/support/customtabs/CustomTabsIntent.java",
