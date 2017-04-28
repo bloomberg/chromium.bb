@@ -18,6 +18,7 @@ ModuleScript* ModuleScript::Create(
     ParserDisposition parser_state,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     AccessControlStatus access_control_status) {
+  // https://html.spec.whatwg.org/#creating-a-module-script
   // Step 1. Let script be a new module script that this algorithm will
   // subsequently initialize.
   // Step 2. Set script's settings object to the environment settings object
@@ -30,6 +31,19 @@ ModuleScript* ModuleScript::Create(
   // Step 6: "...return null, and abort these steps."
   if (result.IsNull())
     return nullptr;
+
+  return CreateInternal(modulator, result, base_url, nonce, parser_state,
+                        credentials_mode);
+}
+
+ModuleScript* ModuleScript::CreateInternal(
+    Modulator* modulator,
+    ScriptModule result,
+    const KURL& base_url,
+    const String& nonce,
+    ParserDisposition parser_state,
+    WebURLRequest::FetchCredentialsMode credentials_mode) {
+  // https://html.spec.whatwg.org/#creating-a-module-script
   // Step 7. Set script's module record to result.
   // Step 8. Set script's base URL to the script base URL provided.
   // Step 9. Set script's cryptographic nonce to the cryptographic nonce
@@ -39,6 +53,17 @@ ModuleScript* ModuleScript::Create(
   // Step 12. Return script.
   return new ModuleScript(modulator, result, base_url, nonce, parser_state,
                           credentials_mode);
+}
+
+ModuleScript* ModuleScript::CreateForTest(
+    Modulator* modulator,
+    ScriptModule record,
+    const KURL& base_url,
+    const String& nonce,
+    ParserDisposition parser_state,
+    WebURLRequest::FetchCredentialsMode credentials_mode) {
+  return CreateInternal(modulator, record, base_url, nonce, parser_state,
+                        credentials_mode);
 }
 
 void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {

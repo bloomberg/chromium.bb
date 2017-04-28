@@ -39,16 +39,15 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                               WebURLRequest::FetchCredentialsMode,
                               AccessControlStatus);
 
-  static ModuleScript* CreateForTest(
-      Modulator* settings_object,
-      ScriptModule record,
-      const KURL& base_url,
-      const String& nonce,
-      ParserDisposition parser_state,
-      WebURLRequest::FetchCredentialsMode credentials_mode) {
-    return new ModuleScript(settings_object, record, base_url, nonce,
-                            parser_state, credentials_mode);
-  }
+  // Mostly corresponds to Create() but accepts ScriptModule as the argument
+  // and allows null ScriptModule.
+  static ModuleScript* CreateForTest(Modulator*,
+                                     ScriptModule,
+                                     const KURL& base_url,
+                                     const String& nonce,
+                                     ParserDisposition,
+                                     WebURLRequest::FetchCredentialsMode);
+
   ~ModuleScript() override = default;
 
   const ScriptModule& Record() const { return record_; }
@@ -88,6 +87,13 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
         nonce_(nonce),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode) {}
+
+  static ModuleScript* CreateInternal(Modulator*,
+                                      ScriptModule,
+                                      const KURL& base_url,
+                                      const String& nonce,
+                                      ParserDisposition,
+                                      WebURLRequest::FetchCredentialsMode);
 
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
   bool IsEmpty() const override;
