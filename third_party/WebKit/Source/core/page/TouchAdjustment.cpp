@@ -223,7 +223,7 @@ static inline void AppendContextSubtargetsForNode(
         std::tie(start_pos, end_pos) = text_layout_object->SelectionStartEnd();
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     Vector<FloatQuad> quads;

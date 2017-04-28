@@ -21,7 +21,7 @@ WebNativeScrollBehavior ScrollStateCallback::ToNativeScrollBehavior(
   if (native_scroll_behavior == kAfter)
     return WebNativeScrollBehavior::kPerformAfterNativeScroll;
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return WebNativeScrollBehavior::kDisableNativeScroll;
 }
 
