@@ -30,7 +30,8 @@ class ReportingPersisterTest : public ReportingTestBase {
   const std::string kType_ = "default";
 };
 
-TEST_F(ReportingPersisterTest, Test) {
+// Disabled because the Persister has no persistence layer to use yet.
+TEST_F(ReportingPersisterTest, DISABLED_Test) {
   ReportingPolicy policy;
   policy.persist_reports_across_restarts = true;
   policy.persist_clients_across_restarts = true;
@@ -49,8 +50,7 @@ TEST_F(ReportingPersisterTest, Test) {
                      kGroup_,
                      tick_clock()->NowTicks() + base::TimeDelta::FromDays(1));
 
-  EXPECT_TRUE(persistence_timer()->IsRunning());
-  persistence_timer()->Fire();
+  // TODO: Actually trigger persistence, once it's possible.
 
   SimulateRestart(/* delta= */ base::TimeDelta::FromHours(1),
                   /* delta_ticks= */ base::TimeDelta::FromHours(-3));

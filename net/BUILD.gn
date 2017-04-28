@@ -1424,8 +1424,6 @@ component("net") {
       "reporting/reporting_client.h",
       "reporting/reporting_context.cc",
       "reporting/reporting_context.h",
-      "reporting/reporting_delegate.cc",
-      "reporting/reporting_delegate.h",
       "reporting/reporting_delivery_agent.cc",
       "reporting/reporting_delivery_agent.h",
       "reporting/reporting_endpoint_manager.cc",

@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
-#include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "url/gurl.h"
 
@@ -25,11 +24,7 @@ namespace {
 class ReportingServiceImpl : public ReportingService {
  public:
   ReportingServiceImpl(std::unique_ptr<ReportingContext> context)
-      : context_(std::move(context)) {
-    // TODO(juliatuttle): This can be slow, so it might be better to expose it
-    // as a separate method and call it separately from constructing everything.
-    context_->Initialize();
-  }
+      : context_(std::move(context)) {}
 
   ~ReportingServiceImpl() override {}
 
@@ -37,14 +32,12 @@ class ReportingServiceImpl : public ReportingService {
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<const base::Value> body) override {
-    DCHECK(context_->initialized());
     context_->cache()->AddReport(url, group, type, std::move(body),
                                  context_->tick_clock()->NowTicks(), 0);
   }
 
   void ProcessHeader(const GURL& url,
                      const std::string& header_value) override {
-    DCHECK(context_->initialized());
     ReportingHeaderParser::ParseHeader(context_.get(), url, header_value);
   }
 
@@ -61,10 +54,9 @@ ReportingService::~ReportingService() {}
 // static
 std::unique_ptr<ReportingService> ReportingService::Create(
     const ReportingPolicy& policy,
-    URLRequestContext* request_context,
-    std::unique_ptr<ReportingDelegate> delegate) {
+    URLRequestContext* request_context) {
   return base::MakeUnique<ReportingServiceImpl>(
-      ReportingContext::Create(policy, std::move(delegate), request_context));
+      ReportingContext::Create(policy, request_context));
 }
 
 // static
