@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace ui {
 
@@ -131,9 +132,9 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_CURSOR_CHANGED:
-      return base::StringPrintf("CursorChanged id=%s cursor_id=%d",
+      return base::StringPrintf("CursorChanged id=%s cursor_type=%d",
                                 WindowIdToString(change.window_id).c_str(),
-                                change.cursor_id);
+                                static_cast<int>(change.cursor_type));
     case CHANGE_TYPE_ON_CHANGE_COMPLETED:
       return base::StringPrintf("ChangeCompleted id=%d sucess=%s",
                                 change.change_id,
@@ -230,7 +231,7 @@ Change::Change()
       direction(mojom::OrderDirection::ABOVE),
       bool_value(false),
       float_value(0.f),
-      cursor_id(0),
+      cursor_type(ui::CursorType::kNull),
       change_id(0u) {}
 
 Change::Change(const Change& other) = default;
@@ -420,13 +421,12 @@ void TestChangeTracker::OnWindowFocused(Id window_id) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowPredefinedCursorChanged(
-    Id window_id,
-    mojom::CursorType cursor_id) {
+void TestChangeTracker::OnWindowCursorChanged(Id window_id,
+                                              const ui::CursorData& cursor) {
   Change change;
   change.type = CHANGE_TYPE_CURSOR_CHANGED;
   change.window_id = window_id;
-  change.cursor_id = static_cast<int32_t>(cursor_id);
+  change.cursor_type = cursor.cursor_type();
   AddChange(change);
 }
 

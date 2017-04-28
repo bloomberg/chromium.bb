@@ -53,9 +53,9 @@ void TestWindowManagerClient::WmRequestClose(Id transport_window_id) {}
 void TestWindowManagerClient::WmSetFrameDecorationValues(
     ui::mojom::FrameDecorationValuesPtr values) {}
 
-void TestWindowManagerClient::WmSetNonClientCursor(
-    uint32_t window_id,
-    ui::mojom::CursorType cursor_id) {}
+void TestWindowManagerClient::WmSetNonClientCursor(uint32_t window_id,
+                                                   ui::CursorData cursor_data) {
+}
 
 void TestWindowManagerClient::OnWmCreatedTopLevelWindow(
     uint32_t change_id,

@@ -66,7 +66,7 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
 
   // Returns the cursor for the current target, or POINTER if the mouse is not
   // over a valid target.
-  ui::mojom::CursorType GetCurrentMouseCursor() const;
+  ui::CursorData GetCurrentMouseCursor() const;
 
   // |capture_window_| will receive all input. See window_tree.mojom for
   // details.

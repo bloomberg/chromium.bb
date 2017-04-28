@@ -16,6 +16,7 @@
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace ui {
@@ -28,7 +29,7 @@ namespace {
 class TestPlatformDisplay : public PlatformDisplay {
  public:
   explicit TestPlatformDisplay(const display::ViewportMetrics& metrics,
-                               mojom::CursorType* cursor_storage)
+                               ui::CursorData* cursor_storage)
       : metrics_(metrics), cursor_storage_(cursor_storage) {}
   ~TestPlatformDisplay() override {}
 
@@ -40,7 +41,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetTitle(const base::string16& title) override {}
   void SetCapture() override {}
   void ReleaseCapture() override {}
-  void SetCursorById(mojom::CursorType cursor) override {
+  void SetCursor(const ui::CursorData& cursor) override {
     *cursor_storage_ = cursor;
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
@@ -56,7 +57,7 @@ class TestPlatformDisplay : public PlatformDisplay {
 
  private:
   display::ViewportMetrics metrics_;
-  mojom::CursorType* cursor_storage_;
+  ui::CursorData* cursor_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };
@@ -149,7 +150,7 @@ display::ScreenBase* TestScreenManager::GetScreen() {
 // TestPlatformDisplayFactory  -------------------------------------------------
 
 TestPlatformDisplayFactory::TestPlatformDisplayFactory(
-    mojom::CursorType* cursor_storage)
+    ui::CursorData* cursor_storage)
     : cursor_storage_(cursor_storage) {}
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
@@ -423,10 +424,9 @@ void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {
   tracker_.OnWindowFocused(focused_window_id);
 }
 
-void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
-    uint32_t window_id,
-    mojom::CursorType cursor_id) {
-  tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
+void TestWindowTreeClient::OnWindowCursorChanged(uint32_t window_id,
+                                                 ui::CursorData cursor) {
+  tracker_.OnWindowCursorChanged(window_id, cursor);
 }
 
 void TestWindowTreeClient::OnWindowSurfaceChanged(
@@ -530,8 +530,7 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 // WindowServerTestHelper  ---------------------------------------------------
 
 WindowServerTestHelper::WindowServerTestHelper()
-    : cursor_id_(mojom::CursorType::kNull),
-      platform_display_factory_(&cursor_id_) {
+    : cursor_(ui::CursorType::kNull), platform_display_factory_(&cursor_) {
   // Some tests create their own message loop, for example to add a task runner.
   if (!base::MessageLoop::current())
     message_loop_ = base::MakeUnique<base::MessageLoop>();

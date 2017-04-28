@@ -18,6 +18,7 @@
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/base_event_utils.h"
 
 namespace ui {
@@ -162,7 +163,7 @@ class DragControllerTest : public testing::Test,
     // It would be nice if we could just let the observer method fire, but it
     // fires during the constructor when we haven't assigned the unique_ptr
     // yet.
-    cursor_ = ui::mojom::CursorType(drag_operation_->current_cursor());
+    cursor_ = drag_operation_->current_cursor().cursor_type();
   }
 
   void DispatchDrag(DragTestWindow* window,
@@ -204,7 +205,7 @@ class DragControllerTest : public testing::Test,
     return drag_completed_value_;
   }
 
-  ui::mojom::CursorType cursor() { return cursor_; }
+  ui::CursorType cursor_type() const { return cursor_; }
 
  private:
   // Overridden from testing::Test:
@@ -232,7 +233,7 @@ class DragControllerTest : public testing::Test,
   // Overridden from DragCursorUpdater:
   void OnDragCursorUpdated() override {
     if (drag_operation_)
-      cursor_ = ui::mojom::CursorType(drag_operation_->current_cursor());
+      cursor_ = drag_operation_->current_cursor().cursor_type();
   }
 
   // Overridden from DragControllerSource:
@@ -260,7 +261,7 @@ class DragControllerTest : public testing::Test,
 
   int window_id_ = 3;
 
-  ui::mojom::CursorType cursor_;
+  ui::CursorType cursor_;
 
   std::map<WindowId, ServerWindow*> server_window_by_id_;
   std::map<ServerWindow*, DragTargetConnection*> connection_by_window_;
@@ -282,14 +283,14 @@ TEST_F(DragControllerTest, SimpleDragDrop) {
   std::unique_ptr<DragTestWindow> window = BuildWindow();
   StartDragOperation(window.get(), ui::mojom::kDropEffectMove);
 
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 
   DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(1, 1));
   EXPECT_EQ(QueuedType::ENTER, window->queue_response_type());
   window->Respond(true);
 
   // (Even though we're doing a move, the cursor name is COPY.)
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 
   DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(2, 2));
   EXPECT_EQ(QueuedType::OVER, window->queue_response_type());
@@ -538,7 +539,7 @@ TEST_F(DragControllerTest, TargetWindowClosedResetsCursor) {
   std::unique_ptr<DragTestWindow> window1 = BuildWindow();
   std::unique_ptr<DragTestWindow> window2 = BuildWindow();
   StartDragOperation(window1.get(), ui::mojom::kDropEffectMove);
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 
   // Send some events to |window|.
   DispatchDrag(window2.get(), false, ui::EF_LEFT_MOUSE_BUTTON,
@@ -548,13 +549,13 @@ TEST_F(DragControllerTest, TargetWindowClosedResetsCursor) {
   DispatchDrag(window2.get(), false, ui::EF_LEFT_MOUSE_BUTTON,
                gfx::Point(1, 1));
   window2->Respond(true);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 
   // Force the destruction of |window.window|.
   window2.reset();
 
   // The cursor no loner indicates that it can drop on |window2|.
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 }
 
 TEST_F(DragControllerTest, SourceWindowClosedWhileDrag) {
@@ -640,20 +641,20 @@ TEST_F(DragControllerTest, RejectingWindowHasProperCursor) {
   std::unique_ptr<DragTestWindow> window = BuildWindow();
   StartDragOperation(window.get(), ui::mojom::kDropEffectMove);
 
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 
   DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(1, 1));
   EXPECT_EQ(QueuedType::ENTER, window->queue_response_type());
   window->Respond(true);
 
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 
   DispatchDrag(window.get(), false, ui::EF_LEFT_MOUSE_BUTTON, gfx::Point(2, 2));
   EXPECT_EQ(QueuedType::OVER, window->queue_response_type());
 
   // At this point, we respond with no available drag actions at this pixel.
   window->Respond(false);
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 }
 
 TEST_F(DragControllerTest, ResopnseFromOtherWindowDoesntChangeCursor) {
@@ -668,7 +669,7 @@ TEST_F(DragControllerTest, ResopnseFromOtherWindowDoesntChangeCursor) {
   DispatchDrag(window2.get(), false, ui::EF_LEFT_MOUSE_BUTTON,
                gfx::Point(1, 1));
 
-  EXPECT_EQ(ui::mojom::CursorType::kNoDrop, cursor());
+  EXPECT_EQ(ui::CursorType::kNoDrop, cursor_type());
 
   // Now enter |window1|, and respond.
   DispatchDrag(window1.get(), false, ui::EF_LEFT_MOUSE_BUTTON,
@@ -676,13 +677,13 @@ TEST_F(DragControllerTest, ResopnseFromOtherWindowDoesntChangeCursor) {
   EXPECT_EQ(QueuedType::ENTER, window1->queue_response_type());
   window1->Respond(true);
 
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 
   // Window 2 responding negatively to its queued messages shouldn't change the
   // cursor.
   window2->Respond(false);
 
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, cursor());
+  EXPECT_EQ(ui::CursorType::kCopy, cursor_type());
 }
 
 }  // namespace ws

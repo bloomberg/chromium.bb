@@ -14,6 +14,7 @@
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace ui {
 namespace ws {
@@ -34,8 +35,8 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       visible_(false),
       // Default to kPointer as kNull doesn't change the cursor, it leaves
       // the last non-null cursor.
-      cursor_id_(mojom::CursorType::kPointer),
-      non_client_cursor_id_(mojom::CursorType::kPointer),
+      cursor_(ui::CursorType::kPointer),
+      non_client_cursor_(ui::CursorType::kPointer),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
@@ -299,20 +300,20 @@ void ServerWindow::SetOpacity(float value) {
     observer.OnWindowOpacityChanged(this, old_opacity, opacity_);
 }
 
-void ServerWindow::SetPredefinedCursor(ui::mojom::CursorType value) {
-  if (value == cursor_id_)
+void ServerWindow::SetCursor(ui::CursorData value) {
+  if (cursor_.IsSameAs(value))
     return;
-  cursor_id_ = value;
+  cursor_ = std::move(value);
   for (auto& observer : observers_)
-    observer.OnWindowPredefinedCursorChanged(this, value);
+    observer.OnWindowCursorChanged(this, cursor_);
 }
 
-void ServerWindow::SetNonClientCursor(ui::mojom::CursorType value) {
-  if (value == non_client_cursor_id_)
+void ServerWindow::SetNonClientCursor(ui::CursorData value) {
+  if (non_client_cursor_.IsSameAs(value))
     return;
-  non_client_cursor_id_ = value;
+  non_client_cursor_ = std::move(value);
   for (auto& observer : observers_)
-    observer.OnWindowNonClientCursorChanged(this, value);
+    observer.OnWindowNonClientCursorChanged(this, non_client_cursor_);
 }
 
 void ServerWindow::SetTransform(const gfx::Transform& transform) {

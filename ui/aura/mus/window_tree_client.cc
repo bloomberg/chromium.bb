@@ -302,14 +302,14 @@ void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   tree_->SetCanFocus(WindowMus::Get(window)->server_id(), can_focus);
 }
 
-void WindowTreeClient::SetPredefinedCursor(WindowMus* window,
-                                           ui::mojom::CursorType old_cursor,
-                                           ui::mojom::CursorType new_cursor) {
+void WindowTreeClient::SetCursor(WindowMus* window,
+                                 const ui::CursorData& old_cursor,
+                                 const ui::CursorData& new_cursor) {
   DCHECK(tree_);
 
   const uint32_t change_id = ScheduleInFlightChange(
-      base::MakeUnique<InFlightPredefinedCursorChange>(window, old_cursor));
-  tree_->SetPredefinedCursor(change_id, window->server_id(), new_cursor);
+      base::MakeUnique<InFlightCursorChange>(window, old_cursor));
+  tree_->SetCursor(change_id, window->server_id(), new_cursor);
 }
 
 void WindowTreeClient::SetWindowTextInputState(WindowMus* window,
@@ -1341,18 +1341,17 @@ void WindowTreeClient::OnWindowFocused(Id focused_window_id) {
   focus_synchronizer_->SetFocusFromServer(focused_window);
 }
 
-void WindowTreeClient::OnWindowPredefinedCursorChanged(
-    Id window_id,
-    ui::mojom::CursorType cursor) {
+void WindowTreeClient::OnWindowCursorChanged(Id window_id,
+                                             ui::CursorData cursor) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
 
-  InFlightPredefinedCursorChange new_change(window, cursor);
+  InFlightCursorChange new_change(window, cursor);
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  window->SetPredefinedCursorFromServer(cursor);
+  window->SetCursorFromServer(cursor);
 }
 
 void WindowTreeClient::OnWindowSurfaceChanged(
@@ -1770,10 +1769,10 @@ void WindowTreeClient::SetFrameDecorationValues(
 }
 
 void WindowTreeClient::SetNonClientCursor(Window* window,
-                                          ui::mojom::CursorType cursor_id) {
+                                          const ui::CursorData& cursor) {
   if (window_manager_client_) {
     window_manager_client_->WmSetNonClientCursor(
-        WindowMus::Get(window)->server_id(), cursor_id);
+        WindowMus::Get(window)->server_id(), cursor);
   }
 }
 

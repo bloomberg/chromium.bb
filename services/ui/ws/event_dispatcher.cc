@@ -16,6 +16,7 @@
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/window_coordinate_conversions.h"
 #include "services/ui/ws/window_finder.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -86,18 +87,18 @@ void EventDispatcher::SetMousePointerScreenLocation(
   delegate_->OnMouseCursorLocationChanged(screen_location);
 }
 
-ui::mojom::CursorType EventDispatcher::GetCurrentMouseCursor() const {
+ui::CursorData EventDispatcher::GetCurrentMouseCursor() const {
   if (drag_controller_)
     return drag_controller_->current_cursor();
 
   if (!mouse_cursor_source_window_)
-    return ui::mojom::CursorType::kPointer;
+    return ui::CursorData(ui::CursorType::kPointer);
 
   if (mouse_cursor_in_non_client_area_)
     return mouse_cursor_source_window_->non_client_cursor();
 
   const ServerWindow* window = GetWindowForMouseCursor();
-  return window ? window->cursor() : ui::mojom::CursorType::kPointer;
+  return window ? window->cursor() : ui::CursorData(ui::CursorType::kPointer);
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,

@@ -134,8 +134,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
                               uint32_t window_id,
                               int64_t display_id) override;
   void OnWindowFocused(ui::Id focused_window_id) override;
-  void OnWindowPredefinedCursorChanged(ui::Id window_id,
-                                       ui::mojom::CursorType cursor) override;
+  void OnWindowCursorChanged(ui::Id window_id, ui::CursorData cursor) override;
   void OnWindowSurfaceChanged(ui::Id window_id,
                               const cc::SurfaceInfo& surface_info) override;
   void OnDragDropStart(

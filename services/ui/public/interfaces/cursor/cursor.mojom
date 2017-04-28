@@ -5,7 +5,7 @@
 module ui.mojom;
 
 import "mojo/common/time.mojom";
-import "skia/public/interfaces/bitmap_array.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Standard Cursor numbers. These are the same as Chrome's ui::Cursor and
@@ -72,7 +72,7 @@ struct CursorData {
   gfx.mojom.Point hotspot_in_pixels;
 
   // The frames of the cursor.
-  skia.mojom.BitmapArray cursor_frames;
+  array<skia.mojom.Bitmap?> cursor_frames;
 
   // This is the image scale of this cursor.
   float scale_factor;

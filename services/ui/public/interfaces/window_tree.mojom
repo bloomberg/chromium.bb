@@ -244,12 +244,10 @@ interface WindowTree {
   // Marks the specified window as being able to receive focus.
   SetCanFocus(uint32 window_id, bool can_focus);
 
-  // Sets the cursor when the pointer is inside |window_id| to a system standard
-  // cursor provided by the window manager.
-  SetPredefinedCursor(uint32 change_id, uint32 window_id, CursorType cursor_id);
+  // Sets the cursor when the pointer is inside |window_id|.
+  SetCursor(uint32 change_id, uint32 window_id, CursorData cursor);
 
-  // TODO(erg): Additional cursor methods. Image based cursors, visibility,
-  // and cursor locking.
+  // TODO(erg): Additional cursor methods. Visibility, and cursor locking.
 
   // Set text input state for the given window.
   SetWindowTextInputState(uint32 window_id, mojo.TextInputState state);
@@ -467,7 +465,7 @@ interface WindowTreeClient {
   // initiate the change.
   OnWindowFocused(uint32 focused_window_id);
 
-  OnWindowPredefinedCursorChanged(uint32 window_id, CursorType cursor_id);
+  OnWindowCursorChanged(uint32 window_id, CursorData cursor);
 
   // Invoked when a client window submits a new surface ID. The surface ID and
   // associated information is propagated to the parent connection. The parent

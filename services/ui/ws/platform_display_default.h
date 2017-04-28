@@ -44,7 +44,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   void SetTitle(const base::string16& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  void SetCursorById(mojom::CursorType cursor) override;
+  void SetCursor(const ui::CursorData& cursor) override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   void UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;

@@ -149,7 +149,7 @@ class Display : public PlatformDisplayDelegate,
   // |display_root| being destroyed.
   void RemoveWindowManagerDisplayRoot(WindowManagerDisplayRoot* display_root);
 
-  void UpdateNativeCursor(mojom::CursorType cursor_id);
+  void UpdateNativeCursor(const ui::CursorData& cursor);
 
   // mojom::WindowTreeHost:
   void SetSize(const gfx::Size& size) override;
@@ -219,7 +219,7 @@ class Display : public PlatformDisplayDelegate,
   display::Display display_;
 
   // The last cursor set. Used to track whether we need to change the cursor.
-  mojom::CursorType last_cursor_;
+  ui::CursorData last_cursor_;
 
   ServerWindowTracker activation_parents_;
 

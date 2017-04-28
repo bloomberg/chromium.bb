@@ -151,7 +151,7 @@ class DisplayTestApi {
 
   void OnEvent(ui::Event* event) { display_->OnEventFromSource(event); }
 
-  mojom::CursorType last_cursor() const { return display_->last_cursor_; }
+  const ui::CursorData& last_cursor() const { return display_->last_cursor_; }
 
  private:
   Display* display_;
@@ -300,7 +300,7 @@ class TestDisplayBinding : public DisplayBinding {
 // Factory that dispenses TestPlatformDisplays.
 class TestPlatformDisplayFactory : public PlatformDisplayFactory {
  public:
-  explicit TestPlatformDisplayFactory(mojom::CursorType* cursor_storage);
+  explicit TestPlatformDisplayFactory(ui::CursorData* cursor_storage);
   ~TestPlatformDisplayFactory();
 
   // PlatformDisplayFactory:
@@ -309,7 +309,7 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
       const display::ViewportMetrics& metrics) override;
 
  private:
-  mojom::CursorType* cursor_storage_;
+  ui::CursorData* cursor_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
 };
@@ -490,8 +490,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                               uint32_t window_id,
                               int64_t display_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
-  void OnWindowPredefinedCursorChanged(uint32_t window_id,
-                                       mojom::CursorType cursor_id) override;
+  void OnWindowCursorChanged(uint32_t window_id,
+                             ui::CursorData cursor) override;
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceInfo& surface_info) override;
   void OnDragDropStart(
@@ -622,14 +622,14 @@ class WindowServerTestHelper {
   ~WindowServerTestHelper();
 
   WindowServer* window_server() { return window_server_.get(); }
-  mojom::CursorType cursor() const { return cursor_id_; }
+  ui::CursorData cursor() const { return cursor_; }
 
   TestWindowServerDelegate* window_server_delegate() {
     return &window_server_delegate_;
   }
 
  private:
-  mojom::CursorType cursor_id_;
+  ui::CursorData cursor_;
   TestPlatformDisplayFactory platform_display_factory_;
   TestWindowServerDelegate window_server_delegate_;
   std::unique_ptr<WindowServer> window_server_;
@@ -665,7 +665,9 @@ class WindowEventTargetingHelper {
   // Sets the task runner for |message_loop_|
   void SetTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  mojom::CursorType cursor() const { return ws_test_helper_.cursor(); }
+  ui::CursorType cursor_type() const {
+    return ws_test_helper_.cursor().cursor_type();
+  }
   Display* display() { return display_; }
   TestWindowTreeBinding* last_binding() {
     return ws_test_helper_.window_server_delegate()->last_binding();

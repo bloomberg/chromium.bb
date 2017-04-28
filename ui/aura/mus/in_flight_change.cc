@@ -181,24 +181,22 @@ void InFlightPropertyChange::Revert() {
   window()->SetPropertyFromServer(property_name_, revert_value_.get());
 }
 
-// InFlightPredefinedCursorChange ---------------------------------------------
+// InFlightCursorChange ----------------------------------------------------
 
-InFlightPredefinedCursorChange::InFlightPredefinedCursorChange(
-    WindowMus* window,
-    ui::mojom::CursorType revert_value)
-    : InFlightChange(window, ChangeType::PREDEFINED_CURSOR),
+InFlightCursorChange::InFlightCursorChange(WindowMus* window,
+                                           const ui::CursorData& revert_value)
+    : InFlightChange(window, ChangeType::CURSOR),
       revert_cursor_(revert_value) {}
 
-InFlightPredefinedCursorChange::~InFlightPredefinedCursorChange() {}
+InFlightCursorChange::~InFlightCursorChange() {}
 
-void InFlightPredefinedCursorChange::SetRevertValueFrom(
-    const InFlightChange& change) {
+void InFlightCursorChange::SetRevertValueFrom(const InFlightChange& change) {
   revert_cursor_ =
-      static_cast<const InFlightPredefinedCursorChange&>(change).revert_cursor_;
+      static_cast<const InFlightCursorChange&>(change).revert_cursor_;
 }
 
-void InFlightPredefinedCursorChange::Revert() {
-  window()->SetPredefinedCursorFromServer(revert_cursor_);
+void InFlightCursorChange::Revert() {
+  window()->SetCursorFromServer(revert_cursor_);
 }
 
 // InFlightVisibleChange -------------------------------------------------------

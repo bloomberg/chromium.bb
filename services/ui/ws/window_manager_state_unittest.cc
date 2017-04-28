@@ -26,6 +26,7 @@
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -649,8 +650,9 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
   child_window->SetVisible(true);
   child_window->SetBounds(gfx::Rect(0, 0, 20, 20));
-  child_window->parent()->SetPredefinedCursor(ui::mojom::CursorType::kCopy);
-  EXPECT_EQ(ui::mojom::CursorType::kCopy, display_test_api.last_cursor());
+  child_window->parent()->SetCursor(ui::CursorData(ui::CursorType::kCopy));
+  EXPECT_EQ(ui::CursorType::kCopy,
+            display_test_api.last_cursor().cursor_type());
   // Move the mouse outside the bounds of the child, so that the mouse is not
   // over any valid windows. Cursor should change to POINTER.
   ui::PointerEvent move(
@@ -660,7 +662,8 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   window_manager_state()->ProcessEvent(move, 0);
   // The event isn't over a valid target, which should trigger resetting the
   // cursor to POINTER.
-  EXPECT_EQ(ui::mojom::CursorType::kPointer, display_test_api.last_cursor());
+  EXPECT_EQ(ui::CursorType::kPointer,
+            display_test_api.last_cursor().cursor_type());
 }
 
 }  // namespace test
