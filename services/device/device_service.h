@@ -9,7 +9,6 @@
 #include "device/battery/battery_monitor.mojom.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
-#include "device/sensors/public/interfaces/light.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context_provider.mojom.h"
@@ -47,7 +46,6 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 class DeviceService
     : public service_manager::Service,
       public service_manager::InterfaceFactory<mojom::Fingerprint>,
-      public service_manager::InterfaceFactory<mojom::LightSensor>,
       public service_manager::InterfaceFactory<mojom::MotionSensor>,
       public service_manager::InterfaceFactory<mojom::OrientationSensor>,
       public service_manager::InterfaceFactory<
@@ -85,10 +83,6 @@ class DeviceService
   // InterfaceFactory<mojom::Fingerprint>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::FingerprintRequest request) override;
-
-  // InterfaceFactory<mojom::LightSensor>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::LightSensorRequest request) override;
 
   // InterfaceFactory<mojom::MotionSensor>:
   void Create(const service_manager::Identity& remote_identity,

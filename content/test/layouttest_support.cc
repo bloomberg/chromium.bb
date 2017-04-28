@@ -269,10 +269,6 @@ void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider) {
                                            std::move(provider));
 }
 
-void SetMockDeviceLightData(const double data) {
-  RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(data);
-}
-
 void SetMockDeviceMotionData(const MotionData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(data);
 }

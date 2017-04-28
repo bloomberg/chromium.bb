@@ -13,8 +13,7 @@
 namespace device {
 
 DeviceSensorService::DeviceSensorService()
-    : num_light_readers_(0),
-      num_motion_readers_(0),
+    : num_motion_readers_(0),
       num_orientation_readers_(0),
       num_orientation_absolute_readers_(0),
       is_shutdown_(false) {
@@ -66,10 +65,6 @@ bool DeviceSensorService::ChangeNumberConsumers(ConsumerType consumer_type,
       num_orientation_absolute_readers_ += delta;
       DCHECK_GE(num_orientation_absolute_readers_, 0);
       return true;
-    case CONSUMER_TYPE_LIGHT:
-      num_light_readers_ += delta;
-      DCHECK_GE(num_light_readers_, 0);
-      return true;
     default:
       NOTREACHED();
   }
@@ -84,8 +79,6 @@ int DeviceSensorService::GetNumberConsumers(ConsumerType consumer_type) const {
       return num_orientation_readers_;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       return num_orientation_absolute_readers_;
-    case CONSUMER_TYPE_LIGHT:
-      return num_light_readers_;
     default:
       NOTREACHED();
   }

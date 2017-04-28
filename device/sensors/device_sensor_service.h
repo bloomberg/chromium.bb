@@ -62,7 +62,6 @@ class DEVICE_SENSOR_EXPORT DeviceSensorService
   bool ChangeNumberConsumers(ConsumerType consumer_type, int delta);
   int GetNumberConsumers(ConsumerType consumer_type) const;
 
-  int num_light_readers_;
   int num_motion_readers_;
   int num_orientation_readers_;
   int num_orientation_absolute_readers_;

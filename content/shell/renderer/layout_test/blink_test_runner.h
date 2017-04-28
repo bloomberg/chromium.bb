@@ -68,7 +68,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetEditCommand(const std::string& name,
                       const std::string& value) override;
   void SetGamepadProvider(test_runner::GamepadController* controller) override;
-  void SetDeviceLightData(const double data) override;
   void SetDeviceMotionData(const device::MotionData& data) override;
   void SetDeviceOrientationData(const device::OrientationData& data) override;
   void PrintMessageToStderr(const std::string& message) override;

@@ -111,7 +111,6 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/credentialmanager",
     "//third_party/WebKit/Source/modules/crypto",
     "//third_party/WebKit/Source/modules/csspaint",
-    "//third_party/WebKit/Source/modules/device_light",
     "//third_party/WebKit/Source/modules/device_orientation",
     "//third_party/WebKit/Source/modules/document_metadata",
     "//third_party/WebKit/Source/modules/donottrack",

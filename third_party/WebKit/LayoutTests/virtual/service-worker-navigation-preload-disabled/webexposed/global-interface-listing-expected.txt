@@ -1343,10 +1343,6 @@ interface DetectedText
     getter boundingBox
     getter rawValue
     method constructor
-interface DeviceLightEvent : Event
-    attribute @@toStringTag
-    getter value
-    method constructor
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration
@@ -8902,7 +8898,6 @@ interface webkitURL
     getter oncontextmenu
     getter oncuechange
     getter ondblclick
-    getter ondevicelight
     getter ondevicemotion
     getter ondeviceorientation
     getter ondeviceorientationabsolute
@@ -9082,7 +9077,6 @@ interface webkitURL
     setter oncontextmenu
     setter oncuechange
     setter ondblclick
-    setter ondevicelight
     setter ondevicemotion
     setter ondeviceorientation
     setter ondeviceorientationabsolute

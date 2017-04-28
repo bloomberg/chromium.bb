@@ -221,8 +221,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Returns the previous |enable| value.
   static bool SetSandboxEnabledForTesting(bool enable);
 
-  //  Set a double to return when setDeviceLightListener is invoked.
-  static void SetMockDeviceLightDataForTesting(double data);
   // Set MotionData to return when setDeviceMotionListener is invoked.
   static void SetMockDeviceMotionDataForTesting(const device::MotionData& data);
   // Set OrientationData to return when setDeviceOrientationListener

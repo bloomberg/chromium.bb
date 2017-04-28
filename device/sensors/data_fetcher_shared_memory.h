@@ -10,7 +10,6 @@
 #include "device/sensors/data_fetcher_shared_memory_base.h"
 
 #if !defined(OS_ANDROID)
-#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 #endif
@@ -26,8 +25,6 @@ namespace device {
 
 #if defined(OS_CHROMEOS)
 class SensorManagerChromeOS;
-#elif defined(OS_MACOSX)
-class AmbientLightSensor;
 #endif
 
 class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
@@ -48,7 +45,6 @@ class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
 #if !defined(OS_CHROMEOS)
   DeviceMotionHardwareBuffer* motion_buffer_ = nullptr;
   DeviceOrientationHardwareBuffer* orientation_buffer_ = nullptr;
-  DeviceLightHardwareBuffer* light_buffer_ = nullptr;
 #endif
   DeviceOrientationHardwareBuffer* orientation_absolute_buffer_ = nullptr;
 #endif
@@ -59,13 +55,11 @@ class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
   void Fetch(unsigned consumer_bitmask) override;
   FetcherType GetType() const override;
 
-  std::unique_ptr<AmbientLightSensor> ambient_light_sensor_;
   std::unique_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #elif defined(OS_WIN)
   class SensorEventSink;
   class SensorEventSinkMotion;
   class SensorEventSinkOrientation;
-  class SensorEventSinkLight;
 
   FetcherType GetType() const override;
 
@@ -79,7 +73,6 @@ class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
   base::win::ScopedComPtr<ISensor> sensor_inclinometer_absolute_;
   base::win::ScopedComPtr<ISensor> sensor_accelerometer_;
   base::win::ScopedComPtr<ISensor> sensor_gyrometer_;
-  base::win::ScopedComPtr<ISensor> sensor_light_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);

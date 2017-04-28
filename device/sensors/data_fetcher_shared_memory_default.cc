@@ -28,15 +28,6 @@ bool SetOrientationBuffer(device::DeviceOrientationHardwareBuffer* buffer,
   return true;
 }
 
-bool SetLightBuffer(device::DeviceLightHardwareBuffer* buffer, double lux) {
-  if (!buffer)
-    return false;
-  buffer->seqlock.WriteBegin();
-  buffer->data.value = lux;
-  buffer->seqlock.WriteEnd();
-  return true;
-}
-
 }  // namespace
 
 namespace device {
@@ -63,10 +54,6 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       orientation_absolute_buffer_ =
           static_cast<DeviceOrientationHardwareBuffer*>(buffer);
       return SetOrientationBuffer(orientation_absolute_buffer_, true);
-    case CONSUMER_TYPE_LIGHT:
-      light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
-      return SetLightBuffer(light_buffer_,
-                            std::numeric_limits<double>::infinity());
     default:
       NOTREACHED();
   }
@@ -81,8 +68,6 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       return SetOrientationBuffer(orientation_buffer_, false);
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       return SetOrientationBuffer(orientation_absolute_buffer_, false);
-    case CONSUMER_TYPE_LIGHT:
-      return SetLightBuffer(light_buffer_, -1);
     default:
       NOTREACHED();
   }

@@ -20,13 +20,6 @@ namespace {
 
 const double kMeanGravity = 9.80665;
 
-void SetLightBuffer(device::DeviceLightHardwareBuffer* buffer, double lux) {
-  DCHECK(buffer);
-  buffer->seqlock.WriteBegin();
-  buffer->data.value = lux;
-  buffer->seqlock.WriteEnd();
-}
-
 }  // namespace
 
 namespace device {
@@ -224,37 +217,6 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
   DISALLOW_COPY_AND_ASSIGN(SensorEventSinkMotion);
 };
 
-class DataFetcherSharedMemory::SensorEventSinkLight
-    : public DataFetcherSharedMemory::SensorEventSink {
- public:
-  explicit SensorEventSinkLight(DeviceLightHardwareBuffer* const buffer)
-      : buffer_(buffer) {}
-  ~SensorEventSinkLight() override {}
-
- protected:
-  bool UpdateSharedMemoryBuffer(ISensor* sensor,
-                                ISensorDataReport* new_data) override {
-    double lux;
-    bool has_lux;
-
-    GetSensorValue(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, new_data, &lux, &has_lux);
-
-    if (!has_lux) {
-      // Could not get lux value.
-      return false;
-    }
-
-    SetLightBuffer(buffer_, lux);
-
-    return true;
-  }
-
- private:
-  DeviceLightHardwareBuffer* const buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SensorEventSinkLight);
-};
-
 DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {}
@@ -318,20 +280,6 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       // if no sensors are available set buffer to ready, to fire null-events.
       SetBufferAvailableState(consumer_type, true);
     } break;
-    case CONSUMER_TYPE_LIGHT: {
-      light_buffer_ = static_cast<DeviceLightHardwareBuffer*>(buffer);
-      scoped_refptr<SensorEventSink> sink(
-          new SensorEventSinkLight(light_buffer_));
-      bool sensor_light_available = RegisterForSensor(
-          SENSOR_TYPE_AMBIENT_LIGHT, sensor_light_.Receive(), sink);
-      if (sensor_light_available) {
-        SetLightBuffer(light_buffer_, -1);
-        return true;
-      }
-
-      // if no sensors are available, fire an Infinity event.
-      SetLightBuffer(light_buffer_, std::numeric_limits<double>::infinity());
-    } break;
     default:
       NOTREACHED();
   }
@@ -352,10 +300,6 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_MOTION:
       SetBufferAvailableState(consumer_type, false);
       motion_buffer_ = nullptr;
-      return true;
-    case CONSUMER_TYPE_LIGHT:
-      SetLightBuffer(light_buffer_, -1);
-      light_buffer_ = nullptr;
       return true;
     default:
       NOTREACHED();
@@ -435,12 +379,6 @@ void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
       if (sensor_gyrometer_.Get()) {
         sensor_gyrometer_->SetEventSink(nullptr);
         sensor_gyrometer_.Reset();
-      }
-      break;
-    case CONSUMER_TYPE_LIGHT:
-      if (sensor_light_.Get()) {
-        sensor_light_->SetEventSink(nullptr);
-        sensor_light_.Reset();
       }
       break;
     default:

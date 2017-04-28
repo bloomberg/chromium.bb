@@ -86,7 +86,6 @@ DeviceService::~DeviceService() {
 
 void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(this);
-  registry_.AddInterface<mojom::LightSensor>(this);
   registry_.AddInterface<mojom::MotionSensor>(this);
   registry_.AddInterface<mojom::OrientationSensor>(this);
   registry_.AddInterface<mojom::OrientationAbsoluteSensor>(this);
@@ -133,22 +132,6 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
 void DeviceService::Create(const service_manager::Identity& remote_identity,
                            mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
-}
-
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::LightSensorRequest request) {
-#if defined(OS_ANDROID)
-  // On Android the device sensors implementations need to run on the UI thread
-  // to communicate to Java.
-  DeviceLightHost::Create(std::move(request));
-#else
-  // On platforms other than Android the device sensors implementations run on
-  // the IO thread.
-  if (io_task_runner_) {
-    io_task_runner_->PostTask(FROM_HERE, base::Bind(&DeviceLightHost::Create,
-                                                    base::Passed(&request)));
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,

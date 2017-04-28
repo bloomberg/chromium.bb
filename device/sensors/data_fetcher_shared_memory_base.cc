@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "device/sensors/public/cpp/device_light_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_motion_hardware_buffer.h"
 #include "device/sensors/public/cpp/device_orientation_hardware_buffer.h"
 
@@ -30,8 +29,6 @@ size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
       return sizeof(DeviceOrientationHardwareBuffer);
-    case CONSUMER_TYPE_LIGHT:
-      return sizeof(DeviceLightHardwareBuffer);
     default:
       NOTREACHED();
   }
@@ -174,7 +171,6 @@ void DataFetcherSharedMemoryBase::Shutdown() {
   StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);
 
   // Ensure that the polling thread stops before entering the destructor of the
   // subclass, as the stopping of the polling thread causes tasks to execute
