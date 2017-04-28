@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_CHROME_PROMPT_IMPL_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SRT_CHROME_PROMPT_IMPL_H_
 
+#include "base/callback.h"
+#include "base/macros.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -13,7 +15,8 @@ namespace safe_browsing {
 // Implementation of the ChromePrompt Mojo interface.
 class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
  public:
-  explicit ChromePromptImpl(chrome_cleaner::mojom::ChromePromptRequest request);
+  ChromePromptImpl(chrome_cleaner::mojom::ChromePromptRequest request,
+                   base::Closure on_connection_closed);
   ~ChromePromptImpl() override;
 
   void PromptUser(
@@ -24,6 +27,8 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
 
  private:
   mojo::Binding<chrome_cleaner::mojom::ChromePrompt> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromePromptImpl);
 };
 
 }  // namespace safe_browsing
