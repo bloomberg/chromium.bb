@@ -74,11 +74,15 @@ const char kQueueFunctionName[] = "base::PostTask";
 const char kRunFunctionName[] = "TaskSchedulerRunTask";
 
 HistogramBase* GetTaskLatencyHistogram(const char* suffix) {
-  // Mimics the UMA_HISTOGRAM_TIMES macro.
-  return Histogram::FactoryTimeGet(
-      std::string("TaskScheduler.TaskLatency.") + suffix,
-      TimeDelta::FromMilliseconds(1), TimeDelta::FromSeconds(10), 50,
-      HistogramBase::kUmaTargetedHistogramFlag);
+  // Mimics the UMA_HISTOGRAM_TIMES macro except we don't specify bounds with
+  // TimeDeltas as FactoryTimeGet assumes millisecond granularity. The minimums
+  // and maximums were chosen to place the 1ms mark at around the 70% range
+  // coverage for buckets giving us good info for tasks that have a latency
+  // below 1ms (most of them) and enough info to assess how bad the latency is
+  // for tasks that exceed this threshold.
+  return Histogram::FactoryGet(
+      std::string("TaskScheduler.TaskLatencyMicroseconds.") + suffix, 1, 20000,
+      50, HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 // Upper bound for the
@@ -495,7 +499,7 @@ void TaskTracker::RecordTaskLatencyHistogram(Task* task) {
                                    task->traits.with_base_sync_primitives()
                                ? 1
                                : 0]
-                              ->AddTime(task_latency);
+                              ->Add(task_latency.InMicroseconds());
 }
 
 }  // namespace internal
