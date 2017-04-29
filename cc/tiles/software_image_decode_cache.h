@@ -140,6 +140,7 @@ class CC_EXPORT SoftwareImageDecodeCache
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override {}
   void ClearCache() override;
+  size_t GetMaximumMemoryLimitBytes() const override;
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.
@@ -220,7 +221,7 @@ class CC_EXPORT SoftwareImageDecodeCache
     size_t GetCurrentUsageSafe() const;
 
    private:
-    size_t limit_bytes_;
+    const size_t limit_bytes_;
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };
 
@@ -306,6 +307,8 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   // The members below this comment can only be accessed if the lock is held to
   // ensure that they are safe to access on multiple threads.
+  // The exception is accessing |locked_images_budget_.total_limit_bytes()|,
+  // which is const and thread safe.
   base::Lock lock_;
 
   // Decoded images and ref counts (predecode path).

@@ -120,7 +120,9 @@ bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
       std::pair<ImageId, DecodePolicy>(image_id, DecodePolicy::ASYNC));
   auto it = insert_result.first;
   if (insert_result.second) {
-    it->second = SafeSizeOfImage(image.get()) >= kMinImageSizeToCheckerBytes
+    size_t size = SafeSizeOfImage(image.get());
+    it->second = (size >= kMinImageSizeToCheckerBytes &&
+                  size <= image_controller_->image_cache_max_limit_bytes())
                      ? DecodePolicy::ASYNC
                      : DecodePolicy::SYNC_PERMANENT;
   }

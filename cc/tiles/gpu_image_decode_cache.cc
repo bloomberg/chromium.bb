@@ -616,6 +616,10 @@ void GpuImageDecodeCache::ClearCache() {
   }
 }
 
+size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
+  return normal_max_cache_bytes_;
+}
+
 bool GpuImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -1102,7 +1106,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         // scale.
         SkPixmap image_pixmap(image_info.makeColorSpace(nullptr),
                               backing_memory->data(), image_info.minRowBytes());
-        // Note that scalePixels falls back to readPixels if the sale is 1x, so
+        // Note that scalePixels falls back to readPixels if the scale is 1x, so
         // no need to special case that as an optimization.
         if (!draw_image.image()->scalePixels(
                 image_pixmap, CalculateUploadScaleFilterQuality(draw_image),

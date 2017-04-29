@@ -839,6 +839,10 @@ void SoftwareImageDecodeCache::ClearCache() {
   ReduceCacheUsageUntilWithinLimit(0);
 }
 
+size_t SoftwareImageDecodeCache::GetMaximumMemoryLimitBytes() const {
+  return locked_images_budget_.total_limit_bytes();
+}
+
 void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
                                                  DecodeTaskType task_type) {
   base::AutoLock lock(lock_);
