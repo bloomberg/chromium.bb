@@ -135,6 +135,8 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerEventQueue* GetEventQueue() const final;
   bool IsSecureContext(String& error_message) const override;
 
+  CoreProbeSink* GetProbeSink() final;
+
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
 

@@ -39,6 +39,7 @@
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/WorkerFetchContext.h"
 #include "core/loader/WorkerThreadableLoader.h"
@@ -281,6 +282,13 @@ void WorkerGlobalScope::AddConsoleMessage(ConsoleMessage* console_message) {
 
 WorkerEventQueue* WorkerGlobalScope::GetEventQueue() const {
   return event_queue_.Get();
+}
+
+CoreProbeSink* WorkerGlobalScope::GetProbeSink() {
+  if (WorkerInspectorController* controller =
+          GetThread()->GetWorkerInspectorController())
+    return controller->InstrumentingAgents();
+  return nullptr;
 }
 
 bool WorkerGlobalScope::IsSecureContext(String& error_message) const {

@@ -43,14 +43,15 @@
 
 namespace blink {
 
-class SuspendableObject;
 class ConsoleMessage;
+class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
 class LocalDOMWindow;
+class SuspendableObject;
 class PublicURLManager;
 class SecurityOrigin;
 class ScriptState;
@@ -180,6 +181,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                  bool support_legacy_keywords = false);
   void SetReferrerPolicy(ReferrerPolicy);
   virtual ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+
+  virtual CoreProbeSink* GetProbeSink() { return nullptr; }
 
  protected:
   ExecutionContext();
