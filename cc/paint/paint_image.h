@@ -5,8 +5,8 @@
 #ifndef CC_PAINT_PAINT_IMAGE_H_
 #define CC_PAINT_PAINT_IMAGE_H_
 
+#include "base/logging.h"
 #include "cc/paint/paint_export.h"
-
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace cc {
@@ -20,10 +20,18 @@ class CC_PAINT_EXPORT PaintImage {
   // TODO(vmpstr): Work towards removing "UNKNOWN" value.
   enum class CompletionState { UNKNOWN, DONE, PARTIALLY_DONE };
 
-  PaintImage(sk_sp<const SkImage> sk_image,
-             AnimationType animation_type,
-             CompletionState completion_state);
+  PaintImage();
+  explicit PaintImage(sk_sp<const SkImage> sk_image,
+                      AnimationType animation_type = AnimationType::STATIC,
+                      CompletionState completion_state = CompletionState::DONE);
+  PaintImage(const PaintImage& other);
+  PaintImage(PaintImage&& other);
   ~PaintImage();
+
+  PaintImage& operator=(const PaintImage& other);
+  PaintImage& operator=(PaintImage&& other);
+
+  bool operator==(const PaintImage& other);
 
   const sk_sp<const SkImage>& sk_image() const { return sk_image_; }
   AnimationType animation_type() const { return animation_type_; }
@@ -31,8 +39,8 @@ class CC_PAINT_EXPORT PaintImage {
 
  private:
   sk_sp<const SkImage> sk_image_;
-  AnimationType animation_type_;
-  CompletionState completion_state_;
+  AnimationType animation_type_ = AnimationType::UNKNOWN;
+  CompletionState completion_state_ = CompletionState::UNKNOWN;
 };
 
 }  // namespace cc

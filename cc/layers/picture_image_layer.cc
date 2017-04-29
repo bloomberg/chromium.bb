@@ -33,15 +33,15 @@ std::unique_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
 }
 
 bool PictureImageLayer::HasDrawableContent() const {
-  return image_ && PictureLayer::HasDrawableContent();
+  return image_.sk_image() && PictureLayer::HasDrawableContent();
 }
 
-void PictureImageLayer::SetImage(sk_sp<const SkImage> image) {
+void PictureImageLayer::SetImage(PaintImage image) {
   // SetImage() currently gets called whenever there is any
   // style change that affects the layer even if that change doesn't
   // affect the actual contents of the image (e.g. a CSS animation).
   // With this check in place we avoid unecessary texture uploads.
-  if (image_.get() == image.get())
+  if (image_ == image)
     return;
 
   image_ = std::move(image);
@@ -55,9 +55,9 @@ gfx::Rect PictureImageLayer::PaintableRegion() {
 
 scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     ContentLayerClient::PaintingControlSetting painting_control) {
-  DCHECK(image_);
-  DCHECK_GT(image_->width(), 0);
-  DCHECK_GT(image_->height(), 0);
+  DCHECK(image_.sk_image());
+  DCHECK_GT(image_.sk_image()->width(), 0);
+  DCHECK_GT(image_.sk_image()->height(), 0);
   DCHECK(layer_tree_host());
 
   auto display_list = make_scoped_refptr(new DisplayItemList);
@@ -66,19 +66,16 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   PaintCanvas* canvas =
       recorder.beginRecording(gfx::RectToSkRect(PaintableRegion()));
 
-  SkScalar content_to_layer_scale_x =
-      SkFloatToScalar(static_cast<float>(bounds().width()) / image_->width());
-  SkScalar content_to_layer_scale_y =
-      SkFloatToScalar(static_cast<float>(bounds().height()) / image_->height());
+  SkScalar content_to_layer_scale_x = SkFloatToScalar(
+      static_cast<float>(bounds().width()) / image_.sk_image()->width());
+  SkScalar content_to_layer_scale_y = SkFloatToScalar(
+      static_cast<float>(bounds().height()) / image_.sk_image()->height());
   canvas->scale(content_to_layer_scale_x, content_to_layer_scale_y);
 
   // Because Android WebView resourceless software draw mode rasters directly
   // to the root canvas, this draw must use the kSrcOver_Mode so that
   // transparent images blend correctly.
-  // TODO(vmpstr): Plumb animation type and completion states to here.
-  canvas->drawImage(PaintImage(image_, PaintImage::AnimationType::UNKNOWN,
-                               PaintImage::CompletionState::UNKNOWN),
-                    0, 0);
+  canvas->drawImage(image_, 0, 0);
 
   display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       PaintableRegion(), recorder.finishRecordingAsPicture());

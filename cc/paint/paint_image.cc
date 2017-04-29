@@ -6,12 +6,26 @@
 
 namespace cc {
 
+PaintImage::PaintImage() = default;
 PaintImage::PaintImage(sk_sp<const SkImage> sk_image,
                        AnimationType animation_type,
                        CompletionState completion_state)
     : sk_image_(std::move(sk_image)),
       animation_type_(animation_type),
-      completion_state_(completion_state) {}
+      completion_state_(completion_state) {
+  DCHECK(sk_image_);
+}
+PaintImage::PaintImage(const PaintImage& other) = default;
+PaintImage::PaintImage(PaintImage&& other) = default;
 PaintImage::~PaintImage() = default;
+
+PaintImage& PaintImage::operator=(const PaintImage& other) = default;
+PaintImage& PaintImage::operator=(PaintImage&& other) = default;
+
+bool PaintImage::operator==(const PaintImage& other) {
+  return sk_image_ == other.sk_image_ &&
+         animation_type_ == other.animation_type_ &&
+         completion_state_ == other.completion_state_;
+}
 
 }  // namespace cc

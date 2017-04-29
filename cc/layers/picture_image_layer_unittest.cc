@@ -40,7 +40,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   image_canvas->drawRect(SkRect::MakeWH(100, 100), blue_paint);
   image_canvas->drawRect(SkRect::MakeLTRB(100, 100, 200, 200), blue_paint);
 
-  layer->SetImage(image_surface->makeImageSnapshot());
+  layer->SetImage(PaintImage(image_surface->makeImageSnapshot()));
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =
