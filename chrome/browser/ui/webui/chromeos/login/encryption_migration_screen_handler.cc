@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 
+#include <cmath>
 #include <string>
 #include <utility>
 
 #include "ash/system/devicetype_utils.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -46,9 +48,45 @@ constexpr char kJsApiStartMigration[] = "startMigration";
 constexpr char kJsApiSkipMigration[] = "skipMigration";
 constexpr char kJsApiRequestRestart[] = "requestRestart";
 
+// UMA names.
+constexpr char kUmaNameFirstScreen[] = "Cryptohome.MigrationUI.FirstScreen";
+constexpr char kUmaNameUserChoice[] = "Cryptohome.MigrationUI.UserChoice";
+constexpr char kUmaNameConsumedBatteryPercent[] =
+    "Cryptohome.MigrationUI.ConsumedBatteryPercent";
+
+// This enum must match the numbering for Cryptohome.MigrationUI.FirstScreen in
+// histograms.xml. Do not reorder or remove items, only add new items before
+// FIRST_SCREEN_MAX.
+enum class FirstScreen {
+  FIRST_SCREEN_READY = 0,
+  FIRST_SCREEN_RESUME = 1,
+  FIRST_SCREEN_LOW_STORAGE = 2,
+  FIRST_SCREEN_COUNT
+};
+
+// This enum must match the numbering for Cryptohome.MigrationUI.UserChoice in
+// histograms.xml. Do not reorder or remove items, only add new items before
+// FIRST_SCREEN_MAX.
+enum class UserChoice {
+  USER_CHOICE_UPDATE = 0,
+  USER_CHOICE_SKIP = 1,
+  USER_CHOICE_COUNT
+};
+
 bool IsTestingUI() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kTestEncryptionMigrationUI);
+}
+
+// Wrapper functions for histogram macros to avoid duplication of expanded code.
+void RecordFirstScreen(FirstScreen first_screen) {
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameFirstScreen, static_cast<int>(first_screen),
+                            static_cast<int>(FirstScreen::FIRST_SCREEN_COUNT));
+}
+
+void RecordUserChoice(UserChoice user_choice) {
+  UMA_HISTOGRAM_ENUMERATION(kUmaNameUserChoice, static_cast<int>(user_choice),
+                            static_cast<int>(UserChoice::USER_CHOICE_COUNT));
 }
 
 }  // namespace
@@ -187,10 +225,12 @@ void EncryptionMigrationScreenHandler::PowerChanged(
 }
 
 void EncryptionMigrationScreenHandler::HandleStartMigration() {
+  RecordUserChoice(UserChoice::USER_CHOICE_UPDATE);
   WaitBatteryAndMigrate();
 }
 
 void EncryptionMigrationScreenHandler::HandleSkipMigration() {
+  RecordUserChoice(UserChoice::USER_CHOICE_SKIP);
   // If the user skips migration, we mount the cryptohome without performing the
   // migration by reusing UserContext and LoginPerformer which were used in the
   // previous attempt and dropping |is_forcing_dircrypto| flag in UserContext.
@@ -239,11 +279,14 @@ void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
 void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
   if (size >= kMinimumAvailableStorage || IsTestingUI()) {
     if (should_resume_) {
+      RecordFirstScreen(FirstScreen::FIRST_SCREEN_RESUME);
       WaitBatteryAndMigrate();
     } else {
+      RecordFirstScreen(FirstScreen::FIRST_SCREEN_READY);
       UpdateUIState(UIState::READY);
     }
   } else {
+    RecordFirstScreen(FirstScreen::FIRST_SCREEN_LOW_STORAGE);
     CallJS("setAvailableSpaceInString", ui::FormatBytes(size));
     CallJS("setNecessarySpaceInString",
            ui::FormatBytes(kMinimumAvailableStorage));
@@ -264,6 +307,7 @@ void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
 
 void EncryptionMigrationScreenHandler::StartMigration() {
   UpdateUIState(UIState::MIGRATING);
+  initial_battery_percent_ = current_battery_percent_;
 
   // Mount the existing eCryptfs vault to a temporary location for migration.
   cryptohome::MountParameters mount(false);
@@ -362,6 +406,14 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       CallJS("setMigrationProgress", static_cast<double>(current) / total);
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
+      // If the battery level decreased during migration, record the consumed
+      // battery level.
+      if (current_battery_percent_ < initial_battery_percent_) {
+        UMA_HISTOGRAM_PERCENTAGE(
+            kUmaNameConsumedBatteryPercent,
+            static_cast<int>(std::round(initial_battery_percent_ -
+                                        current_battery_percent_)));
+      }
       // Restart immediately after successful migration.
       DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
       break;
