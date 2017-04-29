@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
@@ -161,8 +162,9 @@ void CreateNSProgress(content::DownloadItem* download) {
 
   [progress publish];
 
-  download->SetUserData(&kCrNSProgressUserDataKey,
-                        new CrNSProgressUserData(progress, destination_path));
+  download->SetUserData(
+      &kCrNSProgressUserDataKey,
+      base::MakeUnique<CrNSProgressUserData>(progress, destination_path));
 }
 
 void UpdateNSProgress(content::DownloadItem* download,

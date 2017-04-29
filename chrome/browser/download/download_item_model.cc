@@ -6,6 +6,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -44,6 +45,8 @@ namespace {
 // DownloadItem, and the lifetime of the model is shorter than the DownloadItem.
 class DownloadItemModelData : public base::SupportsUserData::Data {
  public:
+  ~DownloadItemModelData() override {}
+
   // Get the DownloadItemModelData object for |download|. Returns NULL if
   // there's no model data.
   static const DownloadItemModelData* Get(const DownloadItem* download);
@@ -72,7 +75,6 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
 
  private:
   DownloadItemModelData();
-  ~DownloadItemModelData() override {}
 
   static const char kKey[];
 };
@@ -94,7 +96,7 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
   if (data == NULL) {
     data = new DownloadItemModelData();
     data->should_show_in_shelf_ = !download->IsTransient();
-    download->SetUserData(kKey, data);
+    download->SetUserData(kKey, base::WrapUnique(data));
   }
   return data;
 }
