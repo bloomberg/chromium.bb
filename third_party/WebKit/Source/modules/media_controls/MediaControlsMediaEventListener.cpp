@@ -8,6 +8,9 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackList.h"
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
+#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 
 namespace blink {
 
@@ -51,6 +54,23 @@ void MediaControlsMediaEventListener::Attach() {
     media_controls_->PanelElement()->addEventListener(EventTypeNames::keypress,
                                                       this, false);
   }
+
+  RemotePlayback* remote = GetRemotePlayback();
+  if (remote) {
+    remote->addEventListener(EventTypeNames::connect, this);
+    remote->addEventListener(EventTypeNames::connecting, this);
+    remote->addEventListener(EventTypeNames::disconnect, this);
+
+    // TODO(avayvod, mlamouri): Attach can be called twice. See
+    // https://crbug.com/713275.
+    if (remote_playback_availability_callback_id_ == -1) {
+      remote_playback_availability_callback_id_ =
+          remote->WatchAvailabilityInternal(new AvailabilityCallbackWrapper(
+              WTF::Bind(&MediaControlsMediaEventListener::
+                            OnRemotePlaybackAvailabilityChanged,
+                        WrapPersistent(this))));
+    }
+  }
 }
 
 void MediaControlsMediaEventListener::Detach() {
@@ -68,6 +88,21 @@ void MediaControlsMediaEventListener::Detach() {
     media_controls_->PanelElement()->removeEventListener(
         EventTypeNames::keypress, this, false);
   }
+
+  RemotePlayback* remote = GetRemotePlayback();
+  if (remote) {
+    remote->removeEventListener(EventTypeNames::connect, this);
+    remote->removeEventListener(EventTypeNames::connecting, this);
+    remote->removeEventListener(EventTypeNames::disconnect, this);
+
+    // TODO(avayvod): apparently Detach() can be called without a previous
+    // Attach() call. See https://crbug.com/713275 for more details.
+    if (remote_playback_availability_callback_id_ != -1) {
+      remote->CancelWatchAvailabilityInternal(
+          remote_playback_availability_callback_id_);
+      remote_playback_availability_callback_id_ = -1;
+    }
+  }
 }
 
 bool MediaControlsMediaEventListener::operator==(
@@ -77,6 +112,10 @@ bool MediaControlsMediaEventListener::operator==(
 
 HTMLMediaElement& MediaControlsMediaEventListener::GetMediaElement() {
   return media_controls_->MediaElement();
+}
+
+RemotePlayback* MediaControlsMediaEventListener::GetRemotePlayback() {
+  return HTMLMediaElementRemotePlayback::remote(GetMediaElement());
 }
 
 void MediaControlsMediaEventListener::handleEvent(
@@ -147,7 +186,19 @@ void MediaControlsMediaEventListener::handleEvent(
     return;
   }
 
+  // RemotePlayback state change events.
+  if (event->type() == EventTypeNames::connect ||
+      event->type() == EventTypeNames::connecting ||
+      event->type() == EventTypeNames::disconnect) {
+    media_controls_->RemotePlaybackStateChanged();
+    return;
+  }
+
   NOTREACHED();
+}
+
+void MediaControlsMediaEventListener::OnRemotePlaybackAvailabilityChanged() {
+  media_controls_->RefreshCastButtonVisibility();
 }
 
 DEFINE_TRACE(MediaControlsMediaEventListener) {

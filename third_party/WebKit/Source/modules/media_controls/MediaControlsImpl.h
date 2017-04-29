@@ -85,18 +85,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // HTMLTrackElement failed to load because there is no web exposed way to
   // be notified on the TextTrack object. See https://crbug.com/669977
   void OnTrackElementFailedToLoad() override { OnTextTracksAddedOrRemoved(); }
-  // TODO(mlamouri): the following methods will be able to become private when
-  // the controls have to modules/ and have access to RemotePlayback.
-  void OnRemotePlaybackAvailabilityChanged() override {
-    RefreshCastButtonVisibility();
-  }
-  void OnRemotePlaybackConnecting() override { StartedCasting(); }
-  void OnRemotePlaybackDisconnected() override { StoppedCasting(); }
-  // TODO(mlamouri): this method is needed in order to notify the controls that
-  // the attribute have changed.
-  void OnDisableRemotePlaybackAttributeChanged() override {
-    RefreshCastButtonVisibility();
-  }
   // Notify us that the media element's network state has changed.
   void NetworkStateChanged() override;
   LayoutObject* PanelLayoutObject() override;
@@ -153,6 +141,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Need to be members of MediaControls for private member access.
   class BatchedControlUpdate;
   class MediaControlsResizeObserverCallback;
+  class MediaElementMutationCallback;
 
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
 
@@ -201,8 +190,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool ContainsRelatedTarget(Event*);
 
   // Internal cast related methods.
-  void StartedCasting();
-  void StoppedCasting();
+  void RemotePlaybackStateChanged();
   void RefreshCastButtonVisibility();
   void RefreshCastButtonVisibilityWithoutUpdate();
 
@@ -258,6 +246,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Watches the video element for resize and updates media controls as
   // necessary.
   Member<ResizeObserver> resize_observer_;
+
+  // Watches the media element for attribute changes and updates media controls
+  // as necessary.
+  Member<MediaElementMutationCallback> element_mutation_callback_;
 
   TaskRunnerTimer<MediaControlsImpl> element_size_changed_timer_;
   IntSize size_;

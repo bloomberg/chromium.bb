@@ -14,6 +14,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/EventTargetModules.h"
+#include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -86,28 +87,7 @@ ScriptPromise RemotePlayback::watchAvailability(
     return promise;
   }
 
-  int id;
-  do {
-    id = GetExecutionContext()->CircularSequentialID();
-  } while (
-      !availability_callbacks_
-           .insert(id, TraceWrapperMember<RemotePlaybackAvailabilityCallback>(
-                           this, callback))
-           .is_new_entry);
-
-  // Report the current availability via the callback.
-  // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as
-  // InspectorInstrumentation requires a globally unique pointer to track tasks.
-  // We can remove the wrapper if InspectorInstrumentation returns a task id.
-  std::unique_ptr<WTF::Closure> task = WTF::Bind(
-      &RemotePlayback::NotifyInitialAvailability, WrapPersistent(this), id);
-  probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
-                            task.get());
-  TaskRunnerHelper::Get(TaskType::kMediaElementEvent, GetExecutionContext())
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(RunNotifyInitialAvailabilityTask,
-                           WrapPersistent(GetExecutionContext()),
-                           WTF::Passed(std::move(task))));
+  int id = WatchAvailabilityInternal(new AvailabilityCallbackWrapper(callback));
 
   // TODO(avayvod): Currently the availability is tracked for each media element
   // as soon as it's created, we probably want to limit that to when the
@@ -130,14 +110,11 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
     return promise;
   }
 
-  auto iter = availability_callbacks_.find(id);
-  if (iter == availability_callbacks_.end()) {
+  if (!CancelWatchAvailabilityInternal(id)) {
     resolver->Reject(DOMException::Create(
         kNotFoundError, "A callback with the given id is not found."));
     return promise;
   }
-
-  availability_callbacks_.erase(iter);
 
   resolver->Resolve();
   return promise;
@@ -200,13 +177,8 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  if (state_ == WebRemotePlaybackState::kDisconnected) {
-    prompt_promise_resolver_ = resolver;
-    media_element_->RequestRemotePlayback();
-  } else {
-    prompt_promise_resolver_ = resolver;
-    media_element_->RequestRemotePlaybackControl();
-  }
+  prompt_promise_resolver_ = resolver;
+  PromptInternal();
 
   return promise;
 }
@@ -220,13 +192,54 @@ bool RemotePlayback::HasPendingActivity() const {
          prompt_promise_resolver_;
 }
 
+void RemotePlayback::PromptInternal() {
+  if (state_ == WebRemotePlaybackState::kDisconnected)
+    media_element_->RequestRemotePlayback();
+  else
+    media_element_->RequestRemotePlaybackControl();
+}
+
+int RemotePlayback::WatchAvailabilityInternal(
+    AvailabilityCallbackWrapper* callback) {
+  int id;
+  do {
+    id = GetExecutionContext()->CircularSequentialID();
+  } while (!availability_callbacks_
+                .insert(id, TraceWrapperMember<AvailabilityCallbackWrapper>(
+                                this, callback))
+                .is_new_entry);
+
+  // Report the current availability via the callback.
+  // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as
+  // InspectorInstrumentation requires a globally unique pointer to track tasks.
+  // We can remove the wrapper if InspectorInstrumentation returns a task id.
+  std::unique_ptr<WTF::Closure> task = WTF::Bind(
+      &RemotePlayback::NotifyInitialAvailability, WrapPersistent(this), id);
+  probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
+                            task.get());
+  TaskRunnerHelper::Get(TaskType::kMediaElementEvent, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(RunNotifyInitialAvailabilityTask,
+                           WrapPersistent(GetExecutionContext()),
+                           WTF::Passed(std::move(task))));
+  return id;
+}
+
+bool RemotePlayback::CancelWatchAvailabilityInternal(int id) {
+  auto iter = availability_callbacks_.find(id);
+  if (iter == availability_callbacks_.end())
+    return false;
+  availability_callbacks_.erase(iter);
+  return true;
+}
+
 void RemotePlayback::NotifyInitialAvailability(int callback_id) {
   // May not find the callback if the website cancels it fast enough.
   auto iter = availability_callbacks_.find(callback_id);
   if (iter == availability_callbacks_.end())
     return;
 
-  iter->value->call(this, RemotePlaybackAvailable());
+  iter->value->Run(this, RemotePlaybackAvailable());
 }
 
 void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
@@ -278,7 +291,7 @@ void RemotePlayback::AvailabilityChanged(
     return;
 
   for (auto& callback : availability_callbacks_.Values())
-    callback->call(this, new_availability);
+    callback->Run(this, new_availability);
 }
 
 void RemotePlayback::PromptCancelled() {
@@ -315,9 +328,8 @@ DEFINE_TRACE(RemotePlayback) {
 }
 
 DEFINE_TRACE_WRAPPERS(RemotePlayback) {
-  for (auto callback : availability_callbacks_.Values()) {
+  for (auto callback : availability_callbacks_.Values())
     visitor->TraceWrappers(callback);
-  }
   EventTargetWithInlineData::TraceWrappers(visitor);
 }
 

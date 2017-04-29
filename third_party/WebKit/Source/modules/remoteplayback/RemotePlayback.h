@@ -21,6 +21,7 @@
 
 namespace blink {
 
+class AvailabilityCallbackWrapper;
 class HTMLMediaElement;
 class RemotePlaybackAvailabilityCallback;
 class ScriptPromiseResolver;
@@ -63,6 +64,21 @@ class MODULES_EXPORT RemotePlayback final
 
   String state() const;
 
+  // The implementation of prompt(). Used by the native remote playback button.
+  void PromptInternal();
+
+  // The implementation of watchAvailability() and cancelWatchAvailability().
+  int WatchAvailabilityInternal(AvailabilityCallbackWrapper*);
+  bool CancelWatchAvailabilityInternal(int id);
+
+  WebRemotePlaybackState GetState() const { return state_; }
+
+  // WebRemotePlaybackClient implementation.
+  void StateChanged(WebRemotePlaybackState) override;
+  void AvailabilityChanged(WebRemotePlaybackAvailability) override;
+  void PromptCancelled() override;
+  bool RemotePlaybackAvailable() const override;
+
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
@@ -76,6 +92,7 @@ class MODULES_EXPORT RemotePlayback final
  private:
   friend class V8RemotePlayback;
   friend class RemotePlaybackTest;
+  friend class MediaControlsImplTest;
 
   explicit RemotePlayback(HTMLMediaElement&);
 
@@ -83,15 +100,9 @@ class MODULES_EXPORT RemotePlayback final
   // Need a void() method to post it as a task.
   void NotifyInitialAvailability(int callback_id);
 
-  // WebRemotePlaybackClient implementation.
-  void StateChanged(WebRemotePlaybackState) override;
-  void AvailabilityChanged(WebRemotePlaybackAvailability) override;
-  void PromptCancelled() override;
-  bool RemotePlaybackAvailable() const override;
-
   WebRemotePlaybackState state_;
   WebRemotePlaybackAvailability availability_;
-  HeapHashMap<int, TraceWrapperMember<RemotePlaybackAvailabilityCallback>>
+  HeapHashMap<int, TraceWrapperMember<AvailabilityCallbackWrapper>>
       availability_callbacks_;
   Member<HTMLMediaElement> media_element_;
   Member<ScriptPromiseResolver> prompt_promise_resolver_;
