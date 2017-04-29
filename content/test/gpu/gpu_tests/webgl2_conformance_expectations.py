@@ -256,8 +256,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=1832) # khronos WebGL issue
 
     # Mac Retina NVIDIA
-    self.Fail('conformance/textures/misc/cube-map-uploads-out-of-order.html',
-        ['mac', ('nvidia', 0xfe9)], bug=473739)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', ('nvidia', 0xfe9)], bug=641209)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
