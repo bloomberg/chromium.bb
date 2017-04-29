@@ -127,12 +127,15 @@ void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
     SetPredecodeImages(std::vector<DrawImage>(),
                        ImageDecodeCache::TracingInfo());
     StopWorkerTasks();
+    image_cache_max_limit_bytes_ = 0u;
   }
 
   cache_ = cache;
 
-  if (cache_)
+  if (cache_) {
+    image_cache_max_limit_bytes_ = cache_->GetMaximumMemoryLimitBytes();
     GenerateTasksForOrphanedRequests();
+  }
 }
 
 void ImageController::GetTasksForImagesAndRef(

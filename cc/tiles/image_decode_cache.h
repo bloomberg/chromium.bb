@@ -96,6 +96,12 @@ class CC_EXPORT ImageDecodeCache {
 
   // Clears all elements from the cache.
   virtual void ClearCache() = 0;
+
+  // Returns the maximum amount of memory we would be able to lock. This ignores
+  // any temporary states, such as throttled, and return the maximum possible
+  // memory. It is used as an esimate of whether an image can fit into the
+  // locked budget before creating a task.
+  virtual size_t GetMaximumMemoryLimitBytes() const = 0;
 };
 
 }  // namespace cc
