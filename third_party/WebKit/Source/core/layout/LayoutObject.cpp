@@ -328,24 +328,6 @@ void LayoutObject::AddChild(LayoutObject* new_child,
   if (new_child->IsText() &&
       new_child->Style()->TextTransform() == ETextTransform::kCapitalize)
     ToLayoutText(new_child)->TransformText();
-
-  // SVG creates layoutObjects for <g display="none">, as SVG requires children
-  // of hidden <g>s to have layoutObjects - at least that's how our
-  // implementation works.
-  // Consider:
-  // <g display="none"><foreignObject><body style="position: relative">FOO...
-  // - layerTypeRequired() would return true for the <body>, creating a new
-  //   Layer
-  // - when the document is painted, both layers are painted. The <body> layer
-  //   doesn't know that it's inside a "hidden SVG subtree", and thus paints,
-  //   even if it shouldn't.
-  // To avoid the problem altogether, detect early if we're inside a hidden SVG
-  // subtree and stop creating layers at all for these cases - they're not used
-  // anyways.
-  if (new_child->HasLayer() && !LayerCreationAllowedForSubtree())
-    ToLayoutBoxModelObject(new_child)
-        ->Layer()
-        ->RemoveOnlyThisLayerAfterStyleChange();
 }
 
 void LayoutObject::RemoveChild(LayoutObject* old_child) {
