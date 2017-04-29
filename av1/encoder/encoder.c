@@ -3045,29 +3045,6 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
     aom_extend_frame_borders(dst);
 }
 
-static int scale_down(AV1_COMP *cpi, int q) {
-  RATE_CONTROL *const rc = &cpi->rc;
-  GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-  int scale = 0;
-  assert(frame_is_kf_gf_arf(cpi));
-
-  if (cpi->resize_scale_num == cpi->resize_scale_den &&
-      q >= rc->rf_level_maxq[gf_group->rf_level[gf_group->index]]) {
-    const int old_num = cpi->resize_scale_num;
-    --cpi->resize_scale_num;
-    if (cpi->resize_scale_num <= 0) {
-      cpi->resize_scale_num = old_num;
-      return 0;
-    }
-    const int max_size_thresh =
-        (int)(av1_resize_rate_factor(cpi) *
-              AOMMAX(rc->this_frame_target, rc->avg_frame_bandwidth));
-    cpi->resize_scale_num = old_num;
-    scale = rc->projected_frame_size > max_size_thresh ? 1 : 0;
-  }
-  return scale;
-}
-
 #if CONFIG_GLOBAL_MOTION
 #define GM_RECODE_LOOP_NUM4X4_FACTOR 192
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
@@ -3104,13 +3081,6 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
   if ((rc->projected_frame_size >= rc->max_frame_bandwidth) ||
       (cpi->sf.recode_loop == ALLOW_RECODE) ||
       (frame_is_kfgfarf && (cpi->sf.recode_loop == ALLOW_RECODE_KFARFGF))) {
-    if (frame_is_kfgfarf && (oxcf->resize_mode == RESIZE_DYNAMIC) &&
-        scale_down(cpi, q)) {
-      // Code this group at a lower resolution.
-      cpi->resize_pending = 1;
-      return 1;
-    }
-
     // TODO(agrange) high_limit could be greater than the scale-down threshold.
     if ((rc->projected_frame_size > high_limit && q < maxq) ||
         (rc->projected_frame_size < low_limit && q > minq)) {
@@ -4310,27 +4280,9 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         int last_q = q;
 #if !CONFIG_XIPHRC
         int retries = 0;
-#endif
 
-        if (cpi->resize_pending == 1) {
-          // Change in frame size so go back around the recode loop.
-          // 11/16 is close to the old 2/3, then goes back to 16/16.
-          cpi->resize_scale_num -= 5;
-          if (cpi->resize_scale_num < 8 || cpi->resize_scale_num > 16)
-            cpi->resize_scale_num = 16;
-          cpi->resize_scale_den = 16;
-          cpi->resize_next_scale_num = cpi->resize_scale_num;
-          cpi->resize_next_scale_den = cpi->resize_scale_den;
+        // TODO(afergs): Replace removed recode when resize_pending is true
 
-#if CONFIG_INTERNAL_STATS
-          ++cpi->tot_recode_hits;
-#endif
-          ++loop_count;
-          loop = 1;
-          continue;
-        }
-
-#if !CONFIG_XIPHRC
         // Frame size out of permitted range:
         // Update correction factor & compute new Q to try...
         // Frame is too large
