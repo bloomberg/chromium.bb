@@ -11,6 +11,7 @@ namespace blink {
 
 class HTMLMediaElement;
 class MediaControlsImpl;
+class RemotePlayback;
 
 class MediaControlsMediaEventListener final : public EventListener {
  public:
@@ -31,10 +32,14 @@ class MediaControlsMediaEventListener final : public EventListener {
 
  private:
   HTMLMediaElement& GetMediaElement();
+  RemotePlayback* GetRemotePlayback();
 
   void handleEvent(ExecutionContext*, Event*) override;
 
+  void OnRemotePlaybackAvailabilityChanged();
+
   Member<MediaControlsImpl> media_controls_;
+  int remote_playback_availability_callback_id_ = -1;
 };
 
 }  // namespace blink

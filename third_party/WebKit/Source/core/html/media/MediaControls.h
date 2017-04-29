@@ -47,16 +47,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // be notified on the TextTrack object. See https://crbug.com/669977
   virtual void OnTrackElementFailedToLoad() = 0;
 
-  // TODO(mlamouri): the following methods will be able to become private when
-  // the controls have moved to modules/ and have access to RemotePlayback.
-  virtual void OnRemotePlaybackAvailabilityChanged() = 0;
-  virtual void OnRemotePlaybackConnecting() = 0;
-  virtual void OnRemotePlaybackDisconnected() = 0;
-
-  // TODO(mlamouri): this method is needed in order to notify the controls that
-  // the attribute have changed.
-  virtual void OnDisableRemotePlaybackAttributeChanged() = 0;
-
   // TODO(mlamouri): this method should be moved away from the interface to
   // become an implementation detail.
   virtual void NetworkStateChanged() = 0;

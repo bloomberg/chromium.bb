@@ -646,11 +646,6 @@ void HTMLMediaElement::ParseAttribute(
         web_media_player_->RequestRemotePlaybackDisabled(
             !params.new_value.IsNull());
       }
-      // TODO(mlamouri): there is no direct API to expose if
-      // disableRemotePLayback attribute has changed. It will require a direct
-      // access to MediaControls for the moment.
-      if (GetMediaControls())
-        GetMediaControls()->OnDisableRemotePlaybackAttributeChanged();
     }
   } else {
     HTMLElement::ParseAttribute(params);
@@ -3159,18 +3154,10 @@ void HTMLMediaElement::RemoteRouteAvailabilityChanged(
     WebRemotePlaybackAvailability availability) {
   if (RemotePlaybackClient())
     RemotePlaybackClient()->AvailabilityChanged(availability);
-
-  // TODO(mlamouri): the RemotePlayback object should be used in order to
-  // register to watch availability but the object is in modules/ and core/ has
-  // no access to it. It will have to be done when the media controls move to
-  // modules/.
-  if (GetMediaControls())
-    GetMediaControls()->OnRemotePlaybackAvailabilityChanged();
 }
 
 bool HTMLMediaElement::HasRemoteRoutes() const {
-  // TODO(mlamouri): this is only used for controls related code. It shouldn't
-  // live in HTMLMediaElement.
+  // TODO(mlamouri): used by MediaControlsPainter; should be refactored out.
   return RemotePlaybackClient() &&
          RemotePlaybackClient()->RemotePlaybackAvailable();
 }
@@ -3179,24 +3166,12 @@ void HTMLMediaElement::ConnectedToRemoteDevice() {
   playing_remotely_ = true;
   if (RemotePlaybackClient())
     RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kConnecting);
-
-  // TODO(mlamouri): the RemotePlayback object should be used in order to listen
-  // for events but the object is in modules/ and core/ has no access to it. It
-  // will have to be done when the media controls move to modules/.
-  if (GetMediaControls())
-    GetMediaControls()->OnRemotePlaybackConnecting();
 }
 
 void HTMLMediaElement::DisconnectedFromRemoteDevice() {
   playing_remotely_ = false;
   if (RemotePlaybackClient())
     RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kDisconnected);
-
-  // TODO(mlamouri): the RemotePlayback object should be used in order to listen
-  // for events but the object is in modules/ and core/ has no access to it. It
-  // will have to be done when the media controls move to modules/.
-  if (GetMediaControls())
-    GetMediaControls()->OnRemotePlaybackDisconnected();
 }
 
 void HTMLMediaElement::CancelledRemotePlaybackRequest() {

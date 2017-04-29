@@ -20,7 +20,9 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
   // This MUST be called for cast button elements that are overlay elements.
   void TryShowOverlay();
 
-  void SetIsPlayingRemotely(bool);
+  // TODO(avayvod): replace with the button listening to the state change
+  // events.
+  void UpdateDisplayType();
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
@@ -41,6 +43,8 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
   bool KeepEventInNode(Event*) override;
 
   void RecordMetrics(CastOverlayMetrics);
+
+  bool IsPlayingRemotely() const;
 
   bool is_overlay_button_;
 

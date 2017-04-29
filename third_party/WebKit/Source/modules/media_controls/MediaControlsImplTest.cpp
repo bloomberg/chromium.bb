@@ -25,6 +25,8 @@
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
+#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
@@ -60,23 +62,6 @@ class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
   WebTimeRanges seekable_;
 };
 
-class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
- public:
-  void StateChanged(WebRemotePlaybackState) override {}
-  void AvailabilityChanged(
-      WebRemotePlaybackAvailability availability) override {
-    availability_ = availability;
-  }
-  void PromptCancelled() override {}
-  bool RemotePlaybackAvailable() const override {
-    return availability_ == WebRemotePlaybackAvailability::kDeviceAvailable;
-  }
-
- private:
-  WebRemotePlaybackAvailability availability_ =
-      WebRemotePlaybackAvailability::kUnknown;
-};
-
 class MockLayoutObject : public LayoutObject {
  public:
   MockLayoutObject(Node* node) : LayoutObject(node) {}
@@ -100,16 +85,9 @@ class StubLocalFrameClient : public EmptyLocalFrameClient {
   }
 
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
-      HTMLMediaElement&) override {
-    if (!remote_playback_client_) {
-      remote_playback_client_ =
-          WTF::WrapUnique(new MockWebRemotePlaybackClient);
-    }
-    return remote_playback_client_.get();
+      HTMLMediaElement& element) override {
+    return HTMLMediaElementRemotePlayback::remote(element);
   }
-
- private:
-  std::unique_ptr<MockWebRemotePlaybackClient> remote_playback_client_;
 };
 
 Element* GetElementByShadowPseudoId(Node& root_node,
@@ -227,6 +205,10 @@ class MediaControlsImplTest : public ::testing::Test {
   void MouseDownAt(WebFloatPoint pos);
   void MouseMoveTo(WebFloatPoint pos);
   void MouseUpAt(WebFloatPoint pos);
+
+  bool HasAvailabilityCallbacks(RemotePlayback* remote_playback) {
+    return !remote_playback->availability_callbacks_.IsEmpty();
+  }
 
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
@@ -349,10 +331,12 @@ TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
+  testing::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
+  testing::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_button));
 }
 
@@ -376,10 +360,12 @@ TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
+  testing::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
+  testing::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
@@ -845,6 +831,63 @@ TEST_F(MediaControlsImplTest, ControlsRemainVisibleDuringKeyboardInteraction) {
   // Once user interaction stops, controls can hide.
   platform->RunForPeriodSeconds(2);
   EXPECT_FALSE(IsElementVisible(*panel));
+}
+
+TEST_F(MediaControlsImplTest,
+       RemovingFromDocumentRemovesListenersAndCallbacks) {
+  auto page_holder = DummyPageHolder::Create();
+
+  HTMLMediaElement* element =
+      HTMLVideoElement::Create(page_holder->GetDocument());
+  element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  page_holder->GetDocument().body()->AppendChild(element);
+
+  RemotePlayback* remote_playback =
+      HTMLMediaElementRemotePlayback::remote(*element);
+
+  EXPECT_TRUE(remote_playback->HasEventListeners());
+  EXPECT_TRUE(HasAvailabilityCallbacks(remote_playback));
+
+  WeakPersistent<HTMLMediaElement> weak_persistent_video = element;
+  {
+    Persistent<HTMLMediaElement> persistent_video = element;
+    page_holder->GetDocument().body()->setInnerHTML("");
+
+    // When removed from the document, the event listeners should have been
+    // dropped.
+    EXPECT_FALSE(remote_playback->HasEventListeners());
+    EXPECT_FALSE(HasAvailabilityCallbacks(remote_playback));
+  }
+
+  testing::RunPendingTasks();
+
+  ThreadState::Current()->CollectAllGarbage();
+
+  // It has been GC'd.
+  EXPECT_EQ(nullptr, weak_persistent_video);
+}
+
+TEST_F(MediaControlsImplTest,
+       ReInsertingInDocumentRestoresListenersAndCallbacks) {
+  auto page_holder = DummyPageHolder::Create();
+
+  HTMLMediaElement* element =
+      HTMLVideoElement::Create(page_holder->GetDocument());
+  element->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  page_holder->GetDocument().body()->AppendChild(element);
+
+  RemotePlayback* remote_playback =
+      HTMLMediaElementRemotePlayback::remote(*element);
+
+  // This should be a no-op. We keep a reference on the media element to avoid
+  // an unexpected GC.
+  {
+    Persistent<HTMLMediaElement> video_holder = element;
+    page_holder->GetDocument().body()->RemoveChild(element);
+    page_holder->GetDocument().body()->AppendChild(video_holder.Get());
+    EXPECT_TRUE(remote_playback->HasEventListeners());
+    EXPECT_TRUE(HasAvailabilityCallbacks(remote_playback));
+  }
 }
 
 }  // namespace blink

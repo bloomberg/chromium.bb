@@ -10,6 +10,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
+#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 
@@ -42,7 +44,7 @@ MediaControlCastButtonElement::MediaControlCastButtonElement(
 
   if (is_overlay_button_)
     RecordMetrics(CastOverlayMetrics::kCreated);
-  SetIsPlayingRemotely(false);
+  UpdateDisplayType();
 }
 
 void MediaControlCastButtonElement::TryShowOverlay() {
@@ -61,9 +63,8 @@ void MediaControlCastButtonElement::TryShowOverlay() {
   }
 }
 
-void MediaControlCastButtonElement::SetIsPlayingRemotely(
-    bool is_playing_remotely) {
-  if (is_playing_remotely) {
+void MediaControlCastButtonElement::UpdateDisplayType() {
+  if (IsPlayingRemotely()) {
     if (is_overlay_button_) {
       SetDisplayType(kMediaOverlayCastOnButton);
     } else {
@@ -85,7 +86,7 @@ bool MediaControlCastButtonElement::WillRespondToMouseClickEvents() {
 
 WebLocalizedString::Name
 MediaControlCastButtonElement::GetOverflowStringName() {
-  if (MediaElement().IsPlayingRemotely())
+  if (IsPlayingRemotely())
     return WebLocalizedString::kOverflowMenuStopCast;
   return WebLocalizedString::kOverflowMenuCast;
 }
@@ -108,11 +109,10 @@ void MediaControlCastButtonElement::DefaultEventHandler(Event* event) {
       click_use_counted_ = true;
       RecordMetrics(CastOverlayMetrics::kClicked);
     }
-    if (MediaElement().IsPlayingRemotely()) {
-      MediaElement().RequestRemotePlaybackControl();
-    } else {
-      MediaElement().RequestRemotePlayback();
-    }
+    RemotePlayback* remote =
+        HTMLMediaElementRemotePlayback::remote(MediaElement());
+    if (remote)
+      remote->PromptInternal();
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }
@@ -127,6 +127,12 @@ void MediaControlCastButtonElement::RecordMetrics(CastOverlayMetrics metric) {
       EnumerationHistogram, overlay_histogram,
       ("Cast.Sender.Overlay", static_cast<int>(CastOverlayMetrics::kCount)));
   overlay_histogram.Count(static_cast<int>(metric));
+}
+
+bool MediaControlCastButtonElement::IsPlayingRemotely() const {
+  RemotePlayback* remote =
+      HTMLMediaElementRemotePlayback::remote(MediaElement());
+  return remote && remote->GetState() != WebRemotePlaybackState::kDisconnected;
 }
 
 }  // namespace blink

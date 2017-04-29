@@ -96,6 +96,8 @@ TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
     EXPECT_TRUE(persistent_video->HasEventListeners());
   }
 
+  testing::RunPendingTasks();
+
   ThreadState::Current()->CollectAllGarbage();
 
   // They have been GC'd.
@@ -122,6 +124,8 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
   EXPECT_TRUE(GetDocument().HasEventListeners());
   EXPECT_TRUE(Video()->HasEventListeners());
+
+  testing::RunPendingTasks();
 
   ThreadState::Current()->CollectAllGarbage();
 
