@@ -351,6 +351,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   void CloseAllStreams(int net_error);
   void CloseAllObservers(int net_error);
+  void CancelAllRequests(int net_error);
 
   // Notifies the factory that this session is going away and no more streams
   // should be created from it.  This needs to be called before closing any
