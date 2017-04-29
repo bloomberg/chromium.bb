@@ -227,7 +227,7 @@ int32_t VideoDecoderResource::Decode(uint32_t decode_id,
     if (!UnpackMessage<PpapiPluginMsg_VideoDecoder_GetShmReply>(reply,
                                                                 &shm_size))
       return PP_ERROR_FAILED;
-    base::SharedMemoryHandle shm_handle = base::SharedMemory::NULLHandle();
+    base::SharedMemoryHandle shm_handle;
     if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &shm_handle))
       return PP_ERROR_NOMEMORY;
     std::unique_ptr<base::SharedMemory> shm(

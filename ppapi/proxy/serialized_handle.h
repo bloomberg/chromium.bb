@@ -94,7 +94,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     type_ = SOCKET;
     descriptor_ = socket;
 
-    shm_handle_ = base::SharedMemory::NULLHandle();
+    shm_handle_ = base::SharedMemoryHandle();
     size_ = 0;
   }
   void set_file_handle(const IPC::PlatformFileForTransit& descriptor,
@@ -103,14 +103,12 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     type_ = FILE;
 
     descriptor_ = descriptor;
-    shm_handle_ = base::SharedMemory::NULLHandle();
+    shm_handle_ = base::SharedMemoryHandle();
     size_ = 0;
     open_flags_ = open_flags;
     file_io_ = file_io;
   }
-  void set_null_shmem() {
-    set_shmem(base::SharedMemory::NULLHandle(), 0);
-  }
+  void set_null_shmem() { set_shmem(base::SharedMemoryHandle(), 0); }
   void set_null_socket() {
     set_socket(IPC::InvalidPlatformFileForTransit());
   }

@@ -92,17 +92,15 @@ class BASE_EXPORT SharedMemory {
   // invalid value; NULL for a HANDLE and -1 for a file descriptor)
   static bool IsHandleValid(const SharedMemoryHandle& handle);
 
-  // Returns invalid handle (see comment above for exact definition).
-  static SharedMemoryHandle NULLHandle();
-
   // Closes a shared memory handle.
   static void CloseHandle(const SharedMemoryHandle& handle);
 
   // Returns the maximum number of handles that can be open at once per process.
   static size_t GetHandleLimit();
 
-  // Duplicates The underlying OS primitive. Returns NULLHandle() on failure.
-  // The caller is responsible for destroying the duplicated OS primitive.
+  // Duplicates The underlying OS primitive. Returns an invalid handle on
+  // failure. The caller is responsible for destroying the duplicated OS
+  // primitive.
   static SharedMemoryHandle DuplicateHandle(const SharedMemoryHandle& handle);
 
 #if defined(OS_POSIX)

@@ -546,8 +546,7 @@ bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(NSFont* src_font,
     return false;
   }
 
-  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
-      *font_id == 0) {
+  if (font_data_size == 0 || !font_data.IsValid() || *font_id == 0) {
     LOG(ERROR) << "Bad response from RenderProcessHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
     *out = NULL;

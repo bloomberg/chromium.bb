@@ -239,7 +239,6 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
   if (result->font_data_size == 0 || result->font_id == 0) {
     result->font_data_size = 0;
     result->font_id = 0;
-    handle = base::SharedMemory::NULLHandle();
   } else {
     result->font_data.GiveToProcess(base::GetCurrentProcessHandle(), &handle);
   }

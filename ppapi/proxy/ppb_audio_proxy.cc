@@ -249,7 +249,7 @@ void PPB_Audio_Proxy::AudioChannelConnected(
     const HostResource& resource) {
   IPC::PlatformFileForTransit socket_handle =
       IPC::InvalidPlatformFileForTransit();
-  base::SharedMemoryHandle shared_memory = base::SharedMemory::NULLHandle();
+  base::SharedMemoryHandle shared_memory;
   uint32_t audio_buffer_length = 0;
 
   int32_t result_code = result;

@@ -81,8 +81,7 @@ std::string LookupAttribute(const std::map<std::string, std::string>& args,
 
 }  // namespace
 
-NexeLoadManager::NexeLoadManager(
-    PP_Instance pp_instance)
+NexeLoadManager::NexeLoadManager(PP_Instance pp_instance)
     : pp_instance_(pp_instance),
       nacl_ready_state_(PP_NACL_READY_STATE_UNSENT),
       nexe_error_reported_(false),
@@ -91,7 +90,6 @@ NexeLoadManager::NexeLoadManager(
       nexe_size_(0),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       nonsfi_(false),
-      crash_info_shmem_handle_(base::SharedMemory::NULLHandle()),
       weak_factory_(this) {
   set_exit_status(-1);
   SetLastError("");

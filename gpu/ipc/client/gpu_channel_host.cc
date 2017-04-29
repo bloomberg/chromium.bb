@@ -227,7 +227,7 @@ void GpuChannelHost::RemoveRoute(int route_id) {
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
     const base::SharedMemoryHandle& source_handle) {
   if (IsLost())
-    return base::SharedMemory::NULLHandle();
+    return base::SharedMemoryHandle();
 
   return base::SharedMemory::DuplicateHandle(source_handle);
 }

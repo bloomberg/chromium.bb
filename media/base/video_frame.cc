@@ -231,7 +231,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalData(
     base::TimeDelta timestamp) {
   return WrapExternalStorage(format, STORAGE_UNOWNED_MEMORY, coded_size,
                              visible_rect, natural_size, data, data_size,
-                             timestamp, base::SharedMemory::NULLHandle(), 0);
+                             timestamp, base::SharedMemoryHandle(), 0);
 }
 
 // static
@@ -925,7 +925,6 @@ VideoFrame::VideoFrame(VideoPixelFormat format,
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
-      shared_memory_handle_(base::SharedMemory::NULLHandle()),
       shared_memory_offset_(0),
       timestamp_(timestamp),
       unique_id_(g_unique_id_generator.GetNext()) {

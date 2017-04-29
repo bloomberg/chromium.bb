@@ -83,10 +83,6 @@ class BASE_EXPORT SharedMemoryHandle {
                      mach_vm_size_t size,
                      base::ProcessId pid);
 
-  // Comparison operators.
-  bool operator==(const SharedMemoryHandle& handle) const;
-  bool operator!=(const SharedMemoryHandle& handle) const;
-
   // Duplicates the underlying OS resources.
   SharedMemoryHandle Duplicate() const;
 
@@ -105,10 +101,6 @@ class BASE_EXPORT SharedMemoryHandle {
   bool MapAt(off_t offset, size_t bytes, void** memory, bool read_only);
 #elif defined(OS_WIN)
   SharedMemoryHandle(HANDLE h, base::ProcessId pid);
-
-  // Comparison operators.
-  bool operator==(const SharedMemoryHandle& handle) const;
-  bool operator!=(const SharedMemoryHandle& handle) const;
 
   // Whether |pid_| is the same as the current process's id.
   bool BelongsToCurrentProcess() const;

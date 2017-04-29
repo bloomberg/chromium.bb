@@ -103,7 +103,7 @@ void GamepadResource::Sample(PP_Instance /* instance */,
 void GamepadResource::OnPluginMsgSendMemory(
     const ResourceMessageReplyParams& params) {
   // On failure, the handle will be null and the CHECK below will be tripped.
-  base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
+  base::SharedMemoryHandle handle;
   params.TakeSharedMemoryHandleAtIndex(0, &handle);
 
   shared_memory_.reset(new base::SharedMemory(handle, true));

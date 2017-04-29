@@ -16,8 +16,7 @@ NaClStartParams::NaClStartParams()
 #endif
       validation_cache_enabled(false),
       enable_debug_stub(false),
-      process_type(kUnknownNaClProcessType),
-      crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
+      process_type(kUnknownNaClProcessType) {
 }
 
 NaClStartParams::NaClStartParams(const NaClStartParams& other) = default;
@@ -91,9 +90,7 @@ NaClLaunchResult::NaClLaunchResult()
     : ppapi_ipc_channel_handle(),
       trusted_ipc_channel_handle(),
       plugin_pid(base::kNullProcessId),
-      plugin_child_id(0),
-      crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
-}
+      plugin_child_id(0) {}
 
 NaClLaunchResult::NaClLaunchResult(
     const IPC::ChannelHandle& ppapi_ipc_channel_handle,

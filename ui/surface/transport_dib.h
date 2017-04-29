@@ -34,12 +34,6 @@ class SURFACE_EXPORT TransportDIB {
 // side can map the transport DIB.
   typedef base::SharedMemoryHandle Handle;
 
-  // Returns a default, invalid handle, that is meant to indicate a missing
-  // Transport DIB.
-  static Handle DefaultHandleValue() {
-    return base::SharedMemory::NULLHandle();
-  }
-
   // Create a new TransportDIB, returning NULL on failure.
   //
   // The size is the minimum size in bytes of the memory backing the transport

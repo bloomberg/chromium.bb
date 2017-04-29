@@ -87,7 +87,7 @@ base::SharedMemoryHandle
 MockRendererPpapiHost::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle) {
   NOTIMPLEMENTED();
-  return base::SharedMemory::NULLHandle();
+  return base::SharedMemoryHandle();
 }
 
 bool MockRendererPpapiHost::IsRunningInProcess() const { return false; }

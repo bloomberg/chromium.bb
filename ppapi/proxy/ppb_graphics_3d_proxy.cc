@@ -272,7 +272,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(
   if (!enter.succeeded())
     return;
 
-  base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
+  base::SharedMemoryHandle handle;
   result->SetHostResource(
       instance, enter.functions()->CreateGraphics3DRaw(
                     instance, share_context.host_resource(), attrib_helper,
