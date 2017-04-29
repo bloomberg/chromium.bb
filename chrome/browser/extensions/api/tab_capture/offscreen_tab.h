@@ -36,7 +36,7 @@ class OffscreenTab;  // Forward declaration.  See below.
 //
 // This class operates exclusively on the UI thread and so is not thread-safe.
 class OffscreenTabsOwner
-    : protected content::WebContentsUserData<OffscreenTabsOwner> {
+    : public content::WebContentsUserData<OffscreenTabsOwner> {
  public:
   ~OffscreenTabsOwner() final;
 
