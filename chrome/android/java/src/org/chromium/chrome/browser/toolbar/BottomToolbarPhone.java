@@ -136,6 +136,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
         return !ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
     }
 
+    /**
+     * @return True if the toolbar is showing tab switcher assets, including during transitions.
+     */
+    public boolean isInTabSwitcherMode() {
+        return mTabSwitcherState != STATIC_TAB;
+    }
+
     @Override
     protected int getProgressBarTopMargin() {
         // In the case where the toolbar is at the bottom of the screen, the progress bar should
