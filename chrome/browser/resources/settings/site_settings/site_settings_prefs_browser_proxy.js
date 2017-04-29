@@ -326,15 +326,20 @@ cr.define('settings', function() {
     /** @override */
     resetCategoryPermissionForOrigin: function(
         primaryPattern, secondaryPattern, contentType, incognito) {
-      chrome.send('resetCategoryPermissionForOrigin',
+      chrome.send(
+          'resetCategoryPermissionForOrigin',
           [primaryPattern, secondaryPattern, contentType, incognito]);
     },
 
     /** @override */
     setCategoryPermissionForOrigin: function(
         primaryPattern, secondaryPattern, contentType, value, incognito) {
-      chrome.send('setCategoryPermissionForOrigin',
-          [primaryPattern, secondaryPattern, contentType, value, incognito]);
+      // TODO(dschuyler): It may be incorrect for JS to send the embeddingOrigin
+      // pattern. Look into removing this parameter from site_settings_handler.
+      // Ignoring the |secondaryPattern| and using '' instead is a quick-fix.
+      chrome.send(
+          'setCategoryPermissionForOrigin',
+          [primaryPattern, '', contentType, value, incognito]);
     },
 
     /** @override */
