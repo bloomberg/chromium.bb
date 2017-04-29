@@ -123,7 +123,7 @@ TEST_F(ClipboardMessageFilterTest, ImageSizeOverflows32BitRowBytes) {
 }
 
 TEST_F(ClipboardMessageFilterTest, InvalidSharedMemoryHandle) {
-  CallWriteImageDirectly(gfx::Size(5, 5), base::SharedMemory::NULLHandle());
+  CallWriteImageDirectly(gfx::Size(5, 5), base::SharedMemoryHandle());
   uint64_t sequence_number =
       clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
   CallCommitWrite();

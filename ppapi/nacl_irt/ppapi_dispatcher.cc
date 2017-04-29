@@ -74,7 +74,7 @@ IPC::PlatformFileForTransit PpapiDispatcher::ShareHandleWithRemote(
 base::SharedMemoryHandle PpapiDispatcher::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
     base::ProcessId remote_pid) {
-  return base::SharedMemory::NULLHandle();
+  return base::SharedMemoryHandle();
 }
 
 std::set<PP_Instance>* PpapiDispatcher::GetGloballySeenInstanceIDSet() {

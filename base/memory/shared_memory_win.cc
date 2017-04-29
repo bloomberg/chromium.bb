@@ -171,11 +171,6 @@ bool SharedMemory::IsHandleValid(const SharedMemoryHandle& handle) {
 }
 
 // static
-SharedMemoryHandle SharedMemory::NULLHandle() {
-  return SharedMemoryHandle();
-}
-
-// static
 void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
   handle.Close();
 }

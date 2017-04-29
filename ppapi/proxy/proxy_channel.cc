@@ -71,7 +71,7 @@ IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
 base::SharedMemoryHandle ProxyChannel::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle) {
   if (!channel_.get())
-    return base::SharedMemory::NULLHandle();
+    return base::SharedMemoryHandle();
 
   DCHECK(peer_pid_ != base::kNullProcessId);
   return delegate_->ShareSharedMemoryHandleWithRemote(handle, peer_pid_);

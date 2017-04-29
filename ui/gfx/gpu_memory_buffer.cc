@@ -8,9 +8,7 @@
 
 namespace gfx {
 
-GpuMemoryBufferHandle::GpuMemoryBufferHandle()
-    : type(EMPTY_BUFFER), id(0), handle(base::SharedMemory::NULLHandle()) {
-}
+GpuMemoryBufferHandle::GpuMemoryBufferHandle() : type(EMPTY_BUFFER), id(0) {}
 
 GpuMemoryBufferHandle::GpuMemoryBufferHandle(
     const GpuMemoryBufferHandle& other) = default;

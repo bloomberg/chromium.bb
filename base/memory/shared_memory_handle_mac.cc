@@ -91,26 +91,6 @@ SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
   }
 }
 
-bool SharedMemoryHandle::operator==(const SharedMemoryHandle& handle) const {
-  if (!IsValid() && !handle.IsValid())
-    return true;
-
-  if (type_ != handle.type_)
-    return false;
-
-  switch (type_) {
-    case POSIX:
-      return file_descriptor_.fd == handle.file_descriptor_.fd;
-    case MACH:
-      return memory_object_ == handle.memory_object_ && size_ == handle.size_ &&
-             pid_ == handle.pid_;
-  }
-}
-
-bool SharedMemoryHandle::operator!=(const SharedMemoryHandle& handle) const {
-  return !(*this == handle);
-}
-
 bool SharedMemoryHandle::IsValid() const {
   switch (type_) {
     case POSIX:

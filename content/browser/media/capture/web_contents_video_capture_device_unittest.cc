@@ -300,7 +300,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         VideoFrame::WrapExternalSharedMemory(
             media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
             format.frame_size, buffer_access->data(),
-            buffer_access->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+            buffer_access->mapped_size(), base::SharedMemoryHandle(), 0u,
             base::TimeDelta());
     const gfx::Point center = visible_rect.CenterPoint();
     const int center_offset_y =

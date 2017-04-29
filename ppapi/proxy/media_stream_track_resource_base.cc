@@ -70,7 +70,7 @@ void MediaStreamTrackResourceBase::OnPluginMsgInitBuffers(
     int32_t number_of_buffers,
     int32_t buffer_size,
     bool readonly) {
-  base::SharedMemoryHandle shm_handle = base::SharedMemory::NULLHandle();
+  base::SharedMemoryHandle shm_handle;
   params.TakeSharedMemoryHandleAtIndex(0, &shm_handle);
   buffer_manager_.SetBuffers(number_of_buffers, buffer_size,
                              std::unique_ptr<base::SharedMemory>(

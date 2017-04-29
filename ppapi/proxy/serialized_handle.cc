@@ -19,7 +19,6 @@ namespace proxy {
 
 SerializedHandle::SerializedHandle()
     : type_(INVALID),
-      shm_handle_(base::SharedMemory::NULLHandle()),
       size_(0),
       descriptor_(IPC::InvalidPlatformFileForTransit()),
       open_flags_(0),
@@ -28,7 +27,6 @@ SerializedHandle::SerializedHandle()
 
 SerializedHandle::SerializedHandle(Type type_param)
     : type_(type_param),
-      shm_handle_(base::SharedMemory::NULLHandle()),
       size_(0),
       descriptor_(IPC::InvalidPlatformFileForTransit()),
       open_flags_(0),
@@ -48,7 +46,6 @@ SerializedHandle::SerializedHandle(
     Type type,
     const IPC::PlatformFileForTransit& socket_descriptor)
     : type_(type),
-      shm_handle_(base::SharedMemory::NULLHandle()),
       size_(0),
       descriptor_(socket_descriptor),
       open_flags_(0),

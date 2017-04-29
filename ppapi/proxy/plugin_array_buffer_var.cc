@@ -28,7 +28,6 @@ namespace ppapi {
 
 PluginArrayBufferVar::PluginArrayBufferVar(uint32_t size_in_bytes)
     : buffer_(size_in_bytes),
-      plugin_handle_(base::SharedMemory::NULLHandle()),
       size_in_bytes_(size_in_bytes) {}
 
 PluginArrayBufferVar::PluginArrayBufferVar(uint32_t size_in_bytes,
@@ -99,7 +98,7 @@ bool PluginArrayBufferVar::CopyToNewShmem(
   // We don't need to keep the shared memory around on the plugin side;
   // we've already copied all our data into it. We'll make it invalid
   // just to be safe.
-  *plugin_out_handle = base::SharedMemory::NULLHandle();
+  *plugin_out_handle = base::SharedMemoryHandle();
 
   return true;
 }

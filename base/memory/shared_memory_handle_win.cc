@@ -30,18 +30,6 @@ SharedMemoryHandle& SharedMemoryHandle::operator=(
   return *this;
 }
 
-bool SharedMemoryHandle::operator==(const SharedMemoryHandle& handle) const {
-  // Invalid handles are always equal.
-  if (!IsValid() && !handle.IsValid())
-    return true;
-
-  return handle_ == handle.handle_ && pid_ == handle.pid_;
-}
-
-bool SharedMemoryHandle::operator!=(const SharedMemoryHandle& handle) const {
-  return !(*this == handle);
-}
-
 void SharedMemoryHandle::Close() const {
   DCHECK(handle_ != nullptr);
   DCHECK(BelongsToCurrentProcess());

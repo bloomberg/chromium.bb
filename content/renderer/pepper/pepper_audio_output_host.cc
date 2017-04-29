@@ -86,7 +86,7 @@ void PepperAudioOutputHost::StreamCreated(
 }
 
 void PepperAudioOutputHost::StreamCreationFailed() {
-  OnOpenComplete(PP_ERROR_FAILED, base::SharedMemory::NULLHandle(), 0,
+  OnOpenComplete(PP_ERROR_FAILED, base::SharedMemoryHandle(), 0,
                  base::SyncSocket::kInvalidHandle);
 }
 
@@ -182,7 +182,7 @@ void PepperAudioOutputHost::OnOpenComplete(
   if (result == PP_OK) {
     IPC::PlatformFileForTransit temp_socket =
         IPC::InvalidPlatformFileForTransit();
-    base::SharedMemoryHandle temp_shmem = base::SharedMemory::NULLHandle();
+    base::SharedMemoryHandle temp_shmem;
     result = GetRemoteHandles(scoped_socket, scoped_shared_memory, &temp_socket,
                               &temp_shmem);
 

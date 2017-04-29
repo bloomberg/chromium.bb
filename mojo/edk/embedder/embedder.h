@@ -109,8 +109,8 @@ CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
 // |MojoHandle| and closes the handle. If successful, |num_bytes| will contain
 // the size of the shared memory buffer and |read_only| will contain whether the
 // buffer handle is read-only. Both |num_bytes| and |read_only| may be null.
-// Note: The value of |shared_memory_handle| may be
-// base::SharedMemory::NULLHandle(), even if this function returns success.
+// Note: |shared_memory_handle| may be invalid even if this function returns
+// success.
 // Callers should perform appropriate checks.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassSharedMemoryHandle(MojoHandle mojo_handle,

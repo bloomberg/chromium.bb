@@ -141,7 +141,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   *storage = VideoFrame::WrapExternalSharedMemory(
       params_.requested_format.pixel_format, coded_size,
       gfx::Rect(visible_size), visible_size, output_buffer_access->data(),
-      output_buffer_access->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+      output_buffer_access->mapped_size(), base::SharedMemoryHandle(), 0u,
       base::TimeDelta());
   // If creating the VideoFrame wrapper failed, call DidCaptureFrame() with
   // !success to execute the required post-capture steps (tracing, notification
