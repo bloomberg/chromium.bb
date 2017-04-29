@@ -533,13 +533,10 @@ public class VideoCaptureCamera
         }
         builder.setFocusMode(jniFocusMode);
 
-        // Auto Exposure is the usual capability and state, unless AE is not available at all, which
-        // is signalled by the absence of Metering Areas. Exposure Compensation can also support or
-        // be locked, this is equivalent to AndroidMeteringMode.FIXED.
+        // Auto Exposure is understood to be supported always; besides that, only "locked"
+        // (equivalent to AndroidMeteringMode.FIXED) may be supported and/or configured.
         ArrayList<Integer> jniExposureModes = new ArrayList<Integer>(2);
-        if (parameters.getMaxNumMeteringAreas() > 0) {
-            jniExposureModes.add(AndroidMeteringMode.CONTINUOUS);
-        }
+        jniExposureModes.add(AndroidMeteringMode.CONTINUOUS);
         if (parameters.isAutoExposureLockSupported()) {
             jniExposureModes.add(AndroidMeteringMode.FIXED);
         }
