@@ -309,6 +309,10 @@ typedef struct TileDataEnc {
 typedef struct RD_COUNTS {
   av1_coeff_count coef_counts[TX_SIZES][PLANE_TYPES];
   int64_t comp_pred_diff[REFERENCE_MODES];
+#if CONFIG_GLOBAL_MOTION
+  // Stores number of 4x4 blocks using global motion per reference frame.
+  int global_motion_used[TOTAL_REFS_PER_FRAME];
+#endif  // CONFIG_GLOBAL_MOTION
 } RD_COUNTS;
 
 typedef struct ThreadData {
@@ -665,8 +669,6 @@ typedef struct AV1_COMP {
   int arf_map[MAX_EXT_ARFS + 1];
 #endif  // CONFIG_EXT_REFS
 #if CONFIG_GLOBAL_MOTION
-  // Stores number of 4x4 blocks using global motion per reference frame.
-  int global_motion_used[TOTAL_REFS_PER_FRAME];
   int global_motion_search_done;
 #endif
 #if CONFIG_REFERENCE_BUFFER

@@ -1039,7 +1039,8 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
 #endif
 #if CONFIG_GLOBAL_MOTION
 static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
-                                      const MB_MODE_INFO *mbmi, AV1_COMP *cpi) {
+                                      const MB_MODE_INFO *mbmi,
+                                      RD_COUNTS *rdc) {
   if (mode == ZEROMV
 #if CONFIG_EXT_INTER
       || mode == ZERO_ZEROMV
@@ -1049,7 +1050,7 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
         num_4x4_blocks_wide_lookup[bsize] * num_4x4_blocks_high_lookup[bsize];
     int ref;
     for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
-      cpi->global_motion_used[mbmi->ref_frame[ref]] += num_4x4s;
+      rdc->global_motion_used[mbmi->ref_frame[ref]] += num_4x4s;
     }
   }
 }
@@ -1265,7 +1266,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
       if (bsize >= BLOCK_8X8) {
         // TODO(sarahparker): global motion stats need to be handled per-tile
         // to be compatible with tile-based threading.
-        update_global_motion_used(mbmi->mode, bsize, mbmi, (AV1_COMP *)cpi);
+        update_global_motion_used(mbmi->mode, bsize, mbmi, rdc);
       } else {
         const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
         const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
@@ -1273,8 +1274,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         for (idy = 0; idy < 2; idy += num_4x4_h) {
           for (idx = 0; idx < 2; idx += num_4x4_w) {
             const int j = idy * 2 + idx;
-            update_global_motion_used(mi->bmi[j].as_mode, bsize, mbmi,
-                                      (AV1_COMP *)cpi);
+            update_global_motion_used(mi->bmi[j].as_mode, bsize, mbmi, rdc);
           }
         }
       }
@@ -1431,7 +1431,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
       if (bsize >= BLOCK_8X8) {
         // TODO(sarahparker): global motion stats need to be handled per-tile
         // to be compatible with tile-based threading.
-        update_global_motion_used(mbmi->mode, bsize, mbmi, (AV1_COMP *)cpi);
+        update_global_motion_used(mbmi->mode, bsize, mbmi, rdc);
       } else {
         const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
         const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
@@ -1439,8 +1439,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
         for (idy = 0; idy < 2; idy += num_4x4_h) {
           for (idx = 0; idx < 2; idx += num_4x4_w) {
             const int j = idy * 2 + idx;
-            update_global_motion_used(mi->bmi[j].as_mode, bsize, mbmi,
-                                      (AV1_COMP *)cpi);
+            update_global_motion_used(mi->bmi[j].as_mode, bsize, mbmi, rdc);
           }
         }
       }
@@ -5208,7 +5207,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->comp_pred_diff);
 
 #if CONFIG_GLOBAL_MOTION
-  av1_zero(cpi->global_motion_used);
+  av1_zero(rdc->global_motion_used);
   if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf;

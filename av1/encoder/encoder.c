@@ -3062,17 +3062,18 @@ static int scale_down(AV1_COMP *cpi, int q) {
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
   int i;
   int recode = 0;
+  RD_COUNTS *const rdc = &cpi->td.rd_counts;
   AV1_COMMON *const cm = &cpi->common;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     if (cm->global_motion[i].wmtype != IDENTITY &&
-        cpi->global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
+        rdc->global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
             cpi->gmparams_cost[i]) {
       set_default_warp_params(&cm->global_motion[i]);
       cpi->gmparams_cost[i] = 0;
 #if CONFIG_REF_MV
       recode = 1;
 #else
-      recode |= (cpi->global_motion_used[i] > 0);
+      recode |= (rdc->global_motion_used[i] > 0);
 #endif
     }
   }

@@ -20,6 +20,12 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   for (i = 0; i < REFERENCE_MODES; i++)
     td->rd_counts.comp_pred_diff[i] += td_t->rd_counts.comp_pred_diff[i];
 
+#if CONFIG_GLOBAL_MOTION
+  for (i = 0; i < TOTAL_REFS_PER_FRAME; i++)
+    td->rd_counts.global_motion_used[i] +=
+        td_t->rd_counts.global_motion_used[i];
+#endif  // CONFIG_GLOBAL_MOTION
+
   for (i = 0; i < TX_SIZES; i++)
     for (j = 0; j < PLANE_TYPES; j++)
       for (k = 0; k < REF_TYPES; k++)
