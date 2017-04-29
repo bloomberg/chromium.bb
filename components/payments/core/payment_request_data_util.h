@@ -66,6 +66,12 @@ std::string FormatPhoneForDisplay(const std::string& phone_number,
 std::string FormatPhoneForResponse(const std::string& phone_number,
                                    const std::string& country_code);
 
+// Returns a country code to be used when validating this profile. If the
+// profile has a valid country code set, it is returned. If not, a country code
+// associated with |app_locale| is used as a fallback.
+std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,
+                                       const std::string& app_locale);
+
 }  // namespace data_util
 }  // namespace payments
 

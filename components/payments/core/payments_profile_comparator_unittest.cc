@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/profile_util.h"
+#include "components/payments/core/payments_profile_comparator.h"
 
 #include <memory>
 #include <vector>
@@ -13,12 +13,13 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/payments/core/payment_options_provider.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using autofill::AutofillProfile;
 
 namespace payments {
-namespace profile_util {
 
 constexpr uint32_t kRequestPayerName = 1 << 0;
 constexpr uint32_t kRequestPayerEmail = 1 << 1;
@@ -57,20 +58,36 @@ AutofillProfile CreateProfileWithContactInfo(const char* name,
   return profile;
 }
 
+AutofillProfile CreateProfileWithCompleteAddress(const char* name,
+                                                 const char* phone) {
+  AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
+  autofill::test::SetProfileInfo(&profile, name, "", "", "", "", "123 Fake St.",
+                                 "", "Fakesville", "MN", "54000", "US", phone);
+  return profile;
+}
+
+AutofillProfile CreateProfileWithPartialAddress(const char* name,
+                                                const char* phone) {
+  AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
+  autofill::test::SetProfileInfo(&profile, name, "", "", "", "", "123 Fake St.",
+                                 "", "", "", "54000", "", phone);
+  return profile;
+}
+
 TEST(PaymentRequestProfileUtilTest, FilterProfilesForContact) {
   // These profiles are subset/equal, so only the first complete one is
   // included.
   AutofillProfile exclude_1 =
-      CreateProfileWithContactInfo("Homer", "", "5551234567");
+      CreateProfileWithContactInfo("Homer", "", "6515553226");
 
   AutofillProfile exclude_2 =
       CreateProfileWithContactInfo("Homer", "homer@simpson.net", "");
 
   AutofillProfile include_1 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
 
   AutofillProfile exclude_3 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
 
   // This profile is different, so it should also be included. Since it is
   // less complete than |include_1|, it will appear after.
@@ -82,15 +99,17 @@ TEST(PaymentRequestProfileUtilTest, FilterProfilesForContact) {
   // after |include_1| since order is preserved amongst profiles of equal
   // completeness.
   AutofillProfile include_3 = CreateProfileWithContactInfo(
-      "Bart", "eatmyshorts@simpson.net", "5551234567");
+      "Bart", "eatmyshorts@simpson.net", "6515553226");
 
   std::vector<AutofillProfile*> profiles = {&exclude_1, &exclude_2, &include_1,
                                             &exclude_3, &include_2, &include_3};
 
   MockPaymentOptionsProvider provider(kRequestPayerName | kRequestPayerEmail |
                                       kRequestPayerPhone);
+  PaymentsProfileComparator comp("en-US", provider);
+
   std::vector<AutofillProfile*> filtered =
-      FilterProfilesForContact(profiles, "en-US", provider);
+      comp.FilterProfilesForContact(profiles);
 
   ASSERT_EQ(3u, filtered.size());
   EXPECT_EQ(&include_1, filtered[0]);
@@ -101,8 +120,9 @@ TEST(PaymentRequestProfileUtilTest, FilterProfilesForContact) {
   // Under these rules, since all profiles have the same (or no) phone number,
   // we should only see the first profile with a phone number, |exclude_1|.
   MockPaymentOptionsProvider phone_only_provider(kRequestPayerPhone);
+  PaymentsProfileComparator phone_only_comp("en-US", phone_only_provider);
   std::vector<AutofillProfile*> filtered_phones =
-      FilterProfilesForContact(profiles, "en-US", phone_only_provider);
+      phone_only_comp.FilterProfilesForContact(profiles);
   ASSERT_EQ(1u, filtered_phones.size());
   EXPECT_EQ(&exclude_1, filtered_phones[0]);
 }
@@ -113,17 +133,17 @@ TEST(PaymentRequestProfileUtilTest, IsContactEqualOrSuperset) {
   PaymentsProfileComparator comp("en-US", provider);
 
   AutofillProfile p1 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
 
   // Candidate subset profile is equal.
   AutofillProfile p2 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p1, p2));
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p2, p1));
 
   // Candidate subset profile has non-matching fields.
   AutofillProfile p3 = CreateProfileWithContactInfo(
-      "Homer", "homer@springfieldnuclear.gov", "5551234567");
+      "Homer", "homer@springfieldnuclear.gov", "6515553226");
   EXPECT_FALSE(comp.IsContactEqualOrSuperset(p1, p3));
   EXPECT_FALSE(comp.IsContactEqualOrSuperset(p3, p1));
 
@@ -136,7 +156,7 @@ TEST(PaymentRequestProfileUtilTest, IsContactEqualOrSuperset) {
   // One field is common, but each has a field which the other is missing.
   AutofillProfile p5 =
       CreateProfileWithContactInfo("Homer", "homer@simpson.net", "");
-  AutofillProfile p6 = CreateProfileWithContactInfo("Homer", "", "5551234567");
+  AutofillProfile p6 = CreateProfileWithContactInfo("Homer", "", "6515553226");
   EXPECT_FALSE(comp.IsContactEqualOrSuperset(p5, p6));
   EXPECT_FALSE(comp.IsContactEqualOrSuperset(p6, p5));
 }
@@ -147,22 +167,22 @@ TEST(PaymentRequestProfileUtilTest, IsContactEqualOrSuperset_WithFieldIgnored) {
   PaymentsProfileComparator comp("en-US", provider);
 
   AutofillProfile p1 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
 
   // Candidate subset profile is equal.
   AutofillProfile p2 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p1, p2));
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p2, p1));
 
   // Email fields don't match, but profiles are still equal.
   AutofillProfile p3 = CreateProfileWithContactInfo(
-      "Homer", "homer@springfieldnuclear.gov", "5551234567");
+      "Homer", "homer@springfieldnuclear.gov", "6515553226");
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p1, p3));
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p3, p1));
 
   // Profile without an email is mutual subset of profile with an email.
-  AutofillProfile p4 = CreateProfileWithContactInfo("Homer", "", "5551234567");
+  AutofillProfile p4 = CreateProfileWithContactInfo("Homer", "", "6515553226");
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p1, p4));
   EXPECT_TRUE(comp.IsContactEqualOrSuperset(p4, p1));
 }
@@ -174,7 +194,7 @@ TEST(PaymentRequestProfileUtilTest, GetContactCompletenessScore) {
   // Two completeness points: One each for name and phone number, but not email
   // as it was not requested.
   AutofillProfile p1 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
   EXPECT_EQ(2, comp.GetContactCompletenessScore(&p1));
 
   // One completeness point for name, no points for phone number (missing) or
@@ -199,7 +219,7 @@ TEST(PaymentRequestProfileUtilTest, IsContactInfoComplete) {
   // If name and email are present, return true regardless of the (ignored)
   // phone value.
   AutofillProfile p1 =
-      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
   AutofillProfile p2 =
       CreateProfileWithContactInfo("Homer", "homer@simpson.net", "");
 
@@ -209,7 +229,7 @@ TEST(PaymentRequestProfileUtilTest, IsContactInfoComplete) {
   // If name is not present, return false regardless of the (ignored)
   // phone value.
   AutofillProfile p3 =
-      CreateProfileWithContactInfo("", "homer@simpson.net", "5551234567");
+      CreateProfileWithContactInfo("", "homer@simpson.net", "6515553226");
   AutofillProfile p4 =
       CreateProfileWithContactInfo("", "homer@simpson.net", "");
 
@@ -227,5 +247,121 @@ TEST(PaymentRequestProfileUtilTest, IsContactInfoComplete) {
   EXPECT_TRUE(empty_comp.IsContactInfoComplete(nullptr));
 }
 
-}  // namespace profile_util
+TEST(PaymentRequestProfileUtilTest, IsShippingComplete) {
+  MockPaymentOptionsProvider provider(kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  // True if name, phone, and address are all populated.
+  AutofillProfile p1 = CreateProfileWithCompleteAddress("Homer", "6515553226");
+  EXPECT_TRUE(comp.IsShippingComplete(&p1));
+
+  // False if address is partially populated.
+  AutofillProfile p2 = CreateProfileWithPartialAddress("Homer", "6515553226");
+  EXPECT_FALSE(comp.IsShippingComplete(&p2));
+
+  // False if name isn't populated.
+  AutofillProfile p3 = CreateProfileWithCompleteAddress("", "6515553226");
+  EXPECT_FALSE(comp.IsShippingComplete(&p3));
+
+  // False if phone isn't populated.
+  AutofillProfile p4 = CreateProfileWithCompleteAddress("Homer", "");
+  EXPECT_FALSE(comp.IsShippingComplete(&p4));
+
+  // False if only contact info (no address fields) is populated.
+  AutofillProfile p5 =
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
+  EXPECT_FALSE(comp.IsShippingComplete(&p5));
+
+  MockPaymentOptionsProvider provider_no_shipping(0);
+  PaymentsProfileComparator comp_no_shipping("en-US", provider_no_shipping);
+  // nullptr is handled correctly: false if shipping requested, true if not.
+  EXPECT_FALSE(comp.IsShippingComplete(nullptr));
+  EXPECT_TRUE(comp_no_shipping.IsShippingComplete(nullptr));
+}
+
+TEST(PaymentRequestProfileUtilTest, GetStringForMissingContactFields) {
+  MockPaymentOptionsProvider provider(kRequestPayerName | kRequestPayerPhone |
+                                      kRequestPayerEmail | kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  // No error message for complete profile.
+  AutofillProfile p1 =
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
+  EXPECT_TRUE(comp.GetStringForMissingContactFields(p1).empty());
+
+  MockPaymentOptionsProvider provider_no_email(
+      kRequestPayerName | kRequestPayerPhone | kRequestShipping);
+  PaymentsProfileComparator comp_no_email("en-US", provider_no_email);
+
+  // No error message if missing field wasn't required.
+  AutofillProfile p2 = CreateProfileWithContactInfo("Homer", "", "6515553226");
+  EXPECT_TRUE(comp_no_email.GetStringForMissingContactFields(p2).empty());
+
+  // Error message for email address if email address is missing and required.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_EMAIL_REQUIRED),
+            comp.GetStringForMissingContactFields(p2));
+
+  // Error message for phone number if phone is missing and required.
+  AutofillProfile p3 =
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_PHONE_NUMBER_REQUIRED),
+            comp.GetStringForMissingContactFields(p3));
+
+  // Error message for name if name is missing and required.
+  AutofillProfile p4 =
+      CreateProfileWithContactInfo("", "homer@simpson.net", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_REQUIRED),
+            comp.GetStringForMissingContactFields(p4));
+
+  // Generic error message if multiple fields missing.
+  AutofillProfile p5 =
+      CreateProfileWithContactInfo("", "homer@simpson.net", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED),
+            comp.GetStringForMissingContactFields(p5));
+}
+
+TEST(PaymentRequestProfileUtilTest, GetStringForMissingShippingFields) {
+  MockPaymentOptionsProvider provider(kRequestPayerName | kRequestPayerPhone |
+                                      kRequestPayerEmail | kRequestShipping);
+  PaymentsProfileComparator comp("en-US", provider);
+
+  // No error message for complete profile.
+  AutofillProfile p1 = CreateProfileWithCompleteAddress("Homer", "6515553226");
+  EXPECT_TRUE(comp.GetStringForMissingShippingFields(p1).empty());
+
+  // Error message for shipping if shipping requested and not present.
+  AutofillProfile p2 =
+      CreateProfileWithContactInfo("Homer", "homer@simpson.net", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_INVALID_ADDRESS),
+            comp.GetStringForMissingShippingFields(p2));
+
+  // Error message for shipping if shipping requested and only partially
+  // complete.
+  AutofillProfile p3 = CreateProfileWithPartialAddress("Homer", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_INVALID_ADDRESS),
+            comp.GetStringForMissingShippingFields(p3));
+
+  // Error message for name if name requested and missing.
+  AutofillProfile p4 = CreateProfileWithCompleteAddress("", "6515553226");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_REQUIRED),
+            comp.GetStringForMissingShippingFields(p4));
+
+  // Error message for phone if phone requested and missing.
+  AutofillProfile p5 = CreateProfileWithCompleteAddress("Homer", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_PHONE_NUMBER_REQUIRED),
+            comp.GetStringForMissingShippingFields(p5));
+
+  // Generic error message if multiple fields missing.
+  AutofillProfile p6 = CreateProfileWithContactInfo("", "", "");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED),
+            comp.GetStringForMissingShippingFields(p6));
+
+  MockPaymentOptionsProvider provider_no_shipping(
+      kRequestPayerName | kRequestPayerPhone | kRequestPayerEmail);
+  PaymentsProfileComparator comp_no_shipping("en-US", provider_no_shipping);
+
+  // No error message if everything is missing but shipping wasn't requested.
+  EXPECT_TRUE(comp_no_shipping.GetStringForMissingShippingFields(p6).empty());
+}
+
 }  // namespace payments

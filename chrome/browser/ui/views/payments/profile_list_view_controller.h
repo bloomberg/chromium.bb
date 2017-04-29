@@ -65,6 +65,8 @@ class ProfileListViewController : public PaymentRequestSheetController {
 
   virtual autofill::AutofillProfile* GetSelectedProfile() = 0;
 
+  virtual bool IsValidProfile(const autofill::AutofillProfile& profile) = 0;
+
  protected:
   // Does not take ownership of the arguments, which should outlive this object.
   ProfileListViewController(PaymentRequestSpec* spec,

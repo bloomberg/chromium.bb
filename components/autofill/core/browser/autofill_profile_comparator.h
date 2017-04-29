@@ -215,6 +215,8 @@ class AutofillProfileComparator {
                      const AutofillProfile& p2,
                      NameInfo* info) const;
 
+  const std::string app_locale() const { return app_locale_; }
+
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;
   std::unique_ptr<icu::Transliterator> transliterator_;

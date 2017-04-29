@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/payment_options_provider.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/vector_icons/vector_icons.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -63,10 +65,15 @@ base::string16 GetAddressFromProfile(const autofill::AutofillProfile& profile,
   return profile.ConstructInferredLabel(fields, fields.size(), locale);
 }
 
-std::unique_ptr<views::View> GetThreeLineLabel(AddressStyleType type,
-                                               const base::string16& s1,
-                                               const base::string16& s2,
-                                               const base::string16& s3) {
+// |s1|, |s2|, and |s3| are lines identifying the profile. |s1| is the
+// "headline" which may be emphasized depending on |type|. |error| is a
+// message indicating errors that need to be resolved before using this
+// profile.
+std::unique_ptr<views::View> GetProfileLabel(AddressStyleType type,
+                                             const base::string16& s1,
+                                             const base::string16& s2,
+                                             const base::string16& s3,
+                                             const base::string16& error) {
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
   std::unique_ptr<views::BoxLayout> layout =
       base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 0, 0, 0);
@@ -80,26 +87,33 @@ std::unique_ptr<views::View> GetThreeLineLabel(AddressStyleType type,
       const gfx::FontList& font_list = label->font_list();
       label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
     }
-    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_1));
+    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
   if (!s2.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s2);
-    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_2));
+    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
   if (!s3.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s3);
-    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_3));
+    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     container->AddChildView(label.release());
   }
 
-  // TODO(anthonyvd): add the error label
+  if (!error.empty()) {
+    std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(error);
+    label->set_id(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
+    label->SetFontList(label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+    label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_LinkEnabled));
+    container->AddChildView(label.release());
+  }
 
   return container;
 }
@@ -231,7 +245,9 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
 std::unique_ptr<views::View> GetShippingAddressLabel(
     AddressStyleType type,
     const std::string& locale,
-    const autofill::AutofillProfile& profile) {
+    const autofill::AutofillProfile& profile,
+    const PaymentOptionsProvider& options,
+    const PaymentsProfileComparator& comp) {
   base::string16 name =
       profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
 
@@ -240,7 +256,9 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
   base::string16 phone = profile.GetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale);
 
-  return GetThreeLineLabel(type, name, address, phone);
+  base::string16 error = comp.GetStringForMissingShippingFields(profile);
+
+  return GetProfileLabel(type, name, address, phone, error);
 }
 
 // TODO(anthonyvd): unit test the label layout.
@@ -248,7 +266,8 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    const PaymentOptionsProvider& options) {
+    const PaymentOptionsProvider& options,
+    const PaymentsProfileComparator& comp) {
   base::string16 name =
       options.request_payer_name()
           ? profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale)
@@ -267,7 +286,9 @@ std::unique_ptr<views::View> GetContactInfoLabel(
                             locale)
           : base::string16();
 
-  return GetThreeLineLabel(type, name, phone, email);
+  base::string16 error = comp.GetStringForMissingContactFields(profile);
+
+  return GetProfileLabel(type, name, phone, email, error);
 }
 
 std::unique_ptr<views::Border> CreatePaymentRequestRowBorder() {

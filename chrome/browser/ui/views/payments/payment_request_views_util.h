@@ -26,6 +26,7 @@ class View;
 namespace payments {
 
 class PaymentOptionsProvider;
+class PaymentsProfileComparator;
 enum class PaymentShippingType;
 
 constexpr int kPaymentRequestRowHorizontalInsets = 16;
@@ -81,7 +82,9 @@ enum class AddressStyleType { SUMMARY, DETAILED };
 std::unique_ptr<views::View> GetShippingAddressLabel(
     AddressStyleType type,
     const std::string& locale,
-    const autofill::AutofillProfile& profile);
+    const autofill::AutofillProfile& profile,
+    const PaymentOptionsProvider& options,
+    const PaymentsProfileComparator& comp);
 
 // Extracts and formats descriptive text from the given |profile| to represent
 // the contact info in the context specified by |type|. Includes/excludes name,
@@ -90,7 +93,8 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    const PaymentOptionsProvider& options);
+    const PaymentOptionsProvider& options,
+    const PaymentsProfileComparator& comp);
 
 // Creates a views::Border object that can paint the gray horizontal ruler used
 // as a separator between items in the Payment Request dialog.

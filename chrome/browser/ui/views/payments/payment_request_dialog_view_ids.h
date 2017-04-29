@@ -45,10 +45,11 @@ enum class DialogViewID : int {
   SHIPPING_OPTION_DESCRIPTION,
   SHIPPING_OPTION_AMOUNT,
 
-  // Used in "three line labels" to annotate each Label of the grouping.
-  THREE_LINE_LABEL_LINE_1,
-  THREE_LINE_LABEL_LINE_2,
-  THREE_LINE_LABEL_LINE_3,
+  // Used in profile labels to annotate each line of the grouping.
+  PROFILE_LABEL_LINE_1,
+  PROFILE_LABEL_LINE_2,
+  PROFILE_LABEL_LINE_3,
+  PROFILE_LABEL_ERROR,
 
   // The following are views contained within the Payment Method Sheet.
   CONTACT_INFO_SHEET_LIST_VIEW,

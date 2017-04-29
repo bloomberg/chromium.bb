@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -129,6 +130,7 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
     DCHECK(success);
     profile_to_edit_->set_origin(autofill::kSettingsOrigin);
     state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+    state()->profile_comparator()->Invalidate(*profile_to_edit_);
     std::move(on_edited_).Run();
     on_added_.Reset();
   }

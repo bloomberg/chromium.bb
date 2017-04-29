@@ -148,8 +148,8 @@ class PaymentRequestBrowserTestBase
   void ClickOnChildInListViewAndWait(int child_index,
                                      int total_num_children,
                                      DialogViewID list_view_id);
-  // Returns "three-line label" values under |parent_view|.
-  std::vector<base::string16> GetThreeLineLabelValues(
+  // Returns profile label values under |parent_view|.
+  std::vector<base::string16> GetProfileLabelValues(
       DialogViewID parent_view_id);
   // Returns the shipping option labels under |parent_view_id|.
   std::vector<base::string16> GetShippingOptionLabelValues(

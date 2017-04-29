@@ -78,6 +78,7 @@ bool ContactInfoEditorViewController::ValidateModelAndSave() {
   if (profile_to_edit_) {
     PopulateProfile(profile_to_edit_);
     state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+    state()->profile_comparator()->Invalidate(*profile_to_edit_);
   } else {
     std::unique_ptr<autofill::AutofillProfile> profile =
         base::MakeUnique<autofill::AutofillProfile>();
