@@ -112,6 +112,18 @@ def ParseWhiteList(whitelist):
   return out
 
 
+def FilterOutDepsedRepo(files, deps):
+  return {f for f in files if not any(f.startswith(d) for d in deps)}
+
+
+def GetNonExistingFiles(lst):
+  out = set()
+  for f in lst:
+    if not os.path.isfile(f):
+      out.add(f)
+  return out
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--out-dir', default='out/Release')
@@ -134,11 +146,15 @@ def main():
   deps_p.start()
 
   d = d_q.get()
+  assert len(GetNonExistingFiles(d)) == 0, \
+      'Found non-existing files in ninja deps'
   gn = gn_q.get()
   missing = d - gn
+  nonexisting = GetNonExistingFiles(gn)
 
   deps = deps_q.get()
-  missing = {m for m in missing if not any(m.startswith(d) for d in deps)}
+  missing = FilterOutDepsedRepo(missing, deps)
+  nonexisting = FilterOutDepsedRepo(nonexisting, deps)
 
   d_p.join()
   gn_p.join()
@@ -149,17 +165,25 @@ def main():
     missing -= whitelist
 
   missing = sorted(missing)
+  nonexisting = sorted(nonexisting)
 
   if args.json:
     with open(args.json, 'w') as f:
       json.dump(missing, f)
 
-  if len(missing) == 0:
+  if len(missing) == 0 and len(nonexisting) == 0:
     return 0
 
-  print 'The following files should be included in gn files:'
-  for i in missing:
-    print i
+  if len(missing) > 0:
+    print '\nThe following files should be included in gn files:'
+    for i in missing:
+      print i
+
+  if len(nonexisting) > 0:
+    print '\nThe following non-existing files should be removed from gn files:'
+    for i in nonexisting:
+      print i
+
   return 1
 
 
