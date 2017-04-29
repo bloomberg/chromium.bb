@@ -1051,7 +1051,19 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
 void GraphicsLayer::SetContentsToImage(
     Image* image,
     RespectImageOrientationEnum respect_image_orientation) {
-  sk_sp<SkImage> sk_image = image ? image->ImageForCurrentFrame() : nullptr;
+  sk_sp<SkImage> sk_image;
+  PaintImage::AnimationType animation_type = PaintImage::AnimationType::UNKNOWN;
+  PaintImage::CompletionState completion_state =
+      PaintImage::CompletionState::UNKNOWN;
+  if (image) {
+    sk_image = image->ImageForCurrentFrame();
+    animation_type = image->MaybeAnimated()
+                         ? PaintImage::AnimationType::ANIMATED
+                         : PaintImage::AnimationType::STATIC;
+    completion_state = image->CurrentFrameIsComplete()
+                           ? PaintImage::CompletionState::DONE
+                           : PaintImage::CompletionState::PARTIALLY_DONE;
+  }
 
   if (image && sk_image && image->IsBitmapImage()) {
     if (respect_image_orientation == kRespectImageOrientation) {
@@ -1068,7 +1080,8 @@ void GraphicsLayer::SetContentsToImage(
           Platform::Current()->CompositorSupport()->CreateImageLayer();
       RegisterContentsLayer(image_layer_->Layer());
     }
-    image_layer_->SetImage(sk_image.get());
+    image_layer_->SetImage(
+        PaintImage(std::move(sk_image), animation_type, completion_state));
     image_layer_->Layer()->SetOpaque(image->CurrentFrameKnownToBeOpaque());
     UpdateContentsRect();
   } else {

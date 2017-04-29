@@ -11,10 +11,9 @@
 #include "cc/cc_export.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
-
-class SkImage;
 
 namespace cc {
 
@@ -22,7 +21,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
  public:
   static scoped_refptr<PictureImageLayer> Create();
 
-  void SetImage(sk_sp<const SkImage> image);
+  void SetImage(PaintImage image);
 
   // Layer implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -42,7 +41,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   PictureImageLayer();
   ~PictureImageLayer() override;
 
-  sk_sp<const SkImage> image_;
+  PaintImage image_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureImageLayer);
 };

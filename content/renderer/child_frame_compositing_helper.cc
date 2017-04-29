@@ -13,6 +13,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/paint/paint_image.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "content/child/thread_safe_sender.h"
@@ -191,7 +192,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
         web_layer_->Bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
-      sad_layer->SetImage(SkImage::MakeFromBitmap(*sad_bitmap));
+      sad_layer->SetImage(cc::PaintImage(SkImage::MakeFromBitmap(*sad_bitmap)));
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
       sad_layer->SetPosition(gfx::PointF(

@@ -22,11 +22,12 @@ blink::WebLayer* WebImageLayerImpl::Layer() {
   return layer_.get();
 }
 
-void WebImageLayerImpl::SetImage(const SkImage* image) {
-  static_cast<cc::PictureImageLayer*>(layer_->layer())
-      ->SetImage(sk_ref_sp(image));
+void WebImageLayerImpl::SetImage(cc::PaintImage image) {
   static_cast<WebLayerImplFixedBounds*>(layer_.get())
-      ->SetFixedBounds(gfx::Size(image->width(), image->height()));
+      ->SetFixedBounds(
+          gfx::Size(image.sk_image()->width(), image.sk_image()->height()));
+  static_cast<cc::PictureImageLayer*>(layer_->layer())
+      ->SetImage(std::move(image));
 }
 
 void WebImageLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
