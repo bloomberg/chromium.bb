@@ -125,6 +125,7 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
      */
     @LargeTest
     @Feature({"CopylessPaste"})
+    @DisabledTest(message = "crbug.com/713895")
     public void testNoMeta() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(NODATA_PAGE));
         mCallbackHelper.waitForCallback(0);
