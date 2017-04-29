@@ -7586,20 +7586,20 @@
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "eve-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "eve-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -7626,11 +7626,11 @@
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "eve-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -7660,7 +7660,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "eve-payloads": {
         "_template": "payloads",
@@ -7673,14 +7674,14 @@
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "eve-release": {
         "_template": "release",
@@ -7689,14 +7690,14 @@
             "eve"
         ],
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "eve-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -7704,7 +7705,9 @@
                     "eve"
                 ],
                 "grouped": true,
-                "name": "eve-release-afdo-generate"
+                "name": "eve-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release_afdo_use",
@@ -7712,41 +7715,47 @@
                     "eve"
                 ],
                 "grouped": true,
-                "name": "eve-release-afdo-use"
+                "name": "eve-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
             }
-        ]
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "eve-release-afdo-generate": {
         "_template": "release_afdo_generate",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "eve-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "eve-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "eve-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "eve"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "eve-unittest-stress": {
         "_template": "unittest_stress",

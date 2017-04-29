@@ -586,6 +586,7 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'chell',
     'cyan',
     'edgar',
+    'eve',
     'fizz',
     'gandof',
     'glados',
