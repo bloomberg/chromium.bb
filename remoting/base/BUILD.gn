@@ -108,7 +108,6 @@ source_set("breakpad") {
   sources = [
     "breakpad.h",
     "breakpad_linux.cc",
-    "breakpad_linux.h",
     "breakpad_mac.mm",
     "breakpad_win.cc",
   ]

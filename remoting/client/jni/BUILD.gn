@@ -26,7 +26,6 @@ shared_library("remoting_client_jni") {
     "//ui/gfx",
   ]
   sources = [
-    "display_updater_factory.h",
     "egl_thread_context.cc",
     "egl_thread_context.h",
     "jni_client.cc",

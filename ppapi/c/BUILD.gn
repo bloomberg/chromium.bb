@@ -56,7 +56,6 @@ source_set("c") {
     "ppb_network_monitor.h",
     "ppb_network_proxy.h",
     "ppb_opengles2.h",
-    "ppb_ppb_vpn_provider.h",
     "ppb_tcp_socket.h",
     "ppb_text_input_controller.h",
     "ppb_udp_socket.h",

@@ -8,7 +8,6 @@ static_library("client") {
   set_sources_assignment_filter([])
 
   sources = [
-    "audio_consumer.h",
     "audio_player.cc",
     "audio_player.h",
     "chromoting_client.cc",
