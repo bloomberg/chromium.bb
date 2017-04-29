@@ -578,8 +578,18 @@ def GetFirmwareVersions(buildroot, board):
   result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
                                      capture_output=True, log_output=True,
                                      cwd=buildroot)
+  # Sometimes a firmware bundle includes a special combination of RO+RW
+  # firmware.  In this case, the RW firmware version is indicated with a "(RW)
+  # version" field.  In other cases, the "(RW) version" field is not present.
+  # Therefore, search for the "(RW)" fields first and if they aren't present,
+  # fallback to the other format. e.g. just "BIOS version:".
+  # TODO(aaboagye): Use JSON once the firmware updater supports it.
   main = re.search(r'BIOS \(RW\) version:\s*(?P<version>.*)', result.output)
+  if not main:
+    main = re.search(r'BIOS version:\s*(?P<version>.*)', result.output)
   ec = re.search(r'EC \(RW\) version:\s*(?P<version>.*)', result.output)
+  if not ec:
+    ec = re.search(r'EC version:\s*(?P<version>.*)', result.output)
   return (main.group('version') if main else None,
           ec.group('version') if ec else None)
 

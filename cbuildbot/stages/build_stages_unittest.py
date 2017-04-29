@@ -280,6 +280,37 @@ class BuildPackagesStageTest(AllConfigsTestCase,
                      side_effect=Exception('unmet dependency'))
     self.RunTestsWithBotId('x86-generic-paladin')
 
+  def testFirmwareVersionsMixedImage(self):
+    """Test that firmware versions are extracted correctly."""
+    expected_main_firmware_version = 'reef_v1.1.5822-78709a5'
+    expected_ec_firmware_version = 'Google_Reef.9042.30.0'
+
+    def _HookRunCommandFirmwareUpdate(rc):
+      # A mixed RO+RW image will have separate "(RW) version" fields.
+      rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
+                      output='BIOS (RW) version: %s\nEC (RW) version: %s' %
+                      (expected_main_firmware_version,
+                       expected_ec_firmware_version))
+
+    self._update_metadata = True
+    update = os.path.join(
+        self.build_root,
+        'chroot/build/x86-generic/usr/sbin/chromeos-firmwareupdate')
+    osutils.Touch(update, makedirs=True)
+
+    self._mock_configurator = _HookRunCommandFirmwareUpdate
+    self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
+    board_metadata = (self._run.attrs.metadata.GetDict()['board-metadata']
+                      .get('x86-generic'))
+    if board_metadata:
+      self.assertIn('main-firmware-version', board_metadata)
+      self.assertEqual(board_metadata['main-firmware-version'],
+                       expected_main_firmware_version)
+      self.assertIn('ec-firmware-version', board_metadata)
+      self.assertEqual(board_metadata['ec-firmware-version'],
+                       expected_ec_firmware_version)
+      self.assertFalse(self._run.attrs.metadata.GetDict()['unibuild'])
+
   def testFirmwareVersions(self):
     """Test that firmware versions are extracted correctly."""
     expected_main_firmware_version = 'reef_v1.1.5822-78709a5'
@@ -287,7 +318,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
     def _HookRunCommandFirmwareUpdate(rc):
       rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
-                      output='BIOS (RW) version: %s\nEC (RW) version: %s' %
+                      output='BIOS version: %s\nEC version: %s' %
                       (expected_main_firmware_version,
                        expected_ec_firmware_version))
 
