@@ -1286,6 +1286,7 @@ component("platform") {
     "scheduler/base/work_queue_sets.cc",
     "scheduler/base/work_queue_sets.h",
     "scheduler/child/compositor_worker_scheduler.cc",
+    "scheduler/child/compositor_worker_scheduler.h",
     "scheduler/child/idle_canceled_delayed_task_sweeper.cc",
     "scheduler/child/idle_canceled_delayed_task_sweeper.h",
     "scheduler/child/idle_helper.cc",
@@ -1302,9 +1303,11 @@ component("platform") {
     "scheduler/child/web_task_runner_impl.h",
     "scheduler/child/webthread_base.cc",
     "scheduler/child/webthread_impl_for_worker_scheduler.cc",
+    "scheduler/child/webthread_impl_for_worker_scheduler.h",
     "scheduler/child/worker_global_scope_scheduler.cc",
     "scheduler/child/worker_global_scope_scheduler.h",
     "scheduler/child/worker_scheduler.cc",
+    "scheduler/child/worker_scheduler.h",
     "scheduler/child/worker_scheduler_impl.cc",
     "scheduler/child/worker_scheduler_impl.h",
     "scheduler/renderer/auto_advancing_virtual_time_domain.cc",
@@ -1338,6 +1341,7 @@ component("platform") {
     "scheduler/renderer/webthread_impl_for_renderer_scheduler.cc",
     "scheduler/renderer/webthread_impl_for_renderer_scheduler.h",
     "scheduler/utility/webthread_impl_for_utility_thread.cc",
+    "scheduler/utility/webthread_impl_for_utility_thread.h",
     "scroll/MainThreadScrollingReason.h",
     "scroll/ProgrammaticScrollAnimator.cpp",
     "scroll/ProgrammaticScrollAnimator.h",
@@ -1486,11 +1490,6 @@ component("platform") {
     "weborigin/URLSecurityOriginMap.h",
   ]
 
-  if (is_android) {
-    set_sources_assignment_filter([])
-    sources += [ "exported/linux/WebFontRenderStyle.cpp" ]
-  }
-
   sources -= blink_platform_neon_files
   sources -= blink_platform_msa_files
   sources -= blink_platform_sse_files
@@ -1613,6 +1612,7 @@ component("platform") {
     # Add in some Linux files also shared with Android.
     set_sources_assignment_filter([])
     sources += [
+      "exported/linux/WebFontRenderStyle.cpp",
       "fonts/linux/FontPlatformDataLinux.cpp",
       "fonts/linux/FontRenderStyle.cpp",
       "fonts/linux/FontRenderStyle.h",
