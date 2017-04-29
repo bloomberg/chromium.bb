@@ -49,6 +49,10 @@ namespace IPC {
 
 struct ChannelHandle;
 
+#if defined(OS_WIN)
+class PlatformFileForTransit;
+#endif
+
 // -----------------------------------------------------------------------------
 // How we send IPC message logs across channels.
 struct IPC_EXPORT LogData {
@@ -592,6 +596,19 @@ struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+#if defined(OS_WIN)
+template <>
+struct IPC_EXPORT ParamTraits<PlatformFileForTransit> {
+  typedef PlatformFileForTransit param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+#endif  // defined(OS_WIN)
 
 template <>
 struct IPC_EXPORT ParamTraits<base::FilePath> {

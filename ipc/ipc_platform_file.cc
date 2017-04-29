@@ -11,6 +11,32 @@
 
 namespace IPC {
 
+#if defined(OS_WIN)
+PlatformFileForTransit::PlatformFileForTransit() : handle_(nullptr) {}
+
+PlatformFileForTransit::PlatformFileForTransit(HANDLE handle)
+    : handle_(handle) {}
+
+bool PlatformFileForTransit::operator==(
+    const PlatformFileForTransit& platform_file) const {
+  return handle_ == platform_file.handle_;
+}
+
+bool PlatformFileForTransit::operator!=(
+    const PlatformFileForTransit& platform_file) const {
+  return !(*this == platform_file);
+}
+
+HANDLE PlatformFileForTransit::GetHandle() const {
+  return handle_;
+}
+
+bool PlatformFileForTransit::IsValid() const {
+  return handle_ != nullptr;
+}
+
+#endif  // defined(OS_WIN)
+
 PlatformFileForTransit GetPlatformFileForTransit(base::PlatformFile handle,
                                                  bool close_source_handle) {
 #if defined(OS_WIN)
@@ -24,10 +50,7 @@ PlatformFileForTransit GetPlatformFileForTransit(base::PlatformFile handle,
     return IPC::InvalidPlatformFileForTransit();
   }
 
-  IPC::PlatformFileForTransit out_handle = IPC::PlatformFileForTransit(
-      raw_handle, base::GetCurrentProcId());
-  out_handle.SetOwnershipPassesToIPC(true);
-  return out_handle;
+  return IPC::PlatformFileForTransit(raw_handle);
 #elif defined(OS_POSIX)
   // If asked to close the source, we can simply re-use the source fd instead of
   // dup()ing and close()ing.
