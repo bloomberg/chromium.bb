@@ -388,6 +388,10 @@ void WebRuntimeFeatures::EnableBackgroundVideoTrackOptimization(bool enable) {
   RuntimeEnabledFeatures::setBackgroundVideoTrackOptimizationEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableNewRemotePlaybackPipeline(bool enable) {
+  RuntimeEnabledFeatures::setNewRemotePlaybackPipelineEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableRemotePlaybackAPI(bool enable) {
   RuntimeEnabledFeatures::setRemotePlaybackEnabled(enable);
 }

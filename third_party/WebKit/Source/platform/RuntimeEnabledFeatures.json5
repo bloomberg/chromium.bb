@@ -659,6 +659,10 @@
       name: "NetworkInformation",
       status: "stable",
     },
+    // Not a web exposed feature, enabled from the command line.
+    {
+      name: "NewRemotePlaybackPipeline",
+    },
     {
       name: "NotificationBadge",
       status: "stable",
@@ -999,7 +1003,7 @@
     {
       name: "WebAssemblyStreaming",
       status: "experimental",
-    }, 
+    },
     {
       name: "WebAuth",
       status: "experimental",

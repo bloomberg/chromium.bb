@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
@@ -1083,6 +1084,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetHideDownloadUI(prefs.hide_download_ui);
   WebRuntimeFeatures::EnableBackgroundVideoTrackOptimization(
       prefs.background_video_track_optimization_enabled);
+  WebRuntimeFeatures::EnableNewRemotePlaybackPipeline(
+      base::FeatureList::IsEnabled(media::kNewRemotePlaybackPipeline));
 
   settings->SetPresentationReceiver(prefs.presentation_receiver);
 

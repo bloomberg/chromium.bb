@@ -2574,6 +2574,15 @@ const char kBackgroundVideoTrackOptimizationDescription[] =
     "Disable video tracks when the video is played in the background to "
     "optimize performance.";
 
+//  New remote playback pipeline experiment strings.
+
+const char kNewRemotePlaybackPipelineName[] =
+    "Enable the new remote playback pipeline.";
+
+const char kNewRemotePlaybackPipelineDescription[] =
+    "Enable the new pipeline for playing media element remotely via "
+    "RemotePlayback API or native controls.";
+
 //  Video fullscreen with orientation lock experiment strings.
 
 const char kVideoFullscreenOrientationLockName[] =
