@@ -496,12 +496,12 @@ void WebstoreInstaller::OnDownloadStarted(
     if (version_required.IsValid()) {
       approval->minimum_version.reset(new base::Version(version_required));
     }
-    download_item_->SetUserData(kApprovalKey, approval.release());
+    download_item_->SetUserData(kApprovalKey, std::move(approval));
   } else {
     // It is for the main module of the extension. We should use the provided
     // |approval_|.
     if (approval_)
-      download_item_->SetUserData(kApprovalKey, approval_.release());
+      download_item_->SetUserData(kApprovalKey, std::move(approval_));
   }
 
   if (!download_started_) {

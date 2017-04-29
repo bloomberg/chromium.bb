@@ -620,7 +620,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         determined_conflict_action_(
             downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    download_item->SetUserData(kKey, this);
+    download_item->SetUserData(kKey, base::WrapUnique(this));
   }
 
   ~ExtensionDownloadsEventRouterData() override {
@@ -954,7 +954,7 @@ DownloadedByExtension::DownloadedByExtension(
     const std::string& name)
   : id_(id),
     name_(name) {
-  item->SetUserData(kKey, this);
+  item->SetUserData(kKey, base::WrapUnique(this));
 }
 
 DownloadsDownloadFunction::DownloadsDownloadFunction() {}

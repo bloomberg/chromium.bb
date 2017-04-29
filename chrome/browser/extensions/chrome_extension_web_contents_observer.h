@@ -26,12 +26,14 @@ namespace extensions {
 class ChromeExtensionWebContentsObserver
     : public ExtensionWebContentsObserver,
       public content::WebContentsUserData<ChromeExtensionWebContentsObserver> {
+ public:
+  ~ChromeExtensionWebContentsObserver() override;
+
  private:
   friend class content::WebContentsUserData<ChromeExtensionWebContentsObserver>;
 
   explicit ChromeExtensionWebContentsObserver(
       content::WebContents* web_contents);
-  ~ChromeExtensionWebContentsObserver() override;
 
   // ExtensionWebContentsObserver:
   void InitializeRenderFrame(
