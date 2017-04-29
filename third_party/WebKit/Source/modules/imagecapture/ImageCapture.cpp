@@ -403,7 +403,7 @@ void ImageCapture::ClearMediaTrackConstraints(ScriptPromiseResolver* resolver) {
 }
 
 void ImageCapture::GetMediaTrackSettings(MediaTrackSettings& settings) const {
-  // Merge any present |m_settings| members into |settings|.
+  // Merge any present |settings_| members into |settings|.
 
   if (settings_.hasWhiteBalanceMode())
     settings.setWhiteBalanceMode(settings_.whiteBalanceMode());
@@ -412,8 +412,10 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings& settings) const {
   if (settings_.hasFocusMode())
     settings.setFocusMode(settings_.focusMode());
 
-  if (settings_.hasPointsOfInterest())
+  if (settings_.hasPointsOfInterest() &&
+      !settings_.pointsOfInterest().IsEmpty()) {
     settings.setPointsOfInterest(settings_.pointsOfInterest());
+  }
 
   if (settings_.hasExposureCompensation())
     settings.setExposureCompensation(settings_.exposureCompensation());
@@ -504,7 +506,9 @@ void ImageCapture::OnPhotoCapabilities(
       caps->SetImageWidth(
           MediaSettingsRange::Create(std::move(capabilities->width)));
     }
-    caps->SetFillLightMode(capabilities->fill_light_mode);
+
+    if (!capabilities->fill_light_mode.IsEmpty())
+      caps->SetFillLightMode(capabilities->fill_light_mode);
 
     resolver->Resolve(caps);
   }
