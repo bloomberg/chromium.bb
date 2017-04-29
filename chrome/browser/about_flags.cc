@@ -561,20 +561,6 @@ const FeatureEntry::Choice kAshForceTabletModeChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
-const FeatureEntry::Choice kAppMenuIconChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kAppMenuIconOldBehavior, switches::kAppMenuIcon,
-     switches::kAppMenuIconOldBehavior},
-    {flag_descriptions::kAppMenuIconPersistentOpenedState,
-     switches::kAppMenuIcon, switches::kAppMenuIconPersistentOpenedState},
-    {flag_descriptions::kAppMenuIconPersistentClosedState,
-     switches::kAppMenuIcon, switches::kAppMenuIconPersistentClosedState},
-};
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
-        // defined(OS_WIN)
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kContentSuggestionsCategoryOrderFeatureVariationGeneral[] = {
@@ -2638,9 +2624,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxEntitySuggestionsName,
      flag_descriptions::kOmniboxEntitySuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxEntitySuggestions)},
-    {"app-menu-icon", flag_descriptions::kAppMenuIconName,
-     flag_descriptions::kAppMenuIconDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kAppMenuIconChoices)},
+    {"enable-new-app-menu-icon", flag_descriptions::kEnableNewAppMenuIconName,
+     flag_descriptions::kEnableNewAppMenuIconDescription, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableNewAppMenuIcon)},
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 

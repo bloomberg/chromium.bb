@@ -47,22 +47,16 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       severity_(AppMenuIconController::Severity::NONE),
       type_(AppMenuIconController::IconType::NONE),
       toolbar_view_(toolbar_view),
+      should_use_new_icon_(false),
       margin_trailing_(0),
       weak_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppMenuIcon)) {
-    std::string flag =
-        command_line->GetSwitchValueASCII(switches::kAppMenuIcon);
-    if (flag == switches::kAppMenuIconPersistentClosedState) {
-      Browser* browser = toolbar_view_->browser();
-      browser->tab_strip_model()->AddObserver(this);
-      animation_ = base::MakeUnique<AppMenuAnimation>(this, true);
-    } else if (flag == switches::kAppMenuIconPersistentOpenedState) {
-      animation_ = base::MakeUnique<AppMenuAnimation>(this, false);
-    }
+  if (command_line->HasSwitch(switches::kEnableNewAppMenuIcon)) {
+    toolbar_view_->browser()->tab_strip_model()->AddObserver(this);
+    should_use_new_icon_ = true;
   }
 }
 
@@ -109,8 +103,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
                         base::TimeTicks::Now() - menu_open_time);
   }
 
-  if (animation_ && severity_ != AppMenuIconController::Severity::NONE)
-    animation_->StartAnimation();
+  AnimateIconIfPossible();
 }
 
 void AppMenuButton::CloseMenu() {
@@ -162,8 +155,7 @@ void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
                                   content::WebContents* contents,
                                   int index,
                                   bool foreground) {
-  if (severity_ != AppMenuIconController::Severity::NONE)
-    animation_->StartAnimation();
+  AnimateIconIfPossible();
 }
 
 void AppMenuButton::UpdateIcon(bool should_animate) {
@@ -189,10 +181,14 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
       break;
   }
 
-  if (animation_) {
-    animation_->SetIconColors(toolbar_icon_color, severity_color);
+  if (should_use_new_icon_) {
+    if (!animation_)
+      animation_ = base::MakeUnique<AppMenuAnimation>(this, toolbar_icon_color);
+
+    animation_->set_target_color(severity_color);
     if (should_animate)
-      animation_->StartAnimation();
+      AnimateIconIfPossible();
+
     return;
   }
 
@@ -219,6 +215,15 @@ void AppMenuButton::SetTrailingMargin(int margin) {
   margin_trailing_ = margin;
   UpdateThemedBorder();
   InvalidateLayout();
+}
+
+void AppMenuButton::AnimateIconIfPossible() {
+  if (!animation_ || !should_use_new_icon_ ||
+      severity_ == AppMenuIconController::Severity::NONE) {
+    return;
+  }
+
+  animation_->StartAnimation();
 }
 
 void AppMenuButton::AppMenuAnimationStarted() {

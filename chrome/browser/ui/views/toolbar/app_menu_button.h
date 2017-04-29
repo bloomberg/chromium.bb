@@ -72,6 +72,10 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
   // to make the focus rectangle centered.
   void SetTrailingMargin(int margin);
 
+  // Animates the icon if possible. The icon will not animate if the severity
+  // level is none, |animation_| is nullptr or |should_use_new_icon_| is false.
+  void AnimateIconIfPossible();
+
   // Methods called by AppMenuAnimation when the animation has started/ended.
   // The layer is managed inside these methods.
   void AppMenuAnimationStarted();
@@ -114,6 +118,9 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
 
   // Used for animating and drawing the app menu icon.
   std::unique_ptr<AppMenuAnimation> animation_;
+
+  // True if the app menu should use the new animated icon.
+  bool should_use_new_icon_;
 
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.

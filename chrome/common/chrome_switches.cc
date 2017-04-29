@@ -1139,12 +1139,7 @@ extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
     defined(OS_WIN)
-extern const char kAppMenuIcon[] = "app-menu-icon";
-extern const char kAppMenuIconOldBehavior[] = "old-behavior";
-extern const char kAppMenuIconPersistentOpenedState[] =
-    "persistent-opened-state";
-extern const char kAppMenuIconPersistentClosedState[] =
-    "persistent-closed-state";
+extern const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
