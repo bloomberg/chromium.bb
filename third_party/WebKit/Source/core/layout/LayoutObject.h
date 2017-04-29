@@ -1810,7 +1810,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // The following non-const functions for ObjectPaintProperties should only
     // be called from PaintPropertyTreeBuilder.
     ObjectPaintProperties& EnsurePaintProperties() {
-      return layout_object_.EnsureRarePaintData().EnsurePaintProperties();
+      return layout_object_.EnsureRarePaintData()
+          .EnsureFragment()
+          .EnsurePaintProperties();
     }
     ObjectPaintProperties* PaintProperties() {
       if (auto* paint_data = layout_object_.GetRarePaintData())
@@ -1818,8 +1820,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       return nullptr;
     }
     void ClearPaintProperties() {
-      if (auto* paint_data = layout_object_.GetRarePaintData())
-        paint_data->ClearPaintProperties();
+      if (auto* paint_data = layout_object_.GetRarePaintData()) {
+        if (auto* fragment = paint_data->Fragment())
+          fragment->ClearPaintProperties();
+      }
     }
 
     // The following non-const functions for local border box properties should
