@@ -24,7 +24,8 @@ class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
 
 // Exported for tests.
-class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser {
+class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
+                                            public HeadlessDevToolsTarget {
  public:
   HeadlessBrowserImpl(
       const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
@@ -49,6 +50,13 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser {
   void SetDefaultBrowserContext(
       HeadlessBrowserContext* browser_context) override;
   HeadlessBrowserContext* GetDefaultBrowserContext() override;
+  HeadlessDevToolsTarget* GetDevToolsTarget() override;
+
+  // HeadlessDevToolsTarget implementation:
+  bool AttachClient(HeadlessDevToolsClient* client) override;
+  void ForceAttachClient(HeadlessDevToolsClient* client) override;
+  void DetachClient(HeadlessDevToolsClient* client) override;
+  bool IsAttached() override;
 
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
@@ -81,6 +89,8 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser {
   std::unordered_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
       browser_contexts_;
   HeadlessBrowserContext* default_browser_context_;  // Not owned.
+
+  scoped_refptr<content::DevToolsAgentHost> agent_host_;
 
   base::WeakPtrFactory<HeadlessBrowserImpl> weak_ptr_factory_;
 

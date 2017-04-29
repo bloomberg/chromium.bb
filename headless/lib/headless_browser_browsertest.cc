@@ -21,6 +21,7 @@
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
+#include "headless/public/devtools/domains/tracing.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
@@ -827,6 +828,78 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithNetLog, WriteNetLog) {
   std::string net_log_data;
   EXPECT_TRUE(base::ReadFileToString(net_log_, &net_log_data));
   EXPECT_GE(net_log_data.find("hello.html"), 0u);
+}
+
+namespace {
+
+class TraceHelper : public headless::tracing::ExperimentalObserver {
+ public:
+  TraceHelper(HeadlessBrowserTest* browser_test, HeadlessDevToolsTarget* target)
+      : browser_test_(browser_test),
+        target_(target),
+        client_(HeadlessDevToolsClient::Create()),
+        tracing_data_(base::MakeUnique<base::ListValue>()) {
+    EXPECT_FALSE(target_->IsAttached());
+    target_->AttachClient(client_.get());
+    EXPECT_TRUE(target_->IsAttached());
+
+    client_->GetTracing()->GetExperimental()->AddObserver(this);
+
+    client_->GetTracing()->GetExperimental()->Start(
+        tracing::StartParams::Builder().Build(),
+        base::Bind(&TraceHelper::OnTracingStarted, base::Unretained(this)));
+  }
+
+  ~TraceHelper() override {
+    target_->DetachClient(client_.get());
+    EXPECT_FALSE(target_->IsAttached());
+  }
+
+  std::unique_ptr<base::ListValue> TakeTracingData() {
+    return std::move(tracing_data_);
+  }
+
+ private:
+  void OnTracingStarted(std::unique_ptr<headless::tracing::StartResult>) {
+    // We don't need the callback from End, but the OnTracingComplete event.
+    client_->GetTracing()->GetExperimental()->End(
+        headless::tracing::EndParams::Builder().Build());
+  }
+
+  // headless::tracing::ExperimentalObserver implementation:
+  void OnDataCollected(
+      const headless::tracing::DataCollectedParams& params) override {
+    for (const auto& value : *params.GetValue()) {
+      tracing_data_->Append(value->CreateDeepCopy());
+    }
+  }
+
+  void OnTracingComplete(
+      const headless::tracing::TracingCompleteParams& params) override {
+    browser_test_->FinishAsynchronousTest();
+  }
+
+  HeadlessBrowserTest* browser_test_;  // Not owned.
+  HeadlessDevToolsTarget* target_;     // Not owned.
+  std::unique_ptr<HeadlessDevToolsClient> client_;
+
+  std::unique_ptr<base::ListValue> tracing_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceHelper);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, TraceUsingBrowserDevToolsTarget) {
+  HeadlessDevToolsTarget* target = browser()->GetDevToolsTarget();
+  EXPECT_NE(nullptr, target);
+
+  TraceHelper helper(this, target);
+  RunAsynchronousTest();
+
+  std::unique_ptr<base::ListValue> tracing_data = helper.TakeTracingData();
+  EXPECT_TRUE(tracing_data);
+  EXPECT_LT(0u, tracing_data->GetSize());
 }
 
 }  // namespace headless

@@ -46,6 +46,12 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   virtual std::vector<HeadlessBrowserContext*> GetAllBrowserContexts() = 0;
 
+  // Return a DevTools target corresponding to this browser. Note that this
+  // method only returns a valid target after browser has been initialized on
+  // the main thread. The target only supports the domains available on the
+  // browser endpoint excluding the Tethering domain.
+  virtual HeadlessDevToolsTarget* GetDevToolsTarget() = 0;
+
   // Returns the HeadlessWebContents associated with the
   // |devtools_agent_host_id| if any.  Otherwise returns null.
   virtual HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
