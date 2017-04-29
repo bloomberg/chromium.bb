@@ -205,6 +205,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
     return scale;
   }
   virtual void MainFrameScrollOffsetChanged() const {}
+  virtual void ResizeAfterLayout(LocalFrame*) const {}
   virtual void LayoutUpdated(LocalFrame*) const {}
 
   void MouseDidMoveOverElement(LocalFrame&, const HitTestResult&);

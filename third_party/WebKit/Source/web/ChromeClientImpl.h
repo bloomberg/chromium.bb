@@ -119,6 +119,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
   void MainFrameScrollOffsetChanged() const override;
+  void ResizeAfterLayout(LocalFrame*) const override;
   void LayoutUpdated(LocalFrame*) const override;
   void ShowMouseOverURL(const HitTestResult&) override;
   void SetToolTip(LocalFrame&, const String&, TextDirection) override;
