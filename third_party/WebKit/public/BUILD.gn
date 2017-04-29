@@ -430,6 +430,7 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerResponseType.h",
     "platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h",
     "platform/modules/serviceworker/WebServiceWorkerState.h",
+    "platform/modules/serviceworker/WebServiceWorkerStreamHandle.h",
     "platform/modules/vr/WebVR.h",
     "platform/modules/webmidi/WebMIDIAccessor.h",
     "platform/modules/webmidi/WebMIDIAccessorClient.h",
@@ -620,6 +621,16 @@ source_set("blink_headers") {
     "web/modules/serviceworker/WebServiceWorkerContextProxy.h",
     "web/win/WebFontRendering.h",
   ]
+
+  if (is_android) {
+    # Android uses some Linux sources, put those back.
+    set_sources_assignment_filter([])
+    sources += [
+      "platform/linux/WebFontRenderStyle.h",
+      "web/linux/WebFontRendering.h",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
 
   public_configs = [
     ":blink_headers_config",
