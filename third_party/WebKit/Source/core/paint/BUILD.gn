@@ -56,6 +56,8 @@ blink_core_sources("paint") {
     "FirstMeaningfulPaintDetector.h",
     "FloatClipRecorder.cpp",
     "FloatClipRecorder.h",
+    "FragmentData.cpp",
+    "FragmentData.h",
     "FramePainter.cpp",
     "FramePainter.h",
     "FrameSetPainter.cpp",

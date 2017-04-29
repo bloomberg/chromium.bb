@@ -4,7 +4,7 @@
 
 #include "core/paint/RarePaintData.h"
 
-#include "core/paint/ObjectPaintProperties.h"
+#include "core/paint/FragmentData.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -17,14 +17,10 @@ void RarePaintData::SetLayer(std::unique_ptr<PaintLayer> layer) {
   layer_ = std::move(layer);
 };
 
-ObjectPaintProperties& RarePaintData::EnsurePaintProperties() {
-  if (!paint_properties_)
-    paint_properties_ = ObjectPaintProperties::Create();
-  return *paint_properties_.get();
-}
-
-void RarePaintData::ClearPaintProperties() {
-  paint_properties_.reset(nullptr);
+FragmentData& RarePaintData::EnsureFragment() {
+  if (!fragment_data_)
+    fragment_data_ = FragmentData::Create();
+  return *fragment_data_.get();
 }
 
 void RarePaintData::ClearLocalBorderBoxProperties() {
@@ -41,13 +37,15 @@ void RarePaintData::SetLocalBorderBoxProperties(PropertyTreeState& state) {
 PropertyTreeState RarePaintData::ContentsProperties() const {
   DCHECK(local_border_box_properties_);
   PropertyTreeState contents(*local_border_box_properties_);
-  if (paint_properties_) {
-    if (paint_properties_->ScrollTranslation())
-      contents.SetTransform(paint_properties_->ScrollTranslation());
-    if (paint_properties_->OverflowClip())
-      contents.SetClip(paint_properties_->OverflowClip());
-    else if (paint_properties_->CssClip())
-      contents.SetClip(paint_properties_->CssClip());
+  if (fragment_data_) {
+    if (auto* properties = fragment_data_->PaintProperties()) {
+      if (properties->ScrollTranslation())
+        contents.SetTransform(properties->ScrollTranslation());
+      if (properties->OverflowClip())
+        contents.SetClip(properties->OverflowClip());
+      else if (properties->CssClip())
+        contents.SetClip(properties->CssClip());
+    }
   }
 
   // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
