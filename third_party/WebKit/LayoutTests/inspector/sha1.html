@@ -5,18 +5,18 @@
 <script>
 
 function initialize_ProductRegistry() {
-    InspectorTest.preloadModule('product_registry');
+    InspectorTest.preloadModule('product_registry_impl');
 }
 
 function test()
 {
-    InspectorTest.addResult('foobar : ' + ProductRegistry.sha1('foobar'));
-    InspectorTest.addResult('hello : ' + ProductRegistry.sha1('hello'));
-    InspectorTest.addResult('abcdefghijklmnopqrstuvwxyz : ' + ProductRegistry.sha1('abcdefghijklmnopqrstuvwxyz'));
-    InspectorTest.addResult('ABCDEFGHIJKLMNOPQRSTUVWXYZ : ' + ProductRegistry.sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-    InspectorTest.addResult('a : ' + ProductRegistry.sha1('a'));
-    InspectorTest.addResult('A : ' + ProductRegistry.sha1('A'));
-    InspectorTest.addResult('A1 : ' + ProductRegistry.sha1('A1'));
+    InspectorTest.addResult('foobar : ' + ProductRegistryImpl.sha1('foobar'));
+    InspectorTest.addResult('hello : ' + ProductRegistryImpl.sha1('hello'));
+    InspectorTest.addResult('abcdefghijklmnopqrstuvwxyz : ' + ProductRegistryImpl.sha1('abcdefghijklmnopqrstuvwxyz'));
+    InspectorTest.addResult('ABCDEFGHIJKLMNOPQRSTUVWXYZ : ' + ProductRegistryImpl.sha1('ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+    InspectorTest.addResult('a : ' + ProductRegistryImpl.sha1('a'));
+    InspectorTest.addResult('A : ' + ProductRegistryImpl.sha1('A'));
+    InspectorTest.addResult('A1 : ' + ProductRegistryImpl.sha1('A1'));
     InspectorTest.completeTest();
 }
 
