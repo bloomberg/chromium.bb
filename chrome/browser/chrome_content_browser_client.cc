@@ -37,6 +37,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/budget_service/budget_service_impl.h"
+#include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -3087,7 +3088,16 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
+    content::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
+  // The CacheStatsRecorder is an associated binding, instead of a
+  // non-associated one, because the sender (in the renderer process) posts the
+  // message after a time delay, in order to rate limit. The association
+  // protects against the render process host ID being recycled in that time
+  // gap between the preparation and the execution of that IPC.
+  associated_registry->AddInterface(
+      base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI);

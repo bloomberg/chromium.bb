@@ -49,7 +49,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
   void OnPreconnect(const GURL& url, bool allow_credentials, int count);
-  void OnUpdatedCacheStats(uint64_t capacity, uint64_t size);
 
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,

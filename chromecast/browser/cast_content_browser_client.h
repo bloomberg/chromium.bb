@@ -164,6 +164,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
                        bool* no_javascript_access) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
+      content::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

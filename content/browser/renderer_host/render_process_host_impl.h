@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
+#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
@@ -344,6 +345,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const std::string& name,
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
+  void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
+
   void CreateMusGpuRequest(ui::mojom::GpuRequest request);
   void CreateOffscreenCanvasProvider(
       blink::mojom::OffscreenCanvasProviderRequest request);
@@ -457,6 +460,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
   IDMap<IPC::Listener*> listeners_;
+
+  // Mojo interfaces provided to the child process are registered here if they
+  // need consistent delivery ordering with legacy IPC, and are process-wide in
+  // nature (e.g. metrics, memory usage).
+  std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_interfaces_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider, int32_t>

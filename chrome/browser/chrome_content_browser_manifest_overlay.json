@@ -7,6 +7,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "chrome::mojom::CacheStatsRecorder",
           "chrome::mojom::NetBenchmarking",
           "extensions::StashService",
           "metrics::mojom::LeakDetector",

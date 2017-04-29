@@ -199,6 +199,8 @@ split_static_library("browser") {
     "budget_service/budget_manager_factory.h",
     "budget_service/budget_service_impl.cc",
     "budget_service/budget_service_impl.h",
+    "cache_stats_recorder.cc",
+    "cache_stats_recorder.h",
     "chrome_browser_application_mac.h",
     "chrome_browser_application_mac.mm",
     "chrome_browser_field_trials.cc",
