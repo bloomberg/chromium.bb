@@ -189,8 +189,13 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         mBitmapDetails = bitmapDetails;
         setItem(bitmapDetails);
-        setThumbnailBitmap(thumbnail);
-        mImageLoaded = !placeholder;
+        if (isCameraTile() || isGalleryTile()) {
+            initializeSpecialTile(mBitmapDetails);
+            mImageLoaded = true;
+        } else {
+            setThumbnailBitmap(thumbnail);
+            mImageLoaded = !placeholder;
+        }
 
         updateSelectionState();
     }
@@ -216,8 +221,6 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
         ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 mSpecialTile, null, image, null, null);
         mSpecialTile.setText(labelStringId);
-
-        initialize(bitmapDetails, null, false);
 
         // Reset visibility, since #initialize() sets mSpecialTile visibility to GONE.
         mSpecialTile.setVisibility(View.VISIBLE);
@@ -266,6 +269,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      * re-used.
      */
     private void resetTile() {
+        mIconView.setImageBitmap(null);
         mUnselectedView.setVisibility(View.GONE);
         mSelectedView.setVisibility(View.GONE);
         mScrim.setVisibility(View.GONE);
@@ -323,15 +327,14 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     }
 
     private boolean isGalleryTile() {
-        // TODO(finnur): Remove the null checks here and below.
-        return mBitmapDetails != null && mBitmapDetails.type() == PickerBitmap.GALLERY;
+        return mBitmapDetails.type() == PickerBitmap.GALLERY;
     }
 
     private boolean isCameraTile() {
-        return mBitmapDetails != null && mBitmapDetails.type() == PickerBitmap.CAMERA;
+        return mBitmapDetails.type() == PickerBitmap.CAMERA;
     }
 
     private boolean isPictureTile() {
-        return mBitmapDetails == null || mBitmapDetails.type() == PickerBitmap.PICTURE;
+        return mBitmapDetails.type() == PickerBitmap.PICTURE;
     }
 }
