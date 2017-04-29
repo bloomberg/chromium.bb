@@ -9,11 +9,14 @@
 
 import glob
 import os.path
+import re
 import subprocess
 
 
 _BASE_APK = 'base.apk'
 _LIBCHROME_SO = 'libchrome.so'
+
+_BUILD_FINGERPRINT_RE = re.compile('.*Build fingerprint: (.*)$')
 
 
 def GetTargetAndroidVersionNumber(lines):
@@ -26,13 +29,15 @@ def GetTargetAndroidVersionNumber(lines):
   """
   # For example, "Build fingerprint: 'Android/aosp_flo/flo:5.1.1/...'" is 5.
   for line in lines:
-    if line.startswith('Build fingerprint: '):
-      fingerprint = line.split()[2]
+    m = _BUILD_FINGERPRINT_RE.match(line)
+    if not m:
+      continue
+    fingerprint = m.group(1)
+    try:
       version = fingerprint.split('/')[2].split(':')[1].split('.')[0]
-      try:
-        return int(version)
-      except ValueError:
-        return None
+      return int(version)
+    except Exception:
+      pass
   return None
 
 
@@ -90,7 +95,7 @@ def _FindMinLoadVaddr(lib):
   return 0
 
 
-def GetLoadVaddrs(stripped_libs_dir):
+def GetLoadVaddrs(stripped_libs=None, stripped_libs_dir=None):
   """Return a dict of minimum VirtAddr for libraries in the given directory.
 
   The dictionary returned may be passed to stack_core.ConvertTrace(). In
@@ -103,8 +108,11 @@ def GetLoadVaddrs(stripped_libs_dir):
   Returns:
     {'libchrome.so': 12345, ...}
   """
-  libs = glob.glob(os.path.join(stripped_libs_dir, '*.so'))
-  libs = [l for l in libs if _HasElfHeader(l)]
+  if not stripped_libs:
+    stripped_libs = []
+  if stripped_libs_dir:
+    stripped_libs.extend(glob.glob(os.path.join(stripped_libs_dir, '*.so')))
+  libs = [l for l in stripped_libs if _HasElfHeader(l)]
 
   load_vaddrs = {}
   for lib in libs:
