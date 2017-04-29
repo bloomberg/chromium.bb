@@ -43,7 +43,7 @@ std::string SimulateGroupAssignment(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrial::CreateSimulatedFieldTrial(
           study.name(), processed_study.total_probability(),
-          study.default_experiment_name(), entropy_value));
+          processed_study.GetDefaultExperimentName(), entropy_value));
 
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
