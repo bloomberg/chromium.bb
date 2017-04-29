@@ -28,6 +28,8 @@ struct EchoArgsList {
   EchoArgs? item;
 };
 
+interface ForTesting {};
+
 // Note: For messages which control test flow, pick numbers that are unlikely
 // to be hit as a result of our deliberate corruption of response messages.
 interface CppSide {
@@ -40,7 +42,11 @@ interface CppSide {
   // Responses from specific tests.
   PingResponse();
   EchoResponse(EchoArgsList list);
-  BitFlipResponse(EchoArgsList arg);
+
+  // Having an associated interface pointer in the message makes sure the
+  // message header version 2 is tested.
+  BitFlipResponse(EchoArgsList arg, associated ForTesting? not_used);
+
   BackPointerResponse(EchoArgsList arg);
 };
 

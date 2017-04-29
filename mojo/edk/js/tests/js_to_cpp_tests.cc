@@ -239,7 +239,9 @@ class CppSideConnection : public js_to_cpp::CppSide {
     mishandled_messages_ += 1;
   }
 
-  void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
+  void BitFlipResponse(
+      js_to_cpp::EchoArgsListPtr list,
+      js_to_cpp::ForTestingAssociatedPtrInfo not_used) override {
     mishandled_messages_ += 1;
   }
 
@@ -332,7 +334,9 @@ class BitFlipCppSideConnection : public CppSideConnection {
   // js_to_cpp::CppSide:
   void StartTest() override { js_side_->BitFlip(BuildSampleEchoArgs()); }
 
-  void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
+  void BitFlipResponse(
+      js_to_cpp::EchoArgsListPtr list,
+      js_to_cpp::ForTestingAssociatedPtrInfo not_used) override {
     CheckCorruptedEchoArgsList(list);
   }
 

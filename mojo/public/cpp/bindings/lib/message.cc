@@ -80,6 +80,7 @@ const uint8_t* Message::payload() const {
   if (version() < 2)
     return data() + header()->num_bytes;
 
+  DCHECK(!header_v2()->payload.is_null());
   return static_cast<const uint8_t*>(header_v2()->payload.Get());
 }
 
@@ -89,17 +90,14 @@ uint32_t Message::payload_num_bytes() const {
   if (version() < 2) {
     num_bytes = data_num_bytes() - header()->num_bytes;
   } else {
-    auto payload = reinterpret_cast<uintptr_t>(header_v2()->payload.Get());
-    if (!payload) {
-      num_bytes = 0;
-    } else {
-      auto payload_end =
-          reinterpret_cast<uintptr_t>(header_v2()->payload_interface_ids.Get());
-      if (!payload_end)
-        payload_end = reinterpret_cast<uintptr_t>(data() + data_num_bytes());
-      DCHECK_GE(payload_end, payload);
-      num_bytes = payload_end - payload;
-    }
+    auto payload_begin =
+        reinterpret_cast<uintptr_t>(header_v2()->payload.Get());
+    auto payload_end =
+        reinterpret_cast<uintptr_t>(header_v2()->payload_interface_ids.Get());
+    if (!payload_end)
+      payload_end = reinterpret_cast<uintptr_t>(data() + data_num_bytes());
+    DCHECK_GE(payload_end, payload_begin);
+    num_bytes = payload_end - payload_begin;
   }
   DCHECK_LE(num_bytes, std::numeric_limits<uint32_t>::max());
   return static_cast<uint32_t>(num_bytes);

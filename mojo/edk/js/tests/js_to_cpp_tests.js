@@ -114,7 +114,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
       writeMessagePipe(messagePipe, sampleMessage);
       arg.message_handle = messagePipe.handle1;
 
-      this.cppSide_.bitFlipResponse(createEchoArgsList(arg));
+      this.cppSide_.bitFlipResponse(createEchoArgsList(arg), null);
 
       core.close(messagePipe.handle0);
       iteration += 1;
