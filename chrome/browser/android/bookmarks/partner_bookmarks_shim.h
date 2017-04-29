@@ -33,6 +33,8 @@ class PrefRegistrySyncable;
 // Note that node->GetTitle() returns an original (unmodified) title.
 class PartnerBookmarksShim : public base::SupportsUserData::Data {
  public:
+  ~PartnerBookmarksShim() override;
+
   // Returns an instance of the shim for a given |browser_context|.
   static PartnerBookmarksShim* BuildForBrowserContext(
       content::BrowserContext* browser_context);
@@ -126,7 +128,6 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
 
  private:
   explicit PartnerBookmarksShim(PrefService* prefs);
-  ~PartnerBookmarksShim() override;
 
   const bookmarks::BookmarkNode* GetNodeByID(
       const bookmarks::BookmarkNode* parent,

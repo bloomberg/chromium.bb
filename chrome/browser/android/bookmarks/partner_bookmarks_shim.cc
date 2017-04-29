@@ -65,7 +65,8 @@ PartnerBookmarksShim* PartnerBookmarksShim::BuildForBrowserContext(
 
   data = new PartnerBookmarksShim(
       Profile::FromBrowserContext(browser_context)->GetPrefs());
-  browser_context->SetUserData(kPartnerBookmarksShimUserDataKey, data);
+  browser_context->SetUserData(kPartnerBookmarksShimUserDataKey,
+                               base::WrapUnique(data));
   data->ReloadNodeMapping();
   return data;
 }
