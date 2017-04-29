@@ -68,7 +68,7 @@ class ObjectEncoder(json.JSONEncoder):
     return obj.__dict__
 
 
-def MapCIDBToSOMStatus(status):
+def MapCIDBToSOMStatus(status, message_type=None, message_subtype=None):
   """Map CIDB status to Sheriff-o-Matic display status.
 
   In particular, maps inflight stages to being timed out since if they're
@@ -77,6 +77,8 @@ def MapCIDBToSOMStatus(status):
 
   Args:
     status: A status string from CIDB.
+    message_type: A message type string from CIDB.
+    message_subtype: A message subtype string from CIDB.
 
   Returns:
     A string suitable for displaying by Sheriff-o-Matic.
@@ -87,6 +89,12 @@ def MapCIDBToSOMStatus(status):
   }
   if status in STATUS_MAP:
     status = STATUS_MAP[status]
+  if message_type == constants.MESSAGE_TYPE_IGNORED_REASON:
+    IGNORED_MAP = {
+        constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION: 'self destructed',
+    }
+    if message_subtype in IGNORED_MAP:
+      status = IGNORED_MAP[message_subtype]
   return status
 
 
@@ -109,13 +117,15 @@ def AddLogsLink(logdog_client, name,
     logs_links.append(som.Link(name, url))
 
 
-def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
+def GenerateAlertStage(build, stage, exceptions, aborted,
+                       buildinfo, logdog_client):
   """Generate alert details for a single build stage.
 
   Args:
     build: Dictionary of build details from CIDB.
-    stage: Dictionary fo stage details from CIDB.
+    stage: Dictionary of stage details from CIDB.
     exceptions: A list of instances of failure_message_lib.StageFailure.
+    aborted: Boolean indicated if the build was aborted.
     buildinfo: BuildInfo build JSON file from MILO.
     logdog_client: logdog.LogdogClient object.
 
@@ -126,14 +136,14 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
                                      constants.BUILDER_STATUS_PLANNED,
                                      constants.BUILDER_STATUS_SKIPPED])
   ABORTED_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
-                                       constants.BUILDER_STATUS_FORGIVEN])
+                                       constants.BUILDER_STATUS_FORGIVEN,
+                                       constants.BUILDER_STATUS_WAITING])
   NO_LOG_RETRY_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
                                      constants.BUILDER_STATUS_ABORTED])
   if (stage['build_id'] != build['id'] or
       stage['status'] in STAGE_IGNORE_STATUSES):
     return None
-  if (build['status'] == constants.BUILDER_STATUS_ABORTED and
-      stage['status'] in ABORTED_IGNORE_STATUSES):
+  if aborted and stage['status'] in ABORTED_IGNORE_STATUSES:
     return None
 
   logging.info('    stage %s (id %d): %s', stage['name'], stage['id'],
@@ -168,6 +178,9 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
       except Exception as e:
         logging.exception('Could not classify logs: %s', e)
         notes.append('Warning: unable to classify logs: %s' % (e))
+  elif aborted:
+    # Aborted build with no stage logs is not worth reporting on.
+    return None
   else:
     notes.append('Warning: stage logs unavailable')
 
@@ -200,9 +213,13 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
     del stage_links[MAX_STAGE_LINKS:]
 
   # Add all exceptions recording in CIDB as notes.
-  notes.extend('%s: %s' % (e.exception_type, e.exception_message)
-               for e in exceptions
-               if e.build_stage_id == stage['id'])
+  for e in exceptions:
+    if e.build_stage_id == stage['id']:
+      notes.append('%s: %s' % (e.exception_type, e.exception_message))
+      # If the build was aborted and a stage failed because of a shutdown
+      # exception, don't generate an alert.
+      if aborted and e.exception_type == '_ShutDownException':
+        return None
 
   # Add the stage to the alert.
   return som.CrosStageFailure(stage['name'],
@@ -210,7 +227,7 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
                               logs_links, stage_links, notes)
 
 
-def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
+def GenerateBuildAlert(build, slave_stages, exceptions, messages, severity, now,
                        logdog_client, milo_client, allow_experimental=False):
   """Generate an alert for a single build.
 
@@ -218,6 +235,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
     build: Dictionary of build details from CIDB.
     slave_stages: Dictionary of stage details from CIDB.
     exceptions: A list of instances of failure_message_lib.StageFailure.
+    messages: A list of build message dictionaries from CIDB.
     severity: Sheriff-o-Matic severity to use for the alert.
     now: Current datettime.
     logdog_client: logdog.LogdogClient object.
@@ -232,8 +250,21 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
       build['status'] in BUILD_IGNORE_STATUSES):
     return None
 
-  logging.info('  %s:%d (id %d) %s', build['builder_name'],
-               build['build_number'], build['id'], build['status'])
+  # Record any relevant build messages, keeping track if it was aborted.
+  message = (None, None)
+  aborted = build['status'] == constants.BUILDER_STATUS_ABORTED
+  for m in messages:
+    # MESSAGE_TYPE_IGNORED_REASON implies that the target of the message
+    # is stored as message_value (as a string).
+    if (m['message_type'] == constants.MESSAGE_TYPE_IGNORED_REASON and
+        str(build['id']) == m['message_value']):
+      if m['message_subtype'] == constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION:
+        aborted = True
+      message = (m['message_type'], m['message_subtype'])
+
+  logging.info('  %s:%d (id %d) %s %s', build['builder_name'],
+               build['build_number'], build['id'], build['status'],
+               '%s/%s' % message if message[0] else '')
 
   # Create links for details on the build.
   dashboard_url = tree_status.ConstructDashboardURL(build['waterfall'],
@@ -267,19 +298,20 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
   # Highlight the problematic stages.
   stages = []
   for stage in slave_stages:
-    alert_stage = GenerateAlertStage(build, stage, exceptions, buildinfo,
-                                     logdog_client)
+    alert_stage = GenerateAlertStage(build, stage, exceptions, aborted,
+                                     buildinfo, logdog_client)
     if alert_stage:
       stages.append(alert_stage)
 
-  if build['status'] == constants.BUILDER_STATUS_ABORTED and len(stages) == 0:
+  if aborted and len(stages) == 0:
     return None
 
   # Add the alert to the summary.
   key = '%s:%s:%d' % (build['waterfall'], build['build_config'],
                       build['build_number'])
   alert_name = '%s:%d %s' % (build['build_config'], build['build_number'],
-                             MapCIDBToSOMStatus(build['status']))
+                             MapCIDBToSOMStatus(build['status'],
+                                                message[0], message[1]))
   return som.Alert(key, alert_name, alert_name, int(severity),
                    ToEpoch(now), ToEpoch(build['finish_time'] or now),
                    links, [], 'cros-failure',
@@ -333,26 +365,28 @@ def GenerateAlertsSummary(db, builds=None,
 
     # Find any slave builds, and the individual slave stages.
     statuses = db.GetSlaveStatuses(master['id'])
+    messages = db.GetBuildMessages(master['id'])
     if len(statuses):
       stages = db.GetSlaveStages(master['id'])
       exceptions = db.GetSlaveFailures(master['id'])
-      logging.info('%s %s (id %d): %d slaves, %d slave stages',
+      logging.info('%s %s (id %d): %d slaves, %d slave stages, %d messages',
                    waterfall, build_config, master['id'],
-                   len(statuses), len(stages))
+                   len(statuses), len(stages), len(messages))
     else:
       # Didn't find any slaves, so treat as a singular build.
       statuses = [master]
       stages = db.GetBuildStages(master['id'])
       exceptions = db.GetBuildsFailures([master['id']])
-      logging.info('%s %s (id %d): single build, %d stages',
+      logging.info('%s %s (id %d): single build, %d stages, %d messages',
                    waterfall, build_config, master['id'],
-                   len(stages))
+                   len(stages), len(messages))
 
     # Look for failing and inflight (signifying timeouts) slave builds.
     for build in sorted(statuses, key=lambda s: s['builder_name']):
       funcs.append(lambda build_=build, stages_=stages, exceptions_=exceptions,
-                          severity_=severity:
-                   GenerateBuildAlert(build_, stages_, exceptions_, severity_,
+                          messages_=messages, severity_=severity:
+                   GenerateBuildAlert(build_, stages_, exceptions_, messages_,
+                                      severity_,
                                       now, logdog_client, milo_client,
                                       allow_experimental=allow_experimental))
 

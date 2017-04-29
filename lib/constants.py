@@ -712,6 +712,8 @@ SUBSYSTEM_UNUSED = 'subsystem_unused'
 
 # Build messages
 MESSAGE_TYPE_IGNORED_REASON = 'ignored_reason'
+# MESSSGE_TYPE_IGNORED_REASON messages store the affected build as
+# the CIDB column message_value.
 MESSAGE_SUBTYPE_SELF_DESTRUCTION = 'self_destruction'
 
 # Define HWTEST job_keyvals
