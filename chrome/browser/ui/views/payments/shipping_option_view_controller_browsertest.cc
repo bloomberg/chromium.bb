@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
 
   // Michigan address is selected and has standard shipping.
-  std::vector<base::string16> shipping_address_labels = GetThreeLineLabelValues(
+  std::vector<base::string16> shipping_address_labels = GetProfileLabelValues(
       DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
   EXPECT_EQ(base::ASCIIToUTF16("Jane A. Smith"), shipping_address_labels[0]);
   EXPECT_EQ(

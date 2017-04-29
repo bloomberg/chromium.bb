@@ -25,8 +25,8 @@ static_library("core") {
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
     "payment_request_delegate.h",
-    "profile_util.cc",
-    "profile_util.h",
+    "payments_profile_comparator.cc",
+    "payments_profile_comparator.h",
     "strings_util.cc",
     "strings_util.h",
   ]
@@ -74,7 +74,7 @@ source_set("unit_tests") {
     "payment_address_unittest.cc",
     "payment_method_data_unittest.cc",
     "payment_request_data_util_unittest.cc",
-    "profile_util_unittest.cc",
+    "payments_profile_comparator_unittest.cc",
   ]
 
   deps = [

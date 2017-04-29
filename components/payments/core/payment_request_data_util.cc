@@ -7,6 +7,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -160,6 +162,15 @@ std::string FormatPhoneForResponse(const std::string& phone_number,
                                    const std::string& country_code) {
   return FormatPhoneNumber(phone_number, country_code,
                            PhoneNumberUtil::PhoneNumberFormat::E164);
+}
+
+std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,
+                                       const std::string& app_locale) {
+  std::string country_code =
+      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  if (!autofill::data_util::IsValidCountryCode(country_code))
+    country_code = autofill::AutofillCountry::CountryCodeForLocale(app_locale);
+  return country_code;
 }
 
 }  // namespace data_util

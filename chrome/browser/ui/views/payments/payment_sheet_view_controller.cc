@@ -600,10 +600,11 @@ PaymentSheetViewController::CreateShippingSectionContent() {
   } else {
     auto* profile = state()->selected_shipping_profile();
 
-    return profile ? GetShippingAddressLabel(AddressStyleType::SUMMARY,
-                                             state()->GetApplicationLocale(),
-                                             *profile)
-                   : base::MakeUnique<views::Label>(base::string16());
+    return profile
+               ? GetShippingAddressLabel(
+                     AddressStyleType::SUMMARY, state()->GetApplicationLocale(),
+                     *profile, *spec(), *(state()->profile_comparator()))
+               : base::MakeUnique<views::Label>(base::string16());
   }
 }
 
@@ -736,10 +737,11 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateContactInfoSectionContent() {
   autofill::AutofillProfile* profile = state()->selected_contact_profile();
-  return profile ? payments::GetContactInfoLabel(
-                       AddressStyleType::SUMMARY,
-                       state()->GetApplicationLocale(), *profile, *spec())
-                 : base::MakeUnique<views::Label>(base::string16());
+  return profile
+             ? payments::GetContactInfoLabel(
+                   AddressStyleType::SUMMARY, state()->GetApplicationLocale(),
+                   *profile, *spec(), *(state()->profile_comparator()))
+             : base::MakeUnique<views::Label>(base::string16());
 }
 
 // Creates the Contact Info row, which contains a "Contact info" label; the

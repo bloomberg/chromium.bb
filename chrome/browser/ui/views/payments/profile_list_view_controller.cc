@@ -11,6 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -75,9 +76,7 @@ class ProfileItem : public PaymentRequestItemList::Item {
   }
 
   bool CanBeSelected() const override {
-    // TODO(crbug.com/709454): Check for profile completeness. Currently a giant
-    // hack to test the UI.
-    return !profile_->GetRawInfo(autofill::ADDRESS_HOME_ZIP).empty();
+    return parent_view_->IsValidProfile(*profile_);
   }
 
   void PerformSelectionFallback() override {
@@ -108,7 +107,8 @@ class ShippingProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
     return GetShippingAddressLabel(AddressStyleType::DETAILED,
-                                   state()->GetApplicationLocale(), *profile);
+                                   state()->GetApplicationLocale(), *profile,
+                                   *spec(), *(state()->profile_comparator()));
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
@@ -128,6 +128,10 @@ class ShippingProfileViewController : public ProfileListViewController {
 
   autofill::AutofillProfile* GetSelectedProfile() override {
     return state()->selected_shipping_profile();
+  }
+
+  bool IsValidProfile(const autofill::AutofillProfile& profile) override {
+    return state()->profile_comparator()->IsShippingComplete(&profile);
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
@@ -175,7 +179,7 @@ class ContactProfileViewController : public ProfileListViewController {
       autofill::AutofillProfile* profile) override {
     return GetContactInfoLabel(AddressStyleType::DETAILED,
                                state()->GetApplicationLocale(), *profile,
-                               *spec());
+                               *spec(), *(state()->profile_comparator()));
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {
@@ -188,6 +192,10 @@ class ContactProfileViewController : public ProfileListViewController {
 
   autofill::AutofillProfile* GetSelectedProfile() override {
     return state()->selected_contact_profile();
+  }
+
+  bool IsValidProfile(const autofill::AutofillProfile& profile) override {
+    return state()->profile_comparator()->IsContactInfoComplete(&profile);
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {

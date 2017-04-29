@@ -14,6 +14,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/address_normalizer.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/mojom/payment_request.mojom.h"
 
 namespace autofill {
@@ -157,6 +158,10 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   Delegate* delegate() { return delegate_; }
 
+  PaymentsProfileComparator* profile_comparator() {
+    return &profile_comparator_;
+  }
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
@@ -210,6 +215,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   PaymentRequestDelegate* payment_request_delegate_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
+
+  PaymentsProfileComparator profile_comparator_;
 
   base::ObserverList<Observer> observers_;
 

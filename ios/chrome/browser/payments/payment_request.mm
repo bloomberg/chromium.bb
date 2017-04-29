@@ -11,7 +11,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_request_data_util.h"
-#include "components/payments/core/profile_util.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 
@@ -98,17 +98,20 @@ void PaymentRequest::PopulateProfileCache() {
     contact_profiles_.push_back(&profile_cache_.back());
   }
 
+  payments::PaymentsProfileComparator comparator(
+      GetApplicationContext()->GetApplicationLocale(), *this);
+
   // TODO(crbug.com/602666): Implement deduplication and prioritization rules
   // for shipping profiles.
 
-  contact_profiles_ = payments::profile_util::FilterProfilesForContact(
-      contact_profiles_, GetApplicationContext()->GetApplicationLocale(),
-      *this);
+  contact_profiles_ = comparator.FilterProfilesForContact(contact_profiles_);
 
   if (!shipping_profiles_.empty())
     selected_shipping_profile_ = shipping_profiles_[0];
-  if (!contact_profiles_.empty())
+  if (!contact_profiles_.empty() &&
+      comparator.IsContactInfoComplete(contact_profiles_[0])) {
     selected_contact_profile_ = contact_profiles_[0];
+  }
 }
 
 void PaymentRequest::PopulateCreditCardCache() {

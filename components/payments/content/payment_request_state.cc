@@ -17,8 +17,8 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "components/payments/core/profile_util.h"
 
 namespace payments {
 
@@ -37,7 +37,8 @@ PaymentRequestState::PaymentRequestState(
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_instrument_(nullptr),
-      payment_request_delegate_(payment_request_delegate) {
+      payment_request_delegate_(payment_request_delegate),
+      profile_comparator_(app_locale, *spec) {
   PopulateProfileCache();
   SetDefaultProfileSelections();
   spec_->AddObserver(this);
@@ -163,10 +164,8 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // Start the normalization of the shipping address.
   // Use the country code from the profile if it is set, otherwise infer it
   // from the |app_locale_|.
-  std::string country_code = base::UTF16ToUTF8(
-      selected_shipping_profile_->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-  if (!autofill::data_util::IsValidCountryCode(country_code))
-    country_code = autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
+  std::string country_code = data_util::GetCountryCodeWithFallback(
+      selected_shipping_profile_, app_locale_);
   payment_request_delegate_->GetAddressNormalizer()->StartAddressNormalization(
       *selected_shipping_profile_, country_code, /*timeout_seconds=*/2, this);
 }
@@ -218,8 +217,8 @@ void PaymentRequestState::PopulateProfileCache() {
                    return p.get();
                  });
 
-  contact_profiles_ = profile_util::FilterProfilesForContact(
-      raw_profiles_for_filtering, GetApplicationLocale(), *spec_);
+  contact_profiles_ = profile_comparator()->FilterProfilesForContact(
+      raw_profiles_for_filtering);
 
   // Create the list of available instruments.
   const std::vector<autofill::CreditCard*>& cards =
@@ -274,15 +273,13 @@ bool PaymentRequestState::ArePaymentDetailsSatisfied() {
 }
 
 bool PaymentRequestState::ArePaymentOptionsSatisfied() {
-  // TODO(mathp): Have a measure of shipping address completeness.
-  if (spec_->request_shipping() && selected_shipping_profile_ == nullptr)
-    return false;
-
   if (is_waiting_for_merchant_validation_)
     return false;
 
-  profile_util::PaymentsProfileComparator comparator(app_locale_, *spec_);
-  return comparator.IsContactInfoComplete(selected_contact_profile_);
+  if (!profile_comparator()->IsShippingComplete(selected_shipping_profile_))
+    return false;
+
+  return profile_comparator()->IsContactInfoComplete(selected_contact_profile_);
 }
 
 }  // namespace payments

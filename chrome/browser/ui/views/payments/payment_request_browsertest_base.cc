@@ -428,7 +428,7 @@ void PaymentRequestBrowserTestBase::ClickOnChildInListViewAndWait(
 }
 
 std::vector<base::string16>
-PaymentRequestBrowserTestBase::GetThreeLineLabelValues(
+PaymentRequestBrowserTestBase::GetProfileLabelValues(
     DialogViewID parent_view_id) {
   std::vector<base::string16> line_labels;
   views::View* parent_view =
@@ -436,15 +436,19 @@ PaymentRequestBrowserTestBase::GetThreeLineLabelValues(
   EXPECT_TRUE(parent_view);
 
   views::View* view = parent_view->GetViewByID(
-      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_1));
+      static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
   if (view)
     line_labels.push_back(static_cast<views::Label*>(view)->text());
   view = parent_view->GetViewByID(
-      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_2));
+      static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
   if (view)
     line_labels.push_back(static_cast<views::Label*>(view)->text());
   view = parent_view->GetViewByID(
-      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_3));
+      static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
+  if (view)
+    line_labels.push_back(static_cast<views::Label*>(view)->text());
+  view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   if (view)
     line_labels.push_back(static_cast<views::Label*>(view)->text());
 
