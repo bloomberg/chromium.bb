@@ -461,8 +461,7 @@ void PPBNaClPrivate::LaunchSelLdr(
   if (nexe_file_info->handle != PP_kInvalidFileHandle)
     nexe_for_transit = base::FileDescriptor(nexe_file_info->handle, true);
 #elif defined(OS_WIN)
-  nexe_for_transit = IPC::PlatformFileForTransit(nexe_file_info->handle,
-                                                 base::GetCurrentProcId());
+  nexe_for_transit = IPC::PlatformFileForTransit(nexe_file_info->handle);
 #else
 # error Unsupported target platform.
 #endif

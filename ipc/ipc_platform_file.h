@@ -14,17 +14,32 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/memory/shared_memory_handle.h"
-#endif
-
 namespace IPC {
 
 #if defined(OS_WIN)
-// The semantics for IPC transfer of a SharedMemoryHandle are exactly the same
-// as for a PlatformFileForTransit. The object wraps a HANDLE, and has some
-// metadata that indicates the process to which the HANDLE belongs.
-using PlatformFileForTransit = base::SharedMemoryHandle;
+class IPC_EXPORT PlatformFileForTransit {
+ public:
+  // Creates an invalid platform file.
+  PlatformFileForTransit();
+
+  // Creates a platform file that takes unofficial ownership of |handle|. Note
+  // that ownership is not handled by a Scoped* class due to usage patterns of
+  // this class and its POSIX counterpart [base::FileDescriptor]. When this
+  // class is used as an input to an IPC message, the IPC subsystem will close
+  // |handle|. When this class is used as the output from an IPC message, the
+  // receiver is expected to take ownership of |handle|.
+  explicit PlatformFileForTransit(HANDLE handle);
+
+  // Comparison operators.
+  bool operator==(const PlatformFileForTransit& platform_file) const;
+  bool operator!=(const PlatformFileForTransit& platform_file) const;
+
+  HANDLE GetHandle() const;
+  bool IsValid() const;
+
+ private:
+  HANDLE handle_;
+};
 #elif defined(OS_POSIX)
 typedef base::FileDescriptor PlatformFileForTransit;
 #endif
