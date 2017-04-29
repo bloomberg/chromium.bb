@@ -26,9 +26,8 @@ class View;
 }
 
 namespace ash {
-
+class HoverHighlightView;
 struct NetworkInfo;
-class NetworkListDelegate;
 class TriView;
 
 // A list of available networks of a given type. This class is used for all
@@ -38,7 +37,7 @@ class NetworkListView : public NetworkListViewBase,
  public:
   class SectionHeaderRowView;
 
-  explicit NetworkListView(NetworkListDelegate* delegate);
+  explicit NetworkListView(tray::NetworkStateListDetailedView* detailed_view);
   ~NetworkListView() override;
 
   // NetworkListViewBase:
@@ -71,6 +70,18 @@ class NetworkListView : public NetworkListViewBase,
   // Creates the view which displays a warning message, if a VPN or proxy is
   // being used.
   TriView* CreateConnectionWarning();
+
+  // Creates and returns a View with the information in |info|.
+  HoverHighlightView* CreateViewForNetwork(const NetworkInfo& info);
+
+  // Updates |view| with the information in |info|. Note that |view| is
+  // guaranteed to be a View returned from |CreateViewForNetwork()|.
+  void UpdateViewForNetwork(HoverHighlightView* view, const NetworkInfo& info);
+
+  // Creates the view of an extra icon appearing next to the network name
+  // indicating that the network is controlled by an extension. If no extension
+  // is registered for this network, returns |nullptr|.
+  views::View* CreateControlledByExtensionView(const NetworkInfo& info);
 
   // Adds or updates child views representing the network connections when
   // |is_wifi| is matching the attribute of a network connection starting at
@@ -112,7 +123,6 @@ class NetworkListView : public NetworkListViewBase,
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
 
   bool needs_relayout_;
-  NetworkListDelegate* delegate_;
 
   views::Label* no_wifi_networks_view_;
   views::Label* no_cellular_networks_view_;
@@ -131,7 +141,7 @@ class NetworkListView : public NetworkListViewBase,
   NetworkMap network_map_;
 
   // A map of network guids to their view.
-  using NetworkGuidMap = std::map<std::string, views::View*>;
+  using NetworkGuidMap = std::map<std::string, HoverHighlightView*>;
   NetworkGuidMap network_guid_map_;
 
   // Save a map of network guids to their infos against current |network_list_|.

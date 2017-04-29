@@ -380,7 +380,6 @@ component("ash") {
     "system/network/network_info.h",
     "system/network/network_list.cc",
     "system/network/network_list.h",
-    "system/network/network_list_delegate.h",
     "system/network/network_list_view_base.cc",
     "system/network/network_list_view_base.h",
     "system/network/network_observer.h",

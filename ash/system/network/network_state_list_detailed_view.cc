@@ -17,19 +17,13 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
-#include "ash/system/network/network_info.h"
 #include "ash/system/network/network_list.h"
 #include "ash/system/network/network_list_view_base.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/network/vpn_list_view.h"
-#include "ash/system/networking_config_delegate.h"
-#include "ash/system/tray/fixed_sized_image_view.h"
-#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/throbber_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_popup_header_button.h"
@@ -78,30 +72,6 @@ namespace {
 
 // Delay between scan requests.
 const int kRequestScanDelaySeconds = 10;
-
-// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
-void SetupConnectedItem(HoverHighlightView* container,
-                        const base::string16& text,
-                        const gfx::ImageSkia& image) {
-  container->AddIconAndLabels(
-      image, text,
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
-  style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
-  style.SetupLabel(container->sub_text_label());
-}
-
-// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
-void SetupConnectingItem(HoverHighlightView* container,
-                         const base::string16& text,
-                         const gfx::ImageSkia& image) {
-  container->AddIconAndLabels(
-      image, text,
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
-  ThrobberView* throbber = new ThrobberView;
-  throbber->Start();
-  container->AddRightView(throbber);
-}
 
 }  // namespace
 
@@ -445,32 +415,6 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   return label;
 }
 
-views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
-    const NetworkInfo& info) {
-  NetworkingConfigDelegate* networking_config_delegate =
-      Shell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
-  if (!networking_config_delegate)
-    return nullptr;
-  std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
-      extension_info =
-          networking_config_delegate->LookUpExtensionForNetwork(info.guid);
-  if (!extension_info)
-    return nullptr;
-
-  // Get the tooltip text.
-  base::string16 tooltip_text = l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16(extension_info->extension_name));
-
-  views::ImageView* controlled_icon =
-      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
-
-  controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
-  controlled_icon->SetTooltipText(tooltip_text);
-  return controlled_icon;
-}
-
 void NetworkStateListDetailedView::CallRequestScan() {
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan();
@@ -481,62 +425,8 @@ void NetworkStateListDetailedView::CallRequestScan() {
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
 }
 
-views::View* NetworkStateListDetailedView::CreateViewForNetwork(
-    const NetworkInfo& info) {
-  HoverHighlightView* container = new HoverHighlightView(this);
-  if (info.connected)
-    SetupConnectedItem(container, info.label, info.image);
-  else if (info.connecting)
-    SetupConnectingItem(container, info.label, info.image);
-  else
-    container->AddIconAndLabel(info.image, info.label);
-  container->SetTooltipText(info.tooltip);
-  views::View* controlled_icon = CreateControlledByExtensionView(info);
-  if (controlled_icon)
-    container->AddChildView(controlled_icon);
-  return container;
-}
-
-NetworkTypePattern NetworkStateListDetailedView::GetNetworkTypePattern() const {
-  return list_type_ == LIST_TYPE_VPN ? NetworkTypePattern::VPN()
-                                     : NetworkTypePattern::NonVirtual();
-}
-
-void NetworkStateListDetailedView::UpdateViewForNetwork(
-    views::View* view,
-    const NetworkInfo& info) {
-  HoverHighlightView* container = static_cast<HoverHighlightView*>(view);
-  DCHECK(!container->has_children());
-  if (info.connected)
-    SetupConnectedItem(container, info.label, info.image);
-  else if (info.connecting)
-    SetupConnectingItem(container, info.label, info.image);
-  else
-    container->AddIconAndLabel(info.image, info.label);
-  views::View* controlled_icon = CreateControlledByExtensionView(info);
-  container->SetTooltipText(info.tooltip);
-  if (controlled_icon)
-    view->AddChildView(controlled_icon);
-}
-
-views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
-  views::Label* label = new views::Label();
-  label->SetBorder(views::CreateEmptyBorder(kTrayPopupPaddingBetweenItems,
-                                            kTrayPopupPaddingHorizontal,
-                                            kTrayPopupPaddingBetweenItems, 0));
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
-  return label;
-}
-
 void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
   HandleViewClicked(sender);
-}
-
-void NetworkStateListDetailedView::OnOtherWifiClicked() {
-  ShellPort::Get()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-  Shell::Get()->system_tray_controller()->ShowNetworkCreate(shill::kTypeWifi);
 }
 
 void NetworkStateListDetailedView::RelayoutScrollList() {
