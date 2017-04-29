@@ -696,8 +696,11 @@ public class BottomSheet
         mContentSwapAnimatorSet.playTogether(animators);
         mContentSwapAnimatorSet.start();
 
-        // If the existing content is null, end the animation immediately.
-        if (mSheetContent == null) mContentSwapAnimatorSet.end();
+        // If the existing content is null or the tab switcher assets are showing, end the animation
+        // immediately.
+        if (mSheetContent == null || mDefaultToolbarView.isInTabSwitcherMode()) {
+            mContentSwapAnimatorSet.end();
+        }
     }
 
     /**
