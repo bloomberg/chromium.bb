@@ -1804,7 +1804,7 @@ void WebViewImpl::ResizeVisualViewport(const WebSize& new_size) {
   GetPage()->GetVisualViewport().ClampToBoundaries();
 }
 
-void WebViewImpl::PerformResize() {
+void WebViewImpl::UpdateICBAndResizeViewport() {
   // We'll keep the initial containing block size from changing when the top
   // controls hide so that the ICB will always be the same size as the
   // viewport with the browser controls shown.
@@ -1825,7 +1825,7 @@ void WebViewImpl::PerformResize() {
   if (MainFrameImpl()->GetFrameView()) {
     MainFrameImpl()->GetFrameView()->SetInitialViewportSize(icb_size);
     if (!MainFrameImpl()->GetFrameView()->NeedsLayout())
-      PostLayoutResize(MainFrameImpl());
+      ResizeFrameView(MainFrameImpl());
   }
 }
 
@@ -1845,7 +1845,7 @@ void WebViewImpl::UpdateBrowserControlsState(WebBrowserControlsState constraint,
        constraint == kWebBrowserControlsBoth) ||
       (old_permitted_state == kWebBrowserControlsBoth &&
        constraint == kWebBrowserControlsHidden)) {
-    PerformResize();
+    UpdateICBAndResizeViewport();
   }
 
   if (layer_tree_view_)
@@ -1901,7 +1901,7 @@ void WebViewImpl::ResizeViewWhileAnchored(float browser_controls_height,
     // Avoids unnecessary invalidations while various bits of state in
     // TextAutosizer are updated.
     TextAutosizer::DeferUpdatePageInfo defer_update_page_info(GetPage());
-    PerformResize();
+    UpdateICBAndResizeViewport();
   }
 
   fullscreen_controller_->UpdateSize();
@@ -3657,7 +3657,7 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   EndActiveFlingAnimation();
 }
 
-void WebViewImpl::PostLayoutResize(WebLocalFrameImpl* webframe) {
+void WebViewImpl::ResizeFrameView(WebLocalFrameImpl* webframe) {
   FrameView* view = webframe->GetFrame()->View();
   if (webframe == MainFrame())
     resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
@@ -3665,7 +3665,7 @@ void WebViewImpl::PostLayoutResize(WebLocalFrameImpl* webframe) {
     view->Resize(webframe->GetFrameView()->Size());
 }
 
-void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
+void WebViewImpl::ResizeAfterLayout(WebLocalFrameImpl* webframe) {
   LocalFrame* frame = webframe->GetFrame();
   if (!client_ || !client_->CanUpdateLayout() || !frame->IsMainFrame())
     return;
@@ -3687,12 +3687,19 @@ void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
   if (GetPageScaleConstraintsSet().ConstraintsDirty())
     RefreshPageScaleFactorAfterLayout();
 
-  FrameView* view = webframe->GetFrame()->View();
+  UpdateICBAndResizeViewport();
+}
 
-  PostLayoutResize(webframe);
+void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
+  LocalFrame* frame = webframe->GetFrame();
+  if (!client_ || !client_->CanUpdateLayout() || !frame->IsMainFrame())
+    return;
+
+  ResizeAfterLayout(webframe);
 
   // Relayout immediately to avoid violating the rule that needsLayout()
   // isn't set at the end of a layout.
+  FrameView* view = frame->View();
   if (view->NeedsLayout())
     view->UpdateLayout();
 

@@ -347,14 +347,13 @@ class WEB_EXPORT WebViewImpl final
   void DidCommitLoad(bool is_new_navigation,
                      bool is_navigation_within_page) override;
 
-  void PostLayoutResize(WebLocalFrameImpl* webframe);
-
   // Indicates two things:
   //   1) This view may have a new layout now.
   //   2) Calling updateAllLifecyclePhases() is a no-op.
   // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
   // notification unless the view did not need a layout.
   void LayoutUpdated(WebLocalFrameImpl*);
+  void ResizeAfterLayout(WebLocalFrameImpl*);
 
   void DidChangeContentsSize() override;
   void PageScaleFactorChanged() override;
@@ -520,7 +519,8 @@ class WEB_EXPORT WebViewImpl final
   void RefreshPageScaleFactorAfterLayout();
   IntSize ContentsSize() const;
 
-  void PerformResize();
+  void ResizeFrameView(WebLocalFrameImpl* webframe);
+  void UpdateICBAndResizeViewport();
   void ResizeViewWhileAnchored(float browser_controls_height,
                                bool browser_controls_shrink_layout);
 
