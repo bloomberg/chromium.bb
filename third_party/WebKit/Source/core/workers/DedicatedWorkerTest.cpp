@@ -118,6 +118,9 @@ class InProcessWorkerMessagingProxyForTest
     CSPHeaderAndType header_and_type("contentSecurityPolicy",
                                      kContentSecurityPolicyHeaderTypeReport);
     headers->push_back(header_and_type);
+    WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
+    worker_v8_settings.atomics_wait_mode_ =
+        WorkerV8Settings::AtomicsWaitMode::kAllow;
     GetWorkerThread()->Start(
         WorkerThreadStartupData::Create(
             script_url, "fake user agent", source, nullptr /* cachedMetaData */,
@@ -125,7 +128,7 @@ class InProcessWorkerMessagingProxyForTest
             "" /* referrerPolicy */, security_origin_.Get(),
             nullptr /* workerClients */, kWebAddressSpaceLocal,
             nullptr /* originTrialTokens */, nullptr /* workerSettings */,
-            WorkerV8Settings::Default()),
+            worker_v8_settings),
         GetParentFrameTaskRunners());
 
     GetWorkerInspectorProxy()->WorkerThreadCreated(

@@ -447,6 +447,9 @@ void WorkerThread::InitializeOnWorkerThread(
   bool heap_limit_increased_for_debugging =
       startup_data->worker_v8_settings_.heap_limit_mode_ ==
       WorkerV8Settings::HeapLimitMode::kIncreasedForDebugging;
+  bool allow_atomics_wait =
+      startup_data->worker_v8_settings_.atomics_wait_mode_ ==
+      WorkerV8Settings::AtomicsWaitMode::kAllow;
 
   {
     MutexLocker lock(thread_state_mutex_);
@@ -461,6 +464,8 @@ void WorkerThread::InitializeOnWorkerThread(
     if (heap_limit_increased_for_debugging) {
       GetIsolate()->IncreaseHeapLimitForDebugging();
     }
+
+    GetIsolate()->SetAllowAtomicsWait(allow_atomics_wait);
 
     console_message_storage_ = new ConsoleMessageStorage();
     global_scope_ = CreateWorkerGlobalScope(std::move(startup_data));
