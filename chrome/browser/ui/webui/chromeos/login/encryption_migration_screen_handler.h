@@ -113,6 +113,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // sufficient.
   bool should_migrate_on_enough_battery_ = false;
 
+  // The battery level at the timing that the migration starts.
+  double initial_battery_percent_ = 0.0;
+
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
