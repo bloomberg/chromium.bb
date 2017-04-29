@@ -321,17 +321,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
     CloseAllStreams(ERR_UNEXPECTED);
     DCHECK(observers_.empty());
     CloseAllObservers(ERR_UNEXPECTED);
+    CancelAllRequests(ERR_UNEXPECTED);
 
     connection()->set_debug_visitor(nullptr);
-
-    UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.AbortedPendingStreamRequests",
-                              stream_requests_.size());
-
-    while (!stream_requests_.empty()) {
-      StreamRequest* request = stream_requests_.front();
-      stream_requests_.pop_front();
-      request->OnRequestCompleteFailure(ERR_ABORTED);
-    }
   }
 
   if (connection()->connected()) {
@@ -1013,6 +1005,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   DCHECK(dynamic_streams().empty());
   CloseAllStreams(ERR_UNEXPECTED);
   CloseAllObservers(ERR_UNEXPECTED);
+  CancelAllRequests(ERR_CONNECTION_CLOSED);
   NotifyFactoryOfSessionClosedLater();
 }
 
@@ -1267,6 +1260,17 @@ void QuicChromiumClientSession::CloseAllObservers(int net_error) {
     Observer* observer = *observers_.begin();
     observers_.erase(observer);
     observer->OnSessionClosed(net_error, port_migration_detected_);
+  }
+}
+
+void QuicChromiumClientSession::CancelAllRequests(int net_error) {
+  UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.AbortedPendingStreamRequests",
+                            stream_requests_.size());
+
+  while (!stream_requests_.empty()) {
+    StreamRequest* request = stream_requests_.front();
+    stream_requests_.pop_front();
+    request->OnRequestCompleteFailure(net_error);
   }
 }
 
