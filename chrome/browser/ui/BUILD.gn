@@ -1675,6 +1675,12 @@ split_static_library("ui") {
           "views/extensions/extension_popup_aura.h",
         ]
       }
+      if (is_chromeos) {
+        sources += [
+          "views/extensions/request_file_system_dialog_view.cc",
+          "views/extensions/request_file_system_dialog_view.h",
+        ]
+      }
     }
     if (!is_mac || mac_views_browser) {
       sources += [
@@ -1928,6 +1934,13 @@ split_static_library("ui") {
         deps += [
           "//services/ui/public/cpp",
           "//services/ui/public/interfaces",
+        ]
+      }
+
+      if (is_win) {
+        sources += [
+          "views/try_chrome_dialog_view.cc",
+          "views/try_chrome_dialog_view.h",
         ]
       }
 
