@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
+#include "chrome/browser/ui/views/extensions/request_file_system_dialog_view.h"
 
 #include <stddef.h>
 
@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
@@ -17,8 +18,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
@@ -30,17 +30,17 @@ const int kDialogMaxWidth = 320;
 // static
 void RequestFileSystemDialogView::ShowDialog(
     content::WebContents* web_contents,
-    const extensions::Extension& extension,
-    base::WeakPtr<file_manager::Volume> volume,
+    const std::string& extension_name,
+    const std::string& volume_label,
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback) {
   constrained_window::ShowWebModalDialogViews(
-      new RequestFileSystemDialogView(extension, volume, writable, callback),
+      new RequestFileSystemDialogView(extension_name, volume_label, writable,
+                                      callback),
       web_contents);
 }
 
-RequestFileSystemDialogView::~RequestFileSystemDialogView() {
-}
+RequestFileSystemDialogView::~RequestFileSystemDialogView() {}
 
 base::string16 RequestFileSystemDialogView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(
@@ -70,18 +70,6 @@ ui::ModalType RequestFileSystemDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-views::View* RequestFileSystemDialogView::GetContentsView() {
-  return contents_view_;
-}
-
-views::Widget* RequestFileSystemDialogView::GetWidget() {
-  return contents_view_->GetWidget();
-}
-
-const views::Widget* RequestFileSystemDialogView::GetWidget() const {
-  return contents_view_->GetWidget();
-}
-
 bool RequestFileSystemDialogView::Cancel() {
   callback_.Run(ui::DIALOG_BUTTON_CANCEL);
   return true;
@@ -92,27 +80,28 @@ bool RequestFileSystemDialogView::Accept() {
   return true;
 }
 
+gfx::Size RequestFileSystemDialogView::GetPreferredSize() const {
+  return gfx::Size(kDialogMaxWidth,
+                   child_at(0)->GetHeightForWidth(kDialogMaxWidth));
+}
+
+gfx::Insets RequestFileSystemDialogView::GetInsets() const {
+  return ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_PANEL);
+}
+
 RequestFileSystemDialogView::RequestFileSystemDialogView(
-    const extensions::Extension& extension,
-    base::WeakPtr<file_manager::Volume> volume,
+    const std::string& extension_name,
+    const std::string& volume_label,
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback)
     : callback_(callback), contents_view_(new views::View) {
   DCHECK(!callback_.is_null());
 
-  // If the volume is gone, then cancel the dialog.
-  if (!volume.get()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_CANCEL));
-    return;
-  }
-
-  const base::string16 app_name = base::UTF8ToUTF16(extension.name());
+  const base::string16 app_name = base::UTF8ToUTF16(extension_name);
   // TODO(mtomasz): Improve the dialog contents, so it's easier for the user
   // to understand what device is being requested.
-  const base::string16 volume_name =
-      base::UTF8ToUTF16(!volume->volume_label().empty() ? volume->volume_label()
-                                                        : volume->volume_id());
+  const base::string16 volume_name = base::UTF8ToUTF16(volume_label);
+
   std::vector<size_t> placeholder_offsets;
   const base::string16 message = l10n_util::GetStringFUTF16(
       writable ? IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_WRITABLE_MESSAGE
@@ -132,11 +121,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
                  placeholder_offsets[1] + volume_name.length()),
       bold_style);
 
-  views::BoxLayout* const layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      views::kPanelVertMargin, 0);
-  contents_view_->SetLayoutManager(layout);
+  SetLayoutManager(new views::FillLayout());
 
-  label->SizeToFit(kDialogMaxWidth - 2 * views::kButtonHEdgeMarginNew);
-  contents_view_->AddChildView(label);
+  AddChildView(label);
 }

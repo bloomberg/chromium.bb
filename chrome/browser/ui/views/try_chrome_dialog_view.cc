@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/first_run/try_chrome_dialog_view.h"
+#include "chrome/browser/ui/views/try_chrome_dialog_view.h"
 
 #include <shellapi.h>
 
@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/process_singleton.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -22,6 +23,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
@@ -33,7 +35,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
@@ -64,7 +65,9 @@ TryChromeDialogView::Result TryChromeDialogView::Show(
     return NOT_NOW;
   }
   TryChromeDialogView dialog(flavor);
-  return dialog.ShowModal(listener);
+  TryChromeDialogView::Result result = dialog.ShowDialog(
+      listener, kDialogType::MODAL, kUsageType::FOR_CHROME);
+  return result;
 }
 
 TryChromeDialogView::TryChromeDialogView(size_t flavor)
@@ -74,14 +77,14 @@ TryChromeDialogView::TryChromeDialogView(size_t flavor)
       kill_chrome_(NULL),
       dont_try_chrome_(NULL),
       make_default_(NULL),
-      result_(COUNT)  {
-}
+      result_(COUNT) {}
 
-TryChromeDialogView::~TryChromeDialogView() {
-}
+TryChromeDialogView::~TryChromeDialogView() {}
 
-TryChromeDialogView::Result TryChromeDialogView::ShowModal(
-    const ActiveModalDialogListener& listener) {
+TryChromeDialogView::Result TryChromeDialogView::ShowDialog(
+    const ActiveModalDialogListener& listener,
+    kDialogType dialog_type,
+    kUsageType usage_type) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
@@ -103,46 +106,53 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
   views::ColumnSet* columns;
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int label_spacing =
+      provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+  const int unrelated_space_horiz =
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+  const int unrelated_space_vert =
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  const int button_spacing_horiz =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
+
   // First row: [icon][pad][text][pad][button].
   columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, icon_size.width(),
                      icon_size.height());
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, label_spacing);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, unrelated_space_horiz);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // Optional second row: [pad][pad][radio 1].
+  int icon_padding = icon_size.width() + label_spacing;
+  // Optional second row: [pad][radio 1].
   columns = layout->AddColumnSet(1);
-  columns->AddPaddingColumn(0, icon_size.width());
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, icon_padding);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // Third row: [pad][pad][radio 2].
+  // Third row: [pad][radio 2].
   columns = layout->AddColumnSet(2);
-  columns->AddPaddingColumn(0, icon_size.width());
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, icon_padding);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // Fourth row: [pad][pad][button][pad][button].
+  // Fourth row: [pad][button][pad][button].
   columns = layout->AddColumnSet(3);
-  columns->AddPaddingColumn(0, icon_size.width());
+  columns->AddPaddingColumn(0, icon_padding);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, views::LayoutProvider::Get()->GetDistanceMetric(
-                                   views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+  columns->AddPaddingColumn(0, button_spacing_horiz);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  // Fifth row: [pad][pad][link].
+  // Fifth row: [pad][link].
   columns = layout->AddColumnSet(4);
-  columns->AddPaddingColumn(0, icon_size.width());
-  columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, icon_padding);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
@@ -160,7 +170,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   columns = layout->AddColumnSet(7);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  columns->AddPaddingColumn(0, unrelated_space_horiz);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
@@ -170,7 +180,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Find out what experiment we are conducting.
   installer::ExperimentDetails experiment;
-  if (!install_static::SupportsRetentionExperiments() ||
+  if ((usage_type != kUsageType::FOR_TESTING &&
+          !install_static::SupportsRetentionExperiments()) ||
       !installer::CreateExperimentDetails(flavor_, &experiment) ||
       !experiment.heading) {
     NOTREACHED() << "Cannot determine which headline to show.";
@@ -230,13 +241,13 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   views::Separator* separator = NULL;
   if (experiment.flags & installer::kToastUiMakeDefault) {
-    // In this flavor we have some veritical space, then a separator line
+    // In this flavor we have some vertical space, then a separator line
     // and the 'make default' checkbox and the OK button on the same row.
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, unrelated_space_vert);
     layout->StartRow(0, 6);
     separator = new views::Separator();
     layout->AddView(separator);
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, unrelated_space_vert);
 
     layout->StartRow(0, 7);
     make_default_ = new views::Checkbox(
@@ -262,8 +273,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   if (experiment.flags & installer::kToastUiWhyLink) {
     layout->StartRowWithPadding(0, 4, 0, 10);
-    views::Link* link = new views::Link(
-        l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
+    views::Link* link =
+        new views::Link(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
     link->set_listener(this);
     layout->AddView(link);
   }
@@ -287,38 +298,38 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   // Time to show the window in a modal loop.
   popup_->Show();
+
   if (!listener.is_null())
     listener.Run(popup_->GetNativeView());
-  base::RunLoop().Run();
-  if (!listener.is_null())
-    listener.Run(NULL);
+
+  // If the dialog is not modal, we don't control when it is going to be
+  // dismissed and hence we cannot inform the listener about the dialog going
+  // away.
+  if (dialog_type == kDialogType::MODAL) {
+    base::RunLoop().Run();
+    if (!listener.is_null())
+      listener.Run(nullptr);
+  }
   return result_;
 }
 
-gfx::Rect TryChromeDialogView::ComputeWindowPosition(gfx::Size size,
+gfx::Rect TryChromeDialogView::ComputeWindowPosition(const gfx::Size& size,
                                                      bool is_RTL) {
-  // A best guess at a visible location in case all else fails.
-  gfx::Point origin(20, 20);
+  gfx::Point origin;
 
-  // The taskbar (the 'Shell_TrayWnd' window) is always on the primary monitor.
-  constexpr POINT kOrigin = {};
-  MONITORINFO info = {sizeof(info)};
-  if (::GetMonitorInfo(::MonitorFromPoint(kOrigin, MONITOR_DEFAULTTOPRIMARY),
-                       &info)) {
-    // |rcWork| is the work area, accounting for the visible taskbars.
-    origin.set_x(is_RTL ? info.rcWork.left : info.rcWork.right - size.width());
-    origin.set_y(info.rcWork.bottom - size.height());
-  }
+  gfx::Rect work_area = popup_->GetWorkAreaBoundsInScreen();
+  origin.set_x(is_RTL ? work_area.x() : work_area.right() - size.width());
+  origin.set_y(work_area.bottom()- size.height());
 
-  return gfx::Rect(origin, size);
+  return display::Screen::GetScreen()->ScreenToDIPRectInWindow(
+      popup_->GetNativeView(), gfx::Rect(origin, size));
 }
 
 void TryChromeDialogView::SetToastRegion(HWND window, int w, int h) {
   static const POINT polygon[] = {
-    {0,   4}, {1,   2}, {2,   1}, {4, 0},   // Left side.
-    {w-4, 0}, {w-2, 1}, {w-1, 2}, {w, 4},   // Right side.
-    {w, h}, {0, h}
-  };
+      {0, 4},     {1, 2},     {2, 1},     {4, 0},  // Left side.
+      {w - 4, 0}, {w - 2, 1}, {w - 1, 2}, {w, 4},  // Right side.
+      {w, h},     {0, h}};
   HRGN region = ::CreatePolygonRgn(polygon, arraysize(polygon), WINDING);
   ::SetWindowRgn(window, region, FALSE);
 }
@@ -357,7 +368,7 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
 
   if (make_default_) {
     if ((result_ == TRY_CHROME) && make_default_->checked())
-        result_ = TRY_CHROME_AS_DEFAULT;
+      result_ = TRY_CHROME_AS_DEFAULT;
   }
 
   popup_->Close();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
-#define CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_VIEW_H_
 
 #include <stddef.h>
 
@@ -79,20 +79,40 @@ class TryChromeDialogView : public views::ButtonListener,
   // Note that the dialog has no parent and it will position itself in a lower
   // corner of the screen. The dialog does not steal focus and does not have an
   // entry in the taskbar.
-  static Result Show(size_t flavor, const ActiveModalDialogListener& listener);
-
+  static Result Show(size_t flavor,
+                     const ActiveModalDialogListener& listener);
  private:
+  // Indicates whether the dialog is modal
+  enum class kDialogType {
+    MODAL,     // Modal dialog.
+    MODELESS,  // Modeless dialog.
+  };
+
+  // Indicates the usage type. Chrome or tests.
+  enum class kUsageType {
+    FOR_CHROME,
+    FOR_TESTING,
+  };
+
+  friend class TryChromeDialogTest;
+
   explicit TryChromeDialogView(size_t flavor);
   ~TryChromeDialogView() override;
 
-  Result ShowModal(const ActiveModalDialogListener& listener);
+  // Helper function to show the dialog.
+  // The |dialog_type| parameter indicates whether the dialog is modal.
+  // The |usage_type| parameter indicates whether this is being invoked by
+  // chrome or a test.
+  Result ShowDialog(const ActiveModalDialogListener& listener,
+                    kDialogType dialog_type,
+                    kUsageType usage_type);
 
   // Returns a screen rectangle that is fit to show the window. In particular
   // it has the following properties: a) is visible and b) is attached to the
   // bottom of the working area. For LTR machines it returns a left side
   // rectangle and for RTL it returns a right side rectangle so that the dialog
   // does not compete with the standard place of the start menu.
-  gfx::Rect ComputeWindowPosition(gfx::Size size, bool is_RTL);
+  gfx::Rect ComputeWindowPosition(const gfx::Size& size, bool is_RTL);
 
   // Create a windows region that looks like a toast of width |w| and height
   // |h|. This is best effort, so we don't care much if the operation fails.
@@ -123,4 +143,4 @@ class TryChromeDialogView : public views::ButtonListener,
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogView);
 };
 
-#endif  // CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_VIEW_H_

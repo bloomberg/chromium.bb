@@ -3690,8 +3690,6 @@ split_static_library("browser") {
     sources += [
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
-      "first_run/try_chrome_dialog_view.cc",
-      "first_run/try_chrome_dialog_view.h",
       "first_run/upgrade_util.cc",
     ]
     public_deps += [

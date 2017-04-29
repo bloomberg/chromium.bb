@@ -57,6 +57,7 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -71,9 +72,10 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
-#include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/ui/views/extensions/request_file_system_dialog_view.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -437,8 +439,18 @@ void ConsentProviderDelegate::ShowDialog(
     return;
   }
 
-  RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
-                                          writable, callback);
+  // If the volume is gone, then cancel the dialog.
+  if (!volume.get()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_CANCEL));
+    return;
+  }
+
+  RequestFileSystemDialogView::ShowDialog(
+      web_contents, extension.name(),
+      (volume->volume_label().empty() ? volume->volume_id()
+                                      : volume->volume_label()),
+      writable, callback);
 }
 
 void ConsentProviderDelegate::ShowNotification(

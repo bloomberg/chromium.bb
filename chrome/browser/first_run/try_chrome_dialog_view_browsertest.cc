@@ -4,9 +4,11 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/ui_base_switches.h"
 
 // Unfortunately, this needs to be Windows only for now. Even though this test
 // is meant to exercise code that is for Windows only, it is a good general
@@ -16,6 +18,7 @@
 // will be improved to support this so we can get coverage on other platforms.
 // See http://crbug.com/45115 for details.
 #if defined(OS_WIN)
+#include "chrome/browser/ui/views/try_chrome_dialog_view.h"
 
 // By passing kTryChromeAgain with a magic value > 10000 we cause Chrome
 // to exit fairly early.
@@ -54,5 +57,36 @@ protected:
 // changes to see if it affects the test. History shows that waiting until later
 // only makes the problem worse.
 IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, ToastCrasher) {}
+
+// Helper class to display the TryChromeDialog for testing.
+class TryChromeDialogTest : public DialogBrowserTest {
+ public:
+  // TODO(ananta)
+  // Provide a way to test flavors other than 0.
+  TryChromeDialogTest() : dialog_(0) {}
+
+  static void DialogHandler(gfx::NativeWindow active_dialog) {}
+
+  // DialogBrowserTest:
+  void ShowDialog(const std::string& name) override {
+    dialog_.ShowDialog(base::Bind(&TryChromeDialogTest::DialogHandler),
+                       TryChromeDialogView::kDialogType::MODELESS,
+                       TryChromeDialogView::kUsageType::FOR_TESTING);
+  }
+
+  // content::BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  }
+
+ private:
+  TryChromeDialogView dialog_;
+
+  DISALLOW_COPY_AND_ASSIGN(TryChromeDialogTest);
+};
+
+IN_PROC_BROWSER_TEST_F(TryChromeDialogTest, InvokeDialog_default) {
+  RunDialog();
+}
 
 #endif  // defined(OS_WIN)
