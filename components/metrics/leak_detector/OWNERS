@@ -5,3 +5,5 @@ wfh@chromium.org
 # introducing new sandbox escapes.
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
+
+# COMPONENT: Internals>Metrics
