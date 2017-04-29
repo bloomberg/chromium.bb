@@ -350,6 +350,9 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       worker_inspector_proxy_->WorkerStartMode(document);
   std::unique_ptr<WorkerSettings> worker_settings =
       WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
+  WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
+  worker_v8_settings.atomics_wait_mode_ =
+      WorkerV8Settings::AtomicsWaitMode::kAllow;
   std::unique_ptr<WorkerThreadStartupData> startup_data =
       WorkerThreadStartupData::Create(
           url_, loading_document_->UserAgent(),
@@ -359,7 +362,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
           main_script_loader_->GetReferrerPolicy(), starter_origin,
           worker_clients, main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-          WorkerV8Settings::Default());
+          worker_v8_settings);
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So

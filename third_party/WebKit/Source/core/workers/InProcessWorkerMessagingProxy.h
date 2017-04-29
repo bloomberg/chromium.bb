@@ -87,6 +87,9 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
     return *worker_object_proxy_.get();
   }
 
+  // Whether Atomics.wait (a blocking function call) is allowed on this thread.
+  virtual bool IsAtomicsWaitAllowed() { return false; }
+
  private:
   friend class InProcessWorkerMessagingProxyForTest;
   InProcessWorkerMessagingProxy(ExecutionContext*,

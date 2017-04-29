@@ -107,6 +107,9 @@ void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
       ToIsolate(document)->IsHeapLimitIncreasedForDebugging()
           ? WorkerV8Settings::HeapLimitMode::kIncreasedForDebugging
           : WorkerV8Settings::HeapLimitMode::kDefault;
+  worker_v8_settings.atomics_wait_mode_ =
+      IsAtomicsWaitAllowed() ? WorkerV8Settings::AtomicsWaitMode::kAllow
+                             : WorkerV8Settings::AtomicsWaitMode::kDisallow;
   std::unique_ptr<WorkerThreadStartupData> startup_data =
       WorkerThreadStartupData::Create(
           script_url, user_agent, source_code, nullptr, start_mode,
