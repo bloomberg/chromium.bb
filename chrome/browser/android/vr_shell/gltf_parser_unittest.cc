@@ -17,16 +17,24 @@
 
 namespace vr_shell {
 
-class GltfParserTest : public testing::Test {
+class DataDrivenTest : public testing::Test {
  protected:
   static void SetUpTestCase() { test::RegisterPathProvider(); }
 
   void SetUp() override { PathService::Get(test::DIR_TEST_DATA, &data_dir_); }
 
   base::FilePath data_dir_;
+};
 
+class GltfParserTest : public DataDrivenTest {
+ protected:
   std::unique_ptr<base::DictionaryValue> Deserialize(
       const base::FilePath& gltf_path);
+};
+
+class BinaryGltfParserTest : public DataDrivenTest {
+ protected:
+  base::StringPiece Read(const base::FilePath& path);
 };
 
 std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
@@ -40,6 +48,12 @@ std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
   EXPECT_TRUE(asset_value->GetAsDictionary(&asset));
   asset_value.release();
   return std::unique_ptr<base::DictionaryValue>(asset);
+}
+
+base::StringPiece BinaryGltfParserTest::Read(const base::FilePath& path) {
+  std::string data;
+  base::ReadFileToString(path, &data);
+  return base::StringPiece(data);
 }
 
 TEST_F(GltfParserTest, Parse) {
@@ -155,6 +169,17 @@ TEST_F(GltfParserTest, ParseExternalNoPath) {
 
   // Parsing fails when no path is provided.
   EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
+}
+
+TEST_F(BinaryGltfParserTest, ParseBinary) {
+  auto glb_data = Read(data_dir_.Append("sample.glb"));
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
+  auto asset = BinaryGltfParser::Parse(glb_data, &buffers);
+  EXPECT_TRUE(asset);
+  EXPECT_EQ(1u, buffers.size());
+  const gltf::BufferView* buffer_view = asset->GetBufferView(0);
+  EXPECT_TRUE(buffer_view);
+  EXPECT_EQ(0, buffer_view->buffer);
 }
 
 }  // namespace vr_shell
