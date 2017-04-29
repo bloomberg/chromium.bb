@@ -56,6 +56,84 @@ var initialize_NetworkTest = function() {
 
 InspectorTest.preloadPanel("network");
 
+/**
+ * @param {!SDK.NetworkRequest} request
+ * @return {!Promise<!SDK.NetworkRequest>}
+ */
+InspectorTest.waitForRequestResponse = function(request)
+{
+    return new Promise(resolve => {
+        if (request.responseReceivedTime !== -1) {
+            resolve(request);
+            return;
+        }
+        InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, checkRequestUpdated);
+
+        function checkRequestUpdated(data)
+        {
+            if (data.data !== request || request.responseReceivedTime === -1)
+                return;
+            InspectorTest.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestUpdated, checkRequestUpdated);
+            resolve(request);
+        }
+    });
+}
+
+/**
+ * @param {!SDK.NetworkRequest} request
+ * @return {!Promise<!Network.NetworkRequestNode>}
+ */
+InspectorTest.waitForNetworkLogViewNodeForRequest = function(request)
+{
+    var networkLogView = UI.panels.network._networkLogView;
+    var node = networkLogView._nodesByRequestId.get(request.requestId());
+    if (node)
+        return Promise.resolve(node);
+    return new Promise(resolve => {
+        networkLogView.addEventToListeners(Network.NetworkLogView.Events.UpdateRequest, requestUpdated);
+        networkLogView._appendRequest;
+
+        function requestUpdated(data) {
+            if (data.data !== request)
+                return;
+            networkLogView.removeEventToListeners(Network.NetworkLogView.Events.UpdateRequest, requestUpdated);
+            var node = networkLogView._nodesByRequestId.get(request.requestId());
+            console.assert(node);
+            resolve(node);
+        }
+    });
+}
+
+/**
+ * @param {!SDK.NetworkRequest} wsRequest
+ * @param {string} message
+ * @return {!Promise<!SDK.NetworkRequest.WebSocketFrame>}
+ */
+InspectorTest.waitForWebsocketFrameReceived = function(wsRequest, message)
+{
+    return new Promise(resolve => {
+        for (var frame of wsRequest.frames()) {
+            if (resolveIfNeeded(frame))
+                return;
+        }
+        wsRequest.addEventListener(SDK.NetworkRequest.Events.WebsocketFrameAdded, handleFrameReceived);
+
+        function handleFrameReceived(data)
+        {
+            if (resolveIfNeeded(/** @type {!SDK.NetworkRequest.WebSocketFrame} */ (data.data)))
+                wsRequest.removeEventListener(SDK.NetworkRequest.Events.WebsocketFrameAdded, handleFrameReceived);
+        }
+
+        function resolveIfNeeded(frame)
+        {
+            if (frame.type !== SDK.NetworkRequest.WebSocketFrameType.Receive || frame.text !== message)
+                return false;
+            resolve(frame);
+            return true;
+        }
+    });
+}
+
 InspectorTest.recordNetwork = function()
 {
     UI.panels.network._networkLogView.setRecording(true);
