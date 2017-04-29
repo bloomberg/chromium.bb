@@ -53,12 +53,17 @@ public class DataReductionMainMenuFooter extends FrameLayout implements View.OnC
                     DataReductionProxySettings.getInstance()
                             .getContentLengthSavedInHistorySummary());
 
-            long millisSinceEpoch =
+            long chartStartDateInMillisSinceEpoch =
                     DataReductionProxySettings.getInstance().getDataReductionLastUpdateTime()
                     - DateUtils.DAY_IN_MILLIS * ChartDataUsageView.DAYS_IN_CHART;
+            long firstEnabledInMillisSinceEpoch = DataReductionProxySettings.getInstance()
+                                                          .getDataReductionProxyFirstEnabledTime();
+            long mostRecentTime = chartStartDateInMillisSinceEpoch > firstEnabledInMillisSinceEpoch
+                    ? chartStartDateInMillisSinceEpoch
+                    : firstEnabledInMillisSinceEpoch;
+
             final int flags = DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_NO_YEAR;
-            String date =
-                    DateUtils.formatDateTime(getContext(), millisSinceEpoch, flags).toString();
+            String date = DateUtils.formatDateTime(getContext(), mostRecentTime, flags).toString();
 
             itemText.setText(
                     getContext().getString(R.string.data_reduction_saved_label, dataSaved));
@@ -67,6 +72,12 @@ public class DataReductionMainMenuFooter extends FrameLayout implements View.OnC
             int lightActiveColor = ApiCompatibilityUtils.getColor(
                     getContext().getResources(), R.color.light_active_color);
             itemText.setTextColor(lightActiveColor);
+
+            // Reset the icon to blue.
+            ImageView icon = (ImageView) findViewById(R.id.chart_icon);
+            LayerDrawable layers = (LayerDrawable) icon.getDrawable();
+            Drawable chart = layers.findDrawableByLayerId(R.id.main_menu_chart);
+            chart.setColorFilter(null);
         } else {
             DataReductionProxyUma.dataReductionProxyUIAction(
                     DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);
