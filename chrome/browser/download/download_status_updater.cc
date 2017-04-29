@@ -39,7 +39,7 @@ class WasInProgressData : public base::SupportsUserData::Data {
   }
 
   explicit WasInProgressData(content::DownloadItem* item) {
-    item->SetUserData(kKey, this);
+    item->SetUserData(kKey, base::WrapUnique(this));
   }
 
  private:

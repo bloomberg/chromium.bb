@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "components/history/content/browser/download_conversions.h"
@@ -77,7 +78,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
   explicit DownloadHistoryData(content::DownloadItem* item)
       : state_(NOT_PERSISTED),
         was_restored_from_history_(false) {
-    item->SetUserData(kKey, this);
+    item->SetUserData(kKey, base::WrapUnique(this));
   }
 
   ~DownloadHistoryData() override {}

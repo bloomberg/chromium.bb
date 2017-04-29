@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -62,10 +63,9 @@ class DownloadItemObserver : public DownloadItem::Observer,
                              public base::SupportsUserData::Data {
  public:
   explicit DownloadItemObserver(DownloadItem* download_item);
-
- private:
   ~DownloadItemObserver() override;
 
+ private:
   // DownloadItem::Observer
   void OnDownloadUpdated(DownloadItem* download) override;
   void OnDownloadDestroyed(DownloadItem* download) override;
@@ -338,7 +338,7 @@ DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
       last_target_path_(download_item->GetTargetFilePath()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download_item_->AddObserver(this);
-  download_item_->SetUserData(&kUserDataKey, this);
+  download_item_->SetUserData(&kUserDataKey, base::WrapUnique(this));
 }
 
 DownloadItemObserver::~DownloadItemObserver() {

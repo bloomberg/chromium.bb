@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -318,7 +319,7 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
       item->GetUserData(&kSafeBrowsingUserDataKey));
   if (!state) {
     state = new SafeBrowsingState();
-    item->SetUserData(&kSafeBrowsingUserDataKey, state);
+    item->SetUserData(&kSafeBrowsingUserDataKey, base::WrapUnique(state));
   }
   state->CompleteDownload();
 #endif
@@ -339,7 +340,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
                << item->DebugString(false);
       state = new SafeBrowsingState();
       state->set_callback(internal_complete_callback);
-      item->SetUserData(&kSafeBrowsingUserDataKey, state);
+      item->SetUserData(&kSafeBrowsingUserDataKey, base::WrapUnique(state));
       service->CheckClientDownload(
           item,
           base::Bind(&ChromeDownloadManagerDelegate::CheckClientDownloadDone,
