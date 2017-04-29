@@ -53,8 +53,6 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   //     opts out, nothing further will be sent (honoring the user's setting).
   //  2) Dogfood users (see dogfood agreement).
   registry->RegisterBooleanPref(prefs::kOptInStats, true);
-  registry->RegisterListPref(prefs::kActiveDCSExperiments);
-  registry->RegisterDictionaryPref(prefs::kLatestDCSFeatures);
 
   RegisterPlatformPrefs(registry);
 
