@@ -145,6 +145,7 @@ def main(argv):
                                         "output-directory=",
                                         "symbols-dir=",
                                         "symbols-zip=",
+                                        "packed-lib=",
                                         "arch=",
                                         "fallback-monochrome",
                                         "verbose",
@@ -154,9 +155,9 @@ def main(argv):
 
   zip_arg = None
   more_info = False
-  packed_relocation_adjustments = "unknown"
   fallback_monochrome = False
   arch_defined = False
+  packed_libs = []
   for option, value in options:
     if option == "--help":
       PrintUsage()
@@ -171,10 +172,8 @@ def main(argv):
       symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
     elif option == "--output-directory":
       constants.SetOutputDirectory(value)
-    elif option == "--packed-relocation-adjustments":
-      packed_relocation_adjustments = True
-    elif option == "--no-packed-relocation-adjustments":
-      packed_relocation_adjustments = False
+    elif option == "--packed-lib":
+      packed_libs.append(os.path.expanduser(value))
     elif option == "--more-info":
       more_info = True
     elif option == "--less-info":
@@ -183,6 +182,11 @@ def main(argv):
       fallback_monochrome = True
     elif option == "--verbose":
       logging.basicConfig(level=logging.DEBUG)
+    elif option in (
+        '--packed-relocation-adjustments',
+        '--no-packed-relocation-adjustments'):
+      print ('--[no-]packed-relocation-adjustments options are deprecated. '
+             'Specify packed libs directory instead.')
 
   if len(arguments) > 1:
     PrintUsage()
@@ -205,25 +209,16 @@ def main(argv):
   if zip_arg:
     rootdir, symbol.SYMBOLS_DIR = UnzipSymbols(zip_arg)
 
-  if packed_relocation_adjustments == "unknown":
-    version = stack_libs.GetTargetAndroidVersionNumber(lines)
-    if version == None:
-      packed_relocation_adjustments = False
-      print ("Unknown Android release, "
-             + "consider --[no-]packed-relocation-adjustments options")
-    elif version >= _ANDROID_M_MAJOR_VERSION:
-      packed_relocation_adjustments = False
-    else:
-      packed_relocation_adjustments = True
-      print ("Pre-M Android release detected, "
-             + "added --packed-relocation-adjustments option")
-  else:
-    packed_relocation_adjustments = False
+  version = stack_libs.GetTargetAndroidVersionNumber(lines)
+  if version is None:
+    print ("Unknown Android release, "
+           "consider passing --packed-lib.")
+  elif version < _ANDROID_M_MAJOR_VERSION and not packed_libs:
+    print ("Pre-M Android release detected, "
+           "but --packed-lib not specified. Stack symbolization may fail.")
 
-  if packed_relocation_adjustments:
-    constants.CheckOutputDirectory()
-    stripped_libs_dir = constants.GetOutDirectory()
-    load_vaddrs = stack_libs.GetLoadVaddrs(stripped_libs_dir)
+  if (version is None or version < _ANDROID_M_MAJOR_VERSION) and packed_libs:
+    load_vaddrs = stack_libs.GetLoadVaddrs(stripped_libs=packed_libs)
   else:
     load_vaddrs = {}
 
