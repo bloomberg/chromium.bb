@@ -1565,7 +1565,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 1800,
+          "hard_timeout": 2400,
           "output_links": [
             {
               "link": [
