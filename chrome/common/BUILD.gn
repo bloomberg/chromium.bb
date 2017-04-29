@@ -697,6 +697,7 @@ source_set("app_mode_app_support") {
 
 mojom("mojo_bindings") {
   sources = [
+    "cache_stats_recorder.mojom",
     "conflicts/module_event_sink_win.mojom",
     "file_patcher.mojom",
     "image_context_menu_renderer.mojom",

@@ -74,6 +74,7 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
 
 void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
+    AssociatedInterfaceRegistry* associated_registry,
     RenderProcessHost* render_process_host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(

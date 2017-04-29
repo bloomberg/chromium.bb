@@ -29,6 +29,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   void RenderProcessWillLaunch(RenderProcessHost* host) override;
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
+      AssociatedInterfaceRegistry* associated_registry,
       RenderProcessHost* render_process_host) override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;

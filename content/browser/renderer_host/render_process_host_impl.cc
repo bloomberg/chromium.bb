@@ -1358,8 +1358,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           base::Unretained(
               memory_instrumentation::CoordinatorImpl::GetInstance())));
 
-  GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
-                                                            this);
+  associated_interfaces_.reset(new AssociatedInterfaceRegistryImpl());
+  GetContentClient()->browser()->ExposeInterfacesToRenderer(
+      registry.get(), associated_interfaces_.get(), this);
+  static_cast<AssociatedInterfaceRegistry*>(associated_interfaces_.get())
+      ->AddInterface(base::Bind(&RenderProcessHostImpl::BindRouteProvider,
+                                base::Unretained(this)));
 
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(browser_context_);
@@ -1369,6 +1373,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   connection_filter_controller_ = connection_filter->controller();
   connection_filter_id_ = service_manager_connection->AddConnectionFilter(
       std::move(connection_filter));
+}
+
+void RenderProcessHostImpl::BindRouteProvider(
+    mojom::RouteProviderAssociatedRequest request) {
+  if (route_provider_binding_.is_bound())
+    return;
+  route_provider_binding_.Bind(std::move(request));
 }
 
 void RenderProcessHostImpl::GetRoute(
@@ -2120,12 +2131,9 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  if (interface_name == mojom::RouteProvider::Name_) {
-    if (route_provider_binding_.is_bound())
-      return;
-    mojom::RouteProviderAssociatedRequest request;
-    request.Bind(std::move(handle));
-    route_provider_binding_.Bind(std::move(request));
+  if (associated_interfaces_ &&
+      associated_interfaces_->CanBindRequest(interface_name)) {
+    associated_interfaces_->BindRequest(interface_name, std::move(handle));
   } else {
     LOG(ERROR) << "Request for unknown Channel-associated interface: "
                << interface_name;
@@ -2785,6 +2793,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   is_dead_ = true;
   if (route_provider_binding_.is_bound())
     route_provider_binding_.Close();
+  associated_interfaces_.reset();
   ResetChannelProxy();
 
   UpdateProcessPriority();

@@ -27,6 +27,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/common/cache_stats_recorder.mojom.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/media/media_resource_provider.h"
@@ -49,6 +50,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/features/features.h"
+#include "ipc/ipc_sync_channel.h"
 #include "media/base/localized_strings.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
@@ -119,10 +121,14 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   void InformHostOfCacheStats() {
     WebCache::UsageStats stats;
     WebCache::GetUsageStats(&stats);
-    RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
-        static_cast<uint64_t>(stats.capacity),
-        static_cast<uint64_t>(stats.size)));
+    if (!cache_stats_recorder_) {
+      RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+          &cache_stats_recorder_);
+    }
+    cache_stats_recorder_->RecordCacheStats(stats.capacity, stats.size);
   }
+
+  chrome::mojom::CacheStatsRecorderAssociatedPtr cache_stats_recorder_;
 
   base::WeakPtrFactory<RendererResourceDelegate> weak_factory_;
 

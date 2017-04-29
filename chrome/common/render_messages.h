@@ -199,10 +199,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_AddSandboxStatusExtension)
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_UpdatedCacheStats,
-                     uint64_t /* capacity */,
-                     uint64_t /* size */)
-
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,

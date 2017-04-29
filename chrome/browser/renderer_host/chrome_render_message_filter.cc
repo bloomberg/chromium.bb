@@ -63,8 +63,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_DNSPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(NetworkHintsMsg_Preconnect, OnPreconnect)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
-                        OnUpdatedCacheStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -85,16 +83,15 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  switch (message.type()) {
 #if BUILDFLAG(ENABLE_PLUGINS)
+  switch (message.type()) {
     case ChromeViewHostMsg_IsCrashReportingEnabled::ID:
-#endif
-    case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
     default:
       break;
   }
+#endif
 }
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
@@ -117,12 +114,6 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
                               chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
                               allow_credentials, count);
   }
-}
-
-void ChromeRenderMessageFilter::OnUpdatedCacheStats(uint64_t capacity,
-                                                    uint64_t size) {
-  web_cache::WebCacheManager::GetInstance()->ObserveStats(render_process_id_,
-                                                          capacity, size);
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(
