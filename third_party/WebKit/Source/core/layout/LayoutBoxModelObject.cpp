@@ -326,7 +326,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
 
   PaintLayerType type = LayerTypeRequired();
   if (type != kNoPaintLayer) {
-    if (!Layer() && LayerCreationAllowedForSubtree()) {
+    if (!Layer()) {
       if (was_floating_before_style_changed && IsFloating())
         SetChildNeedsLayout();
       CreateLayerAfterStyleChange();

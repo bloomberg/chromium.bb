@@ -1999,8 +1999,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
 
-  inline bool LayerCreationAllowedForSubtree() const;
-
   // Overrides should call the superclass at the end. m_style will be 0 the
   // first time this function will be called.
   virtual void StyleWillChange(StyleDifference, const ComputedStyle& new_style);
@@ -2738,17 +2736,6 @@ inline bool LayoutObject::PreservesNewline() const {
     return false;
 
   return Style()->PreserveNewline();
-}
-
-inline bool LayoutObject::LayerCreationAllowedForSubtree() const {
-  LayoutObject* parent_layout_object = Parent();
-  while (parent_layout_object) {
-    if (parent_layout_object->IsSVGHiddenContainer())
-      return false;
-    parent_layout_object = parent_layout_object->Parent();
-  }
-
-  return true;
 }
 
 inline void LayoutObject::SetSelectionStateIfNeeded(SelectionState state) {
