@@ -80,6 +80,7 @@ Loaded modules:
     perf_ui
     persistence
     platform
+    product_registry
     protocol
     sdk
     services
@@ -118,6 +119,7 @@ Loaded modules:
     perf_ui
     persistence
     platform
+    product_registry
     protocol
     quick_open
     sdk
@@ -159,6 +161,7 @@ Loaded modules:
     perf_ui
     persistence
     platform
+    product_registry
     protocol
     quick_open
     sdk
