@@ -68,6 +68,8 @@ public class DataReductionProxySettings {
 
     private static final String DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF =
             "BANDWIDTH_REDUCTION_PROXY_HAS_EVER_BEEN_ENABLED";
+    public static final String DATA_REDUCTION_FIRST_ENABLED_TIME =
+            "BANDWIDTH_REDUCTION_FIRST_ENABLED_TIME";
 
     private static final String PARAM_PERSISTENT_MENU_ITEM_ENABLED = "persistent_menu_item_enabled";
 
@@ -155,6 +157,15 @@ public class DataReductionProxySettings {
      * data reduction statistics if this is the first time the SPDY proxy has been enabled.
      */
     public void setDataReductionProxyEnabled(Context context, boolean enabled) {
+        if (enabled
+                && ContextUtils.getAppSharedPreferences().getLong(
+                           DATA_REDUCTION_FIRST_ENABLED_TIME, 0)
+                        == 0) {
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
+                    .apply();
+        }
         ContextUtils.getAppSharedPreferences().edit()
                 .putBoolean(DATA_REDUCTION_ENABLED_PREF, enabled).apply();
         nativeSetDataReductionProxyEnabled(mNativeDataReductionProxySettings, enabled);
@@ -203,12 +214,25 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Returns the time that the proxy was first enabled. If data saving statistics are cleared,
+     * this is set to the reset time.
+     * @return The time that the proxy was first enabled in milliseconds since the epoch.
+     */
+    public long getDataReductionProxyFirstEnabledTime() {
+        return ContextUtils.getAppSharedPreferences().getLong(DATA_REDUCTION_FIRST_ENABLED_TIME, 0);
+    }
+
+    /**
      * Clears all data saving statistics.
      */
     public void clearDataSavingStatistics() {
         // When the data saving statistics are cleared, reset the snackbar promo that tells the user
         // how much data they have saved using Data Saver so far.
         DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
+                .apply();
         nativeClearDataSavingStatistics(mNativeDataReductionProxySettings);
     }
 
