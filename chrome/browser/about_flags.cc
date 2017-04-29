@@ -2382,6 +2382,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBackgroundVideoTrackOptimizationName,
      flag_descriptions::kBackgroundVideoTrackOptimizationDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kBackgroundVideoTrackOptimization)},
+    {"enable-new-remote-playback-pipeline",
+     flag_descriptions::kNewRemotePlaybackPipelineName,
+     flag_descriptions::kNewRemotePlaybackPipelineDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kNewRemotePlaybackPipeline)},
 #if defined(OS_CHROMEOS)
     {"quick-unlock-pin", flag_descriptions::kQuickUnlockPin,
      flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,

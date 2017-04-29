@@ -27,7 +27,7 @@ body {
 test(_ => {
   var videos = document.querySelectorAll('video');
   for (var video, i = 0; video = videos[i]; ++i) {
-    video.src = findMediaFile('video', 'content/test');
+    video.src = findMediaFile('video', '../content/test');
   }
 
   var forceLayout = document.body.offsetHeight;

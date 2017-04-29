@@ -105,6 +105,7 @@ MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
+MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kAndroidMediaPlayerRenderer;

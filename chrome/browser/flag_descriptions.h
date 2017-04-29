@@ -2797,6 +2797,14 @@ extern const char kBackgroundVideoTrackOptimizationName[];
 // Description of the flag for enabling optimizing background video playback.
 extern const char kBackgroundVideoTrackOptimizationDescription[];
 
+//  New remote playback pipeline experiment strings.
+
+// Name of the flag for enabling the new remote playback pipeline.
+extern const char kNewRemotePlaybackPipelineName[];
+
+// Description of the flag for enabling the new remote playback pipeline.
+extern const char kNewRemotePlaybackPipelineDescription[];
+
 //  Video fullscreen with orientation lock experiment strings.
 
 // Name of the flag for enabling orientation lock for fullscreen video playback.
