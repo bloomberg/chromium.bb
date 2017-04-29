@@ -1318,6 +1318,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void IncrementPasswordCount();
   void DecrementPasswordCount();
 
+  CoreProbeSink* GetProbeSink() final;
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 

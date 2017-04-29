@@ -45,7 +45,6 @@ namespace blink {
 class CoreProbeSink;
 class Resource;
 class ThreadDebugger;
-class WorkerGlobalScope;
 
 namespace probe {
 
@@ -66,19 +65,12 @@ class CORE_EXPORT AsyncTask {
 };
 
 // Called from generated instrumentation code.
-CORE_EXPORT CoreProbeSink* ToCoreProbeSink(WorkerGlobalScope*);
-CORE_EXPORT CoreProbeSink* ToCoreProbeSinkForNonDocumentContext(
-    ExecutionContext*);
-
 inline CoreProbeSink* ToCoreProbeSink(LocalFrame* frame) {
   return frame ? frame->InstrumentingAgents() : nullptr;
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Document& document) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame && document.TemplateDocumentHost())
-    frame = document.TemplateDocumentHost()->GetFrame();
-  return ToCoreProbeSink(frame);
+  return document.GetProbeSink();
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Document* document) {
@@ -86,10 +78,7 @@ inline CoreProbeSink* ToCoreProbeSink(Document* document) {
 }
 
 inline CoreProbeSink* ToCoreProbeSink(ExecutionContext* context) {
-  if (!context)
-    return nullptr;
-  return context->IsDocument() ? ToCoreProbeSink(*ToDocument(context))
-                               : ToCoreProbeSinkForNonDocumentContext(context);
+  return context ? context->GetProbeSink() : nullptr;
 }
 
 inline CoreProbeSink* ToCoreProbeSink(Node* node) {

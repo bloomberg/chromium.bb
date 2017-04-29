@@ -11,6 +11,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/probe/CoreProbes.h"
 
 namespace blink {
 
@@ -122,6 +123,10 @@ void MainThreadWorkletGlobalScope::AddConsoleMessage(
 
 void MainThreadWorkletGlobalScope::ExceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::Instance()->ExceptionThrown(this, event);
+}
+
+CoreProbeSink* MainThreadWorkletGlobalScope::GetProbeSink() {
+  return probe::ToCoreProbeSink(GetFrame());
 }
 
 DEFINE_TRACE(MainThreadWorkletGlobalScope) {

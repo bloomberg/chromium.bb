@@ -41,11 +41,8 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/ThreadDebugger.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 
@@ -137,23 +134,6 @@ void ContinueWithPolicyIgnore(LocalFrame* frame,
                               const ResourceResponse& r,
                               Resource* resource) {
   DidReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
-}
-
-CoreProbeSink* ToCoreProbeSink(WorkerGlobalScope* worker_global_scope) {
-  if (!worker_global_scope)
-    return nullptr;
-  if (WorkerInspectorController* controller =
-          worker_global_scope->GetThread()->GetWorkerInspectorController())
-    return controller->InstrumentingAgents();
-  return nullptr;
-}
-
-CoreProbeSink* ToCoreProbeSinkForNonDocumentContext(ExecutionContext* context) {
-  if (context->IsWorkerGlobalScope())
-    return ToCoreProbeSink(ToWorkerGlobalScope(context));
-  if (context->IsMainThreadWorkletGlobalScope())
-    return ToCoreProbeSink(ToMainThreadWorkletGlobalScope(context)->GetFrame());
-  return nullptr;
 }
 
 }  // namespace probe

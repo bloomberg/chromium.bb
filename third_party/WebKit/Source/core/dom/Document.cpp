@@ -6666,6 +6666,13 @@ void Document::DecrementPasswordCount() {
   SendSensitiveInputVisibility();
 }
 
+CoreProbeSink* Document::GetProbeSink() {
+  LocalFrame* frame = GetFrame();
+  if (!frame && TemplateDocumentHost())
+    frame = TemplateDocumentHost()->GetFrame();
+  return probe::ToCoreProbeSink(frame);
+}
+
 DEFINE_TRACE(Document) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);

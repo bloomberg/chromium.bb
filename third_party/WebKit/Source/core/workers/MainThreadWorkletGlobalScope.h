@@ -53,6 +53,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   // ExecutionContext
   void AddConsoleMessage(ConsoleMessage*) final;
   void ExceptionThrown(ErrorEvent*) final;
+  CoreProbeSink* GetProbeSink() final;
 
   DECLARE_VIRTUAL_TRACE();
 
