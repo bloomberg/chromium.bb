@@ -625,6 +625,7 @@
       'linux_perf_bisect': 'official_goma',
       'linux_perf_bisect_builder': 'official_goma',
       'linux_perf_cq': 'official_goma',
+      'Mac Builder': 'official_goma',
       'mac_10_10_perf_bisect': 'official_goma',
       'mac_10_11_perf_bisect': 'official_goma',
       'mac_fyi_perf_bisect': 'official_goma',
