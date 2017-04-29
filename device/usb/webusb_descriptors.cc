@@ -45,7 +45,7 @@ const uint8_t kWebUsbCapabilityUUID[16] = {
     0x38, 0xB6, 0x08, 0x34, 0xA9, 0x09, 0xA0, 0x47,
     0x8B, 0xFD, 0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65};
 
-const int kControlTransferTimeout = 60000;  // 1 minute
+const int kControlTransferTimeoutMs = 2000;  // 2 seconds
 
 using ReadWebUsbDescriptorsCallback =
     base::Callback<void(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
@@ -218,7 +218,7 @@ void ReadUrlDescriptor(scoped_refptr<UsbDeviceHandle> device_handle,
   device_handle->ControlTransfer(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, index, kGetUrlRequest,
-      buffer, buffer->size(), kControlTransferTimeout,
+      buffer, buffer->size(), kControlTransferTimeoutMs,
       base::Bind(&OnReadUrlDescriptor, url_map, index, callback));
 }
 
@@ -301,7 +301,7 @@ void OnReadWebUsbAllowedOriginsHeader(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, 0,
       kGetAllowedOriginsRequest, new_buffer, new_buffer->size(),
-      kControlTransferTimeout,
+      kControlTransferTimeoutMs,
       base::Bind(&OnReadWebUsbAllowedOrigins, callback));
 }
 
@@ -314,7 +314,7 @@ void ReadWebUsbAllowedOrigins(
       UsbTransferDirection::INBOUND, UsbControlTransferType::VENDOR,
       UsbControlTransferRecipient::DEVICE, vendor_code, 0,
       kGetAllowedOriginsRequest, buffer, buffer->size(),
-      kControlTransferTimeout,
+      kControlTransferTimeoutMs,
       base::Bind(&OnReadWebUsbAllowedOriginsHeader, device_handle, callback,
                  vendor_code));
 }
@@ -361,7 +361,7 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kBosDescriptorType << 8, 0, new_buffer, new_buffer->size(),
-      kControlTransferTimeout,
+      kControlTransferTimeoutMs,
       base::Bind(&OnReadBosDescriptor, device_handle, callback));
 }
 
@@ -574,7 +574,7 @@ void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kBosDescriptorType << 8, 0, buffer, buffer->size(),
-      kControlTransferTimeout,
+      kControlTransferTimeoutMs,
       base::Bind(&OnReadBosDescriptorHeader, device_handle, callback));
 }
 

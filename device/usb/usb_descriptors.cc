@@ -41,7 +41,7 @@ const uint8_t kInterfaceDescriptorLength = 9;
 const uint8_t kEndpointDescriptorLength = 7;
 const uint8_t kInterfaceAssociationDescriptorLength = 8;
 
-const int kControlTransferTimeout = 60000;  // 1 minute
+const int kControlTransferTimeoutMs = 2000;  // 2 seconds
 
 struct UsbInterfaceAssociationDescriptor {
   UsbInterfaceAssociationDescriptor(uint8_t first_interface,
@@ -123,7 +123,7 @@ void OnReadConfigDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
         UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | index, 0, buffer, total_length,
-        kControlTransferTimeout,
+        kControlTransferTimeoutMs,
         base::Bind(&OnReadConfigDescriptor, desc, closure));
   } else {
     LOG(ERROR) << "Failed to read length for configuration "
@@ -169,7 +169,7 @@ void OnReadDeviceDescriptor(
         UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
         UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
         kConfigurationDescriptorType << 8 | i, 0, header, header->size(),
-        kControlTransferTimeout,
+        kControlTransferTimeoutMs,
         base::Bind(&OnReadConfigDescriptorHeader, device_handle, desc_ptr, i,
                    closure));
   }
@@ -208,7 +208,7 @@ void ReadStringDescriptor(
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kStringDescriptorType << 8 | index, language_id, buffer, buffer->size(),
-      kControlTransferTimeout, base::Bind(&OnReadStringDescriptor, callback));
+      kControlTransferTimeoutMs, base::Bind(&OnReadStringDescriptor, callback));
 }
 
 void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
@@ -503,7 +503,7 @@ void ReadUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       UsbTransferDirection::INBOUND, UsbControlTransferType::STANDARD,
       UsbControlTransferRecipient::DEVICE, kGetDescriptorRequest,
       kDeviceDescriptorType << 8, 0, buffer, buffer->size(),
-      kControlTransferTimeout,
+      kControlTransferTimeoutMs,
       base::Bind(&OnReadDeviceDescriptor, device_handle, callback));
 }
 
