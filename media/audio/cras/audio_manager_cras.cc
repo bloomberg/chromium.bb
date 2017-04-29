@@ -50,8 +50,8 @@ const int kDefaultInputBufferSize = 1024;
 const char kBeamformingOnDeviceId[] = "default-beamforming-on";
 const char kBeamformingOffDeviceId[] = "default-beamforming-off";
 
-const char kInternalInputDevice[] = "Built-in-mic";
-const char kInternalOutputDevice[] = "Built-in-speaker";
+const char kInternalInputDevice[] = "Built-in mic";
+const char kInternalOutputDevice[] = "Built-in speaker";
 
 enum CrosBeamformingDeviceState {
   BEAMFORMING_DEFAULT_ENABLED = 0,
