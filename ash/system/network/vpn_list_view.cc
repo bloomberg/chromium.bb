@@ -16,7 +16,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/network_list_delegate.h"
+#include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -220,7 +220,8 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   Layout();
 }
 
-// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
+// TODO(varkha|mohsen): Consolidate with a similar method in
+// BluetoothDetailedView. See https://crbug.com/686924.
 void VPNListNetworkEntry::SetupConnectedItem(const base::string16& text,
                                              const gfx::ImageSkia& image) {
   AddIconAndLabels(
@@ -231,7 +232,8 @@ void VPNListNetworkEntry::SetupConnectedItem(const base::string16& text,
   style.SetupLabel(sub_text_label());
 }
 
-// TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
+// TODO(varkha|mohsen): Consolidate with a similar method in
+// BluetoothDetailedView. See https://crbug.com/686924.
 void VPNListNetworkEntry::SetupConnectingItem(const base::string16& text,
                                               const gfx::ImageSkia& image) {
   AddIconAndLabels(
@@ -244,7 +246,8 @@ void VPNListNetworkEntry::SetupConnectingItem(const base::string16& text,
 
 }  // namespace
 
-VPNListView::VPNListView(NetworkListDelegate* delegate) : delegate_(delegate) {
+VPNListView::VPNListView(tray::NetworkStateListDetailedView* detailed_view)
+    : NetworkListViewBase(detailed_view) {
   Shell::Get()->vpn_list()->AddObserver(this);
 }
 
@@ -314,7 +317,7 @@ void VPNListView::Update() {
 
   // Layout the updated list.
   container()->SizeToPreferredSize();
-  delegate_->RelayoutScrollList();
+  detailed_view()->RelayoutScrollList();
 
   if (scroll_to_show_view) {
     // Scroll the list so that |scroll_to_show_view| is in view.
@@ -357,7 +360,7 @@ void VPNListView::OnViewClicked(views::View* sender) {
   // If the user clicked on a network entry, let the |delegate_| trigger a
   // connection attempt (if the network is currently disconnected) or show a
   // configuration dialog (if the network is currently connected or connecting).
-  delegate_->OnNetworkEntryClicked(sender);
+  detailed_view()->OnNetworkEntryClicked(sender);
 }
 
 void VPNListView::AddNetwork(const chromeos::NetworkState* network) {

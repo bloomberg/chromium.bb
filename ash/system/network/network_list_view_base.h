@@ -14,12 +14,14 @@ class View;
 }
 
 namespace ash {
+namespace tray {
+class NetworkStateListDetailedView;
+}
 
 // Base class for a list of available networks (and, in the case of VPNs, the
 // list of available VPN providers).
 class NetworkListViewBase {
  public:
-  NetworkListViewBase();
   virtual ~NetworkListViewBase();
 
   void set_container(views::View* container) { container_ = container; }
@@ -33,9 +35,18 @@ class NetworkListViewBase {
   virtual bool IsNetworkEntry(views::View* view, std::string* guid) const = 0;
 
  protected:
-  views::View* container() { return container_; }
+  explicit NetworkListViewBase(
+      tray::NetworkStateListDetailedView* detailed_view);
+
+  tray::NetworkStateListDetailedView* detailed_view() const {
+    return detailed_view_;
+  }
+
+  views::View* container() const { return container_; }
 
  private:
+  tray::NetworkStateListDetailedView* const detailed_view_;
+
   // The container that holds the actual list entries.
   views::View* container_ = nullptr;
 

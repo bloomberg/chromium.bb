@@ -18,15 +18,14 @@ namespace chromeos {
 class NetworkState;
 }
 
-namespace ash {
-class NetworkListDelegate;
-}
-
 namespace views {
 class View;
 }
 
 namespace ash {
+namespace tray {
+class NetworkStateListDetailedView;
+}
 
 // A list of VPN providers and networks that shows VPN providers and networks in
 // a hierarchical layout, allowing the user to see at a glance which provider a
@@ -45,7 +44,7 @@ class VPNListView : public NetworkListViewBase,
                     public VpnList::Observer,
                     public ViewClickListener {
  public:
-  explicit VPNListView(NetworkListDelegate* delegate);
+  explicit VPNListView(tray::NetworkStateListDetailedView* detailed_view);
   ~VPNListView() override;
 
   // NetworkListViewBase:
@@ -71,8 +70,6 @@ class VPNListView : public NetworkListViewBase,
   // Adds all available VPN providers and networks to the list.
   void AddProvidersAndNetworks(
       const chromeos::NetworkStateHandler::NetworkStateList& networks);
-
-  NetworkListDelegate* const delegate_;
 
   // A mapping from each VPN provider's list entry to the provider.
   std::map<const views::View* const, VPNProvider> provider_view_map_;

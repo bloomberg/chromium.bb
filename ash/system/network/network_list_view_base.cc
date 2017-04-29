@@ -4,9 +4,15 @@
 
 #include "ash/system/network/network_list_view_base.h"
 
+#include "base/logging.h"
+
 namespace ash {
 
-NetworkListViewBase::NetworkListViewBase() {}
+NetworkListViewBase::NetworkListViewBase(
+    tray::NetworkStateListDetailedView* detailed_view)
+    : detailed_view_(detailed_view) {
+  DCHECK(detailed_view_);
+}
 
 NetworkListViewBase::~NetworkListViewBase() {}
 

@@ -4,18 +4,29 @@
 
 #include "ash/system/network/network_list.h"
 
-#include <stddef.h>
+#include <memory>
 
+#include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
-#include "ash/system/network/network_list_delegate.h"
+#include "ash/system/network/network_info.h"
+#include "ash/system/network/network_state_list_detailed_view.h"
+#include "ash/system/networking_config_delegate.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
+#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/throbber_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -26,12 +37,16 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/device_event_log/device_event_log.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -71,6 +86,32 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
     return false;
   return !managed_configuration_handler->FindPolicyByGuidAndProfile(
       network->guid(), network->profile_path(), nullptr /* onc_source */);
+}
+
+// TODO(varkha|mohsen): Consolidate with a similar method in
+// BluetoothDetailedView (see https://crbug.com/686924).
+void SetupConnectedItem(HoverHighlightView* container,
+                        const base::string16& text,
+                        const gfx::ImageSkia& image) {
+  container->AddIconAndLabels(
+      image, text,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
+  style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
+  style.SetupLabel(container->sub_text_label());
+}
+
+// TODO(varkha|mohsen): Consolidate with a similar method in
+// BluetoothDetailedView (see https://crbug.com/686924).
+void SetupConnectingItem(HoverHighlightView* container,
+                         const base::string16& text,
+                         const gfx::ImageSkia& image) {
+  container->AddIconAndLabels(
+      image, text,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+  ThrobberView* throbber = new ThrobberView;
+  throbber->Start();
+  container->AddRightView(throbber);
 }
 
 }  // namespace
@@ -210,9 +251,8 @@ class TetherHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
 class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
-  explicit WifiHeaderRowView(NetworkListDelegate* network_list_delegate)
+  WifiHeaderRowView()
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI),
-        network_list_delegate_(network_list_delegate),
         join_(nullptr) {}
 
   ~WifiHeaderRowView() override {}
@@ -252,7 +292,10 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == join_) {
-      network_list_delegate_->OnOtherWifiClicked();
+      ShellPort::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
+      Shell::Get()->system_tray_controller()->ShowNetworkCreate(
+          shill::kTypeWifi);
       return;
     }
     SectionHeaderRowView::ButtonPressed(sender, event);
@@ -271,8 +314,6 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
   // .30 * .38 opacity for disabled icon.
   static constexpr int kDisabledJoinIconAlpha = 0x1D;
 
-  NetworkListDelegate* network_list_delegate_;
-
   // A button to invoke "Join Wi-Fi network" dialog.
   SystemMenuButton* join_;
 
@@ -283,9 +324,10 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
 // NetworkListView:
 
-NetworkListView::NetworkListView(NetworkListDelegate* delegate)
-    : needs_relayout_(false),
-      delegate_(delegate),
+NetworkListView::NetworkListView(
+    tray::NetworkStateListDetailedView* detailed_view)
+    : NetworkListViewBase(detailed_view),
+      needs_relayout_(false),
       no_wifi_networks_view_(nullptr),
       no_cellular_networks_view_(nullptr),
       cellular_header_view_(nullptr),
@@ -294,9 +336,7 @@ NetworkListView::NetworkListView(NetworkListDelegate* delegate)
       cellular_separator_view_(nullptr),
       tether_separator_view_(nullptr),
       wifi_separator_view_(nullptr),
-      connection_warning_(nullptr) {
-  CHECK(delegate_);
-}
+      connection_warning_(nullptr) {}
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -345,9 +385,8 @@ void NetworkListView::UpdateNetworks(
     last_network_info_map_[info->guid] = std::move(info);
 
   network_list_.clear();
-  const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   for (const auto* network : networks) {
-    if (!pattern.MatchesType(network->type()))
+    if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
       continue;
 
     // Do not add Wi-Fi networks that are associated with a Tether network.
@@ -474,7 +513,7 @@ void NetworkListView::UpdateNetworkListInternal() {
     }
   }
   container()->SizeToPreferredSize();
-  delegate_->RelayoutScrollList();
+  detailed_view()->RelayoutScrollList();
   if (selected_view)
     container()->ScrollRectToVisible(selected_view->bounds());
 }
@@ -505,32 +544,29 @@ NetworkListView::UpdateNetworkListEntries() {
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
   index += new_guids->size();
 
-  const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
-  if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
-    if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular())) {
-      index = UpdateSectionHeaderRow(
-          NetworkTypePattern::Cellular(),
-          handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()), index,
-          &cellular_header_view_, &cellular_separator_view_);
-    }
-
-    // Cellular initializing.
-    int message_id = network_icon::GetCellularUninitializedMsg();
-    if (!message_id &&
-        handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
-        !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
-      message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
-    }
-    UpdateInfoLabel(message_id, index, &no_cellular_networks_view_);
-    if (message_id)
-      ++index;
-
-    // Add cellular networks.
-    std::unique_ptr<std::set<std::string>> new_cellular_guids =
-        UpdateNetworkChildren(NetworkInfo::Type::CELLULAR, index);
-    index += new_cellular_guids->size();
-    new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
+  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular())) {
+    index = UpdateSectionHeaderRow(
+        NetworkTypePattern::Cellular(),
+        handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()), index,
+        &cellular_header_view_, &cellular_separator_view_);
   }
+
+  // Cellular initializing.
+  int cellular_message_id = network_icon::GetCellularUninitializedMsg();
+  if (!cellular_message_id &&
+      handler->IsTechnologyEnabled(NetworkTypePattern::Mobile()) &&
+      !handler->FirstNetworkByType(NetworkTypePattern::Mobile())) {
+    cellular_message_id = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
+  }
+  UpdateInfoLabel(cellular_message_id, index, &no_cellular_networks_view_);
+  if (cellular_message_id)
+    ++index;
+
+  // Add cellular networks.
+  std::unique_ptr<std::set<std::string>> new_cellular_guids =
+      UpdateNetworkChildren(NetworkInfo::Type::CELLULAR, index);
+  index += new_cellular_guids->size();
+  new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
 
   // TODO (hansberry): Audit existing usage of NonVirtual and consider changing
   // it to include Tether. See crbug.com/693647.
@@ -541,8 +577,8 @@ NetworkListView::UpdateNetworkListEntries() {
         &tether_header_view_, &tether_separator_view_);
 
     // TODO (hansberry): Should a message similar to
-    // IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS be shown if Tether technology
-    // is enabled but no networks are around?
+    // IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS be shown if Tether technology is
+    // enabled but no networks are around?
 
     // Add Tether networks.
     std::unique_ptr<std::set<std::string>> new_tether_guids =
@@ -551,29 +587,27 @@ NetworkListView::UpdateNetworkListEntries() {
     new_guids->insert(new_tether_guids->begin(), new_tether_guids->end());
   }
 
-  if (pattern.MatchesPattern(NetworkTypePattern::WiFi())) {
-    index = UpdateSectionHeaderRow(
-        NetworkTypePattern::WiFi(),
-        handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()), index,
-        &wifi_header_view_, &wifi_separator_view_);
+  index = UpdateSectionHeaderRow(
+      NetworkTypePattern::WiFi(),
+      handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()), index,
+      &wifi_header_view_, &wifi_separator_view_);
 
-    // "Wifi Enabled / Disabled".
-    int message_id = 0;
-    if (network_list_.empty()) {
-      message_id = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi())
-                       ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
-                       : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    }
-    UpdateInfoLabel(message_id, index, &no_wifi_networks_view_);
-    if (message_id)
-      ++index;
-
-    // Add Wi-Fi networks.
-    std::unique_ptr<std::set<std::string>> new_wifi_guids =
-        UpdateNetworkChildren(NetworkInfo::Type::WIFI, index);
-    index += new_wifi_guids->size();
-    new_guids->insert(new_wifi_guids->begin(), new_wifi_guids->end());
+  // "Wifi Enabled / Disabled".
+  int wifi_message_id = 0;
+  if (network_list_.empty()) {
+    wifi_message_id = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi())
+                          ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
+                          : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
   }
+  UpdateInfoLabel(wifi_message_id, index, &no_wifi_networks_view_);
+  if (wifi_message_id)
+    ++index;
+
+  // Add Wi-Fi networks.
+  std::unique_ptr<std::set<std::string>> new_wifi_guids =
+      UpdateNetworkChildren(NetworkInfo::Type::WIFI, index);
+  index += new_wifi_guids->size();
+  new_guids->insert(new_wifi_guids->begin(), new_wifi_guids->end());
 
   // No networks or other messages (fallback).
   if (index == 0) {
@@ -582,6 +616,63 @@ NetworkListView::UpdateNetworkListEntries() {
   }
 
   return new_guids;
+}
+
+HoverHighlightView* NetworkListView::CreateViewForNetwork(
+    const NetworkInfo& info) {
+  HoverHighlightView* container = new HoverHighlightView(detailed_view());
+  if (info.connected)
+    SetupConnectedItem(container, info.label, info.image);
+  else if (info.connecting)
+    SetupConnectingItem(container, info.label, info.image);
+  else
+    container->AddIconAndLabel(info.image, info.label);
+  container->SetTooltipText(info.tooltip);
+  views::View* controlled_icon = CreateControlledByExtensionView(info);
+  if (controlled_icon)
+    container->AddChildView(controlled_icon);
+  return container;
+}
+
+void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
+                                           const NetworkInfo& info) {
+  DCHECK(!view->has_children());
+  if (info.connected)
+    SetupConnectedItem(view, info.label, info.image);
+  else if (info.connecting)
+    SetupConnectingItem(view, info.label, info.image);
+  else
+    view->AddIconAndLabel(info.image, info.label);
+  views::View* controlled_icon = CreateControlledByExtensionView(info);
+  view->SetTooltipText(info.tooltip);
+  if (controlled_icon)
+    view->AddChildView(controlled_icon);
+}
+
+views::View* NetworkListView::CreateControlledByExtensionView(
+    const NetworkInfo& info) {
+  NetworkingConfigDelegate* networking_config_delegate =
+      Shell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
+  if (!networking_config_delegate)
+    return nullptr;
+  std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
+      extension_info =
+          networking_config_delegate->LookUpExtensionForNetwork(info.guid);
+  if (!extension_info)
+    return nullptr;
+
+  // Get the tooltip text.
+  base::string16 tooltip_text = l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
+      base::UTF8ToUTF16(extension_info->extension_name));
+
+  views::ImageView* controlled_icon =
+      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+
+  controlled_icon->SetImage(
+      gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
+  controlled_icon->SetTooltipText(tooltip_text);
+  return controlled_icon;
 }
 
 std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
@@ -598,15 +689,15 @@ std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
 }
 
 void NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
-  views::View* network_view = nullptr;
+  HoverHighlightView* network_view = nullptr;
   NetworkGuidMap::const_iterator found = network_guid_map_.find(info->guid);
   if (found == network_guid_map_.end()) {
-    network_view = delegate_->CreateViewForNetwork(*info);
+    network_view = CreateViewForNetwork(*info);
   } else {
     network_view = found->second;
     if (NeedUpdateViewForNetwork(*info)) {
       network_view->RemoveAllChildViews(true);
-      delegate_->UpdateViewForNetwork(network_view, *info);
+      UpdateViewForNetwork(network_view, *info);
       network_view->Layout();
       network_view->SchedulePaint();
     }
@@ -643,8 +734,16 @@ void NetworkListView::UpdateInfoLabel(int message_id,
   }
   base::string16 text =
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
-  if (!label)
-    label = delegate_->CreateInfoLabel();
+  if (!label) {
+    // TODO(mohsen): Update info label to follow MD specs. See
+    // https://crbug.com/687778.
+    label = new views::Label();
+    label->SetBorder(views::CreateEmptyBorder(
+        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
+        kTrayPopupPaddingBetweenItems, 0));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
+  }
   label->SetText(text);
   PlaceViewAtIndex(label, insertion_index);
   *label_ptr = label;
@@ -661,7 +760,7 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
     else if (pattern.Equals(NetworkTypePattern::Tether()))
       *view = new TetherHeaderRowView();
     else if (pattern.Equals(NetworkTypePattern::WiFi()))
-      *view = new WifiHeaderRowView(delegate_);
+      *view = new WifiHeaderRowView();
     else
       NOTREACHED();
     (*view)->Init(enabled);
