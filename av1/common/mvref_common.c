@@ -1152,8 +1152,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       pts[0] = (x * 8);
       pts[1] = (y * 8);
       calc_projection_samples(mbmi, x, y, pts_inref);
-      pts += 2;
-      pts_inref += 2;
       np++;
     }
   }
