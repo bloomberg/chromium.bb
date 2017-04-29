@@ -43,7 +43,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=712096)
 
     # canvas.commit() promise synchronization isn't fully reliable yet.
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
@@ -110,6 +109,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
+        ['win', 'nvidia', 'opengl'], bug=693090)
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
         ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/glsl3/' +
         'vector-dynamic-indexing-swizzled-lvalue.html',

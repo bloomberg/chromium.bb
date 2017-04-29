@@ -412,11 +412,20 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   GLenum internal_format = 0;
   GLenum format = 0;
   GLsizei base_level = tex->base_level();
+  GLsizei max_level = tex->max_level();
   tex->GetLevelSize(target, base_level, &width, &height, &depth);
   tex->GetLevelType(target, base_level, &type, &internal_format);
   format = TextureManager::ExtractFormatFromStorageFormat(internal_format);
-  const GLint mipmap_levels =
-      TextureManager::ComputeMipMapCount(target, width, height, depth);
+  GLint mipmap_levels;
+  if (tex->IsImmutable()) {
+    mipmap_levels = tex->GetImmutableLevels();
+  } else {
+    mipmap_levels =
+        TextureManager::ComputeMipMapCount(target, width, height, depth);
+  }
+  const GLint max_mipmap_available_levels =
+      (base_level + mipmap_levels) > max_level ? max_level
+                                               : (base_level + mipmap_levels);
 
   glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
   if (feature_info_->ext_color_buffer_float_available() &&
@@ -458,26 +467,29 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                   GL_NEAREST_MIPMAP_NEAREST);
-  width >>= 1;
-  height >>= 1;
+
+  width = (width == 1) ? 1 : width >> 1;
+  height = (height == 1) ? 1 : height >> 1;
 
   // TODO(yizhou): An optimization. Attach 1 level at a time, once for every
   // iteration of the loop.
-  for (GLint level = base_level + 1; level < base_level + mipmap_levels;
+  for (GLint level = base_level + 1; level < max_mipmap_available_levels;
        ++level) {
     // copy mipmaps level by level from srgb_converter_textures_[1] to tex
     // generate mipmap for tex manually
     glBindTexture(GL_TEXTURE_2D, tex->service_id());
-    glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, 0,
-                 format, type, nullptr);
+    if (!tex->IsImmutable()) {
+      glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, 0,
+                   format, type, nullptr);
+    }
     glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, tex->service_id(), level);
 
     glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
     glViewport(0, 0, width, height);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    width >>= 1;
-    height >>= 1;
+    width = (width == 1) ? 1 : width >> 1;
+    height = (height == 1) ? 1 : height >> 1;
   }
 
   // Restore state
