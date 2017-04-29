@@ -355,10 +355,7 @@ extern const char kEnableInputImeAPI[];
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
     defined(OS_WIN)
-extern const char kAppMenuIcon[];
-extern const char kAppMenuIconOldBehavior[];
-extern const char kAppMenuIconPersistentOpenedState[];
-extern const char kAppMenuIconPersistentClosedState[];
+extern const char kEnableNewAppMenuIcon[];
 #endif
 
 bool ExtensionsDisabled(const base::CommandLine& command_line);

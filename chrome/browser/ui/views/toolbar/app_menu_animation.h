@@ -20,15 +20,14 @@ class AppMenuButton;
 // This class is used for animating and drawing the app menu icon.
 class AppMenuAnimation : public gfx::AnimationDelegate {
  public:
-  AppMenuAnimation(AppMenuButton* owner, bool should_animate_closed);
+  AppMenuAnimation(AppMenuButton* owner, SkColor initial_color);
 
   ~AppMenuAnimation() override;
 
   // Paints the app menu icon.
   void PaintAppMenu(gfx::Canvas* canvas, const gfx::Rect& bounds);
 
-  // Updates the icon colors.
-  void SetIconColors(SkColor start_color, SkColor severity_color);
+  void set_target_color(SkColor target_color) { target_color_ = target_color; }
 
   // Starts the animation if it's not already running.
   void StartAnimation();
@@ -70,9 +69,6 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
 
   AppMenuButton* const owner_;
 
-  // True if the animation should close after it finishes opening.
-  const bool should_animate_closed_;
-
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   AppMenuDot bottom_dot_;
@@ -80,12 +76,12 @@ class AppMenuAnimation : public gfx::AnimationDelegate {
   AppMenuDot top_dot_;
 
   // The starting color of the dots. The animation is expected to transition
-  // from this color to |severity_color_|.
+  // from this color to |target_color_|.
   SkColor start_color_;
 
   // The severity color of the dots. This is final color at the end of the
   // animation.
-  SkColor severity_color_;
+  SkColor target_color_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuAnimation);
 };

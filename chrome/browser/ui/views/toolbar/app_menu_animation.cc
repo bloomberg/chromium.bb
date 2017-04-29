@@ -60,7 +60,7 @@ AppMenuAnimation::AppMenuDot::AppMenuDot(base::TimeDelta delay,
 
 void AppMenuAnimation::AppMenuDot::Paint(const gfx::PointF& center_point,
                                          SkColor start_color,
-                                         SkColor severity_color,
+                                         SkColor target_color,
                                          gfx::Canvas* canvas,
                                          const gfx::Rect& bounds,
                                          const gfx::SlideAnimation* animation) {
@@ -110,8 +110,8 @@ void AppMenuAnimation::AppMenuDot::Paint(const gfx::PointF& center_point,
   point.Offset(-dot_width / 2, -dot_height / 2);
 
   SkColor color = is_opening ? gfx::Tween::ColorValueBetween(
-                                   color_progress, start_color, severity_color)
-                             : severity_color;
+                                   color_progress, start_color, target_color)
+                             : target_color;
 
   cc::PaintFlags flags;
   flags.setColor(color);
@@ -124,10 +124,8 @@ void AppMenuAnimation::AppMenuDot::Paint(const gfx::PointF& center_point,
   canvas->DrawRoundRect(gfx::RectF(point, dot_size), 2.0, flags);
 }
 
-AppMenuAnimation::AppMenuAnimation(AppMenuButton* owner,
-                                   bool should_animate_closed)
+AppMenuAnimation::AppMenuAnimation(AppMenuButton* owner, SkColor initial_color)
     : owner_(owner),
-      should_animate_closed_(should_animate_closed),
       animation_(base::MakeUnique<gfx::SlideAnimation>(this)),
       bottom_dot_(base::TimeDelta(),
                   kBottomWidthOpenInterval,
@@ -138,8 +136,8 @@ AppMenuAnimation::AppMenuAnimation(AppMenuButton* owner,
       top_dot_(base::TimeDelta::FromMilliseconds(kDotDelayMs * 2),
                kTopWidthOpenInterval,
                kTopStrokeOpenInterval),
-      start_color_(gfx::kPlaceholderColor),
-      severity_color_(gfx::kPlaceholderColor) {
+      start_color_(initial_color),
+      target_color_(initial_color) {
   animation_->SetSlideDuration(kOpenDurationMs);
   animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
 }
@@ -156,18 +154,12 @@ void AppMenuAnimation::PaintAppMenu(gfx::Canvas* canvas,
   gfx::PointF bottom_point = middle_point;
   bottom_point.Offset(0, y_offset);
 
-  middle_dot_.Paint(middle_point, start_color_, severity_color_, canvas, bounds,
+  middle_dot_.Paint(middle_point, start_color_, target_color_, canvas, bounds,
                     animation_.get());
-  top_dot_.Paint(top_point, start_color_, severity_color_, canvas, bounds,
+  top_dot_.Paint(top_point, start_color_, target_color_, canvas, bounds,
                  animation_.get());
-  bottom_dot_.Paint(bottom_point, start_color_, severity_color_, canvas, bounds,
+  bottom_dot_.Paint(bottom_point, start_color_, target_color_, canvas, bounds,
                     animation_.get());
-}
-
-void AppMenuAnimation::SetIconColors(SkColor start_color,
-                                     SkColor severity_color) {
-  start_color_ = start_color;
-  severity_color_ = severity_color;
 }
 
 void AppMenuAnimation::StartAnimation() {
@@ -179,14 +171,12 @@ void AppMenuAnimation::StartAnimation() {
 }
 
 void AppMenuAnimation::AnimationEnded(const gfx::Animation* animation) {
-  if (animation_->IsShowing() && should_animate_closed_) {
+  if (animation_->IsShowing()) {
     animation_->SetSlideDuration(kCloseDurationMs);
     animation_->Hide();
-    return;
+  } else {
+    start_color_ = target_color_;
   }
-
-  if (!animation_->IsShowing())
-    start_color_ = severity_color_;
 
   owner_->AppMenuAnimationEnded();
 }
