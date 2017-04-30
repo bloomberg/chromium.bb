@@ -88,7 +88,7 @@ class PythonChecker(object):
             sys.executable,
             wkf.path_from_depot_tools_base('pylint.py'),
             '--output-format=parseable',
-            '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
+            '--rcfile=' + wkf.path_from_tools_scripts('webkitpy', 'pylintrc'),
             path,
         ], env=env, error_handler=executive.ignore_error)
 
