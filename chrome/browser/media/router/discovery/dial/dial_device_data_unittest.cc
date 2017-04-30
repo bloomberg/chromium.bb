@@ -69,9 +69,9 @@ TEST(DialDeviceDataTest, TestUpdateFrom) {
 }
 
 TEST(DialDeviceDataTest, TestIsDeviceDescriptionUrl) {
-  EXPECT_TRUE(DialDeviceData::IsDeviceDescriptionUrl(
+  EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(
       GURL("http://some.device.com/dd.xml")));
-  EXPECT_TRUE(DialDeviceData::IsDeviceDescriptionUrl(
+  EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(
       GURL("https://some.device.com/dd.xml")));
   EXPECT_TRUE(DialDeviceData::IsDeviceDescriptionUrl(
       GURL("http://192.168.1.1:1234/dd.xml")));

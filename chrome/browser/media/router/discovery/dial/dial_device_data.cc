@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+#include "net/base/ip_address.h"
 
 namespace media_router {
 
@@ -31,7 +32,16 @@ void DialDeviceData::set_device_description_url(const GURL& url) {
 
 // static
 bool DialDeviceData::IsDeviceDescriptionUrl(const GURL& url) {
-  return url.is_valid() && !url.is_empty() && url.SchemeIsHTTPOrHTTPS();
+  if (!url.is_valid() || url.is_empty() || !url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  net::IPAddress address;
+  if (!net::ParseURLHostnameToAddress(url.host(), &address))
+    return false;
+
+  // TODO(crbug.com/679432): check that this IP address matches the address that
+  // we received the SSDP advertisement from.
+  return address.IsReserved();
 }
 
 bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {

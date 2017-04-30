@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/media_sink_service.h"
+#include "chrome/common/media_router/discovery/media_sink_service.h"
 
 namespace media_router {
 
 MediaSinkService::MediaSinkService(
-    const OnSinksDiscoveredCallback& sinks_discovered_callback)
-    : sinks_discovered_callback_(sinks_discovered_callback) {}
+    const OnSinksDiscoveredCallback& sink_discovery_callback)
+    : sink_discovery_callback_(sink_discovery_callback) {}
 
 MediaSinkService::~MediaSinkService() = default;
 

@@ -73,6 +73,9 @@ class MediaSinkInternal {
 
   MediaSinkInternal& operator=(const MediaSinkInternal& other);
   bool operator==(const MediaSinkInternal& other) const;
+  bool operator!=(const MediaSinkInternal& other) const;
+  // Sorted by sink id.
+  bool operator<(const MediaSinkInternal& other) const;
 
   // Used by mojo.
   void set_sink_id(const MediaSink::Id& sink_id) { sink_.set_sink_id(sink_id); }
