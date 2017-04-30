@@ -262,14 +262,6 @@
       status: "experimental",
     },
     {
-      name: "CSSOffsetRotate",
-      status: "stable",
-    },
-    {
-      name: "CSSOffsetRotation",
-      status: "stable",
-    },
-    {
       name: "CSSOMSmoothScroll",
       status: "experimental",
     },

@@ -750,21 +750,21 @@ static CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range) {
   return list;
 }
 
-// offset: <offset-path> <offset-distance> <offset-rotation>
+// offset: <offset-path> <offset-distance> <offset-rotate>
 bool CSSPropertyParser::ConsumeOffsetShorthand(bool important) {
   const CSSValue* offset_path =
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range_, context_);
   const CSSValue* offset_distance =
       ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
-  const CSSValue* offset_rotation = ConsumeOffsetRotate(range_);
-  if (!offset_path || !offset_distance || !offset_rotation || !range_.AtEnd())
+  const CSSValue* offset_rotate = ConsumeOffsetRotate(range_);
+  if (!offset_path || !offset_distance || !offset_rotate || !range_.AtEnd())
     return false;
 
   AddProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path,
               important);
   AddProperty(CSSPropertyOffsetDistance, CSSPropertyOffset, *offset_distance,
               important);
-  AddProperty(CSSPropertyOffsetRotation, CSSPropertyOffset, *offset_rotation,
+  AddProperty(CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate,
               important);
 
   return true;
@@ -1757,7 +1757,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
-    case CSSPropertyOffsetRotation:
       return ConsumeOffsetRotate(range_);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:

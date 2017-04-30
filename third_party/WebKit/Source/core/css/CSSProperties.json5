@@ -1433,14 +1433,6 @@
       api_class: "CSSPropertyAPIOffsetRotate",
       converter: "ConvertOffsetRotate",
       interpolable: true,
-      runtime_flag: "CSSOffsetRotate",
-    },
-    {
-      name: "offset-rotation",
-      api_class: "CSSPropertyAPIOffsetRotate",
-      converter: "ConvertOffsetRotate",
-      interpolable: true,
-      runtime_flag: "CSSOffsetRotation",
     },
     {
       name: "opacity",
@@ -2855,7 +2847,7 @@
     },
     {
       name: "offset",
-      longhands: "offset-path;offset-distance;offset-rotation",
+      longhands: "offset-path;offset-distance;offset-rotate",
     },
     {
       name: "outline",

@@ -616,10 +616,9 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::Create(
     case CSSPropertyOffsetPosition:
       return CreateFromLengthPoint(style.OffsetPosition(), style);
     case CSSPropertyOffsetRotate:
-    case CSSPropertyOffsetRotation:
       return CreateFromDoubleAndBool(
-          style.OffsetRotation().angle,
-          style.OffsetRotation().type == kOffsetRotationAuto, style);
+          style.OffsetRotate().angle,
+          style.OffsetRotate().type == kOffsetRotationAuto, style);
     case CSSPropertyTransformOrigin:
       return CreateFromTransformOrigin(style.GetTransformOrigin(), style);
     case CSSPropertyWebkitPerspectiveOriginX:

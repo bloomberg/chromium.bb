@@ -200,8 +200,7 @@ bool CSSPropertyEquality::PropertiesEqual(CSSPropertyID prop,
     case CSSPropertyOffsetPosition:
       return a.OffsetPosition() == b.OffsetPosition();
     case CSSPropertyOffsetRotate:
-    case CSSPropertyOffsetRotation:
-      return a.OffsetRotation() == b.OffsetRotation();
+      return a.OffsetRotate() == b.OffsetRotate();
     case CSSPropertyOpacity:
       return a.Opacity() == b.Opacity();
     case CSSPropertyOrder:
