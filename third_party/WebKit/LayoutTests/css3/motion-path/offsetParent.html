@@ -11,7 +11,7 @@
    <div id="d3" style="offset-distance: 100%">
         <span id="s3"></span>
     </div>
-   <div id="d4" style="offset-rotation: 360deg">
+   <div id="d4" style="offset-rotate: 360deg">
         <span id="s4"></span>
     </div>
    <div id="d5" style="offset-anchor: bottom right">
@@ -31,7 +31,7 @@ test(function() {
 }, "inside offset-distance");
 test(function() {
     assert_equals(s4.offsetParent, container);
-}, "inside offset-rotation");
+}, "inside offset-rotate");
 test(function() {
     assert_equals(s5.offsetParent, container);
 }, "inside offset-anchor");

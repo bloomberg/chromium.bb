@@ -3437,13 +3437,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyOffsetDistance:
       return ZoomAdjustedPixelValueForLength(style.OffsetDistance(), style);
 
-    case CSSPropertyOffsetRotate:
-    case CSSPropertyOffsetRotation: {
+    case CSSPropertyOffsetRotate: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      if (style.OffsetRotation().type == kOffsetRotationAuto)
+      if (style.OffsetRotate().type == kOffsetRotationAuto)
         list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
       list->Append(*CSSPrimitiveValue::Create(
-          style.OffsetRotation().angle, CSSPrimitiveValue::UnitType::kDegrees));
+          style.OffsetRotate().angle, CSSPrimitiveValue::UnitType::kDegrees));
       return list;
     }
 

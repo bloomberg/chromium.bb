@@ -225,7 +225,6 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       applicable_types->push_back(
           WTF::MakeUnique<CSSClipInterpolationType>(used_property));
       break;
-    case CSSPropertyOffsetRotation:
     case CSSPropertyOffsetRotate:
       applicable_types->push_back(
           WTF::MakeUnique<CSSOffsetRotateInterpolationType>(used_property));

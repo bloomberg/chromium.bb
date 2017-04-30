@@ -212,7 +212,6 @@ offset-distance: 0px
 offset-path: none
 offset-position: auto
 offset-rotate: auto 0deg
-offset-rotation: auto 0deg
 opacity: 1
 order: 0
 orphans: 2

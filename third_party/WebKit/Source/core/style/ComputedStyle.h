@@ -1171,23 +1171,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // offset-rotate
   static StyleOffsetRotation InitialOffsetRotate() {
-    return InitialOffsetRotation();
-  }
-  const StyleOffsetRotation& OffsetRotate() const { return OffsetRotation(); }
-  void SetOffsetRotate(const StyleOffsetRotation& offset_rotate) {
-    SetOffsetRotation(offset_rotate);
-  }
-
-  // offset-rotation
-  static StyleOffsetRotation InitialOffsetRotation() {
     return StyleOffsetRotation(0, kOffsetRotationAuto);
   }
-  const StyleOffsetRotation& OffsetRotation() const {
+  const StyleOffsetRotation& OffsetRotate() const {
     return rare_non_inherited_data_->transform_->motion_.rotation_;
   }
-  void SetOffsetRotation(const StyleOffsetRotation& offset_rotation) {
+  void SetOffsetRotate(const StyleOffsetRotation& offset_rotate) {
     SET_NESTED_VAR(rare_non_inherited_data_, transform_, motion_.rotation_,
-                   offset_rotation);
+                   offset_rotate);
   }
 
   // opacity (aka -webkit-opacity)

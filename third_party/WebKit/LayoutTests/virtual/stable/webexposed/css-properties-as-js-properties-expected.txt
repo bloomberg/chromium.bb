@@ -197,7 +197,6 @@ offset
 offsetDistance
 offsetPath
 offsetRotate
-offsetRotation
 opacity
 order
 orientation

@@ -13,8 +13,7 @@ class CSSOffsetRotateInterpolationType : public CSSInterpolationType {
  public:
   CSSOffsetRotateInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK(CssProperty() == CSSPropertyOffsetRotate ||
-           CssProperty() == CSSPropertyOffsetRotation);
+    DCHECK(CssProperty() == CSSPropertyOffsetRotate);
   }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(

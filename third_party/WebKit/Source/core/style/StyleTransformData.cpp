@@ -33,7 +33,7 @@ StyleTransformData::StyleTransformData()
               ComputedStyle::InitialOffsetPosition(),
               nullptr,
               ComputedStyle::InitialOffsetDistance(),
-              ComputedStyle::InitialOffsetRotation()),
+              ComputedStyle::InitialOffsetRotate()),
       translate_(ComputedStyle::InitialTranslate()),
       rotate_(ComputedStyle::InitialRotate()),
       scale_(ComputedStyle::InitialScale()) {}
