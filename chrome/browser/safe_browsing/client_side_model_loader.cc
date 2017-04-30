@@ -10,10 +10,9 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -108,6 +107,9 @@ ModelLoader::ModelLoader(base::Closure update_renderers_callback,
 }
 
 ModelLoader::~ModelLoader() {
+  // This must happen on the same sequence as ScheduleFetch because it
+  // invalidates any WeakPtrs allocated there.
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
 }
 
 void ModelLoader::StartFetch() {
@@ -117,6 +119,7 @@ void ModelLoader::StartFetch() {
   // TODO(nparker): If no profile needs this model, we shouldn't fetch it.
   // Then only re-fetch when a profile setting changes to need it.
   // This will save on the order of ~50KB/week/client of bandwidth.
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */, url_,
                                      net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -128,6 +131,7 @@ void ModelLoader::StartFetch() {
 }
 
 void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   DCHECK_EQ(fetcher_.get(), source);
   DCHECK_EQ(url_, source->GetURL());
 
@@ -174,6 +178,7 @@ void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   // We don't differentiate models in the UMA stats.
   UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClientModelStatus",
                             status,
@@ -200,16 +205,20 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
 }
 
 void ModelLoader::ScheduleFetch(int64_t delay_ms) {
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           safe_browsing::switches::kSbDisableAutoUpdate))
     return;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void ModelLoader::CancelFetcher() {
+  // This must be called on the same sequence as ScheduleFetch because it
+  // invalidates any WeakPtrs allocated there.
+  DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   // Invalidate any scheduled request.
   weak_factory_.InvalidateWeakPtrs();
   // Cancel any request in progress.
