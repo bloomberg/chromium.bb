@@ -177,9 +177,9 @@ void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 // Post encode update of the rate control parameters for 2-pass
 void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 
-void av1_calculate_coded_size(const struct AV1_COMP *cpi,
-                              int *scaled_frame_width,
-                              int *scaled_frame_height);
+void av1_calculate_next_coded_size(const struct AV1_COMP *cpi,
+                                   int *scaled_frame_width,
+                                   int *scaled_frame_height);
 
 #if CONFIG_EXT_REFS
 static INLINE int get_number_of_extra_arfs(int interval, int arf_pending) {

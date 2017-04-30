@@ -1081,8 +1081,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
   }
 
   // Modify active_best_quality for downscaled normal frames.
-  if (cpi->resize_scale_num != cpi->resize_scale_den &&
-      !frame_is_kf_gf_arf(cpi)) {
+  if (!av1_resize_unscaled(cpi) && !frame_is_kf_gf_arf(cpi)) {
     int qdelta = av1_compute_qdelta_by_rate(
         rc, cm->frame_type, active_best_quality, 2.0, cm->bit_depth);
     active_best_quality =
@@ -1164,9 +1163,8 @@ void av1_rc_set_frame_target(AV1_COMP *cpi, int target) {
 
   rc->this_frame_target = target;
 
-  // Modify frame size target when down-scaling.
-  if (cpi->oxcf.resize_mode == RESIZE_DYNAMIC &&
-      cpi->resize_scale_num != cpi->resize_scale_den)
+  // Modify frame size target when down-scaled.
+  if (cpi->oxcf.resize_mode == RESIZE_DYNAMIC && !av1_resize_unscaled(cpi))
     rc->this_frame_target =
         (int)(rc->this_frame_target * av1_resize_rate_factor(cpi));
 
@@ -1231,7 +1229,6 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
 
 void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const AV1_COMMON *const cm = &cpi->common;
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   RATE_CONTROL *const rc = &cpi->rc;
   const int qindex = cm->base_qindex;
 
@@ -1322,15 +1319,6 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
 #endif  // CONFIG_EXT_REFS
     rc->frames_since_key++;
     rc->frames_to_key--;
-  }
-
-  // Trigger the resizing of the next frame if it is scaled.
-  if (oxcf->pass != 0) {
-    cpi->resize_pending =
-        (cpi->resize_next_scale_num != cpi->resize_scale_num ||
-         cpi->resize_next_scale_den != cpi->resize_scale_den);
-    cpi->resize_scale_num = cpi->resize_next_scale_num;
-    cpi->resize_scale_den = cpi->resize_next_scale_den;
   }
 }
 

@@ -613,7 +613,6 @@ typedef struct AV1_COMP {
 
   TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
-  int resize_pending;
   int resize_state;
   int resize_scale_num;
   int resize_scale_den;
@@ -858,6 +857,25 @@ static INLINE void uref_cnt_fb(EncRefCntBuffer *ubufs, int *uidx,
 
   *uidx = new_uidx;
   ubufs[new_uidx].ref_count++;
+}
+
+// Returns 1 if a resize is pending and 0 otherwise.
+static INLINE int av1_resize_pending(const struct AV1_COMP *cpi) {
+  return cpi->resize_scale_num != cpi->resize_next_scale_num ||
+         cpi->resize_scale_den != cpi->resize_next_scale_den;
+}
+
+// Returns 1 if a frame is unscaled and 0 otherwise.
+static INLINE int av1_resize_unscaled(const struct AV1_COMP *cpi) {
+  return cpi->resize_scale_num == cpi->resize_scale_den;
+}
+
+// Moves resizing to the next state. This is just setting the numerator and
+// denominator to the next numerator and denominator, causing
+// av1_resize_pending to subsequently return false.
+static INLINE void av1_resize_step(struct AV1_COMP *cpi) {
+  cpi->resize_scale_num = cpi->resize_next_scale_num;
+  cpi->resize_scale_den = cpi->resize_next_scale_den;
 }
 
 #ifdef __cplusplus
