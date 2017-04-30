@@ -4,9 +4,6 @@
 //
 // Helper class loads models for client-side phishing detection
 // from the the SafeBrowsing backends.
-//
-// This class is not thread-safe and expects all calls to be made on the UI
-// thread.
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_MODEL_LOADER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_MODEL_LOADER_H_
@@ -22,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/sequence_checker.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -49,6 +46,9 @@ class ModelLoader : public net::URLFetcherDelegate {
   static const char kClientModelUrlPrefix[];
   static const char kClientModelNamePattern[];
 
+  // Constructs a model loader to fetch a model using |request_context_getter|.
+  // When ScheduleFetch is called, |update_renderers| will be called on the
+  // same sequence if the fetch is successful.
   ModelLoader(base::Closure update_renderers,
               net::URLRequestContextGetter* request_context_getter,
               bool is_extended_reporting);
@@ -60,7 +60,8 @@ class ModelLoader : public net::URLFetcherDelegate {
   // Schedules the next fetch of the model.
   virtual void ScheduleFetch(int64_t delay_ms);
 
-  // Cancel any pending model fetch.
+  // Cancels any pending model fetch. This must be called from the same
+  // sequence as ScheduleFetch.
   virtual void CancelFetcher();
 
   const std::string& model_str() const { return model_str_; }
@@ -121,6 +122,10 @@ class ModelLoader : public net::URLFetcherDelegate {
 
   // Not owned, must outlive this obj or be NULL.
   net::URLRequestContextGetter* request_context_getter_;
+
+  // Used to check that ScheduleFetch and CancelFetcher are called on the same
+  // sequence.
+  base::SequenceChecker fetch_sequence_checker_;
 
   // Used to protect the delayed callback to StartFetchModel()
   base::WeakPtrFactory<ModelLoader> weak_factory_;
