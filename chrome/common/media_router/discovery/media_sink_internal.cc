@@ -64,6 +64,14 @@ bool MediaSinkInternal::operator==(const MediaSinkInternal& other) const {
   return false;
 }
 
+bool MediaSinkInternal::operator!=(const MediaSinkInternal& other) const {
+  return !operator==(other);
+}
+
+bool MediaSinkInternal::operator<(const MediaSinkInternal& other) const {
+  return sink_.id() < other.sink().id();
+}
+
 void MediaSinkInternal::set_sink(const MediaSink& sink) {
   sink_ = sink;
 }

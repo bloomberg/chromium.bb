@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/media_router/mojo/dial_device_description_parser.mojom.h"
@@ -29,30 +30,20 @@ class SafeDialDeviceDescriptionParser {
       ParseDialDeviceDescriptionCallback;
 
   SafeDialDeviceDescriptionParser();
+  virtual ~SafeDialDeviceDescriptionParser();
 
   // Start parsing device description XML file in utility process.
-  void Start(const std::string& xml_text,
-             const DeviceDescriptionCallback& callback);
-
- private:
-  ~SafeDialDeviceDescriptionParser();
-
-  // See SafeDialDeviceDescriptionParser::DeviceDescriptionCallback
-  void OnParseDeviceDescriptionComplete(
-      chrome::mojom::DialDeviceDescriptionPtr device_description);
-
   // TODO(crbug.com/702766): Add an enum type describing why utility process
   // fails to parse device description xml.
-  void OnParseDeviceDescriptionFailed();
+  virtual void Start(const std::string& xml_text,
+                     const DeviceDescriptionCallback& callback);
 
+ private:
   // Utility client used to send device description parsing task to the utility
   // process.
   std::unique_ptr<content::UtilityProcessMojoClient<
       chrome::mojom::DialDeviceDescriptionParser>>
       utility_process_mojo_client_;
-
-  // Only accessed on the IO thread.
-  DeviceDescriptionCallback device_description_callback_;
 
   base::ThreadChecker thread_checker_;
 

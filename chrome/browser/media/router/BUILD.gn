@@ -40,8 +40,6 @@ static_library("router") {
     "media_router_metrics.h",
     "media_routes_observer.cc",
     "media_routes_observer.h",
-    "media_sink_service.cc",
-    "media_sink_service.h",
     "media_sinks_observer.cc",
     "media_sinks_observer.h",
     "mojo/media_route_controller.cc",

@@ -63,9 +63,9 @@ class DialRegistry : public DialService::Observer,
   void OnListenerRemoved();
 
   // pass a reference of |observer| to allow it to notify on DIAL device events.
-  // This class does not take ownership of |observer|.
-  void RegisterObserver(Observer* observer);
-  void UnregisterObserver(Observer* observer);
+  // This class does not take ownership of observer.
+  virtual void RegisterObserver(Observer* observer);
+  virtual void UnregisterObserver(Observer* observer);
 
   // Called by the DIAL API to try to kickoff a discovery if there is not one
   // already active.
@@ -102,6 +102,7 @@ class DialRegistry : public DialService::Observer,
   using DeviceByLabelMap = std::map<std::string, DialDeviceData*>;
 
   friend class MockDialRegistry;
+  friend class TestDialRegistry;
   friend struct base::DefaultSingletonTraits<DialRegistry>;
 
   DialRegistry();

@@ -43,6 +43,8 @@ class DeviceDescriptionFetcher : public net::URLFetcherDelegate {
 
   ~DeviceDescriptionFetcher() override;
 
+  const GURL& device_description_url() { return device_description_url_; }
+
   void Start();
 
  private:
