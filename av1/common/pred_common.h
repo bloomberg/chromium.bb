@@ -79,6 +79,15 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd);
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+// Get a list of palette base colors that are used in the above and left blocks,
+// referred to as "color cache". The return value is the number of colors in the
+// cache (<= 2 * PALETTE_MAX_SIZE). The color values are stored in "cache"
+// in ascending order.
+int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
+                          int plane, uint16_t *cache);
+#endif  // CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_intra_inter_prob(const AV1_COMMON *cm,

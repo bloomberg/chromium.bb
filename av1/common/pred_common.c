@@ -153,6 +153,53 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd) {
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
+                          int plane, uint16_t *cache) {
+  int above_n = 0, left_n = 0;
+  if (above_mi)
+    above_n = above_mi->mbmi.palette_mode_info.palette_size[plane != 0];
+  if (left_mi)
+    left_n = left_mi->mbmi.palette_mode_info.palette_size[plane != 0];
+  if (above_n == 0 && left_n == 0) return 0;
+  int above_idx = plane * PALETTE_MAX_SIZE;
+  int left_idx = plane * PALETTE_MAX_SIZE;
+  int n = 0;
+#if CONFIG_HIGHBITDEPTH
+  const uint16_t *above_colors =
+      above_mi->mbmi.palette_mode_info.palette_colors;
+  const uint16_t *left_colors = left_mi->mbmi.palette_mode_info.palette_colors;
+#else
+  const uint8_t *above_colors = above_mi->mbmi.palette_mode_info.palette_colors;
+  const uint8_t *left_colors = left_mi->mbmi.palette_mode_info.palette_colors;
+#endif  // CONFIG_HIGHBITDEPTH
+  // Merge the sorted lists of base colors from above and left to get
+  // combined sorted color cache.
+  while (above_n > 0 && left_n > 0) {
+    uint16_t v_above = above_colors[above_idx];
+    uint16_t v_left = left_colors[left_idx];
+    if (v_left < v_above) {
+      if (n == 0 || v_left != cache[n - 1]) cache[n++] = v_left;
+      ++left_idx, --left_n;
+    } else {
+      if (n == 0 || v_above != cache[n - 1]) cache[n++] = v_above;
+      ++above_idx, --above_n;
+      if (v_left == v_above) ++left_idx, --left_n;
+    }
+  }
+  while (above_n-- > 0) {
+    uint16_t val = above_colors[above_idx++];
+    if (n == 0 || val != cache[n - 1]) cache[n++] = val;
+  }
+  while (left_n-- > 0) {
+    uint16_t val = left_colors[left_idx++];
+    if (n == 0 || val != cache[n - 1]) cache[n++] = val;
+  }
+  assert(n <= 2 * PALETTE_MAX_SIZE);
+  return n;
+}
+#endif  // CONFIG_PALETTE && CONFIG_PALETTE_DELTA_ENCODING
+
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real macroblocks.
 // The prediction flags in these dummy entries are initialized to 0.

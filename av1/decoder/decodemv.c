@@ -645,6 +645,110 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
 }
 
 #if CONFIG_PALETTE
+#if CONFIG_PALETTE_DELTA_ENCODING
+#if CONFIG_HIGHBITDEPTH
+static int uint16_compare(const void *a, const void *b) {
+  const uint16 va = *(const uint16 *)a;
+  const uint16 vb = *(const uint16 *)b;
+  return va - vb;
+}
+#else
+static int uint8_compare(const void *a, const void *b) {
+  const uint8_t va = *(const uint8_t *)a;
+  const uint8_t vb = *(const uint8_t *)b;
+  return va - vb;
+}
+#endif  // CONFIG_HIGHBITDEPTH
+
+static void read_palette_colors_y(MACROBLOCKD *const xd, int bit_depth,
+                                  PALETTE_MODE_INFO *const pmi, aom_reader *r) {
+  uint16_t color_cache[2 * PALETTE_MAX_SIZE];
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const int n_cache = av1_get_palette_cache(above_mi, left_mi, 0, color_cache);
+  const int n = pmi->palette_size[0];
+  int idx = 0;
+  for (int i = 0; i < n_cache && idx < n; ++i)
+    if (aom_read_bit(r, ACCT_STR)) pmi->palette_colors[idx++] = color_cache[i];
+  if (idx < n) {
+    pmi->palette_colors[idx++] = aom_read_literal(r, bit_depth, ACCT_STR);
+    if (idx < n) {
+      const int min_bits = bit_depth - 3;
+      int bits = min_bits + aom_read_literal(r, 2, ACCT_STR);
+      int range = (1 << bit_depth) - pmi->palette_colors[idx - 1] - 1;
+      for (; idx < n; ++idx) {
+        const int delta = aom_read_literal(r, bits, ACCT_STR) + 1;
+        pmi->palette_colors[idx] = pmi->palette_colors[idx - 1] + delta;
+        range -= delta;
+        bits = AOMMIN(bits, av1_ceil_log2(range));
+      }
+    }
+  }
+#if CONFIG_HIGHBITDEPTH
+  qsort(pmi->palette_colors, n, sizeof(pmi->palette_colors[0]), uint16_compare);
+#else
+  qsort(pmi->palette_colors, n, sizeof(pmi->palette_colors[0]), uint8_compare);
+#endif  // CONFIG_HIGHBITDEPTH
+}
+
+static void read_palette_colors_uv(MACROBLOCKD *const xd, int bit_depth,
+                                   PALETTE_MODE_INFO *const pmi,
+                                   aom_reader *r) {
+  const int n = pmi->palette_size[1];
+  // U channel colors.
+  uint16_t color_cache[2 * PALETTE_MAX_SIZE];
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const int n_cache = av1_get_palette_cache(above_mi, left_mi, 1, color_cache);
+  int idx = PALETTE_MAX_SIZE;
+  for (int i = 0; i < n_cache && idx < PALETTE_MAX_SIZE + n; ++i)
+    if (aom_read_bit(r, ACCT_STR)) pmi->palette_colors[idx++] = color_cache[i];
+  if (idx < PALETTE_MAX_SIZE + n) {
+    pmi->palette_colors[idx++] = aom_read_literal(r, bit_depth, ACCT_STR);
+    if (idx < PALETTE_MAX_SIZE + n) {
+      const int min_bits = bit_depth - 3;
+      int bits = min_bits + aom_read_literal(r, 2, ACCT_STR);
+      int range = (1 << bit_depth) - pmi->palette_colors[idx - 1];
+      for (; idx < PALETTE_MAX_SIZE + n; ++idx) {
+        const int delta = aom_read_literal(r, bits, ACCT_STR);
+        pmi->palette_colors[idx] = pmi->palette_colors[idx - 1] + delta;
+        range -= delta;
+        bits = AOMMIN(bits, av1_ceil_log2(range));
+      }
+    }
+  }
+#if CONFIG_HIGHBITDEPTH
+  qsort(pmi->palette_colors + PALETTE_MAX_SIZE, n,
+        sizeof(pmi->palette_colors[0]), uint16_compare);
+#else
+  qsort(pmi->palette_colors + PALETTE_MAX_SIZE, n,
+        sizeof(pmi->palette_colors[0]), uint8_compare);
+#endif  // CONFIG_HIGHBITDEPTH
+
+  // V channel colors.
+  if (aom_read_bit(r, ACCT_STR)) {  // Delta encoding.
+    const int min_bits_v = bit_depth - 4;
+    const int max_val = 1 << bit_depth;
+    int bits = min_bits_v + aom_read_literal(r, 2, ACCT_STR);
+    pmi->palette_colors[2 * PALETTE_MAX_SIZE] =
+        aom_read_literal(r, bit_depth, ACCT_STR);
+    for (int i = 1; i < n; ++i) {
+      int delta = aom_read_literal(r, bits, ACCT_STR);
+      if (delta && aom_read_bit(r, ACCT_STR)) delta = -delta;
+      int val = (int)pmi->palette_colors[2 * PALETTE_MAX_SIZE + i - 1] + delta;
+      if (val < 0) val += max_val;
+      if (val >= max_val) val -= max_val;
+      pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] = val;
+    }
+  } else {
+    for (int i = 0; i < n; ++i) {
+      pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] =
+          aom_read_literal(r, bit_depth, ACCT_STR);
+    }
+  }
+}
+#endif  // CONFIG_PALETTE_DELTA_ENCODING
+
 static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                    aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
@@ -652,7 +756,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  int i, n;
+  int n;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 
   if (mbmi->mode == DC_PRED) {
@@ -673,16 +777,9 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           2;
       n = pmi->palette_size[0];
 #if CONFIG_PALETTE_DELTA_ENCODING
-      const int min_bits = cm->bit_depth - 3;
-      int bits = min_bits + aom_read_literal(r, 2, ACCT_STR);
-      pmi->palette_colors[0] = aom_read_literal(r, cm->bit_depth, ACCT_STR);
-      for (i = 1; i < n; ++i) {
-        pmi->palette_colors[i] = pmi->palette_colors[i - 1] +
-                                 aom_read_literal(r, bits, ACCT_STR) + 1;
-        bits = AOMMIN(
-            bits, av1_ceil_log2((1 << cm->bit_depth) - pmi->palette_colors[i]));
-      }
+      read_palette_colors_y(xd, cm->bit_depth, pmi, r);
 #else
+      int i;
       for (i = 0; i < n; ++i)
         pmi->palette_colors[i] = aom_read_literal(r, cm->bit_depth, ACCT_STR);
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
@@ -702,42 +799,9 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           2;
       n = pmi->palette_size[1];
 #if CONFIG_PALETTE_DELTA_ENCODING
-      // U channel colors.
-      const int min_bits_u = cm->bit_depth - 3;
-      int bits = min_bits_u + aom_read_literal(r, 2, ACCT_STR);
-      pmi->palette_colors[PALETTE_MAX_SIZE] =
-          aom_read_literal(r, cm->bit_depth, ACCT_STR);
-      for (i = 1; i < n; ++i) {
-        pmi->palette_colors[PALETTE_MAX_SIZE + i] =
-            pmi->palette_colors[PALETTE_MAX_SIZE + i - 1] +
-            aom_read_literal(r, bits, ACCT_STR);
-        bits = AOMMIN(bits,
-                      av1_ceil_log2(1 + (1 << cm->bit_depth) -
-                                    pmi->palette_colors[PALETTE_MAX_SIZE + i]));
-      }
-      // V channel colors.
-      if (aom_read_bit(r, ACCT_STR)) {  // Delta encoding.
-        const int min_bits_v = cm->bit_depth - 4;
-        const int max_val = 1 << cm->bit_depth;
-        bits = min_bits_v + aom_read_literal(r, 2, ACCT_STR);
-        pmi->palette_colors[2 * PALETTE_MAX_SIZE] =
-            aom_read_literal(r, cm->bit_depth, ACCT_STR);
-        for (i = 1; i < n; ++i) {
-          int delta = aom_read_literal(r, bits, ACCT_STR);
-          if (delta && aom_read_bit(r, ACCT_STR)) delta = -delta;
-          int val =
-              (int)pmi->palette_colors[2 * PALETTE_MAX_SIZE + i - 1] + delta;
-          if (val < 0) val += max_val;
-          if (val >= max_val) val -= max_val;
-          pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] = val;
-        }
-      } else {
-        for (i = 0; i < n; ++i) {
-          pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] =
-              aom_read_literal(r, cm->bit_depth, ACCT_STR);
-        }
-      }
+      read_palette_colors_uv(xd, cm->bit_depth, pmi, r);
 #else
+      int i;
       for (i = 0; i < n; ++i) {
         pmi->palette_colors[PALETTE_MAX_SIZE + i] =
             aom_read_literal(r, cm->bit_depth, ACCT_STR);
