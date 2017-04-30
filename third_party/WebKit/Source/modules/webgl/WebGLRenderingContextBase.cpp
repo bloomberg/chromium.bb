@@ -906,11 +906,11 @@ static const GLenum kSupportedInternalFormatsFloatES3[] = {
 
 // ES3 enums supported by TexImageSource
 static const GLenum kSupportedInternalFormatsTexImageSourceES3[] = {
-    GL_R8,      GL_R16F,           GL_R32F,         GL_R8UI,    GL_RG8,
-    GL_RG16F,   GL_RG32F,          GL_RG8UI,        GL_RGB8,    GL_SRGB8,
-    GL_RGB565,  GL_R11F_G11F_B10F, GL_RGB9_E5,      GL_RGB16F,  GL_RGB32F,
-    GL_RGB8UI,  GL_RGBA8,          GL_SRGB8_ALPHA8, GL_RGB5_A1, GL_RGBA4,
-    GL_RGBA16F, GL_RGBA32F,        GL_RGBA8UI,
+    GL_R8,      GL_R16F,           GL_R32F,         GL_R8UI,     GL_RG8,
+    GL_RG16F,   GL_RG32F,          GL_RG8UI,        GL_RGB8,     GL_SRGB8,
+    GL_RGB565,  GL_R11F_G11F_B10F, GL_RGB9_E5,      GL_RGB16F,   GL_RGB32F,
+    GL_RGB8UI,  GL_RGBA8,          GL_SRGB8_ALPHA8, GL_RGB5_A1,  GL_RGBA4,
+    GL_RGBA16F, GL_RGBA32F,        GL_RGBA8UI,      GL_RGB10_A2,
 };
 
 // ES2 enums
@@ -983,6 +983,7 @@ static const GLenum kSupportedTypesES3[] = {
 // ES3 enums supported by TexImageSource
 static const GLenum kSupportedTypesTexImageSourceES3[] = {
     GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_INT_10F_11F_11F_REV,
+    GL_UNSIGNED_INT_2_10_10_10_REV,
 };
 
 }  // namespace

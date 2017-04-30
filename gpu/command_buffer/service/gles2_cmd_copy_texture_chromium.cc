@@ -74,6 +74,7 @@ enum {
   D_FORMAT_RGBA16F,
   D_FORMAT_RGBA32F,
   D_FORMAT_R11F_G11F_B10F,
+  D_FORMAT_RGB10_A2,
   NUM_D_FORMAT
 };
 
@@ -269,6 +270,9 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
       break;
     case GL_R11F_G11F_B10F:
       destFormatIndex = D_FORMAT_R11F_G11F_B10F;
+      break;
+    case GL_RGB10_A2:
+      destFormatIndex = D_FORMAT_RGB10_A2;
       break;
     default:
       NOTREACHED();

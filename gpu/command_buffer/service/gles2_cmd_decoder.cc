@@ -16571,6 +16571,7 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
     case GL_RGB5_A1:
     case GL_RGBA4:
     case GL_RGBA8UI:
+    case GL_RGB10_A2:
       valid_dest_format = feature_info_->IsWebGL2OrES3Context();
       break;
     case GL_RGB9_E5:
