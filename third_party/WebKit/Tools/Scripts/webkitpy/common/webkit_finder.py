@@ -117,12 +117,6 @@ class WebKitFinder(object):
     def path_from_blink_source(self, *comps):
         return self._filesystem.join(self._filesystem.join(self.webkit_base(), 'Source'), *comps)
 
-    def path_to_script(self, script_name):
-        """Returns the relative path to the script from the top of the WebKit tree."""
-        # This is intentionally relative in order to force callers to consider what
-        # their current working directory is (and change to the top of the tree if necessary).
-        return self._filesystem.join('Tools', 'Scripts', script_name)
-
     def path_from_tools_scripts(self, *comps):
         return self._filesystem.join(self._filesystem.join(self.webkit_base(), 'Tools', 'Scripts'), *comps)
 

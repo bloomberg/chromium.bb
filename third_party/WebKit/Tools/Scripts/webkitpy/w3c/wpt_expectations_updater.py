@@ -404,8 +404,7 @@ class WPTExpectationsUpdater(object):
         for test in tests_to_rebaseline:
             _log.info('  %s', test)
         if tests_to_rebaseline:
-            webkit_patch = self.host.filesystem.join(
-                self.finder.chromium_base(), self.finder.webkit_base(), self.finder.path_to_script('webkit-patch'))
+            webkit_patch = self.finder.path_from_tools_scripts('webkit-patch')
             self.host.executive.run_command([
                 'python',
                 webkit_patch,
