@@ -49,6 +49,7 @@ public class LogcatExtractionRunnableTest extends CrashTestCase {
         }
     };
 
+    // TODO(crbug/716236): Refer to this crbug for compilation error after the O SDK is rolled.
     @TargetApi(Build.VERSION_CODES.M)
     private static class TestJobScheduler extends JobScheduler {
         TestJobScheduler() {}
