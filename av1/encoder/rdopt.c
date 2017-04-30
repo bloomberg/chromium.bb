@@ -10350,7 +10350,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
               mbmi->filter_intra_mode_info.filter_intra_mode[1]);
       }
 #endif  // CONFIG_FILTER_INTRA
-      if (this_mode != DC_PRED && this_mode != TM_PRED)
+      if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED)
         rate2 += intra_cost_penalty;
       distortion2 = distortion_y + distortion_uv;
     } else {
@@ -10414,7 +10414,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         }
       } else {
 #endif  // CONFIG_EXT_INTER
-        if (this_mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
+        if (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
           int ref;
           for (ref = 0; ref < 1 + comp_pred; ++ref) {
             int_mv this_mv =
