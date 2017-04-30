@@ -1023,7 +1023,6 @@ static int ransac(const int *matched_points, int npoints,
     *(cnp2++) = *(matched_points++);
     *(cnp2++) = *(matched_points++);
   }
-  matched_points -= 4 * npoints;
 
   while (N > trial_count) {
     double sum_distance = 0.0;
