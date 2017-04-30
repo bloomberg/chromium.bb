@@ -267,7 +267,7 @@ Union fields may be of any type supported by [struct](#Structs) fields. For
 example:
 
 ```cpp
-enum ExampleUnion {
+union ExampleUnion {
   string str;
   StringPair pair;
   int64 id;
