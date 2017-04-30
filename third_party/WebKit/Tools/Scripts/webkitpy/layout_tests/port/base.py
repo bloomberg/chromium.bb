@@ -877,9 +877,6 @@ class Port(object):
     def path_from_chromium_base(self, *comps):
         return self._webkit_finder.path_from_chromium_base(*comps)
 
-    def path_to_script(self, script_name):
-        return self._webkit_finder.path_to_script(script_name)
-
     def layout_tests_dir(self):
         custom_layout_tests_dir = self.get_option('layout_tests_directory')
         if custom_layout_tests_dir:
