@@ -880,6 +880,9 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
   void SetUpOnMainThread() override {
     SavePageBrowserTest::SetUpOnMainThread();
 
+    // Used by the BrokenImage test which depends on *.no.such.host not
+    // resolving to 127.0.0.1
+    host_resolver()->AddRule("no.such.host", "128.0.0.1");
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     content::SetupCrossSiteRedirector(embedded_test_server());
@@ -1331,10 +1334,6 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Style) {
 // - Broken, undecodable image (see also https://crbug.com/586680)
 // - Broken link, to unresolvable host (see also https://crbug.com/594219)
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
-  // Clear resolver rules to make sure that *.no.such.host used in the test html
-  // doesn't resolve to 127.0.0.1
-  host_resolver()->ClearRules();
-
   content::SavePageType save_page_type = GetParam();
 
   std::string arr[] = {
