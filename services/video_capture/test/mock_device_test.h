@@ -7,8 +7,9 @@
 
 #include "base/test/mock_callback.h"
 #include "media/capture/video/video_capture_device.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-#include "services/video_capture/public/interfaces/service.mojom.h"
+#include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
 #include "services/video_capture/test/mock_device_factory.h"
 #include "services/video_capture/test/mock_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,9 +30,9 @@ class MockDevice : public media::VideoCaptureDevice {
 
   void SendStubFrame(const media::VideoCaptureFormat& format,
                      int rotation,
-                     int frame_id);
+                     int frame_feedback_id);
 
-  // media::VideoCaptureDevice:
+  // media::VideoCaptureDevice implementation.
   MOCK_METHOD2(DoAllocateAndStart,
                void(const media::VideoCaptureParams& params,
                     std::unique_ptr<Client>* client));
@@ -83,6 +84,7 @@ class MockDeviceTest : public ::testing::Test {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
+  service_manager::ServiceContextRefFactory ref_factory_;
 };
 
 }  // namespace video_capture

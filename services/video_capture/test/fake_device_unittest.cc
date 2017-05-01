@@ -7,6 +7,7 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
+#include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 #include "services/video_capture/test/fake_device_test.h"
 #include "services/video_capture/test/mock_receiver.h"
@@ -136,6 +137,28 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
 
   ASSERT_LT(num_buffers_created, num_frames_arrived);
   ASSERT_LE(num_buffers_created, kMaxBufferPoolBuffers);
+}
+
+// Tests that the service requests to be closed when the last client disconnects
+// while using a device.
+TEST_F(FakeVideoCaptureDeviceTest,
+       ServiceQuitsWhenClientDisconnectsWhileUsingDevice) {
+  base::RunLoop wait_loop;
+  EXPECT_CALL(*service_state_observer_, OnServiceStopped(_))
+      .WillOnce(Invoke([&wait_loop](const service_manager::Identity& identity) {
+        if (identity.name() == mojom::kServiceName)
+          wait_loop.Quit();
+      }));
+
+  mojom::ReceiverPtr receiver_proxy;
+  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  fake_device_proxy_->Start(requestable_settings_, std::move(receiver_proxy));
+
+  fake_device_proxy_.reset();
+  factory_.reset();
+  factory_provider_.reset();
+
+  wait_loop.Run();
 }
 
 }  // namespace video_capture

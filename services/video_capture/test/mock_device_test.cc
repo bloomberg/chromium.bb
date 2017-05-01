@@ -29,7 +29,7 @@ MockDevice::~MockDevice() = default;
 
 void MockDevice::SendStubFrame(const media::VideoCaptureFormat& format,
                                int rotation,
-                               int frame_id) {
+                               int frame_feedback_id) {
   auto stub_frame = media::VideoFrame::CreateZeroInitializedFrame(
       format.pixel_format, format.frame_size,
       gfx::Rect(format.frame_size.width(), format.frame_size.height()),
@@ -38,7 +38,8 @@ void MockDevice::SendStubFrame(const media::VideoCaptureFormat& format,
       stub_frame->data(0),
       static_cast<int>(media::VideoFrame::AllocationSize(
           stub_frame->format(), stub_frame->coded_size())),
-      format, rotation, base::TimeTicks(), base::TimeDelta(), frame_id);
+      format, rotation, base::TimeTicks(), base::TimeDelta(),
+      frame_feedback_id);
 }
 
 void MockDevice::AllocateAndStart(const media::VideoCaptureParams& params,
@@ -65,7 +66,7 @@ void MockDevice::TakePhoto(TakePhotoCallback callback) {
   DoTakePhoto(&callback);
 }
 
-MockDeviceTest::MockDeviceTest() = default;
+MockDeviceTest::MockDeviceTest() : ref_factory_(base::Bind(&base::DoNothing)) {}
 
 MockDeviceTest::~MockDeviceTest() = default;
 
@@ -80,7 +81,8 @@ void MockDeviceTest::SetUp() {
       std::move(mock_device_factory));
   mock_device_factory_adapter_ =
       base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-          std::move(video_capture_system), base::Bind(CreateJpegDecoder));
+          ref_factory_.CreateRef(), std::move(video_capture_system),
+          base::Bind(CreateJpegDecoder));
 
   mock_factory_binding_ = base::MakeUnique<mojo::Binding<mojom::DeviceFactory>>(
       mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));

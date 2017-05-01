@@ -5,8 +5,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
-#include "services/video_capture/test/service_test.h"
+#include "services/video_capture/test/device_factory_provider_test.h"
 
 using testing::Exactly;
 using testing::_;
@@ -17,11 +18,12 @@ namespace video_capture {
 
 // This alias ensures test output is easily attributed to this service's tests.
 // TODO(rockot/chfremer): Consider just renaming the type.
-using VideoCaptureServiceTest = ServiceTest;
+using VideoCaptureServiceDeviceFactoryProviderTest = DeviceFactoryProviderTest;
 
 // Tests that an answer arrives from the service when calling
 // GetDeviceInfos().
-TEST_F(VideoCaptureServiceTest, GetDeviceInfosCallbackArrives) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       GetDeviceInfosCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(device_info_receiver_, Run(_))
       .Times(Exactly(1))
@@ -31,7 +33,8 @@ TEST_F(VideoCaptureServiceTest, GetDeviceInfosCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -50,7 +53,8 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
 
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::DevicePtr fake_device_proxy;
@@ -64,6 +68,25 @@ TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   factory_->CreateDevice(invalid_device_id,
                          mojo::MakeRequest(&fake_device_proxy),
                          create_device_proxy_callback.Get());
+  wait_loop.Run();
+}
+
+// Tests that the service requests to be closed when the last client disconnects
+// after not having done anything other than obtaining a connection to the
+// fake device factory.
+TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
+       ServiceQuitsWhenNoClientConnected) {
+  base::RunLoop wait_loop;
+  EXPECT_CALL(*service_state_observer_, OnServiceStopped(_))
+      .WillOnce(Invoke([&wait_loop](const service_manager::Identity& identity) {
+        if (identity.name() == mojom::kServiceName)
+          wait_loop.Quit();
+      }));
+
+  // Exercise: Disconnect from service by discarding our references to it.
+  factory_.reset();
+  factory_provider_.reset();
+
   wait_loop.Run();
 }
 

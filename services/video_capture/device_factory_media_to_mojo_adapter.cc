@@ -61,6 +61,12 @@ static void TranslateDeviceInfos(
   callback.Run(translated_device_infos);
 }
 
+static void DiscardDeviceInfosAndCallContinuation(
+    base::Closure continuation,
+    const std::vector<media::VideoCaptureDeviceInfo>&) {
+  continuation.Run();
+}
+
 }  // anonymous namespace
 
 namespace video_capture {
@@ -79,11 +85,15 @@ DeviceFactoryMediaToMojoAdapter::ActiveDeviceEntry::operator=(
     DeviceFactoryMediaToMojoAdapter::ActiveDeviceEntry&& other) = default;
 
 DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureSystem> capture_system,
     const media::VideoCaptureJpegDecoderFactoryCB&
         jpeg_decoder_factory_callback)
-    : capture_system_(std::move(capture_system)),
-      jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback) {}
+    : service_ref_(std::move(service_ref)),
+      capture_system_(std::move(capture_system)),
+      jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback),
+      has_called_get_device_infos_(false),
+      weak_factory_(this) {}
 
 DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;
 
@@ -91,6 +101,7 @@ void DeviceFactoryMediaToMojoAdapter::GetDeviceInfos(
     const GetDeviceInfosCallback& callback) {
   capture_system_->GetDeviceInfosAsync(
       base::Bind(&TranslateDeviceInfos, callback));
+  has_called_get_device_infos_ = true;
 }
 
 void DeviceFactoryMediaToMojoAdapter::CreateDevice(
@@ -112,6 +123,24 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
     return;
   }
 
+  const auto create_and_add_new_device_cb =
+      base::Bind(&DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice,
+                 weak_factory_.GetWeakPtr(), device_id,
+                 base::Passed(&device_request), callback);
+
+  if (has_called_get_device_infos_) {
+    create_and_add_new_device_cb.Run();
+    return;
+  }
+
+  capture_system_->GetDeviceInfosAsync(base::Bind(
+      &DiscardDeviceInfosAndCallContinuation, create_and_add_new_device_cb));
+}
+
+void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
+    const std::string& device_id,
+    mojom::DeviceRequest device_request,
+    const CreateDeviceCallback& callback) {
   std::unique_ptr<media::VideoCaptureDevice> media_device =
       capture_system_->CreateDevice(device_id);
   if (media_device == nullptr) {
@@ -122,7 +151,8 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
   // Add entry to active_devices to keep track of it
   ActiveDeviceEntry device_entry;
   device_entry.device = base::MakeUnique<DeviceMediaToMojoAdapter>(
-      std::move(media_device), jpeg_decoder_factory_callback_);
+      service_ref_->Clone(), std::move(media_device),
+      jpeg_decoder_factory_callback_);
   device_entry.binding = base::MakeUnique<mojo::Binding<mojom::Device>>(
       device_entry.device.get(), std::move(device_request));
   device_entry.binding->set_connection_error_handler(base::Bind(

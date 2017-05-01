@@ -10,6 +10,7 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 
 namespace video_capture {
@@ -23,12 +24,13 @@ class DeviceMediaToMojoAdapter;
 class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
  public:
   DeviceFactoryMediaToMojoAdapter(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureSystem> capture_system,
       const media::VideoCaptureJpegDecoderFactoryCB&
           jpeg_decoder_factory_callback);
   ~DeviceFactoryMediaToMojoAdapter() override;
 
-  // mojom::DeviceFactory:
+  // mojom::DeviceFactory implementation.
   void GetDeviceInfos(const GetDeviceInfosCallback& callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
@@ -48,11 +50,20 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
     std::unique_ptr<mojo::Binding<mojom::Device>> binding;
   };
 
+  void CreateAndAddNewDevice(const std::string& device_id,
+                             mojom::DeviceRequest device_request,
+                             const CreateDeviceCallback& callback);
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;
   const media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
   std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
+  bool has_called_get_device_infos_;
+
+  base::WeakPtrFactory<DeviceFactoryMediaToMojoAdapter> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceFactoryMediaToMojoAdapter);
 };
 
 }  // namespace video_capture

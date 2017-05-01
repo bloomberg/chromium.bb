@@ -10,6 +10,8 @@
 
 namespace media {
 
+// GetDeviceInfosAsync() should be called at least once before calling
+// CreateDevice(), because otherwise CreateDevice() will allways return nullptr.
 class CAPTURE_EXPORT VideoCaptureSystem {
  public:
   using DeviceInfoCallback =

@@ -23,7 +23,7 @@ class MockDeviceFactory : public media::VideoCaptureDeviceFactory {
   void AddMockDevice(media::VideoCaptureDevice* device,
                      const media::VideoCaptureDeviceDescriptor& descriptor);
 
-  // media::VideoCaptureDeviceFactory:
+  // media::VideoCaptureDeviceFactory implementation.
   std::unique_ptr<media::VideoCaptureDevice> CreateDevice(
       const media::VideoCaptureDeviceDescriptor& device_descriptor) override;
   void GetDeviceDescriptors(

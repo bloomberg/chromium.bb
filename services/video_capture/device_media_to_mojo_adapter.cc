@@ -22,27 +22,40 @@ static const int kMaxBufferCount = 3;
 namespace video_capture {
 
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
     const media::VideoCaptureJpegDecoderFactoryCB&
         jpeg_decoder_factory_callback)
-    : device_(std::move(device)),
+    : service_ref_(std::move(service_ref)),
+      device_(std::move(device)),
       jpeg_decoder_factory_callback_(jpeg_decoder_factory_callback),
-      device_running_(false) {}
+      device_started_(false) {}
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
-  if (device_running_)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (device_started_)
     device_->StopAndDeAllocate();
 }
 
 void DeviceMediaToMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
     mojom::ReceiverPtr receiver) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   receiver.set_connection_error_handler(
       base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                  base::Unretained(this)));
 
-  auto media_receiver =
+  auto receiver_adapter =
       base::MakeUnique<ReceiverMojoToMediaAdapter>(std::move(receiver));
+  // We must hold on something that allows us to unsubscribe from
+  // receiver.set_connection_error_handler() when we stop the device. Otherwise,
+  // we may receive a corresponding callback after having been destroyed.
+  // This happens when the deletion of |receiver| is delayed (scheduled to a
+  // task runner) when we release |device_|, as is the case when using
+  // ReceiverOnTaskRunner.
+  receiver_adapter_ptr_ = receiver_adapter.get();
+  auto media_receiver = base::MakeUnique<ReceiverOnTaskRunner>(
+      std::move(receiver_adapter), base::ThreadTaskRunnerHandle::Get());
 
   // Create a dedicated buffer pool for the device usage session.
   auto buffer_tracker_factory =
@@ -55,23 +68,29 @@ void DeviceMediaToMojoAdapter::Start(
       std::move(media_receiver), buffer_pool, jpeg_decoder_factory_callback_);
 
   device_->AllocateAndStart(requested_settings, std::move(device_client));
-  device_running_ = true;
+  device_started_ = true;
 }
 
 void DeviceMediaToMojoAdapter::OnReceiverReportingUtilization(
     int32_t frame_feedback_id,
     double utilization) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   device_->OnUtilizationReport(frame_feedback_id, utilization);
 }
 
 void DeviceMediaToMojoAdapter::Stop() {
-  if (device_running_ == false)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (device_started_ == false)
     return;
-  device_running_ = false;
+  device_started_ = false;
+  // Unsubscribe from connection error callbacks.
+  receiver_adapter_ptr_->ResetConnectionErrorHandler();
+  receiver_adapter_ptr_ = nullptr;
   device_->StopAndDeAllocate();
 }
 
 void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   Stop();
 }
 
