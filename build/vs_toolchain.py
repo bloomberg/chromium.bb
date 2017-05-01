@@ -325,6 +325,10 @@ def _CopyDebugger(target_dir, target_cpu):
 
   debug_file = 'dbghelp.dll'
   full_path = os.path.join(win_sdk_dir, 'Debuggers', target_cpu, debug_file)
+  if not os.path.exists(full_path):
+    raise Exception('dbghelp.dll not found in "%s"\r\nYou must install the '
+                    '"Debugging Tools for Windows" feature from the Windows '
+                    '10 SDK.' % full_path)
   target_path = os.path.join(target_dir, debug_file)
   _CopyRuntimeImpl(target_path, full_path)
 
