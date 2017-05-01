@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -34,7 +35,9 @@ class DoNothingObserver : public ArcSessionRunner::Observer {
 class ArcSessionRunnerTest : public testing::Test,
                              public ArcSessionRunner::Observer {
  public:
-  ArcSessionRunnerTest() = default;
+  ArcSessionRunnerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
@@ -97,7 +100,7 @@ class ArcSessionRunnerTest : public testing::Test,
   ArcStopReason stop_reason_;
   bool restarting_;
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionRunnerTest);
 };

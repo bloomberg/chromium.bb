@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -97,21 +98,25 @@ class PasswordStoreDefaultTestDelegate {
 
   base::FilePath test_login_db_file_path() const;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<PasswordStoreDefault> store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefaultTestDelegate);
 };
 
-PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
+PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   SetupTempDir();
   store_ = CreateInitializedStore(
       base::MakeUnique<LoginDatabase>(test_login_db_file_path()));
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
-    std::unique_ptr<LoginDatabase> database) {
+    std::unique_ptr<LoginDatabase> database)
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   SetupTempDir();
   store_ = CreateInitializedStore(std::move(database));
 }

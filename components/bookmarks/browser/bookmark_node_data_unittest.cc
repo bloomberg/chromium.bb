@@ -8,9 +8,9 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -25,7 +25,9 @@ namespace bookmarks {
 
 class BookmarkNodeDataTest : public testing::Test {
  public:
-  BookmarkNodeDataTest() {}
+  BookmarkNodeDataTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     model_ = TestBookmarkClient::CreateModel();
@@ -53,7 +55,7 @@ class BookmarkNodeDataTest : public testing::Test {
  private:
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<BookmarkModel> model_;
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNodeDataTest);
 };

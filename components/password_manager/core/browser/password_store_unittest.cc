@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -89,6 +90,10 @@ class StartSyncFlareMock {
 
 class PasswordStoreTest : public testing::Test {
  protected:
+  PasswordStoreTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void TearDown() override { ASSERT_TRUE(temp_dir_.Delete()); }
@@ -97,7 +102,7 @@ class PasswordStoreTest : public testing::Test {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

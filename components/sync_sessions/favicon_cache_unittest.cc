@@ -5,11 +5,11 @@
 #include "components/sync_sessions/favicon_cache.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/sync/model/attachments/attachment_id.h"
 #include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
@@ -292,7 +292,7 @@ class SyncFaviconCacheTest : public testing::Test {
                                   int64_t last_visit_time_ms);
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FaviconCache cache_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
@@ -302,7 +302,9 @@ class SyncFaviconCacheTest : public testing::Test {
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
-    : cache_(nullptr, nullptr, kMaxSyncFavicons),
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      cache_(nullptr, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
           sync_processor_.get())) {}

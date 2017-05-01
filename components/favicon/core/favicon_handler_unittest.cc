@@ -13,10 +13,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -325,7 +325,9 @@ class FaviconHandlerTest : public testing::Test {
   const GURL kIconURL16x16 = GURL("http://www.google.com/favicon16x16");
   const GURL kIconURL64x64 = GURL("http://www.google.com/favicon64x64");
 
-  FaviconHandlerTest() {
+  FaviconHandlerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     // Register various known icon URLs.
     delegate_.fake_downloader().Add(kIconURL10x10, IntVector{10});
     delegate_.fake_downloader().Add(kIconURL12x12, IntVector{12});
@@ -377,7 +379,7 @@ class FaviconHandlerTest : public testing::Test {
                                     candidates);
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       scoped_set_supported_scale_factors_;
   testing::NiceMock<MockFaviconServiceWithFake> favicon_service_;

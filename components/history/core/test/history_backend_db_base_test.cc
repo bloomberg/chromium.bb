@@ -62,9 +62,10 @@ class BackendDelegate : public HistoryBackend::Delegate {
 };
 
 HistoryBackendDBBaseTest::HistoryBackendDBBaseTest()
-    : db_(nullptr),
-      last_profile_error_ (sql::INIT_OK) {
-}
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      db_(nullptr),
+      last_profile_error_(sql::INIT_OK) {}
 
 HistoryBackendDBBaseTest::~HistoryBackendDBBaseTest() {
 }
