@@ -243,6 +243,9 @@ bool UpdateJumpList(const wchar_t* app_id,
     recently_closed_items = recently_closed_pages.size();
   }
 
+  // Record the desired number of icons to create in this JumpList update.
+  int icons_to_create = 0;
+
   if (most_visited_pages_have_updates) {
     // Delete the content in JumpListIconsMostVisited folder and log the results
     // to UMA.
@@ -262,6 +265,9 @@ bool UpdateJumpList(const wchar_t* app_id,
       // Create icon files for shortcuts in the "Most Visited" category.
       CreateIconFiles(icon_dir_most_visited, most_visited_pages,
                       most_visited_items);
+
+      icons_to_create +=
+          std::min(most_visited_pages.size(), most_visited_items);
     }
   }
 
@@ -279,8 +285,14 @@ bool UpdateJumpList(const wchar_t* app_id,
       // Create icon files for shortcuts in the "Recently Closed" category.
       CreateIconFiles(icon_dir_recent_closed, recently_closed_pages,
                       recently_closed_items);
+
+      icons_to_create +=
+          std::min(recently_closed_pages.size(), recently_closed_items);
     }
   }
+
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  UMA_HISTOGRAM_COUNTS_100("WinJumplist.CreateIconFilesCount", icons_to_create);
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
