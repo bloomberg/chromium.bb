@@ -2732,11 +2732,11 @@ const char kWindows10CustomTitlebarDescription[] =
 
 #if defined(OS_WIN)
 
-const char kPostscriptPrinting[] = "PostScript Printing";
+const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
 
-const char kPostscriptPrintingDescription[] =
-    "Enable postscript generation in place of emf generation when printing "
-    "to postscript capable printers.";
+const char kDisablePostscriptPrintingDescription[] =
+    "Disables PostScript generation when printing to PostScript capable "
+    "printers, and uses EMF generation in its place.";
 
 #endif  // defined(OS_WIN)
 

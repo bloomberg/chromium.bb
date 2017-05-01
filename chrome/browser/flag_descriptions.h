@@ -2958,11 +2958,11 @@ extern const char kWindows10CustomTitlebarDescription[];
 
 #if defined(OS_WIN)
 
-// Name of the flag that enables postscript printing.
-extern const char kPostscriptPrinting[];
+// Name of the flag that disables postscript printing.
+extern const char kDisablePostscriptPrinting[];
 
-// Description of the flag that enables postscript printing.
-extern const char kPostscriptPrintingDescription[];
+// Description of the flag that disables postscript printing.
+extern const char kDisablePostscriptPrintingDescription[];
 
 #endif  // defined(OS_WIN)
 

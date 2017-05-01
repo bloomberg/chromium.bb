@@ -189,7 +189,7 @@ void PrintViewManagerBase::OnDidPrintPage(
 
     const auto& settings = document->settings();
     if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
-        base::FeatureList::IsEnabled(features::kPostScriptPrinting)) {
+        !base::FeatureList::IsEnabled(features::kDisablePostScriptPrinting)) {
       print_job_->StartPdfToPostScriptConversion(bytes, params.content_area,
                                                  params.physical_offsets,
                                                  settings.printer_is_ps2());
