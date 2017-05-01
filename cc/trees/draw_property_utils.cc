@@ -460,10 +460,9 @@ static inline bool LayerShouldBeSkippedInternal(
 
   if (effect_node->has_render_surface && effect_node->subtree_has_copy_request)
     return false;
-  // If the layer transform is not invertible, it should be skipped.
-  // TODO(ajuma): Correctly process subtrees with singular transform for the
-  // case where we may animate to a non-singular transform and wish to
-  // pre-raster.
+
+  // If the layer transform is not invertible, it should be skipped. In case the
+  // transform is animating and singular, we should not skip it.
   return !transform_node->node_and_ancestors_are_animated_or_invertible ||
          effect_node->hidden_by_backface_visibility || !effect_node->is_drawn;
 }
@@ -800,15 +799,17 @@ void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                      1.0 / effect_node->surface_contents_scale.y());
 }
 
-bool LayerShouldBeSkipped(LayerImpl* layer,
-                          const TransformTree& transform_tree,
-                          const EffectTree& effect_tree) {
+bool LayerShouldBeSkippedForDrawPropertiesComputation(
+    LayerImpl* layer,
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree) {
   return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
-bool LayerShouldBeSkipped(Layer* layer,
-                          const TransformTree& transform_tree,
-                          const EffectTree& effect_tree) {
+bool LayerShouldBeSkippedForDrawPropertiesComputation(
+    Layer* layer,
+    const TransformTree& transform_tree,
+    const EffectTree& effect_tree) {
   return LayerShouldBeSkippedInternal(layer, transform_tree, effect_tree);
 }
 
@@ -818,8 +819,8 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
   const TransformTree& transform_tree = property_trees->transform_tree;
   const EffectTree& effect_tree = property_trees->effect_tree;
   for (auto* layer : *layer_tree_host) {
-    if (!IsRootLayer(layer) &&
-        LayerShouldBeSkipped(layer, transform_tree, effect_tree))
+    if (!IsRootLayer(layer) && LayerShouldBeSkippedForDrawPropertiesComputation(
+                                   layer, transform_tree, effect_tree))
       continue;
 
     bool layer_is_drawn =
@@ -844,7 +845,8 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
 
   for (auto* layer_impl : *layer_tree_impl) {
     if (!IsRootLayer(layer_impl) &&
-        LayerShouldBeSkipped(layer_impl, transform_tree, effect_tree))
+        LayerShouldBeSkippedForDrawPropertiesComputation(
+            layer_impl, transform_tree, effect_tree))
       continue;
 
     bool layer_is_drawn =

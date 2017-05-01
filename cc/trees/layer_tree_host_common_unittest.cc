@@ -8970,14 +8970,31 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectForAnimatedLayerWithSingularTransform) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip = AddChild<LayerImpl>(root);
-  LayerImpl* animated = AddChild<LayerImpl>(clip);
-  LayerImpl* surface = AddChild<LayerImpl>(animated);
-  LayerImpl* descendant_of_animation = AddChild<LayerImpl>(surface);
+  host_impl()->CreatePendingTree();
+  std::unique_ptr<LayerImpl> root_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 1);
+  LayerImpl* root = root_ptr.get();
+  host_impl()->pending_tree()->SetRootLayerForTesting(std::move(root_ptr));
+  std::unique_ptr<LayerImpl> clip_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 2);
+  LayerImpl* clip = clip_ptr.get();
+  root->test_properties()->AddChild(std::move(clip_ptr));
+  std::unique_ptr<LayerImpl> animated_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 3);
+  LayerImpl* animated = animated_ptr.get();
+  clip->test_properties()->AddChild(std::move(animated_ptr));
+  std::unique_ptr<LayerImpl> surface_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 4);
+  LayerImpl* surface = surface_ptr.get();
+  animated->test_properties()->AddChild(std::move(surface_ptr));
+  std::unique_ptr<LayerImpl> descendant_of_animation_ptr =
+      LayerImpl::Create(host_impl()->pending_tree(), 5);
+  LayerImpl* descendant_of_animation = descendant_of_animation_ptr.get();
+  surface->test_properties()->AddChild(std::move(descendant_of_animation_ptr));
 
-  SetElementIdsForTesting();
+  host_impl()->pending_tree()->SetElementIdsForTesting();
 
+  root->SetDrawsContent(true);
   animated->SetDrawsContent(true);
   surface->SetDrawsContent(true);
   descendant_of_animation->SetDrawsContent(true);
@@ -9001,7 +9018,11 @@ TEST_F(LayerTreeHostCommonTest,
   AddAnimatedTransformToElementWithPlayer(
       animated->element_id(), timeline_impl(), 10.0, start_transform_operations,
       end_transform_operations);
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
+  ExecuteCalculateDrawProperties(root);
+  // Since animated has singular transform, it is not be part of render
+  // surface layer list but should be rastered.
+  EXPECT_FALSE(animated->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(animated->raster_even_if_not_in_rsll());
 
   // The animated layer has a singular transform and maps to a non-empty rect in
   // clipped target space, so is treated as fully visible.
@@ -9016,7 +9037,7 @@ TEST_F(LayerTreeHostCommonTest,
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
   root->layer_tree_impl()->SetTransformMutated(animated->element_id(),
                                                zero_matrix);
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
+  ExecuteCalculateDrawProperties(root);
 
   // The animated layer will be treated as fully visible when we combine clips
   // in screen space.
@@ -9027,6 +9048,22 @@ TEST_F(LayerTreeHostCommonTest,
   // |surface| and layers that draw into it as having empty visible rect.
   EXPECT_EQ(gfx::Rect(100, 100), surface->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(200, 200), descendant_of_animation->visible_layer_rect());
+
+  host_impl()->ActivateSyncTree();
+  LayerImpl* active_root = host_impl()->active_tree()->LayerById(root->id());
+  ExecuteCalculateDrawProperties(active_root);
+
+  // Since the animated has singular transform, it is not be part of render
+  // surface layer list.
+  LayerImpl* active_animated =
+      host_impl()->active_tree()->LayerById(animated->id());
+  EXPECT_TRUE(active_root->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(active_animated->is_drawn_render_surface_layer_list_member());
+
+  // Since animated has singular transform, it is not be part of render
+  // surface layer list but should be rastered.
+  EXPECT_TRUE(animated->raster_even_if_not_in_rsll());
+  EXPECT_EQ(gfx::Rect(120, 120), active_animated->visible_layer_rect());
 }
 
 // Verify that having animated opacity but current opacity 1 still creates

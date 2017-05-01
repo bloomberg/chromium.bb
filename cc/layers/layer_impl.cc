@@ -80,7 +80,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
       scrollbars_hidden_(false),
-      needs_show_scrollbars_(false) {
+      needs_show_scrollbars_(false),
+      raster_even_if_not_in_rsll_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);

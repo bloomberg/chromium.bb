@@ -20,6 +20,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
@@ -348,9 +349,20 @@ static void ComputeInitialRenderSurfaceList(
     layer->set_is_drawn_render_surface_layer_list_member(false);
 
     bool is_root = layer_tree_impl->IsRootLayer(layer);
-    bool skip_layer = !is_root && draw_property_utils::LayerShouldBeSkipped(
-                                      layer, property_trees->transform_tree,
-                                      property_trees->effect_tree);
+
+    bool skip_draw_properties_computation =
+        draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
+            layer, property_trees->transform_tree, property_trees->effect_tree);
+
+    const TransformNode* transform_node =
+        property_trees->transform_tree.Node(layer->transform_tree_index());
+    bool skip_for_invertibility = !transform_node->ancestors_are_invertible;
+
+    bool skip_layer = !is_root && (skip_draw_properties_computation ||
+                                   skip_for_invertibility);
+
+    layer->set_raster_even_if_not_in_rsll(skip_for_invertibility &&
+                                          !skip_draw_properties_computation);
     if (skip_layer)
       continue;
 
