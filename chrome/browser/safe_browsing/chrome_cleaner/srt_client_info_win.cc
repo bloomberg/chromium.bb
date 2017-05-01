@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/srt_client_info_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"

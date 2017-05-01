@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_GLOBAL_ERROR_WIN_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SRT_GLOBAL_ERROR_WIN_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_GLOBAL_ERROR_WIN_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_GLOBAL_ERROR_WIN_H_
 
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 
 class GlobalErrorService;
@@ -83,4 +83,4 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_GLOBAL_ERROR_WIN_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_GLOBAL_ERROR_WIN_H_

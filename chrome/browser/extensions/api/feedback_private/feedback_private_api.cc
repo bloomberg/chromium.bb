@@ -39,7 +39,7 @@
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
-#include "chrome/browser/safe_browsing/srt_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_fetcher_win.h"
 #endif
 
 using extensions::api::feedback_private::SystemInformation;

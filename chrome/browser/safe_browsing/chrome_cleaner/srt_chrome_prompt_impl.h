@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_CHROME_PROMPT_IMPL_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SRT_CHROME_PROMPT_IMPL_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -33,4 +33,4 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_CHROME_PROMPT_IMPL_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_

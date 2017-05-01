@@ -995,7 +995,7 @@
                   '|chrome/browser/.*supervised_user',
     },
     'swreporter': {
-      'filepath': 'chrome/browser/safe_browsing/srt_'\
+      'filepath': 'chrome/browser/safe_browsing/chrome_cleaner/'\
                   '|chrome/browser/component_updater/sw_reporter_',
     },
     'sync': {

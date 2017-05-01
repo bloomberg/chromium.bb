@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_FIELD_TRIAL_WIN_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SRT_FIELD_TRIAL_WIN_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
 
 #include <string>
 
@@ -46,4 +46,4 @@ void RecordSRTPromptHistogram(SRTPromptHistogramValue value);
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_FIELD_TRIAL_WIN_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/srt_global_error_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_global_error_win.h"
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -18,8 +18,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/safe_browsing/srt_client_info_win.h"
-#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
