@@ -160,8 +160,15 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         }
 
         // Set the list adapter and get the height to display it appropriately in a dialog.
+        Runnable onDirectShare = new Runnable() {
+            @Override
+            public void run() {
+                mOnShareItemClicked.run();
+                mDialog.dismiss();
+            }
+        };
         TabularContextMenuListAdapter listAdapter =
-                new TabularContextMenuListAdapter(items, activity, mOnShareItemClicked);
+                new TabularContextMenuListAdapter(items, activity, onDirectShare);
         ViewGroup.LayoutParams layoutParams = listView.getLayoutParams();
         layoutParams.height = measureApproximateListViewHeight(listView, listAdapter, maxCount);
         listView.setLayoutParams(layoutParams);

@@ -26,7 +26,7 @@ import java.util.List;
 class TabularContextMenuListAdapter extends BaseAdapter {
     private final List<ContextMenuItem> mMenuItems;
     private final Activity mActivity;
-    private final Runnable mOnShareItemClicked;
+    private final Runnable mOnDirectShare;
 
     /**
      * Adapter for the tabular context menu UI
@@ -34,10 +34,10 @@ class TabularContextMenuListAdapter extends BaseAdapter {
      * @param activity Used to inflate the layout.
      */
     TabularContextMenuListAdapter(
-            List<ContextMenuItem> menuItems, Activity activity, Runnable onShareItemClicked) {
+            List<ContextMenuItem> menuItems, Activity activity, Runnable onDirectShare) {
         mMenuItems = menuItems;
         mActivity = activity;
-        mOnShareItemClicked = onShareItemClicked;
+        mOnDirectShare = onDirectShare;
     }
 
     @Override
@@ -91,7 +91,7 @@ class TabularContextMenuListAdapter extends BaseAdapter {
                 viewHolder.mShareIcon.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mOnShareItemClicked.run();
+                        mOnDirectShare.run();
                     }
                 });
             }
