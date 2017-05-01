@@ -30,6 +30,7 @@ shared_library("libc++") {
     "trunk/src/condition_variable.cpp",
     "trunk/src/debug.cpp",
     "trunk/src/exception.cpp",
+    "trunk/src/functional.cpp",
     "trunk/src/future.cpp",
     "trunk/src/hash.cpp",
     "trunk/src/ios.cpp",
@@ -50,6 +51,7 @@ shared_library("libc++") {
     "trunk/src/typeinfo.cpp",
     "trunk/src/utility.cpp",
     "trunk/src/valarray.cpp",
+    "trunk/src/variant.cpp",
   ]
   configs -= [
     "//build/config/compiler:chromium_code",
@@ -64,6 +66,7 @@ shared_library("libc++") {
     "//build/config/gcc:symbol_visibility_default",
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
+  defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
 
   ldflags = [ "-nodefaultlibs" ]
 
