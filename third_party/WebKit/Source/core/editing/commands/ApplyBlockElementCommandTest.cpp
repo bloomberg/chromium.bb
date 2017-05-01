@@ -78,4 +78,35 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
       GetDocument().documentElement()->innerHTML());
 }
 
+// This is a regression test for https://crbug.com/712510
+TEST_F(ApplyBlockElementCommandTest, IndentHeadingIntoBlockquote) {
+  SetBodyContent(
+      "<div contenteditable=\"true\">"
+      "<h6><button><table></table></button></h6>"
+      "<object></object>"
+      "</div>");
+  Element* button = GetDocument().QuerySelector("button");
+  Element* object = GetDocument().QuerySelector("object");
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(button, 0))
+                               .Extend(Position(object, 0))
+                               .Build());
+
+  IndentOutdentCommand* command = IndentOutdentCommand::Create(
+      GetDocument(), IndentOutdentCommand::kIndent);
+  command->Apply();
+
+  // This only records the current behavior, which can be wrong.
+  EXPECT_EQ(
+      "<div contenteditable=\"true\">"
+      "<blockquote style=\"margin: 0 0 0 40px; border: none; padding: 0px;\">"
+      "<h6><button></button></h6>"
+      "<h6><button><table></table></button></h6>"
+      "</blockquote>"
+      "<h6><button></button></h6><br>"
+      "<object></object>"
+      "</div>",
+      GetDocument().body()->innerHTML());
+}
+
 }  // namespace blink

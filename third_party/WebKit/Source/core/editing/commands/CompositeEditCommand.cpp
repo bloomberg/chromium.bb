@@ -1266,9 +1266,10 @@ void CompositeEditCommand::MoveParagraphWithClones(
   DCHECK(outer_node);
   DCHECK(block_element);
 
-  VisiblePosition before_paragraph =
-      PreviousPositionOf(start_of_paragraph_to_move);
-  VisiblePosition after_paragraph = NextPositionOf(end_of_paragraph_to_move);
+  RelocatablePosition relocatable_before_paragraph(
+      PreviousPositionOf(start_of_paragraph_to_move).DeepEquivalent());
+  RelocatablePosition relocatable_after_paragraph(
+      NextPositionOf(end_of_paragraph_to_move).DeepEquivalent());
 
   // We upstream() the end and downstream() the start so that we don't include
   // collapsed whitespace in the move. When we paste a fragment, spaces after
@@ -1311,14 +1312,10 @@ void CompositeEditCommand::MoveParagraphWithClones(
   // would cause 'baz' to collapse onto the line with 'foobar' unless we insert
   // a br. Must recononicalize these two VisiblePositions after the pruning
   // above.
-  // TODO(yosin): We should abort when |beforeParagraph| is a orphan when
-  // we have a sample.
-  before_paragraph = CreateVisiblePosition(before_paragraph.DeepEquivalent());
-  if (after_paragraph.IsOrphan()) {
-    editing_state->Abort();
-    return;
-  }
-  after_paragraph = CreateVisiblePosition(after_paragraph.DeepEquivalent());
+  const VisiblePosition& before_paragraph =
+      CreateVisiblePosition(relocatable_before_paragraph.GetPosition());
+  const VisiblePosition& after_paragraph =
+      CreateVisiblePosition(relocatable_after_paragraph.GetPosition());
 
   if (before_paragraph.IsNotNull() &&
       !IsDisplayInsideTable(before_paragraph.DeepEquivalent().AnchorNode()) &&
