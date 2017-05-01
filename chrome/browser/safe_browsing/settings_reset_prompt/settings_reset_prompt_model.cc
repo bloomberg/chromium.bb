@@ -136,7 +136,13 @@ void DefaultSettingsFetcher::OnSettingsFetched() {
   DCHECK(config_fetcher_);
   DCHECK(!config_fetcher_->IsActive());
 
-  PostCallbackAndDeleteSelf(config_fetcher_->GetSettings());
+  std::unique_ptr<BrandcodedDefaultSettings> settings(
+      config_fetcher_->GetSettings());
+  // Use default settings if fetching of BrandcodedDefaultSettings fails.
+  if (!settings)
+    settings.reset(new BrandcodedDefaultSettings());
+
+  PostCallbackAndDeleteSelf(std::move(settings));
 }
 
 void DefaultSettingsFetcher::PostCallbackAndDeleteSelf(
