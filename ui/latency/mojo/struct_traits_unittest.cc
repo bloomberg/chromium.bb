@@ -86,12 +86,15 @@ TEST_F(StructTraitsTest, LatencyInfo) {
   EXPECT_EQ(100, latency.trace_id());
   EXPECT_TRUE(latency.terminated());
 
+  latency.set_source_event_type(ui::TOUCH);
+
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   LatencyInfo output;
   proxy->EchoLatencyInfo(latency, &output);
 
   EXPECT_EQ(latency.trace_id(), output.trace_id());
   EXPECT_EQ(latency.terminated(), output.terminated());
+  EXPECT_EQ(latency.source_event_type(), output.source_event_type());
 
   EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234,
                                  nullptr));
