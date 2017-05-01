@@ -13,6 +13,15 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'automation_manager',
+      'dependencies': [
+        '<(EXTERNS_GYP):accessibility_private',
+        '<(EXTERNS_GYP):automation',
+        'tree_walker',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'background',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
@@ -52,8 +61,8 @@
         '<(EXTERNS_GYP):chrome_extensions',
         'prefs',
         'auto_scan_manager',
+        'automation_manager',
         'keyboard_handler',
-        'tree_walker',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

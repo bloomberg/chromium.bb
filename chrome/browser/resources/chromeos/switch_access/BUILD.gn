@@ -26,6 +26,7 @@ run_jsbundler("switch_access_copied_files") {
   dest_dir = switch_access_dir
   sources = [
     "auto_scan_manager.js",
+    "automation_manager.js",
     "background.js",
     "keyboard_handler.js",
     "options.css",
