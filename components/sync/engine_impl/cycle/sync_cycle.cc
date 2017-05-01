@@ -13,11 +13,6 @@
 
 namespace syncer {
 
-// static
-SyncCycle* SyncCycle::Build(SyncCycleContext* context, Delegate* delegate) {
-  return new SyncCycle(context, delegate);
-}
-
 SyncCycle::SyncCycle(SyncCycleContext* context, Delegate* delegate)
     : context_(context), delegate_(delegate) {
   status_controller_ = base::MakeUnique<StatusController>();

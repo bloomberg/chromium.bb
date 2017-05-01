@@ -88,9 +88,7 @@ class SyncCycle {
     virtual ~Delegate() {}
   };
 
-  // Build a cycle without a nudge tracker.  Used for poll or configure type
-  // sync cycles.
-  static SyncCycle* Build(SyncCycleContext* context, Delegate* delegate);
+  SyncCycle(SyncCycleContext* context, Delegate* delegate);
   ~SyncCycle();
 
   // Builds a thread-safe and read-only copy of the current cycle state.
@@ -117,8 +115,6 @@ class SyncCycle {
   }
 
  private:
-  SyncCycle(SyncCycleContext* context, Delegate* delegate);
-
   // The context for this cycle, guaranteed to outlive |this|.
   SyncCycleContext* const context_;
 

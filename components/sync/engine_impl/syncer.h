@@ -58,7 +58,7 @@ class Syncer {
   // Returns: false if an error occurred and retries should backoff, true
   // otherwise.
   virtual bool ConfigureSyncShare(
-      ModelTypeSet request_types,
+      const ModelTypeSet& request_types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
       SyncCycle* cycle);
 
@@ -85,7 +85,7 @@ class Syncer {
   // number of unsynced and ready to commit items reaches zero or an error is
   // encountered.  A request to exit early will be treated as an error and will
   // abort any blocking operations.
-  SyncerError BuildAndPostCommits(ModelTypeSet request_types,
+  SyncerError BuildAndPostCommits(const ModelTypeSet& request_types,
                                   NudgeTracker* nudge_tracker,
                                   SyncCycle* cycle,
                                   CommitProcessor* commit_processor);

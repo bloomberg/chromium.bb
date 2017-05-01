@@ -90,7 +90,7 @@ void PartitionUpdatesByType(const sync_pb::GetUpdatesResponse& gu_response,
 // |gu_response| message.  The map is returned in the |index_map| parameter.
 void PartitionProgressMarkersByType(
     const sync_pb::GetUpdatesResponse& gu_response,
-    ModelTypeSet request_types,
+    const ModelTypeSet& request_types,
     TypeToIndexMap* index_map) {
   for (int i = 0; i < gu_response.new_progress_marker_size(); ++i) {
     int field_number = gu_response.new_progress_marker(i).data_type_id();
@@ -111,7 +111,7 @@ void PartitionProgressMarkersByType(
 
 void PartitionContextMutationsByType(
     const sync_pb::GetUpdatesResponse& gu_response,
-    ModelTypeSet request_types,
+    const ModelTypeSet& request_types,
     TypeToIndexMap* index_map) {
   for (int i = 0; i < gu_response.context_mutations_size(); ++i) {
     int field_number = gu_response.context_mutations(i).data_type_id();
@@ -181,7 +181,7 @@ SyncerError GetUpdatesProcessor::DownloadUpdates(
 }
 
 void GetUpdatesProcessor::PrepareGetUpdates(
-    ModelTypeSet gu_types,
+    const ModelTypeSet& gu_types,
     sync_pb::ClientToServerMessage* message) {
   sync_pb::GetUpdatesMessage* get_updates = message->mutable_get_updates();
 
@@ -277,7 +277,7 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
 
 SyncerError GetUpdatesProcessor::ProcessResponse(
     const sync_pb::GetUpdatesResponse& gu_response,
-    ModelTypeSet request_types,
+    const ModelTypeSet& request_types,
     StatusController* status) {
   status->increment_num_updates_downloaded_by(gu_response.entries_size());
 
@@ -300,7 +300,7 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
 }
 
 SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
-    ModelTypeSet gu_types,
+    const ModelTypeSet& gu_types,
     const sync_pb::GetUpdatesResponse& gu_response,
     StatusController* status_controller) {
   TypeSyncEntityMap updates_by_type;
@@ -355,7 +355,7 @@ SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
   return SYNCER_OK;
 }
 
-void GetUpdatesProcessor::ApplyUpdates(ModelTypeSet gu_types,
+void GetUpdatesProcessor::ApplyUpdates(const ModelTypeSet& gu_types,
                                        StatusController* status_controller) {
   status_controller->set_get_updates_request_types(gu_types);
   delegate_.ApplyUpdates(gu_types, status_controller, update_handler_map_);

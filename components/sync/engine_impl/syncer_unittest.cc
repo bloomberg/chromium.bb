@@ -238,7 +238,9 @@ class SyncerTest : public testing::Test,
   void OnBackedOffTypesChanged(ModelTypeSet backed_off_types) override {}
   void OnMigrationRequested(ModelTypeSet types) override {}
 
-  void ResetCycle() { cycle_.reset(SyncCycle::Build(context_.get(), this)); }
+  void ResetCycle() {
+    cycle_ = base::MakeUnique<SyncCycle>(context_.get(), this);
+  }
 
   bool SyncShareNudge() {
     ResetCycle();

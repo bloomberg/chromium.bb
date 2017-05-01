@@ -14,7 +14,7 @@ namespace syncer {
 
 namespace {
 
-void NonPassiveApplyUpdates(ModelTypeSet gu_types,
+void NonPassiveApplyUpdates(const ModelTypeSet& gu_types,
                             StatusController* status_controller,
                             UpdateHandlerMap* update_handler_map) {
   for (const auto& kv : *update_handler_map) {
@@ -24,7 +24,7 @@ void NonPassiveApplyUpdates(ModelTypeSet gu_types,
   }
 }
 
-void PassiveApplyUpdates(ModelTypeSet gu_types,
+void PassiveApplyUpdates(const ModelTypeSet& gu_types,
                          StatusController* status_controller,
                          UpdateHandlerMap* update_handler_map) {
   for (const auto& kv : *update_handler_map) {
@@ -79,7 +79,7 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void NormalGetUpdatesDelegate::ApplyUpdates(
-    ModelTypeSet gu_types,
+    const ModelTypeSet& gu_types,
     StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
@@ -105,7 +105,7 @@ void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void ConfigureGetUpdatesDelegate::ApplyUpdates(
-    ModelTypeSet gu_types,
+    const ModelTypeSet& gu_types,
     StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   PassiveApplyUpdates(gu_types, status_controller, update_handler_map);
@@ -155,7 +155,7 @@ void PollGetUpdatesDelegate::HelpPopulateGuMessage(
 }
 
 void PollGetUpdatesDelegate::ApplyUpdates(
-    ModelTypeSet gu_types,
+    const ModelTypeSet& gu_types,
     StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);

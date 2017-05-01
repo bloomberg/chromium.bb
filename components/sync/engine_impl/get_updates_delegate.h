@@ -18,7 +18,7 @@ namespace syncer {
 
 class GetUpdatesProcessor;
 
-// Interface for GetUpdates functionality that dependends on the requested
+// Interface for GetUpdates functionality that depends on the requested
 // GetUpdate type (normal, configuration, poll).  The GetUpdatesProcessor is
 // given an appropriate GetUpdatesDelegate to handle type specific functionality
 // on construction.
@@ -27,12 +27,12 @@ class GetUpdatesDelegate {
   GetUpdatesDelegate();
   virtual ~GetUpdatesDelegate() = 0;
 
-  // Populates GetUpdate message fields that depende on GetUpdates request type.
+  // Populates GetUpdate message fields that depend on GetUpdates request type.
   virtual void HelpPopulateGuMessage(
       sync_pb::GetUpdatesMessage* get_updates) const = 0;
 
   // Applies pending updates to non-control types.
-  virtual void ApplyUpdates(ModelTypeSet gu_types,
+  virtual void ApplyUpdates(const ModelTypeSet& gu_types,
                             StatusController* status,
                             UpdateHandlerMap* update_handler_map) const = 0;
 
@@ -52,7 +52,7 @@ class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
   // Applies pending updates on the appropriate data type threads.
-  void ApplyUpdates(ModelTypeSet gu_types,
+  void ApplyUpdates(const ModelTypeSet& gu_types,
                     StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
@@ -77,11 +77,11 @@ class ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
   void HelpPopulateGuMessage(
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
-  // Applies updates passively (ie. on the sync thread).
+  // Applies updates passively (i.e. on the sync thread).
   //
   // This is safe only if the ChangeProcessor is not listening to changes at
   // this time.
-  void ApplyUpdates(ModelTypeSet gu_types,
+  void ApplyUpdates(const ModelTypeSet& gu_types,
                     StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
@@ -109,7 +109,7 @@ class PollGetUpdatesDelegate : public GetUpdatesDelegate {
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
   // Applies updates on the appropriate data type thread.
-  void ApplyUpdates(ModelTypeSet gu_types,
+  void ApplyUpdates(const ModelTypeSet& gu_types,
                     StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 

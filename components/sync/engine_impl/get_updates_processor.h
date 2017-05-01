@@ -48,11 +48,12 @@ class GetUpdatesProcessor {
                               bool create_mobile_bookmarks_folder);
 
   // Applies any downloaded and processed updates.
-  void ApplyUpdates(ModelTypeSet gu_types, StatusController* status_controller);
+  void ApplyUpdates(const ModelTypeSet& gu_types,
+                    StatusController* status_controller);
 
  private:
   // Populates a GetUpdates request message with per-type information.
-  void PrepareGetUpdates(ModelTypeSet gu_types,
+  void PrepareGetUpdates(const ModelTypeSet& gu_types,
                          sync_pb::ClientToServerMessage* message);
 
   // Sends the specified message to the server and stores the response in a
@@ -64,12 +65,12 @@ class GetUpdatesProcessor {
   // Helper function for processing responses from the server.  Defined here for
   // testing.
   SyncerError ProcessResponse(const sync_pb::GetUpdatesResponse& gu_response,
-                              ModelTypeSet proto_request_types,
+                              const ModelTypeSet& proto_request_types,
                               StatusController* status);
 
   // Processes a GetUpdates responses for each type.
   SyncerError ProcessGetUpdatesResponse(
-      ModelTypeSet gu_types,
+      const ModelTypeSet& gu_types,
       const sync_pb::GetUpdatesResponse& gu_response,
       StatusController* status_controller);
 
