@@ -14,6 +14,23 @@
 
 namespace gpu {
 
+#if defined(OS_ANDROID)
+GpuSurfaceTracker::SurfaceRecord::SurfaceRecord(gfx::AcceleratedWidget widget,
+                                                jobject j_surface)
+    : widget(widget) {
+  // TODO(liberato): It would be nice to assert |surface != nullptr|, but we
+  // can't.  in_process_context_factory.cc (for tests) actually calls us without
+  // a Surface from java.  Presumably, nobody uses it.  crbug.com/712717 .
+  if (j_surface != nullptr)
+    surface = gl::ScopedJavaSurface::AcquireExternalSurface(j_surface);
+}
+#else   // defined(OS_ANDROID)
+GpuSurfaceTracker::SurfaceRecord::SurfaceRecord(gfx::AcceleratedWidget widget)
+    : widget(widget) {}
+#endif  // !defined(OS_ANDROID)
+
+GpuSurfaceTracker::SurfaceRecord::SurfaceRecord(SurfaceRecord&&) = default;
+
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_handle_(1) {
   gpu::GpuSurfaceLookup::InitInstance(this);
@@ -27,11 +44,10 @@ GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
   return base::Singleton<GpuSurfaceTracker>::get();
 }
 
-int GpuSurfaceTracker::AddSurfaceForNativeWidget(
-    gfx::AcceleratedWidget widget) {
+int GpuSurfaceTracker::AddSurfaceForNativeWidget(SurfaceRecord record) {
   base::AutoLock lock(surface_map_lock_);
   gpu::SurfaceHandle surface_handle = next_surface_handle_++;
-  surface_map_[surface_handle] = widget;
+  surface_map_.emplace(surface_handle, std::move(record));
   return surface_handle;
 }
 
@@ -55,38 +71,22 @@ gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(
     return gfx::kNullAcceleratedWidget;
 
 #if defined(OS_ANDROID)
-  if (it->second != gfx::kNullAcceleratedWidget)
-    ANativeWindow_acquire(it->second);
+  if (it->second.widget != gfx::kNullAcceleratedWidget)
+    ANativeWindow_acquire(it->second.widget);
 #endif  // defined(OS_ANDROID)
 
-  return it->second;
+  return it->second.widget;
 }
 
 #if defined(OS_ANDROID)
-void GpuSurfaceTracker::RegisterViewSurface(
-    int surface_id, jobject j_surface) {
-  base::AutoLock lock(surface_view_map_lock_);
-  DCHECK(surface_view_map_.find(surface_id) == surface_view_map_.end());
-
-  surface_view_map_[surface_id] =
-      gl::ScopedJavaSurface::AcquireExternalSurface(j_surface);
-  CHECK(surface_view_map_[surface_id].IsValid());
-}
-
-void GpuSurfaceTracker::UnregisterViewSurface(int surface_id)
-{
-  base::AutoLock lock(surface_view_map_lock_);
-  DCHECK(surface_view_map_.find(surface_id) != surface_view_map_.end());
-  surface_view_map_.erase(surface_id);
-}
-
-gl::ScopedJavaSurface GpuSurfaceTracker::AcquireJavaSurface(int surface_id) {
-  base::AutoLock lock(surface_view_map_lock_);
-  SurfaceViewMap::const_iterator iter = surface_view_map_.find(surface_id);
-  if (iter == surface_view_map_.end())
+gl::ScopedJavaSurface GpuSurfaceTracker::AcquireJavaSurface(
+    gpu::SurfaceHandle surface_handle) {
+  base::AutoLock lock(surface_map_lock_);
+  SurfaceMap::const_iterator it = surface_map_.find(surface_handle);
+  if (it == surface_map_.end())
     return gl::ScopedJavaSurface();
 
-  const gl::ScopedJavaSurface& j_surface = iter->second;
+  const gl::ScopedJavaSurface& j_surface = it->second.surface;
   DCHECK(j_surface.IsValid());
   return gl::ScopedJavaSurface::AcquireExternalSurface(
       j_surface.j_surface().obj());

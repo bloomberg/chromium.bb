@@ -142,7 +142,7 @@ MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
   if (surface_handle_) {
     // Unregister from the surface tracker to avoid a resource leak.
     gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
-    tracker->UnregisterViewSurface(surface_handle_);
+    tracker->RemoveSurface(surface_handle_);
   }
   DestroyContext();
 }
@@ -173,10 +173,10 @@ void MailboxToSurfaceBridge::CreateSurface(
   gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
   ANativeWindow_acquire(window);
   // Skip ANativeWindow_setBuffersGeometry, the default size appears to work.
-  surface_handle_ = tracker->AddSurfaceForNativeWidget(window);
-
   auto surface = base::MakeUnique<gl::ScopedJavaSurface>(surface_texture);
-  tracker->RegisterViewSurface(surface_handle_, surface->j_surface().obj());
+  surface_handle_ =
+      tracker->AddSurfaceForNativeWidget(gpu::GpuSurfaceTracker::SurfaceRecord(
+          window, surface->j_surface().obj()));
   // Unregistering happens in the destructor.
   ANativeWindow_release(window);
 

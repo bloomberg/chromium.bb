@@ -332,7 +332,18 @@ InProcessContextFactory::CreatePerCompositorData(ui::Compositor* compositor) {
     data->surface_handle = widget;
 #else
     gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
-    data->surface_handle = tracker->AddSurfaceForNativeWidget(widget);
+    data->surface_handle = tracker->AddSurfaceForNativeWidget(
+        gpu::GpuSurfaceTracker::SurfaceRecord(
+            widget
+#if defined(OS_ANDROID)
+            // We have to provide a surface too, but we don't have one.  For
+            // now, we don't proide it, since nobody should ask anyway.
+            // If we ever provide a valid surface here, then GpuSurfaceTracker
+            // can be more strict about enforcing it.
+            ,
+            nullptr
+#endif
+            ));
 #endif
   }
 

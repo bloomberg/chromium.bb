@@ -41,7 +41,6 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
   if (surface.IsEmpty()) {
     DCHECK_NE(surface_id_, media::SurfaceManager::kNoSurfaceID);
     gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
-    gpu::GpuSurfaceTracker::Get()->UnregisterViewSurface(surface_id_);
     SendDestroyingVideoSurface(surface_id_);
     surface_id_ = media::SurfaceManager::kNoSurfaceID;
   } else {
@@ -49,9 +48,8 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
     // lookup will go through the Android specific path and get the java
     // surface directly, so there's no need to add a valid native widget here.
     surface_id_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
-        gfx::kNullAcceleratedWidget);
-    gpu::GpuSurfaceTracker::GetInstance()->RegisterViewSurface(
-        surface_id_, surface.j_surface().obj());
+        gpu::GpuSurfaceTracker::SurfaceRecord(gfx::kNullAcceleratedWidget,
+                                              surface.j_surface().obj()));
     SendSurfaceID(surface_id_);
   }
 }
