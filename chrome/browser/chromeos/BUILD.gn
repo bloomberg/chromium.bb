@@ -1571,6 +1571,7 @@ source_set("unit_tests") {
     "arc/notification/arc_provision_notification_service_unittest.cc",
     "arc/optin/arc_terms_of_service_default_negotiator_unittest.cc",
     "arc/policy/arc_policy_bridge_unittest.cc",
+    "arc/process/arc_process_unittest.cc",
     "attestation/attestation_ca_client_unittest.cc",
     "attestation/attestation_policy_observer_unittest.cc",
     "attestation/fake_certificate.cc",
