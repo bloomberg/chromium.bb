@@ -76,7 +76,6 @@ class Field(object):
             - 'property': for fields that store CSS properties
             - 'inherited_flag': for single-bit flags that store whether a property is
                                 inherited by this style or set explicitly
-            - 'nonproperty': for fields that are not CSS properties
         name_for_methods: String used to form the names of getters and setters.
             Should be in upper camel case.
         property_name: Name of the property that the field is part of.
@@ -89,7 +88,7 @@ class Field(object):
     """
 
     def __init__(self, field_role, name_for_methods, property_name, type_name,
-                 field_template, field_group, size, default_value,
+                 field_template, field_group, size, default_value, has_custom_compare_and_copy,
                  getter_method_name, setter_method_name, initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
@@ -100,13 +99,13 @@ class Field(object):
         self.group_member_name = class_member_name(join_name(field_group, 'data')) if field_group else None
         self.size = size
         self.default_value = default_value
+        self.has_custom_compare_and_copy = has_custom_compare_and_copy
 
         # Field role: one of these must be true
         self.is_property = field_role == 'property'
         self.is_inherited_flag = field_role == 'inherited_flag'
-        self.is_nonproperty = field_role == 'nonproperty'
-        assert (self.is_property, self.is_inherited_flag, self.is_nonproperty).count(True) == 1, \
-            'Field role has to be exactly one of: property, inherited_flag, nonproperty'
+        assert (self.is_property, self.is_inherited_flag).count(True) == 1, \
+            'Field role has to be exactly one of: property, inherited_flag'
 
         if not self.is_inherited_flag:
             self.is_inherited = kwargs.pop('inherited')
@@ -177,12 +176,10 @@ def _create_enums(properties):
     return OrderedDict(sorted(enums.items(), key=lambda t: t[0]))
 
 
-def _create_field(field_role, property_):
+def _create_property_field(property_):
     """
-    Create a property or nonproperty field.
+    Create a property field.
     """
-    assert field_role in ('property', 'nonproperty')
-
     name_for_methods = property_['name_for_methods']
 
     assert property_['default_value'] is not None, \
@@ -213,7 +210,7 @@ def _create_field(field_role, property_):
         size = 1
 
     return Field(
-        field_role,
+        'property',
         name_for_methods,
         property_name=property_['name'],
         inherited=property_['inherited'],
@@ -223,6 +220,7 @@ def _create_field(field_role, property_):
         field_group=property_['field_group'],
         size=size,
         default_value=default_value,
+        has_custom_compare_and_copy=property_['has_custom_compare_and_copy'],
         getter_method_name=property_['getter'],
         setter_method_name=property_['setter'],
         initial_method_name=property_['initial'],
@@ -244,6 +242,7 @@ def _create_inherited_flag_field(property_):
         field_group=property_['field_group'],
         size=1,
         default_value='true',
+        has_custom_compare_and_copy=False,
         getter_method_name=method_name(name_for_methods),
         setter_method_name=method_name(join_name('set', name_for_methods)),
         initial_method_name=method_name(join_name('initial', name_for_methods)),
@@ -252,7 +251,7 @@ def _create_inherited_flag_field(property_):
 
 def _create_fields(properties):
     """
-    Create ComputedStyle fields from properties or nonproperties and return a list of Field objects.
+    Create ComputedStyle fields from properties and return a list of Field objects.
     """
     fields = []
     for property_ in properties:
@@ -263,11 +262,7 @@ def _create_fields(properties):
             if property_['independent']:
                 fields.append(_create_inherited_flag_field(property_))
 
-            # TODO(shend): Get rid of the property/nonproperty field roles.
-            # If the field has_custom_compare_and_copy, then it does not appear in
-            # ComputedStyle::operator== and ComputedStyle::CopyNonInheritedFromCached.
-            field_role = 'nonproperty' if property_['has_custom_compare_and_copy'] else 'property'
-            fields.append(_create_field(field_role, property_))
+            fields.append(_create_property_field(property_))
 
     return fields
 

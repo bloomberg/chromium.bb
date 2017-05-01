@@ -25,6 +25,7 @@ ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 void ComputedStyleBase::InheritFrom(const ComputedStyleBase& other,
                                     IsAtShadowBoundary isAtShadowBoundary) {
   {{fieldwise_copy(computed_style, computed_style.all_fields
+      |selectattr("is_property")
       |selectattr("is_inherited")
       |list
     )|indent(2)}}
@@ -33,7 +34,7 @@ void ComputedStyleBase::InheritFrom(const ComputedStyleBase& other,
 void ComputedStyleBase::CopyNonInheritedFromCached(
     const ComputedStyleBase& other) {
   {{fieldwise_copy(computed_style, computed_style.all_fields
-      |rejectattr("is_nonproperty")
+      |rejectattr("has_custom_compare_and_copy")
       |rejectattr("is_inherited")
       |list
     )|indent(2)}}
