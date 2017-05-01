@@ -41,8 +41,7 @@ const double kUserGestureOutOfProcessTimeout = 10.0;
 UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
       timestamp_(WTF::CurrentTime()),
-      timeout_policy_(kDefault),
-      usage_callback_(nullptr) {
+      timeout_policy_(kDefault) {
   if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
     consumable_gestures_++;
 }
@@ -81,19 +80,6 @@ bool UserGestureToken::HasTimedOut() const {
                        ? kUserGestureOutOfProcessTimeout
                        : kUserGestureTimeout;
   return WTF::CurrentTime() - timestamp_ > timeout;
-}
-
-void UserGestureToken::SetUserGestureUtilizedCallback(
-    UserGestureUtilizedCallback* callback) {
-  CHECK(this == UserGestureIndicator::CurrentToken());
-  usage_callback_ = callback;
-}
-
-void UserGestureToken::UserGestureUtilized() {
-  if (usage_callback_) {
-    usage_callback_->UserGestureUtilized();
-    usage_callback_ = nullptr;
-  }
 }
 
 // This enum is used in a histogram, so its values shouldn't change.
@@ -136,19 +122,8 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token) {
 }
 
 UserGestureIndicator::~UserGestureIndicator() {
-  if (IsMainThread() && token_ && token_ == root_token_) {
-    root_token_->SetUserGestureUtilizedCallback(nullptr);
+  if (IsMainThread() && token_ && token_ == root_token_)
     root_token_ = nullptr;
-  }
-}
-
-// static
-bool UserGestureIndicator::UtilizeUserGesture() {
-  if (UserGestureIndicator::ProcessingUserGesture()) {
-    root_token_->UserGestureUtilized();
-    return true;
-  }
-  return false;
 }
 
 bool UserGestureIndicator::ProcessingUserGesture() {
@@ -164,10 +139,8 @@ bool UserGestureIndicator::ProcessingUserGestureThreadSafe() {
 // static
 bool UserGestureIndicator::ConsumeUserGesture() {
   if (auto* token = CurrentToken()) {
-    if (token->ConsumeGesture()) {
-      token->UserGestureUtilized();
+    if (token->ConsumeGesture())
       return true;
-    }
   }
   return false;
 }

@@ -1363,7 +1363,7 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   }
 
   if (!LocalDOMWindow::AllowPopUp(*frame_) &&
-      !UserGestureIndicator::UtilizeUserGesture())
+      !UserGestureIndicator::ProcessingUserGesture())
     return kNavigationPolicyIgnore;
   Client()->LoadURLExternally(request, policy, String(),
                               replaces_current_history_item);

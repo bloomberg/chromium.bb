@@ -410,7 +410,7 @@ bool NavigationScheduler::MustReplaceCurrentItem(LocalFrame* target_frame) {
   // create a new back/forward item. See https://webkit.org/b/42861 for the
   // original motivation for this.
   if (!target_frame->GetDocument()->LoadEventFinished() &&
-      !UserGestureIndicator::UtilizeUserGesture())
+      !UserGestureIndicator::ProcessingUserGesture())
     return true;
 
   // Navigation of a subframe during loading of an ancestor frame does not

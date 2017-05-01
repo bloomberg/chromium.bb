@@ -849,7 +849,6 @@ void BaseAudioContext::MaybeUnlockUserGesture() {
   DCHECK(!autoplay_status_.has_value() ||
          autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
 
-  UserGestureIndicator::UtilizeUserGesture();
   user_gesture_required_ = false;
   autoplay_status_ = AutoplayStatus::kAutoplayStatusSucceeded;
 }

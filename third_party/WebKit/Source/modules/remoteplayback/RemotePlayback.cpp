@@ -154,7 +154,7 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  if (!UserGestureIndicator::UtilizeUserGesture()) {
+  if (!UserGestureIndicator::ProcessingUserGesture()) {
     resolver->Reject(DOMException::Create(
         kInvalidAccessError,
         "RemotePlayback::prompt() requires user gesture."));

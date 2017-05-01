@@ -211,7 +211,7 @@ bool AutoplayPolicy::IsLockedPendingUserGesture() const {
 
 void AutoplayPolicy::TryUnlockingUserGesture() {
   if (IsLockedPendingUserGesture() &&
-      UserGestureIndicator::UtilizeUserGesture()) {
+      UserGestureIndicator::ProcessingUserGesture()) {
     UnlockUserGesture();
   }
 }
