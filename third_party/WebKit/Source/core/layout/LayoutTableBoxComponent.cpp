@@ -15,7 +15,7 @@ void LayoutTableBoxComponent::InvalidateCollapsedBordersOnStyleChange(
     LayoutTable& table,
     const StyleDifference& diff,
     const ComputedStyle& old_style) {
-  if (!table.CollapseBorders())
+  if (!table.ShouldCollapseBorders())
     return;
   if (old_style.Border() != table_part.StyleRef().Border() ||
       (diff.TextDecorationOrColorChanged() &&
@@ -35,7 +35,7 @@ bool LayoutTableBoxComponent::DoCellsHaveDirtyWidth(
   // optimization but now it seems that diff.needsFullLayout() implies
   // tablePart.needsLayout().
   return diff.NeedsFullLayout() && table_part.NeedsLayout() &&
-         table.CollapseBorders() &&
+         table.ShouldCollapseBorders() &&
          !old_style.Border().SizeEquals(table_part.Style()->Border());
 }
 

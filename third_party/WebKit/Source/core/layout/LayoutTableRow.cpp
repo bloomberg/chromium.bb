@@ -170,7 +170,7 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
     // When borders collapse, adding a cell can affect the the width of
     // neighboring cells.
     LayoutTable* enclosing_table = Table();
-    if (enclosing_table && enclosing_table->CollapseBorders()) {
+    if (enclosing_table && enclosing_table->ShouldCollapseBorders()) {
       enclosing_table->InvalidateCollapsedBorders();
       if (LayoutTableCell* previous_cell = cell->PreviousCell())
         previous_cell->SetNeedsLayoutAndPrefWidthsRecalc(

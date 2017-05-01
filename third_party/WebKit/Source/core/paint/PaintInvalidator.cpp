@@ -227,7 +227,7 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
   // on the table's layer.
   if (object.IsTable()) {
     const LayoutTable& table = ToLayoutTable(object);
-    if (table.CollapseBorders() && !table.CollapsedBorders().IsEmpty())
+    if (table.ShouldCollapseBorders() && !table.CollapsedBorders().IsEmpty())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 

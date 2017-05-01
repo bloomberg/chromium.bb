@@ -107,7 +107,7 @@ void LayoutTableCell::WillBeRemovedFromTree() {
   // neighboring cells.
   LayoutTable* enclosing_table = Table();
   DCHECK(enclosing_table);
-  if (!enclosing_table->CollapseBorders())
+  if (!enclosing_table->ShouldCollapseBorders())
     return;
   if (PreviousCell()) {
     // TODO(dgrogan): Should this be setChildNeedsLayout or setNeedsLayout?
@@ -415,7 +415,7 @@ LayoutRect LayoutTableCell::LocalVisualRect() const {
   // because it means that the table is going to recalculate the grid, relayout
   // and issue a paint invalidation of its current rect, which includes any
   // outside borders of this cell.
-  if (!Table()->CollapseBorders() || Table()->NeedsSectionRecalc())
+  if (!Table()->ShouldCollapseBorders() || Table()->NeedsSectionRecalc())
     return LayoutBlockFlow::LocalVisualRect();
 
   bool rtl = !StyleForCellFlow().IsLeftToRightDirection();
@@ -1102,46 +1102,46 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
 }
 
 LayoutUnit LayoutTableCell::BorderLeft() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfLeft(false)
-                                    : LayoutBlockFlow::BorderLeft();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfLeft(false)
+                                          : LayoutBlockFlow::BorderLeft();
 }
 
 LayoutUnit LayoutTableCell::BorderRight() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfRight(false)
-                                    : LayoutBlockFlow::BorderRight();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfRight(false)
+                                          : LayoutBlockFlow::BorderRight();
 }
 
 LayoutUnit LayoutTableCell::BorderTop() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfTop(false)
-                                    : LayoutBlockFlow::BorderTop();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfTop(false)
+                                          : LayoutBlockFlow::BorderTop();
 }
 
 LayoutUnit LayoutTableCell::BorderBottom() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfBottom(false)
-                                    : LayoutBlockFlow::BorderBottom();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfBottom(false)
+                                          : LayoutBlockFlow::BorderBottom();
 }
 
 // FIXME: https://bugs.webkit.org/show_bug.cgi?id=46191, make the collapsed
 // border drawing work with different block flow values instead of being
 // hard-coded to top-to-bottom.
 LayoutUnit LayoutTableCell::BorderStart() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfStart(false)
-                                    : LayoutBlockFlow::BorderStart();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfStart(false)
+                                          : LayoutBlockFlow::BorderStart();
 }
 
 LayoutUnit LayoutTableCell::BorderEnd() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfEnd(false)
-                                    : LayoutBlockFlow::BorderEnd();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfEnd(false)
+                                          : LayoutBlockFlow::BorderEnd();
 }
 
 LayoutUnit LayoutTableCell::BorderBefore() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfBefore(false)
-                                    : LayoutBlockFlow::BorderBefore();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfBefore(false)
+                                          : LayoutBlockFlow::BorderBefore();
 }
 
 LayoutUnit LayoutTableCell::BorderAfter() const {
-  return Table()->CollapseBorders() ? CollapsedBorderHalfAfter(false)
-                                    : LayoutBlockFlow::BorderAfter();
+  return Table()->ShouldCollapseBorders() ? CollapsedBorderHalfAfter(false)
+                                          : LayoutBlockFlow::BorderAfter();
 }
 
 LayoutUnit LayoutTableCell::CollapsedBorderHalfLeft(bool outer) const {
@@ -1268,7 +1268,7 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
 
   collapsed_border_values_valid_ = true;
 
-  if (!Table()->CollapseBorders()) {
+  if (!Table()->ShouldCollapseBorders()) {
     if (collapsed_border_values_) {
       collapsed_borders_visually_changed_ = true;
       collapsed_border_values_ = nullptr;
@@ -1426,7 +1426,7 @@ bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
   // If this object has layer, the area of collapsed borders should be
   // transparent to expose the collapsed borders painted on the underlying
   // layer.
-  if (HasLayer() && Table()->CollapseBorders())
+  if (HasLayer() && Table()->ShouldCollapseBorders())
     return false;
   return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }

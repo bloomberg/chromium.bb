@@ -44,7 +44,7 @@ void TablePainter::PaintObject(const PaintInfo& paint_info,
       }
     }
 
-    if (layout_table_.CollapseBorders() &&
+    if (layout_table_.ShouldCollapseBorders() &&
         ShouldPaintDescendantBlockBackgrounds(paint_phase) &&
         layout_table_.Style()->Visibility() == EVisibility::kVisible) {
       // Using our cached sorted styles, we then do individual passes,

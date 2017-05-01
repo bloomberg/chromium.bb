@@ -186,7 +186,7 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
     return;
 
   LayoutTable* table = layout_table_cell_.Table();
-  if (!table->CollapseBorders() &&
+  if (!table->ShouldCollapseBorders() &&
       layout_table_cell_.Style()->EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
     return;
@@ -210,7 +210,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
     bool should_clip = background_object.HasLayer() &&
                        (background_object == layout_table_cell_ ||
                         background_object == layout_table_cell_.Parent()) &&
-                       layout_table_cell_.Table()->CollapseBorders();
+                       layout_table_cell_.Table()->ShouldCollapseBorders();
     GraphicsContextStateSaver state_saver(paint_info.context, should_clip);
     if (should_clip) {
       LayoutRect clip_rect(paint_rect.Location(), layout_table_cell_.Size());
@@ -229,12 +229,13 @@ void TableCellPainter::PaintBoxDecorationBackground(
     const LayoutPoint& paint_offset) {
   LayoutTable* table = layout_table_cell_.Table();
   const ComputedStyle& style = layout_table_cell_.StyleRef();
-  if (!table->CollapseBorders() && style.EmptyCells() == EEmptyCells::kHide &&
+  if (!table->ShouldCollapseBorders() &&
+      style.EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
     return;
 
   bool needs_to_paint_border =
-      style.HasBorderDecoration() && !table->CollapseBorders();
+      style.HasBorderDecoration() && !table->ShouldCollapseBorders();
   if (!style.HasBackground() && !style.BoxShadow() && !needs_to_paint_border)
     return;
 
@@ -272,7 +273,7 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
     return;
 
   LayoutTable* table_elt = layout_table_cell_.Table();
-  if (!table_elt->CollapseBorders() &&
+  if (!table_elt->ShouldCollapseBorders() &&
       layout_table_cell_.Style()->EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
     return;
