@@ -57,7 +57,7 @@ Polymer({
   },
 
   focus: function() {
-    this.$.neworkList.focus();
+    this.$.networkList.focus();
   },
 
   /**

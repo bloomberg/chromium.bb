@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
@@ -9,8 +8,12 @@
       :host {
         display: inline-flex;
       }
+
+      #networkList {
+        flex: 1;
+      }
     </style>
-    <cr-network-list id="neworkList" class ="flex"
+    <cr-network-list id="networkList"
         on-selected="onNetworkListItemSelected_"
         on-network-connected="onNetworkConnected_"
         networks="[[networkStateList_]]" custom-items="[[customItems]]"
