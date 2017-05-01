@@ -10,12 +10,11 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/default_settings_fetcher.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -33,10 +32,6 @@
 namespace safe_browsing {
 
 namespace {
-
-#if defined(GOOGLE_CHROME_BUILD)
-constexpr char kOmahaUrl[] = "https://tools.google.com/service/update2";
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 // These values are used for UMA metrics reporting. New enum values can be
 // added, but existing enums must never be renumbered or deleted and reused.
@@ -56,103 +51,6 @@ enum SettingsType : uint32_t {
   SETTINGS_TYPE_ALL = SETTINGS_TYPE_HOMEPAGE | SETTINGS_TYPE_DEFAULT_SEARCH |
                       SETTINGS_TYPE_STARTUP_URLS,
 };
-
-// A helper class that fetches default settings to be used for the settings
-// reset prompt. The static |FetchDefaultSettings()| function will create and
-// manage the lifetime of |DefaultSettingsFetcher| instances.
-class DefaultSettingsFetcher {
- public:
-  using SettingsCallback =
-      base::Callback<void(std::unique_ptr<BrandcodedDefaultSettings>)>;
-
-  // Fetches default settings and passes the corresponding
-  // |BrandcodedDefaultSettings| object to |callback| on the UI thread. The
-  // function should be called on the UI thread as well.
-  static void FetchDefaultSettings(SettingsCallback callback);
-
- private:
-  // Instances of |DefaultSettingsFetcher| own themselves and will delete
-  // themselves once default settings have been fetched and |callback| has been
-  // posted on the UI thread.
-  //
-  // The main reason for this design is that |BrandcodeConfigFetcher| takes a
-  // callback and initiates the fetching process in its constructor, and we need
-  // to hold on to the instance of the fetcher until settings have been
-  // fetched. This design saves us from having to explicitly manage global
-  // |BrandcodeConfigFetcher| instances.
-  explicit DefaultSettingsFetcher(SettingsCallback callback);
-  ~DefaultSettingsFetcher();
-
-  // Starts the process of fetching default settings and will ensure that
-  // |PostCallbackAndDeleteSelf| is called once settings have been fetched.
-  void Start();
-  void OnSettingsFetched();
-  // Posts a call to |callback_| on the UI thread, passing to it
-  // |default_settings|, and deletes |this|.
-  void PostCallbackAndDeleteSelf(
-      std::unique_ptr<BrandcodedDefaultSettings> default_settings);
-
-  std::unique_ptr<BrandcodeConfigFetcher> config_fetcher_;
-  SettingsCallback callback_;
-};
-
-// static
-void DefaultSettingsFetcher::FetchDefaultSettings(SettingsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // |settings_fetcher| will delete itself when default settings have been
-  // fetched after the call to |Start()|.
-  DefaultSettingsFetcher* settings_fetcher =
-      new DefaultSettingsFetcher(std::move(callback));
-  settings_fetcher->Start();
-}
-
-DefaultSettingsFetcher::DefaultSettingsFetcher(SettingsCallback callback)
-    : callback_(std::move(callback)) {}
-
-DefaultSettingsFetcher::~DefaultSettingsFetcher() {}
-
-void DefaultSettingsFetcher::Start() {
-  DCHECK(!config_fetcher_);
-
-#if defined(GOOGLE_CHROME_BUILD)
-  std::string brandcode;
-  if (google_brand::GetBrand(&brandcode) && !brandcode.empty()) {
-    config_fetcher_.reset(new BrandcodeConfigFetcher(
-        base::Bind(&DefaultSettingsFetcher::OnSettingsFetched,
-                   base::Unretained(this)),
-        GURL(kOmahaUrl), brandcode));
-    return;
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  // For non Google Chrome builds and cases with an empty |brandcode|, we create
-  // a default-constructed |BrandcodedDefaultSettings| object and post the
-  // callback immediately.
-  PostCallbackAndDeleteSelf(base::MakeUnique<BrandcodedDefaultSettings>());
-}
-
-void DefaultSettingsFetcher::OnSettingsFetched() {
-  DCHECK(config_fetcher_);
-  DCHECK(!config_fetcher_->IsActive());
-
-  std::unique_ptr<BrandcodedDefaultSettings> settings(
-      config_fetcher_->GetSettings());
-  // Use default settings if fetching of BrandcodedDefaultSettings fails.
-  if (!settings)
-    settings.reset(new BrandcodedDefaultSettings());
-
-  PostCallbackAndDeleteSelf(std::move(settings));
-}
-
-void DefaultSettingsFetcher::PostCallbackAndDeleteSelf(
-    std::unique_ptr<BrandcodedDefaultSettings> default_settings) {
-  DCHECK(default_settings);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback_), base::Passed(&default_settings)));
-  delete this;
-}
 
 const extensions::Extension* GetExtension(
     Profile* profile,
