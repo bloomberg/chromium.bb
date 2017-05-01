@@ -990,6 +990,12 @@ source_set("browser") {
     "memory/memory_monitor_win.h",
     "memory/memory_pressure_controller_impl.cc",
     "memory/memory_pressure_controller_impl.h",
+    "memory/swap_metrics_observer.cc",
+    "memory/swap_metrics_observer.h",
+    "memory/swap_metrics_observer_linux.cc",
+    "memory/swap_metrics_observer_linux.h",
+    "memory/swap_metrics_observer_mac.cc",
+    "memory/swap_metrics_observer_win.cc",
     "message_port_provider.cc",
     "mime_registry_impl.cc",
     "mime_registry_impl.h",
@@ -1864,6 +1870,14 @@ source_set("browser") {
       "web_contents/web_contents_view_android.cc",
       "web_contents/web_contents_view_android.h",
     ]
+
+    set_sources_assignment_filter([])
+    sources += [
+      "memory/swap_metrics_observer_linux.cc",
+      "memory/swap_metrics_observer_linux.h",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+
     sources -= [
       "browser_ipc_logging.cc",
       "media/session/audio_focus_delegate_default.cc",
