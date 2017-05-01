@@ -68,13 +68,13 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   void WorkerScriptLoadFailed() override;
   void SelectAppCacheID(long long) override;
   blink::WebNotificationPresenter* NotificationPresenter() override;
-  blink::WebApplicationCacheHost* CreateApplicationCacheHost(
+  std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
   blink::WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy(
       const blink::WebSecurityOrigin& origin) override;
-  blink::WebServiceWorkerNetworkProvider* CreateServiceWorkerNetworkProvider()
-      override;
+  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+  CreateServiceWorkerNetworkProvider() override;
   void SendDevToolsMessage(int session_id,
                            int call_id,
                            const blink::WebString& message,
@@ -110,7 +110,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   std::vector<PendingChannel> pending_channels_;
 
   ScopedChildProcessReference process_ref_;
-  WebApplicationCacheHostImpl* app_cache_host_ = nullptr;
+  WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
 

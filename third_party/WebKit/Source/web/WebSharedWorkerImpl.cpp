@@ -153,7 +153,8 @@ void WebSharedWorkerImpl::InitializeLoader() {
   LoadShadowPage();
 }
 
-WebApplicationCacheHost* WebSharedWorkerImpl::CreateApplicationCacheHost(
+std::unique_ptr<WebApplicationCacheHost>
+WebSharedWorkerImpl::CreateApplicationCacheHost(
     WebApplicationCacheHostClient* appcache_host_client) {
   DCHECK(IsMainThread());
   return client_->CreateApplicationCacheHost(appcache_host_client);
@@ -178,7 +179,7 @@ void WebSharedWorkerImpl::DidFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(!loading_document_);
   DCHECK(!main_script_loader_);
   frame->DataSource()->SetServiceWorkerNetworkProvider(
-      WTF::WrapUnique(client_->CreateServiceWorkerNetworkProvider()));
+      client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
   main_script_loader_->SetRequestContext(
       WebURLRequest::kRequestContextSharedWorker);

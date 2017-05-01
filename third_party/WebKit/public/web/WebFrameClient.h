@@ -47,6 +47,7 @@
 #include "WebSandboxFlags.h"
 #include "WebTextDirection.h"
 #include "public/platform/BlameContext.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebColor.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicy.h"
@@ -66,6 +67,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -133,13 +135,16 @@ class BLINK_EXPORT WebFrameClient {
   virtual WebMediaSession* CreateMediaSession() { return 0; }
 
   // May return null.
-  virtual WebApplicationCacheHost* CreateApplicationCacheHost(
+  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) {
-    return 0;
+    return nullptr;
   }
 
   // May return null.
-  virtual WebServiceWorkerProvider* CreateServiceWorkerProvider() { return 0; }
+  virtual std::unique_ptr<WebServiceWorkerProvider>
+  CreateServiceWorkerProvider() {
+    return nullptr;
+  }
 
   // May return null.
   virtual WebWorkerContentSettingsClientProxy*

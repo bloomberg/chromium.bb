@@ -1063,7 +1063,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
   context_->payment_request_event_callbacks.erase(payment_request_id);
 }
 
-blink::WebServiceWorkerNetworkProvider*
+std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
 
@@ -1081,7 +1081,8 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
                                       embedded_worker_id_);
 
   // Blink is responsible for deleting the returned object.
-  return new WebServiceWorkerNetworkProviderImpl(std::move(provider));
+  return base::MakeUnique<WebServiceWorkerNetworkProviderImpl>(
+      std::move(provider));
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>
@@ -1099,13 +1100,13 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
       worker_url_loader_factory_provider.PassInterface(), network_provider_id_);
 }
 
-blink::WebServiceWorkerProvider*
+std::unique_ptr<blink::WebServiceWorkerProvider>
 ServiceWorkerContextClient::CreateServiceWorkerProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(provider_context_);
 
   // Blink is responsible for deleting the returned object.
-  return new WebServiceWorkerProviderImpl(
+  return base::MakeUnique<WebServiceWorkerProviderImpl>(
       sender_.get(), provider_context_.get());
 }
 
