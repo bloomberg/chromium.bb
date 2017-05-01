@@ -2816,11 +2816,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
 
-      <!-- Photo Picker strings -->
-      <message name="IDS_DECODER_DESCRIPTION" desc="The title for the image decoder utility service.">
-        Image decoder
-      </message>
-
       <!-- Migration strings -->
       <message name="IDS_TAB_SWITCHER_CALLOUT_BODY" desc="Indicates that clicking the tab switcher button gives you quick access to your tabs.">
         Tap this button for quick access to your tabs.
