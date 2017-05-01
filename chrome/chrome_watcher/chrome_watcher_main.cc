@@ -36,6 +36,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
@@ -197,7 +198,9 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::AtExitManager exit_manager;
   // Initialize the commandline singleton from the environment.
   base::CommandLine::Init(0, nullptr);
+  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
 
+  logging::InitChromeLogging(cmd_line, logging::APPEND_TO_OLD_LOG_FILE);
   logging::LogEventProvider::Initialize(kChromeWatcherTraceProviderName);
 
   // Arrange to be shut down as late as possible, as we want to outlive
@@ -208,7 +211,6 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
   base::win::RegisterInvalidParamHandler();
-  const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   base::win::SetupCRT(cmd_line);
 
   // Run a UI message loop on the main thread.
