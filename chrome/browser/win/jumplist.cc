@@ -114,8 +114,11 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
   }
 
   if (!IconUtil::CreateIconFileFromImageFamily(image_family, path,
-                                               IconUtil::NORMAL_WRITE))
+                                               IconUtil::NORMAL_WRITE)) {
+    // Delete the file created by CreateTemporaryFileInDir as it won't be used.
+    base::DeleteFile(path, false);
     return false;
+  }
 
   // Add this icon file to the list and return its absolute path.
   // The IShellLink::SetIcon() function needs the absolute path to an icon.
