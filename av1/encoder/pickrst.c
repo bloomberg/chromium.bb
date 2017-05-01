@@ -1072,7 +1072,8 @@ static double search_switchable_restoration(
     double best_cost = tile_cost[RESTORE_NONE][tile_idx];
     rsi->restoration_type[tile_idx] = RESTORE_NONE;
     for (r = 1; r < RESTORE_SWITCHABLE_TYPES; r++) {
-      if (r != force_restore_type) continue;
+      if (force_restore_type != 0)
+        if (r != force_restore_type) continue;
       if (tile_cost[r][tile_idx] < best_cost) {
         rsi->restoration_type[tile_idx] = r;
         best_cost = tile_cost[r][tile_idx];
