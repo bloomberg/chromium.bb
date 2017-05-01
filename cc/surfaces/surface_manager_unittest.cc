@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/framesink_manager_client.h"
+#include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_resource_holder_client.h"

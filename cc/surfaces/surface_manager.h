@@ -19,7 +19,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/framesink_manager.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"

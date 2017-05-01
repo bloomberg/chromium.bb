@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_FRAMESINK_MANAGER_H_
-#define CC_SURFACES_FRAMESINK_MANAGER_H_
+#ifndef CC_SURFACES_FRAME_SINK_MANAGER_H_
+#define CC_SURFACES_FRAME_SINK_MANAGER_H_
 
 #include <stdint.h>
 
@@ -68,7 +68,7 @@ class CC_SURFACES_EXPORT FrameSinkManager {
 
   // Export list of valid frame_sink_ids for SatisfyDestructionDeps in surface
   // may be removed later when References replace Sequences
-  std::unordered_set<FrameSinkId, FrameSinkIdHash>* GetValidFrameSinkIds(){
+  std::unordered_set<FrameSinkId, FrameSinkIdHash>* GetValidFrameSinkIds() {
     return &valid_frame_sink_ids_;
   }
 
@@ -119,4 +119,4 @@ class CC_SURFACES_EXPORT FrameSinkManager {
 
 }  // namespace cc
 
-#endif  // CC_SURFACES_FRAMESINK_MANAGER_H_
+#endif  // CC_SURFACES_FRAME_SINK_MANAGER_H_
