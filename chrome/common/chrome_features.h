@@ -171,6 +171,8 @@ extern const base::Feature kSyzyasanDeferredFree;
 
 extern const base::Feature kUseGroupedPermissionInfobars;
 
+extern const base::Feature kUsePermissionManagerForMediaRequests;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;
 
