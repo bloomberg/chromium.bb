@@ -1550,7 +1550,7 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   // Compute Determinant of A
   Det = (int64_t)A[0][0] * A[1][1] - (int64_t)A[0][1] * A[0][1];
   if (Det == 0) return 1;
-  iDet = resolve_divisor_64(labs(Det), &shift) * (Det < 0 ? -1 : 1);
+  iDet = resolve_divisor_64(llabs(Det), &shift) * (Det < 0 ? -1 : 1);
   shift -= WARPEDMODEL_PREC_BITS;
   if (shift < 0) {
     iDet <<= (-shift);
@@ -1704,7 +1704,7 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
 
   int16_t shift;
   int64_t iDet;
-  iDet = resolve_divisor_64(labs(Det), &shift) * (Det < 0 ? -1 : 1);
+  iDet = resolve_divisor_64(llabs(Det), &shift) * (Det < 0 ? -1 : 1);
   shift -= WARPEDMODEL_PREC_BITS;
   if (shift < 0) {
     iDet <<= (-shift);
