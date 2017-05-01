@@ -10,14 +10,13 @@ import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.SwitchCompat;
 import android.text.method.LinkMovementMethod;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -26,6 +25,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
 import java.util.List;
 
@@ -45,12 +45,8 @@ import java.util.List;
  * TODO(dfalcantara): The line spacing multiplier is applied to all lines in JB & KK, even if the
  *                    TextView has only one line.  This throws off vertical alignment.  Find a
  *                    solution that hopefully doesn't involve subclassing the TextView.
- *
- * TODO(dfalcantara): Move this to a more general location.
  */
 public final class InfoBarControlLayout extends ViewGroup {
-    public static final int INVALID_INDEX = -1;
-
     /**
      * ArrayAdapter that automatically determines what size make its Views to accommodate all of
      * its potential values.
@@ -163,7 +159,11 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Do not call this method directly; use {@link InfoBarLayout#addControlLayout()}.
      */
     public InfoBarControlLayout(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public InfoBarControlLayout(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
         Resources resources = context.getResources();
         mMarginBetweenRows =
@@ -361,40 +361,17 @@ public final class InfoBarControlLayout extends ViewGroup {
     /**
      * Creates a set of standard radio buttons and adds it to the layout.
      *
-     * -------------------------------------------------
-     * | O | MESSAGE #1                                |
-     * | O | MESSAGE #N                                |
-     * -------------------------------------------------
-     *
      * @param messages      Messages to display for the options.
      * @param tags          Optional list of tags to attach to the buttons.
-     * @param selectedIndex Which index to mark as being selected.
      */
-    public RadioGroup addRadioButtons(
-            List<CharSequence> messages, @Nullable List<?> tags, int selectedIndex) {
-        if (tags != null) assert tags.size() == messages.size();
-
+    public RadioButtonLayout addRadioButtons(List<CharSequence> messages, @Nullable List<?> tags) {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 
-        RadioGroup radioLayout = new RadioGroup(getContext());
+        RadioButtonLayout radioLayout = new RadioButtonLayout(getContext());
+        radioLayout.addOptions(messages, tags);
+
         addView(radioLayout, params);
-
-        for (int i = 0; i < messages.size(); i++) {
-            RadioButton button =
-                    (RadioButton) LayoutInflater.from(getContext())
-                            .inflate(R.layout.infobar_control_radio, radioLayout, false);
-            button.setText(messages.get(i));
-            if (tags != null) button.setTag(tags.get(i));
-            button.setChecked(i == selectedIndex);
-            radioLayout.addView(button);
-
-            // Add margins between each of the radio buttons.
-            if (i < messages.size() - 1) {
-                ((MarginLayoutParams) button.getLayoutParams()).bottomMargin = mMarginBetweenRows;
-            }
-        }
-
         return radioLayout;
     }
 
