@@ -3387,3 +3387,6 @@ crbug.com/716569 [ Android ] tables/mozilla/bugs/bug2479-4.html [ Failure ]
 crbug.com/716569 [ Android ] tables/mozilla/core/bloomberg.html [ Failure ]
 crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug1055-2.html [ Failure ]
 crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure ]
+
+# Sheriff flake 2017-05-01
+crbug.com/716729 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Pass Timeout ]
