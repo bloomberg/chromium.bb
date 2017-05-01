@@ -199,7 +199,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
           LayoutTheme::GetTheme().Painter().PaintBorderOnly(
               layout_box_, paint_info, snapped_paint_rect))) &&
         !(layout_box_.IsTable() &&
-          ToLayoutTable(&layout_box_)->CollapseBorders())) {
+          ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
       PaintBorder(layout_box_, paint_info, paint_rect, style,
                   box_decoration_data.bleed_avoidance);
     }

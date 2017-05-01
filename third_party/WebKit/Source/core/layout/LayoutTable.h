@@ -145,7 +145,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   int HBorderSpacing() const { return h_spacing_; }
   int VBorderSpacing() const { return v_spacing_; }
 
-  bool CollapseBorders() const {
+  bool ShouldCollapseBorders() const {
     return Style()->BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
@@ -349,9 +349,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     // 'border-spacing' only applies to separate borders (see 17.6.1 The
     // separated borders model).
     return BorderStart() + BorderEnd() +
-           (CollapseBorders() ? LayoutUnit()
-                              : (PaddingStart() + PaddingEnd() +
-                                 BorderSpacingInRowDirection()));
+           (ShouldCollapseBorders() ? LayoutUnit()
+                                    : (PaddingStart() + PaddingEnd() +
+                                       BorderSpacingInRowDirection()));
   }
 
   // Return the first column or column-group.
