@@ -1,0 +1,233 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.net;
+
+import android.os.ConditionVariable;
+import android.os.StrictMode;
+import android.support.test.filters.SmallTest;
+
+import org.chromium.base.Log;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
+import org.chromium.net.MetricsTestUtil.TestExecutor;
+import org.chromium.net.test.EmbeddedTestServer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+/**
+ * Test Network Quality Estimator.
+ */
+@JNINamespace("cronet")
+public class NQETest extends CronetTestBase {
+    private static final String TAG = NQETest.class.getSimpleName();
+
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
+
+    // Thread on which network quality listeners should be notified.
+    private Thread mNetworkQualityThread;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartServer(getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+    }
+
+    private class ExecutorThreadFactory implements ThreadFactory {
+        public Thread newThread(final Runnable r) {
+            mNetworkQualityThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    StrictMode.ThreadPolicy threadPolicy = StrictMode.getThreadPolicy();
+                    try {
+                        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                                                           .detectNetwork()
+                                                           .penaltyLog()
+                                                           .penaltyDeath()
+                                                           .build());
+                        r.run();
+                    } finally {
+                        StrictMode.setThreadPolicy(threadPolicy);
+                    }
+                }
+            });
+            return mNetworkQualityThread;
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNotEnabled() throws Exception {
+        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+                new ExperimentalCronetEngine.Builder(getContext());
+        final CronetTestFramework testFramework =
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
+        Executor networkQualityExecutor = Executors.newSingleThreadExecutor();
+        TestNetworkQualityRttListener rttListener =
+                new TestNetworkQualityRttListener(networkQualityExecutor);
+        TestNetworkQualityThroughputListener throughputListener =
+                new TestNetworkQualityThroughputListener(networkQualityExecutor, null);
+        try {
+            testFramework.mCronetEngine.addRttListener(rttListener);
+            fail("Should throw an exception.");
+        } catch (IllegalStateException e) {
+        }
+        try {
+            testFramework.mCronetEngine.addThroughputListener(throughputListener);
+            fail("Should throw an exception.");
+        } catch (IllegalStateException e) {
+        }
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
+                mUrl, callback, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+
+        urlRequest.start();
+        callback.blockForDone();
+        assertEquals(0, rttListener.rttObservationCount());
+        assertEquals(0, throughputListener.throughputObservationCount());
+        testFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testListenerRemoved() throws Exception {
+        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+                new ExperimentalCronetEngine.Builder(getContext());
+        TestExecutor networkQualityExecutor = new TestExecutor();
+        TestNetworkQualityRttListener rttListener =
+                new TestNetworkQualityRttListener(networkQualityExecutor);
+        mCronetEngineBuilder.enableNetworkQualityEstimator(true);
+        final CronetTestFramework testFramework =
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
+        testFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true, false);
+
+        testFramework.mCronetEngine.addRttListener(rttListener);
+        testFramework.mCronetEngine.removeRttListener(rttListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
+                mUrl, callback, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        networkQualityExecutor.runAllTasks();
+        assertEquals(0, rttListener.rttObservationCount());
+        testFramework.mCronetEngine.shutdown();
+    }
+
+    // Returns whether a file contains a particular string.
+    @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
+    private boolean fileContainsString(String filename, String content) throws IOException {
+        File file =
+                new File(CronetTestFramework.getTestStorage(getContext()) + "/prefs/" + filename);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] data = new byte[(int) file.length()];
+        fileInputStream.read(data);
+        fileInputStream.close();
+        return new String(data, "UTF-8").contains(content);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @DisabledTest(message = "Disabled due to flaky assert. See crbug.com/710626")
+    public void testQuicDisabled() throws Exception {
+        ExperimentalCronetEngine.Builder mCronetEngineBuilder =
+                new ExperimentalCronetEngine.Builder(getContext());
+        assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
+        Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
+        ConditionVariable waitForThroughput = new ConditionVariable();
+        TestNetworkQualityRttListener rttListener =
+                new TestNetworkQualityRttListener(listenersExecutor);
+        TestNetworkQualityThroughputListener throughputListener =
+                new TestNetworkQualityThroughputListener(listenersExecutor, waitForThroughput);
+        mCronetEngineBuilder.enableNetworkQualityEstimator(true).enableHttp2(true).enableQuic(
+                false);
+        mCronetEngineBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
+        final CronetTestFramework testFramework =
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mCronetEngineBuilder);
+        testFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true, true);
+
+        testFramework.mCronetEngine.addRttListener(rttListener);
+        testFramework.mCronetEngine.addThroughputListener(throughputListener);
+
+        HistogramDelta writeCountHistogram = new HistogramDelta("NQE.Prefs.WriteCount", 1);
+        assertEquals(0, writeCountHistogram.getDelta()); // Sanity check.
+
+        HistogramDelta readCountHistogram = new HistogramDelta("NQE.Prefs.ReadCount", 1);
+        assertEquals(0, readCountHistogram.getDelta()); // Sanity check.
+
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = testFramework.mCronetEngine.newUrlRequestBuilder(
+                mUrl, callback, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+
+        // Throughput observation is posted to the network quality estimator on the network thread
+        // after the UrlRequest is completed. The observations are then eventually posted to
+        // throughput listeners on the executor provided to network quality.
+        waitForThroughput.block();
+        assertTrue(throughputListener.throughputObservationCount() > 0);
+
+        // Prefs must be read at startup.
+        assertTrue(readCountHistogram.getDelta() > 0);
+
+        // Check RTT observation count after throughput observation has been received. This ensures
+        // that executor has finished posting the RTT observation to the RTT listeners.
+        assertTrue(rttListener.rttObservationCount() > 0);
+
+        // NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST
+        assertTrue(rttListener.rttObservationCount(0) > 0);
+
+        // NETWORK_QUALITY_OBSERVATION_SOURCE_TCP
+        assertTrue(rttListener.rttObservationCount(1) > 0);
+
+        // NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC
+        assertEquals(0, rttListener.rttObservationCount(2));
+
+        // Verify that the listeners were notified on the expected thread.
+        assertEquals(mNetworkQualityThread, rttListener.getThread());
+        assertEquals(mNetworkQualityThread, throughputListener.getThread());
+
+        // Verify that effective connection type callback is received and
+        // effective connection type is correctly set.
+        assertTrue(testFramework.mCronetEngine.getEffectiveConnectionType()
+                != EffectiveConnectionType.TYPE_UNKNOWN);
+
+        // Verify that the HTTP RTT, transport RTT and downstream throughput
+        // estimates are available.
+        assertTrue(testFramework.mCronetEngine.getHttpRttMs() >= 0);
+        assertTrue(testFramework.mCronetEngine.getTransportRttMs() >= 0);
+        assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() >= 0);
+
+        // Verify that the cached estimates were written to the prefs.
+        while (true) {
+            Log.i(TAG, "Still waiting for pref file update.....");
+            Thread.sleep(12000);
+            try {
+                if (fileContainsString("local_prefs.json", "network_qualities")) {
+                    break;
+                }
+            } catch (FileNotFoundException e) {
+                // Ignored this exception since the file will only be created when updates are
+                // flushed to the disk.
+            }
+        }
+        assertTrue(fileContainsString("local_prefs.json", "network_qualities"));
+
+        testFramework.mCronetEngine.shutdown();
+        assertTrue(writeCountHistogram.getDelta() > 0);
+    }
+}
