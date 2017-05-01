@@ -340,6 +340,7 @@ bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
 void WebMediaPlayerImpl::EnableOverlay() {
   overlay_enabled_ = true;
   if (surface_manager_) {
+    overlay_surface_id_.reset();
     surface_created_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::OnSurfaceCreated, AsWeakPtr()));
     surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
@@ -358,7 +359,7 @@ void WebMediaPlayerImpl::DisableOverlay() {
   if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
   else if (!set_surface_cb_.is_null())
-    set_surface_cb_.Run(overlay_surface_id_);
+    set_surface_cb_.Run(*overlay_surface_id_);
 }
 
 void WebMediaPlayerImpl::EnteredFullscreen() {
@@ -1696,10 +1697,10 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
 
   // If we're waiting for the surface to arrive, OnSurfaceCreated() will be
   // called later when it arrives; so do nothing for now.
-  if (overlay_enabled_ && overlay_surface_id_ == SurfaceManager::kNoSurfaceID)
+  if (!overlay_surface_id_)
     return;
 
-  OnSurfaceCreated(overlay_surface_id_);
+  OnSurfaceCreated(*overlay_surface_id_);
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
