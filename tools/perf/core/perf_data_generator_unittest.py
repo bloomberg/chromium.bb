@@ -3,10 +3,12 @@
 # found in the LICENSE file.
 import unittest
 
+from core import perf_benchmark
 from core import perf_data_generator
 from core.perf_data_generator import BenchmarkMetadata
 
 from telemetry import benchmark
+from telemetry import decorators
 
 
 class PerfDataGeneratorTest(unittest.TestCase):
@@ -32,9 +34,9 @@ class PerfDataGeneratorTest(unittest.TestCase):
         }
     }
     benchmarks = {
-        'benchmark_name_1': BenchmarkMetadata(None, None),
-        'benchmark_name_2': BenchmarkMetadata(None, None),
-        'benchmark_name_3': BenchmarkMetadata(None, None)
+        'benchmark_name_1': BenchmarkMetadata(None, None, False),
+        'benchmark_name_2': BenchmarkMetadata(None, None, False),
+        'benchmark_name_3': BenchmarkMetadata(None, None, False)
     }
 
     perf_data_generator.verify_all_tests_in_benchmark_csv(tests, benchmarks)
@@ -50,8 +52,8 @@ class PerfDataGeneratorTest(unittest.TestCase):
         }
     }
     benchmarks = {
-        'benchmark_name_2': BenchmarkMetadata(None, None),
-        'benchmark_name_3': BenchmarkMetadata(None, None),
+        'benchmark_name_2': BenchmarkMetadata(None, None, False),
+        'benchmark_name_3': BenchmarkMetadata(None, None, False),
     }
 
     with self.assertRaises(AssertionError) as context:
@@ -64,7 +66,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
   def testVerifyAllTestsInBenchmarkCsvFindsFakeTest(self):
     tests = {'Random fake test': {}}
     benchmarks = {
-        'benchmark_name_1': BenchmarkMetadata(None, None)
+        'benchmark_name_1': BenchmarkMetadata(None, None, False)
     }
 
     with self.assertRaises(AssertionError) as context:
@@ -140,3 +142,49 @@ class PerfDataGeneratorTest(unittest.TestCase):
     self.assertEquals(
         generated_test_names,
         {'blacklisted', 'not_blacklisted', 'not_blacklisted.reference'})
+
+  def testShouldBenchmarkBeScheduledNormal(self):
+    class bench(perf_benchmark.PerfBenchmark):
+      pass
+
+    self.assertEqual(
+        perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'win'),
+        True)
+
+  def testShouldBenchmarkBeScheduledDisabledAll(self):
+    @decorators.Disabled('all')
+    class bench(perf_benchmark.PerfBenchmark):
+      pass
+
+    self.assertEqual(
+        perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'win'),
+        False)
+
+  def testShouldBenchmarkBeScheduledOnDesktopMobileTest(self):
+    @decorators.Enabled('android')
+    class bench(perf_benchmark.PerfBenchmark):
+      pass
+
+    self.assertEqual(
+        perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'win'),
+        False)
+
+  def testShouldBenchmarkBeScheduledOnMobileMobileTest(self):
+    @decorators.Enabled('android')
+    class bench(perf_benchmark.PerfBenchmark):
+      pass
+
+    self.assertEqual(
+        perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'android'),
+        True)
+
+  def testShouldBenchmarkBeScheduledOnMobileMobileTestDisabled(self):
+    @decorators.Disabled('android')
+    class bench(perf_benchmark.PerfBenchmark):
+      pass
+
+    self.assertEqual(
+        perf_data_generator.ShouldBenchmarkBeScheduled(bench(), 'android'),
+        False)
+
+
