@@ -256,7 +256,8 @@ class RemoteCache(DiskCache):
       ctx.Copy(url, local_path)
     else:
       # Note: unittests assume local_path is at the end.
-      retry_util.RunCurl([url, '-o', local_path], debug_level=logging.DEBUG)
+      retry_util.RunCurl(['--fail', url, '-o', local_path],
+                         debug_level=logging.DEBUG, capture_output=True)
 
   def _Insert(self, key, url):
     """Insert a remote file into the cache."""
