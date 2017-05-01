@@ -120,6 +120,9 @@ float NormalizeVector(gfx::Vector3dF* vec) {
 void NormalizeQuat(Quatf* quat) {
   float len = sqrt(quat->qx * quat->qx + quat->qy * quat->qy +
                    quat->qz * quat->qz + quat->qw * quat->qw);
+  DCHECK_NE(len, 0);
+  if (len == 0)
+    return;
   quat->qx /= len;
   quat->qy /= len;
   quat->qz /= len;
