@@ -64,11 +64,12 @@ using JumpListData = JumpList::JumpListData;
 
 namespace {
 
-// Delay jumplist updates to allow collapsing of redundant update requests.
+// The delay before updating the JumpList to prevent update storms.
 constexpr base::TimeDelta kDelayForJumplistUpdate =
     base::TimeDelta::FromMilliseconds(3500);
 
-// Timeout jumplist updates for users with extremely slow OS.
+// The maximum allowed time for JumpListUpdater::BeginUpdate. Updates taking
+// longer than this are discarded to prevent bogging down slow machines.
 constexpr base::TimeDelta kTimeOutForJumplistUpdate =
     base::TimeDelta::FromMilliseconds(500);
 
@@ -126,8 +127,7 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
   return true;
 }
 
-// Helper method for RunUpdate to create icon files for the asynchrounously
-// loaded icons.
+// Creates icon files for the asynchrounously loaded icons.
 void CreateIconFiles(const base::FilePath& icon_dir,
                      const ShellLinkItemList& item_list,
                      size_t max_items) {
@@ -140,6 +140,18 @@ void CreateIconFiles(const base::FilePath& icon_dir,
     if (CreateIconFile((*item)->icon_image(), icon_dir, &icon_path))
       (*item)->set_icon(icon_path.value(), 0);
   }
+}
+
+// Updates icon files in |icon_dir|, which includes deleting old icons and
+// creating at most |slot_limit| new icons for |page_list|.
+void UpdateIconFiles(const base::FilePath& icon_dir,
+                     const ShellLinkItemList& page_list,
+                     size_t slot_limit) {
+  DeleteDirectoryContentAndLogRuntime(icon_dir, kFileDeleteLimit);
+
+  // Create new icons only when the directory exists and is empty.
+  if (base::CreateDirectory(icon_dir) && base::IsDirectoryEmpty(icon_dir))
+    CreateIconFiles(icon_dir, page_list, slot_limit);
 }
 
 // Updates the "Tasks" category of the JumpList.
@@ -200,15 +212,16 @@ bool UpdateJumpList(const wchar_t* app_id,
   if (!JumpListUpdater::IsEnabled())
     return true;
 
-  // Records the time cost of starting a JumpListUpdater.
+  JumpListUpdater jumplist_updater(app_id);
+
   base::ElapsedTimer begin_update_timer;
 
-  JumpListUpdater jumplist_updater(app_id);
   if (!jumplist_updater.BeginUpdate())
     return false;
 
-  // Stops jumplist update if JumpListUpdater's start times out, as it's very
-  // likely the following update steps will also take a long time.
+  // Discard this JumpList update if JumpListUpdater::BeginUpdate takes longer
+  // than the maximum allowed time, as it's very likely the following update
+  // steps will also take a long time.
   if (begin_update_timer.Elapsed() >= kTimeOutForJumplistUpdate)
     return false;
 
@@ -246,49 +259,27 @@ bool UpdateJumpList(const wchar_t* app_id,
   // Record the desired number of icons to create in this JumpList update.
   int icons_to_create = 0;
 
+  // Update the icons for "Most Visisted" category of the JumpList if needed.
   if (most_visited_pages_have_updates) {
-    // Delete the content in JumpListIconsMostVisited folder and log the results
-    // to UMA.
     base::FilePath icon_dir_most_visited = icon_dir.DirName().Append(
         icon_dir.BaseName().value() + FILE_PATH_LITERAL("MostVisited"));
 
-    DeleteDirectoryContentAndLogResults(icon_dir_most_visited,
-                                        kFileDeleteLimit);
+    UpdateIconFiles(icon_dir_most_visited, most_visited_pages,
+                    most_visited_items);
 
-    // If the directory doesn't exist (we have tried to create it in
-    // DeleteDirectoryContentAndLogResults) or is not empty, skip updating the
-    // jumplist icons. The jumplist links should be updated anyway, as it
-    // doesn't involve disk IO. In this case, Chrome's icon will be used for the
-    // new links.
-    if (base::DirectoryExists(icon_dir_most_visited) &&
-        base::IsDirectoryEmpty(icon_dir_most_visited)) {
-      // Create icon files for shortcuts in the "Most Visited" category.
-      CreateIconFiles(icon_dir_most_visited, most_visited_pages,
-                      most_visited_items);
-
-      icons_to_create +=
-          std::min(most_visited_pages.size(), most_visited_items);
-    }
+    icons_to_create += std::min(most_visited_pages.size(), most_visited_items);
   }
 
+  // Update the icons for "Recently Closed" category of the JumpList if needed.
   if (recently_closed_pages_have_updates) {
-    // Delete the content in JumpListIconsRecentClosed folder and log the
-    // results to UMA.
     base::FilePath icon_dir_recent_closed = icon_dir.DirName().Append(
         icon_dir.BaseName().value() + FILE_PATH_LITERAL("RecentClosed"));
 
-    DeleteDirectoryContentAndLogResults(icon_dir_recent_closed,
-                                        kFileDeleteLimit);
+    UpdateIconFiles(icon_dir_recent_closed, recently_closed_pages,
+                    recently_closed_items);
 
-    if (base::DirectoryExists(icon_dir_recent_closed) &&
-        base::IsDirectoryEmpty(icon_dir_recent_closed)) {
-      // Create icon files for shortcuts in the "Recently Closed" category.
-      CreateIconFiles(icon_dir_recent_closed, recently_closed_pages,
-                      recently_closed_items);
-
-      icons_to_create +=
-          std::min(recently_closed_pages.size(), recently_closed_items);
-    }
+    icons_to_create +=
+        std::min(recently_closed_pages.size(), recently_closed_items);
   }
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
@@ -355,7 +346,7 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
   if (!most_visited_pages_have_updates && !recently_closed_pages_have_updates)
     return;
 
-  // Updates the application JumpList. If it fails, reset the flags to true if
+  // Update the application JumpList. If it fails, reset the flags to true if
   // they were so that the corresponding JumpList categories will be tried to
   // update again in the next run.
   if (!UpdateJumpList(
@@ -701,16 +692,15 @@ void JumpList::DeferredRunUpdate() {
   // Now we have JumpListIconsMostVisited folder and JumpListIconsRecentClosed
   // folder instead.
   delete_jumplisticons_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeleteDirectoryAndLogResults, icon_dir_, kFileDeleteLimit));
+      FROM_HERE, base::Bind(&DeleteDirectory, icon_dir_, kFileDeleteLimit));
 
   // Post a task to delete JumpListIconsOld folder as it's no longer needed.
   base::FilePath icon_dir_old = icon_dir_.DirName().Append(
       icon_dir_.BaseName().value() + FILE_PATH_LITERAL("Old"));
 
   delete_jumplisticons_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteDirectoryAndLogResults,
-                            std::move(icon_dir_old), kFileDeleteLimit));
+      FROM_HERE,
+      base::Bind(&DeleteDirectory, std::move(icon_dir_old), kFileDeleteLimit));
 }
 
 void JumpList::TopSitesLoaded(history::TopSites* top_sites) {
