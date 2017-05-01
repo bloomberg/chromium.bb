@@ -222,9 +222,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // and passing the data along to the QuicConnection.
   void StartReading();
 
-  // Close the session because of |error| and notifies the factory
+  // Close the session because of |net_error| and notifies the factory
   // that this session has been closed, which will delete the session.
-  void CloseSessionOnError(int error, QuicErrorCode quic_error);
+  void CloseSessionOnError(int net_error, QuicErrorCode quic_error);
 
   std::unique_ptr<base::Value> GetInfoAsValue(
       const std::set<HostPortPair>& aliases);
@@ -336,18 +336,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnReadComplete(int result);
 
   void OnClosedStream();
-
-  // Close the session because of |error| and records it in UMA histogram.
-  void RecordAndCloseSessionOnError(int error, QuicErrorCode quic_error);
-
-  // A Session may be closed via any of three methods:
-  // OnConnectionClosed - called by the connection when the connection has been
-  //     closed, perhaps due to a timeout or a protocol error.
-  // CloseSessionOnError - called from the owner of the session,
-  //     the QuicStreamFactory, when there is an error.
-  // OnReadComplete - when there is a read error.
-  // This method closes all stream and performs any necessary cleanup.
-  void CloseSessionOnErrorInner(int net_error, QuicErrorCode quic_error);
 
   void CloseAllStreams(int net_error);
   void CloseAllObservers(int net_error);

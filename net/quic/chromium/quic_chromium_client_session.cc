@@ -1216,22 +1216,11 @@ void QuicChromiumClientSession::StartReading() {
   }
 }
 
-void QuicChromiumClientSession::CloseSessionOnError(int error,
+void QuicChromiumClientSession::CloseSessionOnError(int net_error,
                                                     QuicErrorCode quic_error) {
-  RecordAndCloseSessionOnError(error, quic_error);
-  NotifyFactoryOfSessionClosed();
-}
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError",
+                              -net_error);
 
-void QuicChromiumClientSession::RecordAndCloseSessionOnError(
-    int error,
-    QuicErrorCode quic_error) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
-  CloseSessionOnErrorInner(error, quic_error);
-}
-
-void QuicChromiumClientSession::CloseSessionOnErrorInner(
-    int net_error,
-    QuicErrorCode quic_error) {
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);
   }
@@ -1244,6 +1233,8 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
     connection()->CloseConnection(quic_error, "net error",
                                   ConnectionCloseBehavior::SILENT_CLOSE);
   DCHECK(!connection()->connected());
+
+  NotifyFactoryOfSessionClosed();
 }
 
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
