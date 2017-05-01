@@ -1787,6 +1787,8 @@ split_static_library("browser") {
       "renderer_host/chrome_extension_message_filter.h",
       "safe_browsing/chrome_cleaner_dialog_controller.cc",
       "safe_browsing/chrome_cleaner_dialog_controller.h",
+      "safe_browsing/settings_reset_prompt/default_settings_fetcher.cc",
+      "safe_browsing/settings_reset_prompt/default_settings_fetcher.h",
       "safe_browsing/settings_reset_prompt/extension_info.cc",
       "safe_browsing/settings_reset_prompt/extension_info.h",
       "safe_browsing/settings_reset_prompt/settings_reset_prompt_config.cc",
