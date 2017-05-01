@@ -689,7 +689,6 @@ void LayoutBlockFlow::MarkDescendantsWithFloatsForLayoutIfNeeded(
     // mark it for layout.
     LayoutUnit lowest_float =
         std::max(previous_float_logical_bottom, LowestFloatLogicalBottom());
-    lowest_float = std::max(lowest_float, child.LowestFloatLogicalBottom());
     if (lowest_float > new_logical_top)
       mark_descendants_with_floats = true;
   }
@@ -3715,6 +3714,7 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
     }
   }
 
+  LayoutUnit old_logical_top = child.LogicalTop();
   if (child.NeedsLayout()) {
     if (is_paginated) {
       // Before we can lay out the float, we need to estimate a position for
@@ -3763,6 +3763,17 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   // fragmented, in order to remove pagination struts inside the child.
   MarkChildForPaginationRelayoutIfNeeded(child, layout_scope);
   child.LayoutIfNeeded();
+
+  // If negative margin pushes the child completely out of its old position
+  // mark for layout siblings that may have it in its float lists.
+  if (child.LogicalBottom() <= old_logical_top) {
+    LayoutObject* next = child.NextSibling();
+    if (next && next->IsLayoutBlockFlow()) {
+      LayoutBlockFlow* nextBlock = ToLayoutBlockFlow(next);
+      if (!nextBlock->AvoidsFloats() || nextBlock->ShrinkToAvoidFloats())
+        nextBlock->MarkAllDescendantsWithFloatsForLayout();
+    }
+  }
 
   if (is_paginated) {
     PaginatedContentWasLaidOut(child.LogicalBottom());
