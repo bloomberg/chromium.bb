@@ -207,6 +207,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
     request_handlers_.clear();
     embedded_services_.clear();
+    child_binding_.Close();
   }
 
   void ClearConnectionFiltersOnIOThread() {
