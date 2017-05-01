@@ -231,6 +231,8 @@ static_library("headless_lib") {
               "lib/browser/headless_permission_manager.h",
               "lib/browser/headless_platform_event_source.cc",
               "lib/browser/headless_platform_event_source.h",
+              "lib/browser/headless_resource_dispatcher_host_delegate.cc",
+              "lib/browser/headless_resource_dispatcher_host_delegate.h",
               "lib/browser/headless_shell_application_mac.mm",
               "lib/browser/headless_shell_application_mac.h",
               "lib/browser/headless_tab_socket_impl.cc",

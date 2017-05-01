@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -201,6 +202,13 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   if (breakpad::IsCrashReporterEnabled())
     command_line->AppendSwitch(::switches::kEnableCrashReporter);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
+}
+
+void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
+  resource_dispatcher_host_delegate_.reset(
+      new HeadlessResourceDispatcherHostDelegate);
+  content::ResourceDispatcherHost::Get()->SetDelegate(
+      resource_dispatcher_host_delegate_.get());
 }
 
 }  // namespace headless
