@@ -682,6 +682,7 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/GetStatusTest.java",
     "test/javatests/src/org/chromium/net/MetricsTestUtil.java",
     "test/javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
+    "test/javatests/src/org/chromium/net/NQETest.java",
     "test/javatests/src/org/chromium/net/PkpTest.java",
     "test/javatests/src/org/chromium/net/QuicTest.java",
     "test/javatests/src/org/chromium/net/RequestFinishedInfoTest.java",
