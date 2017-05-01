@@ -65,7 +65,7 @@ static void* Allocate(CFIndex size, CFOptionFlags, void*) {
 static void* Reallocate(void* pointer, CFIndex new_size, CFOptionFlags, void*) {
   size_t new_allocation_size = sizeof(StringImpl*) + new_size;
   StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
-  ASSERT(!*header);
+  DCHECK(!*header);
   header = static_cast<StringImpl**>(WTF::Partitions::FastRealloc(
       header, new_allocation_size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
   return header + 1;

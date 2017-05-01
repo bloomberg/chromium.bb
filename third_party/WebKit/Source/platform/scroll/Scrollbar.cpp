@@ -121,7 +121,7 @@ bool Scrollbar::IsLeftSideVerticalScrollbar() const {
 }
 
 void Scrollbar::OffsetDidChange() {
-  ASSERT(scrollable_area_);
+  DCHECK(scrollable_area_);
 
   float position = ScrollableAreaCurrentPos();
   if (position == current_pos_)

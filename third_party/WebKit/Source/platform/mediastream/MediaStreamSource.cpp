@@ -90,14 +90,14 @@ void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
 }
 
 void MediaStreamSource::AddAudioConsumer(AudioDestinationConsumer* consumer) {
-  ASSERT(requires_consumer_);
+  DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   audio_consumers_.insert(consumer);
 }
 
 bool MediaStreamSource::RemoveAudioConsumer(
     AudioDestinationConsumer* consumer) {
-  ASSERT(requires_consumer_);
+  DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   auto it = audio_consumers_.find(consumer);
   if (it == audio_consumers_.end())
@@ -112,14 +112,14 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
                                        float sample_rate) {
-  ASSERT(requires_consumer_);
+  DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)
     consumer->SetFormat(number_of_channels, sample_rate);
 }
 
 void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
-  ASSERT(requires_consumer_);
+  DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)
     consumer->ConsumeAudio(bus, number_of_frames);

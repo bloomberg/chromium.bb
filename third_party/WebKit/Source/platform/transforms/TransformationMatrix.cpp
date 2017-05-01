@@ -868,7 +868,7 @@ FloatQuad TransformationMatrix::ProjectQuad(const FloatQuad& q,
 }
 
 static float ClampEdgeValue(float f) {
-  ASSERT(!std::isnan(f));
+  DCHECK(!std::isnan(f));
   return clampTo(f, (-LayoutUnit::Max() / 2).ToFloat(),
                  (LayoutUnit::Max() / 2).ToFloat());
 }
@@ -1835,7 +1835,7 @@ bool TransformationMatrix::IsIntegerTranslation() const {
 }
 
 FloatSize TransformationMatrix::To2DTranslation() const {
-  ASSERT(IsIdentityOr2DTranslation());
+  DCHECK(IsIdentityOr2DTranslation());
   return FloatSize(matrix_[3][0], matrix_[3][1]);
 }
 

@@ -40,7 +40,7 @@ ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data,
       data_(std::move(data)),
       mime_type_(mime_type),
       text_encoding_(text_encoding) {
-  ASSERT(data_);
+  DCHECK(data_);
 }
 
 ArchiveResource::~ArchiveResource() {}

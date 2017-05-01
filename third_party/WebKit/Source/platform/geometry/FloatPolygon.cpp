@@ -163,7 +163,7 @@ bool FloatPolygon::OverlappingEdges(
   for (unsigned i = 0; i < overlapping_edge_intervals_size; ++i) {
     const FloatPolygonEdge* edge = static_cast<const FloatPolygonEdge*>(
         overlapping_edge_intervals[i].Data());
-    ASSERT(edge);
+    DCHECK(edge);
     result[i] = edge;
   }
   return overlapping_edge_intervals_size > 0;

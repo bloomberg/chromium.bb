@@ -79,7 +79,7 @@ static void AppendQuotedString(Vector<char>& buffer, const CString& string) {
 WTF::TextEncoding FormDataEncoder::EncodingFromAcceptCharset(
     const String& accept_charset,
     const WTF::TextEncoding& fallback_encoding) {
-  ASSERT(fallback_encoding.IsValid());
+  DCHECK(fallback_encoding.IsValid());
 
   String normalized_accept_charset = accept_charset;
   normalized_accept_charset.Replace(',', ' ');

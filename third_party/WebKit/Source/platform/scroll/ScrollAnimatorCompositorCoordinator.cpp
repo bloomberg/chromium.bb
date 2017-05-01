@@ -27,7 +27,7 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
       compositor_animation_group_id_(0),
       impl_only_animation_takeover_(false) {
   compositor_player_ = CompositorAnimationPlayer::Create();
-  ASSERT(compositor_player_);
+  DCHECK(compositor_player_);
   compositor_player_->SetAnimationDelegate(this);
 }
 

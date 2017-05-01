@@ -156,7 +156,7 @@ class UInt128 {
 };
 
 UInt128& UInt128::operator/=(const uint32_t divisor) {
-  ASSERT(divisor);
+  DCHECK(divisor);
 
   if (!high_) {
     low_ /= divisor;
@@ -454,8 +454,8 @@ Decimal Decimal::operator/(const Decimal& rhs) const {
       return Zero(result_sign);
   }
 
-  ASSERT(lhs.IsFinite());
-  ASSERT(rhs.IsFinite());
+  DCHECK(lhs.IsFinite());
+  DCHECK(rhs.IsFinite());
 
   if (rhs.IsZero())
     return lhs.IsZero() ? Nan() : Infinity(result_sign);
@@ -544,8 +544,8 @@ Decimal Decimal::Abs() const {
 
 Decimal::AlignedOperands Decimal::AlignOperands(const Decimal& lhs,
                                                 const Decimal& rhs) {
-  ASSERT(lhs.IsFinite());
-  ASSERT(rhs.IsFinite());
+  DCHECK(lhs.IsFinite());
+  DCHECK(rhs.IsFinite());
 
   const int lhs_exponent = lhs.Exponent();
   const int rhs_exponent = rhs.Exponent();

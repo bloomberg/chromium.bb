@@ -36,7 +36,7 @@ bool ComputeDigest(HashAlgorithm algorithm,
   unsigned char* result;
   unsigned result_size;
 
-  ASSERT(crypto);
+  DCHECK(crypto);
 
   std::unique_ptr<WebCryptoDigestor> digestor =
       crypto->CreateDigestor(algorithm_id);
@@ -62,7 +62,7 @@ void FinishDigestor(WebCryptoDigestor* digestor, DigestValue& digest_result) {
   if (!digestor->Finish(result, result_size))
     return;
 
-  ASSERT(result);
+  DCHECK(result);
 
   digest_result.Append(static_cast<uint8_t*>(result), result_size);
 }

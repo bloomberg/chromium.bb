@@ -56,7 +56,7 @@ class AsyncMethodRunner final
   // resume() is called.
   void RunAsync() {
     if (suspended_) {
-      ASSERT(!timer_.IsActive());
+      DCHECK(!timer_.IsActive());
       run_when_resumed_ = true;
       return;
     }
@@ -97,13 +97,13 @@ class AsyncMethodRunner final
 
   void Stop() {
     if (suspended_) {
-      ASSERT(!timer_.IsActive());
+      DCHECK(!timer_.IsActive());
       run_when_resumed_ = false;
       suspended_ = false;
       return;
     }
 
-    ASSERT(!run_when_resumed_);
+    DCHECK(!run_when_resumed_);
     timer_.Stop();
   }
 

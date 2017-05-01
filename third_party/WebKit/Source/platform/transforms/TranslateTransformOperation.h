@@ -99,7 +99,7 @@ class PLATFORM_EXPORT TranslateTransformOperation final
                               double tz,
                               OperationType type)
       : x_(tx), y_(ty), z_(tz), type_(type) {
-    ASSERT(IsMatchingOperationType(type));
+    DCHECK(IsMatchingOperationType(type));
   }
 
   Length x_;

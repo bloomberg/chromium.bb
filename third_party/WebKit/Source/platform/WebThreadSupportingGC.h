@@ -71,7 +71,7 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   void Shutdown();
 
   WebThread& PlatformThread() const {
-    ASSERT(thread_);
+    DCHECK(thread_);
     return *thread_;
   }
 

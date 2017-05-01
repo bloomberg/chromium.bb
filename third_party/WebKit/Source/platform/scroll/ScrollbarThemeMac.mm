@@ -390,7 +390,7 @@ IntRect ScrollbarThemeMac::ForwardButtonRect(
 
 IntRect ScrollbarThemeMac::TrackRect(const ScrollbarThemeClient& scrollbar,
                                      bool painting) {
-  ASSERT(!HasButtons(scrollbar));
+  DCHECK(!HasButtons(scrollbar));
   return scrollbar.FrameRect();
 }
 

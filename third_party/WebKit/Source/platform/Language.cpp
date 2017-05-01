@@ -42,7 +42,7 @@ static const AtomicString& PlatformLanguage() {
   if (computed_default_language.IsEmpty()) {
     computed_default_language = AtomicString(
         CanonicalizeLanguageIdentifier(Platform::Current()->DefaultLocale()));
-    ASSERT(!computed_default_language.IsEmpty());
+    DCHECK(!computed_default_language.IsEmpty());
   }
   return computed_default_language;
 }

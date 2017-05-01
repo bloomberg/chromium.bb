@@ -92,7 +92,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
   }
   if (referrer == Referrer::NoReferrer())
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
-  ASSERT(!referrer.IsEmpty());
+  DCHECK(!referrer.IsEmpty());
 
   KURL referrer_url = KURL(KURL(), referrer);
   String scheme = referrer_url.Protocol();
@@ -202,8 +202,8 @@ void SecurityPolicy::AddOriginAccessWhitelistEntry(
     const String& destination_protocol,
     const String& destination_domain,
     bool allow_destination_subdomains) {
-  ASSERT(IsMainThread());
-  ASSERT(!source_origin.IsUnique());
+  DCHECK(IsMainThread());
+  DCHECK(!source_origin.IsUnique());
   if (source_origin.IsUnique())
     return;
 
@@ -225,8 +225,8 @@ void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
     const String& destination_protocol,
     const String& destination_domain,
     bool allow_destination_subdomains) {
-  ASSERT(IsMainThread());
-  ASSERT(!source_origin.IsUnique());
+  DCHECK(IsMainThread());
+  DCHECK(!source_origin.IsUnique());
   if (source_origin.IsUnique())
     return;
 
@@ -252,7 +252,7 @@ void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
 }
 
 void SecurityPolicy::ResetOriginAccessWhitelists() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   GetOriginAccessMap().clear();
 }
 

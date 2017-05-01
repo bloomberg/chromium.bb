@@ -193,7 +193,7 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::CreateUnique() {
   RefPtr<SecurityOrigin> origin = AdoptRef(new SecurityOrigin());
-  ASSERT(origin->IsUnique());
+  DCHECK(origin->IsUnique());
   return origin.Release();
 }
 
@@ -369,7 +369,7 @@ void SecurityOrigin::GrantUniversalAccess() {
 }
 
 void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
-  ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
+  DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
   // Changing suborigins midstream is bad. Very bad. It should not happen.
   // This is, in fact,  one of the very basic invariants that makes
   // suborigins an effective security tool.
@@ -379,7 +379,7 @@ void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
 }
 
 void SecurityOrigin::BlockLocalAccessFromLocalOrigin() {
-  ASSERT(IsLocal());
+  DCHECK(IsLocal());
   block_local_access_from_local_origin_ = true;
 }
 
@@ -575,7 +575,7 @@ bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
 }
 
 const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(const KURL, unique_security_origin_url,
                       (kParsedURLString, "data:,"));
   return unique_security_origin_url;

@@ -88,7 +88,7 @@ namespace double_conversion {
     void BignumDtoa(double v, BignumDtoaMode mode, int requested_digits,
                     Vector<char> buffer, int* length, int* decimal_point) {
         ASSERT(v > 0);
-        ASSERT(!Double(v).IsSpecial());
+        DCHECK(!Double(v).IsSpecial());
         uint64_t significand = Double(v).Significand();
         bool is_even = (significand & 1) == 0;
         int exponent = Double(v).Exponent();

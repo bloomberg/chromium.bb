@@ -73,7 +73,7 @@ class TestingObserver final
 
   void SetObserverToRemoveAndDestroy(
       TestingObserver* observer_to_remove_on_destruct) {
-    ASSERT(!observer_to_remove_on_destruct_);
+    DCHECK(!observer_to_remove_on_destruct_);
     observer_to_remove_on_destruct_ = observer_to_remove_on_destruct;
   }
 

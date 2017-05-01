@@ -740,7 +740,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       break;
     case kSweeping:
       DCHECK(IsInGC());
-      ASSERT(CheckThread());
+      DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(gc_state_ == kGCRunning);
       break;
     case kSweepingAndIdleGCScheduled:

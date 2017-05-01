@@ -11,7 +11,7 @@
 namespace WTF {
 
 TEST(AssertionsTest, Assertions) {
-  ASSERT(true);
+  DCHECK(true);
 #if DCHECK_IS_ON()
   EXPECT_DEATH_IF_SUPPORTED(ASSERT(false), "");
   EXPECT_DEATH_IF_SUPPORTED(NOTREACHED(), "");

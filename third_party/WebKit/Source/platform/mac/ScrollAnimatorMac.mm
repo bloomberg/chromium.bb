@@ -375,7 +375,7 @@ class BlinkScrollbarPartAnimationTimer {
 }
 
 - (void)startAnimation {
-  ASSERT(_scrollbar);
+  DCHECK(_scrollbar);
 
   _scrollbarPainter = scrollbarPainterForScrollbar(*_scrollbar);
   _timer->Start();
@@ -398,7 +398,7 @@ class BlinkScrollbarPartAnimationTimer {
 }
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
-  ASSERT(_scrollbar);
+  DCHECK(_scrollbar);
 
   CGFloat currentValue;
   if (_startValue > _endValue)
@@ -802,7 +802,7 @@ void ScrollAnimatorMac::ImmediateScrollTo(const ScrollOffset& new_offset) {
 
 void ScrollAnimatorMac::ImmediateScrollToOffsetForScrollAnimation(
     const ScrollOffset& new_offset) {
-  ASSERT(scroll_animation_helper_);
+  DCHECK(scroll_animation_helper_);
   ImmediateScrollTo(new_offset);
 }
 
@@ -877,7 +877,7 @@ void ScrollAnimatorMac::DidAddVerticalScrollbar(Scrollbar& scrollbar) {
   if (!painter)
     return;
 
-  ASSERT(!vertical_scrollbar_painter_delegate_);
+  DCHECK(!vertical_scrollbar_painter_delegate_);
   vertical_scrollbar_painter_delegate_.AdoptNS(
       [[BlinkScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
 
@@ -890,7 +890,7 @@ void ScrollAnimatorMac::WillRemoveVerticalScrollbar(Scrollbar& scrollbar) {
   if (!painter)
     return;
 
-  ASSERT(vertical_scrollbar_painter_delegate_);
+  DCHECK(vertical_scrollbar_painter_delegate_);
   [vertical_scrollbar_painter_delegate_.Get() invalidate];
   vertical_scrollbar_painter_delegate_ = nullptr;
 
@@ -903,7 +903,7 @@ void ScrollAnimatorMac::DidAddHorizontalScrollbar(Scrollbar& scrollbar) {
   if (!painter)
     return;
 
-  ASSERT(!horizontal_scrollbar_painter_delegate_);
+  DCHECK(!horizontal_scrollbar_painter_delegate_);
   horizontal_scrollbar_painter_delegate_.AdoptNS(
       [[BlinkScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
 
@@ -916,7 +916,7 @@ void ScrollAnimatorMac::WillRemoveHorizontalScrollbar(Scrollbar& scrollbar) {
   if (!painter)
     return;
 
-  ASSERT(horizontal_scrollbar_painter_delegate_);
+  DCHECK(horizontal_scrollbar_painter_delegate_);
   [horizontal_scrollbar_painter_delegate_.Get() invalidate];
   horizontal_scrollbar_painter_delegate_ = nullptr;
 

@@ -183,7 +183,7 @@ static bool WithinHTMLDateLimits(int year,
 }
 
 bool DateComponents::AddDay(int day_diff) {
-  ASSERT(month_day_);
+  DCHECK(month_day_);
 
   int day = month_day_ + day_diff;
   if (day > MaxDayOfMonth(year_, month_)) {

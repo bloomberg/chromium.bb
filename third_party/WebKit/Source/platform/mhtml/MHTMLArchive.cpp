@@ -129,8 +129,8 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
                                        const String& title,
                                        const String& mime_type,
                                        Vector<char>& output_buffer) {
-  ASSERT(!boundary.IsEmpty());
-  ASSERT(!mime_type.IsEmpty());
+  DCHECK(!boundary.IsEmpty());
+  DCHECK(!mime_type.IsEmpty());
 
   DateComponents now;
   now.SetMillisecondsSinceEpochForDateTime(CurrentTimeMS());
@@ -157,7 +157,7 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
 
   // We use utf8() below instead of ascii() as ascii() replaces CRLFs with ??
   // (we still only have put ASCII characters in it).
-  ASSERT(string_builder.ToString().ContainsOnlyASCII());
+  DCHECK(string_builder.ToString().ContainsOnlyASCII());
   CString ascii_string = string_builder.ToString().Utf8();
 
   output_buffer.Append(ascii_string.data(), ascii_string.length());
@@ -168,7 +168,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
                                      EncodingPolicy encoding_policy,
                                      const SerializedResource& resource,
                                      Vector<char>& output_buffer) {
-  ASSERT(!boundary.IsEmpty());
+  DCHECK(!boundary.IsEmpty());
   ASSERT(content_id.IsEmpty() || content_id[0] == '<');
 
   StringBuilder string_builder;
@@ -249,7 +249,7 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
 
 void MHTMLArchive::GenerateMHTMLFooterForTesting(const String& boundary,
                                                  Vector<char>& output_buffer) {
-  ASSERT(!boundary.IsEmpty());
+  DCHECK(!boundary.IsEmpty());
   CString ascii_string = String("--" + boundary + "--\r\n").Utf8();
   output_buffer.Append(ascii_string.data(), ascii_string.length());
 }
