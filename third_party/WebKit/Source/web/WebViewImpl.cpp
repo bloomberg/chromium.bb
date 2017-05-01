@@ -1770,6 +1770,10 @@ Frame* WebViewImpl::FocusedCoreFrame() const {
   return page_ ? page_->GetFocusController().FocusedOrMainFrame() : nullptr;
 }
 
+WebViewBase* WebViewBase::FromPage(Page* page) {
+  return WebViewImpl::FromPage(page);
+}
+
 WebViewImpl* WebViewImpl::FromPage(Page* page) {
   return page ? static_cast<WebViewImpl*>(page->GetChromeClient().WebView())
               : nullptr;
@@ -3723,6 +3727,10 @@ void WebViewImpl::PageScaleFactorChanged() {
 
 void WebViewImpl::MainFrameScrollOffsetChanged() {
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+}
+
+bool WebViewBase::UseExternalPopupMenus() {
+  return WebViewImpl::UseExternalPopupMenus();
 }
 
 bool WebViewImpl::UseExternalPopupMenus() {

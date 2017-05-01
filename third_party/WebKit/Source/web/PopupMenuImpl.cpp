@@ -11,6 +11,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHRElement.h"
@@ -23,9 +24,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/web/WebColorChooser.h"
 #include "web/ChromeClientImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
