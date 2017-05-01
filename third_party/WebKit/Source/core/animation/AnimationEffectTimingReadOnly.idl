@@ -14,6 +14,6 @@
     readonly attribute double iterationStart;
     readonly attribute unrestricted double iterations;
     readonly attribute (unrestricted double or DOMString) duration;
-    readonly attribute DOMString direction;
+    readonly attribute PlaybackDirection direction;
     readonly attribute DOMString easing;
 };
