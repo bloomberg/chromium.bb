@@ -20,8 +20,8 @@ namespace vr_shell {
 namespace {
 
 enum {
-  ELEMENTS_BUFFER_ID = 2,
-  INDICES_BUFFER_ID = 3,
+  ELEMENTS_BUFFER_ID = 0,
+  INDICES_BUFFER_ID = 1,
 };
 
 constexpr char kPosition[] = "POSITION";
@@ -33,7 +33,7 @@ constexpr char const kComponentName[] = "VrShell";
 constexpr char const kDefaultVersion[] = "0";
 
 constexpr char const kModelsDirectory[] = "models";
-constexpr char const kModelFilename[] = "ddcontroller.glb";
+constexpr char const kModelFilename[] = "controller.gltf";
 constexpr char const kTexturesDirectory[] = "tex";
 constexpr char const kBaseTextureFilename[] = "ddcontroller_idle.png";
 constexpr char const* kTexturePatchesFilenames[] = {
@@ -167,11 +167,9 @@ std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromComponent() {
     return nullptr;
   }
 
+  GltfParser gltf_parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
-
-  std::string model_data;
-  base::ReadFileToString(model_path, &model_data);
-  auto asset = BinaryGltfParser::Parse(base::StringPiece(model_data), &buffers);
+  auto asset = gltf_parser.Parse(model_path, &buffers);
   if (!asset) {
     LOG(ERROR) << "Failed to read controller model";
     return nullptr;
