@@ -1347,8 +1347,9 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesAffiliated) {
 }
 
 // PRE_TransferCookiesUnaffiliated and TransferCookiesUnaffiliated are flaky on
-// MSAN and ASAN, most probably timing out. See crbug.com/683161.
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+// MSAN, ASAN, Debug due to time out - most likely, because of the general
+// slowness of the test. See crbug.com/683161, crbug.com/714167.
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_PRE_TransferCookiesUnaffiliated \
   DISABLED_PRE_TransferCookiesUnaffiliated
 #define MAYBE_TransferCookiesUnaffiliated DISABLED_TransferCookiesUnaffiliated
