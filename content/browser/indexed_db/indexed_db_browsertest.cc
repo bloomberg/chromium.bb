@@ -200,7 +200,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
+#if defined(OS_ANDROID)
+#define MAYBE_CursorTestIncognito DISABLED_CursorTestIncognito
+#else
+#define MAYBE_CursorTestIncognito CursorTestIncogntio
+#endif
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_CursorTestIncognito) {
   SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"),
              true /* incognito */);
 }
