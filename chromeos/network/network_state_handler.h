@@ -208,14 +208,16 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // service. When initially created, it does not actually represent a real
   // network. The |guid| provided must be non-empty. If a network with |guid|
   // already exists, this method will do nothing. Use the provided |guid| to
-  // refer to and fetch this NetworkState in the future.
-  // NOTE: only GetNetworkStateFromGuid is supported to fetch "tether"
-  // NetworkStates.
+  // refer to and fetch this NetworkState in the future. Note that the
+  // |has_connected_to_host| parameter refers to whether the current device has
+  // already connected to the tether host device providing this Tether network
+  // in the past.
   void AddTetherNetworkState(const std::string& guid,
                              const std::string& name,
                              const std::string& carrier,
                              int battery_percentage,
-                             int signal_strength);
+                             int signal_strength,
+                             bool has_connected_to_host);
 
   // Updates the tether properties (carrier, battery percentage, and signal
   // strength) for a network which has already been added via
@@ -225,9 +227,18 @@ class CHROMEOS_EXPORT NetworkStateHandler
                                      int battery_percentage,
                                      int signal_strength);
 
+  // Updates whether the Tether network with GUID |guid| has connected to the
+  // host device before, setting the value to true. Note that there is no way to
+  // change this value back to false. If no network with GUID |guid| is
+  // registered or if the network is registered and its HasConnectedToHost value
+  // was already true, this function does nothing. Returns whether the value was
+  // actually changed.
+  bool SetTetherNetworkHasConnectedToHost(const std::string& guid);
+
   // Remove a Tether NetworkState, using the same |guid| passed to
-  // AddTetherNetworkState.
-  void RemoveTetherNetworkState(const std::string& guid);
+  // AddTetherNetworkState(). If no network with GUID |guid| is registered, this
+  // function does nothing. Returns whether the network was actually removed.
+  bool RemoveTetherNetworkState(const std::string& guid);
 
   // Inform NetworkStateHandler that the provided Tether network with the
   // provided guid |tether_network_guid| is associated with the Wi-Fi network

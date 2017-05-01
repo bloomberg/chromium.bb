@@ -183,11 +183,13 @@ class TetherConnectorTest : public NetworkStateTest {
     network_state_handler()->AddTetherNetworkState(
         GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
         "TetherNetworkName1", "TetherNetworkCarrier1",
-        85 /* battery_percentage */, 75 /* signal_strength */);
+        85 /* battery_percentage */, 75 /* signal_strength */,
+        true /* has_connected_to_host */);
     network_state_handler()->AddTetherNetworkState(
         GetTetherNetworkGuid(test_devices_[1].GetDeviceId()),
         "TetherNetworkName2", "TetherNetworkCarrier2",
-        90 /* battery_percentage */, 50 /* signal_strength */);
+        90 /* battery_percentage */, 50 /* signal_strength */,
+        true /* has_connected_to_host */);
   }
 
   void SuccessfullyJoinWifiNetwork() {
