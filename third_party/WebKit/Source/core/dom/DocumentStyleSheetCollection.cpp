@@ -48,8 +48,6 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(
 void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
     StyleEngine& master_engine,
     DocumentStyleSheetCollector& collector) {
-  DocumentOrderedList::MutationForbiddenScope mutation_forbidden_(
-      &style_sheet_candidate_nodes_);
   // TODO(keishi) Check added for crbug.com/699269 diagnosis. Remove once done.
   CHECK(HeapObjectHeader::FromPayload(this)->IsValid());
   CHECK(ThreadState::Current()->IsOnThreadHeap(this));
