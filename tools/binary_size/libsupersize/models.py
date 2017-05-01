@@ -10,6 +10,8 @@ Description of common properties:
         May be 0 (e.g. for .bss or for SymbolGroups).
   * size: The number of bytes this symbol takes up, including padding that comes
        before |address|.
+  * num_aliases: The number of symbols with the same address (including self).
+  * pss: size / num_aliases.
   * padding: The number of bytes of padding before |address| due to this symbol.
   * name: Symbol names with parameter list removed.
         Never None, but will be '' for anonymous symbols.
@@ -23,7 +25,7 @@ Description of common properties:
 """
 
 import collections
-import copy
+import logging
 import os
 import re
 
@@ -52,6 +54,13 @@ FLAG_STARTUP = 2
 FLAG_UNLIKELY = 4
 FLAG_REL = 8
 FLAG_REL_LOCAL = 16
+
+
+def _StripCloneSuffix(name):
+  clone_idx = name.find(' [clone ')
+  if clone_idx != -1:
+    return name[:clone_idx]
+  return name
 
 
 class SizeInfo(object):
@@ -132,10 +141,14 @@ class BaseSymbol(object):
   def is_anonymous(self):
     return bool(self.flags & FLAG_ANONYMOUS)
 
+  @property
+  def num_aliases(self):
+    return len(self.aliases) if self.aliases else 1
+
   def FlagsString(self):
     # Most flags are 0.
     flags = self.flags
-    if not flags:
+    if not flags and not self.aliases:
       return '{}'
     parts = []
     if flags & FLAG_ANONYMOUS:
@@ -148,6 +161,9 @@ class BaseSymbol(object):
       parts.append('rel')
     if flags & FLAG_REL_LOCAL:
       parts.append('rel.loc')
+    # Not actually a part of flags, but useful to show it here.
+    if self.aliases:
+      parts.append('{} aliases'.format(self.num_aliases))
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):
@@ -169,9 +185,7 @@ class BaseSymbol(object):
     common key."""
     stripped_full_name = self.full_name
     if stripped_full_name:
-      clone_idx = stripped_full_name.find(' [clone ')
-      if clone_idx != -1:
-        stripped_full_name = stripped_full_name[:clone_idx]
+      stripped_full_name = _StripCloneSuffix(stripped_full_name)
     return (self.section_name, stripped_full_name or self.name)
 
 
@@ -187,6 +201,7 @@ class Symbol(BaseSymbol):
       'flags',
       'object_path',
       'name',
+      'aliases',
       'padding',
       'section_name',
       'source_path',
@@ -195,7 +210,7 @@ class Symbol(BaseSymbol):
 
   def __init__(self, section_name, size_without_padding, address=None,
                name=None, source_path=None, object_path=None, full_name=None,
-               flags=0):
+               flags=0, aliases=None):
     self.section_name = section_name
     self.address = address or 0
     self.name = name or ''
@@ -204,13 +219,24 @@ class Symbol(BaseSymbol):
     self.object_path = object_path or ''
     self.size = size_without_padding
     self.flags = flags
+    self.aliases = aliases
     self.padding = 0
 
   def __repr__(self):
-    return ('%s@%x(size_without_padding=%d,padding=%d,name=%s,path=%s,flags=%s)'
-            % (self.section_name, self.address, self.size_without_padding,
-               self.padding, self.name, self.source_path or self.object_path,
-               self.FlagsString()))
+    template = ('{}@{:x}(size_without_padding={},padding={},name={},'
+                'object_path={},source_path={},flags={})')
+    return template.format(
+        self.section_name, self.address, self.size_without_padding,
+        self.padding, self.name, self.object_path, self.source_path,
+        self.FlagsString())
+
+  @property
+  def pss(self):
+    return float(self.size) / self.num_aliases
+
+  @property
+  def pss_without_padding(self):
+    return float(self.size_without_padding) / self.num_aliases
 
 
 class SymbolGroup(BaseSymbol):
@@ -231,6 +257,7 @@ class SymbolGroup(BaseSymbol):
   __slots__ = (
       '_padding',
       '_size',
+      '_pss',
       '_symbols',
       '_filtered_symbols',
       'full_name',
@@ -243,6 +270,7 @@ class SymbolGroup(BaseSymbol):
                full_name=None, section_name=None, is_sorted=False):
     self._padding = None
     self._size = None
+    self._pss = None
     self._symbols = symbols
     self._filtered_symbols = filtered_symbols or []
     self.name = name or ''
@@ -302,26 +330,49 @@ class SymbolGroup(BaseSymbol):
   @property
   def object_path(self):
     first = self._symbols[0].object_path
-    return first if all(s.object_path == first for s in self._symbols) else None
+    return first if all(s.object_path == first for s in self._symbols) else ''
 
   @property
   def source_path(self):
     first = self._symbols[0].source_path
-    return first if all(s.source_path == first for s in self._symbols) else None
+    return first if all(s.source_path == first for s in self._symbols) else ''
+
+  def IterUniqueSymbols(self):
+    seen_aliases_lists = set()
+    for s in self:
+      if not s.aliases:
+        yield s
+      elif id(s.aliases) not in seen_aliases_lists:
+        seen_aliases_lists.add(id(s.aliases))
+        yield s
 
   @property
   def size(self):
     if self._size is None:
       if self.IsBss():
         self._size = sum(s.size for s in self)
-      self._size = sum(s.size for s in self if not s.IsBss())
+      else:
+        self._size = sum(s.size for s in self.IterUniqueSymbols())
     return self._size
+
+  @property
+  def pss(self):
+    if self._pss is None:
+      if self.IsBss():
+        self._pss = self.size
+      else:
+        self._pss = sum(s.pss for s in self)
+    return self._pss
 
   @property
   def padding(self):
     if self._padding is None:
-      self._padding = sum(s.padding for s in self)
+      self._padding = sum(s.padding for s in self.IterUniqueSymbols())
     return self._padding
+
+  @property
+  def aliases(self):
+    return None
 
   def IsGroup(self):
     return True
@@ -356,8 +407,14 @@ class SymbolGroup(BaseSymbol):
 
   def Filter(self, func):
     filtered_and_kept = ([], [])
-    for symbol in self:
-      filtered_and_kept[int(bool(func(symbol)))].append(symbol)
+    symbol = None
+    try:
+      for symbol in self:
+        filtered_and_kept[int(bool(func(symbol)))].append(symbol)
+    except:
+      logging.warning('Filter failed on symbol %r', symbol)
+      raise
+
     return self._CreateTransformed(filtered_and_kept[1],
                                    filtered_symbols=filtered_and_kept[0],
                                    section_name=self.section_name)
@@ -613,95 +670,6 @@ class SymbolDiff(SymbolGroup):
 
   def WhereNotUnchanged(self):
     return self.Filter(lambda s: not self.IsSimilar(s) or s.size)
-
-
-def Diff(before, after):
-  """Diffs two SizeInfo or SymbolGroup objects.
-
-  When diffing SizeInfos, a SizeInfoDiff is returned.
-  When diffing SymbolGroups, a SymbolDiff is returned.
-
-  Returns:
-    Returns a SizeInfo when args are of type SizeInfo.
-    Returns a SymbolDiff when args are of type SymbolGroup.
-  """
-  if isinstance(after, SizeInfo):
-    assert isinstance(before, SizeInfo)
-    section_sizes = {k: after.section_sizes[k] - v
-                     for k, v in before.section_sizes.iteritems()}
-    symbol_diff = _DiffSymbols(before.symbols, after.symbols)
-    return SizeInfoDiff(section_sizes, symbol_diff, before.metadata,
-                        after.metadata)
-
-  assert isinstance(after, SymbolGroup) and isinstance(before, SymbolGroup)
-  return _DiffSymbols(before, after)
-
-
-def _NegateAll(symbols):
-  ret = []
-  for symbol in symbols:
-    if symbol.IsGroup():
-      duped = SymbolDiff([], _NegateAll(symbol), [], name=symbol.name,
-                         full_name=symbol.full_name,
-                         section_name=symbol.section_name)
-    else:
-      duped = copy.copy(symbol)
-      duped.size = -duped.size
-      duped.padding = -duped.padding
-    ret.append(duped)
-  return ret
-
-
-def _DiffSymbols(before, after):
-  symbols_by_key = collections.defaultdict(list)
-  for s in before:
-    symbols_by_key[s._Key()].append(s)
-
-  added = []
-  similar = []
-  # For similar symbols, padding is zeroed out. In order to not lose the
-  # information entirely, store it in aggregate.
-  padding_by_section_name = collections.defaultdict(int)
-  for after_sym in after:
-    matching_syms = symbols_by_key.get(after_sym._Key())
-    if matching_syms:
-      before_sym = matching_syms.pop(0)
-      if before_sym.IsGroup() and after_sym.IsGroup():
-        merged_sym = _DiffSymbols(before_sym, after_sym)
-      else:
-        size_diff = (after_sym.size_without_padding -
-                     before_sym.size_without_padding)
-        merged_sym = Symbol(after_sym.section_name, size_diff,
-                            address=after_sym.address, name=after_sym.name,
-                            source_path=after_sym.source_path,
-                            object_path=after_sym.object_path,
-                            full_name=after_sym.full_name,
-                            flags=after_sym.flags)
-
-        # Diffs are more stable when comparing size without padding, except when
-        # the symbol is a padding-only symbol.
-        if after_sym.size_without_padding == 0 and size_diff == 0:
-          merged_sym.padding = after_sym.padding - before_sym.padding
-        else:
-          padding_by_section_name[after_sym.section_name] += (
-              after_sym.padding - before_sym.padding)
-
-      similar.append(merged_sym)
-    else:
-      added.append(after_sym)
-
-  removed = []
-  for remaining_syms in symbols_by_key.itervalues():
-    if remaining_syms:
-      removed.extend(_NegateAll(remaining_syms))
-
-  for section_name, padding in padding_by_section_name.iteritems():
-    if padding != 0:
-      similar.append(Symbol(section_name, padding,
-                            name="** aggregate padding of diff'ed symbols"))
-  return SymbolDiff(added, removed, similar, name=after.name,
-                    full_name=after.full_name,
-                    section_name=after.section_name)
 
 
 def _ExtractPrefixBeforeSeparator(string, separator, count=1):
