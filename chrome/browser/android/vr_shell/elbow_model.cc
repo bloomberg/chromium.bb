@@ -32,9 +32,7 @@ constexpr float kDefaultElbowRotationRatio = 0.4f;
 }  // namespace
 
 ElbowModel::ElbowModel(gvr::ControllerHandedness handedness)
-    : handedness_(handedness),
-      alpha_value_(1.0f),
-      torso_direction_{0.0f, 0.0f, 0.0f} {}
+    : handedness_(handedness), alpha_value_(1.0f), torso_direction_(kForward) {}
 
 ElbowModel::~ElbowModel() = default;
 
