@@ -62,8 +62,7 @@ using AppWindowApiTest = PlatformAppBrowserTest;
 using ExperimentalAppWindowApiTest = ExperimentalPlatformAppBrowserTest;
 
 // Tests chrome.app.window.setIcon.
-// Flaky test crbug.com/716726
-IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, DISABLED_SetIcon) {
+IN_PROC_BROWSER_TEST_F(ExperimentalAppWindowApiTest, SetIcon) {
   std::unique_ptr<TestAppWindowRegistryObserver> test_observer(
       new TestAppWindowRegistryObserver(browser()->profile()));
   ExtensionTestMessageListener listener("ready", true);
