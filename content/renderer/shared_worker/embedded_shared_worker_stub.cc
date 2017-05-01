@@ -215,11 +215,13 @@ EmbeddedSharedWorkerStub::NotificationPresenter() {
   return NULL;
 }
 
-blink::WebApplicationCacheHost*
+std::unique_ptr<blink::WebApplicationCacheHost>
 EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
-  app_cache_host_ = new SharedWorkerWebApplicationCacheHostImpl(client);
-  return app_cache_host_;
+  std::unique_ptr<WebApplicationCacheHostImpl> host =
+      base::MakeUnique<SharedWorkerWebApplicationCacheHostImpl>(client);
+  app_cache_host_ = host.get();
+  return std::move(host);
 }
 
 blink::WebWorkerContentSettingsClientProxy*
@@ -230,7 +232,7 @@ EmbeddedSharedWorkerStub::CreateWorkerContentSettingsClientProxy(
       ChildThreadImpl::current()->thread_safe_sender());
 }
 
-blink::WebServiceWorkerNetworkProvider*
+std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
@@ -240,8 +242,8 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
           true /* is_parent_frame_secure */));
 
   // Blink is responsible for deleting the returned object.
-  return new WebServiceWorkerNetworkProviderImpl(std::move(provider),
-                                                 IsOriginSecure(url_));
+  return base::MakeUnique<WebServiceWorkerNetworkProviderImpl>(
+      std::move(provider), IsOriginSecure(url_));
 }
 
 void EmbeddedSharedWorkerStub::SendDevToolsMessage(

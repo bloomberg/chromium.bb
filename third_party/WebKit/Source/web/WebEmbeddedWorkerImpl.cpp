@@ -329,8 +329,8 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad(WebLocalFrame* frame) {
   DCHECK(loading_shadow_page_);
   DCHECK(!asked_to_terminate_);
   loading_shadow_page_ = false;
-  frame->DataSource()->SetServiceWorkerNetworkProvider(WTF::WrapUnique(
-      worker_context_client_->CreateServiceWorkerNetworkProvider()));
+  frame->DataSource()->SetServiceWorkerNetworkProvider(
+      worker_context_client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
   main_script_loader_->SetRequestContext(
       WebURLRequest::kRequestContextServiceWorker);
@@ -419,12 +419,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       worker_clients,
       ServiceWorkerGlobalScopeClientImpl::Create(*worker_context_client_));
   ProvideServiceWorkerContainerClientToWorker(
-      worker_clients,
-      WTF::WrapUnique(worker_context_client_->CreateServiceWorkerProvider()));
+      worker_clients, worker_context_client_->CreateServiceWorkerProvider());
 
   if (RuntimeEnabledFeatures::offMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
-
         worker_context_client_->CreateServiceWorkerFetchContext();
     DCHECK(web_worker_fetch_context);
     // TODO(horo): Set more information about the context (ex: DataSaverEnabled)

@@ -70,7 +70,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
   // WebFrameClient methods to support resource loading thru the 'shadow page'.
-  WebApplicationCacheHost* CreateApplicationCacheHost(
+  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
   void DidFinishDocumentLoad(WebLocalFrame*) override;
 

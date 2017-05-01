@@ -907,7 +907,7 @@ std::unique_ptr<WebServiceWorkerProvider>
 LocalFrameClientImpl::CreateServiceWorkerProvider() {
   if (!web_frame_->Client())
     return nullptr;
-  return WTF::WrapUnique(web_frame_->Client()->CreateServiceWorkerProvider());
+  return web_frame_->Client()->CreateServiceWorkerProvider();
 }
 
 ContentSettingsClient& LocalFrameClientImpl::GetContentSettingsClient() {
@@ -924,8 +924,7 @@ LocalFrameClientImpl::CreateApplicationCacheHost(
     WebApplicationCacheHostClient* client) {
   if (!web_frame_->Client())
     return nullptr;
-  return WTF::WrapUnique(
-      web_frame_->Client()->CreateApplicationCacheHost(client));
+  return web_frame_->Client()->CreateApplicationCacheHost(client);
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {

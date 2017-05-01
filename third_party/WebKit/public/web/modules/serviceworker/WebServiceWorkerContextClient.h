@@ -238,26 +238,20 @@ class WebServiceWorkerContextClient {
                                             WebServiceWorkerEventResult result,
                                             double event_dispatch_time) {}
 
-  // Ownership of the returned object is transferred to the caller.
   // This is called on the main thread.
-  virtual WebServiceWorkerNetworkProvider*
-  CreateServiceWorkerNetworkProvider() {
-    return nullptr;
-  }
+  virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
+  CreateServiceWorkerNetworkProvider() = 0;
 
-  // Creates a WebWorkerFetchContext for a service worker. Ownership of the
-  // returned object is transferred to the caller. This is called on the main
-  // thread. This is used only when off-main-thread-fetch is enabled.
+  // Creates a WebWorkerFetchContext for a service worker. This is called on the
+  // main thread. This is used only when off-main-thread-fetch is enabled.
   virtual std::unique_ptr<blink::WebWorkerFetchContext>
   CreateServiceWorkerFetchContext() {
     return nullptr;
   }
 
-  // Ownership of the returned object is transferred to the caller.
   // This is called on the main thread.
-  virtual WebServiceWorkerProvider* CreateServiceWorkerProvider() {
-    return nullptr;
-  }
+  virtual std::unique_ptr<WebServiceWorkerProvider>
+  CreateServiceWorkerProvider() = 0;
 
   // Ownership of the passed callbacks is transferred to the callee, callee
   // should delete the callbacks after calling either onSuccess or onError.

@@ -500,7 +500,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id) override;
-  blink::WebApplicationCacheHost* CreateApplicationCacheHost(
+  std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient* client) override;
   blink::WebWorkerContentSettingsClientProxy*
   CreateWorkerContentSettingsClientProxy() override;
@@ -511,7 +511,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
   blink::WebCookieJar* CookieJar() override;
   blink::BlameContext* GetFrameBlameContext() override;
-  blink::WebServiceWorkerProvider* CreateServiceWorkerProvider() override;
+  std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
+      override;
   void DidAccessInitialDocument() override;
   blink::WebLocalFrame* CreateChildFrame(
       blink::WebLocalFrame* parent,

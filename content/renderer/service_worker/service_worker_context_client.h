@@ -196,11 +196,12 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                                     double dispatch_event_time) override;
 
   // Called on the main thread.
-  blink::WebServiceWorkerNetworkProvider* CreateServiceWorkerNetworkProvider()
-      override;
+  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+  CreateServiceWorkerNetworkProvider() override;
   std::unique_ptr<blink::WebWorkerFetchContext>
   CreateServiceWorkerFetchContext() override;
-  blink::WebServiceWorkerProvider* CreateServiceWorkerProvider() override;
+  std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
+      override;
 
   void PostMessageToClient(const blink::WebString& uuid,
                            const blink::WebString& message,
