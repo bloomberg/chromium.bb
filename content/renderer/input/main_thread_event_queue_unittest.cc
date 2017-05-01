@@ -118,6 +118,7 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
   void SetUp() override {
     queue_ = new MainThreadEventQueue(this, main_task_runner_,
                                       &renderer_scheduler_, true);
+    queue_->set_use_raf_fallback_timer(false);
   }
 
   bool HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
