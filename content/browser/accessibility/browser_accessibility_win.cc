@@ -491,15 +491,16 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
                                                   VARIANT start,
                                                   VARIANT* end) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ACC_NAVIGATE);
-  BrowserAccessibilityWin* target = GetTargetFromChildID(start);
-  if (!target)
-    return E_INVALIDARG;
 
   // Forward all directions but NAVDIR_ to the platform node implementation.
   if (nav_dir != NAVDIR_DOWN && nav_dir != NAVDIR_UP &&
       nav_dir != NAVDIR_LEFT && nav_dir != NAVDIR_RIGHT) {
-    return target->GetPlatformNodeWin()->accNavigate(nav_dir, start, end);
+    return GetPlatformNodeWin()->accNavigate(nav_dir, start, end);
   }
+
+  BrowserAccessibilityWin* target = GetTargetFromChildID(start);
+  if (!target)
+    return E_INVALIDARG;
 
   BrowserAccessibility* result = nullptr;
   switch (nav_dir) {
