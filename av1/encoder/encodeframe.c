@@ -2453,10 +2453,12 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
                      PICK_MODE_CONTEXT *ctx, int *rate) {
   MACROBLOCK *const x = &td->mb;
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+#if (CONFIG_MOTION_VAR && CONFIG_NCOBMC) | CONFIG_EXT_DELTA_Q
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi;
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
   int check_ncobmc;
+#endif
 #endif
 
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
@@ -2481,6 +2483,13 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, ctx, rate);
 
   if (!dry_run) {
+#if CONFIG_EXT_DELTA_Q
+    mbmi = &xd->mi[0]->mbmi;
+    if (bsize == BLOCK_64X64 && mbmi->skip == 1 && is_inter_block(mbmi) &&
+        cpi->common.delta_lf_present_flag) {
+      mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
+    }
+#endif
 #if CONFIG_SUPERTX
     update_stats(&cpi->common, td, mi_row, mi_col, 0);
 #else

@@ -37,12 +37,18 @@ class AqSegmentTest
     if (video->frame() == 1) {
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_AQ_MODE, aq_mode_);
+#if CONFIG_EXT_DELTA_Q
+      encoder->Control(AV1E_SET_DELTAQ_MODE, deltaq_mode_);
+#endif
       encoder->Control(AOME_SET_MAX_INTRA_BITRATE_PCT, 100);
     }
   }
 
   void DoTest(int aq_mode) {
     aq_mode_ = aq_mode;
+#if CONFIG_EXT_DELTA_Q
+    deltaq_mode_ = 0;
+#endif
     cfg_.kf_max_dist = 12;
     cfg_.rc_min_quantizer = 8;
     cfg_.rc_max_quantizer = 56;
@@ -59,6 +65,9 @@ class AqSegmentTest
 
   int set_cpu_used_;
   int aq_mode_;
+#if CONFIG_EXT_DELTA_Q
+  int deltaq_mode_;
+#endif
 };
 
 // Validate that this AQ segmentation mode (AQ=1, variance_ap)
@@ -81,14 +90,27 @@ TEST_P(AqSegmentTestLarge, TestNoMisMatchAQ2) { DoTest(2); }
 
 TEST_P(AqSegmentTestLarge, TestNoMisMatchAQ3) { DoTest(3); }
 
-#if CONFIG_DELTA_Q
+#if CONFIG_DELTA_Q & !CONFIG_EXT_DELTA_Q
 // Validate that this AQ mode (AQ=4, delta q)
 // encodes and decodes without a mismatch.
 TEST_P(AqSegmentTest, TestNoMisMatchAQ4) {
   cfg_.rc_end_usage = AOM_CQ;
-
   aq_mode_ = 4;
 
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+                                       30, 1, 0, 100);
+
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+}
+#endif
+
+#if CONFIG_EXT_DELTA_Q
+// Validate that this delta q mode
+// encodes and decodes without a mismatch.
+TEST_P(AqSegmentTest, TestNoMisMatchExtDeltaQ) {
+  cfg_.rc_end_usage = AOM_CQ;
+  aq_mode_ = 0;
+  deltaq_mode_ = 2;
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 100);
 
