@@ -882,7 +882,8 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     case CSSPropertyJustifyItems:
       return 455;
     // CSSPropertyMotionPath was 457.
-    // CSSPropertyAliasMotionOffset was 458.
+    case CSSPropertyAliasMotionOffset:
+      return 458;
     // CSSPropertyAliasMotionRotation was 459.
     // CSSPropertyMotion was 460.
     case CSSPropertyX:

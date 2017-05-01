@@ -1390,6 +1390,10 @@
       type_name: "blink::WebBlendMode",
     },
     {
+      name: "motion-offset",
+      alias_for: "offset-distance",
+    },
+    {
       name: "object-fit",
       type_name: "ObjectFit",
     },
