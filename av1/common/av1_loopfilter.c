@@ -2228,7 +2228,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
+      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
       for (int planeIdx = 0; planeIdx < num_planes; planeIdx += 1) {
         const int32_t scaleHorz = planes[planeIdx].subsampling_x;
         const int32_t scaleVert = planes[planeIdx].subsampling_y;
@@ -2242,7 +2242,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
+      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
       for (int planeIdx = 0; planeIdx < num_planes; planeIdx += 1) {
         const int32_t scaleHorz = planes[planeIdx].subsampling_x;
         const int32_t scaleVert = planes[planeIdx].subsampling_y;
@@ -2259,7 +2259,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
       int plane;
 
-      av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
+      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
 
       // TODO(JBB): Make setup_mask work for non 420.
       av1_setup_mask(cm, mi_row, mi_col, mi + mi_col, cm->mi_stride, &lfm);
