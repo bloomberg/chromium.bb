@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/history/core/test/history_unittest_base.h"
 #include "sql/init_status.h"
 
@@ -59,7 +59,7 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
 
   base::ScopedTempDir temp_dir_;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // names of the database files
   base::FilePath history_dir_;

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -31,7 +31,10 @@ class BookmarkUtilsTest : public testing::Test,
                           public BaseBookmarkModelObserver {
  public:
   BookmarkUtilsTest()
-      : grouped_changes_beginning_count_(0), grouped_changes_ended_count_(0) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        grouped_changes_beginning_count_(0),
+        grouped_changes_ended_count_(0) {}
 
   ~BookmarkUtilsTest() override {}
 
@@ -69,11 +72,11 @@ class BookmarkUtilsTest : public testing::Test,
     ++grouped_changes_ended_count_;
   }
 
+  // Clipboard requires a message loop.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   int grouped_changes_beginning_count_;
   int grouped_changes_ended_count_;
-
-  // Clipboard requires a message loop.
-  base::MessageLoopForUI loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkUtilsTest);
 };

@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +87,7 @@ class InstanceIDDriverTest : public testing::Test {
   void GetTokenCompleted(const std::string& token, InstanceID::Result result);
   void DeleteTokenCompleted(InstanceID::Result result);
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
   std::unique_ptr<InstanceIDDriver> driver_;
 
@@ -108,9 +108,10 @@ class InstanceIDDriverTest : public testing::Test {
 };
 
 InstanceIDDriverTest::InstanceIDDriverTest()
-    : result_(InstanceID::UNKNOWN_ERROR),
-      async_operation_completed_(false) {
-}
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      result_(InstanceID::UNKNOWN_ERROR),
+      async_operation_completed_(false) {}
 
 InstanceIDDriverTest::~InstanceIDDriverTest() {
 }

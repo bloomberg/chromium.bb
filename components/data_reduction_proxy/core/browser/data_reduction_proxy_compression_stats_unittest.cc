@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -112,7 +113,9 @@ const char kLastUpdateTime[] = "Wed, 18 Sep 2013 03:45:26";
 
 class DataReductionProxyCompressionStatsTest : public testing::Test {
  protected:
-  DataReductionProxyCompressionStatsTest() {
+  DataReductionProxyCompressionStatsTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     EXPECT_TRUE(base::Time::FromString(kLastUpdateTime, &now_));
   }
 
@@ -473,7 +476,7 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
   base::Time now_;

@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_constants.h"
 #include "net/http/http_response_headers.h"
@@ -89,7 +90,9 @@ namespace precache {
 
 class PrecacheDatabaseTest : public testing::Test {
  public:
-  PrecacheDatabaseTest() {}
+  PrecacheDatabaseTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~PrecacheDatabaseTest() override {}
 
  protected:
@@ -147,9 +150,7 @@ class PrecacheDatabaseTest : public testing::Test {
   // Must be declared first so that it is destroyed last.
   base::ScopedTempDir scoped_temp_dir_;
 
-  // Having this MessageLoop member variable causes base::MessageLoop::current()
-  // to be set properly.
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<PrecacheDatabase> precache_database_;
   base::HistogramTester histograms_;

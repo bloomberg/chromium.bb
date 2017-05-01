@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
@@ -23,7 +24,9 @@ namespace {
 class DeviceInfoDataTypeControllerTest : public testing::Test {
  public:
   DeviceInfoDataTypeControllerTest()
-      : load_finished_(false),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        load_finished_(false),
         last_type_(UNSPECIFIED),
         weak_ptr_factory_(this) {}
   ~DeviceInfoDataTypeControllerTest() override {}
@@ -78,13 +81,15 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
     return testing::AssertionSuccess();
   }
 
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  protected:
   std::unique_ptr<DeviceInfoDataTypeController> controller_;
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
   bool load_finished_;
 
  private:
-  base::MessageLoopForUI message_loop_;
   ModelType last_type_;
   SyncError last_error_;
   FakeSyncClient sync_client_;

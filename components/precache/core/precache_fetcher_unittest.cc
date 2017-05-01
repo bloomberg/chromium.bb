@@ -26,6 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
@@ -210,7 +211,9 @@ class MockURLFetcherFactory : public net::URLFetcherFactory {
 class PrecacheFetcherFetcherTest : public testing::Test {
  public:
   PrecacheFetcherFetcherTest()
-      : request_context_(new net::TestURLRequestContextGetter(
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         scoped_url_fetcher_factory_(&factory_),
         callback_(base::Bind(&PrecacheFetcherFetcherTest::Callback,
@@ -219,7 +222,7 @@ class PrecacheFetcherFetcherTest : public testing::Test {
   MOCK_METHOD1(Callback, void(const PrecacheFetcher::Fetcher&));
 
  protected:
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   MockURLFetcherFactory factory_;
   net::ScopedURLFetcherFactory scoped_url_fetcher_factory_;
@@ -425,7 +428,9 @@ TEST_F(PrecacheFetcherFetcherTest, ResourceTooBig) {
 class PrecacheFetcherTest : public testing::Test {
  public:
   PrecacheFetcherTest()
-      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         factory_(NULL,
@@ -482,7 +487,7 @@ class PrecacheFetcherTest : public testing::Test {
     }
 
     // Check again after allowing the message loop to process some messages.
-    loop_.task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
             &PrecacheFetcherTest::CheckUntilParallelFetchesBeyondCapacity,
@@ -497,7 +502,7 @@ class PrecacheFetcherTest : public testing::Test {
   void Flush() { precache_database_.Flush(); }
 
   // Must be declared first so that it is destroyed last.
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestURLFetcherCallback url_callback_;
@@ -1740,7 +1745,8 @@ TEST_F(PrecacheFetcherTest, GloballyRankResourcesAfterPauseResume) {
             precache_fetcher.resources_to_fetch_.empty())) {
       LOG(INFO) << "remaining_tries: " << remaining_tries;
       base::RunLoop run_loop;
-      loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop.QuitClosure());
       run_loop.Run();
     }
 
@@ -1977,7 +1983,8 @@ TEST_F(PrecacheFetcherTest, CancelPrecachingAfterAllManifestFetch) {
             precache_fetcher.resources_to_fetch_.empty())) {
       LOG(INFO) << "remaining_tries: " << remaining_tries;
       base::RunLoop run_loop;
-      loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop.QuitClosure());
       run_loop.Run();
     }
 

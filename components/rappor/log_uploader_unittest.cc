@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -60,13 +61,15 @@ class TestLogUploader : public LogUploader {
 class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
-      : request_context_(new net::TestURLRequestContextGetter(
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
         factory_(NULL) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::FakeURLFetcherFactory factory_;
 
