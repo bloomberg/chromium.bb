@@ -6,6 +6,13 @@ import logging
 
 import models
 
+# About linker maps:
+# * "Discarded input sections" include symbols merged with other symbols
+#   (aliases), so the information there is not actually a list of unused things.
+# * Linker maps include symbols that do not have names (with object path),
+#   whereas "nm" skips over these (they don't account for much though).
+# * The parse time for compressed linker maps is dominated by ungzipping.
+
 
 class MapFileParser(object):
   """Parses a linker map file (tested only on files from gold linker)."""
@@ -13,6 +20,7 @@ class MapFileParser(object):
   # https://github.com/gittup/binutils/blob/HEAD/gold/mapfile.cc
 
   def __init__(self):
+    self._common_symbols = []
     self._symbols = []
     self._section_sizes = {}
     self._lines = None
@@ -28,8 +36,8 @@ class MapFileParser(object):
     """
     self._lines = iter(lines)
     logging.info('Parsing common symbols')
-    self._ParseCommonSymbols()
-    logging.debug('.bss common entries: %d', len(self._symbols))
+    self._common_symbols = self._ParseCommonSymbols()
+    logging.debug('.bss common entries: %d', len(self._common_symbols))
     logging.info('Parsing section symbols')
     self._ParseSections()
     return self._section_sizes, self._symbols
@@ -56,6 +64,7 @@ class MapFileParser(object):
 # ff_cos_131072       0x40000           obj/third_party/<snip>
 # ff_cos_131072_fixed
 #                     0x20000           obj/third_party/<snip>
+    ret = []
     self._SkipToLineWithPrefix('Common symbol')
     next(self._lines)  # Skip past blank line
 
@@ -65,9 +74,10 @@ class MapFileParser(object):
       if not parts:
         break
       name, size_str, path = parts
-      self._symbols.append(
-          models.Symbol('.bss',  int(size_str[2:], 16), name=name,
-                        object_path=path))
+      sym = models.Symbol('.bss',  int(size_str[2:], 16), name=name,
+                          object_path=path)
+      ret.append(sym)
+    return ret
 
   def _ParseSections(self):
 # .text           0x0028c600  0x22d3468
@@ -113,6 +123,8 @@ class MapFileParser(object):
         if (section_name in ('.bss', '.rodata', '.text') or
             section_name.startswith('.data')):
           logging.info('Parsing %s', section_name)
+          if section_name == '.bss':
+            syms.extend(self._common_symbols)
           prefix_len = len(section_name) + 1  # + 1 for the trailing .
           merge_symbol_start_address = 0
           sym_count_at_start = len(syms)
@@ -139,9 +151,9 @@ class MapFileParser(object):
               address = int(address_str[2:], 16)
               size = int(size_str[2:], 16)
               path = None
-              syms.append(
-                  models.Symbol(section_name, size, address=address, name=name,
-                                object_path=path))
+              sym = models.Symbol(section_name, size, address=address,
+                                  name=name, object_path=path)
+              syms.append(sym)
             else:
               # A normal symbol entry.
               subsection_name, address_str, size_str, path = (
@@ -202,9 +214,9 @@ class MapFileParser(object):
                   syms.append(sym)
                   merge_symbol_start_address = 0
 
-              syms.append(models.Symbol(section_name, size, address=address,
-                                        name=name or mangled_name,
-                                        object_path=path))
+              sym = models.Symbol(section_name, size, address=address,
+                                  name=name or mangled_name, object_path=path)
+              syms.append(sym)
           logging.debug('Symbol count for %s: %d', section_name,
                         len(syms) - sym_count_at_start)
       except:

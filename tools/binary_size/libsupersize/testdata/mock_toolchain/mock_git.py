@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utility methods."""
-
-import os
+import sys
 
 
-SRC_ROOT = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+def main():
+  assert sys.argv[-2:] == ['rev-parse', 'HEAD']
+  sys.stdout.write('abc123\n')
+
+
+if __name__ == '__main__':
+  main()
