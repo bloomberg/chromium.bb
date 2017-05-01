@@ -25,7 +25,7 @@ function buildTree(parent, depth, arity, tagNameCallback, createElementCallback)
 
 // Build a tall tree that is skinny. A middle layer of
 // the tree should have the changeColor class.
-buildTree(document.body, 15, 2,
+buildTree(document.body, 5, 5,
   function(depth) {
     // Use divs at upper levels to avoid too much layout time.
     return depth > 9 ? 'div' : 'span';
@@ -33,20 +33,6 @@ buildTree(document.body, 15, 2,
   function(element, depth) {
     element.style.backgroundColor = 'green';
     if (depth == 5)
-      element.setAttribute('class', 'changeColor');
-  }
-);
-
-// Build a short tree that is fat. A middle layer of
-// the tree should have the changeColor class.
-buildTree(document.body, 6, 7,
-  function(depth) {
-    // Use divs at upper levels to avoid too much layout time.
-    return depth > 4 ? 'div' : 'span';
-  },
-  function(element, depth) {
-    element.style.backgroundColor = 'orange';
-    if (depth == 3)
       element.setAttribute('class', 'changeColor');
   }
 );
