@@ -98,8 +98,12 @@ ServiceConfiguration GetServiceConfigurationFromUserPrefs(
 
 // Returns service configuration for the signin screen.
 ServiceConfiguration GetServiceConfigurationForSigninScreen() {
-  if (!g_browser_process->local_state()->GetBoolean(
-          prefs::kResolveDeviceTimezoneByGeolocation)) {
+  const PrefService::Preference* device_pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kResolveDeviceTimezoneByGeolocation);
+  bool device_pref_value;
+  if (!device_pref ||
+      !device_pref->GetValue()->GetAsBoolean(&device_pref_value)) {
     // CfM devices default to static timezone.
     bool keyboard_driven_oobe =
         system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
@@ -112,7 +116,7 @@ ServiceConfiguration GetServiceConfigurationForSigninScreen() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
     return SHOULD_STOP;
 
-  return SHOULD_START;
+  return device_pref_value ? SHOULD_START : SHOULD_STOP;
 }
 
 }  // anonymous namespace.
