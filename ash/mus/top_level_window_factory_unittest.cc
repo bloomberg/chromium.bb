@@ -13,7 +13,6 @@
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/window_properties.h"

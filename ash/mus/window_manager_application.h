@@ -71,8 +71,6 @@ class WindowManagerApplication : public service_manager::Service {
 
  private:
   friend class ash::test::AshTestHelper;
-  friend class WmTestBase;
-  friend class WmTestHelper;
 
   // If |init_network_handler| is true, chromeos::NetworkHandler is initialized.
   void InitWindowManager(

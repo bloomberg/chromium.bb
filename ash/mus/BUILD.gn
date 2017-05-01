@@ -191,12 +191,6 @@ source_set("unittests") {
     "bridge/shell_port_mash_test_api.h",
     "non_client_frame_controller_unittest.cc",
     "screen_mus_unittest.cc",
-    "test/ash_test_impl_mus.cc",
-    "test/ash_test_impl_mus.h",
-    "test/wm_test_base.cc",
-    "test/wm_test_base.h",
-    "test/wm_test_helper.cc",
-    "test/wm_test_helper.h",
     "top_level_window_factory_unittest.cc",
     "window_manager_unittest.cc",
   ]

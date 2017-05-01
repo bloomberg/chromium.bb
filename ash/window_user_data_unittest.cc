@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/window_user_data.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
@@ -30,7 +30,7 @@ class Data {
 
 }  // namespace
 
-using WindowUserDataTest = AshTest;
+using WindowUserDataTest = test::AshTestBase;
 
 // Verifies clear() deletes the data associated with a window.
 TEST_F(WindowUserDataTest, ClearDestroys) {

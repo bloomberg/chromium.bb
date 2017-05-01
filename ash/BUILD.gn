@@ -1253,7 +1253,6 @@ source_set("common_unittests") {
     "wm/workspace_controller_test_helper.cc",
     "wm/workspace_controller_test_helper.h",
     "wm/workspace_controller_unittest.cc",
-    "wm_window_unittest.cc",
   ]
   deps = [
     "//ash",

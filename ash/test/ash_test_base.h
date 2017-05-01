@@ -49,7 +49,6 @@ class WidgetDelegate;
 }
 
 namespace ash {
-class AshTestImplAura;
 class SystemTray;
 class WmShelf;
 
@@ -101,6 +100,13 @@ class AshTestBase : public testing::Test {
   std::unique_ptr<aura::Window> CreateTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
       ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
+      int shell_window_id = kShellWindowId_Invalid);
+
+  // Creates a visible top-level window. For Config::CLASSIC and Config::MUS
+  // this creates a Window with a delegate. For Config::MASH this creates a
+  // window as if the client requested a top-level window.
+  std::unique_ptr<aura::Window> CreateToplevelTestWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
       int shell_window_id = kShellWindowId_Invalid);
 
   // Versions of the functions in aura::test:: that go through our shell
@@ -193,8 +199,6 @@ class AshTestBase : public testing::Test {
   display::Display GetSecondaryDisplay();
 
  private:
-  friend class ash::AshTestImplAura;
-
   bool setup_called_;
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.

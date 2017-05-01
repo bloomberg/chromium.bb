@@ -5,11 +5,11 @@
 #include "ash/system/audio/tray_audio.h"
 
 #include "ash/system/tray/system_tray.h"
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
 
 namespace ash {
 
-using TrayAudioTest = AshTest;
+using TrayAudioTest = test::AshTestBase;
 
 // Tests that the volume popup view can be explicitly shown.
 TEST_F(TrayAudioTest, ShowPopUpVolumeView) {

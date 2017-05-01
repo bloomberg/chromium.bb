@@ -288,8 +288,25 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
       ash_test_helper_->window_manager_app()->window_manager();
   aura::Window* window = mus::CreateAndParentTopLevelWindow(
       window_manager, mus_window_type, &properties);
+  window->set_id(shell_window_id);
   window->Show();
   return base::WrapUnique<aura::Window>(window);
+}
+
+std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    int shell_window_id) {
+  if (AshTestHelper::config() == Config::MASH) {
+    return CreateTestWindow(bounds_in_screen, ui::wm::WINDOW_TYPE_NORMAL,
+                            shell_window_id);
+  }
+
+  aura::test::TestWindowDelegate* delegate =
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
+  return base::WrapUnique<aura::Window>(
+      CreateTestWindowInShellWithDelegateAndType(
+          delegate, ui::wm::WINDOW_TYPE_NORMAL, shell_window_id,
+          bounds_in_screen));
 }
 
 aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
