@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <unordered_set>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -27,7 +28,9 @@ class PrefStoreImpl::Observer {
       return;
 
     std::vector<mojom::PrefUpdatePtr> updates;
-    updates.push_back(mojom::PrefUpdate::New(key, value.CreateDeepCopy(), 0));
+    updates.push_back(mojom::PrefUpdate::New(
+        key, mojom::PrefUpdateValue::NewAtomicUpdate(value.CreateDeepCopy()),
+        0));
     observer_->OnPrefsChanged(std::move(updates));
   }
 
@@ -36,7 +39,8 @@ class PrefStoreImpl::Observer {
       return;
 
     std::vector<mojom::PrefUpdatePtr> updates;
-    updates.push_back(mojom::PrefUpdate::New(key, nullptr, 0));
+    updates.push_back(mojom::PrefUpdate::New(
+        key, mojom::PrefUpdateValue::NewAtomicUpdate(nullptr), 0));
     observer_->OnPrefsChanged(std::move(updates));
   }
 

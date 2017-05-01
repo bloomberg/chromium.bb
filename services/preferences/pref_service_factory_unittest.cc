@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -14,8 +15,10 @@
 #include "components/prefs/value_map_pref_store.h"
 #include "components/prefs/writeable_pref_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/cpp/pref_store_impl.h"
+#include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -76,6 +79,7 @@ constexpr int kInitialValue = 1;
 constexpr int kUpdatedValue = 2;
 constexpr char kKey[] = "some_key";
 constexpr char kOtherKey[] = "some_other_key";
+constexpr char kDictionaryKey[] = "a.dictionary.pref";
 
 class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
                                public service_manager::test::ServiceTest {
@@ -131,6 +135,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
     auto pref_registry = make_scoped_refptr(new PrefRegistrySimple());
     pref_registry->RegisterIntegerPref(kKey, kInitialValue);
     pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
+    pref_registry->RegisterDictionaryPref(kDictionaryKey);
     ConnectToPrefService(connector(), pref_registry,
                          std::vector<PrefValueStore::PrefStoreType>(),
                          base::Bind(&PrefServiceFactoryTest::OnCreate,
@@ -263,6 +268,229 @@ TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_UserPrefStoreLayering) {
 
   pref_service->SetInteger(kKey, 3);
   EXPECT_EQ(2, pref_service->GetInteger(kKey));
+}
+
+void Fail(PrefService* pref_service) {
+  FAIL() << "Unexpected change notification: "
+         << *pref_service->GetDictionary(kDictionaryKey);
+}
+
+TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
+  auto pref_service = Create();
+  auto pref_service2 = Create();
+
+  void (*updates[])(ScopedDictionaryPrefUpdate*) = {
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetInteger("path.to.integer", 1);
+        int out = 0;
+        ASSERT_TRUE((*update)->GetInteger("path.to.integer", &out));
+        EXPECT_EQ(1, out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetIntegerWithoutPathExpansion("key.for.integer", 2);
+        int out = 0;
+        ASSERT_TRUE(
+            (*update)->GetIntegerWithoutPathExpansion("key.for.integer", &out));
+        EXPECT_EQ(2, out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetDouble("path.to.double", 3);
+        double out = 0;
+        ASSERT_TRUE((*update)->GetDouble("path.to.double", &out));
+        EXPECT_EQ(3, out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetDoubleWithoutPathExpansion("key.for.double", 4);
+        double out = 0;
+        ASSERT_TRUE(
+            (*update)->GetDoubleWithoutPathExpansion("key.for.double", &out));
+        EXPECT_EQ(4, out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetBoolean("path.to.boolean", true);
+        bool out = 0;
+        ASSERT_TRUE((*update)->GetBoolean("path.to.boolean", &out));
+        EXPECT_TRUE(out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetBooleanWithoutPathExpansion("key.for.boolean", false);
+        bool out = 0;
+        ASSERT_TRUE(
+            (*update)->GetBooleanWithoutPathExpansion("key.for.boolean", &out));
+        EXPECT_FALSE(out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetString("path.to.string", "hello");
+        std::string out;
+        ASSERT_TRUE((*update)->GetString("path.to.string", &out));
+        EXPECT_EQ("hello", out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetStringWithoutPathExpansion("key.for.string", "prefs!");
+        std::string out;
+        ASSERT_TRUE(
+            (*update)->GetStringWithoutPathExpansion("key.for.string", &out));
+        EXPECT_EQ("prefs!", out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetString("path.to.string16", base::ASCIIToUTF16("hello"));
+        base::string16 out;
+        ASSERT_TRUE((*update)->GetString("path.to.string16", &out));
+        EXPECT_EQ(base::ASCIIToUTF16("hello"), out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        (*update)->SetStringWithoutPathExpansion("key.for.string16",
+                                                 base::ASCIIToUTF16("prefs!"));
+        base::string16 out;
+        ASSERT_TRUE(
+            (*update)->GetStringWithoutPathExpansion("key.for.string16", &out));
+        EXPECT_EQ(base::ASCIIToUTF16("prefs!"), out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        base::ListValue list;
+        list.AppendInteger(1);
+        list.AppendDouble(2);
+        list.AppendBoolean(true);
+        list.AppendString("four");
+        (*update)->Set("path.to.list", list.CreateDeepCopy());
+        const base::ListValue* out = nullptr;
+        ASSERT_TRUE((*update)->GetList("path.to.list", &out));
+        EXPECT_EQ(list, *out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        base::ListValue list;
+        list.AppendInteger(1);
+        list.AppendDouble(2);
+        list.AppendBoolean(true);
+        list.AppendString("four");
+        (*update)->SetWithoutPathExpansion("key.for.list",
+                                           list.CreateDeepCopy());
+        const base::ListValue* out = nullptr;
+        ASSERT_TRUE(
+            (*update)->GetListWithoutPathExpansion("key.for.list", &out));
+        EXPECT_EQ(list, *out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        base::DictionaryValue dict;
+        dict.SetInteger("int", 1);
+        dict.SetDouble("double", 2);
+        dict.SetBoolean("bool", true);
+        dict.SetString("string", "four");
+        (*update)->Set("path.to.dict", dict.CreateDeepCopy());
+        const base::DictionaryValue* out = nullptr;
+        ASSERT_TRUE((*update)->GetDictionary("path.to.dict", &out));
+        EXPECT_EQ(dict, *out);
+      },
+      [](ScopedDictionaryPrefUpdate* update) {
+        base::DictionaryValue dict;
+        dict.SetInteger("int", 1);
+        dict.SetDouble("double", 2);
+        dict.SetBoolean("bool", true);
+        dict.SetString("string", "four");
+        (*update)->SetWithoutPathExpansion("key.for.dict",
+                                           dict.CreateDeepCopy());
+        const base::DictionaryValue* out = nullptr;
+        ASSERT_TRUE(
+            (*update)->GetDictionaryWithoutPathExpansion("key.for.dict", &out));
+        EXPECT_EQ(dict, *out);
+      },
+  };
+  int current_value = kInitialValue + 1;
+  for (auto& mutation : updates) {
+    base::DictionaryValue expected_value;
+    {
+      ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+      EXPECT_EQ(update->AsConstDictionary()->empty(), update->empty());
+      EXPECT_EQ(update->AsConstDictionary()->size(), update->size());
+      mutation(&update);
+      EXPECT_EQ(update->AsConstDictionary()->empty(), update->empty());
+      EXPECT_EQ(update->AsConstDictionary()->size(), update->size());
+      expected_value = *update->AsConstDictionary();
+    }
+
+    EXPECT_EQ(expected_value, *pref_service->GetDictionary(kDictionaryKey));
+    WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+    EXPECT_EQ(expected_value, *pref_service2->GetDictionary(kDictionaryKey));
+
+    {
+      // Apply the same mutation again. Each mutation should be idempotent so
+      // should not trigger a notification.
+      ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+      mutation(&update);
+      EXPECT_EQ(expected_value, *update->AsConstDictionary());
+    }
+    {
+      // Watch for an unexpected change to kDictionaryKey.
+      PrefChangeRegistrar registrar;
+      registrar.Init(pref_service2.get());
+      registrar.Add(kDictionaryKey, base::Bind(&Fail, pref_service2.get()));
+
+      // Make and wait for a change to another pref to ensure an unexpected
+      // change to kDictionaryKey is detected.
+      pref_service->SetInteger(kKey, ++current_value);
+      WaitForPrefChange(pref_service2.get(), kKey);
+    }
+  }
+}
+
+TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Erase) {
+  auto pref_service = Create();
+  auto pref_service2 = Create();
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update->SetInteger("path.to.integer", 1);
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  EXPECT_FALSE(pref_service2->GetDictionary(kDictionaryKey)->empty());
+
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    ASSERT_TRUE(update->RemovePath("path.to.integer", nullptr));
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  EXPECT_TRUE(pref_service2->GetDictionary(kDictionaryKey)->empty());
+}
+
+TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_ClearDictionary) {
+  auto pref_service = Create();
+  auto pref_service2 = Create();
+
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update->SetInteger("path.to.integer", 1);
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  EXPECT_FALSE(pref_service2->GetDictionary(kDictionaryKey)->empty());
+
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update->Clear();
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  EXPECT_TRUE(pref_service2->GetDictionary(kDictionaryKey)->empty());
+}
+
+TEST_F(PrefServiceFactoryTest,
+       MultipleClients_SubPrefUpdates_ClearEmptyDictionary) {
+  auto pref_service = Create();
+  auto pref_service2 = Create();
+
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update.Get();
+  }
+  WaitForPrefChange(pref_service2.get(), kDictionaryKey);
+  EXPECT_TRUE(pref_service2->GetDictionary(kDictionaryKey)->empty());
+
+  {
+    ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
+    update->Clear();
+  }
+  PrefChangeRegistrar registrar;
+  registrar.Init(pref_service2.get());
+  registrar.Add(kDictionaryKey, base::Bind(&Fail, pref_service2.get()));
+  pref_service->SetInteger(kKey, kUpdatedValue);
+  WaitForPrefChange(pref_service2.get(), kKey);
 }
 
 }  // namespace

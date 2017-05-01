@@ -5,6 +5,7 @@
 source_set("tests") {
   testonly = true
   sources = [
+    "persistent_pref_store_client_unittest.cc",
     "pref_store_client_unittest.cc",
     "pref_store_impl_unittest.cc",
   ]

@@ -482,6 +482,14 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
   user_pref_store_->ReportValueChanged(key, GetWriteFlags(FindPreference(key)));
 }
 
+void PrefService::ReportUserPrefChanged(
+    const std::string& key,
+    std::set<std::vector<std::string>> path_components) {
+  DCHECK(CalledOnValidThread());
+  user_pref_store_->ReportSubValuesChanged(key, std::move(path_components),
+                                           GetWriteFlags(FindPreference(key)));
+}
+
 void PrefService::SetUserPrefValue(const std::string& path,
                                    std::unique_ptr<base::Value> new_value) {
   DCHECK(CalledOnValidThread());

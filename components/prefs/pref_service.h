@@ -39,6 +39,10 @@ namespace base {
 class FilePath;
 }
 
+namespace prefs {
+class ScopedDictionaryPrefUpdate;
+}
+
 namespace subtle {
 class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
@@ -331,6 +335,7 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
   friend class PrefServiceTest_WriteablePrefStoreFlags_Test;
+  friend class prefs::ScopedDictionaryPrefUpdate;
 
   // Registration of pref change observers must be done using the
   // PrefChangeRegistrar, which is declared as a friend here to grant it
@@ -354,8 +359,12 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   virtual void RemovePrefObserver(const std::string& path, PrefObserver* obs);
 
   // Sends notification of a changed preference. This needs to be called by
-  // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
+  // a ScopedUserPrefUpdate or ScopedDictionaryPrefUpdate if a DictionaryValue
+  // or ListValue is changed.
   void ReportUserPrefChanged(const std::string& key);
+  void ReportUserPrefChanged(
+      const std::string& key,
+      std::set<std::vector<std::string>> path_components);
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.

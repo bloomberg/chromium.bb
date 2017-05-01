@@ -11,7 +11,9 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
+#include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/preferences/public/cpp/lib/util.h"
 
 namespace prefs {
 
@@ -41,9 +43,7 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
     std::vector<mojom::PrefUpdatePtr> filtered_updates;
     for (const auto& update : updates) {
       if (base::ContainsKey(observed_keys_, update->key)) {
-        filtered_updates.push_back(mojom::PrefUpdate::New(
-            update->key,
-            update->value ? update->value->CreateDeepCopy() : nullptr, 0));
+        filtered_updates.push_back(update->Clone());
       }
     }
     if (!filtered_updates.empty())
@@ -133,11 +133,40 @@ void PersistentPrefStoreImpl::SetValues(
     entry.first->OnPrefValuesChanged(updates);
 
   for (auto& update : updates) {
-    if (update->value) {
-      backing_pref_store_->SetValue(update->key, std::move(update->value),
-                                    update->flags);
-    } else {
-      backing_pref_store_->RemoveValue(update->key, update->flags);
+    if (update->value->is_atomic_update()) {
+      auto& value = update->value->get_atomic_update();
+      if (value) {
+        backing_pref_store_->SetValue(update->key, std::move(value),
+                                      update->flags);
+      } else {
+        backing_pref_store_->RemoveValue(update->key, update->flags);
+      }
+    } else if (update->value->is_split_updates()) {
+      base::Value* mutable_value = nullptr;
+      base::DictionaryValue* dictionary_value = nullptr;
+      std::unique_ptr<base::DictionaryValue> pending_dictionary;
+      if (!backing_pref_store_->GetMutableValue(update->key, &mutable_value) ||
+          !mutable_value->GetAsDictionary(&dictionary_value)) {
+        pending_dictionary = base::MakeUnique<base::DictionaryValue>();
+        dictionary_value = pending_dictionary.get();
+      }
+      std::set<std::vector<std::string>> updated_paths;
+      for (auto& split_update : update->value->get_split_updates()) {
+        if (split_update->path.empty())
+          continue;
+
+        SetValue(dictionary_value,
+                 {split_update->path.begin(), split_update->path.end()},
+                 std::move(split_update->value));
+        updated_paths.insert(std::move(split_update->path));
+      }
+      if (pending_dictionary) {
+        backing_pref_store_->SetValue(
+            update->key, std::move(pending_dictionary), update->flags);
+      } else {
+        backing_pref_store_->ReportSubValuesChanged(
+            update->key, std::move(updated_paths), update->flags);
+      }
     }
   }
 }

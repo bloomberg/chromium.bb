@@ -251,6 +251,12 @@ struct UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>> {
                    std::unique_ptr<base::Value>* value);
 };
 
+template <>
+struct CloneTraits<std::unique_ptr<base::Value>, false> {
+  static std::unique_ptr<base::Value> Clone(
+      const std::unique_ptr<base::Value>& input);
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_COMMON_VALUES_STRUCT_TRAITS_H_

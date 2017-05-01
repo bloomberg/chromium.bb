@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/strings/string_split.h"
 #include "base/values.h"
+#include "services/preferences/public/cpp/lib/util.h"
 #include "services/preferences/public/cpp/pref_store_client.h"
 
 namespace prefs {
@@ -101,22 +103,40 @@ void PrefStoreClientMixin<BasePrefStore>::OnInitializationCompleted(
 template <typename BasePrefStore>
 void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
     const std::string& key,
-    std::unique_ptr<base::Value> value) {
+    mojom::PrefUpdateValuePtr update_value) {
   DCHECK(cached_prefs_);
   bool changed = false;
-  if (!value) {  // Delete
-    if (cached_prefs_->RemovePath(key, nullptr))
-      changed = true;
-  } else {
-    const base::Value* prev;
-    if (cached_prefs_->Get(key, &prev)) {
-      if (!prev->Equals(value.get())) {
+  if (update_value->is_atomic_update()) {
+    auto& value = update_value->get_atomic_update();
+    if (!value) {  // Delete
+      if (cached_prefs_->RemovePath(key, nullptr))
+        changed = true;
+    } else {
+      const base::Value* prev;
+      if (cached_prefs_->Get(key, &prev)) {
+        if (!prev->Equals(value.get())) {
+          cached_prefs_->Set(key, std::move(value));
+          changed = true;
+        }
+      } else {
         cached_prefs_->Set(key, std::move(value));
         changed = true;
       }
-    } else {
-      cached_prefs_->Set(key, std::move(value));
+    }
+  } else if (update_value->is_split_updates()) {
+    auto& updates = update_value->get_split_updates();
+    if (!updates.empty())
       changed = true;
+    for (auto& update : updates) {
+      // Clients shouldn't send empty paths.
+      if (update->path.empty())
+        continue;
+
+      std::vector<base::StringPiece> full_path = base::SplitStringPiece(
+          key, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      full_path.insert(full_path.end(), update->path.begin(),
+                       update->path.end());
+      prefs::SetValue(cached_prefs_.get(), full_path, std::move(update->value));
     }
   }
   if (changed && initialized_)

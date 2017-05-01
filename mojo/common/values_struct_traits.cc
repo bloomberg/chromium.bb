@@ -48,9 +48,7 @@ bool StructTraits<common::mojom::DictionaryValueDataView,
 std::unique_ptr<base::DictionaryValue>
 CloneTraits<std::unique_ptr<base::DictionaryValue>, false>::Clone(
     const std::unique_ptr<base::DictionaryValue>& input) {
-  auto result = base::MakeUnique<base::DictionaryValue>();
-  result->MergeDictionary(input.get());
-  return result;
+  return input ? input->CreateDeepCopy() : nullptr;
 }
 
 bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
@@ -104,6 +102,12 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
     }
   }
   return false;
+}
+
+std::unique_ptr<base::Value>
+CloneTraits<std::unique_ptr<base::Value>, false>::Clone(
+    const std::unique_ptr<base::Value>& input) {
+  return input ? input->CreateDeepCopy() : nullptr;
 }
 
 }  // namespace mojo
