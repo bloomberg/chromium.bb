@@ -3517,10 +3517,14 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   if (has_video_ && tracks_.TrackIsAudio(frame->track_number()) &&
       !force_new_cluster_) {
     Frame* const new_frame = new (std::nothrow) Frame();
-    if (!new_frame || !new_frame->CopyFrom(*frame))
+    if (!new_frame || !new_frame->CopyFrom(*frame)) {
+      delete new_frame;
       return false;
-    if (!QueueFrame(new_frame))
+    }
+    if (!QueueFrame(new_frame)) {
+      delete new_frame;
       return false;
+    }
     track_frames_written_[frame->track_number() - 1]++;
     return true;
   }
@@ -3543,8 +3547,10 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   if (!frame->CanBeSimpleBlock() && !frame->is_key() &&
       !frame->reference_block_timestamp_set()) {
     Frame* const new_frame = new (std::nothrow) Frame();
-    if (!new_frame->CopyFrom(*frame))
+    if (!new_frame || !new_frame->CopyFrom(*frame)) {
+      delete new_frame;
       return false;
+    }
     new_frame->set_reference_block_timestamp(
         last_track_timestamp_[frame->track_number() - 1]);
     frame = new_frame;
