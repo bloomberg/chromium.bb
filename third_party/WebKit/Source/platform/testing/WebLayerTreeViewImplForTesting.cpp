@@ -143,7 +143,7 @@ void WebLayerTreeViewImplForTesting::RequestNewCompositorFrameSink() {
 }
 
 void WebLayerTreeViewImplForTesting::DidFailToInitializeCompositorFrameSink() {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void WebLayerTreeViewImplForTesting::RegisterViewportLayers(

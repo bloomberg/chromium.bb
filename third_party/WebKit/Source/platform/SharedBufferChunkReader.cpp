@@ -106,7 +106,7 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
       return !chunk.IsEmpty();
     }
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

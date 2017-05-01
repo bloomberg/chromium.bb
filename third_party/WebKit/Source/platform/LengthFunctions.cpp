@@ -51,10 +51,10 @@ float FloatValueForLength(const Length& length, float maximum_value) {
     case kDeviceWidth:
     case kDeviceHeight:
     case kMaxSizeNone:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -80,10 +80,10 @@ LayoutUnit MinimumValueForLength(const Length& length,
     case kDeviceWidth:
     case kDeviceHeight:
     case kMaxSizeNone:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return LayoutUnit();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 
@@ -111,10 +111,10 @@ LayoutUnit ValueForLength(const Length& length, LayoutUnit maximum_value) {
     case kDeviceWidth:
     case kDeviceHeight:
     case kMaxSizeNone:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return LayoutUnit();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutUnit();
 }
 

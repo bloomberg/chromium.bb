@@ -141,7 +141,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
     case kReferrerPolicyNoReferrerWhenDowngrade:
       break;
     case kReferrerPolicyDefault:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 

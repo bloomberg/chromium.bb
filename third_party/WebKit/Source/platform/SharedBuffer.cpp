@@ -200,7 +200,7 @@ size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
     return segment == segments - 1 ? segmented_size - position
                                    : kSegmentSize - position_in_segment;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -240,7 +240,7 @@ sk_sp<SkData> SharedBuffer::GetAsSkData() const {
   }
 
   if (position != buffer_length) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     // Don't return the incomplete SkData.
     return nullptr;
   }

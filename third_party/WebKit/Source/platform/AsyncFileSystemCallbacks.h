@@ -51,11 +51,11 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
   AsyncFileSystemCallbacks() : block_until_completion_(false) {}
 
   // Called when a requested operation is completed successfully.
-  virtual void DidSucceed() { ASSERT_NOT_REACHED(); }
+  virtual void DidSucceed() { NOTREACHED(); }
 
   // Called when a requested file system is opened.
   virtual void DidOpenFileSystem(const String& name, const KURL& root_url) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // Called when a filesystem URL is resolved.
@@ -64,32 +64,32 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
                              FileSystemType,
                              const String& file_path,
                              bool is_directory) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // Called when a file metadata is read successfully.
-  virtual void DidReadMetadata(const FileMetadata&) { ASSERT_NOT_REACHED(); }
+  virtual void DidReadMetadata(const FileMetadata&) { NOTREACHED(); }
 
   // Called when a snapshot file is created successfully.
   virtual void DidCreateSnapshotFile(const FileMetadata&,
                                      PassRefPtr<BlobDataHandle> snapshot) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // Called when a directory entry is read.
   virtual void DidReadDirectoryEntry(const String& name, bool is_directory) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // Called after a chunk of directory entries have been read (i.e. indicates
   // it's good time to call back to the application). If hasMore is true there
   // can be more chunks.
-  virtual void DidReadDirectoryEntries(bool has_more) { ASSERT_NOT_REACHED(); }
+  virtual void DidReadDirectoryEntries(bool has_more) { NOTREACHED(); }
 
   // Called when an AsyncFileWrter has been created successfully.
   virtual void DidCreateFileWriter(std::unique_ptr<WebFileWriter>,
                                    long long length) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // Called when there was an error.
