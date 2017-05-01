@@ -95,6 +95,13 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
       "a\nb [SSID=1] [SSID=2] [SSID=foo\nbar] b",
       AnonymizeCustomPatterns("a\nb [SSID=foo] [SSID=bar] [SSID=foo\nbar] b"));
 
+  EXPECT_EQ("SerialNumber: 1",
+            AnonymizeCustomPatterns("SerialNumber: 1217D7EF"));
+  EXPECT_EQ("serial  number: 2",
+            AnonymizeCustomPatterns("serial  number: 50C971FEE7F3x010900"));
+  EXPECT_EQ("SerialNumber: 3",
+            AnonymizeCustomPatterns("SerialNumber: EVT23-17BA01-004"));
+
   EXPECT_EQ("<email: 1>",
             AnonymizeCustomPatterns("foo@bar.com"));
   EXPECT_EQ("Email: <email: 1>.",
