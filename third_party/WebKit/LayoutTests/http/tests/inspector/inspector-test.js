@@ -469,6 +469,57 @@ InspectorTest.waitForUISourceCodeRemoved = function(callback)
     }
 }
 
+InspectorTest.waitForTarget = function(filter) {
+    filter = filter || (target => true);
+    for (var target of SDK.targetManager.targets()) {
+        if (filter(target))
+            return Promise.resolve(target);
+    }
+    var fulfill;
+    var promise = new Promise(callback => fulfill = callback);
+    var observer = {
+        targetAdded: function(target) {
+            if (filter(target)) {
+                SDK.targetManager.unobserveTargets(observer);
+                fulfill(target);
+            }
+        },
+        targetRemoved: function() {
+        },
+    };
+    SDK.targetManager.observeTargets(observer);
+    return promise;
+}
+
+InspectorTest.waitForExecutionContext = function(runtimeModel) {
+    if (runtimeModel.executionContexts().length)
+        return Promise.resolve(runtimeModel.executionContexts()[0]);
+    var fulfill;
+    var promise = new Promise(callback => fulfill = callback);
+    function onContext(event) {
+      runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, onContext);
+      fulfill(event.data);
+    }
+    runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, onContext);
+    return promise;
+}
+
+InspectorTest.waitForExecutionContextDestroyed = function(context) {
+    var runtimeModel = context.runtimeModel;
+    if (runtimeModel.executionContexts().indexOf(context) === -1)
+        return Promise.resolve();
+    var fulfill;
+    var promise = new Promise(callback => fulfill = callback);
+    function onContext(event) {
+        if (event.data === context) {
+            runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextDestroyed, onContext);
+            fulfill();
+        }
+    }
+    runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextDestroyed, onContext);
+    return promise;
+}
+
 InspectorTest.assertGreaterOrEqual = function(a, b, message)
 {
     if (a < b)
