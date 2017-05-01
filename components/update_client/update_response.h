@@ -15,6 +15,11 @@
 
 namespace update_client {
 
+// The protocol versions so far are:
+// * Version 3.1: it changes how the run actions are serialized.
+// * Version 3.0: it is the version implemented by the desktop updaters.
+constexpr char kProtocolVersion[] = "3.1";
+
 // Parses responses for the update protocol version 3.
 // (https://github.com/google/omaha/blob/wiki/ServerProtocolV3.md)
 //
