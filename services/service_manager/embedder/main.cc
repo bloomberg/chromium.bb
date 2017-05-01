@@ -108,6 +108,12 @@ class ServiceProcessLauncherDelegateImpl
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
 void SetupSignalHandlers() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInProcessStackTraces)) {
+    // Don't interfere with sanitizer signal handlers.
+    return;
+  }
+
   // Sanitise our signal handling state. Signals that were ignored by our
   // parent will also be ignored by us. We also inherit our parent's sigmask.
   sigset_t empty_signal_set;
@@ -337,16 +343,6 @@ int Main(const MainParams& params) {
   ui::win::CreateATLModuleIfNeeded();
 #endif  // defined(OS_WIN)
 
-// On Android setlocale() is not supported, and we don't override the signal
-// handlers so we can get a stack trace when crashing.
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // Set C library locale to make sure CommandLine can parse argument values in
-  // the correct encoding.
-  setlocale(LC_ALL, "");
-
-  SetupSignalHandlers();
-#endif
-
 #if !defined(OS_ANDROID)
   // On Android, the command line is initialized when library is loaded.
   int argc = 0;
@@ -368,6 +364,16 @@ int Main(const MainParams& params) {
 
   SetProcessTitleFromCommandLine(argv);
 #endif  // !defined(OS_ANDROID)
+
+// On Android setlocale() is not supported, and we don't override the signal
+// handlers so we can get a stack trace when crashing.
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // Set C library locale to make sure CommandLine can parse argument values in
+  // the correct encoding.
+  setlocale(LC_ALL, "");
+
+  SetupSignalHandlers();
+#endif
 
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
 
