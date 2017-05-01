@@ -11,10 +11,6 @@
 
 @class BookmarkBarController;
 
-namespace bookmarks {
-const CGFloat kInitialNoItemTextFieldXOrigin = 5;
-}
-
 // A simple custom NSView for the bookmark bar used to prevent clicking and
 // dragging from moving the browser window.
 @interface BookmarkBarView : NSView {
@@ -23,11 +19,13 @@ const CGFloat kInitialNoItemTextFieldXOrigin = 5;
   CGFloat dropIndicatorPosition_;  // x position
 
   BookmarkBarController* controller_;
-  base::scoped_nsobject<NSTextField> noItemTextField_;
+  base::scoped_nsobject<NSTextField> noItemTextfield_;
   base::scoped_nsobject<NSButton> importBookmarksButton_;
+  base::scoped_nsobject<NSView> noItemContainer_;
 }
-- (NSTextField*)noItemTextField;
+- (NSTextField*)noItemTextfield;
 - (NSButton*)importBookmarksButton;
+- (NSView*)noItemContainer;
 
 - (instancetype)initWithController:(BookmarkBarController*)controller
                              frame:(NSRect)frame;

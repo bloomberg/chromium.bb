@@ -28,10 +28,14 @@ using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-static const CGFloat kInitialElementYOrigin = 7;
+static const CGFloat kInitialContainerWidth = 596;
+static const CGFloat kInitialContainerHeight = 41;
+static const CGFloat kInitialElementYOrigin = 20;
 static const CGFloat kInitialElementHeight = 14;
 static const CGFloat kInitialTextFieldXOrigin = 5;
+// static const CGFloat kInitialTextFieldWidth = 167;
 static const CGFloat kTextFieldTrailingPadding = 5;
+// static const CGFloat kInitialButtonWidth = 199;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
@@ -76,40 +80,53 @@ static const CGFloat kTextFieldTrailingPadding = 5;
 
     NSFont* smallSystemFont =
         [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    noItemContainer_.reset(
+        [[NSView alloc] initWithFrame:NSMakeRect(0, 0, kInitialContainerWidth,
+                                                 kInitialContainerHeight)]);
+    [noItemContainer_ setAutoresizingMask:NSViewMaxXMargin];
+    [noItemContainer_ setAutoresizingMask:NSViewWidthSizable];
 
-    noItemTextField_.reset([[NSTextField alloc]
+    noItemTextfield_.reset([[NSTextField alloc]
         initWithFrame:NSMakeRect(kInitialTextFieldXOrigin,
                                  kInitialElementYOrigin, CGFLOAT_MAX,
                                  kInitialElementHeight)]);
-    [noItemTextField_ setFont:smallSystemFont];
-    [noItemTextField_
+    [noItemTextfield_ setAutoresizingMask:NSViewWidthSizable];
+    [noItemTextfield_ setFont:smallSystemFont];
+    [noItemTextfield_
         setStringValue:l10n_util::GetNSString(IDS_BOOKMARKS_NO_ITEMS)];
-    [noItemTextField_ setEditable:NO];
+    [noItemTextfield_ setEditable:NO];
 
-    [noItemTextField_ setBordered:NO];
-    [[noItemTextField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    [noItemTextfield_ setBordered:NO];
+    [[noItemTextfield_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
 
-    [noItemTextField_ setTextColor:[NSColor controlTextColor]];
-    [noItemTextField_ setBackgroundColor:[NSColor controlColor]];
+    [noItemTextfield_ setTextColor:[NSColor controlTextColor]];
+    [noItemTextfield_ setBackgroundColor:[NSColor controlColor]];
 
-    [noItemTextField_ setDrawsBackground:NO];
-    [noItemTextField_ setTextColor:[NSColor controlTextColor]];
-    [noItemTextField_ setBackgroundColor:[NSColor controlColor]];
-    [noItemTextField_ sizeToFit];
+    [noItemTextfield_ setDrawsBackground:NO];
+    [noItemTextfield_ setTextColor:[NSColor controlTextColor]];
+    [noItemTextfield_ setBackgroundColor:[NSColor controlColor]];
+    [noItemTextfield_ sizeToFit];
 
     NSButton* importButton = [HyperlinkButtonCell
         buttonWithString:l10n_util::GetNSString(IDS_BOOKMARK_BAR_IMPORT_LINK)];
     importBookmarksButton_.reset([importButton retain]);
     [importBookmarksButton_
-        setFrame:NSMakeRect(NSMaxX([noItemTextField_ frame]) +
+        setFrame:NSMakeRect(NSMaxX([noItemTextfield_ frame]) +
                                 kTextFieldTrailingPadding,
                             kInitialElementYOrigin, CGFLOAT_MAX,
                             kInitialElementHeight)];
+    [importBookmarksButton_ setAutoresizingMask:NSViewMaxXMargin];
     [importBookmarksButton_ setFont:smallSystemFont];
     [importBookmarksButton_ sizeToFit];
+    [noItemContainer_ addSubview:importBookmarksButton_];
 
-    [self addSubview:noItemTextField_];
-    [self addSubview:importBookmarksButton_];
+    [noItemContainer_ addSubview:noItemTextfield_];
+    NSRect containerFrame = [noItemContainer_ frame];
+    containerFrame.size.width = std::max(
+        NSWidth(containerFrame), NSMaxX([importBookmarksButton_ frame]));
+    [noItemContainer_ setFrame:containerFrame];
+
+    [self addSubview:noItemContainer_];
     [self registerForNotificationsAndDraggedTypes];
   }
   return self;
@@ -157,7 +174,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
 
   NSColor* color =
       themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-  [noItemTextField_ setTextColor:color];
+  [noItemTextfield_ setTextColor:color];
 }
 
 // Mouse down events on the bookmark bar should not allow dragging the parent
@@ -166,8 +183,12 @@ static const CGFloat kTextFieldTrailingPadding = 5;
   return NO;
 }
 
-- (NSTextField*)noItemTextField {
-  return noItemTextField_;
+- (NSTextField*)noItemTextfield {
+  return noItemTextfield_;
+}
+
+- (NSView*)noItemContainer {
+  return noItemContainer_;
 }
 
 - (NSButton*)importBookmarksButton {
@@ -236,6 +257,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
 - (void)draggingEnded:(id<NSDraggingInfo>)info {
   [controller_ draggingEnded:info];
 
+  [[BookmarkButton draggedButton] setHidden:NO];
   if (dropIndicatorShown_) {
     dropIndicatorShown_ = NO;
     [self dropIndicatorChanged];
