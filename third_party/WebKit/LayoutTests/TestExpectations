@@ -416,11 +416,12 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-015.xht [ Skip ]
 
 ### external/wpt/css/CSS2/floats
-#### Passed: 19 48%
-#### Skipped: 23
+#### Passed: 18 43%
+#### Skipped: 24
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001c.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-left-overflow.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-right-overflow.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-left-overflow.xht [ Skip ]
@@ -699,8 +700,8 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containin
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009a.xht [ Skip ]
 
 #### external/wpt/css/CSS2/normal-flow
-#### Passed: 492 70%
-#### Skipped: 216
+#### Passed: 495 70%
+#### Skipped: 213
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-008.xht [ Skip ]
@@ -711,10 +712,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-forma
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-contexts-015.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-margins-001a.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-margins-001b.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-margins-002a.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-margins-002b.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-percents-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-005.xht [ Skip ]
@@ -914,6 +911,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-p
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Skip ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/table-in-inline-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-percentage-001.xht [ Skip ]
@@ -951,8 +949,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/min-pref-width-nowrap-floats
 crbug.com/635619 virtual/layout_ng/fast/block/basic/percent-height-inside-anonymous-block.html [ Failure Crash ]
 
 #### fast/block/margin-collapse
-#### Passed: 31
-#### Skipped: 59
+#### Passed: 33
+#### Skipped: 57
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/004.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/016.html [ Skip ]
@@ -984,14 +982,12 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/102.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/104.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/bfc-beside-float-complex-margin-collapsing.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/001.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/002.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/003.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/004.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/005.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/006.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/010.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/016.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/018.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/021.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/022.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/025.html [ Skip ]

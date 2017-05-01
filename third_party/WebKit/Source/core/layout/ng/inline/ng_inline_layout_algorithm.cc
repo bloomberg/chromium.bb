@@ -76,10 +76,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     Initialize(break_token->ItemIndex(), break_token->TextOffset());
   else
     Initialize(0, 0);
-
-  // BFC offset is known for inline fragments.
-  MaybeUpdateFragmentBfcOffset(ConstraintSpace(), ConstraintSpace().BfcOffset(),
-                               &container_builder_);
 }
 
 bool NGInlineLayoutAlgorithm::IsFirstLine() const {
@@ -249,6 +245,16 @@ bool NGInlineLayoutAlgorithm::CreateLine() {
 
 bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
   const Vector<NGInlineItem>& items = Node()->Items();
+
+  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
+  // Only resolve our BFC offset if we know that we are non-empty as we may
+  // need to pass through our margin strut.
+  if (!items.IsEmpty()) {
+    NGLogicalOffset bfc_offset = ConstraintSpace().BfcOffset();
+    bfc_offset.block_offset += ConstraintSpace().MarginStrut().Sum();
+    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_offset,
+                                 &container_builder_);
+  }
 
   // Create a list of LineItemChunk from |start| and |last_break_opportunity|.
   // TODO(kojii): Consider refactoring LineItemChunk once NGLineBuilder's public
@@ -570,6 +576,13 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // TODO(kojii): Check if the line box width should be content or available.
   NGLogicalSize size(max_inline_size_, content_size_);
   container_builder_.SetSize(size).SetOverflowSize(size);
+
+  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
+  // Margin struts shouldn't need to be passed through like this once we've
+  // removed LayoutInline splitting.
+  if (!container_builder_.BfcOffset()) {
+    container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
+  }
 
   return container_builder_.ToBoxFragment();
 }
