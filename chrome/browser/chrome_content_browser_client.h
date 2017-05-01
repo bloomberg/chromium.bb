@@ -286,7 +286,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
   void ExposeInterfacesToMediaService(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void ExposeInterfacesToFrame(
       service_manager::BinderRegistry* registry,

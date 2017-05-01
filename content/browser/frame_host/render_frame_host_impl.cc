@@ -105,6 +105,7 @@
 #include "media/media_features.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/services/media_interface_provider.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -3828,23 +3829,40 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
 }
 
 #if defined(OS_ANDROID)
+
+class RenderFrameHostImpl::JavaInterfaceProvider
+    : public service_manager::mojom::InterfaceProvider {
+ public:
+  JavaInterfaceProvider(
+      const service_manager::BinderRegistry::Binder& bind_callback,
+      service_manager::mojom::InterfaceProviderRequest request)
+      : bind_callback_(bind_callback), binding_(this, std::move(request)) {}
+  ~JavaInterfaceProvider() override = default;
+
+ private:
+  // service_manager::mojom::INterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle handle) override {
+    bind_callback_.Run(interface_name, std::move(handle));
+  }
+
+  service_manager::BinderRegistry::Binder bind_callback_;
+  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(JavaInterfaceProvider);
+};
+
 base::android::ScopedJavaLocalRef<jobject>
 RenderFrameHostImpl::GetJavaRenderFrameHost() {
   RenderFrameHostAndroid* render_frame_host_android =
       static_cast<RenderFrameHostAndroid*>(
           GetUserData(kRenderFrameHostAndroidKey));
   if (!render_frame_host_android) {
-    java_interface_registry_ =
-        base::MakeUnique<service_manager::InterfaceRegistry>(
-            "RenderFrameHost Java");
     service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
-    java_interface_registry_->set_default_binder(
+    java_interface_registry_ = base::MakeUnique<JavaInterfaceProvider>(
         base::Bind(&RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
-                   weak_ptr_factory_.GetWeakPtr()));
-    java_interface_registry_->Bind(
-        mojo::MakeRequest(&interface_provider_ptr), service_manager::Identity(),
-        service_manager::InterfaceProviderSpec(), service_manager::Identity(),
-        service_manager::InterfaceProviderSpec());
+                   weak_ptr_factory_.GetWeakPtr()),
+        mojo::MakeRequest(&interface_provider_ptr));
     render_frame_host_android =
         new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
     SetUserData(kRenderFrameHostAndroidKey, render_frame_host_android);

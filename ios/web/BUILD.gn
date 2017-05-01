@@ -161,6 +161,8 @@ source_set("web_arc") {
     "public/web_state/web_state.h",
     "public/web_state/web_state_delegate.h",
     "public/web_state/web_state_delegate_bridge.h",
+    "public/web_state/web_state_interface_provider.cc",
+    "public/web_state/web_state_interface_provider.h",
     "public/web_state/web_state_observer.h",
     "public/web_state/web_state_observer_bridge.h",
     "public/web_state/web_state_policy_decider.h",

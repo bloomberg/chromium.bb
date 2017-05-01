@@ -12,11 +12,12 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
+#include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/test/mojo_test.mojom.h"
+#include "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -61,13 +62,12 @@ class TestUIHandlerFactory
 class MojoFacadeTest : public WebTest {
  protected:
   MojoFacadeTest() {
-    interface_registry_.reset(
-        new service_manager::InterfaceRegistry(std::string()));
-    interface_registry_->AddInterface(&ui_handler_factory_);
+    interface_provider_ = base::MakeUnique<WebStateInterfaceProvider>();
+    interface_provider_->registry()->AddInterface(&ui_handler_factory_);
     evaluator_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWJSInjectionEvaluator)] retain]);
     facade_.reset(new MojoFacade(
-        interface_registry_.get(),
+        interface_provider_.get(),
         static_cast<id<CRWJSInjectionEvaluator>>(evaluator_.get())));
   }
 
@@ -76,7 +76,7 @@ class MojoFacadeTest : public WebTest {
 
  private:
   TestUIHandlerFactory ui_handler_factory_;
-  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<WebStateInterfaceProvider> interface_provider_;
   base::scoped_nsobject<OCMockObject> evaluator_;
   std::unique_ptr<MojoFacade> facade_;
 };

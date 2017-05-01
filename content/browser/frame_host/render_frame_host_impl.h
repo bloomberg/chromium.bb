@@ -47,7 +47,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
@@ -1165,9 +1164,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
 
-  std::vector<std::unique_ptr<service_manager::InterfaceRegistry>>
-      media_registries_;
-
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;
 
@@ -1187,7 +1183,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // An InterfaceRegistry that forwards interface requests from Java to the
   // RenderFrame. This provides access to interfaces implemented in the renderer
   // to Java code in the browser process.
-  std::unique_ptr<service_manager::InterfaceRegistry> java_interface_registry_;
+  class JavaInterfaceProvider;
+  std::unique_ptr<JavaInterfaceProvider> java_interface_registry_;
 #endif
 
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>

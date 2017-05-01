@@ -24,6 +24,7 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
+#include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/web_thread.h"
@@ -36,7 +37,6 @@
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace web {
 
@@ -540,12 +540,12 @@ bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response) {
 
 #pragma mark - RequestTracker management
 
-service_manager::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
-  if (!mojo_interface_registry_) {
-    mojo_interface_registry_ =
-        base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
+WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
+  if (!web_state_interface_provider_) {
+    web_state_interface_provider_ =
+        base::MakeUnique<WebStateInterfaceProvider>();
   }
-  return mojo_interface_registry_.get();
+  return web_state_interface_provider_.get();
 }
 
 base::WeakPtr<WebState> WebStateImpl::AsWeakPtr() {

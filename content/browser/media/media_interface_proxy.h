@@ -12,7 +12,10 @@
 #include "base/threading/thread_checker.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+
+namespace media {
+class MediaInterfaceProvider;
+}
 
 namespace content {
 
@@ -51,8 +54,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 
   // TODO(xhwang): Replace InterfaceProvider with a dedicated host interface.
   // See http://crbug.com/660573
-  std::vector<std::unique_ptr<service_manager::InterfaceRegistry>>
-      media_registries_;
+  std::vector<std::unique_ptr<media::MediaInterfaceProvider>> media_registries_;
 
   mojo::Binding<media::mojom::InterfaceFactory> binding_;
 

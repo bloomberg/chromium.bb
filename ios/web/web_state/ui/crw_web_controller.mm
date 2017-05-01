@@ -74,6 +74,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
@@ -99,7 +100,6 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -2208,7 +2208,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (web::MojoFacade*)mojoFacade {
   if (!_mojoFacade) {
     service_manager::mojom::InterfaceProvider* interfaceProvider =
-        _webStateImpl->GetMojoInterfaceRegistry();
+        _webStateImpl->GetWebStateInterfaceProvider();
     _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
   }
   return _mojoFacade.get();

@@ -5,7 +5,6 @@
 #include "services/video_capture/service_impl.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"

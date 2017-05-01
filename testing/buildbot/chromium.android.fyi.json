@@ -2607,19 +2607,6 @@
         "test": "mojo_common_unittests"
       },
       {
-        "override_isolate_target": "mojo_public_application_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
-        "test": "mojo_public_application_unittests"
-      },
-      {
         "override_isolate_target": "mojo_public_bindings_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3149,20 +3136,6 @@
           "hard_timeout": 60
         },
         "test": "mojo_common_unittests"
-      },
-      {
-        "override_isolate_target": "mojo_public_application_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_type": "gce_x86"
-            }
-          ],
-          "hard_timeout": 60
-        },
-        "test": "mojo_public_application_unittests"
       },
       {
         "override_isolate_target": "mojo_public_bindings_unittests",
