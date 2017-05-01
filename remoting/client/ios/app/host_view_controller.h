@@ -5,11 +5,14 @@
 #ifndef REMOTING_CLIENT_IOS_APP_HOST_VIEW_CONTROLLER_H_
 #define REMOTING_CLIENT_IOS_APP_HOST_VIEW_CONTROLLER_H_
 
-#import <GLKit/GLKit.h>
+#import <UIKit/UIKit.h>
 
 @class RemotingClient;
 
-@interface HostViewController : GLKViewController
+// We don't inherit it from GLKViewController since it uses its rendering loop,
+// which will swap buffers when the GLRenderer is writing and causes screen
+// tearing issues. Instead we use GlDisplayHandler to handle the rendering loop.
+@interface HostViewController : UIViewController
 
 - (id)initWithClient:(RemotingClient*)client;
 

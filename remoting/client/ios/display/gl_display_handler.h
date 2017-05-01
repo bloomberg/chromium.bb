@@ -28,7 +28,13 @@ class CursorShapeStub;
 }
 
 - (void)stop;
-- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect;
+
+// Called once the GLKView created.
+- (void)onSurfaceCreated:(GLKView*)view;
+
+// Called every time the GLKView dimension is initialized or changed.
+- (void)onSurfaceChanged:(const CGRect&)frame;
+
 - (std::unique_ptr<remoting::protocol::VideoRenderer>)CreateVideoRenderer;
 - (std::unique_ptr<remoting::protocol::CursorShapeStub>)CreateCursorShapeStub;
 

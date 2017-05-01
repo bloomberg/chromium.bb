@@ -8,6 +8,8 @@
 
 #import "remoting/client/ios/app/host_view_controller.h"
 
+#import <GLKit/GLKit.h>
+
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "remoting/client/ios/session/remoting_client.h"
 
@@ -15,6 +17,7 @@ static const CGFloat kFabInset = 15.f;
 
 @interface HostViewController () {
   RemotingClient* _client;
+  MDCFloatingButton* _floatingButton;
 }
 @end
 
@@ -30,25 +33,23 @@ static const CGFloat kFabInset = 15.f;
 
 #pragma mark - UIViewController
 
+- (void)loadView {
+  self.view = [[GLKView alloc] initWithFrame:CGRectZero];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-  MDCFloatingButton* floatingButton =
+  _floatingButton =
       [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
-  [floatingButton setTitle:@"+" forState:UIControlStateNormal];
-  [floatingButton addTarget:self
-                     action:@selector(didTap:)
-           forControlEvents:UIControlEventTouchUpInside];
+  [_floatingButton setTitle:@"+" forState:UIControlStateNormal];
+  [_floatingButton addTarget:self
+                      action:@selector(didTap:)
+            forControlEvents:UIControlEventTouchUpInside];
 
   UIImage* settingsImage = [UIImage imageNamed:@"Settings"];
-  [floatingButton setImage:settingsImage forState:UIControlStateNormal];
-  [floatingButton sizeToFit];
-  CGSize btnSize = floatingButton.frame.size;
-  floatingButton.frame =
-      CGRectMake(self.view.frame.size.width - btnSize.width - kFabInset,
-                 self.view.frame.size.height - btnSize.height - kFabInset,
-                 btnSize.width, btnSize.height);
-
-  [self.view addSubview:floatingButton];
+  [_floatingButton setImage:settingsImage forState:UIControlStateNormal];
+  [_floatingButton sizeToFit];
+  [self.view addSubview:_floatingButton];
 }
 
 - (void)viewDidUnload {
@@ -62,18 +63,35 @@ static const CGFloat kFabInset = 15.f;
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  GLKView* view = (GLKView*)self.view;
-  view.context = [_client.displayHandler GetEAGLContext];
+  GLKView* glView = (GLKView*)self.view;
+  glView.context = [_client.displayHandler GetEAGLContext];
+  [_client.displayHandler onSurfaceCreated:glView];
+
+  // viewDidLayoutSubviews may be called before viewDidAppear, in which case
+  // the surface is not ready and onSurfaceChanged will be no-op.
+  // Call onSurfaceChanged here to cover that case.
+  [_client.displayHandler onSurfaceChanged:glView.frame];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  ((GLKView*)self.view).enableSetNeedsDisplay = true;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 }
 
-#pragma mark - GLKViewDelegate
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
 
-- (void)glkView:(GLKView*)view drawInRect:(CGRect)rect {
-  // Nothing to do that is synchronous yet.
+  [_client.displayHandler onSurfaceChanged:((GLKView*)self.view).frame];
+
+  const CGSize& btnSize = _floatingButton.frame.size;
+  _floatingButton.frame =
+      CGRectMake(self.view.frame.size.width - btnSize.width - kFabInset,
+                 self.view.frame.size.height - btnSize.height - kFabInset,
+                 btnSize.width, btnSize.height);
 }
 
 #pragma mark - Private
