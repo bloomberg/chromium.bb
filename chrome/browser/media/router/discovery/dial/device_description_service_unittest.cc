@@ -247,7 +247,8 @@ TEST_F(DeviceDescriptionServiceTest,
                                                               "");
 }
 
-TEST_F(DeviceDescriptionServiceTest, TestCleanUpCacheEntries) {
+// Flaky: https://crbug.com/716810
+TEST_F(DeviceDescriptionServiceTest, DISABLED_TestCleanUpCacheEntries) {
   DialDeviceData device_data_1 = CreateDialDeviceData(1);
   DialDeviceData device_data_2 = CreateDialDeviceData(2);
   DialDeviceData device_data_3 = CreateDialDeviceData(3);
