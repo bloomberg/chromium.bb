@@ -1131,12 +1131,12 @@ importer.ControllerEnvironment.prototype.showImportDestination;
  * @constructor
  * @implements {importer.ControllerEnvironment}
  *
- * @param {!FileManager} fileManager
+ * @param {!CommandHandlerDeps} fileManager
  * @param {!FileSelectionHandler} selectionHandler
  */
-importer.RuntimeControllerEnvironment =
-    function(fileManager, selectionHandler) {
-  /** @private {!FileManager} */
+importer.RuntimeControllerEnvironment = function(
+    fileManager, selectionHandler) {
+  /** @private {!CommandHandlerDeps} */
   this.fileManager_ = fileManager;
 
   /** @private {!FileSelectionHandler} */
