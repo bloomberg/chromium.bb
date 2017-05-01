@@ -370,6 +370,11 @@ public:
 
 class BrowserTest : public ExtensionBrowserTest {
  protected:
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
   base::string16 LocaleWindowCaptionFromPageTitle(
@@ -588,7 +593,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
 // Flaky test, see https://crbug.com/445155.
 IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -616,7 +620,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
 // subsequent navigations work.  See http://crbug/com/343265.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL beforeunload_url(embedded_test_server()->GetURL("/beforeunload.html"));
   ui_test_utils::NavigateToURL(browser(), beforeunload_url);
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
@@ -1274,7 +1277,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_FaviconChange) {
 // tab.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
 
@@ -1322,7 +1324,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Load an app.
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
 
@@ -1357,7 +1358,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an app.
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
 
@@ -1453,7 +1453,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Add a pinned tab.
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1522,7 +1521,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an app
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
 
@@ -1845,7 +1843,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -1885,7 +1882,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 // that were present on the previous page.  See http://crbug.com/295695.
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(embedded_test_server()->GetURL("/empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 

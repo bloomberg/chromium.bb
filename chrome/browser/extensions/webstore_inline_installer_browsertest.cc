@@ -378,8 +378,8 @@ class WebstoreInlineInstallerRedirectTest : public WebstoreInlineInstallerTest {
   WebstoreInlineInstallerRedirectTest() : cws_request_received_(false) {}
   ~WebstoreInlineInstallerRedirectTest() override {}
 
-  void SetUpInProcessBrowserTestFixture() override {
-    WebstoreInstallerTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    WebstoreInstallerTest::SetUpOnMainThread();
     host_resolver()->AddRule(kRedirect1Domain, "127.0.0.1");
     host_resolver()->AddRule(kRedirect2Domain, "127.0.0.1");
   }

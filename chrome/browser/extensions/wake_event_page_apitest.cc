@@ -63,6 +63,11 @@ class WakeEventPageTest : public ExtensionBrowserTest {
  public:
   WakeEventPageTest() {}
 
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  protected:
   enum BackgroundPageConfiguration { EVENT, PERSISTENT, NONE };
 
@@ -73,7 +78,6 @@ class WakeEventPageTest : public ExtensionBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     GURL web_url = embedded_test_server()->GetURL("example.com", "/empty.html");
-    host_resolver()->AddRule(web_url.host(), "127.0.0.1");
 
     TestExtensionDir extension_dir;
     {

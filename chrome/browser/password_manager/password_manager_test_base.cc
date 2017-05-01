@@ -26,6 +26,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context.h"
@@ -255,6 +256,9 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
       FILE_PATH_LITERAL("chrome/test/data");
   https_test_server().ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server().Start());
+
+  // Setup the mock host resolver
+  host_resolver()->AddRule("*", "127.0.0.1");
 
   // Whitelist all certs for the HTTPS server.
   auto cert = https_test_server().GetCertificate();

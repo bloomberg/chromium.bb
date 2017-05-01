@@ -79,18 +79,16 @@ void WebstoreInstallerTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
 }
 
-void WebstoreInstallerTest::SetUpInProcessBrowserTestFixture() {
-  host_resolver()->AddRule(webstore_domain_, "127.0.0.1");
-  host_resolver()->AddRule(verified_domain_, "127.0.0.1");
-  host_resolver()->AddRule(unverified_domain_, "127.0.0.1");
-}
-
 void WebstoreInstallerTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   ASSERT_TRUE(download_directory_.CreateUniqueTempDir());
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       browser()->profile());
   download_prefs->SetDownloadPath(download_directory_.GetPath());
+
+  host_resolver()->AddRule(webstore_domain_, "127.0.0.1");
+  host_resolver()->AddRule(verified_domain_, "127.0.0.1");
+  host_resolver()->AddRule(unverified_domain_, "127.0.0.1");
 }
 
 GURL WebstoreInstallerTest::GenerateTestServerUrl(

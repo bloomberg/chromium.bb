@@ -360,6 +360,10 @@ class SSLUITest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kProcessPerSite);
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   void CheckAuthenticatedState(WebContents* tab,
                                int expected_authentication_state) {
     CheckSecurityState(tab, CertError::NONE, security_state::SECURE,
@@ -1749,9 +1753,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  host_resolver()->AddRule("example.test",
-                           https_server_.GetURL("/title1.html").host());
-
   net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
   replacement_pair.set_host("example.test");
 
@@ -2151,6 +2152,7 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
   ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); };
 
   void SetUpOnMainThread() override {
+    SSLUITestIgnoreCertErrors::SetUpOnMainThread();
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::NotificationService::AllSources());
   }
@@ -2188,8 +2190,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
                        TestMixedContentWithHTTPInRedirectChain) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
-
-  host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/blank_page.html"));
@@ -2270,14 +2270,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
-  // Make sure to add this hostname to the resolver so that it's not blocked
-  // (browser_test_base.cc has a resolver that blocks all non-local hostnames
-  // by default to ensure tests don't hit the network). This is critical to do
-  // because for PlzNavigate the request would otherwise get cancelled in the
-  // browser before the renderer sees it.
-  host_resolver()->AddRule(
-      "example.test",
-      embedded_test_server()->GetURL("/title1.html").host());
+  // SetUpOnMainThread adds this hostname to the resolver so that it's not
+  // blocked (browser_test_base.cc has a resolver that blocks all non-local
+  // hostnames by default to ensure tests don't hit the network). This is
+  // critical to do because for PlzNavigate the request would otherwise get
+  // cancelled in the browser before the renderer sees it.
 
   std::string top_frame_path;
   GetTopFramePath(*embedded_test_server(), https_server_, https_server_expired_,
@@ -3087,7 +3084,10 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
         "on-demand-only");
   }
 
-  void SetUpOnMainThread() override { SetUpNetworkTimeServer(); }
+  void SetUpOnMainThread() override {
+    SSLUITest::SetUpOnMainThread();
+    SetUpNetworkTimeServer();
+  }
 
   void TearDownOnMainThread() override {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
@@ -3405,6 +3405,11 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "SSLCommonNameMismatchHandling/Enabled/");
   }
+
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 // Visit the URL www.mail.example.com on a server that presents a valid
@@ -3417,12 +3422,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   https_server_example_domain_.ServeFilesFromSourceDirectory(
       base::FilePath(kDocRoot));
   ASSERT_TRUE(https_server_example_domain_.Start());
-
-  host_resolver()->AddRule(
-      "mail.example.com", https_server_example_domain_.host_port_pair().host());
-  host_resolver()->AddRule(
-      "www.mail.example.com",
-      https_server_example_domain_.host_port_pair().host());
 
   scoped_refptr<net::X509Certificate> cert =
       https_server_example_domain_.GetCertificate();
@@ -3484,11 +3483,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
       base::FilePath(kDocRoot));
   ASSERT_TRUE(https_server_example_domain_.Start());
 
-  host_resolver()->AddRule(
-      "www.example.org", https_server_example_domain_.host_port_pair().host());
-  host_resolver()->AddRule(
-      "example.org", https_server_example_domain_.host_port_pair().host());
-
   scoped_refptr<net::X509Certificate> cert =
       https_server_example_domain_.GetCertificate();
 
@@ -3542,12 +3536,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   https_server_example_domain_.ServeFilesFromSourceDirectory(
       base::FilePath(kDocRoot));
   ASSERT_TRUE(https_server_example_domain_.Start());
-
-  host_resolver()->AddRule(
-      "mail.example.com", https_server_example_domain_.host_port_pair().host());
-  host_resolver()->AddRule(
-      "www.mail.example.com",
-      https_server_example_domain_.host_port_pair().host());
 
   scoped_refptr<net::X509Certificate> cert =
       https_server_example_domain_.GetCertificate();
@@ -3612,12 +3600,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
       base::FilePath(kDocRoot));
   ASSERT_TRUE(https_server_example_domain_.Start());
 
-  host_resolver()->AddRule(
-      "mail.example.com", https_server_example_domain_.host_port_pair().host());
-  host_resolver()->AddRule(
-      "www.mail.example.com",
-      https_server_example_domain_.host_port_pair().host());
-
   scoped_refptr<net::X509Certificate> cert =
       https_server_example_domain_.GetCertificate();
 
@@ -3678,12 +3660,6 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   https_server_example_domain_.ServeFilesFromSourceDirectory(
       base::FilePath(kDocRoot));
   ASSERT_TRUE(https_server_example_domain_.Start());
-
-  host_resolver()->AddRule(
-      "mail.example.com", https_server_example_domain_.host_port_pair().host());
-  host_resolver()->AddRule(
-      "www.mail.example.com",
-      https_server_example_domain_.host_port_pair().host());
 
   scoped_refptr<net::X509Certificate> cert =
       https_server_example_domain_.GetCertificate();

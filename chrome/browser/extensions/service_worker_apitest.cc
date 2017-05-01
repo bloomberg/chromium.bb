@@ -99,6 +99,11 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
   ~ServiceWorkerTest() override {}
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("a.com", "127.0.0.1");
+  }
+
  protected:
   // Returns the ProcessManager for the test's profile.
   ProcessManager* process_manager() { return ProcessManager::Get(profile()); }
@@ -753,7 +758,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
   // (non-localhost, non-https) URL for the web page. This page will create
   // iframes that load extension pages that must be controllable by service
   // worker.
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   GURL page_url =
       embedded_test_server()->GetURL("a.com",
                                      "/extensions/api_test/service_worker/"

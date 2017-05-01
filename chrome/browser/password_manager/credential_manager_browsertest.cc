@@ -24,6 +24,12 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
   CredentialManagerBrowserTest() = default;
 
+  void SetUpOnMainThread() override {
+    PasswordManagerBrowserTestBase::SetUpOnMainThread();
+    // Redirect all requests to localhost.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   bool IsShowingAccountChooser() {
     return PasswordsModelDelegateFromWebContents(WebContents())->
         GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE;
@@ -101,9 +107,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
                        StoreSavesPSLMatchedCredential) {
-  // Redirect all requests to localhost.
-  host_resolver()->AddRule("*", "127.0.0.1");
-
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(

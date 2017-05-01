@@ -15,8 +15,8 @@ namespace extensions {
 
 class HistoryApiTest : public ExtensionApiTest {
  public:
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
     host_resolver()->AddRule("www.b.com", "127.0.0.1");

@@ -762,7 +762,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -798,7 +797,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -833,7 +831,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -866,7 +863,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -897,7 +893,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -965,8 +960,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
 // click in the PDF opens a new tab. The main page handles the pageShow event
 // and updates the history state.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
-
   // Navigate to the main page.
   GURL test_url(
       embedded_test_server()->GetURL("/pdf/pdf_href_replace_state.html"));

@@ -356,6 +356,11 @@ void NetInternalsTest::SetUpOnMainThread() {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
+
+  // Sample domain for SDCH-view test. Dictionaries for localhost/127.0.0.1
+  // are forbidden.
+  host_resolver()->AddRule("testdomain.com", "127.0.0.1");
+  host_resolver()->AddRule("sub.testdomain.com", "127.0.0.1");
 }
 
 content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
@@ -380,9 +385,5 @@ bool NetInternalsTest::StartTestServer() {
     return true;
   test_server_started_ = embedded_test_server()->Start();
 
-  // Sample domain for SDCH-view test. Dictionaries for localhost/127.0.0.1
-  // are forbidden.
-  host_resolver()->AddRule("testdomain.com", "127.0.0.1");
-  host_resolver()->AddRule("sub.testdomain.com", "127.0.0.1");
   return test_server_started_;
 }

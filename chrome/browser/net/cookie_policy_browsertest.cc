@@ -26,6 +26,10 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
  protected:
   CookiePolicyBrowserTest() {}
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CookiePolicyBrowserTest);
 };
@@ -71,8 +75,6 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   std::string cookie =
       content::GetCookies(browser()->profile(), redirected_url);
   ASSERT_EQ("", cookie);
-
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
 
   ui_test_utils::NavigateToURL(browser(),
                                GURL(url.spec() + redirected_url.spec()));

@@ -553,7 +553,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   FeatureSwitch::ScopedOverride enable_scripts_require_action(
       FeatureSwitch::scripts_require_action(), true);
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 

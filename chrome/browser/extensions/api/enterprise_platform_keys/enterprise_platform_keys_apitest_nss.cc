@@ -248,8 +248,6 @@ class EnterprisePlatformKeysTest
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    host_resolver()->AddRule("*", "127.0.0.1");
-
     chromeos::FakeSessionManagerClient* fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -283,6 +281,7 @@ class EnterprisePlatformKeysTest
   }
 
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
     // Start the accept thread as the sandbox host process has already been
     // spawned.
     embedded_test_server()->StartAcceptingConnections();

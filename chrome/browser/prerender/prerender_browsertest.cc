@@ -598,6 +598,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    // This one test fails with the host resolver redirecting all hosts.
+    if (std::string(test_info->name()) != "PrerenderServerRedirectInIframe")
+      host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -838,7 +843,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 
   void SetLoaderHostOverride(const std::string& host) {
     loader_host_override_ = host;
-    host_resolver()->AddRule(host, "127.0.0.1");
   }
 
   void set_loader_path(const std::string& path) {
@@ -851,7 +855,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 
   GURL GetCrossDomainTestUrl(const std::string& path) {
     static const std::string secondary_domain = "www.foo.com";
-    host_resolver()->AddRule(secondary_domain, "127.0.0.1");
     std::string url_str(base::StringPrintf(
         "http://%s:%d/%s", secondary_domain.c_str(),
         embedded_test_server()->host_port_pair().port(), path.c_str()));

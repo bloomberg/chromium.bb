@@ -50,6 +50,10 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
     auth_map_["testrealm"] = AuthInfo(username_basic_, password_);
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  protected:
   struct AuthInfo {
     std::string username_;
@@ -689,8 +693,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        BlockCrossdomainPromptForSubresources) {
   const char kTestPage[] = "/login/load_img_from_b.html";
 
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  host_resolver()->AddRule("www.b.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
@@ -757,8 +759,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        AllowCrossdomainPromptForSubframes) {
   const char kTestPage[] = "/login/load_iframe_from_b.html";
 
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  host_resolver()->AddRule("www.b.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =
@@ -1219,7 +1219,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 // should be shown in the omnibox when the auth dialog is displayed.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        ShowCorrectUrlForCrossOriginMainFrameRedirects) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const char kTestPage[] = "/login/cross_origin.html";
@@ -1236,8 +1235,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 // the omnibox.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
                        CancelLoginInterstitialOnRedirect) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
-  host_resolver()->AddRule("www.b.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // The test page redirects to www.a.com which triggers an auth dialog.
@@ -1464,7 +1461,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 
   const char* kTestPage = "/login/load_iframe_from_b.html";
 
-  host_resolver()->AddRule("www.b.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* contents =

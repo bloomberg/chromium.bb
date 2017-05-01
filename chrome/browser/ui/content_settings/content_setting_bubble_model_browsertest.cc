@@ -82,6 +82,14 @@ class ContentSettingsMixedScriptIgnoreCertErrorsTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
+
+  void SetUpOnMainThread() override {
+    ContentSettingBubbleModelMixedScriptTest::SetUpOnMainThread();
+    // Rappor treats local hostnames a little bit special (e.g. records
+    // "127.0.0.1" as "localhost"), so use a non-local hostname for
+    // convenience.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel records UMA
@@ -95,10 +103,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
                        MainFrameMetrics) {
   GURL url(https_server_->GetURL("/content_setting_bubble/mixed_script.html"));
 
-  // Rappor treats local hostnames a little bit special (e.g. records
-  // "127.0.0.1" as "localhost"), so use a non-local hostname for
-  // convenience.
-  host_resolver()->AddRule("*", "127.0.0.1");
   GURL::Replacements replace_host;
   replace_host.SetHostStr("example.test");
   url = url.ReplaceComponents(replace_host);
