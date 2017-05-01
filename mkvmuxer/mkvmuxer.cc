@@ -3361,7 +3361,10 @@ uint64_t Segment::AddVideoTrack(int32_t width, int32_t height, int32_t number) {
   track->set_width(width);
   track->set_height(height);
 
-  tracks_.AddTrack(track, number);
+  if (!tracks_.AddTrack(track, number)) {
+    delete track;
+    return 0;
+  }
   has_video_ = true;
 
   return track->number();
@@ -3401,7 +3404,10 @@ uint64_t Segment::AddAudioTrack(int32_t sample_rate, int32_t channels,
   track->set_sample_rate(sample_rate);
   track->set_channels(channels);
 
-  tracks_.AddTrack(track, number);
+  if (!tracks_.AddTrack(track, number)) {
+    delete track;
+    return 0;
+  }
 
   return track->number();
 }
