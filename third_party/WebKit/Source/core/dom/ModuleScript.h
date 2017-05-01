@@ -64,6 +64,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationSuccess();
 
+  v8::Local<v8::Value> CreateInstantiationError(v8::Isolate* isolate) const {
+    return instantiation_error_.NewLocal(isolate);
+  }
+
   ParserDisposition ParserState() const { return parser_state_; }
   WebURLRequest::FetchCredentialsMode CredentialsMode() const {
     return credentials_mode_;

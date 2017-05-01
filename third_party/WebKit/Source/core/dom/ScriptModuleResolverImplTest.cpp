@@ -4,7 +4,9 @@
 
 #include "core/dom/ScriptModuleResolverImpl.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
@@ -26,6 +28,10 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
 
   DECLARE_TRACE();
 
+  void SetScriptState(ScriptState* script_state) {
+    script_state_ = script_state;
+  }
+
   int GetFetchedModuleScriptCalled() const {
     return get_fetched_module_script_called_;
   }
@@ -38,6 +44,14 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
   // Implements Modulator:
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
 
+  ScriptValue GetInstantiationError(const ModuleScript* module_script) {
+    ScriptState::Scope scope(script_state_.Get());
+    return ScriptValue(
+        script_state_.Get(),
+        module_script->CreateInstantiationError(script_state_->GetIsolate()));
+  }
+
+  RefPtr<ScriptState> script_state_;
   int get_fetched_module_script_called_ = 0;
   KURL fetched_url_;
   Member<ModuleScript> module_script_;
@@ -64,13 +78,14 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
   ModuleScript* referrer_module_script = ModuleScript::CreateForTest(
       modulator, referrer_record, referrer_url, "", kParserInserted,
       WebURLRequest::kFetchCredentialsModeOmit);
-  // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
-  // https://codereview.chromium.org/2782403002/ landed.
+  referrer_module_script->SetInstantiationSuccess();
   return referrer_module_script;
 }
 
-ModuleScript* CreateTargetModuleScript(Modulator* modulator,
-                                       V8TestingScope& scope) {
+ModuleScript* CreateTargetModuleScript(
+    Modulator* modulator,
+    V8TestingScope& scope,
+    ModuleInstantiationState state = ModuleInstantiationState::kInstantiated) {
   ScriptModule record =
       ScriptModule::Compile(scope.GetIsolate(), "export const pi = 3.14;",
                             "target.js", kSharableCrossOrigin);
@@ -78,8 +93,15 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
   ModuleScript* module_script =
       ModuleScript::CreateForTest(modulator, record, url, "", kParserInserted,
                                   WebURLRequest::kFetchCredentialsModeOmit);
-  // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
-  // https://codereview.chromium.org/2782403002/ landed.
+  if (state == ModuleInstantiationState::kInstantiated) {
+    module_script->SetInstantiationSuccess();
+  } else {
+    EXPECT_EQ(ModuleInstantiationState::kErrored, state);
+    v8::Local<v8::Value> error =
+        V8ThrowException::CreateError(scope.GetIsolate(), "hoge");
+    module_script->SetInstantiationErrorAndClearRecord(
+        ScriptValue(scope.GetScriptState(), error));
+  }
   return module_script;
 }
 
@@ -104,7 +126,7 @@ void ScriptModuleResolverImplTest::SetUp() {
   modulator_ = new ScriptModuleResolverImplTestModulator();
 }
 
-TEST_F(ScriptModuleResolverImplTest, registerResolveSuccess) {
+TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {
   ScriptModuleResolverImpl* resolver =
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
@@ -127,7 +149,7 @@ TEST_F(ScriptModuleResolverImplTest, registerResolveSuccess) {
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();
 }
 
-TEST_F(ScriptModuleResolverImplTest, resolveInvalidModuleSpecifier) {
+TEST_F(ScriptModuleResolverImplTest, ResolveInvalidModuleSpecifier) {
   ScriptModuleResolverImpl* resolver =
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
@@ -148,7 +170,7 @@ TEST_F(ScriptModuleResolverImplTest, resolveInvalidModuleSpecifier) {
   EXPECT_EQ(0, modulator_->GetFetchedModuleScriptCalled());
 }
 
-TEST_F(ScriptModuleResolverImplTest, resolveLoadFailedModule) {
+TEST_F(ScriptModuleResolverImplTest, ResolveLoadFailedModule) {
   ScriptModuleResolverImpl* resolver =
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
@@ -168,6 +190,31 @@ TEST_F(ScriptModuleResolverImplTest, resolveLoadFailedModule) {
                         scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(kV8TypeError, scope.GetExceptionState().Code());
+  EXPECT_TRUE(resolved.IsNull());
+  EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());
+  EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
+      << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();
+}
+
+TEST_F(ScriptModuleResolverImplTest, ResolveInstantiationFailedModule) {
+  ScriptModuleResolverImpl* resolver =
+      ScriptModuleResolverImpl::Create(Modulator());
+  V8TestingScope scope;
+  Modulator()->SetScriptState(scope.GetScriptState());
+
+  ModuleScript* referrer_module_script =
+      CreateReferrerModuleScript(modulator_, scope);
+  resolver->RegisterModuleScript(referrer_module_script);
+
+  ModuleScript* target_module_script = CreateTargetModuleScript(
+      modulator_, scope, ModuleInstantiationState::kErrored);
+  Modulator()->SetModuleScript(target_module_script);
+
+  ScriptModule resolved =
+      resolver->Resolve("./target.js", referrer_module_script->Record(),
+                        scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(kUnknownError, scope.GetExceptionState().Code());
   EXPECT_TRUE(resolved.IsNull());
   EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());
   EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
