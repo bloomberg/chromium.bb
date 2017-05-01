@@ -576,7 +576,8 @@ public class DownloadNotificationService extends Service {
             // Move all regular downloads to pending.  Don't propagate the pause because
             // if native is still working and it triggers an update, then the service will be
             // restarted.
-            notifyDownloadPaused(entry.id, !entry.isOffTheRecord, true, entry.isTransient, null);
+            notifyDownloadPaused(entry.id, entry.fileName, !entry.isOffTheRecord, true,
+                    entry.isOffTheRecord, entry.isTransient, null);
         }
     }
 
@@ -897,26 +898,28 @@ public class DownloadNotificationService extends Service {
     /**
      * Change a download notification to paused state.
      * @param id              The {@link ContentId} of the download.
+     * @param fileName        File name of the download.
      * @param isResumable     Whether download can be resumed.
-     * @param isAutoResumable whether download is can be resumed automatically.
+     * @param isAutoResumable Whether download is can be resumed automatically.
+     * @param isOffTheRecord  Whether the download is off the record.
      * @param isTransient     Whether or not clicking on the download should launch downloads home.
      * @param icon            A {@link Bitmap} to be used as the large icon for display.
      */
-    public void notifyDownloadPaused(ContentId id, boolean isResumable, boolean isAutoResumable,
-            boolean isTransient, Bitmap icon) {
+    public void notifyDownloadPaused(ContentId id, String fileName, boolean isResumable,
+            boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon) {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
-        if (entry == null) return;
         if (!isResumable) {
-            notifyDownloadFailed(id, entry.fileName, icon);
+            notifyDownloadFailed(id, fileName, icon);
             return;
         }
         // If download is already paused, do nothing.
-        if (!entry.isAutoResumable) return;
+        if (entry != null && !entry.isAutoResumable) return;
+        boolean canDownloadWhileMetered = entry == null ? false : entry.canDownloadWhileMetered;
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
-            notifyDownloadPending(id, entry.fileName, entry.isOffTheRecord,
-                    entry.canDownloadWhileMetered, isTransient, icon);
+            notifyDownloadPending(id, fileName, isOffTheRecord, canDownloadWhileMetered,
+                    isTransient, icon);
             stopTrackingInProgressDownload(id, true);
             return;
         }
@@ -924,38 +927,37 @@ public class DownloadNotificationService extends Service {
         String contentText = mContext.getResources().getString(
                 R.string.download_notification_paused);
         ChromeNotificationBuilder builder =
-                buildNotification(R.drawable.ic_download_pause, entry.fileName, contentText);
-
+                buildNotification(R.drawable.ic_download_pause, fileName, contentText);
+        int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
         if (!isTransient) {
             // Clicking on an in-progress download sends the user to see all their downloads.
             Intent downloadHomeIntent = buildActionIntent(
                     mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
-            builder.setContentIntent(PendingIntent.getBroadcast(mContext, entry.notificationId,
+            builder.setContentIntent(PendingIntent.getBroadcast(mContext, notificationId,
                     downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         builder.setAutoCancel(false);
         if (icon != null) builder.setLargeIcon(icon);
 
         Intent resumeIntent =
-                buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME, id, entry.isOffTheRecord);
+                buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME, id, isOffTheRecord);
         builder.addAction(R.drawable.ic_file_download_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_resume_button),
-                buildPendingIntent(resumeIntent, entry.notificationId));
+                buildPendingIntent(resumeIntent, notificationId));
 
         Intent cancelIntent =
-                buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL, id, entry.isOffTheRecord);
+                buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL, id, isOffTheRecord);
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(cancelIntent, entry.notificationId));
+                buildPendingIntent(cancelIntent, notificationId));
         PendingIntent deleteIntent = isTransient
-                ? buildPendingIntent(cancelIntent, entry.notificationId)
-                : buildSummaryIconIntent(entry.notificationId);
+                ? buildPendingIntent(cancelIntent, notificationId)
+                : buildSummaryIconIntent(notificationId);
         builder.setDeleteIntent(deleteIntent);
 
-        updateNotification(entry.notificationId, builder.build(), id,
-                new DownloadSharedPreferenceEntry(id, entry.notificationId, entry.isOffTheRecord,
-                        entry.canDownloadWhileMetered, entry.fileName, isAutoResumable,
-                        isTransient));
+        updateNotification(notificationId, builder.build(), id,
+                new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
+                        canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
         stopTrackingInProgressDownload(id, true);
     }
 
@@ -1170,7 +1172,8 @@ public class DownloadNotificationService extends Service {
                 // TODO(dtrainor): Should we spin up native to make sure we have the icon?  Or maybe
                 // build a Java cache for easy access.
                 notifyDownloadPaused(
-                        entry.id, !entry.isOffTheRecord, false, entry.isTransient, null);
+                        entry.id, entry.fileName, !entry.isOffTheRecord, false,
+                        entry.isOffTheRecord, entry.isTransient, null);
                 hideSummaryNotificationIfNecessary(-1);
                 return;
             }
@@ -1219,7 +1222,8 @@ public class DownloadNotificationService extends Service {
                 } else if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
                     // TODO(dtrainor): Consider hitting the delegate and rely on that to update the
                     // state.
-                    notifyDownloadPaused(entry.id, true, false, entry.isTransient, null);
+                    notifyDownloadPaused(entry.id, entry.fileName, true, false,
+                            entry.isOffTheRecord, entry.isTransient, null);
                     downloadServiceDelegate.pauseDownload(entry.id, entry.isOffTheRecord);
                 } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
                     // TODO(dtrainor): Consider hitting the delegate and rely on that to update the

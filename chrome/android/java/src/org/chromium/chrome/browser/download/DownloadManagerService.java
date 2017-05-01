@@ -770,7 +770,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 DownloadUmaStatsEntry entry = getUmaStatsEntry(downloadItem.getId());
                 if (entry == null) {
                     addUmaStatsEntry(new DownloadUmaStatsEntry(
-                            downloadItem.getId(), startTime, 0, false, false, bytesReceived, 0));
+                            downloadItem.getId(), startTime,
+                            downloadStatus == DOWNLOAD_STATUS_INTERRUPTED ? 1 : 0, false, false,
+                            bytesReceived, 0));
                 } else if (updateBytesReceived(entry, bytesReceived)) {
                     storeUmaEntries();
                 }
