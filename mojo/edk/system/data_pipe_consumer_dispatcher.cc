@@ -69,23 +69,20 @@ class DataPipeConsumerDispatcher::PortObserverThunk
   DISALLOW_COPY_AND_ASSIGN(PortObserverThunk);
 };
 
-DataPipeConsumerDispatcher::DataPipeConsumerDispatcher(
+// static
+scoped_refptr<DataPipeConsumerDispatcher> DataPipeConsumerDispatcher::Create(
     NodeController* node_controller,
     const ports::PortRef& control_port,
     scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
     const MojoCreateDataPipeOptions& options,
-    bool initialized,
-    uint64_t pipe_id)
-    : options_(options),
-      node_controller_(node_controller),
-      control_port_(control_port),
-      pipe_id_(pipe_id),
-      watchers_(this),
-      shared_ring_buffer_(shared_ring_buffer) {
-  if (initialized) {
-    base::AutoLock lock(lock_);
-    InitializeNoLock();
-  }
+    uint64_t pipe_id) {
+  scoped_refptr<DataPipeConsumerDispatcher> consumer =
+      new DataPipeConsumerDispatcher(node_controller, control_port,
+                                     shared_ring_buffer, options, pipe_id);
+  base::AutoLock lock(consumer->lock_);
+  if (!consumer->InitializeNoLock())
+    return nullptr;
+  return consumer;
 }
 
 Dispatcher::Type DataPipeConsumerDispatcher::GetType() const {
@@ -322,21 +319,16 @@ bool DataPipeConsumerDispatcher::EndSerialize(
 
   ports[0] = control_port_.name();
 
-  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
-  CHECK(shared_ring_buffer_);
-
   buffer_handle_for_transit_ = shared_ring_buffer_->DuplicatePlatformHandle();
-  platform_handles[0] = buffer_handle_for_transit_.get();
+  if (!buffer_handle_for_transit_.is_valid())
+    return false;
 
+  platform_handles[0] = buffer_handle_for_transit_.get();
   return true;
 }
 
 bool DataPipeConsumerDispatcher::BeginTransit() {
   base::AutoLock lock(lock_);
-
-  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
-  CHECK(shared_ring_buffer_);
-
   if (in_transit_)
     return false;
   in_transit_ = !in_two_phase_read_;
@@ -396,8 +388,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
 
   scoped_refptr<DataPipeConsumerDispatcher> dispatcher =
       new DataPipeConsumerDispatcher(node_controller, port, ring_buffer,
-                                     state->options, false /* initialized */,
-                                     state->pipe_id);
+                                     state->options, state->pipe_id);
 
   {
     base::AutoLock lock(dispatcher->lock_);
@@ -405,45 +396,52 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
     dispatcher->bytes_available_ = state->bytes_available;
     dispatcher->new_data_available_ = state->bytes_available > 0;
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
-    dispatcher->InitializeNoLock();
+    if (!dispatcher->InitializeNoLock())
+      return nullptr;
     dispatcher->UpdateSignalsStateNoLock();
   }
 
   return dispatcher;
 }
 
+DataPipeConsumerDispatcher::DataPipeConsumerDispatcher(
+    NodeController* node_controller,
+    const ports::PortRef& control_port,
+    scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+    const MojoCreateDataPipeOptions& options,
+    uint64_t pipe_id)
+    : options_(options),
+      node_controller_(node_controller),
+      control_port_(control_port),
+      pipe_id_(pipe_id),
+      watchers_(this),
+      shared_ring_buffer_(shared_ring_buffer) {}
+
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
   DCHECK(is_closed_ && !shared_ring_buffer_ && !ring_buffer_mapping_ &&
          !in_transit_);
 }
 
-void DataPipeConsumerDispatcher::InitializeNoLock() {
+bool DataPipeConsumerDispatcher::InitializeNoLock() {
   lock_.AssertAcquired();
+  if (!shared_ring_buffer_)
+    return false;
 
-  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
-  CHECK(shared_ring_buffer_);
-
-  if (shared_ring_buffer_) {
-    DCHECK(!ring_buffer_mapping_);
-
-    // TODO(crbug.com/706689): Remove this when the bug is sorted out.
-    CHECK(shared_ring_buffer_->IsValidMap(0, options_.capacity_num_bytes));
-
-    ring_buffer_mapping_ =
-        shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
-    if (!ring_buffer_mapping_) {
-      DLOG(ERROR) << "Failed to map shared buffer.";
-      shared_ring_buffer_ = nullptr;
-    }
+  DCHECK(!ring_buffer_mapping_);
+  ring_buffer_mapping_ =
+      shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
+  if (!ring_buffer_mapping_) {
+    DLOG(ERROR) << "Failed to map shared buffer.";
+    shared_ring_buffer_ = nullptr;
+    return false;
   }
-
-  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
-  CHECK(shared_ring_buffer_);
 
   base::AutoUnlock unlock(lock_);
   node_controller_->SetPortObserver(
       control_port_,
       make_scoped_refptr(new PortObserverThunk(this)));
+
+  return true;
 }
 
 MojoResult DataPipeConsumerDispatcher::CloseNoLock() {

@@ -32,12 +32,11 @@ class NodeController;
 class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
     : public Dispatcher {
  public:
-  DataPipeConsumerDispatcher(
+  static scoped_refptr<DataPipeConsumerDispatcher> Create(
       NodeController* node_controller,
       const ports::PortRef& control_port,
       scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
       const MojoCreateDataPipeOptions& options,
-      bool initialized,
       uint64_t pipe_id);
 
   // Dispatcher:
@@ -77,9 +76,15 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   class PortObserverThunk;
   friend class PortObserverThunk;
 
+  DataPipeConsumerDispatcher(
+      NodeController* node_controller,
+      const ports::PortRef& control_port,
+      scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+      const MojoCreateDataPipeOptions& options,
+      uint64_t pipe_id);
   ~DataPipeConsumerDispatcher() override;
 
-  void InitializeNoLock();
+  bool InitializeNoLock();
   MojoResult CloseNoLock();
   HandleSignalsState GetHandleSignalsStateNoLock() const;
   void NotifyRead(uint32_t num_bytes);

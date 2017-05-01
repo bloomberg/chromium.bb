@@ -703,7 +703,6 @@ MojoResult Core::CreateDataPipe(
       options && options->capacity_num_bytes ? options->capacity_num_bytes
                                              : 64 * 1024;
 
-  // TODO(rockot): Broker through the parent when necessary.
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       GetNodeController()->CreateSharedBuffer(
           create_options.capacity_num_bytes);
@@ -713,17 +712,21 @@ MojoResult Core::CreateDataPipe(
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
 
-  CHECK(data_pipe_producer_handle);
-  CHECK(data_pipe_consumer_handle);
+  DCHECK(data_pipe_producer_handle);
+  DCHECK(data_pipe_consumer_handle);
 
   uint64_t pipe_id = base::RandUint64();
+  scoped_refptr<Dispatcher> producer = DataPipeProducerDispatcher::Create(
+      GetNodeController(), port0, ring_buffer, create_options, pipe_id);
+  if (!producer)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  scoped_refptr<Dispatcher> producer = new DataPipeProducerDispatcher(
-      GetNodeController(), port0, ring_buffer, create_options,
-      true /* initialized */, pipe_id);
-  scoped_refptr<Dispatcher> consumer = new DataPipeConsumerDispatcher(
-      GetNodeController(), port1, ring_buffer, create_options,
-      true /* initialized */, pipe_id);
+  scoped_refptr<Dispatcher> consumer = DataPipeConsumerDispatcher::Create(
+      GetNodeController(), port1, ring_buffer, create_options, pipe_id);
+  if (!consumer) {
+    consumer->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
 
   *data_pipe_producer_handle = AddDispatcher(producer);
   *data_pipe_consumer_handle = AddDispatcher(consumer);

@@ -246,13 +246,19 @@ void MojoAsyncResourceHandler::OnWillRead(
     options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
     options.element_num_bytes = 1;
     options.capacity_num_bytes = g_allocation_size;
-    mojo::DataPipe data_pipe(options);
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
 
-    DCHECK(data_pipe.producer_handle.is_valid());
-    DCHECK(data_pipe.consumer_handle.is_valid());
+    MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+    if (result != MOJO_RESULT_OK) {
+      controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+      return;
+    }
+    DCHECK(producer.is_valid());
+    DCHECK(consumer.is_valid());
 
-    response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
-    shared_writer_ = new SharedWriter(std::move(data_pipe.producer_handle));
+    response_body_consumer_handle_ = std::move(consumer);
+    shared_writer_ = new SharedWriter(std::move(producer));
     handle_watcher_.Watch(shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
                           base::Bind(&MojoAsyncResourceHandler::OnWritable,
                                      base::Unretained(this)));
