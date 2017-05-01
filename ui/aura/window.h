@@ -27,7 +27,6 @@
 #include "ui/events/event_target.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/gestures/gesture_types.h"
-#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/public/window_types.h"
@@ -239,16 +238,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
   bool ignore_events() const { return ignore_events_; }
-
-  // Sets the window to grab hits for an area extending |insets| pixels inside
-  // its bounds (even if that inner region overlaps a child window). This can be
-  // used to create an invisible non-client area that overlaps the client area.
-  void set_hit_test_bounds_override_inner(const gfx::Insets& insets) {
-    hit_test_bounds_override_inner_ = insets;
-  }
-  gfx::Insets hit_test_bounds_override_inner() const {
-    return hit_test_bounds_override_inner_;
-  }
 
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
@@ -481,9 +470,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;
-
-  // See set_hit_test_bounds_override_inner().
-  gfx::Insets hit_test_bounds_override_inner_;
 
   base::ObserverList<WindowObserver, true> observers_;
 

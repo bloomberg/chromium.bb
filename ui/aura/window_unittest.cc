@@ -544,7 +544,7 @@ TEST_P(WindowTest, GetEventHandlerForPoint) {
   EXPECT_EQ(w13.get(), root->GetEventHandlerForPoint(gfx::Point(26, 481)));
 }
 
-TEST_P(WindowTest, GetEventHandlerForPointWithOverride) {
+TEST_P(WindowTest, GetEventHandlerForPointInCornerOfChildBounds) {
   // If our child is flush to our top-left corner it gets events just inside the
   // window edges.
   std::unique_ptr<Window> parent(CreateTestWindow(
@@ -553,12 +553,6 @@ TEST_P(WindowTest, GetEventHandlerForPointWithOverride) {
       CreateTestWindow(SK_ColorRED, 2, gfx::Rect(0, 0, 60, 70), parent.get()));
   EXPECT_EQ(child.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
   EXPECT_EQ(child.get(), parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
-
-  // We can override the hit test bounds of the parent to make the parent grab
-  // events along that edge.
-  parent->set_hit_test_bounds_override_inner(gfx::Insets(1, 1, 1, 1));
-  EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(child.get(),  parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
 }
 
 TEST_P(WindowTest, GetEventHandlerForPointWithOverrideDescendingOrder) {
