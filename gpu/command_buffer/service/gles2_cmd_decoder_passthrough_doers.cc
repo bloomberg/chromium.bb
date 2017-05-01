@@ -193,6 +193,62 @@ void AppendStringToBuffer(std::vector<uint8_t>* data,
   memcpy(data->data() + old_size.ValueOrDie(), str, len);
 }
 
+// In order to minimize the amount of data copied, the command buffer client
+// unpack pixels before sending the glTex[Sub]Image[2|3]D calls. The only
+// parameter it doesn't handle is the alignment. Resetting the unpack state is
+// not needed when uploading from a PBO and for compressed formats which the
+// client sends untouched. This class handles resetting and restoring the unpack
+// state.
+// TODO(cwallez@chromium.org) it would be nicer to handle the resetting /
+// restoring on the client side.
+class ScopedUnpackStateButAlignmentReset {
+ public:
+  ScopedUnpackStateButAlignmentReset(bool enable, bool is_3d) {
+    if (!enable) {
+      return;
+    }
+
+    glGetIntegerv(GL_UNPACK_SKIP_PIXELS, &skip_pixels_);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glGetIntegerv(GL_UNPACK_SKIP_ROWS, &skip_rows_);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+    glGetIntegerv(GL_UNPACK_ROW_LENGTH, &row_length_);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+    if (is_3d) {
+      glGetIntegerv(GL_UNPACK_SKIP_IMAGES, &skip_images_);
+      glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
+      glGetIntegerv(GL_UNPACK_IMAGE_HEIGHT, &image_height_);
+      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+    }
+  }
+
+  ~ScopedUnpackStateButAlignmentReset() {
+    if (skip_pixels_ != 0) {
+      glPixelStorei(GL_UNPACK_SKIP_PIXELS, skip_pixels_);
+    }
+    if (skip_rows_ != 0) {
+      glPixelStorei(GL_UNPACK_SKIP_ROWS, skip_rows_);
+    }
+    if (skip_images_ != 0) {
+      glPixelStorei(GL_UNPACK_SKIP_IMAGES, skip_images_);
+    }
+    if (row_length_ != 0) {
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length_);
+    }
+    if (image_height_ != 0) {
+      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, image_height_);
+    }
+  }
+
+ private:
+  GLint skip_pixels_ = 0;
+  GLint skip_rows_ = 0;
+  GLint skip_images_ = 0;
+  GLint row_length_ = 0;
+  GLint image_height_ = 0;
+};
+
 }  // anonymous namespace
 
 // Implementations of commands
@@ -1845,10 +1901,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexImage2D(GLenum target,
                                                        GLint border,
                                                        GLenum format,
                                                        GLenum type,
-                                                       GLsizei imagesize,
+                                                       GLsizei image_size,
                                                        const void* pixels) {
+  ScopedUnpackStateButAlignmentReset reset_unpack(
+      image_size != 0 && feature_info_->gl_version_info().is_es3, false);
   glTexImage2DRobustANGLE(target, level, internalformat, width, height, border,
-                          format, type, imagesize, pixels);
+                          format, type, image_size, pixels);
   return error::kNoError;
 }
 
@@ -1861,10 +1919,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexImage3D(GLenum target,
                                                        GLint border,
                                                        GLenum format,
                                                        GLenum type,
-                                                       GLsizei imagesize,
+                                                       GLsizei image_size,
                                                        const void* pixels) {
+  ScopedUnpackStateButAlignmentReset reset_unpack(
+      image_size != 0 && feature_info_->gl_version_info().is_es3, true);
   glTexImage3DRobustANGLE(target, level, internalformat, width, height, depth,
-                          border, format, type, imagesize, pixels);
+                          border, format, type, image_size, pixels);
   return error::kNoError;
 }
 
@@ -1922,10 +1982,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexSubImage2D(GLenum target,
                                                           GLsizei height,
                                                           GLenum format,
                                                           GLenum type,
-                                                          GLsizei imagesize,
+                                                          GLsizei image_size,
                                                           const void* pixels) {
+  ScopedUnpackStateButAlignmentReset reset_unpack(
+      image_size != 0 && feature_info_->gl_version_info().is_es3, false);
   glTexSubImage2DRobustANGLE(target, level, xoffset, yoffset, width, height,
-                             format, type, imagesize, pixels);
+                             format, type, image_size, pixels);
   return error::kNoError;
 }
 
@@ -1939,10 +2001,12 @@ error::Error GLES2DecoderPassthroughImpl::DoTexSubImage3D(GLenum target,
                                                           GLsizei depth,
                                                           GLenum format,
                                                           GLenum type,
-                                                          GLsizei imagesize,
+                                                          GLsizei image_size,
                                                           const void* pixels) {
+  ScopedUnpackStateButAlignmentReset reset_unpack(
+      image_size != 0 && feature_info_->gl_version_info().is_es3, true);
   glTexSubImage3DRobustANGLE(target, level, xoffset, yoffset, zoffset, width,
-                             height, depth, format, type, imagesize, pixels);
+                             height, depth, format, type, image_size, pixels);
   return error::kNoError;
 }
 
