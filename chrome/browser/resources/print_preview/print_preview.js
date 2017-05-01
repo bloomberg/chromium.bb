@@ -934,7 +934,6 @@ cr.define('print_preview', function() {
       this.uiState_ = PrintPreview.UiState_.ERROR;
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
-      console.error('Invalid settings error reported from native layer');
       this.previewArea_.cancelTimeout();
       this.previewArea_.showCustomMessage(
           loadTimeData.getString('invalidPrinterSettings'));
@@ -1200,6 +1199,10 @@ cr.define('print_preview', function() {
         setIsVisible($('system-dialog-link'),
                      this.shouldShowSystemDialogLink_());
       }
+      // Reset if we had a bad settings fetch since the user selected a new
+      // printer.
+      if (this.uiState_ == PrintPreview.UiState_.ERROR)
+        this.uiState_ = PrintPreview.UiState_.READY;
       if (this.destinationStore_.selectedDestination &&
           this.isInKioskAutoPrintMode_) {
         this.onPrintButtonClick_();
