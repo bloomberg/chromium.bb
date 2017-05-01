@@ -320,8 +320,8 @@
         outline: none;
       }
 
-      /* The secondary-action wraps a clickable sub-area of a .settings-box.
-       * An example is the |sign out| button on the People settings.
+      /* TODO(dschuyler): replace with .separator.
+       * The secondary-action wraps a clickable sub-area of a .settings-box.
        * Here is an example with and without a secondary action box:
        *
        *  +-------------------------------------------------------+
@@ -346,6 +346,24 @@
       /* Helper for a list frame to automatically avoid the separator line. */
       .vertical-list > *:not(:first-of-type) {
         border-top: var(--settings-separator-line);
+      }
+
+      /* The separator a vertical line like a horizontal rule <hr> tag, but goes
+       * the other way. An example is near the |sign out| button on the People
+       * settings. */
+      :-webkit-any(.settings-box, .list-item) .separator {
+        -webkit-border-start: var(--settings-separator-line);
+        -webkit-margin-end: var(--settings-box-row-padding);
+        -webkit-margin-start: var(--settings-box-row-padding);
+        flex-shrink: 0;
+        --settings-separator-gaps: 9px;
+        height: calc(var(--settings-row-min-height) -
+            var(--settings-separator-gaps));
+      }
+
+      :-webkit-any(.settings-box, .list-item).two-line .separator {
+        height: calc(var(--settings-row-two-line-min-height) -
+            2 * var(--settings-separator-gaps));
       }
 
       .settings-checkbox-spacer {
