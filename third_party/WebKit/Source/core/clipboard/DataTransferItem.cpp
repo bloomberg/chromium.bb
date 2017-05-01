@@ -59,7 +59,7 @@ String DataTransferItem::kind() const {
     case DataObjectItem::kFileKind:
       return kind_file;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

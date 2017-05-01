@@ -636,7 +636,7 @@ void Diff(const Vector<String>& list_a,
         j -= 1;
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 

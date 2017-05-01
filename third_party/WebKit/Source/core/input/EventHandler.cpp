@@ -1755,7 +1755,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
           *hit_test_result, adjusted_point, adjusted_node);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   // Update the hit-test result to be a point-based result instead of a

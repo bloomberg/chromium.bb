@@ -168,7 +168,7 @@ String DataObject::GetData(const String& type) const {
 void DataObject::SetData(const String& type, const String& data) {
   ClearData(type);
   if (!Add(data, type))
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void DataObject::UrlAndTitle(String& url, String* title) const {
@@ -355,13 +355,13 @@ WebDragData DataObject::ToWebDragData() {
             item.string_data = file->name();
           }
         } else {
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
         }
       } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
       }
     } else {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
     item_list[i] = item;
   }

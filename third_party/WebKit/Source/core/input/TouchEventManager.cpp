@@ -50,7 +50,7 @@ const AtomicString& TouchEventNameForTouchPointState(
     case WebTouchPoint::kStateStationary:
     // Fall through to default
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return g_empty_atom;
   }
 }
