@@ -1034,6 +1034,18 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 return;
             }
 
+            // Do not allow classifier to shorten the selection. If the suggested selection is
+            // smaller than the original we throw away classification result and show the menu.
+            // TODO(amaralp): This was added to fix the SelectAll problem in
+            // http://crbug.com/714106. Once we know the cause of the original selection we can
+            // remove this check.
+            if (result.startAdjust > 0 || result.endAdjust < 0) {
+                mClassificationResult = null;
+                mPendingShowActionMode = false;
+                showActionModeOrClearOnFailure();
+                return;
+            }
+
             // The classificationresult is a property of the selection. Keep it even the action
             // mode has been dismissed.
             mClassificationResult = result;
