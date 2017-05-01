@@ -422,6 +422,18 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
+    'Mac Experimental Release (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off for testing purposes.
+      'swarming': False,
+      'os_type': 'mac',
+    },
     'Mac Experimental Retina Release (AMD)': {
       'swarming_dimensions': [
         {
@@ -1447,6 +1459,7 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux ChromiumOS Ozone (Intel)',
+          'Mac Experimental Release (Intel)',
           'Mac Experimental Retina Release (AMD)',
           'Mac Experimental Retina Release (NVIDIA)',
           'Mac Pro Release (AMD)',
