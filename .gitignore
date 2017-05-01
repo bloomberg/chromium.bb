@@ -2,6 +2,7 @@
 *.pyc
 
 # ignore cipd client files
+/.cipd_bin
 /.cipd_client*
 /.versions
 
@@ -67,3 +68,6 @@
 
 # Ignore google AE downloaded for running testing only.
 testing_support/google_appengine
+
+# Ignore emacs / vim backup files.
+*~
