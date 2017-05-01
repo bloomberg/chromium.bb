@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/SharedWorkerRepositoryClientImpl.h"
+#include "core/exported/SharedWorkerRepositoryClientImpl.h"
 
 #include <memory>
 #include <utility>
@@ -44,13 +44,11 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "public/web/WebFrameClient.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebSharedWorker.h"
 #include "public/web/WebSharedWorkerConnectListener.h"
 #include "public/web/WebSharedWorkerCreationErrors.h"
 #include "public/web/WebSharedWorkerRepositoryClient.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 

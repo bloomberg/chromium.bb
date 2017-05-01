@@ -106,8 +106,6 @@ component("web") {
     "ServiceWorkerGlobalScopeClientImpl.h",
     "ServiceWorkerGlobalScopeProxy.cpp",
     "ServiceWorkerGlobalScopeProxy.h",
-    "SharedWorkerRepositoryClientImpl.cpp",
-    "SharedWorkerRepositoryClientImpl.h",
     "SpeechRecognitionClientProxy.cpp",
     "SpeechRecognitionClientProxy.h",
     "SpellCheckerClientImpl.cpp",

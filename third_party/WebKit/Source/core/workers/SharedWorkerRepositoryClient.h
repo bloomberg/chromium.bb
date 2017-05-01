@@ -31,6 +31,7 @@
 #ifndef SharedWorkerRepositoryClient_h
 #define SharedWorkerRepositoryClient_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
@@ -42,7 +43,7 @@ class Document;
 class KURL;
 class SharedWorker;
 
-class SharedWorkerRepositoryClient {
+class CORE_EXPORT SharedWorkerRepositoryClient {
   WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClient);
   DISALLOW_NEW();
 
