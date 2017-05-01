@@ -59,7 +59,6 @@ class AshTestHelper;
 namespace mus {
 
 class AcceleratorHandler;
-class WmTestHelper;
 
 // WindowManager serves as the WindowManagerDelegate and
 // WindowTreeClientDelegate for mash. WindowManager creates (and owns)
@@ -127,7 +126,6 @@ class WindowManager : public aura::WindowManagerDelegate,
 
  private:
   friend class test::AshTestHelper;
-  friend class WmTestHelper;
 
   using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
 

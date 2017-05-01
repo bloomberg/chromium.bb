@@ -8,14 +8,14 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
 
-using TrayUpdateTest = AshTest;
+using TrayUpdateTest = test::AshTestBase;
 
 // Tests that the update icon becomes visible when an update becomes
 // available.
