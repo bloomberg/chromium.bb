@@ -205,7 +205,7 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   const int unify_bsize = CONFIG_CB4X4;
   int_mv res;
   const int32_t *mat = gm->wmmat;
-  int xc, yc, x, y;
+  int x, y, tx, ty;
 
   if (gm->wmtype == TRANSLATION) {
     res.as_mv.row = gm->wmmat[0] >> GM_TRANS_ONLY_PREC_DIFF;
@@ -227,21 +227,25 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     assert(gm->wmmat[5] == gm->wmmat[2]);
     assert(gm->wmmat[4] == -gm->wmmat[3]);
   }
-
-  xc = mat[2] * x + mat[3] * y + mat[0];
-  yc = mat[4] * x + mat[5] * y + mat[1];
-
   if (gm->wmtype > AFFINE) {
-    const int Z =
-        mat[6] * x + mat[7] * y + (1 << WARPEDMODEL_ROW3HOMO_PREC_BITS);
-    xc <<= (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
-    yc <<= (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
-    xc = xc > 0 ? (xc + Z / 2) / Z : (xc - Z / 2) / Z;
-    yc = yc > 0 ? (yc + Z / 2) / Z : (yc - Z / 2) / Z;
+    int xc = (int)((int64_t)mat[2] * x + (int64_t)mat[3] * y + mat[0]);
+    int yc = (int)((int64_t)mat[4] * x + (int64_t)mat[5] * y + mat[1]);
+    const int Z = (int)((int64_t)mat[6] * x + (int64_t)mat[7] * y +
+                        (1 << WARPEDMODEL_ROW3HOMO_PREC_BITS));
+    xc *= 1 << (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
+    yc *= 1 << (WARPEDMODEL_ROW3HOMO_PREC_BITS - WARPEDMODEL_PREC_BITS);
+    xc = (int)(xc > 0 ? ((int64_t)xc + Z / 2) / Z : ((int64_t)xc - Z / 2) / Z);
+    yc = (int)(yc > 0 ? ((int64_t)yc + Z / 2) / Z : ((int64_t)yc - Z / 2) / Z);
+    tx = convert_to_trans_prec(allow_hp, xc) - (x << 3);
+    ty = convert_to_trans_prec(allow_hp, yc) - (y << 3);
+  } else {
+    const int xc =
+        (mat[2] - (1 << WARPEDMODEL_PREC_BITS)) * x + mat[3] * y + mat[0];
+    const int yc =
+        mat[4] * x + (mat[5] - (1 << WARPEDMODEL_PREC_BITS)) * y + mat[1];
+    tx = convert_to_trans_prec(allow_hp, xc);
+    ty = convert_to_trans_prec(allow_hp, yc);
   }
-
-  int tx = convert_to_trans_prec(allow_hp, xc) - (x << 3);
-  int ty = convert_to_trans_prec(allow_hp, yc) - (y << 3);
 
   res.as_mv.row = ty;
   res.as_mv.col = tx;
