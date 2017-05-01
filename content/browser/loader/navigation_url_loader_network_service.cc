@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_resource_handler.h"
@@ -60,6 +61,11 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate), binding_(this), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      "navigation", "Navigation timeToResponseStarted", this,
+      request_info->common_params.navigation_start, "FrameTreeNode id",
+      request_info->frame_tree_node_id);
 
   // TODO(scottmg): Maybe some of this setup should be done only once, instead
   // of every time.
@@ -167,6 +173,11 @@ void NavigationURLLoaderNetworkService::OnTransferSizeUpdated(
 void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(response_);
+
+  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
+                         "&NavigationURLLoaderNetworkService", this, "success",
+                         true);
+
   // Temporarily, we pass both a stream (null) and the data pipe to the
   // delegate until PlzNavigate has shipped and we can be comfortable fully
   // switching to the data pipe.
@@ -179,6 +190,10 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
 void NavigationURLLoaderNetworkService::OnComplete(
     const ResourceRequestCompletionStatus& completion_status) {
   if (completion_status.error_code != net::OK) {
+    TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted",
+                           this, "&NavigationURLLoaderNetworkService", this,
+                           "success", false);
+
     delegate_->OnRequestFailed(completion_status.exists_in_cache,
                                completion_status.error_code);
   }

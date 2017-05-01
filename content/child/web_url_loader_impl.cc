@@ -622,7 +622,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // https://crbug.com/705508 is found.
   if (IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(resource_request->resource_type) &&
-      !resource_request->resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
+      !resource_request->resource_body_stream_url.SchemeIs(url::kBlobScheme) &&
+      !consumer_handle.is_valid()) {
     base::debug::DumpWithoutCrashing();
   }
 
