@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ANDROID_PERSONAL_DATA_MANAGER_ANDROID_H_
 #define CHROME_BROWSER_AUTOFILL_ANDROID_PERSONAL_DATA_MANAGER_ANDROID_H_
 
+#include <string>
+#include <vector>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -159,9 +162,10 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
-  // Returns the card type according to PaymentRequest spec, or an empty string
-  // if the given card number is not valid and |jempty_if_invalid| is true.
-  base::android::ScopedJavaLocalRef<jstring> GetBasicCardPaymentType(
+  // Returns the issuer network string according to PaymentRequest spec, or an
+  // empty string if the given card number is not valid and |jempty_if_invalid|
+  // is true.
+  base::android::ScopedJavaLocalRef<jstring> GetBasicCardIssuerNetwork(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jcard_number,

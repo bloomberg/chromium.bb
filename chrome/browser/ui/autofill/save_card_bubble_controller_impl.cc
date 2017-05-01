@@ -138,8 +138,8 @@ const CreditCard SaveCardBubbleControllerImpl::GetCard() const {
 }
 
 int SaveCardBubbleControllerImpl::GetCvcImageResourceId() const {
-  return card_.type() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
-                                              : IDR_CREDIT_CARD_CVC_HINT;
+  return card_.network() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
+                                                 : IDR_CREDIT_CARD_CVC_HINT;
 }
 
 bool SaveCardBubbleControllerImpl::ShouldRequestCvcFromUser() const {
@@ -213,7 +213,7 @@ bool SaveCardBubbleControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {
   base::string16 trimmed_text;
   base::TrimWhitespace(input_text, base::TRIM_ALL, &trimmed_text);
-  return IsValidCreditCardSecurityCode(trimmed_text, card_.type());
+  return IsValidCreditCardSecurityCode(trimmed_text, card_.network());
 }
 
 base::TimeDelta SaveCardBubbleControllerImpl::Elapsed() const {

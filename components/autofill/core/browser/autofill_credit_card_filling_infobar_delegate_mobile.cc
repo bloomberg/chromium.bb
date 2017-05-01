@@ -22,9 +22,9 @@ AutofillCreditCardFillingInfoBarDelegateMobile::
       card_filling_callback_(card_filling_callback),
       had_user_interaction_(false),
       was_shown_(false),
-      issuer_icon_id_(CreditCard::IconResourceId(card.type())),
+      issuer_icon_id_(CreditCard::IconResourceId(card.network())),
 #if defined(OS_IOS)
-      card_label_(card.TypeAndLastFourDigits()),
+      card_label_(card.NetworkAndLastFourDigits()),
 #else
       card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
 #endif

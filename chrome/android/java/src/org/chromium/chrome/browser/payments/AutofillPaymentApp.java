@@ -66,10 +66,10 @@ public class AutofillPaymentApp implements PaymentApp {
 
             String methodName = null;
             if (basicCardSupportedNetworks != null
-                    && basicCardSupportedNetworks.contains(card.getBasicCardPaymentType())) {
+                    && basicCardSupportedNetworks.contains(card.getBasicCardIssuerNetwork())) {
                 methodName = BASIC_CARD_METHOD_NAME;
-            } else if (methodDataMap.containsKey(card.getBasicCardPaymentType())) {
-                methodName = card.getBasicCardPaymentType();
+            } else if (methodDataMap.containsKey(card.getBasicCardIssuerNetwork())) {
+                methodName = card.getBasicCardIssuerNetwork();
             }
 
             if (methodName != null) {

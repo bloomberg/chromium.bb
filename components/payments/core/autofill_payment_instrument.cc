@@ -4,6 +4,8 @@
 
 #include "components/payments/core/autofill_payment_instrument.h"
 
+#include <memory>
+
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -28,11 +30,11 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
     PaymentRequestDelegate* payment_request_delegate)
     : PaymentInstrument(
           method_name,
-          /* label= */ card.TypeAndLastFourDigits(),
+          /* label= */ card.NetworkAndLastFourDigits(),
           /* sublabel= */
           card.GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                        app_locale),
-          autofill::data_util::GetPaymentRequestData(card.type())
+          autofill::data_util::GetPaymentRequestData(card.network())
               .icon_resource_id,
           PaymentInstrument::Type::AUTOFILL),
       credit_card_(card),

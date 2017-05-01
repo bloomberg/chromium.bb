@@ -91,7 +91,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
     DCHECK(paymentMethod);
     PaymentMethodItem* item = [[PaymentMethodItem alloc] init];
     item.methodID =
-        base::SysUTF16ToNSString(paymentMethod->TypeAndLastFourDigits());
+        base::SysUTF16ToNSString(paymentMethod->NetworkAndLastFourDigits());
     item.methodDetail = base::SysUTF16ToNSString(
         paymentMethod->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
 
@@ -105,7 +105,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
     }
 
     int methodTypeIconID =
-        autofill::data_util::GetPaymentRequestData(paymentMethod->type())
+        autofill::data_util::GetPaymentRequestData(paymentMethod->network())
             .icon_resource_id;
     item.methodTypeIcon = NativeImage(methodTypeIconID);
 

@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -71,27 +72,27 @@ bool ConvertYear(const base::string16& year, int* num) {
   return false;
 }
 
-base::string16 TypeForFill(const std::string& type) {
-  if (type == kAmericanExpressCard)
+base::string16 NetworkForFill(const std::string& network) {
+  if (network == kAmericanExpressCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
-  if (type == kDinersCard)
+  if (network == kDinersCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
-  if (type == kDiscoverCard)
+  if (network == kDiscoverCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
-  if (type == kJCBCard)
+  if (network == kJCBCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
-  if (type == kMasterCard)
+  if (network == kMasterCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
-  if (type == kMirCard)
+  if (network == kMirCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MIR);
-  if (type == kUnionPay)
+  if (network == kUnionPay)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
-  if (type == kVisaCard)
+  if (network == kVisaCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
 
   // If you hit this DCHECK, the above list of cases needs to be updated to
   // include a new card.
-  DCHECK_EQ(kGenericCard, type);
+  DCHECK_EQ(kGenericCard, network);
   return base::string16();
 }
 
@@ -100,7 +101,7 @@ base::string16 TypeForFill(const std::string& type) {
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
     : AutofillDataModel(guid, origin),
       record_type_(LOCAL_CARD),
-      type_(kGenericCard),
+      network_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
       server_status_(OK) {}
@@ -128,42 +129,42 @@ const base::string16 CreditCard::StripSeparators(const base::string16& number) {
 }
 
 // static
-base::string16 CreditCard::TypeForDisplay(const std::string& type) {
-  if (kGenericCard == type)
+base::string16 CreditCard::NetworkForDisplay(const std::string& network) {
+  if (kGenericCard == network)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
-  if (kAmericanExpressCard == type)
+  if (kAmericanExpressCard == network)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX_SHORT);
 
-  return ::autofill::TypeForFill(type);
+  return ::autofill::NetworkForFill(network);
 }
 
 // static
-int CreditCard::IconResourceId(const std::string& type) {
-  if (type == kAmericanExpressCard)
+int CreditCard::IconResourceId(const std::string& network) {
+  if (network == kAmericanExpressCard)
     return IDR_AUTOFILL_CC_AMEX;
-  if (type == kDinersCard)
+  if (network == kDinersCard)
     return IDR_AUTOFILL_CC_DINERS;
-  if (type == kDiscoverCard)
+  if (network == kDiscoverCard)
     return IDR_AUTOFILL_CC_DISCOVER;
-  if (type == kJCBCard)
+  if (network == kJCBCard)
     return IDR_AUTOFILL_CC_JCB;
-  if (type == kMasterCard)
+  if (network == kMasterCard)
     return IDR_AUTOFILL_CC_MASTERCARD;
-  if (type == kMirCard)
+  if (network == kMirCard)
     return IDR_AUTOFILL_CC_MIR;
-  if (type == kUnionPay)
+  if (network == kUnionPay)
     return IDR_AUTOFILL_CC_UNIONPAY;
-  if (type == kVisaCard)
+  if (network == kVisaCard)
     return IDR_AUTOFILL_CC_VISA;
 
   // If you hit this DCHECK, the above list of cases needs to be updated to
   // include a new card.
-  DCHECK_EQ(kGenericCard, type);
+  DCHECK_EQ(kGenericCard, network);
   return IDR_AUTOFILL_CC_GENERIC;
 }
 
 // static
-const char* CreditCard::GetCreditCardType(const base::string16& number) {
+const char* CreditCard::GetCardNetwork(const base::string16& number) {
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers,
   // http://en.wikipedia.org/wiki/List_of_Issuer_Identification_Numbers,
@@ -256,9 +257,9 @@ const char* CreditCard::GetCreditCardType(const base::string16& number) {
   return kGenericCard;
 }
 
-void CreditCard::SetTypeForMaskedCard(const char* type) {
+void CreditCard::SetNetworkForMaskedCard(base::StringPiece network) {
   DCHECK_EQ(MASKED_SERVER_CARD, record_type());
-  type_ = type;
+  network_ = network.as_string();
 }
 
 void CreditCard::SetServerStatus(ServerStatus status) {
@@ -309,7 +310,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
     }
 
     case CREDIT_CARD_TYPE:
-      return TypeForFill();
+      return NetworkForFill();
 
     case CREDIT_CARD_NUMBER:
       return number_;
@@ -380,7 +381,7 @@ base::string16 CreditCard::GetInfo(const AutofillType& type,
     // Web pages should never actually be filled by a masked server card,
     // but this function is used at the preview stage.
     if (record_type() == MASKED_SERVER_CARD)
-      return TypeAndLastFourDigits();
+      return NetworkAndLastFourDigits();
 
     return StripSeparators(number_);
   }
@@ -431,7 +432,7 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
   if (number().empty())
     return std::make_pair(name_on_card_, base::string16());
 
-  base::string16 obfuscated_cc_number = TypeAndLastFourDigits();
+  base::string16 obfuscated_cc_number = NetworkAndLastFourDigits();
   // No expiration date set.
   if (!expiration_month_ || !expiration_year_)
     return std::make_pair(obfuscated_cc_number, base::string16());
@@ -497,19 +498,19 @@ base::string16 CreditCard::LastFourDigits() const {
   return number.substr(number.size() - kNumLastDigits, kNumLastDigits);
 }
 
-base::string16 CreditCard::TypeForDisplay() const {
-  return CreditCard::TypeForDisplay(type_);
+base::string16 CreditCard::NetworkForDisplay() const {
+  return CreditCard::NetworkForDisplay(network_);
 }
 
-base::string16 CreditCard::TypeAndLastFourDigits() const {
-  base::string16 type = TypeForDisplay();
+base::string16 CreditCard::NetworkAndLastFourDigits() const {
+  base::string16 network = NetworkForDisplay();
 
   base::string16 digits = LastFourDigits();
   if (digits.empty())
-    return type;
+    return network;
 
   // TODO(estade): i18n?
-  return type + base::string16(kMidlineEllipsis) + digits;
+  return network + base::string16(kMidlineEllipsis) + digits;
 }
 
 base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
@@ -532,7 +533,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   record_type_ = credit_card.record_type_;
   number_ = credit_card.number_;
   name_on_card_ = credit_card.name_on_card_;
-  type_ = credit_card.type_;
+  network_ = credit_card.network_;
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
   server_id_ = credit_card.server_id_;
@@ -548,9 +549,9 @@ base::string16 CreditCard::GetLastUsedDateForDisplay(
   bool show_expiration_date =
       ShowExpirationDateInAutofillCreditCardLastUsedDate();
 
-  DCHECK(use_count() > 0);
+  DCHECK_LT(0U, use_count());
   // use_count() is initialized as 1 when the card is just added.
-  if (use_count() == 1) {
+  if (use_count() == 1U) {
     return show_expiration_date
                ? l10n_util::GetStringFUTF16(
                      IDS_AUTOFILL_CREDIT_CARD_EXP_AND_ADDED_DATE,
@@ -691,7 +692,7 @@ bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
   // For masked cards, this is the best we can do to compare card numbers.
   if (record_type() == MASKED_SERVER_CARD ||
       other.record_type() == MASKED_SERVER_CARD) {
-    return TypeAndLastFourDigits() == other.TypeAndLastFourDigits();
+    return NetworkAndLastFourDigits() == other.NetworkAndLastFourDigits();
   }
 
   return StripSeparators(number_) == StripSeparators(other.number_);
@@ -812,8 +813,8 @@ base::string16 CreditCard::ExpirationMonthAsString() const {
   return zero;
 }
 
-base::string16 CreditCard::TypeForFill() const {
-  return ::autofill::TypeForFill(type_);
+base::string16 CreditCard::NetworkForFill() const {
+  return ::autofill::NetworkForFill(network_);
 }
 
 base::string16 CreditCard::Expiration4DigitYearAsString() const {
@@ -836,7 +837,7 @@ void CreditCard::SetNumber(const base::string16& number) {
   // Set the type based on the card number, but only for full numbers, not
   // when we have masked cards from the server (last 4 digits).
   if (record_type_ != MASKED_SERVER_CARD)
-    type_ = GetCreditCardType(StripSeparators(number_));
+    network_ = GetCardNetwork(StripSeparators(number_));
 }
 
 void CreditCard::RecordAndLogUse() {

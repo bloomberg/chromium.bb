@@ -20,7 +20,7 @@ CREATE TABLE autofill_profile_emails ( guid VARCHAR, email VARCHAR);
 CREATE TABLE autofill_profile_phones ( guid VARCHAR, number VARCHAR);
 CREATE TABLE autofill_profiles_trash ( guid VARCHAR);
 CREATE TABLE masked_credit_cards (id VARCHAR,status VARCHAR,name_on_card VARCHAR,type VARCHAR,last_four VARCHAR,exp_month INTEGER DEFAULT 0,exp_year INTEGER DEFAULT 0, billing_address_id VARCHAR);
-INSERT INTO "masked_credit_cards" VALUES('card_1','status','bob','MASKED','1234',12,2050,'address_1');
+INSERT INTO "masked_credit_cards" VALUES('card_1','status','bob','VISA','1234',12,2050,'address_1');
 CREATE TABLE unmasked_credit_cards (id VARCHAR,card_number_encrypted VARCHAR, use_count INTEGER NOT NULL DEFAULT 0, use_date INTEGER NOT NULL DEFAULT 0, unmask_date INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE server_card_metadata (id VARCHAR NOT NULL,use_count INTEGER NOT NULL DEFAULT 0, use_date INTEGER NOT NULL DEFAULT 0);
 INSERT INTO "server_card_metadata" VALUES('card_1', 0, 0);

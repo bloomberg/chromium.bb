@@ -1627,7 +1627,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
   inputs[1].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
   inputs[1].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
-  inputs[1].SetTypeForMaskedCard(kVisaCard);
+  inputs[1].SetNetworkForMaskedCard(kVisaCard);
   inputs[1].SetServerStatus(CreditCard::EXPIRED);
 
   test::SetServerCreditCards(table_.get(), inputs);
@@ -1663,7 +1663,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, masked_number);
-  inputs[0].SetTypeForMaskedCard(kVisaCard);
+  inputs[0].SetNetworkForMaskedCard(kVisaCard);
   test::SetServerCreditCards(table_.get(), inputs);
 
   // Unmask the number. The full number should be available.
@@ -1699,7 +1699,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
-  masked_card.SetTypeForMaskedCard(kVisaCard);
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
 
   std::vector<CreditCard> inputs;
   inputs.push_back(masked_card);
@@ -1736,7 +1736,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   random_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
   random_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
   random_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("2222"));
-  random_card.SetTypeForMaskedCard(kVisaCard);
+  random_card.SetNetworkForMaskedCard(kVisaCard);
   inputs[0] = random_card;
   test::SetServerCreditCards(table_.get(), inputs);
 
@@ -1771,7 +1771,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStatsAndBillingAddress) {
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
   masked_card.set_billing_address_id("1");
-  masked_card.SetTypeForMaskedCard(kVisaCard);
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
 
   std::vector<CreditCard> inputs;
   inputs.push_back(masked_card);
@@ -1912,7 +1912,7 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
   masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
   masked_card.SetRawInfo(CREDIT_CARD_NUMBER, masked_number);
-  masked_card.SetTypeForMaskedCard(kVisaCard);
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
 
   std::vector<CreditCard> inputs;
   inputs.push_back(masked_card);

@@ -110,8 +110,8 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
     bool selected,
     const autofill::CreditCard& card) {
   std::string basic_card_network =
-      autofill::data_util::GetPaymentRequestData(card.type())
-          .basic_card_payment_type;
+      autofill::data_util::GetPaymentRequestData(card.network())
+          .basic_card_issuer_network;
   if (!spec_->supported_card_networks_set().count(basic_card_network))
     return;
 

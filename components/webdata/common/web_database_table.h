@@ -47,8 +47,9 @@ class WEBDATA_EXPORT WebDatabaseTable {
   // Migrates this table to |version|. Returns false if there was
   // migration work to do and it failed, true otherwise.
   //
-  // Implementations may set |*update_compatible_version| to true if
-  // the compatible version should be changed to |version|.
+  // Implementations may set |*update_compatible_version| to true if the
+  // compatible version should be changed to |version|, i.e., if the change will
+  // break previous versions when they try to use the updated database.
   // Implementations should otherwise not modify this parameter.
   virtual bool MigrateToVersion(int version,
                                 bool* update_compatible_version) = 0;

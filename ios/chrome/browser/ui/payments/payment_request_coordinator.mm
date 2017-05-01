@@ -211,14 +211,14 @@ class FullCardRequester
   // If the merchant specified the card network as part of the "basic-card"
   // payment method, return "basic-card" as the method_name. Otherwise, return
   // the name of the network directly.
-  std::string basic_card_type =
-      autofill::data_util::GetPaymentRequestData(card.type())
-          .basic_card_payment_type;
+  std::string issuer_network =
+      autofill::data_util::GetPaymentRequestData(card.network())
+          .basic_card_issuer_network;
   paymentResponse.method_name =
-      _paymentRequest->basic_card_specified_networks().find(basic_card_type) !=
+      _paymentRequest->basic_card_specified_networks().find(issuer_network) !=
               _paymentRequest->basic_card_specified_networks().end()
           ? base::ASCIIToUTF16("basic-card")
-          : base::ASCIIToUTF16(basic_card_type);
+          : base::ASCIIToUTF16(issuer_network);
 
   // Get the billing address
   autofill::AutofillProfile billingAddress;

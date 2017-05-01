@@ -28,11 +28,11 @@
 
 namespace {
 using ::AutofillUITypeFromAutofillType;
-using ::autofill::data_util::GetCardTypeForBasicCardPaymentType;
+using ::autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork;
 using ::autofill::data_util::GetPaymentRequestData;
 using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
-const CGFloat kCardTypeIconDimension = 20.0;
+const CGFloat kCardIssuerNetworkIconDimension = 20.0;
 }  // namespace
 
 @interface CreditCardEditViewControllerMediator ()
@@ -76,13 +76,13 @@ const CGFloat kCardTypeIconDimension = 20.0;
 
   PaymentMethodItem* cardSummaryItem = [[PaymentMethodItem alloc] init];
   cardSummaryItem.methodID =
-      base::SysUTF16ToNSString(_creditCard->TypeAndLastFourDigits());
+      base::SysUTF16ToNSString(_creditCard->NetworkAndLastFourDigits());
   cardSummaryItem.methodDetail = base::SysUTF16ToNSString(
       _creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
-  const int cardTypeIconID =
-      autofill::data_util::GetPaymentRequestData(_creditCard->type())
+  const int issuerNetworkIconID =
+      autofill::data_util::GetPaymentRequestData(_creditCard->network())
           .icon_resource_id;
-  cardSummaryItem.methodTypeIcon = NativeImage(cardTypeIconID);
+  cardSummaryItem.methodTypeIcon = NativeImage(issuerNetworkIconID);
   return cardSummaryItem;
 }
 
@@ -91,27 +91,28 @@ const CGFloat kCardTypeIconDimension = 20.0;
   if (_creditCard && !autofill::IsCreditCardLocal(*_creditCard))
     return nil;
 
-  NSMutableArray* cardTypeIcons = [NSMutableArray array];
+  NSMutableArray* issuerNetworkIcons = [NSMutableArray array];
   for (const auto& supportedNetwork :
        _paymentRequest->supported_card_networks()) {
-    const std::string cardType =
-        GetCardTypeForBasicCardPaymentType(supportedNetwork);
+    const std::string issuerNetwork =
+        GetIssuerNetworkForBasicCardIssuerNetwork(supportedNetwork);
     const autofill::data_util::PaymentRequestData& cardData =
-        GetPaymentRequestData(cardType);
-    UIImage* cardTypeIcon =
+        GetPaymentRequestData(issuerNetwork);
+    UIImage* issuerNetworkIcon =
         ResizeImage(NativeImage(cardData.icon_resource_id),
-                    CGSizeMake(kCardTypeIconDimension, kCardTypeIconDimension),
+                    CGSizeMake(kCardIssuerNetworkIconDimension,
+                               kCardIssuerNetworkIconDimension),
                     ProjectionMode::kAspectFillNoClipping);
-    cardTypeIcon.accessibilityLabel =
+    issuerNetworkIcon.accessibilityLabel =
         l10n_util::GetNSString(cardData.a11y_label_resource_id);
-    [cardTypeIcons addObject:cardTypeIcon];
+    [issuerNetworkIcons addObject:issuerNetworkIcon];
   }
 
   AcceptedPaymentMethodsItem* acceptedMethodsItem =
       [[AcceptedPaymentMethodsItem alloc] init];
   acceptedMethodsItem.message =
       l10n_util::GetNSString(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL);
-  acceptedMethodsItem.methodTypeIcons = cardTypeIcons;
+  acceptedMethodsItem.methodTypeIcons = issuerNetworkIcons;
   return acceptedMethodsItem;
 }
 
@@ -126,16 +127,16 @@ const CGFloat kCardTypeIconDimension = 20.0;
 }
 
 - (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
-  const char* cardType = autofill::CreditCard::GetCreditCardType(
+  const char* issuerNetwork = autofill::CreditCard::GetCardNetwork(
       base::SysNSStringToUTF16(cardNumber));
   // This should not happen in Payment Request.
-  if (cardType == autofill::kGenericCard)
+  if (issuerNetwork == autofill::kGenericCard)
     return nil;
 
-  // Resize and return the card type icon.
-  int resourceID =
-      autofill::data_util::GetPaymentRequestData(cardType).icon_resource_id;
-  CGFloat dimension = kCardTypeIconDimension;
+  // Resize and return the card issuer network icon.
+  int resourceID = autofill::data_util::GetPaymentRequestData(issuerNetwork)
+                       .icon_resource_id;
+  CGFloat dimension = kCardIssuerNetworkIconDimension;
   return ResizeImage(NativeImage(resourceID), CGSizeMake(dimension, dimension),
                      ProjectionMode::kAspectFillNoClipping);
 }

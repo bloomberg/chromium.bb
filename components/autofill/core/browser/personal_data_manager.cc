@@ -1625,7 +1625,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       Suggestion* suggestion = &suggestions.back();
 
       suggestion->value = credit_card->GetInfo(type, app_locale_);
-      suggestion->icon = base::UTF8ToUTF16(credit_card->type());
+      suggestion->icon = base::UTF8ToUTF16(credit_card->network());
       suggestion->backend_id = credit_card->guid();
       suggestion->match = prefix_matched_suggestion
                               ? Suggestion::PREFIX_MATCH
@@ -1635,7 +1635,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        suggestion->value = credit_card->TypeAndLastFourDigits();
+        suggestion->value = credit_card->NetworkAndLastFourDigits();
         if (IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled()) {
           suggestion->label =
               credit_card->GetLastUsedDateForDisplay(app_locale_);
@@ -1655,7 +1655,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         // Since Android places the label on its own row, there's more
         // horizontal
         // space to work with. Show "Amex - 1234" rather than desktop's "*1234".
-        suggestion->label = credit_card->TypeAndLastFourDigits();
+        suggestion->label = credit_card->NetworkAndLastFourDigits();
 #else
         suggestion->label = base::ASCIIToUTF16("*");
         suggestion->label.append(credit_card->LastFourDigits());
