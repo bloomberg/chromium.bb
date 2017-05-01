@@ -108,7 +108,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSearchEngine,
   ItemTypeSavedPasswords,
   ItemTypeAutofill,
-  ItemTypeNativeApps,
   ItemTypeVoiceSearch,
   ItemTypePrivacy,
   ItemTypeContentSettings,
@@ -358,8 +357,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self autoFillDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self nativeAppsDetailItem]
-      toSectionWithIdentifier:SectionIdentifierBasics];
 
   // Advanced Section
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];
@@ -489,13 +486,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                      detailText:autofillDetail] retain]);
 
   return _autoFillDetailItem;
-}
-
-- (CollectionViewItem*)nativeAppsDetailItem {
-  return [self
-      detailItemWithType:ItemTypeNativeApps
-                    text:l10n_util::GetNSString(IDS_IOS_GOOGLE_APPS_SM_SETTINGS)
-              detailText:nil];
 }
 
 - (CollectionViewItem*)voiceSearchDetailItem {
@@ -760,11 +750,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     case ItemTypeAutofill:
       controller.reset([[AutofillCollectionViewController alloc]
           initWithBrowserState:_mainBrowserState]);
-      break;
-    case ItemTypeNativeApps:
-      controller.reset([[NativeAppsCollectionViewController alloc]
-          initWithURLRequestContextGetter:_currentBrowserState
-                                              ->GetRequestContext()]);
       break;
     case ItemTypeVoiceSearch:
       controller.reset([[VoicesearchCollectionViewController alloc]
