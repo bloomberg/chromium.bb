@@ -49,12 +49,6 @@ class AndroidUIControllerDelegate : public DownloadUIController::Delegate {
 
 void AndroidUIControllerDelegate::OnNewDownloadReady(
     content::DownloadItem* item) {
-  // The Android DownloadController is only interested in IN_PROGRESS downloads.
-  // Ones which are INTERRUPTED etc. can't be handed over to the Android
-  // DownloadManager.
-  if (item->GetState() != content::DownloadItem::IN_PROGRESS)
-    return;
-
   DownloadControllerBase::Get()->OnDownloadStarted(item);
 }
 

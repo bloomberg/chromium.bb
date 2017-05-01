@@ -275,11 +275,13 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
                 mBoundService.notifyDownloadPaused(
-                        info.getContentId(), true, false, info.getIsTransient(), info.getIcon());
+                        info.getContentId(), info.getFileName(), true, false, info.isOffTheRecord(),
+                        info.getIsTransient(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
-                mBoundService.notifyDownloadPaused(info.getContentId(), info.isResumable(),
-                        notificationInfo.isAutoResumable, info.getIsTransient(), info.getIcon());
+                mBoundService.notifyDownloadPaused(info.getContentId(), info.getFileName(),
+                        info.isResumable(), notificationInfo.isAutoResumable, info.isOffTheRecord(),
+                        info.getIsTransient(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                 final int notificationId = mBoundService.notifyDownloadSuccessful(
