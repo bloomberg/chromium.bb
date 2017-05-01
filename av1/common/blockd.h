@@ -322,14 +322,18 @@ typedef struct RD_STATS {
 } RD_STATS;
 
 #if CONFIG_EXT_INTER
+// This struct is used to group function args that are commonly
+// sent together in functions related to interinter compound modes
 typedef struct {
-  COMPOUND_TYPE type;
+#if CONFIG_WEDGE
   int wedge_index;
   int wedge_sign;
+#endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
   SEG_MASK_TYPE mask_type;
-  DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
+  uint8_t *seg_mask;
 #endif  // CONFIG_COMPOUND_SEGMENT
+  COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
 #endif  // CONFIG_EXT_INTER
 
@@ -387,12 +391,21 @@ typedef struct {
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_EXT_INTER
+  // interintra members
   INTERINTRA_MODE interintra_mode;
   // TODO(debargha): Consolidate these flags
   int use_wedge_interintra;
   int interintra_wedge_index;
   int interintra_wedge_sign;
-  INTERINTER_COMPOUND_DATA interinter_compound_data;
+  // interinter members
+  COMPOUND_TYPE interinter_compound_type;
+#if CONFIG_WEDGE
+  int wedge_index;
+  int wedge_sign;
+#endif  // CONFIG_WEDGE
+#if CONFIG_COMPOUND_SEGMENT
+  SEG_MASK_TYPE mask_type;
+#endif  // CONFIG_COMPOUND_SEGMENT
 #endif  // CONFIG_EXT_INTER
   MOTION_MODE motion_mode;
 #if CONFIG_MOTION_VAR
@@ -652,6 +665,10 @@ typedef struct macroblockd {
 #if CONFIG_ADAPT_SCAN
   const EobThresholdMD *eob_threshold_md;
 #endif
+
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SEGMENT
+  DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_CFL
   CFL_CTX *cfl;
