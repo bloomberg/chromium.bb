@@ -1,13 +1,11 @@
 <link rel="import" href="chrome://bookmarks/shared_vars.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 
 <dom-module id="shared-style">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-shared-style">
       button.more-vert-button {
-        height: 36px;
         padding: 8px;
-        width: 36px;
       }
 
       button.more-vert-button div {
@@ -23,11 +21,6 @@
         border-width: 0;
         height: 1px;
         margin: 8px 0;
-      }
-
-      paper-button {
-        height: 32px;
-        margin: 0;
       }
 
       .drag-above::before,
@@ -59,7 +52,7 @@
       }
 
       .drag-on {
-        background-color: rgba(66, 133, 244, 0.16);
+        background-color: var(--highlight-color);
       }
     </style>
   </template>
