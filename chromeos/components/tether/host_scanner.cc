@@ -122,7 +122,8 @@ void HostScanner::OnTetherAvailabilityResponse(
       network_state_handler_->AddTetherNetworkState(
           device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
               remote_device.GetDeviceId()),
-          remote_device.name, carrier, battery_percentage, signal_strength);
+          remote_device.name, carrier, battery_percentage, signal_strength,
+          false /* has_connected_to_host */);
     }
 
     if (scanned_device_list_so_far.size() == 1) {

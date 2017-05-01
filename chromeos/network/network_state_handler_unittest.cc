@@ -61,6 +61,8 @@ const int kTetherBatteryPercentage1 = 85;
 const int kTetherBatteryPercentage2 = 90;
 const int kTetherSignalStrength1 = 75;
 const int kTetherSignalStrength2 = 80;
+const bool kTetherHasConnectedToHost1 = true;
+const bool kTetherHasConnectedToHost2 = false;
 
 using chromeos::DeviceState;
 using chromeos::NetworkState;
@@ -368,10 +370,10 @@ TEST_F(NetworkStateHandlerTest, GetNetworkList) {
   const size_t kNumTetherNetworks = 2;
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
-      kTetherSignalStrength2);
+      kTetherSignalStrength2, kTetherHasConnectedToHost2);
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 3,
             test_observer_->network_count());
 
@@ -439,14 +441,14 @@ TEST_F(NetworkStateHandlerTest, GetTetherNetworkList) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   GetTetherNetworkList(0 /* no limit */, &tether_networks);
   EXPECT_EQ(1u, tether_networks.size());
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid2, kTetherName2, kTetherCarrier2, kTetherBatteryPercentage2,
-      kTetherSignalStrength2);
+      kTetherSignalStrength2, kTetherHasConnectedToHost2);
 
   GetTetherNetworkList(0 /* no limit */, &tether_networks);
   EXPECT_EQ(2u, tether_networks.size());
@@ -716,7 +718,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, false /* has_connected_to_network */);
 
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 
@@ -728,6 +730,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_EQ(kTetherCarrier1, tether_network->carrier());
   EXPECT_EQ(kTetherBatteryPercentage1, tether_network->battery_percentage());
   EXPECT_EQ(kTetherSignalStrength1, tether_network->signal_strength());
+  EXPECT_FALSE(tether_network->tether_has_connected_to_host());
 
   // Update the tether properties and verify the changes.
   EXPECT_TRUE(network_state_handler_->UpdateTetherNetworkProperties(
@@ -744,10 +747,24 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkState) {
   EXPECT_EQ("NewCarrier", tether_network->carrier());
   EXPECT_EQ(5, tether_network->battery_percentage());
   EXPECT_EQ(10, tether_network->signal_strength());
+  EXPECT_FALSE(tether_network->tether_has_connected_to_host());
+
+  // Now, set the HasConnectedToHost property to true.
+  EXPECT_TRUE(
+      network_state_handler_->SetTetherNetworkHasConnectedToHost(kTetherGuid1));
+
+  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+
+  // Try calling that function again. It should return false and should not
+  // trigger a NetworkListChanged() callback for observers.
+  EXPECT_FALSE(
+      network_state_handler_->SetTetherNetworkHasConnectedToHost(kTetherGuid1));
+
+  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
 
   network_state_handler_->RemoveTetherNetworkState(kTetherGuid1);
 
-  EXPECT_EQ(3u, test_observer_->network_list_changed_count());
+  EXPECT_EQ(4u, test_observer_->network_list_changed_count());
 
   ASSERT_FALSE(network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1));
 
@@ -775,7 +792,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   EXPECT_EQ(2u, test_observer_->network_list_changed_count());
 
@@ -815,7 +832,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociationWifiRemoved) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
   EXPECT_TRUE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
           kTetherGuid1, kWifiGuid1));
@@ -842,7 +859,7 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoWifiNetwork) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   EXPECT_FALSE(
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
@@ -872,7 +889,7 @@ TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
 
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
-      kTetherSignalStrength1);
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
 
   // Add corresponding Wi-Fi network.
   const std::string profile = "/profile/profile1";

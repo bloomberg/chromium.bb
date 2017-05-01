@@ -488,7 +488,7 @@ TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_Success) {
       NetworkStateHandler::TECHNOLOGY_ENABLED);
   network_state_handler()->AddTetherNetworkState(
       kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
-      100 /* signal_strength */);
+      100 /* signal_strength */, true /* has_connected_to_host */);
   network_connection_handler_->SetTetherDelegate(fake_tether_delegate_.get());
 
   Connect(kTetherGuid /* service_path */);
@@ -506,7 +506,7 @@ TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_Failure) {
       NetworkStateHandler::TECHNOLOGY_ENABLED);
   network_state_handler()->AddTetherNetworkState(
       kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
-      100 /* signal_strength */);
+      100 /* signal_strength */, true /* has_connected_to_host */);
   network_connection_handler_->SetTetherDelegate(fake_tether_delegate_.get());
 
   Connect(kTetherGuid /* service_path */);
@@ -525,7 +525,7 @@ TEST_F(NetworkConnectionHandlerTest, ConnectToTetherNetwork_NoTetherDelegate) {
       NetworkStateHandler::TECHNOLOGY_ENABLED);
   network_state_handler()->AddTetherNetworkState(
       kTetherGuid, "TetherNetwork", "Carrier", 100 /* battery_percentage */,
-      100 /* signal_strength */);
+      100 /* signal_strength */, true /* has_connected_to_host */);
 
   // Do not set a tether delegate.
 

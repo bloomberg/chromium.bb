@@ -500,7 +500,8 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
                                                 const std::string& name,
                                                 const std::string& carrier,
                                                 int battery_percentage,
-                                                int signal_strength) {
+                                                int signal_strength,
+                                                bool has_connected_to_host) {
   DCHECK(!guid.empty());
   DCHECK(battery_percentage >= 0 && battery_percentage <= 100);
   DCHECK(signal_strength >= 0 && signal_strength <= 100);
@@ -531,9 +532,7 @@ void NetworkStateHandler::AddTetherNetworkState(const std::string& guid,
   tether_network_state->set_connectable(true);
   tether_network_state->set_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
-  // TODO(khorimoto): Add this field as a parameter to this function and set it
-  // accordingly from the Tether component.
-  tether_network_state->set_tether_has_connected_to_host(false);
+  tether_network_state->set_tether_has_connected_to_host(has_connected_to_host);
   tether_network_state->set_signal_strength(signal_strength);
 
   tether_network_list_.push_back(std::move(tether_network_state));
@@ -552,8 +551,11 @@ bool NetworkStateHandler::UpdateTetherNetworkProperties(
   }
 
   NetworkState* tether_network_state = GetModifiableNetworkStateFromGuid(guid);
-  if (!tether_network_state)
+  if (!tether_network_state) {
+    NET_LOG(ERROR) << "UpdateTetherNetworkProperties(): No NetworkState for "
+                   << "Tether network with GUID \"" << guid << "\".";
     return false;
+  }
 
   tether_network_state->set_carrier(carrier);
   tether_network_state->set_battery_percentage(battery_percentage);
@@ -563,7 +565,25 @@ bool NetworkStateHandler::UpdateTetherNetworkProperties(
   return true;
 }
 
-void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
+bool NetworkStateHandler::SetTetherNetworkHasConnectedToHost(
+    const std::string& guid) {
+  NetworkState* tether_network_state = GetModifiableNetworkStateFromGuid(guid);
+  if (!tether_network_state) {
+    NET_LOG(ERROR) << "SetTetherNetworkHasConnectedToHost(): No NetworkState "
+                   << "for Tether network with GUID \"" << guid << "\".";
+    return false;
+  }
+
+  if (tether_network_state->tether_has_connected_to_host()) {
+    return false;
+  }
+
+  tether_network_state->set_tether_has_connected_to_host(true);
+  NotifyNetworkListChanged();
+  return true;
+}
+
+bool NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
   for (auto iter = tether_network_list_.begin();
        iter != tether_network_list_.end(); ++iter) {
     if (iter->get()->AsNetworkState()->guid() == guid) {
@@ -574,9 +594,11 @@ void NetworkStateHandler::RemoveTetherNetworkState(const std::string& guid) {
 
       tether_network_list_.erase(iter);
       NotifyNetworkListChanged();
-      return;
+      return true;
     }
   }
+
+  return false;
 }
 
 bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(

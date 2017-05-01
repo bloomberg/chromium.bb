@@ -371,7 +371,8 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
   // coded to false.
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid, "TetherNetworkName", "TetherNetworkCarrier",
-      100 /* battery_percentage */, 100 /* signal_strength */);
+      100 /* battery_percentage */, 100 /* signal_strength */,
+      true /* has_connected_to_host */);
 
   std::string expected_json =
       "{\n   "
@@ -383,7 +384,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
       "\"State\": \"\",\n   "
       "\"Tether.BatteryPercentage\": 100,\n   "
       "\"Tether.Carrier\": \"TetherNetworkCarrier\",\n   "
-      "\"Tether.HasConnectedToHost\": false,\n   "
+      "\"Tether.HasConnectedToHost\": true,\n   "
       "\"Tether.SignalStrength\": 100,\n   "
       "\"Type\": \"wifi-tether\"\n"
       "}\n";

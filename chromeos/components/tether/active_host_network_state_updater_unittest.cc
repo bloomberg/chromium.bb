@@ -62,7 +62,8 @@ class ActiveHostNetworkStateUpdaterTest : public NetworkStateTest {
     // Add tether network whose status will be changed during the test.
     network_state_handler()->AddTetherNetworkState(
         kTetherNetworkGuid, "TetherNetworkName", "TetherNetworkCarrier",
-        100 /* battery_percentage */, 100 /* signal_strength */);
+        100 /* battery_percentage */, 100 /* signal_strength */,
+        true /* has_connected_to_host */);
   }
 
   void SetUpWifiNetwork() {

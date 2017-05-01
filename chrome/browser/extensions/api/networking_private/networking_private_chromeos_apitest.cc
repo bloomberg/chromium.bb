@@ -307,10 +307,12 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
     network_state_handler->AddTetherNetworkState(
         "tetherGuid1", "tetherName1", "tetherCarrier1",
-        50 /* battery_percentage */, 75 /* signal_strength */);
+        50 /* battery_percentage */, 75 /* signal_strength */,
+        true /* has_connected_to_host */);
     network_state_handler->AddTetherNetworkState(
         "tetherGuid2", "tetherName2", "tetherCarrier2",
-        75 /* battery_percentage */, 100 /* signal_strength */);
+        75 /* battery_percentage */, 100 /* signal_strength */,
+        false /* has_connected_to_host */);
   }
 
   void AddService(const std::string& service_path,

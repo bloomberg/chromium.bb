@@ -84,7 +84,7 @@ var privateHelpers = {
   },
   verifyTetherNetwork: function(
       properties, expectedGuid, expectedName, expectedBatteryPercentage,
-      expectedCarrier, expectedSignalStrength) {
+      expectedCarrier, expectedSignalStrength, expectedHasConnectedToHost) {
     //assertEq(NetworkType.Tether, properties.Type);
     assertEq(expectedGuid, properties.GUID);
     assertEq(expectedName,
@@ -92,9 +92,7 @@ var privateHelpers = {
                                                       : properties.Name);
     assertEq(expectedBatteryPercentage, properties.Tether.BatteryPercentage);
     assertEq(expectedCarrier, properties.Tether.Carrier);
-    // TODO(khorimoto): Add the expected value as a parameter once it can be set
-    // via the Tether component.
-    assertFalse(properties.Tether.HasConnectedToHost);
+    assertEq(expectedHasConnectedToHost, properties.Tether.HasConnectedToHost);
     assertEq(expectedSignalStrength, properties.Tether.SignalStrength);
   }
 };
@@ -944,9 +942,9 @@ var availableTests = [
         callbackPass(function(tetherNetworks) {
           assertEq(2, tetherNetworks.length);
           privateHelpers.verifyTetherNetwork(tetherNetworks[0], 'tetherGuid1',
-              'tetherName1', 50, 'tetherCarrier1', 75);
+              'tetherName1', 50, 'tetherCarrier1', 75, true);
           privateHelpers.verifyTetherNetwork(tetherNetworks[1], 'tetherGuid2',
-              'tetherName2', 75, 'tetherCarrier2', 100);
+              'tetherName2', 75, 'tetherCarrier2', 100, false);
         }));
   },
   function getTetherNetworkProperties() {
@@ -954,7 +952,7 @@ var availableTests = [
         'tetherGuid1',
         callbackPass(function(tetherNetwork) {
           privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
-              'tetherName1', 50, 'tetherCarrier1', 75);
+              'tetherName1', 50, 'tetherCarrier1', 75, true);
         }));
   },
   function getTetherNetworkManagedProperties() {
@@ -962,7 +960,7 @@ var availableTests = [
         'tetherGuid1',
         callbackPass(function(tetherNetwork) {
           privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
-              'tetherName1', 50, 'tetherCarrier1', 75);
+              'tetherName1', 50, 'tetherCarrier1', 75, true);
         }));
   },
   function getTetherNetworkState() {
@@ -970,7 +968,7 @@ var availableTests = [
         'tetherGuid1',
         callbackPass(function(tetherNetwork) {
           privateHelpers.verifyTetherNetwork(tetherNetwork, 'tetherGuid1',
-              'tetherName1', 50, 'tetherCarrier1', 75);
+              'tetherName1', 50, 'tetherCarrier1', 75, true);
         }));
   },
 ];
