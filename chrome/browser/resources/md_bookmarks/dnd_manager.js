@@ -205,7 +205,7 @@ cr.define('bookmarks', function() {
      * Used to instantly remove the indicator style in tests.
      * @private {function((Function|null|string), number)}
      */
-    this.setTimeout_ = window.setTimeout.bind(window);
+    this.setTimeout = window.setTimeout.bind(window);
   }
 
   DropIndicator.prototype = {
@@ -260,15 +260,9 @@ cr.define('bookmarks', function() {
       // The use of a timeout is in order to reduce flickering as we move
       // between valid drop targets.
       window.clearTimeout(this.removeDropIndicatorTimer_);
-      this.removeDropIndicatorTimer_ = this.setTimeout_(function() {
+      this.removeDropIndicatorTimer_ = this.setTimeout(function() {
         this.removeDropIndicatorStyle();
       }.bind(this), 100);
-    },
-
-    disableTimeoutForTesting: function() {
-      this.setTimeout_ = function(fn, timeout) {
-        fn();
-      };
     },
   };
 
@@ -288,6 +282,12 @@ cr.define('bookmarks', function() {
 
     /** @private {Object<string, function(!Event)>} */
     this.documentListeners_ = null;
+
+    /**
+     * Used to instantly clearDragData in tests.
+     * @private {function((Function|null|string), number)}
+     */
+    this.setTimeout = window.setTimeout.bind(window);
   }
 
   DNDManager.prototype = {
@@ -384,9 +384,14 @@ cr.define('bookmarks', function() {
 
     /** @private */
     clearDragData_: function() {
-      this.dragInfo_.clearDragData();
-      this.dropDestination_ = null;
-      this.dropIndicator_.finish();
+      // Defer the clearing of the data so that the bookmark manager API's drop
+      // event doesn't clear the drop data before the web drop event has a
+      // chance to execute (on Mac).
+      this.setTimeout_(function() {
+        this.dragInfo_.clearDragData();
+        this.dropDestination_ = null;
+        this.dropIndicator_.finish();
+      }.bind(this), 0);
     },
 
     /**
@@ -614,6 +619,13 @@ cr.define('bookmarks', function() {
 
       return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId)
     },
+
+    disableTimeoutsForTesting: function() {
+      this.setTimeout_ = function(fn) {
+        fn();
+      };
+      this.dropIndicator_.setTimeout = this.setTimeout_;
+    }
   };
 
   return {
