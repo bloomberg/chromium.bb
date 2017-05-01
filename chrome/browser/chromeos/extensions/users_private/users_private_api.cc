@@ -98,17 +98,25 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
 
   // Now populate the list of User objects for returning to the JS.
   for (size_t i = 0; i < email_list->GetSize(); ++i) {
-    api::users_private::User user;
-    email_list->GetString(i, &user.email);
-    AccountId account_id = AccountId::FromUserEmail(user.email);
-    user.name = base::UTF16ToUTF8(user_manager->GetUserDisplayName(account_id));
-    if (user.name.empty()) {
-      // User is not associated with a gaia account.
-      user.name = user_manager->GetUserDisplayEmail(account_id);
+    std::string email;
+    email_list->GetString(i, &email);
+    AccountId account_id = AccountId::FromUserEmail(email);
+    const user_manager::User* user = user_manager->FindUser(account_id);
+    api::users_private::User api_user;
+    if (user) {
+      api_user.email = user->GetDisplayEmail();
+      api_user.name = base::UTF16ToUTF8(user->GetDisplayName());
+      api_user.is_owner =
+          user->GetAccountId() == user_manager->GetOwnerAccountId();
+      api_user.is_supervised = user->IsSupervised();
+    } else {
+      // User is unknown (i.e. not on device).
+      api_user.email = email;
+      api_user.name = email;
+      api_user.is_owner = false;
+      api_user.is_supervised = false;
     }
-    user.is_owner = chromeos::ProfileHelper::IsOwnerProfile(profile) &&
-                    user.email == profile->GetProfileUserName();
-    user_list->Append(user.ToValue());
+    user_list->Append(api_user.ToValue());
   }
 
   return RespondNow(OneArgument(std::move(user_list)));

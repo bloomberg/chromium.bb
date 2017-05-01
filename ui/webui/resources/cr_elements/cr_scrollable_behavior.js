@@ -41,15 +41,10 @@ var CrScrollableBehavior = {
   intervalId_: null,
 
   ready: function() {
-    var scrollableElements = this.root.querySelectorAll('[scrollable]');
-
-    // Setup the intial scrolling related classes for each scrollable container.
-    requestAnimationFrame(function() {
-      for (var i = 0; i < scrollableElements.length; i++)
-        this.updateScroll_(scrollableElements[i]);
-    }.bind(this));
+    this.requestUpdateScroll();
 
     // Listen to the 'scroll' event for each scrollable container.
+    var scrollableElements = this.root.querySelectorAll('[scrollable]');
     for (var i = 0; i < scrollableElements.length; i++) {
       scrollableElements[i].addEventListener(
           'scroll', this.updateScrollEvent_.bind(this));
@@ -70,7 +65,12 @@ var CrScrollableBehavior = {
     if (this.intervalId_ !== null)
       return;  // notifyResize is arelady in progress.
 
+    this.requestUpdateScroll();
+
     var nodeList = this.root.querySelectorAll('[scrollable] iron-list');
+    if (!nodeList.length)
+      return;
+
     // Use setInterval to avoid initial render / sizing issues.
     this.intervalId_ = window.setInterval(function() {
       var unreadyNodes = [];
@@ -90,6 +90,19 @@ var CrScrollableBehavior = {
         nodeList = unreadyNodes;
       }
     }.bind(this), 10);
+  },
+
+  /**
+   * Setup the intial scrolling related classes for each scrollable container.
+   * Called from ready() and updateScrollableContents(). May also be called
+   * directly when the contents change (e.g. when not using iron-list).
+   */
+  requestUpdateScroll: function() {
+    requestAnimationFrame(function() {
+      var scrollableElements = this.root.querySelectorAll('[scrollable]');
+      for (var i = 0; i < scrollableElements.length; i++)
+        this.updateScroll_(/** @type {!HTMLElement} */(scrollableElements[i]));
+    }.bind(this));
   },
 
   /** @param {!IronListElement} list */
