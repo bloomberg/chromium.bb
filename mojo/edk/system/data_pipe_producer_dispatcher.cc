@@ -68,24 +68,20 @@ class DataPipeProducerDispatcher::PortObserverThunk
   DISALLOW_COPY_AND_ASSIGN(PortObserverThunk);
 };
 
-DataPipeProducerDispatcher::DataPipeProducerDispatcher(
+// static
+scoped_refptr<DataPipeProducerDispatcher> DataPipeProducerDispatcher::Create(
     NodeController* node_controller,
     const ports::PortRef& control_port,
     scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
     const MojoCreateDataPipeOptions& options,
-    bool initialized,
-    uint64_t pipe_id)
-    : options_(options),
-      node_controller_(node_controller),
-      control_port_(control_port),
-      pipe_id_(pipe_id),
-      watchers_(this),
-      shared_ring_buffer_(shared_ring_buffer),
-      available_capacity_(options_.capacity_num_bytes) {
-  if (initialized) {
-    base::AutoLock lock(lock_);
-    InitializeNoLock();
-  }
+    uint64_t pipe_id) {
+  scoped_refptr<DataPipeProducerDispatcher> producer =
+      new DataPipeProducerDispatcher(node_controller, control_port,
+                                     shared_ring_buffer, options, pipe_id);
+  base::AutoLock lock(producer->lock_);
+  if (!producer->InitializeNoLock())
+    return nullptr;
+  return producer;
 }
 
 Dispatcher::Type DataPipeProducerDispatcher::GetType() const {
@@ -284,8 +280,10 @@ bool DataPipeProducerDispatcher::EndSerialize(
   ports[0] = control_port_.name();
 
   buffer_handle_for_transit_ = shared_ring_buffer_->DuplicatePlatformHandle();
-  platform_handles[0] = buffer_handle_for_transit_.get();
+  if (!buffer_handle_for_transit_.is_valid())
+    return false;
 
+  platform_handles[0] = buffer_handle_for_transit_.get();
   return true;
 }
 
@@ -352,42 +350,60 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
 
   scoped_refptr<DataPipeProducerDispatcher> dispatcher =
       new DataPipeProducerDispatcher(node_controller, port, ring_buffer,
-                                     state->options, false /* initialized */,
-                                     state->pipe_id);
+                                     state->options, state->pipe_id);
 
   {
     base::AutoLock lock(dispatcher->lock_);
     dispatcher->write_offset_ = state->write_offset;
     dispatcher->available_capacity_ = state->available_capacity;
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
-    dispatcher->InitializeNoLock();
+    if (!dispatcher->InitializeNoLock())
+      return nullptr;
     dispatcher->UpdateSignalsStateNoLock();
   }
 
   return dispatcher;
 }
 
+DataPipeProducerDispatcher::DataPipeProducerDispatcher(
+    NodeController* node_controller,
+    const ports::PortRef& control_port,
+    scoped_refptr<PlatformSharedBuffer> shared_ring_buffer,
+    const MojoCreateDataPipeOptions& options,
+    uint64_t pipe_id)
+    : options_(options),
+      node_controller_(node_controller),
+      control_port_(control_port),
+      pipe_id_(pipe_id),
+      watchers_(this),
+      shared_ring_buffer_(shared_ring_buffer),
+      available_capacity_(options_.capacity_num_bytes) {}
+
 DataPipeProducerDispatcher::~DataPipeProducerDispatcher() {
   DCHECK(is_closed_ && !in_transit_ && !shared_ring_buffer_ &&
          !ring_buffer_mapping_);
 }
 
-void DataPipeProducerDispatcher::InitializeNoLock() {
+bool DataPipeProducerDispatcher::InitializeNoLock() {
   lock_.AssertAcquired();
+  if (!shared_ring_buffer_)
+    return false;
 
-  if (shared_ring_buffer_) {
-    ring_buffer_mapping_ =
-        shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
-    if (!ring_buffer_mapping_) {
-      DLOG(ERROR) << "Failed to map shared buffer.";
-      shared_ring_buffer_ = nullptr;
-    }
+  DCHECK(!ring_buffer_mapping_);
+  ring_buffer_mapping_ =
+      shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
+  if (!ring_buffer_mapping_) {
+    DLOG(ERROR) << "Failed to map shared buffer.";
+    shared_ring_buffer_ = nullptr;
+    return false;
   }
 
   base::AutoUnlock unlock(lock_);
   node_controller_->SetPortObserver(
       control_port_,
       make_scoped_refptr(new PortObserverThunk(this)));
+
+  return true;
 }
 
 MojoResult DataPipeProducerDispatcher::CloseNoLock() {
