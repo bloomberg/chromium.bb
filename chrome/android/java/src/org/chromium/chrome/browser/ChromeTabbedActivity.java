@@ -878,7 +878,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // it will trigger the notification that tab restore is complete which is needed by
             // other parts of Chrome such as sync.
             boolean activeTabBeingRestored = !mIntentWithEffect;
+            mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
+            mMainIntentMetrics.setIgnoreEvents(false);
 
             // Only create an initial tab if no tabs were restored and no intent was handled.
             // Also, check whether the active tab was supposed to be restored and that the total
@@ -893,8 +895,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         new Runnable() {
                             @Override
                             public void run() {
-                                mMainIntentMetrics.ignorePendingAddTab();
+                                mMainIntentMetrics.setIgnoreEvents(true);
                                 createInitialTab();
+                                mMainIntentMetrics.setIgnoreEvents(false);
                             }
                         }, INITIAL_TAB_CREATION_TIMEOUT_MS);
             }
