@@ -171,14 +171,14 @@ static WebAXEvent ToWebAXEvent(AXObjectCache::AXNotification notification) {
   return static_cast<WebAXEvent>(notification);
 }
 
-ChromeClientImpl::ChromeClientImpl(WebViewImpl* web_view)
+ChromeClientImpl::ChromeClientImpl(WebViewBase* web_view)
     : web_view_(web_view),
       cursor_overridden_(false),
       did_request_non_empty_tool_tip_(false) {}
 
 ChromeClientImpl::~ChromeClientImpl() {}
 
-ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
+ChromeClientImpl* ChromeClientImpl::Create(WebViewBase* web_view) {
   return new ChromeClientImpl(web_view);
 }
 
@@ -187,7 +187,7 @@ void* ChromeClientImpl::WebView() const {
 }
 
 void ChromeClientImpl::ChromeDestroyed() {
-  // Our lifetime is bound to the WebViewImpl.
+  // Our lifetime is bound to the WebViewBase.
 }
 
 void ChromeClientImpl::SetWindowRect(const IntRect& r, LocalFrame& frame) {
@@ -910,7 +910,7 @@ bool ChromeClientImpl::HasOpenedPopup() const {
 PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
   NotifyPopupOpeningObservers();
-  if (WebViewImpl::UseExternalPopupMenus())
+  if (WebViewBase::UseExternalPopupMenus())
     return new ExternalPopupMenu(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::pagePopupEnabled());

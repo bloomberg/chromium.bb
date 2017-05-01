@@ -32,6 +32,7 @@
 
 #include "core/dom/ContextFeatures.h"
 #include "core/events/MessageEvent.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -52,6 +53,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/animation/CompositorAnimationHost.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/PtrUtil.h"
@@ -65,7 +67,6 @@
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -268,7 +269,7 @@ WebPagePopupImpl::~WebPagePopupImpl() {
   DCHECK(!page_);
 }
 
-bool WebPagePopupImpl::Initialize(WebViewImpl* web_view,
+bool WebPagePopupImpl::Initialize(WebViewBase* web_view,
                                   PagePopupClient* popup_client) {
   DCHECK(web_view);
   DCHECK(popup_client);
@@ -601,10 +602,10 @@ WebPagePopup* WebPagePopup::Create(WebWidgetClient* client) {
     CRASH();
   // A WebPagePopupImpl instance usually has two references.
   //  - One owned by the instance itself. It represents the visible widget.
-  //  - One owned by a WebViewImpl. It's released when the WebViewImpl ask the
+  //  - One owned by a WebViewBase. It's released when the WebViewBase ask the
   //    WebPagePopupImpl to close.
   // We need them because the closing operation is asynchronous and the widget
-  // can be closed while the WebViewImpl is unaware of it.
+  // can be closed while the WebViewBase is unaware of it.
   return AdoptRef(new WebPagePopupImpl(client)).LeakRef();
 }
 

@@ -42,13 +42,13 @@ namespace blink {
 
 class PagePopup;
 class PagePopupClient;
-class WebViewImpl;
+class WebViewBase;
 struct WebCursorInfo;
 
 // Handles window-level notifications from core on behalf of a WebView.
 class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
-  static ChromeClientImpl* Create(WebViewImpl*);
+  static ChromeClientImpl* Create(WebViewBase*);
   ~ChromeClientImpl() override;
 
   void* WebView() const override;
@@ -236,13 +236,13 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
 
  private:
-  explicit ChromeClientImpl(WebViewImpl*);
+  explicit ChromeClientImpl(WebViewBase*);
 
   bool IsChromeClientImpl() const override { return true; }
 
   void SetCursor(const WebCursorInfo&, LocalFrame*);
 
-  WebViewImpl* web_view_;  // Weak pointer.
+  WebViewBase* web_view_;  // Weak pointer.
   WindowFeatures window_features_;
   Vector<PopupOpeningObserver*> popup_opening_observers_;
   Cursor last_set_mouse_cursor_for_testing_;

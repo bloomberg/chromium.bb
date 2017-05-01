@@ -17,7 +17,11 @@ class CompositorAnimationTimeline;
 class ContextMenuProvider;
 class DevToolsEmulator;
 class Frame;
+class GraphicsLayer;
 class Page;
+class PaintLayerCompositor;
+class PagePopup;
+class PagePopupClient;
 class PageScaleConstraintsSet;
 class WebInputEvent;
 class WebKeyboardEvent;
@@ -48,6 +52,7 @@ class WebViewBase : public WebView {
 
   virtual Page* GetPage() const = 0;
   virtual Frame* FocusedCoreFrame() const = 0;
+  static WebViewBase* FromPage(Page*);
 
   // Returns the main frame associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -104,6 +109,41 @@ class WebViewBase : public WebView {
   virtual CompositorAnimationTimeline* LinkHighlightsTimeline() const = 0;
 
   virtual WebSettingsImpl* SettingsImpl() = 0;
+
+  virtual PagePopup* OpenPagePopup(PagePopupClient*) = 0;
+  virtual void ClosePagePopup(PagePopup*) = 0;
+  virtual void CleanupPagePopup() = 0;
+  virtual LocalDOMWindow* PagePopupWindow() const = 0;
+
+  virtual void InvalidateRect(const IntRect&) = 0;
+  // Indicates two things:
+  //   1) This view may have a new layout now.
+  //   2) Calling updateAllLifecyclePhases() is a no-op.
+  // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
+  // notification unless the view did not need a layout.
+  virtual void LayoutUpdated(WebLocalFrameImpl*) = 0;
+  virtual void ResizeAfterLayout(WebLocalFrameImpl*) = 0;
+
+  virtual void UpdatePageDefinedViewportConstraints(
+      const ViewportDescription&) = 0;
+
+  virtual void EnterFullscreen(LocalFrame&) = 0;
+  virtual void ExitFullscreen(LocalFrame&) = 0;
+  virtual void FullscreenElementChanged(Element*, Element*) = 0;
+
+  virtual bool HasOpenedPopup() const = 0;
+
+  // Returns true if popup menus should be rendered by the browser, false if
+  // they should be rendered by WebKit (which is the default).
+  static bool UseExternalPopupMenus();
+
+  virtual GraphicsLayer* RootGraphicsLayer() = 0;
+  virtual void RegisterViewportLayersWithCompositor() = 0;
+  virtual PaintLayerCompositor* Compositor() const = 0;
+
+  virtual void DidUpdateBrowserControls() = 0;
+  virtual FloatSize ElasticOverscroll() const = 0;
+  virtual double LastFrameTimeMonotonic() const = 0;
 
   static const WebInputEvent* CurrentInputEvent();
 };

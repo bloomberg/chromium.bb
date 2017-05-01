@@ -9,6 +9,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -28,7 +29,6 @@
 #include "v8/include/v8.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
@@ -137,7 +137,7 @@ bool WebRemoteFrameImpl::HasVerticalScrollbar() const {
 WebView* WebRemoteFrameImpl::View() const {
   if (!GetFrame())
     return nullptr;
-  return WebViewImpl::FromPage(GetFrame()->GetPage());
+  return WebViewBase::FromPage(GetFrame()->GetPage());
 }
 
 WebDocument WebRemoteFrameImpl::GetDocument() const {
