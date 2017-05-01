@@ -5,7 +5,7 @@
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 
 #include <memory>
-#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/PtrUtil.h"
 

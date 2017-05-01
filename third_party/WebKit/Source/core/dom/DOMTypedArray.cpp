@@ -4,7 +4,6 @@
 
 #include "core/dom/DOMTypedArray.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Float32Array.h"
 #include "bindings/core/v8/V8Float64Array.h"
@@ -15,6 +14,7 @@
 #include "bindings/core/v8/V8Uint32Array.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
+#include "platform/bindings/DOMDataStore.h"
 
 namespace blink {
 

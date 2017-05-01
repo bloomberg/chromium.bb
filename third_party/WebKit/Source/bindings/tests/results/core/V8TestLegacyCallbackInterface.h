@@ -12,10 +12,10 @@
 #ifndef V8TestLegacyCallbackInterface_h
 #define V8TestLegacyCallbackInterface_h
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/tests/idls/core/TestLegacyCallbackInterface.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScopedPersistent.h"
 
 namespace blink {
 

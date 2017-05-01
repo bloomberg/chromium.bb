@@ -31,11 +31,11 @@
 #ifndef ExceptionState_h
 #define ExceptionState_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"

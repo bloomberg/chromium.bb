@@ -4,7 +4,6 @@
 
 #include "core/xml/DocumentXMLTreeViewer.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
@@ -12,6 +11,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/PlatformResourceLoader.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 namespace blink {
 

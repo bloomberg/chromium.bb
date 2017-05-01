@@ -31,8 +31,8 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
 
@@ -67,8 +67,7 @@ class V8NodeFilterCondition final
   }
 
  private:
-  V8NodeFilterCondition(v8::Local<v8::Value> filter,
-                        ScriptState*);
+  V8NodeFilterCondition(v8::Local<v8::Value> filter, ScriptState*);
 
   RefPtr<ScriptState> script_state_;
   TraceWrapperV8Reference<v8::Object> filter_;

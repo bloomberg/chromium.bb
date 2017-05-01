@@ -5,10 +5,10 @@
 #include "bindings/core/v8/ScriptPromisePropertyBase.h"
 
 #include <memory>
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

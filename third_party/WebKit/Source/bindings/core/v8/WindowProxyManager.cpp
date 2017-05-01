@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/WindowProxyManager.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 namespace blink {
 

@@ -26,7 +26,6 @@
 #ifndef IDBDatabase_h
 #define IDBDatabase_h
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/StringOrStringSequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -41,6 +40,7 @@
 #include "modules/indexeddb/IDBObjectStoreParameters.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"

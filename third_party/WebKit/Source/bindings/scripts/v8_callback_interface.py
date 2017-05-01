@@ -40,8 +40,8 @@ import v8_types
 import v8_utilities
 
 CALLBACK_INTERFACE_H_INCLUDES = frozenset([
-    'bindings/core/v8/DOMWrapperWorld.h',
-    'bindings/core/v8/ScopedPersistent.h',
+    'platform/bindings/DOMWrapperWorld.h',
+    'platform/bindings/ScopedPersistent.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ScriptController.h',

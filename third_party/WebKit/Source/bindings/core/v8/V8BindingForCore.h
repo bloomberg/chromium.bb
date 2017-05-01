@@ -32,8 +32,6 @@
 #ifndef V8BindingForCore_h
 #define V8BindingForCore_h
 
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/NativeValueTraits.h"
@@ -51,6 +49,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/Node.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringView.h"

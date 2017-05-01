@@ -5,7 +5,6 @@
 #ifndef ScriptPromiseResolver_h
 #define ScriptPromiseResolver_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
@@ -14,6 +13,7 @@
 #include "core/dom/SuspendableObject.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/Timer.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "v8/include/v8.h"

@@ -5,7 +5,7 @@
 #ifndef MediaRecorder_h
 #define MediaRecorder_h
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
+#include <memory>
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
@@ -13,9 +13,9 @@
 #include "modules/mediarecorder/MediaRecorderOptions.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/AsyncMethodRunner.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "public/platform/WebMediaRecorderHandler.h"
 #include "public/platform/WebMediaRecorderHandlerClient.h"
-#include <memory>
 
 namespace blink {
 

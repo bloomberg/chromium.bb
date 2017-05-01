@@ -31,7 +31,6 @@
 #ifndef FontFace_h
 #define FontFace_h
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -39,6 +38,7 @@
 #include "core/css/CSSValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/wtf/text/WTFString.h"
 

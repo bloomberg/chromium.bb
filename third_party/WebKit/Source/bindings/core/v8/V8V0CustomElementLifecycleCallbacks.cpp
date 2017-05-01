@@ -31,7 +31,6 @@
 #include "bindings/core/v8/V8V0CustomElementLifecycleCallbacks.h"
 
 #include <memory>
-#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V0CustomElementBinding.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -39,6 +38,7 @@
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/DOMDataStore.h"
 
 namespace blink {
 

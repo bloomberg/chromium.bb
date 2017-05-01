@@ -5,8 +5,8 @@
 #ifndef AudioWorkletProcessorDefinition_h
 #define AudioWorkletProcessorDefinition_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "modules/ModulesExport.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"

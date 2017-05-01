@@ -26,9 +26,7 @@
 
 #include "core/dom/Node.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/NodeOrString.h"
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
@@ -101,6 +99,8 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/InstanceCounters.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/HashSet.h"

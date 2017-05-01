@@ -5,10 +5,10 @@
 #ifndef CSSPaintDefinition_h
 #define CSSPaintDefinition_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"

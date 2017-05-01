@@ -5,9 +5,9 @@
 #ifndef SuspendableScriptExecutor_h
 #define SuspendableScriptExecutor_h
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/CoreExport.h"
 #include "core/frame/SuspendableTimer.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/RefPtr.h"

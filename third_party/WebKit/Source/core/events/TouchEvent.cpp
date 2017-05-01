@@ -26,7 +26,6 @@
 
 #include "core/events/TouchEvent.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/events/EventDispatcher.h"
 #include "core/frame/FrameConsole.h"
@@ -36,6 +35,7 @@
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 namespace blink {
 

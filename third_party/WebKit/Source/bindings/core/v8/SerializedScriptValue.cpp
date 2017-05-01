@@ -31,8 +31,6 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 
 #include <memory>
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
@@ -51,6 +49,8 @@
 #include "core/dom/MessagePort.h"
 #include "core/frame/ImageBitmap.h"
 #include "platform/SharedBuffer.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"

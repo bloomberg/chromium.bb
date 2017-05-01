@@ -28,7 +28,6 @@
 
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -77,6 +76,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/network/NetworkStateNotifier.h"

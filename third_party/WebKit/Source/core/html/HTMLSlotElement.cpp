@@ -30,7 +30,6 @@
 
 #include "core/html/HTMLSlotElement.h"
 
-#include "bindings/core/v8/Microtask.h"
 #include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
@@ -42,6 +41,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/AssignedNodesOptions.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/bindings/Microtask.h"
 
 namespace blink {
 

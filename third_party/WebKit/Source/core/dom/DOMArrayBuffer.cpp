@@ -4,8 +4,8 @@
 
 #include "core/dom/DOMArrayBuffer.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
+#include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 

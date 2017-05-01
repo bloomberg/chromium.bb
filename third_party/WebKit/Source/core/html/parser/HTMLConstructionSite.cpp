@@ -27,7 +27,6 @@
 #include "core/html/parser/HTMLConstructionSite.h"
 
 #include <limits>
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
@@ -60,6 +59,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/loader/FrameLoader.h"
 #include "core/svg/SVGScriptElement.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {

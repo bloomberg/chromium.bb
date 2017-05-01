@@ -31,11 +31,11 @@
 #ifndef V8AbstractEventListener_h
 #define V8AbstractEventListener_h
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
 #include "core/events/EventListener.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "v8/include/v8.h"
 
