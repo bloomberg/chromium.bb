@@ -16,18 +16,14 @@ import org.robolectric.res.builder.RobolectricPackageManager;
  */
 public class WebApkTestHelper {
     /**
-     * Package name of the WebAPK registered by {@link #registerWebApkWithMetaData}.
-     */
-    public static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
-
-    /**
      * Registers WebAPK.
+     * @param packageName The package to register
      * @param metaData Bundle with meta data from WebAPK's Android Manifest.
      */
-    public static void registerWebApkWithMetaData(Bundle metaData) {
+    public static void registerWebApkWithMetaData(String packageName, Bundle metaData) {
         RobolectricPackageManager packageManager =
                 (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
-        packageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, metaData));
+        packageManager.addPackage(newPackageInfo(packageName, metaData));
     }
 
     private static PackageInfo newPackageInfo(String packageName, Bundle metaData) {

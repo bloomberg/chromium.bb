@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.webapk.lib.client.WebApkVersion.CURRENT_SHELL_APK_VERSION;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -31,7 +33,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.chromium.webapk.lib.client.WebApkVersion;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
@@ -48,9 +49,8 @@ public class WebApkUpdateManagerTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
-    /** WebAPK's id in {@link WebAppDataStorage}. */
-    private static final String WEBAPK_ID =
-            WebApkConstants.WEBAPK_ID_PREFIX + WebApkTestHelper.WEBAPK_PACKAGE_NAME;
+    private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
+    private static final String UNBOUND_WEBAPK_PACKAGE_NAME = "com.webapk.test_package";
 
     /** Web Manifest URL */
     private static final String WEB_MANIFEST_URL = "manifest.json";
@@ -192,16 +192,22 @@ public class WebApkUpdateManagerTest {
 
     private MockClock mClock;
 
-    private WebappDataStorage getStorage() {
-        return WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+    private static String getWebApkId(String packageName) {
+        return WebApkConstants.WEBAPK_ID_PREFIX + packageName;
+    }
+
+    private WebappDataStorage getStorage(String packageName) {
+        return WebappRegistry.getInstance().getWebappDataStorage(getWebApkId(packageName));
     }
 
     /**
      * Registers WebAPK with default package name. Overwrites previous registrations.
+     * @param packageName         Package name for which to register the WebApk.
      * @param manifestData        <meta-data> values for WebAPK's Android Manifest.
      * @param shellApkVersionCode WebAPK's version of the //chrome/android/webapk/shell_apk code.
      */
-    private void registerWebApk(ManifestData manifestData, int shellApkVersionCode) {
+    private void registerWebApk(
+            String packageName, ManifestData manifestData, int shellApkVersionCode) {
         Bundle metaData = new Bundle();
         metaData.putInt(
                 WebApkMetaDataKeys.SHELL_APK_VERSION, shellApkVersionCode);
@@ -225,7 +231,7 @@ public class WebApkUpdateManagerTest {
         metaData.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 iconUrlsAndIconMurmur2Hashes);
 
-        WebApkTestHelper.registerWebApkWithMetaData(metaData);
+        WebApkTestHelper.registerWebApkWithMetaData(packageName, metaData);
     }
 
     private static ManifestData defaultManifestData() {
@@ -250,11 +256,12 @@ public class WebApkUpdateManagerTest {
     private static WebApkInfo infoFromManifestData(ManifestData manifestData) {
         if (manifestData == null) return null;
 
-        return WebApkInfo.create(WEBAPK_ID, "", false /* forceNavigation */, manifestData.scopeUrl,
-                new WebApkInfo.Icon(manifestData.bestIcon), manifestData.name,
-                manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
-                manifestData.themeColor, manifestData.backgroundColor,
-                WebApkTestHelper.WEBAPK_PACKAGE_NAME, -1, WEB_MANIFEST_URL, manifestData.startUrl,
+        final String kPackageName = "org.random.webapk";
+        return WebApkInfo.create(getWebApkId(kPackageName), "", false /* forceNavigation */,
+                manifestData.scopeUrl, new WebApkInfo.Icon(manifestData.bestIcon),
+                manifestData.name, manifestData.shortName, manifestData.displayMode,
+                manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
+                kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
                 manifestData.iconUrlToMurmur2HashMap);
     }
 
@@ -268,12 +275,15 @@ public class WebApkUpdateManagerTest {
     }
 
     private static void updateIfNeeded(WebApkUpdateManager updateManager) {
+        updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager);
+    }
+
+    private static void updateIfNeeded(String packageName, WebApkUpdateManager updateManager) {
         // Use the intent version of {@link WebApkInfo#create()} in order to test default values
         // set by the intent version of {@link WebApkInfo#create()}.
         Intent intent = new Intent();
         intent.putExtra(ShortcutHelper.EXTRA_URL, "");
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
         WebApkInfo info = WebApkInfo.create(intent);
 
         updateManager.updateIfNeeded(null, info);
@@ -297,25 +307,16 @@ public class WebApkUpdateManagerTest {
     }
 
     /**
-     * Runs {@link WebApkUpdateManager#updateIfNeeded()} and returns whether an
-     * is-update-needed check has been triggered.
-     */
-    private boolean updateIfNeededChecksForUpdatedWebManifest() {
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
-        updateIfNeeded(updateManager);
-        return updateManager.updateCheckStarted();
-    }
-
-    /**
      * Checks whether the WebAPK is updated given data from the WebAPK's Android Manifest and data
      * from the fetched Web Manifest.
      */
     private boolean checkUpdateNeededForFetchedManifest(
             ManifestData androidManifestData, ManifestData fetchedManifestData) {
-        registerWebApk(androidManifestData, WebApkVersion.CURRENT_SHELL_APK_VERSION);
+        registerWebApk(WEBAPK_PACKAGE_NAME, androidManifestData, CURRENT_SHELL_APK_VERSION);
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         updateManager.onGotManifestData(
@@ -329,18 +330,18 @@ public class WebApkUpdateManagerTest {
         CommandLine.init(null);
         ChromeWebApkHost.initForTesting(true);
 
-        registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION);
+        registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION);
         mClock = new MockClock();
         WebappDataStorage.setClockForTests(mClock);
 
-        WebappRegistry.getInstance().register(
-                WEBAPK_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
+        WebappRegistry.getInstance().register(getWebApkId(WEBAPK_PACKAGE_NAME),
+                new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
                 });
         ShadowApplication.getInstance().runBackgroundTasks();
 
-        WebappDataStorage storage = getStorage();
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
         storage.updateDidLastWebApkUpdateRequestSucceed(true);
@@ -354,7 +355,8 @@ public class WebApkUpdateManagerTest {
     public void testCheckOnNextLaunchIfClosePriorToFirstPageLoad() {
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
         {
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+            TestWebApkUpdateManager updateManager =
+                    new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
             updateIfNeeded(updateManager);
             assertTrue(updateManager.updateCheckStarted());
         }
@@ -365,7 +367,8 @@ public class WebApkUpdateManagerTest {
 
         {
             // Relaunching the WebAPK should do an is-update-needed check.
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+            TestWebApkUpdateManager updateManager =
+                    new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
             updateIfNeeded(updateManager);
             assertTrue(updateManager.updateCheckStarted());
             onGotUnchangedWebManifestData(updateManager);
@@ -373,7 +376,8 @@ public class WebApkUpdateManagerTest {
 
         {
             // Relaunching the WebAPK should not do an is-update-needed-check.
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+            TestWebApkUpdateManager updateManager =
+                    new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
             updateIfNeeded(updateManager);
             assertFalse(updateManager.updateCheckStarted());
         }
@@ -390,13 +394,14 @@ public class WebApkUpdateManagerTest {
         long initialTime = mClock.currentTimeMillis();
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         onGotUnchangedWebManifestData(updateManager);
         assertFalse(updateManager.updateRequested());
 
-        WebappDataStorage storage = getStorage();
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
         assertEquals(initialTime, storage.getLastWebApkUpdateRequestCompletionTime());
     }
@@ -409,11 +414,12 @@ public class WebApkUpdateManagerTest {
      */
     @Test
     public void testMarkUpdateAsSucceededIfUpdateNoLongerNeeded() {
-        WebappDataStorage storage = getStorage();
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateDidLastWebApkUpdateRequestSucceed(false);
         mClock.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         onGotUnchangedWebManifestData(updateManager);
@@ -432,7 +438,8 @@ public class WebApkUpdateManagerTest {
     public void testMarkUpdateAsFailedIfClosePriorToUpdateCompleting() {
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         ManifestData manifestData = defaultManifestData();
@@ -443,7 +450,7 @@ public class WebApkUpdateManagerTest {
         // Chrome is killed. {@link WebApkUpdateManager#onBuiltWebApk} is never called.
 
         // Check {@link WebappDataStorage} state.
-        WebappDataStorage storage = getStorage();
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         assertFalse(storage.getDidLastWebApkUpdateRequestSucceed());
         assertEquals(
                 mClock.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
@@ -460,10 +467,11 @@ public class WebApkUpdateManagerTest {
      */
     @Test
     public void testShellApkOutOfDateNoWebManifest() {
-        registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
+        registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION - 1);
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -483,10 +491,11 @@ public class WebApkUpdateManagerTest {
      */
     @Test
     public void testShellApkOutOfDateStillHasWebManifest() {
-        registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
+        registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION - 1);
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -511,7 +520,8 @@ public class WebApkUpdateManagerTest {
     public void testStartUrlRedirectsToPageWithUpdatedWebManifest() {
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
@@ -545,7 +555,8 @@ public class WebApkUpdateManagerTest {
     public void testStartUrlRedirectsToPageWithUnchangedWebManifest() {
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
         updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         onGotManifestData(updateManager, defaultManifestData());
@@ -560,6 +571,23 @@ public class WebApkUpdateManagerTest {
     public void testManifestDoesNotUpgrade() {
         assertFalse(
                 checkUpdateNeededForFetchedManifest(defaultManifestData(), defaultManifestData()));
+    }
+
+    /**
+     * Test that a webapk with an unexpected package name does not request updates.
+     */
+    @Test
+    public void testUnboundWebApkDoesNotUpgrade() {
+        ManifestData androidManifestData = defaultManifestData();
+
+        registerWebApk(UNBOUND_WEBAPK_PACKAGE_NAME, androidManifestData, CURRENT_SHELL_APK_VERSION);
+        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(UNBOUND_WEBAPK_PACKAGE_NAME));
+        updateIfNeeded(UNBOUND_WEBAPK_PACKAGE_NAME, updateManager);
+        assertFalse(updateManager.updateCheckStarted());
+        assertFalse(updateManager.updateRequested());
     }
 
     /**
@@ -672,10 +700,10 @@ public class WebApkUpdateManagerTest {
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
         ManifestData differentManifestData = defaultManifestData();
         differentManifestData.name = DIFFERENT_NAME;
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
 
         for (int i = 0; i < 3; ++i) {
-            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+            TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
             updateManager.setIsWebApkForeground(true);
             updateIfNeeded(updateManager);
 
@@ -685,7 +713,7 @@ public class WebApkUpdateManagerTest {
             assertEquals(i + 1, storage.getUpdateRequests());
         }
 
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
         updateManager.setIsWebApkForeground(true);
         updateIfNeeded(updateManager);
 
@@ -699,10 +727,10 @@ public class WebApkUpdateManagerTest {
     public void testRequestUpdateAfterWebApkOnStopIsCalled() {
         ManifestData differentManifestData = defaultManifestData();
         differentManifestData.name = DIFFERENT_NAME;
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
 
         mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
         updateManager.setIsWebApkForeground(true);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
@@ -730,8 +758,9 @@ public class WebApkUpdateManagerTest {
      */
     @Test
     public void testShellApkOutOfDate() {
-        registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
-        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+        registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION - 1);
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
 
         // There have not been any update requests for the current ShellAPK version. A WebAPK update
         // should be requested immediately.
@@ -740,9 +769,9 @@ public class WebApkUpdateManagerTest {
         onGotManifestData(updateManager, defaultManifestData());
         assertTrue(updateManager.updateRequested());
 
-        WebappDataStorage storage = getStorage();
+        WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
-        storage.updateLastRequestedShellApkVersion(WebApkVersion.CURRENT_SHELL_APK_VERSION);
+        storage.updateLastRequestedShellApkVersion(CURRENT_SHELL_APK_VERSION);
 
         mClock.advance(1);
         updateIfNeeded(updateManager);

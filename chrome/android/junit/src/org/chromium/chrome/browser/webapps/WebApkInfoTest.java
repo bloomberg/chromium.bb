@@ -32,6 +32,7 @@ import java.util.Map;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebApkInfoTest {
+    private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
 
     // Android Manifest meta data for {@link PACKAGE_NAME}.
     private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
@@ -68,19 +69,17 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URL, ICON_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, ICON_MURMUR2_HASH + "L");
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_FORCE_NAVIGATION, true);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WebApkTestHelper.WEBAPK_PACKAGE_NAME,
-                info.id());
+        Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WEBAPK_PACKAGE_NAME, info.id());
         Assert.assertEquals(START_URL, info.uri().toString());
         Assert.assertTrue(info.shouldForceNavigation());
         Assert.assertEquals(SCOPE, info.scopeUri().toString());
@@ -92,7 +91,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(1L, info.themeColor());
         Assert.assertTrue(info.hasValidBackgroundColor());
         Assert.assertEquals(2L, info.backgroundColor());
-        Assert.assertEquals(WebApkTestHelper.WEBAPK_PACKAGE_NAME, info.webApkPackageName());
+        Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.webApkPackageName());
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());
@@ -116,11 +115,10 @@ public class WebApkInfoTest {
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -148,11 +146,10 @@ public class WebApkInfoTest {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
         bundle.putString(WebApkMetaDataKeys.SCOPE, "");
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -174,10 +171,9 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 iconUrl1 + " " + murmur2Hash1 + " " + iconUrl2 + " " + murmur2Hash2);
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -199,10 +195,9 @@ public class WebApkInfoTest {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES, "randomUrl " + hash);
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -221,11 +216,10 @@ public class WebApkInfoTest {
     public void testForceNavigationNotSpecified() {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
-        intent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);
