@@ -190,10 +190,10 @@ static INLINE int block_center_y(int mi_row, BLOCK_SIZE bs) {
 }
 
 static INLINE int convert_to_trans_prec(int allow_hp, int coor) {
-  const int shift =
-      allow_hp ? WARPEDMODEL_PREC_BITS - 3 : WARPEDMODEL_PREC_BITS - 2;
-  const int scale = allow_hp ? 0 : 1;
-  return (ROUND_POWER_OF_TWO_SIGNED(coor, shift) << scale);
+  if (allow_hp)
+    return ROUND_POWER_OF_TWO_SIGNED(coor, WARPEDMODEL_PREC_BITS - 3);
+  else
+    return ROUND_POWER_OF_TWO_SIGNED(coor, WARPEDMODEL_PREC_BITS - 2) * 2;
 }
 
 // Convert a global motion translation vector (which may have more bits than a
@@ -227,6 +227,7 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     assert(gm->wmmat[5] == gm->wmmat[2]);
     assert(gm->wmmat[4] == -gm->wmmat[3]);
   }
+
   xc = mat[2] * x + mat[3] * y + mat[0];
   yc = mat[4] * x + mat[5] * y + mat[1];
 
