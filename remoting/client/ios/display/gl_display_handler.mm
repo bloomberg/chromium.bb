@@ -48,6 +48,7 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
                        const base::Closure& done);
   void Stop();
+  void SurfaceCreated(GLKView* view);
   void SurfaceChanged(int width, int height);
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
   EAGLContext* GetEAGLContext();
@@ -60,6 +61,7 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
 
+  GLKView* gl_view_;
   EAGLContext* eagl_context_;
   std::unique_ptr<GlRenderer> renderer_;
   //  GlDemoScreen *demo_screen_;
@@ -108,19 +110,6 @@ void Core::Initialize() {
 
   //  renderer_.RequestCanvasSize();
 
-  renderer_->OnSurfaceCreated(
-      base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
-
-  SurfaceChanged(1024, 640);  // TODO(nicholss): Where does this data comefrom?
-
-  // TODO(nicholss): This are wrong values but it lets us get something on the
-  // screen.
-  std::array<float, 9> matrix = {{1, 0, 0,
-                                  0, 1, 0,
-                                  0, 0, 1}};
-
-  renderer_->OnPixelTransformationChanged(matrix);
-
   // demo_screen_ = new GlDemoScreen();
   // renderer_->AddDrawable(demo_screen_->GetWeakPtr());
   renderer_->SetDelegate(weak_ptr_);
@@ -133,7 +122,7 @@ void Core::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
 
 bool Core::CanRenderFrame() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  return eagl_context_ != NULL;
+  return gl_view_ != NULL && eagl_context_ != NULL;
 }
 
 std::unique_ptr<protocol::FrameConsumer> Core::GrabFrameConsumer() {
@@ -148,7 +137,7 @@ void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
 }
 
 void Core::OnFrameRendered() {
-  // Nothing to do.
+  [gl_view_ setNeedsDisplay];
 }
 
 void Core::OnSizeChanged(int width, int height) {
@@ -162,9 +151,29 @@ void Core::Stop() {
   // demo_screen_ = nil;
 }
 
+void Core::SurfaceCreated(GLKView* view) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  gl_view_ = view;
+
+  renderer_->OnSurfaceCreated(
+      base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
+
+  runtime_->network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
+                            frame_consumer_));
+}
+
 void Core::SurfaceChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   renderer_->OnSurfaceChanged(width, height);
+
+  // TODO(nicholss): This are wrong values but it lets us get something on the
+  // screen.
+  std::array<float, 9> matrix = {{1, 0, 0,  // Row 1
+                                  0, 1, 0,  // Row 2
+                                  0, 0, 1}};
+
+  renderer_->OnPixelTransformationChanged(matrix);
 }
 
 EAGLContext* Core::GetEAGLContext() {
@@ -215,6 +224,19 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 
 - (EAGLContext*)GetEAGLContext {
   return _core->GetEAGLContext();
+}
+
+- (void)onSurfaceCreated:(GLKView*)view {
+  _runtime->display_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&remoting::GlDisplayHandler::Core::SurfaceCreated,
+                            _core->GetWeakPtr(), view));
+}
+
+- (void)onSurfaceChanged:(const CGRect&)frame {
+  _runtime->display_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&remoting::GlDisplayHandler::Core::SurfaceChanged,
+                 _core->GetWeakPtr(), frame.size.width, frame.size.height));
 }
 
 // TODO(nicholss): Remove this function, it is not used in the final impl,
