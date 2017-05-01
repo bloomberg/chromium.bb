@@ -14,12 +14,14 @@ div {
   z-index: 1;
   left: 100px;
   top: 200px;
+  transform-origin: 0px 0px;
 }
 
 #div2 {
   z-index: 3;
   left: 100px;
   top: 300px;
+  transform-origin: 0px 0px;
 }
 
 </style>
@@ -55,11 +57,11 @@ function startAnimations() {
       delay: 1000
   });
   setTimeout(function() {
-    div2.style.motionPath = 'path("m 0 0 h -800")';
-    div2.style.motionRotation = '0deg';
+    div2.style.offsetPath = 'path("m 0 0 h -800")';
+    div2.style.offsetRotate = '0deg';
     div2.animate([
-        {motionOffset: '0%'},
-        {motionOffset: '100%'}
+        {offsetDistance: '0%'},
+        {offsetDistance: '100%'}
     ], {
         duration: 1000
     });
