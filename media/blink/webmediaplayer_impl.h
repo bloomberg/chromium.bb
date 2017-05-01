@@ -626,9 +626,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // For canceling ongoing surface creation requests when exiting fullscreen.
   base::CancelableCallback<void(int)> surface_created_cb_;
 
-  // The current overlay surface id. Populated while in fullscreen once the
-  // surface is created.
-  int overlay_surface_id_;
+  // The current overlay surface id. Populated, possibly with kNoSurfaceID if
+  // we're not supposed to use an overlay, unless we have an outstanding surface
+  // request to the SurfaceManager.
+  base::Optional<int> overlay_surface_id_;
 
   // If a surface is requested before it's finished being created, the request
   // is saved and satisfied once the surface is available. If the decoder does
