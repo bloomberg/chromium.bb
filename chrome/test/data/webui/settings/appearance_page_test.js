@@ -181,14 +181,14 @@ suite('AppearanceHandler', function() {
       assertFalse(!!appearancePage.$$('#useDefault'));
       assertFalse(!!appearancePage.$$('#useSystem'));
       // If there's no "USE" buttons, the container should be hidden.
-      assertTrue(appearancePage.$$('.secondary-action').hidden);
+      assertTrue(appearancePage.$$('#themesSecondaryActions').hidden);
 
       appearanceBrowserProxy.setIsSupervised(false);
       appearancePage.set(THEME_ID_PREF, 'fake theme id');
       Polymer.dom.flush();
       // If there's "USE" buttons again, the container should be visible.
       assertTrue(!!appearancePage.$$('#useDefault'));
-      assertFalse(appearancePage.$$('.secondary-action').hidden);
+      assertFalse(appearancePage.$$('#themesSecondaryActions').hidden);
 
       var button = appearancePage.$$('#useSystem');
       assertTrue(!!button);

@@ -124,21 +124,19 @@
             </div>
 <if expr="not chromeos">
             <template is="dom-if" if="[[showSignin_(syncStatus)]]">
-              <span class="secondary-action">
-                <paper-button class="primary-button" on-tap="onSigninTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
-                  $i18n{syncSignin}
-                </paper-button>
-              </span>
+              <div class="separator"></div>
+              <paper-button class="primary-button" on-tap="onSigninTap_"
+                  disabled="[[syncStatus.setupInProgress]]">
+                $i18n{syncSignin}
+              </paper-button>
             </template>
             <template is="dom-if" if="[[syncStatus.signedIn]]">
-              <span class="secondary-action">
-                <paper-button id="disconnectButton" class="secondary-button"
-                    on-tap="onDisconnectTap_"
-                    disabled="[[syncStatus.setupInProgress]]">
-                  $i18n{syncDisconnect}
-                </paper-button>
-              </span>
+              <div class="separator"></div>
+              <paper-button id="disconnectButton" class="secondary-button"
+                  on-tap="onDisconnectTap_"
+                  disabled="[[syncStatus.setupInProgress]]">
+                $i18n{syncDisconnect}
+              </paper-button>
             </template>
 </if>
           </template>

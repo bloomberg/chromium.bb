@@ -75,17 +75,18 @@
           </a>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
-            <div class="secondary-action">
-              <paper-button id="useDefault" on-tap="onUseDefaultTap_"
-                  class="secondary-button">
-                $i18n{resetToDefaultTheme}
-              </paper-button>
-            </div>
+            <div class="separator"></div>
+            <paper-button id="useDefault" on-tap="onUseDefaultTap_"
+                class="secondary-button">
+              $i18n{resetToDefaultTheme}
+            </paper-button>
           </template>
 </if>
 <if expr="is_linux and not chromeos">
-          <div class="secondary-action" hidden="[[!showThemesSecondary_(
-            prefs.extensions.theme.id.value, useSystemTheme_)]]">
+          <div class="layout horizontal center" hidden="[[!showThemesSecondary_(
+              prefs.extensions.theme.id.value, useSystemTheme_)]]"
+              id="themesSecondaryActions">
+            <div class="separator"></div>
             <template is="dom-if" if="[[showUseClassic_(
                 prefs.extensions.theme.id.value, useSystemTheme_)]]" restamp>
               <paper-button id="useDefault" on-tap="onUseDefaultTap_"
@@ -177,7 +178,7 @@
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
           <div id="pageZoom" class="start">$i18n{pageZoom}</div>
           <div class="md-select-wrapper">
-            <select id="zoomLevel" class="md-select" aria-labelledy="pageZoom"
+            <select id="zoomLevel" class="md-select" aria-labelledby="pageZoom"
                 on-change="onZoomLevelChange_">
               <template is="dom-repeat" items="[[pageZoomLevels_]]">
                 <option value="[[item]]"
