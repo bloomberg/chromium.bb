@@ -356,6 +356,9 @@ void AppListModel::ClearCustomLauncherPageSubpages() {
 }
 
 void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
+  if (search_engine_is_google_ == is_google)
+    return;
+
   search_engine_is_google_ = is_google;
   for (auto& observer : observers_)
     observer.OnSearchEngineIsGoogleChanged(is_google);

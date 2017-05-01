@@ -304,7 +304,7 @@ void SearchBoxView::OnEnabledChanged() {
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
   model_->search_box()->RemoveObserver(this);
-  model_->search_box()->SetText(search_box_->text());
+  model_->search_box()->Update(search_box_->text(), false);
   model_->search_box()->SetSelectionModel(search_box_->GetSelectionModel());
   model_->search_box()->AddObserver(this);
 }
@@ -422,7 +422,7 @@ void SearchBoxView::SelectionModelChanged() {
   search_box_->SelectSelectionModel(model_->search_box()->selection_model());
 }
 
-void SearchBoxView::TextChanged() {
+void SearchBoxView::Update() {
   search_box_->SetText(model_->search_box()->text());
   NotifyQueryChanged();
 }

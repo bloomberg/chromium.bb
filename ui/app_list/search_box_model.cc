@@ -27,8 +27,7 @@ SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
 SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() {
 }
 
-SearchBoxModel::SearchBoxModel() {
-}
+SearchBoxModel::SearchBoxModel() {}
 
 SearchBoxModel::~SearchBoxModel() {
 }
@@ -67,8 +66,8 @@ void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
     observer.SelectionModelChanged();
 }
 
-void SearchBoxModel::SetText(const base::string16& text) {
-  if (text_ == text)
+void SearchBoxModel::Update(const base::string16& text, bool is_voice_query) {
+  if (text_ == text && is_voice_query_ == is_voice_query)
     return;
 
   // Log that a new search has been commenced whenever the text box text
@@ -77,8 +76,9 @@ void SearchBoxModel::SetText(const base::string16& text) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchCommenced", 1, 2);
   }
   text_ = text;
+  is_voice_query_ = is_voice_query;
   for (auto& observer : observers_)
-    observer.TextChanged();
+    observer.Update();
 }
 
 void SearchBoxModel::AddObserver(SearchBoxModelObserver* observer) {

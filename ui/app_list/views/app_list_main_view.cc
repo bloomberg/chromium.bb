@@ -87,7 +87,8 @@ void AppListMainView::AddContentsViews() {
   contents_view_->layer()->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
 
-  delegate_->StartSearch();
+  // Clear the old query and start search.
+  search_box_view_->ClearSearch();
 }
 
 void AppListMainView::ShowAppListWhenReady() {

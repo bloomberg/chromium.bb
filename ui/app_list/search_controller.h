@@ -33,7 +33,7 @@ class APP_LIST_EXPORT SearchController {
                    History* history);
   virtual ~SearchController();
 
-  void Start(bool is_voice_query);
+  void Start();
   void Stop();
 
   void OpenResult(SearchResult* result, int event_flags);

@@ -10,6 +10,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/app_list/app_list_model_observer.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -27,7 +28,8 @@ namespace app_list {
 
 // Manages the web contents for the search answer web view.
 class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
-                                        public content::WebContentsObserver {
+                                        public content::WebContentsObserver,
+                                        public AppListModelObserver {
  public:
   SearchAnswerWebContentsDelegate(Profile* profile,
                                   app_list::AppListModel* model);
@@ -57,6 +59,9 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;
+
+  // AppListModelObserver overrides:
+  void OnSearchEngineIsGoogleChanged(bool is_google) override;
 
  private:
   // Unowned pointer to the associated profile.
