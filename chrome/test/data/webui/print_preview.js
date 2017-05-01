@@ -15,6 +15,7 @@ function PrintPreviewWebUITest() {
   this.nativeLayer_ = null;
   this.initialSettings_ = null;
   this.localDestinationInfos_ = null;
+  this.previewArea_ = null;
 }
 
 /**
@@ -82,15 +83,20 @@ PrintPreviewWebUITest.prototype = {
     window.addEventListener('DOMContentLoaded', function() {
       function NativeLayerStub() {
         cr.EventTarget.call(this);
+        this.printStarted_ = false;
       }
       NativeLayerStub.prototype = {
         __proto__: cr.EventTarget.prototype,
+        isPrintStarted: function() { return this.printStarted_; },
+        previewReadyForTest: function() {},
         startGetInitialSettings: function() {},
         startGetLocalDestinations: function() {},
         startGetPrivetDestinations: function() {},
         startGetExtensionDestinations: function() {},
         startGetLocalDestinationCapabilities: function(destinationId) {},
         startGetPreview: function() {},
+        startHideDialog: function () {},
+        startPrint: function () { this.printStarted_ = true; }
       };
       var oldNativeLayerEventType = print_preview.NativeLayer.EventType;
       var oldDuplexMode = print_preview.NativeLayer.DuplexMode;
@@ -148,6 +154,34 @@ PrintPreviewWebUITest.prototype = {
         new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
     capsSetEvent.settingsInfo = device;
     this.nativeLayer_.dispatchEvent(capsSetEvent);
+  },
+
+  /**
+   * Dispatch the PREVIEW_GENERATION_DONE event. This call is NOT async and
+   * will happen in the same thread.
+   */
+  dispatchPreviewDone: function() {
+    var previewDoneEvent =
+        new Event(print_preview.PreviewArea.EventType.PREVIEW_GENERATION_DONE);
+    this.previewArea_.dispatchEvent(previewDoneEvent);
+  },
+
+  /**
+   * Dispatch the SETTINGS_INVALID event. This call is NOT async and will
+   * happen in the same thread.
+   */
+  dispatchInvalidSettings: function() {
+    var invalidSettingsEvent =
+        new Event(print_preview.NativeLayer.EventType.SETTINGS_INVALID);
+    this.nativeLayer_.dispatchEvent(invalidSettingsEvent);
+  },
+
+  /**
+   * @return {boolean} Whether the UI has/has not "printed" (called startPrint
+   *     on the native layer).
+   */
+  hasPrinted: function() {
+    return this.nativeLayer_.isPrintStarted();
   },
 
   /**
@@ -223,6 +257,7 @@ PrintPreviewWebUITest.prototype = {
       { printerName: 'BarName', deviceName: 'BarDevice' }
     ];
     this.nativeLayer_ = printPreview.nativeLayer_;
+    this.previewArea_ = printPreview.previewArea_;
 
     testing.Test.disableAnimationsAndTransitions();
 
@@ -1102,14 +1137,10 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   // that will therefore dispatch ticket item change events.
   previewGenerator.expects(exactly(9)).requestPreview();
 
-  var barDestination;
-  var destinations = printPreview.destinationStore_.destinations();
-  for (var destination, i = 0; destination = destinations[i]; i++) {
-    if (destination.id == 'BarDevice') {
-      barDestination = destination;
-      break;
-    }
-  }
+  var barDestination =
+      printPreview.destinationStore_.destinations().find(function(d) {
+        return d.id == 'BarDevice';
+      });
 
   printPreview.destinationStore_.selectDestination(barDestination);
 
@@ -1354,5 +1385,65 @@ TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
   this.setInitialSettings();
   expectEquals(printPreview.previewArea_.previewGenerator_.inFlightRequestId_,
     0);
+  testDone();
+});
+
+// Test that invalid settings errors disable the print preview and display
+// an error and that the preview dialog can be recovered by selecting a
+// new destination.
+TEST_F('PrintPreviewWebUITest', 'TestInvalidSettingsError', function() {
+  // Setup
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
+
+  // Manually enable the print header. This is needed since there is no
+  // plugin during test, so it will be set as disabled normally.
+  printPreview.printHeader_.isEnabled = true;
+
+  // There will be an error message in the preview area since the plugin is
+  // not running. However, it should not be the invalid settings error.
+  var previewAreaEl = $('preview-area');
+  var customMessageEl =
+      previewAreaEl.getElementsByClassName('preview-area-custom-message')[0];
+  expectFalse(customMessageEl.hidden);
+  var expectedMessageStart = 'The selected printer is not available or not ' +
+      'installed correctly.'
+  expectFalse(customMessageEl.textContent.includes(expectedMessageStart));
+
+  // Verify that the print button is enabled.
+  var printHeader = $('print-header');
+  var printButton = printHeader.querySelector('button.print');
+  checkElementDisplayed(printButton, true);
+  expectFalse(printButton.disabled);
+
+  // Report invalid settings error.
+  this.dispatchInvalidSettings();
+
+  // Should be in an error state, print button disabled, invalid custom error
+  // message shown.
+  expectFalse(customMessageEl.hidden);
+  expectTrue(customMessageEl.textContent.includes(expectedMessageStart));
+  expectTrue(printButton.disabled);
+
+  // Select a new destination
+  var barDestination =
+      printPreview.destinationStore_.destinations().find(function(d) {
+        return d.id == 'BarDevice';
+      });
+
+  printPreview.destinationStore_.selectDestination(barDestination);
+
+  // Dispatch events indicating capabilities were fetched and new preview has
+  // loaded.
+  this.setCapabilities(getCddTemplate("BarDevice"));
+  this.dispatchPreviewDone();
+
+  // Has active print button and successfully "prints", indicating recovery
+  // from error state.
+  expectFalse(printButton.disabled);
+  expectFalse(this.hasPrinted());
+  printButton.click();
+  expectTrue(this.hasPrinted());
   testDone();
 });
