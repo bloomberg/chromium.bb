@@ -21,9 +21,6 @@ namespace aura {
 namespace test {
 namespace {
 
-// Mask of the mouse buttons currently down.
-unsigned g_button_down_mask = 0;
-
 class UIControlsOzone : public ui_controls::UIControlsAura {
  public:
   UIControlsOzone(WindowTreeHost* host) : host_(host) {}
@@ -45,7 +42,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       bool alt,
       bool command,
       const base::Closure& closure) override {
-    int flags = g_button_down_mask;
+    int flags = button_down_mask_;
 
     if (control) {
       flags |= ui::EF_CONTROL_DOWN;
@@ -114,12 +111,12 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
     ui::EventType event_type;
 
-    if (g_button_down_mask)
+    if (button_down_mask_)
       event_type = ui::ET_MOUSE_DRAGGED;
     else
       event_type = ui::ET_MOUSE_MOVED;
 
-    PostMouseEvent(event_type, host_location, g_button_down_mask, 0);
+    PostMouseEvent(event_type, host_location, button_down_mask_, 0);
 
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
@@ -160,14 +157,14 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     }
 
     if (state & ui_controls::DOWN) {
-      g_button_down_mask |= flag;
+      button_down_mask_ |= flag;
       PostMouseEvent(ui::ET_MOUSE_PRESSED, host_location,
-                     g_button_down_mask | flag, flag);
+                     button_down_mask_ | flag, flag);
     }
     if (state & ui_controls::UP) {
-      g_button_down_mask &= ~flag;
+      button_down_mask_ &= ~flag;
       PostMouseEvent(ui::ET_MOUSE_RELEASED, host_location,
-                     g_button_down_mask | flag, flag);
+                     button_down_mask_ | flag, flag);
     }
 
     RunClosureAfterAllPendingUIEvents(closure);
@@ -231,6 +228,9 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
   WindowTreeHost* host_;
+
+  // Mask of the mouse buttons currently down.
+  unsigned button_down_mask_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UIControlsOzone);
 };
