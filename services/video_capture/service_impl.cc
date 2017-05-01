@@ -4,85 +4,80 @@
 
 #include "services/video_capture/service_impl.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "media/capture/video/fake_video_capture_device_factory.h"
-#include "media/capture/video/video_capture_buffer_pool.h"
-#include "media/capture/video/video_capture_buffer_tracker.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "media/capture/video/video_capture_system_impl.h"
-#include "services/service_manager/public/cpp/service_info.h"
-#include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-
-namespace {
-
-// TODO(chfremer): Replace with an actual decoder factory.
-// https://crbug.com/584797
-std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
-  return nullptr;
-}
-
-}  // anonymous namespace
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/video_capture/device_factory_provider_impl.h"
+#include "services/video_capture/public/interfaces/constants.mojom.h"
 
 namespace video_capture {
 
-ServiceImpl::ServiceImpl() {
-  registry_.AddInterface<mojom::Service>(this);
+ServiceImpl::ServiceImpl()
+    : shutdown_delay_in_seconds_(mojom::kDefaultShutdownDelayInSeconds),
+      weak_factory_(this) {}
+
+ServiceImpl::~ServiceImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-ServiceImpl::~ServiceImpl() = default;
+void ServiceImpl::OnStart() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ref_factory_ =
+      base::MakeUnique<service_manager::ServiceContextRefFactory>(base::Bind(
+          &ServiceImpl::MaybeRequestQuitDelayed, base::Unretained(this)));
+  registry_.AddInterface<mojom::DeviceFactoryProvider>(
+      // Unretained |this| is safe because |registry_| is owned by |this|.
+      base::Bind(&ServiceImpl::OnDeviceFactoryProviderRequest,
+                 base::Unretained(this)));
+}
 
 void ServiceImpl::OnBindInterface(
     const service_manager::ServiceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   registry_.BindInterface(source_info.identity, interface_name,
                           std::move(interface_pipe));
 }
 
-void ServiceImpl::Create(const service_manager::Identity& remote_identity,
-                         mojom::ServiceRequest request) {
-  service_bindings_.AddBinding(this, std::move(request));
+bool ServiceImpl::OnServiceManagerConnectionLost() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return true;
 }
 
-void ServiceImpl::ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) {
-  LazyInitializeDeviceFactory();
-  factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
+void ServiceImpl::OnDeviceFactoryProviderRequest(
+    mojom::DeviceFactoryProviderRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  mojo::MakeStrongBinding(
+      base::MakeUnique<DeviceFactoryProviderImpl>(
+          ref_factory_->CreateRef(),
+          // Use of unretained |this| is safe, because the
+          // VideoCaptureServiceImpl has shared ownership of |this| via the
+          // reference created by ref_factory->CreateRef().
+          base::Bind(&ServiceImpl::SetShutdownDelayInSeconds,
+                     base::Unretained(this))),
+      std::move(request));
 }
 
-void ServiceImpl::ConnectToFakeDeviceFactory(
-    mojom::DeviceFactoryRequest request) {
-  LazyInitializeFakeDeviceFactory();
-  fake_factory_bindings_.AddBinding(fake_device_factory_.get(),
-                                    std::move(request));
+void ServiceImpl::SetShutdownDelayInSeconds(float seconds) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  shutdown_delay_in_seconds_ = seconds;
 }
 
-void ServiceImpl::LazyInitializeDeviceFactory() {
-  if (device_factory_)
-    return;
-
-  // Create the platform-specific device factory.
-  // Task runner does not seem to actually be used.
-  std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
-      media::VideoCaptureDeviceFactory::CreateFactory(
-          base::MessageLoop::current()->task_runner());
-  auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
-      std::move(media_device_factory));
-
-  device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-      std::move(video_capture_system), base::Bind(CreateJpegDecoder));
+void ServiceImpl::MaybeRequestQuitDelayed() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ServiceImpl::MaybeRequestQuit, weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(shutdown_delay_in_seconds_));
 }
 
-void ServiceImpl::LazyInitializeFakeDeviceFactory() {
-  if (fake_device_factory_)
-    return;
-
-  auto factory = base::MakeUnique<media::FakeVideoCaptureDeviceFactory>();
-  auto video_capture_system =
-      base::MakeUnique<media::VideoCaptureSystemImpl>(std::move(factory));
-
-  fake_device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
-      std::move(video_capture_system), base::Bind(&CreateJpegDecoder));
+void ServiceImpl::MaybeRequestQuit() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(ref_factory_);
+  if (ref_factory_->HasNoRefs()) {
+    context()->RequestQuit();
+  }
 }
 
 }  // namespace video_capture

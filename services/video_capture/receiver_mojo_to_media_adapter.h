@@ -10,6 +10,35 @@
 
 namespace video_capture {
 
+class ReceiverOnTaskRunner : public media::VideoFrameReceiver {
+ public:
+  ReceiverOnTaskRunner(std::unique_ptr<media::VideoFrameReceiver> receiver,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  ~ReceiverOnTaskRunner() override;
+
+  // media::VideoFrameReceiver implementation.
+  void OnNewBufferHandle(
+      int buffer_id,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
+          handle_provider) override;
+  void OnFrameReadyInBuffer(
+      int buffer_id,
+      int frame_feedback_id,
+      std::unique_ptr<
+          media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
+          buffer_read_permission,
+      media::mojom::VideoFrameInfoPtr frame_info) override;
+  void OnBufferRetired(int buffer_id) override;
+  void OnError() override;
+  void OnLog(const std::string& message) override;
+  void OnStarted() override;
+  void OnStartedUsingGpuDecode() override;
+
+ private:
+  std::unique_ptr<media::VideoFrameReceiver> receiver_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
+
 // Adapter that allows a mojom::VideoFrameReceiver to be used in place of
 // a media::VideoFrameReceiver.
 class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
@@ -17,7 +46,9 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   ReceiverMojoToMediaAdapter(mojom::ReceiverPtr receiver);
   ~ReceiverMojoToMediaAdapter() override;
 
-  // media::VideoFrameReceiver:
+  void ResetConnectionErrorHandler();
+
+  // media::VideoFrameReceiver implementation.
   void OnNewBufferHandle(
       int buffer_id,
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>

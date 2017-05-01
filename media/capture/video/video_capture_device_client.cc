@@ -151,7 +151,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
         !external_jpeg_decoder_initialized_) {
       external_jpeg_decoder_initialized_ = true;
       external_jpeg_decoder_ = jpeg_decoder_factory_callback_.Run();
-      external_jpeg_decoder_->Initialize();
+      if (external_jpeg_decoder_)
+        external_jpeg_decoder_->Initialize();
     }
   }
 

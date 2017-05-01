@@ -9,14 +9,14 @@ import("//testing/test.gni")
 
 service("video_capture") {
   sources = [
-    "service_impl.cc",
-    "service_impl.h",
     "service_main.cc",
   ]
 
   deps = [
     ":lib",
     "//mojo/public/cpp/system",
+    "//services/video_capture/public/cpp",
+    "//services/video_capture/public/interfaces",
   ]
 }
 
@@ -29,14 +29,14 @@ source_set("lib") {
   sources = [
     "device_factory_media_to_mojo_adapter.cc",
     "device_factory_media_to_mojo_adapter.h",
+    "device_factory_provider_impl.cc",
+    "device_factory_provider_impl.h",
     "device_media_to_mojo_adapter.cc",
     "device_media_to_mojo_adapter.h",
-    "public/cpp/device_to_feedback_observer_adapter.cc",
-    "public/cpp/device_to_feedback_observer_adapter.h",
-    "public/cpp/receiver_media_to_mojo_adapter.cc",
-    "public/cpp/receiver_media_to_mojo_adapter.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
+    "service_impl.cc",
+    "service_impl.h",
   ]
 
   public_deps = [
@@ -47,7 +47,13 @@ source_set("lib") {
     "//media/mojo/common:common",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
+    "//services/video_capture/public/cpp",
     "//services/video_capture/public/interfaces",
+    "//services/video_capture/public/interfaces:constants",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 
@@ -55,6 +61,9 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "test/device_factory_provider_test.cc",
+    "test/device_factory_provider_test.h",
+    "test/device_factory_provider_unittest.cc",
     "test/fake_device_descriptor_test.cc",
     "test/fake_device_descriptor_test.h",
     "test/fake_device_descriptor_unittest.cc",
@@ -68,9 +77,6 @@ source_set("tests") {
     "test/mock_device_unittest.cc",
     "test/mock_receiver.cc",
     "test/mock_receiver.h",
-    "test/service_test.cc",
-    "test/service_test.h",
-    "test/service_unittest.cc",
   ]
 
   deps = [

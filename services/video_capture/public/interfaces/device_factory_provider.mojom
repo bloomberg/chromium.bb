@@ -6,7 +6,7 @@ module video_capture.mojom;
 
 import "services/video_capture/public/interfaces/device_factory.mojom";
 
-// Production entry point to the Video Capture Service API.
+// Entry point to the Video Capture Service API.
 // The service hosts two DeviceFactories. The "regular" factory
 // provides access to the capture devices connected to the system. The "fake"
 // factory provides access to a single fake device that generates test frames.
@@ -14,7 +14,14 @@ import "services/video_capture/public/interfaces/device_factory.mojom";
 // shipped in release builds of Chromium. It is useful for Web Developers who
 // want to test video capture code without having to use an actual capture
 // device.
-interface Service {
+interface DeviceFactoryProvider  {
   ConnectToDeviceFactory(DeviceFactory& request);
   ConnectToFakeDeviceFactory(DeviceFactory& request);
+
+  // The service shuts down after a certain delay when no client is connected.
+  // This method allows clients to customize this delay.
+  // An example use case for a custom delay is integration tests that want to
+  // minimize wait time.
+  // The default value is found in constants.mojom.
+  SetShutdownDelayInSeconds(float seconds);
 };
