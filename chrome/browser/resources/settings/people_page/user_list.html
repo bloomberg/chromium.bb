@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -33,13 +34,15 @@
         -webkit-padding-start: 20px;
       }
     </style>
-    <div class="user-list">
+    <div class="user-list" scrollable>
       <template is="dom-repeat" items="[[users_]]">
         <div class="user layout horizontal center two-line">
           <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
           <div class="flex user-info">
             <div>[[getUserName_(item)]]</div>
-            <div class="secondary">[[item.email]]</div>
+            <template is="dom-if" if="[[shouldShowEmail_(item)]]">
+              <div class="secondary">[[item.email]]</div>
+            </template>
           </div>
           <paper-icon-button icon="cr:clear" class="clear-icon"
               on-tap="removeUser_"

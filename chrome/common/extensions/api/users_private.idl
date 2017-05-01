@@ -16,6 +16,9 @@ namespace usersPrivate {
 
     // Whether this user is the device owner.
     boolean isOwner;
+
+    // Whether this user is supervised.
+    boolean isSupervised;
   };
 
   callback UsersCallback = void (User[] users);

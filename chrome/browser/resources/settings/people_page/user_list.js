@@ -15,7 +15,11 @@
 Polymer({
   is: 'settings-user-list',
 
-  behaviors: [I18nBehavior, settings.RouteObserverBehavior],
+  behaviors: [
+    CrScrollableBehavior,
+    I18nBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /**
@@ -84,6 +88,7 @@ Polymer({
       else
         return -1;
     });
+    this.requestUpdateScroll();
   },
 
   /**
@@ -106,5 +111,13 @@ Polymer({
    */
   getProfilePictureUrl_: function(user) {
     return 'chrome://userimage/' + user.email + '?id=' + Date.now();
-  }
+  },
+
+  /**
+   * @param {chrome.usersPrivate.User} user
+   * @private
+   */
+  shouldShowEmail_: function(user) {
+    return !user.isSupervised && user.name != user.email;
+  },
 });
