@@ -259,14 +259,15 @@ define("mojo/public/js/bindings", [
 
   // ---------------------------------------------------------------------------
 
-  function BindingSetEntry(bindingSet, interfaceType, impl, requestOrHandle,
-                           bindingId) {
+  function BindingSetEntry(bindingSet, interfaceType, bindingType, impl,
+      requestOrHandle, bindingId) {
     this.bindingSet_ = bindingSet;
     this.bindingId_ = bindingId;
-    this.binding_ = new Binding(interfaceType, impl, requestOrHandle);
+    this.binding_ = new bindingType(interfaceType, impl,
+        requestOrHandle);
 
-    this.binding_.setConnectionErrorHandler(function() {
-      this.bindingSet_.onConnectionError(bindingId);
+    this.binding_.setConnectionErrorHandler(function(reason) {
+      this.bindingSet_.onConnectionError(bindingId, reason);
     }.bind(this));
   }
 
@@ -279,6 +280,7 @@ define("mojo/public/js/bindings", [
     this.nextBindingId_ = 0;
     this.bindings_ = new Map();
     this.errorHandler_ = null;
+    this.bindingType_ = Binding;
   }
 
   BindingSet.prototype.isEmpty = function() {
@@ -288,8 +290,8 @@ define("mojo/public/js/bindings", [
   BindingSet.prototype.addBinding = function(impl, requestOrHandle) {
     this.bindings_.set(
         this.nextBindingId_,
-        new BindingSetEntry(this, this.interfaceType_, impl, requestOrHandle,
-                            this.nextBindingId_));
+        new BindingSetEntry(this, this.interfaceType_, this.bindingType_, impl,
+            requestOrHandle, this.nextBindingId_));
     ++this.nextBindingId_;
   };
 
@@ -303,11 +305,11 @@ define("mojo/public/js/bindings", [
     this.errorHandler_ = callback;
   };
 
-  BindingSet.prototype.onConnectionError = function(bindingId) {
+  BindingSet.prototype.onConnectionError = function(bindingId, reason) {
     this.bindings_.delete(bindingId);
 
     if (this.errorHandler_)
-      this.errorHandler_();
+      this.errorHandler_(reason);
   };
 
   var exports = {};

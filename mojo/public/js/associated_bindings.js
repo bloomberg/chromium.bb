@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/associated_bindings", [
+  "mojo/public/js/bindings",
   "mojo/public/js/core",
   "mojo/public/js/interface_types",
   "mojo/public/js/lib/interface_endpoint_client",
   "mojo/public/js/lib/interface_endpoint_handle",
-], function(core, types, interfaceEndpointClient, interfaceEndpointHandle) {
+], function(bindings,
+            core,
+            types,
+            interfaceEndpointClient,
+            interfaceEndpointHandle) {
 
   var InterfaceEndpointClient = interfaceEndpointClient.InterfaceEndpointClient;
 
@@ -237,12 +242,23 @@ define("mojo/public/js/associated_bindings", [
     return result;
   };
 
+  // ---------------------------------------------------------------------------
+
+  function AssociatedBindingSet(interfaceType) {
+    bindings.BindingSet.call(this, interfaceType);
+    this.bindingType_ = AssociatedBinding;
+  }
+
+  AssociatedBindingSet.prototype = Object.create(bindings.BindingSet.prototype);
+  AssociatedBindingSet.prototype.constructor = AssociatedBindingSet;
+
   var exports = {};
   exports.AssociatedInterfacePtrInfo = types.AssociatedInterfacePtrInfo;
   exports.AssociatedInterfaceRequest = types.AssociatedInterfaceRequest;
   exports.makeRequest = makeRequest;
   exports.AssociatedInterfacePtrController = AssociatedInterfacePtrController;
   exports.AssociatedBinding = AssociatedBinding;
+  exports.AssociatedBindingSet = AssociatedBindingSet;
 
   return exports;
 });
