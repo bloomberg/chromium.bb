@@ -82,7 +82,6 @@ void OobeBaseTest::SetUp() {
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
-  host_resolver()->AddRule("*", "127.0.0.1");
   network_portal_detector_ = new NetworkPortalDetectorTestImpl();
   network_portal_detector::InitializeForTesting(network_portal_detector_);
   network_portal_detector_->SetDefaultNetworkForTesting(
@@ -99,6 +98,7 @@ void OobeBaseTest::SetUpOnMainThread() {
 
   // Start the accept thread as the sandbox host process has already been
   // spawned.
+  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->StartAcceptingConnections();
 
   login_screen_load_observer_.reset(new content::WindowedNotificationObserver(

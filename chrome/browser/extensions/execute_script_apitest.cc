@@ -9,38 +9,31 @@
 
 class ExecuteScriptApiTest : public ExtensionApiTest {
  protected:
-  void SetupDelayedHostResolver() {
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
     // We need a.com to be a little bit slow to trigger a race condition.
     host_resolver()->AddRuleWithLatency("a.com", "127.0.0.1", 500);
-    host_resolver()->AddRule("b.com", "127.0.0.1");
-    host_resolver()->AddRule("c.com", "127.0.0.1");
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
   }
 };
 
 // If failing, mark disabled and update http://crbug.com/92105.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptBasic) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptBadEncoding) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   // data/extensions/api_test/../bad = data/extensions/bad
   ASSERT_TRUE(RunExtensionTest("../bad")) << message_;
 }
 
 // If failing, mark disabled and update http://crbug.com/92105.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptByFrameId) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/frame_id")) << message_;
 }
 
@@ -53,21 +46,16 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptByFrameId) {
 #endif  // defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, MAYBE_ExecuteScriptPermissions) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/permissions")) << message_;
 }
 
 // If failing, mark disabled and update http://crbug.com/84760.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
 }
 
 // If crashing, mark disabled and update http://crbug.com/67774.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFragmentNavigation) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   const char extension_name[] = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
@@ -80,62 +68,41 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFragmentNavigation) {
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
                        MAYBE_NavigationRaceExecuteScript) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "execute_script.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, NavigationRaceJavaScriptURL) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("executescript/navigation_race",
                                   "javascript_url.html")) << message_;
 }
 
 // If failing, mark disabled and update http://crbug.com/92105.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, FrameWithHttp204) {
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  host_resolver()->AddRule("c.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/http204")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptRunAt) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/run_at")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptCallback) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/callback")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, UserGesture) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/user_gesture")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, InjectIntoSubframesOnLoad) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/subframes_on_load")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, RemovedFrames) {
-  SetupDelayedHostResolver();
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/removed_frames")) << message_;
 }
 
@@ -149,7 +116,6 @@ class DestructiveScriptTest : public ExecuteScriptApiTest,
  protected:
   // The test extension selects the sub test based on the host name.
   bool RunSubtest(const std::string& test_host) {
-    host_resolver()->AddRule(test_host, "127.0.0.1");
     return RunExtensionSubtest(
         "executescript/destructive",
         "test.html?" + test_host +
@@ -160,55 +126,46 @@ class DestructiveScriptTest : public ExecuteScriptApiTest,
 
 // Removes the frame as soon as the content script is executed.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, SynchronousRemoval) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("synchronous")) << message_;
 }
 
 // Removes the frame at the frame's first scheduled microtask.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, MicrotaskRemoval) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("microtask")) << message_;
 }
 
 // Removes the frame at the frame's first scheduled macrotask.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, MacrotaskRemoval) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("macrotask")) << message_;
 }
 
 // Removes the frame at the first DOMNodeInserted event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMNodeInserted1) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domnodeinserted1")) << message_;
 }
 
 // Removes the frame at the second DOMNodeInserted event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMNodeInserted2) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domnodeinserted2")) << message_;
 }
 
 // Removes the frame at the third DOMNodeInserted event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMNodeInserted3) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domnodeinserted3")) << message_;
 }
 
 // Removes the frame at the first DOMSubtreeModified event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMSubtreeModified1) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domsubtreemodified1")) << message_;
 }
 
 // Removes the frame at the second DOMSubtreeModified event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMSubtreeModified2) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domsubtreemodified2")) << message_;
 }
 
 // Removes the frame at the third DOMSubtreeModified event.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMSubtreeModified3) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunSubtest("domsubtreemodified3")) << message_;
 }
 

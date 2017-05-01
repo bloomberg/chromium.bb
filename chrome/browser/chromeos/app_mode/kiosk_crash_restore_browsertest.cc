@@ -89,8 +89,6 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-
     OverrideDevicePolicy();
   }
 
@@ -115,6 +113,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     extensions::browsertest_util::CreateAndInitializeLocalCache();
 
+    host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->StartAcceptingConnections();
   }
 

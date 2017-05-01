@@ -17,6 +17,11 @@ namespace {
 
 class ClipboardApiTest : public ExtensionApiTest {
  public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   bool LoadHostedApp(const std::string& app_name,
                      const std::string& launch_page);
   bool ExecuteCopyInSelectedTab();
@@ -29,8 +34,6 @@ class ClipboardApiTest : public ExtensionApiTest {
 
 bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
                                      const std::string& launch_page) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-
   if (!StartEmbeddedTestServer()) {
     message_ = "Failed to start test server.";
     return false;

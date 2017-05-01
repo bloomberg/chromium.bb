@@ -53,6 +53,12 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+
   bool CreateApp(const std::string& app_manifest,
                  base::FilePath* app_dir) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -154,9 +160,6 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -187,9 +190,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
 
 // Crashy, http://crbug.com/69215.
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -215,9 +215,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -267,10 +264,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   background_deleted_tracker.ListenFor(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(browser()->profile()));
-
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -312,9 +305,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -352,9 +342,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -381,9 +368,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -416,9 +400,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
 
 // Times out occasionally -- see crbug.com/108493
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -446,9 +427,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","
@@ -492,9 +470,6 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   std::string app_manifest = base::StringPrintf(
       "{"
       "  \"name\": \"App\","

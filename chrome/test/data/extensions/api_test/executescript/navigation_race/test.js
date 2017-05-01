@@ -4,7 +4,7 @@
 
 chrome.test.getConfig(function(config) {
   var path = "/extensions/test_file.txt";
-  var urlA = "http://a.com:" + config.testServer.port + path;
+  var urlC = "http://c.com:" + config.testServer.port + path;
   var urlB = "http://b.com:" + config.testServer.port + path;
   var testTabId;
 
@@ -18,7 +18,7 @@ chrome.test.getConfig(function(config) {
         // permission to run it.
         if (chrome.runtime.lastError) {
           chrome.test.assertLastError(
-              'Cannot access contents of url "' + urlA +
+              'Cannot access contents of url "' + urlC +
               '". Extension manifest must request permission to access this ' +
               'host.');
           chrome.test.notifyPass();
@@ -36,7 +36,7 @@ chrome.test.getConfig(function(config) {
   }
 
   chrome.tabs.onUpdated.addListener(onTabUpdated);
-  chrome.tabs.create({url: urlA}, function(tab) {
+  chrome.tabs.create({url: urlC}, function(tab) {
     testTabId = tab.id;
   });
 });

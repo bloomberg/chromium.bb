@@ -5,18 +5,20 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/dns/mock_host_resolver.h"
 
-// If crashing, mark disabled and update http://crbug.com/63589.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavaScriptURLPermissions) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
+class JavscriptApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+};
 
+// If crashing, mark disabled and update http://crbug.com/63589.
+IN_PROC_BROWSER_TEST_F(JavscriptApiTest, JavaScriptURLPermissions) {
   ASSERT_TRUE(RunExtensionTest("tabs/javascript_url_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavasScriptEncodedURL) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
+IN_PROC_BROWSER_TEST_F(JavscriptApiTest, JavasScriptEncodedURL) {
   ASSERT_TRUE(RunExtensionTest("tabs/javascript_url_encoded")) << message_;
 }

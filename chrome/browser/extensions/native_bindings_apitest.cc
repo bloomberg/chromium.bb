@@ -46,12 +46,16 @@ class NativeBindingsApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(switches::kNativeCrxBindings, "1");
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeBindingsApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleEndToEndTest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("native_bindings/extension")) << message_;
@@ -73,7 +77,6 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleAppTest) {
 
 // Tests the declarativeContent API and declarative events.
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Load an extension and wait for it to be ready.
@@ -136,7 +139,6 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, FileSystemApiGetDisplayPath) {
 // Tests the webRequest API, which requires IO thread requests and custom
 // events.
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebRequest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Load an extension and wait for it to be ready.
@@ -204,7 +206,6 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ContextMenusTest) {
 
 // Tests that unchecked errors don't impede future calls.
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, ErrorsInCallbackTest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
   ASSERT_TRUE(StartEmbeddedTestServer());
 

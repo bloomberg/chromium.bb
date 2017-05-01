@@ -6,10 +6,19 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "net/dns/mock_host_resolver.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WallpaperPrivateApiTest) {
+class WallPaperPrivateApiTest : public ExtensionApiTest {
+ public:
+  ~WallPaperPrivateApiTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("a.com", "127.0.0.1");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WallPaperPrivateApiTest, WallpaperPrivateApiTest) {
   chromeos::SystemSaltGetter::Get()->SetRawSaltForTesting(
       chromeos::SystemSaltGetter::RawSalt({1, 2, 3, 4, 5, 6, 7, 8}));
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunComponentExtensionTest("wallpaper_manager")) << message_;
 }

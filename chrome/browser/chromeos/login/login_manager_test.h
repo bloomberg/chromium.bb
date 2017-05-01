@@ -35,7 +35,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // Overridden from InProcessBrowserTest.
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void SetUp() override;
 
