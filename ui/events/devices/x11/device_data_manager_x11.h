@@ -301,6 +301,16 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
     AxisInfo vertical, horizontal;
   };
 
+  // Information from XIValuatorClassInfo.
+  struct ValuatorInfo {
+    // The valuator number.
+    int number = -1;
+    // The valuator min value.
+    double min = 0.0;
+    // The valuator max value.
+    double max = 0.0;
+  };
+
   DeviceDataManagerX11();
   ~DeviceDataManagerX11() override;
 
@@ -359,9 +369,9 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Number of valuators on the specific device.
   int valuator_count_[kMaxDeviceNum];
 
-  // Index table to find the valuator for DataType on the specific device
-  // by valuator_lookup_[device_id][data_type].
-  std::vector<int> valuator_lookup_[kMaxDeviceNum];
+  // Index table to find valuator number, min and max for DataType on the
+  // specific device by valuator_lookup_[device_id][data_type].
+  std::vector<ValuatorInfo> valuator_lookup_[kMaxDeviceNum];
 
   // Indicates if the user has disabled high precision scrolling support.
   bool high_precision_scrolling_disabled_;
@@ -373,11 +383,6 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Index table to find the DataType for valuator on the specific device
   // by data_type_lookup_[device_id][valuator].
   std::vector<int> data_type_lookup_[kMaxDeviceNum];
-
-  // Index table to find the min & max value of the Valuator on a specific
-  // device.
-  std::vector<double> valuator_min_[kMaxDeviceNum];
-  std::vector<double> valuator_max_[kMaxDeviceNum];
 
   // Table to keep track of the last seen value for the specified valuator for
   // a specified slot of a device. Defaults to 0 if the valuator for that slot
