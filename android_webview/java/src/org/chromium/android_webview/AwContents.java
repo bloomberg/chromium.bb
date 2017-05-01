@@ -1182,7 +1182,7 @@ public class AwContents implements SmartClipProvider {
     @VisibleForTesting
     @CalledByNative
     protected boolean onRenderProcessGoneDetail(int childProcessID, boolean crashed) {
-        if (isDestroyed(NO_WARN)) return false;
+        if (isDestroyed(NO_WARN)) return true;
         return mContentsClient.onRenderProcessGone(new AwRenderProcessGoneDetail(
                 crashed, nativeGetRendererCurrentPriority(mNativeAwContents)));
     }
