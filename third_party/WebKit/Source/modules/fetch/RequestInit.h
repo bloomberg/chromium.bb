@@ -5,6 +5,8 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
+#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
+#include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
@@ -17,7 +19,6 @@ class BytesConsumer;
 class Dictionary;
 class ExecutionContext;
 class ExceptionState;
-class Headers;
 
 // FIXME: Use IDL dictionary instead of this class.
 class RequestInit {
@@ -27,7 +28,7 @@ class RequestInit {
   explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
 
   String method;
-  Member<Headers> headers;
+  HeadersInit headers;
   String content_type;
   Member<BytesConsumer> body;
   Referrer referrer;

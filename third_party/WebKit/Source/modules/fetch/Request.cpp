@@ -320,7 +320,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // We don't create a copy of r's Headers object when init's headers member
   // is present.
   Headers* headers = nullptr;
-  if (!init.headers) {
+  if (init.headers.isNull()) {
     headers = r->getHeaders()->Clone();
   }
   // "Empty |r|'s request's header list."
@@ -345,8 +345,8 @@ Request* Request::CreateRequestWithRequestOrString(
     r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
   }
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
-  if (init.headers) {
-    r->getHeaders()->FillWith(init.headers.Get(), exception_state);
+  if (!init.headers.isNull()) {
+    r->getHeaders()->FillWith(init.headers, exception_state);
   } else {
     DCHECK(headers);
     r->getHeaders()->FillWith(headers, exception_state);
