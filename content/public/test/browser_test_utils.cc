@@ -488,6 +488,12 @@ void CrashTab(WebContents* web_contents) {
   watcher.Wait();
 }
 
+void SimulateUnresponsiveRenderer(WebContents* web_contents,
+                                  RenderWidgetHost* widget) {
+  static_cast<WebContentsImpl*>(web_contents)
+      ->RendererUnresponsive(RenderWidgetHostImpl::From(widget));
+}
+
 #if defined(USE_AURA)
 bool IsResizeComplete(aura::test::WindowEventDispatcherTestApi* dispatcher_test,
                       RenderWidgetHostImpl* widget_host) {

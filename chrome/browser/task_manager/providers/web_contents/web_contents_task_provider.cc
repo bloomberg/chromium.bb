@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/task_manager/providers/web_contents/subframe_task.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -161,18 +162,27 @@ void WebContentsEntry::RenderProcessGone(base::TerminationStatus status) {
 
 void WebContentsEntry::OnRendererUnresponsive(
     RenderWidgetHost* render_widget_host) {
-  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
+  // Find the first RenderFrameHost matching the RenderWidgetHost.
+  RendererTask* task = nullptr;
+  for (const auto& pair : tasks_by_frames_) {
+    if (pair.first->GetView() == render_widget_host->GetView()) {
+      DCHECK_EQ(pair.first->GetProcess(), render_widget_host->GetProcess());
+      task = pair.second;
+      break;
+    }
+  }
   if (!task)
     return;
-
-  DCHECK_EQ(render_widget_host->GetProcess(),
-            web_contents()->GetMainFrame()->GetProcess());
 
   provider_->NotifyObserverTaskUnresponsive(task);
 }
 
 void WebContentsEntry::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // We only need to update tasks for main frame navigations.
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
   RendererTask* main_frame_task =
       GetTaskForFrame(web_contents()->GetMainFrame());
   if (!main_frame_task)
