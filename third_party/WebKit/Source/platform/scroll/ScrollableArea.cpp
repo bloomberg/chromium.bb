@@ -131,7 +131,7 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
     case kScrollByPrecisePixel:
       return PixelStep(orientation);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0.0f;
   }
 }
@@ -193,7 +193,7 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
       UserScrollHelper(clamped_offset, behavior);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -258,7 +258,7 @@ LayoutRect ScrollableArea::ScrollIntoView(const LayoutRect& rect_in_content,
                                           ScrollType) {
   // TODO(bokan): This should really be implemented here but ScrollAlignment is
   // in Core which is a dependency violation.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LayoutRect();
 }
 

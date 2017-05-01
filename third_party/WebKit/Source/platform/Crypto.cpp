@@ -23,7 +23,7 @@ static WebCryptoAlgorithmId ToWebCryptoAlgorithmId(HashAlgorithm algorithm) {
       return kWebCryptoAlgorithmIdSha512;
   };
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kWebCryptoAlgorithmIdSha256;
 }
 

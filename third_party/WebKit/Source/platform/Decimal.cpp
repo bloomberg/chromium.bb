@@ -107,7 +107,7 @@ SpecialValueHandler::HandleResult SpecialValueHandler::Handle() {
   if (rhs_class == Decimal::EncodedData::kClassInfinity)
     return kRHSIsInfinity;
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kBothFinite;
 }
 
@@ -119,7 +119,7 @@ Decimal SpecialValueHandler::Value() const {
       return rhs_;
     case kResultIsUnknown:
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return lhs_;
   }
 }
@@ -426,7 +426,7 @@ Decimal Decimal::operator*(const Decimal& rhs) const {
       return lhs.IsZero() ? Nan() : Infinity(result_sign);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return Nan();
 }
 
@@ -628,7 +628,7 @@ Decimal Decimal::CompareTo(const Decimal& rhs) const {
       return Zero(kPositive);
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return Nan();
   }
 }
@@ -829,7 +829,7 @@ Decimal Decimal::FromString(const String& str) {
         return Nan();
 
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return Nan();
     }
   }
@@ -922,7 +922,7 @@ String Decimal::ToString() const {
       break;
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "";
   }
 

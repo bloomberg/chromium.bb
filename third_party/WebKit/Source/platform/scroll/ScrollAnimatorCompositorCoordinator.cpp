@@ -67,7 +67,7 @@ bool ScrollAnimatorCompositorCoordinator::HasAnimationThatRequiresService()
     case RunState::kWaitingToCancelOnCompositor:
       return true;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -158,7 +158,7 @@ void ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(
     case RunState::kIdle:
     case RunState::kPostAnimationCleanup:
     case RunState::kRunningOnMainThread:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
     case RunState::kWaitingToSendToCompositor:
     case RunState::kWaitingToCancelOnCompositorButNewScroll:
@@ -343,7 +343,7 @@ String ScrollAnimatorCompositorCoordinator::RunStateAsText() const {
     case RunState::kRunningOnCompositorButNeedsAdjustment:
       return String("RunningOnCompositorButNeedsAdjustment");
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

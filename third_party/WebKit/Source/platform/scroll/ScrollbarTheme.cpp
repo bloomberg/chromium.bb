@@ -426,7 +426,7 @@ DisplayItem::Type ScrollbarTheme::ButtonPartToDisplayItemType(
     case kForwardButtonEndPart:
       return DisplayItem::kScrollbarForwardButtonEnd;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return DisplayItem::kScrollbarBackButtonStart;
   }
 }
@@ -439,7 +439,7 @@ DisplayItem::Type ScrollbarTheme::TrackPiecePartToDisplayItemType(
     case kForwardTrackPart:
       return DisplayItem::kScrollbarForwardTrack;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return DisplayItem::kScrollbarBackTrack;
   }
 }

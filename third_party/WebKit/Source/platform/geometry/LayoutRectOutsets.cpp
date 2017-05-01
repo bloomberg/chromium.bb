@@ -75,7 +75,7 @@ LayoutUnit LayoutRectOutsets::Before(WritingMode writing_mode) const {
     case WritingMode::kVerticalRl:
       return right_;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return top_;
 }
 
@@ -88,7 +88,7 @@ LayoutUnit LayoutRectOutsets::After(WritingMode writing_mode) const {
     case WritingMode::kVerticalRl:
       return left_;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return bottom_;
 }
 
@@ -126,7 +126,7 @@ void LayoutRectOutsets::SetBefore(WritingMode writing_mode, LayoutUnit value) {
       right_ = value;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       top_ = value;
   }
 }
@@ -143,7 +143,7 @@ void LayoutRectOutsets::SetAfter(WritingMode writing_mode, LayoutUnit value) {
       left_ = value;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       bottom_ = value;
   }
 }

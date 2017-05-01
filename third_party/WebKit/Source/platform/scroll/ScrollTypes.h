@@ -142,7 +142,7 @@ inline ScrollDirectionPhysical ToPhysicalDirection(ScrollDirection direction,
     case kScrollRightIgnoringWritingMode:
       return kScrollRight;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return kScrollUp;
@@ -159,7 +159,7 @@ inline ScrollDirection ToScrollDirection(ScrollDirectionPhysical direction) {
     case kScrollRight:
       return kScrollRightIgnoringWritingMode;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return kScrollUpIgnoringWritingMode;

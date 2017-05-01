@@ -126,7 +126,7 @@ class PLATFORM_EXPORT Length {
 
   const Length& operator*=(float v) {
     if (IsCalculated()) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return *this;
     }
 
@@ -147,7 +147,7 @@ class PLATFORM_EXPORT Length {
 
   int IntValue() const {
     if (IsCalculated()) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
     }
     return GetIntValue();
@@ -180,7 +180,7 @@ class PLATFORM_EXPORT Length {
 
   void SetValue(int value) {
     if (IsCalculated()) {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
     }
     SetValue(kFixed, value);

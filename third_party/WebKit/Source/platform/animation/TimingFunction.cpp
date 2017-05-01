@@ -219,7 +219,7 @@ bool operator==(const TimingFunction& lhs, const TimingFunction& rhs) {
       return (frame == rhs);
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return false;
 }
