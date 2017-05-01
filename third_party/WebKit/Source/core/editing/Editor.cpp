@@ -1145,7 +1145,7 @@ void Editor::Cut(EditorCommandSource source) {
     GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(true);
     if (EnclosingTextControl(GetFrame()
                                  .Selection()
-                                 .ComputeVisibleSelectionInDOMTreeDeprecated()
+                                 .ComputeVisibleSelectionInDOMTree()
                                  .Start())) {
       String plain_text = GetFrame().SelectedTextForClipboard();
       Pasteboard::GeneralPasteboard()->WritePlainText(
@@ -1183,10 +1183,8 @@ void Editor::Copy() {
   // we need clean layout to obtain the selected content.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (EnclosingTextControl(GetFrame()
-                               .Selection()
-                               .ComputeVisibleSelectionInDOMTreeDeprecated()
-                               .Start())) {
+  if (EnclosingTextControl(
+          GetFrame().Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     Pasteboard::GeneralPasteboard()->WritePlainText(
         GetFrame().SelectedTextForClipboard(),
         CanSmartCopyOrDelete() ? Pasteboard::kCanSmartReplace
@@ -1214,7 +1212,7 @@ void Editor::Paste(EditorCommandSource source) {
 
   PasteMode paste_mode = GetFrame()
                                  .Selection()
-                                 .ComputeVisibleSelectionInDOMTreeDeprecated()
+                                 .ComputeVisibleSelectionInDOMTree()
                                  .IsContentRichlyEditable()
                              ? kAllMimeTypes
                              : kPlainTextOnly;
