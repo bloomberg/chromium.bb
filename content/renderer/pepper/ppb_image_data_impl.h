@@ -16,9 +16,8 @@
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
-class SkBitmap;
 class SkCanvas;
 class TransportDIB;
 
