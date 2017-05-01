@@ -65,6 +65,8 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings->SetBoolean(kSettingCollate, true);
   pdf_settings->SetInteger(kSettingCopies, 1);
   pdf_settings->SetInteger(kSettingColor, printing::COLOR);
+  pdf_settings->SetInteger(kSettingDpiHorizontal, kPointsPerInch);
+  pdf_settings->SetInteger(kSettingDpiVertical, kPointsPerInch);
   pdf_settings->SetInteger(kSettingDuplexMode, printing::SIMPLEX);
   pdf_settings->SetBoolean(kSettingLandscape, false);
   pdf_settings->SetString(kSettingDeviceName, "");
