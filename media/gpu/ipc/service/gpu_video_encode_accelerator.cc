@@ -173,6 +173,9 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
       encode_task_runner_(main_task_runner_),
       weak_this_factory_for_encoder_worker_(this),
       weak_this_factory_(this) {
+  weak_this_for_encoder_worker_ =
+      weak_this_factory_for_encoder_worker_.GetWeakPtr();
+  weak_this_ = weak_this_factory_.GetWeakPtr();
   stub_->AddDestructionObserver(this);
   make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
@@ -182,13 +185,7 @@ GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
   // This class can only be self-deleted from OnWillDestroyStub(), which means
   // the VEA has already been destroyed in there.
   DCHECK(!encoder_);
-  if (encoder_worker_thread_.IsRunning()) {
-    encoder_worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&GpuVideoEncodeAccelerator::DestroyOnEncoderWorker,
-                   weak_this_factory_for_encoder_worker_.GetWeakPtr()));
-    encoder_worker_thread_.Stop();
-  }
+  DCHECK(!encoder_worker_thread_.IsRunning());
 }
 
 bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
@@ -229,8 +226,8 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
       input_visible_size_ = input_visible_size;
       // Attempt to set up performing encoding tasks on IO thread, if supported
       // by the VEA.
-      if (encoder_->TryToSetupEncodeOnSeparateThread(
-              weak_this_factory_.GetWeakPtr(), io_task_runner_)) {
+      if (encoder_->TryToSetupEncodeOnSeparateThread(weak_this_,
+                                                     io_task_runner_)) {
         filter_ = new MessageFilter(this, host_route_id_);
         stub_->channel()->AddFilter(filter_.get());
         encode_task_runner_ = io_task_runner_;
@@ -325,6 +322,16 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
     filter_removed_.Wait();
   }
 
+  // We should stop |encoder_worker_thread_| before releasing |encoder_|, see
+  // crbug.com/715759.
+  if (encoder_worker_thread_.IsRunning()) {
+    encoder_worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GpuVideoEncodeAccelerator::DestroyOnEncoderWorker,
+                   weak_this_for_encoder_worker_));
+    encoder_worker_thread_.Stop();
+  }
+
   stub_->channel()->RemoveRoute(host_route_id_);
   stub_->RemoveDestructionObserver(this);
   encoder_.reset();
@@ -404,7 +411,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
   encoder_worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker,
-                 weak_this_factory_for_encoder_worker_.GetWeakPtr(), params));
+                 weak_this_for_encoder_worker_, params));
 }
 
 void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
@@ -465,18 +472,18 @@ void GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker(
   if (!map_offset.IsValid() || !map_size.IsValid()) {
     DLOG(ERROR) << __func__ << "  invalid map_offset or map_size";
     encode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
-                              weak_this_factory_.GetWeakPtr(),
-                              VideoEncodeAccelerator::kPlatformFailureError));
+        FROM_HERE,
+        base::Bind(&GpuVideoEncodeAccelerator::NotifyError, weak_this_,
+                   VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
 
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
     DLOG(ERROR) << __func__ << " could not map frame_id=" << params.frame_id;
     encode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
-                              weak_this_factory_.GetWeakPtr(),
-                              VideoEncodeAccelerator::kPlatformFailureError));
+        FROM_HERE,
+        base::Bind(&GpuVideoEncodeAccelerator::NotifyError, weak_this_,
+                   VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
 
@@ -489,9 +496,9 @@ void GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker(
   if (!frame) {
     DLOG(ERROR) << __func__ << " could not create a frame";
     encode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
-                              weak_this_factory_.GetWeakPtr(),
-                              VideoEncodeAccelerator::kPlatformFailureError));
+        FROM_HERE,
+        base::Bind(&GpuVideoEncodeAccelerator::NotifyError, weak_this_,
+                   VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
 
@@ -500,9 +507,9 @@ void GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker(
   frame->AddDestructionObserver(
       base::Bind(&DropSharedMemory, base::Passed(&shm)));
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::OnEncodeFrameCreated,
-                            weak_this_factory_.GetWeakPtr(), params.frame_id,
-                            params.force_keyframe, frame));
+      FROM_HERE,
+      base::Bind(&GpuVideoEncodeAccelerator::OnEncodeFrameCreated, weak_this_,
+                 params.frame_id, params.force_keyframe, frame));
 }
 
 void GpuVideoEncodeAccelerator::DestroyOnEncoderWorker() {
@@ -516,6 +523,9 @@ void GpuVideoEncodeAccelerator::OnEncodeFrameCreated(
     const scoped_refptr<media::VideoFrame>& frame) {
   DVLOG(3) << __func__;
   DCHECK(CheckIfCalledOnCorrectThread());
+
+  if (filter_removed_.IsSignaled())
+    return;
 
   if (!frame) {
     DLOG(ERROR) << __func__ << " could not create a frame";
