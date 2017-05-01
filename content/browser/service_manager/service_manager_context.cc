@@ -357,6 +357,11 @@ ServiceManagerContext::ServiceManagerContext() {
 
   packaged_services_connection_->Start();
   ServiceManagerConnection::GetForProcess()->Start();
+
+  // Start the network service process as soon as possible, since it is critical
+  // to start up performance.
+  ServiceManagerConnection::GetForProcess()->GetConnector()->StartService(
+      mojom::kNetworkServiceName);
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
