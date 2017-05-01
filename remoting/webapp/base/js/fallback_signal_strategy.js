@@ -39,7 +39,7 @@ remoting.FallbackSignalStrategy = function(primary,
    * @private {number}
    * @const
    */
-  this.PRIMARY_CONNECT_TIMEOUT_MS_ = 10 * 1000;
+  this.PRIMARY_CONNECT_TIMEOUT_MS_ = 25 * 1000;
 
   /**
    * @enum {string}
@@ -231,6 +231,7 @@ remoting.FallbackSignalStrategy.prototype.onPrimaryStateChanged_ =
         this.updateProgress_(
             this.primary_,
             remoting.FallbackSignalStrategy.Progress.SUCCEEDED_LATE);
+        return;  // Don't notify the external callback
       }
       break;
 
