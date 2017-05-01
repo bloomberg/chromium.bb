@@ -14,6 +14,7 @@
 class Browser;
 
 namespace base {
+class CommandLine;
 class DictionaryValue;
 }
 
@@ -57,6 +58,17 @@ void SaveWindowWorkspace(const Browser* browser, const std::string& workspace);
 void GetSavedWindowBoundsAndShowState(const Browser* browser,
                                       gfx::Rect* bounds,
                                       ui::WindowShowState* show_state);
+
+namespace internal {
+
+// Updates window bounds and show state from the provided command-line. Part of
+// implementation of GetSavedWindowBoundsAndShowState, but exposed for testing.
+void UpdateWindowBoundsAndShowStateFromCommandLine(
+    const base::CommandLine& command_line,
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state);
+
+}  // namespace internal
 
 }  // namespace chrome
 
