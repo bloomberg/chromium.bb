@@ -23,7 +23,7 @@ class ScrollbarAnimationControllerClient;
 class CC_EXPORT SingleScrollbarAnimationControllerThinning {
  public:
   static constexpr float kIdleThicknessScale = 0.4f;
-  static constexpr float kDefaultMouseMoveDistanceToTriggerAnimation = 25.f;
+  static constexpr float kMouseMoveDistanceToTriggerExpand = 25.f;
 
   static std::unique_ptr<SingleScrollbarAnimationControllerThinning> Create(
       ElementId scroll_element_id,
@@ -33,8 +33,16 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
 
   ~SingleScrollbarAnimationControllerThinning() {}
 
-  bool mouse_is_over_scrollbar() const { return mouse_is_over_scrollbar_; }
-  bool mouse_is_near_scrollbar() const { return mouse_is_near_scrollbar_; }
+  bool mouse_is_over_scrollbar_thumb() const {
+    return mouse_is_over_scrollbar_thumb_;
+  }
+  bool mouse_is_near_scrollbar_thumb() const {
+    return mouse_is_near_scrollbar_thumb_;
+  }
+  bool mouse_is_near_scrollbar_track() const {
+    return mouse_is_near_scrollbar_track_;
+  }
+
   bool captured() const { return captured_; }
 
   bool Animate(base::TimeTicks now);
@@ -46,7 +54,7 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
   void DidMouseDown();
   void DidMouseUp();
   void DidMouseLeave();
-  void DidMouseMoveNear(float distance);
+  void DidMouseMove(const gfx::PointF& device_viewport_point);
 
  private:
   SingleScrollbarAnimationControllerThinning(
@@ -55,6 +63,7 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta thinning_duration);
 
+  ScrollbarLayerImplBase* GetScrollbar() const;
   float AnimationProgressAtTime(base::TimeTicks now);
   void RunAnimationFrame(float progress);
   const base::TimeDelta& Duration();
@@ -80,8 +89,9 @@ class CC_EXPORT SingleScrollbarAnimationControllerThinning {
 
   ScrollbarOrientation orientation_;
   bool captured_;
-  bool mouse_is_over_scrollbar_;
-  bool mouse_is_near_scrollbar_;
+  bool mouse_is_over_scrollbar_thumb_;
+  bool mouse_is_near_scrollbar_thumb_;
+  bool mouse_is_near_scrollbar_track_;
   // Are we narrowing or thickening the bars.
   AnimationChange thickness_change_;
 

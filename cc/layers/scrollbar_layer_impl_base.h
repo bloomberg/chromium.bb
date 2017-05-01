@@ -46,7 +46,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   ScrollbarLayerImplBase* ToScrollbarLayer() override;
 
   // Thumb quad rect in layer space.
-  virtual gfx::Rect ComputeThumbQuadRect() const;
+  gfx::Rect ComputeThumbQuadRect() const;
+  gfx::Rect ComputeExpandedThumbQuadRect() const;
 
   float thumb_thickness_scale_factor() {
     return thumb_thickness_scale_factor_;
@@ -75,6 +76,9 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   virtual bool IsThumbResizable() const = 0;
 
  private:
+  gfx::Rect ComputeThumbQuadRectWithThumbThicknessScale(
+      float thumb_thickness_scale_factor) const;
+
   ElementId scroll_element_id_;
   bool is_overlay_scrollbar_;
 

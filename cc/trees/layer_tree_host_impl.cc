@@ -3393,21 +3393,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   return scroll_status;
 }
 
-float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
-    const gfx::PointF& device_viewport_point,
-    LayerImpl* layer_impl) {
-  if (!layer_impl)
-    return std::numeric_limits<float>::max();
-
-  gfx::Rect layer_impl_bounds(layer_impl->bounds());
-
-  gfx::RectF device_viewport_layer_impl_bounds = MathUtil::MapClippedRect(
-      layer_impl->ScreenSpaceTransform(), gfx::RectF(layer_impl_bounds));
-
-  return device_viewport_layer_impl_bounds.ManhattanDistanceToPoint(
-      device_viewport_point);
-}
-
 void LayerTreeHostImpl::MouseDown() {
   ScrollbarAnimationController* animation_controller =
       ScrollbarAnimationControllerForElementId(
@@ -3475,12 +3460,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   if (!new_animation_controller)
     return;
 
-  for (auto* scrollbar : active_tree_->ScrollbarsFor(scroll_element_id)) {
-    new_animation_controller->DidMouseMoveNear(
-        scrollbar->orientation(),
-        DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar) /
-            active_tree_->device_scale_factor());
-  }
+  new_animation_controller->DidMouseMove(device_viewport_point);
 }
 
 void LayerTreeHostImpl::MouseLeave() {

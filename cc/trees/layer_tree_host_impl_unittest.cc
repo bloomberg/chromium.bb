@@ -3123,6 +3123,8 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     LayerImpl* container =
         host_impl_->pending_tree()->InnerViewportContainerLayer();
     scrollbar->SetScrollElementId(scroll->element_id());
+    scrollbar->SetBounds(gfx::Size(10, 100));
+    scrollbar->SetPosition(gfx::PointF(90, 0));
     container->test_properties()->AddChild(std::move(scrollbar));
     host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->pending_tree()->BuildPropertyTreesForTesting();
@@ -3139,7 +3141,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
 
     if (expecting_animations) {
       host_impl_->ScrollbarAnimationControllerForElementId(scroll->element_id())
-          ->DidMouseMoveNear(VERTICAL, 0);
+          ->DidMouseMove(gfx::PointF(0, 90));
     } else {
       EXPECT_EQ(nullptr, host_impl_->ScrollbarAnimationControllerForElementId(
                              scroll->element_id()));
@@ -3217,6 +3219,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   LayerImpl* container =
       host_impl_->pending_tree()->InnerViewportContainerLayer();
   scrollbar->SetScrollElementId(scroll->element_id());
+  scrollbar->SetBounds(gfx::Size(10, 100));
+  scrollbar->SetPosition(gfx::PointF(90, 0));
   container->test_properties()->AddChild(std::move(scrollbar));
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   scroll->set_needs_show_scrollbars(true);
@@ -3243,10 +3247,10 @@ TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   }
 
   // Move the mouse over the scrollbar region. This should post a delayed fade
-  // in task. Execute it to show the scrollbars.
+  // in task. Execute it to fade in the scrollbars.
   {
     animation_task_ = base::Closure();
-    scrollbar_controller->DidMouseMoveNear(VERTICAL, 0);
+    scrollbar_controller->DidMouseMove(gfx::PointF(90, 0));
     ASSERT_FALSE(animation_task_.Equals(base::Closure()));
     ASSERT_FALSE(animation_task_.IsCancelled());
   }
@@ -3448,7 +3452,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   // The scrollbar is on the left side.
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
       SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 6,
-                                           VERTICAL, 5, 5, true, true);
+                                           VERTICAL, 15, 0, true, true);
   scrollbar->SetScrollElementId(root_scroll->element_id());
   scrollbar->SetDrawsContent(true);
   scrollbar->SetBounds(scrollbar_size);
@@ -3467,30 +3471,43 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
       host_impl_->ScrollbarAnimationControllerForElementId(
           root_scroll->element_id());
 
-  const float kMouseDistanceToTriggerAnimation =
+  const float kMouseMoveDistanceToTriggerFadeIn =
+      ScrollbarAnimationController::kMouseMoveDistanceToTriggerFadeIn;
+
+  const float kMouseMoveDistanceToTriggerExpand =
       SingleScrollbarAnimationControllerThinning::
-          kDefaultMouseMoveDistanceToTriggerAnimation;
+          kMouseMoveDistanceToTriggerExpand;
 
   host_impl_->MouseMoveAt(
-      gfx::Point(15 + kMouseDistanceToTriggerAnimation * 2, 1));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 1));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
   host_impl_->MouseMoveAt(
-      gfx::Point(15 + kMouseDistanceToTriggerAnimation - 1, 50));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand - 1, 10));
   EXPECT_TRUE(scrollbar_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
   host_impl_->MouseMoveAt(
-      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 100));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 100));
   EXPECT_FALSE(scrollbar_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
 
   did_request_redraw_ = false;
-  EXPECT_FALSE(scrollbar_animation_controller->MouseIsOverScrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(10, 100));
-  EXPECT_TRUE(scrollbar_animation_controller->MouseIsOverScrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(10, 120));
-  EXPECT_TRUE(scrollbar_animation_controller->MouseIsOverScrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+  host_impl_->MouseMoveAt(gfx::Point(10, 10));
+  EXPECT_TRUE(
+      scrollbar_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+  host_impl_->MouseMoveAt(gfx::Point(10, 0));
+  EXPECT_TRUE(
+      scrollbar_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   host_impl_->MouseMoveAt(gfx::Point(150, 120));
-  EXPECT_FALSE(scrollbar_animation_controller->MouseIsOverScrollbar(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
 }
 
 TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf1) {
@@ -12058,12 +12075,14 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   // scrollbar_1 on root scroll.
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_1 =
       SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
-                                           scrollbar_1_id, VERTICAL, 5, 5, true,
-                                           true);
+                                           scrollbar_1_id, VERTICAL, 15, 0,
+                                           true, true);
   scrollbar_1->SetScrollElementId(root_scroll->element_id());
   scrollbar_1->SetDrawsContent(true);
   scrollbar_1->SetBounds(scrollbar_size_1);
   scrollbar_1->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size_1));
+  scrollbar_1->SetCurrentPos(0);
+  scrollbar_1->SetPosition(gfx::PointF(0, 0));
   host_impl_->active_tree()
       ->InnerViewportContainerLayer()
       ->test_properties()
@@ -12080,43 +12099,77 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
           root_scroll->element_id());
   EXPECT_TRUE(scrollbar_1_animation_controller);
 
-  const float kMouseDistanceToTriggerAnimation =
+  const float kMouseMoveDistanceToTriggerFadeIn =
+      ScrollbarAnimationController::kMouseMoveDistanceToTriggerFadeIn;
+
+  const float kMouseMoveDistanceToTriggerExpand =
       SingleScrollbarAnimationControllerThinning::
-          kDefaultMouseMoveDistanceToTriggerAnimation;
+          kMouseMoveDistanceToTriggerExpand;
 
   // Mouse moves close to the scrollbar, goes over the scrollbar, and
   // moves back to where it was.
   host_impl_->MouseMoveAt(
-      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 0));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
   host_impl_->MouseMoveAt(
-      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(10, 150));
-  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
-  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
   host_impl_->MouseMoveAt(
-      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
+  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
+  host_impl_->MouseMoveAt(gfx::Point(10, 0));
+  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
+  host_impl_->MouseMoveAt(
+      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
+  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
+  host_impl_->MouseMoveAt(
+      gfx::Point(15 + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
   host_impl_->MouseMoveAt(
-      gfx::Point(15 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(15 + kMouseMoveDistanceToTriggerFadeIn, 0));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
 
   // scrollbar_2 on child.
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_2 =
       SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
-                                           scrollbar_2_id, VERTICAL, 5, 5, true,
-                                           true);
+                                           scrollbar_2_id, VERTICAL, 15, 0,
+                                           true, true);
   std::unique_ptr<LayerImpl> child_clip =
       LayerImpl::Create(host_impl_->active_tree(), child_clip_id);
   std::unique_ptr<LayerImpl> child =
@@ -12136,6 +12189,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   scrollbar_2->SetScrollElementId(child_element_id);
   scrollbar_2->SetDrawsContent(true);
   scrollbar_2->SetBounds(scrollbar_size_2);
+  scrollbar_2->SetCurrentPos(0);
+  scrollbar_2->SetPosition(gfx::PointF(0, 0));
 
   child->test_properties()->AddChild(std::move(scrollbar_2));
   child_clip->test_properties()->AddChild(std::move(child));
@@ -12150,38 +12205,57 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
 
   // Mouse goes over scrollbar_2, moves close to scrollbar_2, moves close to
   // scrollbar_1, goes over scrollbar_1.
-  host_impl_->MouseMoveAt(gfx::Point(60, 150));
+  host_impl_->MouseMoveAt(gfx::Point(60, 60));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   EXPECT_TRUE(scrollbar_2_animation_controller->MouseIsNearScrollbar(VERTICAL));
-  EXPECT_TRUE(scrollbar_2_animation_controller->MouseIsOverScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+
   host_impl_->MouseMoveAt(
-      gfx::Point(64 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(64 + kMouseMoveDistanceToTriggerExpand, 50));
   EXPECT_FALSE(
       scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   EXPECT_TRUE(scrollbar_2_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_2_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_2_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_2_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   host_impl_->MouseMoveAt(
-      gfx::Point(14 + kMouseDistanceToTriggerAnimation, 150));
+      gfx::Point(14 + kMouseMoveDistanceToTriggerExpand, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   EXPECT_FALSE(
       scrollbar_2_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_2_animation_controller->MouseIsOverScrollbar(VERTICAL));
-  host_impl_->MouseMoveAt(gfx::Point(10, 150));
+      scrollbar_2_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
+  host_impl_->MouseMoveAt(gfx::Point(10, 0));
   EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsNearScrollbar(VERTICAL));
-  EXPECT_TRUE(scrollbar_1_animation_controller->MouseIsOverScrollbar(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_TRUE(
+      scrollbar_1_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
   EXPECT_FALSE(
       scrollbar_2_animation_controller->MouseIsNearScrollbar(VERTICAL));
   EXPECT_FALSE(
-      scrollbar_2_animation_controller->MouseIsOverScrollbar(VERTICAL));
+      scrollbar_2_animation_controller->MouseIsNearScrollbarThumb(VERTICAL));
+  EXPECT_FALSE(
+      scrollbar_2_animation_controller->MouseIsOverScrollbarThumb(VERTICAL));
 
   // Capture scrollbar_1, then move mouse to scrollbar_2's layer, should post an
   // event to fade out scrollbar_1.
@@ -12189,7 +12263,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   animation_task_ = base::Closure();
 
   host_impl_->MouseDown();
-  host_impl_->MouseMoveAt(gfx::Point(100, 150));
+  host_impl_->MouseMoveAt(gfx::Point(60, 50));
   host_impl_->MouseUp();
 
   EXPECT_FALSE(animation_task_.Equals(base::Closure()));
