@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -213,7 +215,12 @@ void PermissionDialogTest::ShowDialog(const std::string& name) {
   // PermissionRequestImpl::GetMessageTextFragment() are valid.
   constexpr ContentSettingsType kMultipleRequests[] = {
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      CONTENT_SETTINGS_TYPE_MIDI_SYSEX};
+      CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+  };
+  constexpr ContentSettingsType kMultipleRequestsWithMedia[] = {
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA};
   constexpr struct {
     const char* name;
     ContentSettingsType type;
@@ -249,7 +256,12 @@ void PermissionDialogTest::ShowDialog(const std::string& name) {
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      AddMediaRequest(manager, it->type);
+      if (base::FeatureList::IsEnabled(
+              features::kUsePermissionManagerForMediaRequests)) {
+        manager->AddRequest(MakePermissionRequest(it->type));
+      } else {
+        AddMediaRequest(manager, it->type);
+      }
       break;
     // Regular permissions requests.
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
@@ -263,8 +275,15 @@ void PermissionDialogTest::ShowDialog(const std::string& name) {
       break;
     case CONTENT_SETTINGS_TYPE_DEFAULT:
       EXPECT_EQ(kMultipleName, name);
-      for (auto request : kMultipleRequests)
-        manager->AddRequest(MakePermissionRequest(request));
+      if (base::FeatureList::IsEnabled(
+              features::kUsePermissionManagerForMediaRequests)) {
+        for (auto request : kMultipleRequestsWithMedia)
+          manager->AddRequest(MakePermissionRequest(request));
+      } else {
+        for (auto request : kMultipleRequests)
+          manager->AddRequest(MakePermissionRequest(request));
+      }
+
       break;
     default:
       ADD_FAILURE() << "Not a permission type, or one that doesn't prompt.";
@@ -469,11 +488,25 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_notifications) {
 // Host wants to use your microphone.
 IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_mic) {
   RunDialog();
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kUsePermissionManagerForMediaRequests);
+    RunDialog();
+  }
 }
 
 // Host wants to use your camera.
 IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_camera) {
   RunDialog();
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kUsePermissionManagerForMediaRequests);
+    RunDialog();
+  }
 }
 
 // Host wants to open email links.
@@ -489,6 +522,13 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_midi) {
 // Shows a permissions bubble with multiple requests.
 IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_multiple) {
   RunDialog();
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kUsePermissionManagerForMediaRequests);
+    RunDialog();
+  }
 }
 
 // CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER is ChromeOS only.
