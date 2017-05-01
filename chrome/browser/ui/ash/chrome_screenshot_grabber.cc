@@ -18,6 +18,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -72,8 +73,6 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
   if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
     LOG(ERROR) << "Failed to read the screenshot file: "
@@ -281,9 +280,12 @@ std::string GetScreenshotBaseFilename() {
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
     : screenshot_grabber_(new ui::ScreenshotGrabber(
           this,
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))),
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::USER_VISIBLE)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)))),
       profile_for_test_(NULL) {
   screenshot_grabber_->AddObserver(this);
 }
