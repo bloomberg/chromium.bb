@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
@@ -20,7 +21,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -103,7 +103,8 @@ class TestUI : public WebUIIOSController {
     web::WebState* web_state = web_ui->GetWebState();
     web::WebUIIOSDataSource::Add(web_state->GetBrowserState(), source);
 
-    web_state->GetMojoInterfaceRegistry()->AddInterface(ui_handler);
+    web_state->GetWebStateInterfaceProvider()->registry()->AddInterface(
+        ui_handler);
   }
 };
 

@@ -35,7 +35,6 @@ group("tests") {
     "//mojo/edk/test:mojo_public_bindings_unittests",
     "//mojo/edk/test:mojo_public_system_perftests",
     "//mojo/edk/test:mojo_public_system_unittests",
-    "//services/service_manager/public/cpp/tests:mojo_public_application_unittests",
     "//services/service_manager/tests",
   ]
 }

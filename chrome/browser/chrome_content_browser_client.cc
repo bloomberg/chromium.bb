@@ -205,7 +205,6 @@
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h"
@@ -3149,7 +3148,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
 // TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.
 #if defined(OS_CHROMEOS)

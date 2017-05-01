@@ -3,6 +3,7 @@ include_rules = [
   "+crypto",
   "+ios/net",
   "+ios/web",
+  "+mojo/public",
   "+net",
   "+services/service_manager/public",
   "+ui",

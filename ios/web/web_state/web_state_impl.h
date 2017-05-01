@@ -44,6 +44,7 @@ struct LoadCommittedDetails;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
+class WebStateInterfaceProvider;
 class WebStatePolicyDecider;
 class WebUIIOS;
 
@@ -210,7 +211,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                 const std::string& command_prefix) override;
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
-  service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() override;
+  WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
   bool HasOpener() const override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
@@ -351,7 +352,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   base::WeakPtrFactory<WebState> weak_factory_;
 
   // Mojo interface registry for this WebState.
-  std::unique_ptr<service_manager::InterfaceRegistry> mojo_interface_registry_;
+  std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

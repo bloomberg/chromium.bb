@@ -67,7 +67,6 @@ class CdmFactory;
 
 namespace service_manager {
 class BinderRegistry;
-class InterfaceRegistry;
 class Service;
 struct ServiceInfo;
 }
@@ -672,7 +671,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called when RenderFrameHostImpl connects to the Media service. Expose
   // interfaces to the service using |registry|.
   virtual void ExposeInterfacesToMediaService(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
   // Allows to register browser Mojo interfaces exposed through the

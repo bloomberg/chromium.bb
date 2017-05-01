@@ -214,7 +214,7 @@ CRWWebViewProxyType TestWebState::GetWebViewProxy() const {
   return nullptr;
 }
 
-service_manager::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
+WebStateInterfaceProvider* TestWebState::GetWebStateInterfaceProvider() {
   return nullptr;
 }
 

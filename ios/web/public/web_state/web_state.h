@@ -35,10 +35,6 @@ class DictionaryValue;
 class Value;
 }
 
-namespace service_manager {
-class InterfaceRegistry;
-}
-
 namespace web {
 
 class BrowserState;
@@ -46,6 +42,7 @@ class NavigationManager;
 class SessionCertificatePolicyCache;
 class WebInterstitial;
 class WebStateDelegate;
+class WebStateInterfaceProvider;
 class WebStateObserver;
 class WebStatePolicyDecider;
 class WebStateWeakPtrFactory;
@@ -245,7 +242,7 @@ class WebState : public base::SupportsUserData {
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;
 
   // Returns Mojo interface registry for this WebState.
-  virtual service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() = 0;
+  virtual WebStateInterfaceProvider* GetWebStateInterfaceProvider() = 0;
 
   // Returns whether this WebState was created with an opener.  See
   // CreateParams::created_with_opener for more details.
