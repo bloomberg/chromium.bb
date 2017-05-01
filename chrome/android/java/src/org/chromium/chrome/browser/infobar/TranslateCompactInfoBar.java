@@ -158,14 +158,17 @@ class TranslateCompactInfoBar extends InfoBar
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
                 nativeApplyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateOption.ALWAYS_TRANSLATE, true);
+                showSnackbar(TranslateSnackbarType.ALWAYS_TRANSLATE);
                 return;
             case TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE:
                 nativeApplyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE, true);
+                showSnackbar(TranslateSnackbarType.NEVER_TRANSLATE);
                 return;
             case TranslateMenu.ID_OVERFLOW_NEVER_SITE:
                 nativeApplyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE_SITE, true);
+                showSnackbar(TranslateSnackbarType.NEVER_TRANSLATE_SITE);
                 return;
             case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
                 mMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
@@ -173,6 +176,10 @@ class TranslateCompactInfoBar extends InfoBar
             default:
                 assert false : "Unexpected overflow menu code";
         }
+    }
+
+    private void showSnackbar(int snackbarType) {
+        // TODO(ramyasharma): Show snackbar.
     }
 
     @Override
