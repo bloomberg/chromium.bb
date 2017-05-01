@@ -855,6 +855,7 @@ component("base") {
     "task_scheduler/task_tracker_posix.h",
     "task_scheduler/task_traits.cc",
     "task_scheduler/task_traits.h",
+    "task_scheduler/task_traits_details.h",
     "template_util.h",
     "test/malloc_wrapper.h",
     "third_party/dmg_fp/dmg_fp.h",
@@ -2123,6 +2124,7 @@ test("base_unittests") {
     "task_scheduler/task_scheduler_impl_unittest.cc",
     "task_scheduler/task_tracker_posix_unittest.cc",
     "task_scheduler/task_tracker_unittest.cc",
+    "task_scheduler/task_traits_unittest.cc",
     "task_scheduler/task_unittest.cc",
     "task_scheduler/test_task_factory.cc",
     "task_scheduler/test_task_factory.h",
@@ -2401,6 +2403,7 @@ if (enable_nocompile_tests) {
       "memory/ref_counted_unittest.nc",
       "memory/weak_ptr_unittest.nc",
       "metrics/histogram_unittest.nc",
+      "task_scheduler/task_traits_unittest.nc",
     ]
 
     deps = [
