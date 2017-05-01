@@ -10,9 +10,8 @@
 
 namespace ash {
 
-// An image view with a specified width and height (kTrayPopupDetailsIconWidth).
-// If the specified width or height is zero, then the image size is used for
-// that dimension.
+// An image view with a specified width and height. If the specified width or
+// height is zero, then the image size is used for that dimension.
 class FixedSizedImageView : public views::ImageView {
  public:
   FixedSizedImageView(int width, int height);
