@@ -1206,13 +1206,11 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
 static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
                                                 const MACROBLOCKD *xd,
                                                 aom_reader *r) {
+#if !SUB8X8_COMP_REF
+  if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) return SINGLE_REFERENCE;
+#endif
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     const int ctx = av1_get_reference_mode_context(cm, xd);
-
-#if !SUB8X8_COMP_REF
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) return SINGLE_REFERENCE;
-#endif
-
     const REFERENCE_MODE mode =
         (REFERENCE_MODE)aom_read(r, cm->fc->comp_inter_prob[ctx], ACCT_STR);
     FRAME_COUNTS *counts = xd->counts;
