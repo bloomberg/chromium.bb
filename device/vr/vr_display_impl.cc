@@ -59,9 +59,7 @@ void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {
 void VRDisplayImpl::RequestPresent(bool secure_origin,
                                    mojom::VRSubmitFrameClientPtr submit_client,
                                    const RequestPresentCallback& callback) {
-  // TODO(mthiesse): Re-enable insecure origin support once webVR content
-  // warnings are fixed. crbug.com/704937
-  if (!device_->IsAccessAllowed(this) || !secure_origin) {
+  if (!device_->IsAccessAllowed(this)) {
     callback.Run(false);
     return;
   }
