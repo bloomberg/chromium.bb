@@ -284,9 +284,8 @@ class ExtensionsLoadTestWithLoginScreenApps : public ExtensionsLoadTest {
   }
 };
 
-// Flaky test crbug.com/716727
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadTestWithLoginScreenApps,
-                       DISABLED_CommandLineExtensionsDontLoad) {
+                       CommandLineExtensionsDontLoad) {
   // The --load-extension command line flag should not be applied to the sign-in
   // profile.
   EXPECT_EQ(0, GetNonComponentEnabledExtensionCount(
