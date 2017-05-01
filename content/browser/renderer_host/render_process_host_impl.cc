@@ -403,7 +403,7 @@ class RendererSandboxedProcessLauncherDelegate
   }
 
 #elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  ZygoteHandle* GetZygote() override {
+  ZygoteHandle GetZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType renderer_prefix =

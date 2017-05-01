@@ -7,16 +7,23 @@
 #include "content/browser/zygote_host/zygote_communication_linux.h"
 
 namespace content {
+namespace {
 
-ZygoteHandle CreateZygote() {
-  ZygoteHandle zygote = new ZygoteCommunication();
-  zygote->Init();
-  return zygote;
+// Intentionally leaked.
+ZygoteHandle g_generic_zygote = nullptr;
+
+}  // namespace
+
+ZygoteHandle CreateGenericZygote() {
+  CHECK(!g_generic_zygote);
+  g_generic_zygote = new ZygoteCommunication();
+  g_generic_zygote->Init();
+  return g_generic_zygote;
 }
 
-ZygoteHandle* GetGenericZygote() {
-  static ZygoteHandle zygote;
-  return &zygote;
+ZygoteHandle GetGenericZygote() {
+  CHECK(g_generic_zygote);
+  return g_generic_zygote;
 }
 
 }  // namespace content

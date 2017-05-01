@@ -10,14 +10,15 @@
 
 namespace content {
 
-// Allocates and initializes a zygote process, and returns the
+// Allocates and initializes the global generic zygote process, and returns the
 // ZygoteHandle used to communicate with it.
-CONTENT_EXPORT ZygoteHandle CreateZygote();
+CONTENT_EXPORT ZygoteHandle CreateGenericZygote();
 
 // Returns a handle to a global generic zygote object. This function allows the
 // browser to launch and use a single zygote process until the performance
 // issues around launching multiple zygotes are resolved.
-CONTENT_EXPORT ZygoteHandle* GetGenericZygote();
+// http://crbug.com/569191
+CONTENT_EXPORT ZygoteHandle GetGenericZygote();
 
 }  // namespace content
 

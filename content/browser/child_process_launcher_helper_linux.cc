@@ -66,23 +66,20 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     int* launch_result) {
   *is_synchronous_launch = true;
 
-  ZygoteHandle* zygote_handle =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote) ?
-      nullptr : delegate_->GetZygote();
+  ZygoteHandle zygote_handle =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote)
+          ? nullptr
+          : delegate_->GetZygote();
   if (zygote_handle) {
-    // This code runs on the PROCESS_LAUNCHER thread so race conditions are not
-    // an issue with the lazy initialization.
-    if (*zygote_handle == nullptr) {
-      *zygote_handle = CreateZygote();
-    }
-    base::ProcessHandle handle = (*zygote_handle)->ForkRequest(
-        command_line()->argv(),
-        std::move(files_to_register),
-        GetProcessType());
+    // TODO(crbug.com/569191): If chrome supported multiple zygotes they could
+    // be created lazily here, or in the delegate GetZygote() implementations.
+    // Additionally, the delegate could provide a UseGenericZygote() method.
+    base::ProcessHandle handle = zygote_handle->ForkRequest(
+        command_line()->argv(), std::move(files_to_register), GetProcessType());
     *launch_result = LAUNCH_RESULT_SUCCESS;
     Process process;
     process.process = base::Process(handle);
-    process.zygote = *zygote_handle;
+    process.zygote = zygote_handle;
     return process;
   }
 
