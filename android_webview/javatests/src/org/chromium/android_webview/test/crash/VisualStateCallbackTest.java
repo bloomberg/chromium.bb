@@ -26,6 +26,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -175,6 +176,7 @@ public class VisualStateCallbackTest extends AwTestBase {
     // Tests the callback isn't invoked when AwContents knows about render process being gone.
     @Feature({"AndroidWebView"})
     @SmallTest
+    @RetryOnFailure
     @CommandLineFlags
             .Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @ParameterizedTest.Set
