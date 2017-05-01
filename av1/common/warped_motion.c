@@ -1562,16 +1562,16 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   wm->wmmat[2] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Px[1] * (int64_t)iDet;
   wm->wmmat[3] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = (dux * (1 << WARPEDMODEL_PREC_BITS)) - sux * wm->wmmat[2] -
-      suy * wm->wmmat[3];
+  v = (dux * (1 << WARPEDMODEL_PREC_BITS)) - (int64_t)sux * wm->wmmat[2] -
+      (int64_t)suy * wm->wmmat[3];
   wm->wmmat[0] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   v = Py[0] * (int64_t)iDet;
   wm->wmmat[4] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Py[1] * (int64_t)iDet;
   wm->wmmat[5] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = (duy * (1 << WARPEDMODEL_PREC_BITS)) - sux * wm->wmmat[4] -
-      suy * wm->wmmat[5];
+  v = (duy * (1 << WARPEDMODEL_PREC_BITS)) - (int64_t)sux * wm->wmmat[4] -
+      (int64_t)suy * wm->wmmat[5];
   wm->wmmat[1] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   wm->wmmat[6] = wm->wmmat[7] = 0;
