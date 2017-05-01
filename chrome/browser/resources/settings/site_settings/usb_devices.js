@@ -27,6 +27,7 @@ Polymer({
     actionMenuModel_: Object
   },
 
+  /** @override */
   ready: function() {
     this.fetchUsbDevices_();
   },

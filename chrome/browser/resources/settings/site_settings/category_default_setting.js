@@ -69,6 +69,7 @@ Polymer({
         'subControlParams_.value)',
   ],
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('contentSettingCategoryChanged',
         this.onCategoryChanged_.bind(this));

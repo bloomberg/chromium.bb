@@ -34,6 +34,7 @@ Polymer({
     this.browserProxy_ = settings.DefaultBrowserBrowserProxyImpl.getInstance();
   },
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('settings.updateDefaultBrowserState',
         this.updateDefaultBrowserState_.bind(this));

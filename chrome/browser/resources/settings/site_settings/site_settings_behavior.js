@@ -39,11 +39,13 @@ var SiteSettingsBehaviorImpl = {
     browserProxy: Object,
   },
 
+  /** @override */
   created: function() {
     this.browserProxy =
         settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
+  /** @override */
   ready: function() {
     this.PermissionValues = settings.PermissionValues;
   },

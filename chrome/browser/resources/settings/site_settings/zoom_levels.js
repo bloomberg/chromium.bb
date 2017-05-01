@@ -21,6 +21,7 @@ Polymer({
     sites_: Array,
   },
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('onZoomLevelsChanged',
         this.onZoomLevelsChanged_.bind(this));
@@ -41,8 +42,8 @@ Polymer({
    * @param {!{model: !{index: number}}} event
    * @private
    */
-   removeZoomLevel_: function(event) {
-     var site = this.sites_[event.model.index];
-     this.browserProxy.removeZoomLevel(site.origin);
+  removeZoomLevel_: function(event) {
+    var site = this.sites_[event.model.index];
+    this.browserProxy.removeZoomLevel(site.origin);
   },
 });

@@ -27,13 +27,16 @@ Polymer({
     /** @private {!Array<string>} */
     words_: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
   },
 
   /** @type {LanguageSettingsPrivate} */
   languageSettingsPrivate: null,
 
+  /** @override */
   ready: function() {
     this.languageSettingsPrivate =
         settings.languageSettingsPrivateApiForTest ||

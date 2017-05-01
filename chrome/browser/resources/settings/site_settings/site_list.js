@@ -116,6 +116,7 @@ Polymer({
 
   observers: ['configureWidget_(category, categorySubtype)'],
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('contentSettingSitePermissionChanged',
         this.siteWithinCategoryChanged_.bind(this));
