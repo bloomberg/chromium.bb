@@ -4,7 +4,6 @@
 
 #include "core/xml/DocumentXSLT.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -18,6 +17,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTProcessor.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 namespace blink {
 

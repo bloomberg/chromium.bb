@@ -4,7 +4,7 @@
 
 #include "core/dom/DOMSharedArrayBuffer.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
+#include "platform/bindings/DOMDataStore.h"
 
 namespace blink {
 

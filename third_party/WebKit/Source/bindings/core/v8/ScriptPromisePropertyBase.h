@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseProperties.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptPromiseProperties.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"

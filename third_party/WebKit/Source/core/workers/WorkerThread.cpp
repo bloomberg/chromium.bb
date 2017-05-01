@@ -28,7 +28,6 @@
 
 #include <limits.h>
 #include <memory>
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -48,6 +47,7 @@
 #include "platform/Histogram.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"

@@ -22,11 +22,11 @@
 
 #include "core/events/KeyboardEvent.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/editing/InputMethodController.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"

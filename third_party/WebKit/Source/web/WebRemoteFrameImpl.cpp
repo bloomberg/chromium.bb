@@ -4,7 +4,6 @@
 
 #include "web/WebRemoteFrameImpl.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
@@ -16,6 +15,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFeaturePolicy.h"

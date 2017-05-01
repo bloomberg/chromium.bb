@@ -32,7 +32,6 @@
 
 #include <memory>
 
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
@@ -43,6 +42,7 @@
 #include "gin/public/v8_platform.h"
 #include "modules/ModulesInitializer.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"

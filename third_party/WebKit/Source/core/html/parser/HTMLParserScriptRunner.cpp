@@ -27,7 +27,6 @@
 
 #include <inttypes.h>
 #include <memory>
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
@@ -47,6 +46,7 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/bindings/Microtask.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"

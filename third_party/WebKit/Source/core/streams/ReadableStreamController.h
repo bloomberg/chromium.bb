@@ -5,11 +5,11 @@
 #ifndef ReadableStreamController_h
 #define ReadableStreamController_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"

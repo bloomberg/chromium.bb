@@ -4,7 +4,6 @@
 
 #include "bindings/modules/v8/ConditionalFeaturesForModules.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ConditionalFeaturesForCore.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
@@ -23,6 +22,7 @@
 #include "bindings/modules/v8/V8WorkerNavigatorPartial.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/origin_trials/OriginTrials.h"
+#include "platform/bindings/ConditionalFeatures.h"
 
 namespace blink {
 

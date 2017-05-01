@@ -27,7 +27,6 @@
 
 #include <cmath>
 #include <limits>
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -46,6 +45,7 @@
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/PtrUtil.h"

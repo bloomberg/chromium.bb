@@ -4,8 +4,8 @@
 
 #include "core/dom/DOMDataView.h"
 
-#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
+#include "platform/bindings/DOMDataStore.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/typed_arrays/ArrayBufferView.h"
 

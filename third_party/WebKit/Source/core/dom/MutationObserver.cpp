@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/Microtask.h"
 #include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"
@@ -40,6 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/bindings/Microtask.h"
 
 namespace blink {
 

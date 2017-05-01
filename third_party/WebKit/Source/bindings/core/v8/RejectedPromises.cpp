@@ -5,7 +5,6 @@
 #include "bindings/core/v8/RejectedPromises.h"
 
 #include <memory>
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -15,6 +14,7 @@
 #include "core/events/PromiseRejectionEvent.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"

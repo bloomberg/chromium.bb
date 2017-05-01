@@ -4,11 +4,11 @@
 
 #include "core/dom/custom/V0CustomElementMicrotaskDispatcher.h"
 
-#include "bindings/core/v8/Microtask.h"
 #include "core/dom/custom/V0CustomElementCallbackQueue.h"
 #include "core/dom/custom/V0CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/dom/custom/V0CustomElementScheduler.h"
+#include "platform/bindings/Microtask.h"
 
 namespace blink {
 

@@ -25,8 +25,6 @@
 
 #include "core/testing/v8/WebCoreTestSupport.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8OriginTrialsTest.h"
 #include "core/dom/Document.h"
@@ -36,6 +34,8 @@
 #include "core/testing/InternalSettings.h"
 #include "core/testing/Internals.h"
 #include "core/testing/WorkerInternals.h"
+#include "platform/bindings/ConditionalFeatures.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 
 namespace WebCoreTestSupport {
 

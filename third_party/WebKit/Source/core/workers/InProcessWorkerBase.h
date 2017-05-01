@@ -5,13 +5,13 @@
 #ifndef InProcessWorkerBase_h
 #define InProcessWorkerBase_h
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"

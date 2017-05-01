@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -16,6 +15,7 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/streams/ReadableStreamOperations.h"
+#include "platform/bindings/ScopedPersistent.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"

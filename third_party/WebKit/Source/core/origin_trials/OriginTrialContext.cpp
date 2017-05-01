@@ -4,7 +4,6 @@
 
 #include "core/origin_trials/OriginTrialContext.h"
 
-#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/WindowProxy.h"
@@ -15,6 +14,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/ConditionalFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"

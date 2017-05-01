@@ -5,12 +5,12 @@
 #ifndef PresentationAvailability_h
 #define PresentationAvailability_h
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/PresentationPromiseProperty.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebURL.h"

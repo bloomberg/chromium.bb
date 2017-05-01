@@ -31,9 +31,9 @@
 #ifndef RemoteWindowProxy_h
 #define RemoteWindowProxy_h
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/RemoteFrame.h"
+#include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
 
