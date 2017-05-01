@@ -94,11 +94,11 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
         self._invalid_descriptor_index = 0
         # Initialize the whole thing to the invalid descriptor to handle gaps
         num_indices = self.last_unresolved_property_id + 1
-        self._descriptor_indices = [self._invalid_descriptor_index] * num_indices
+        self._descriptor_indices = dict.fromkeys(xrange(num_indices), {'id': self._invalid_descriptor_index, 'api': None})
         # Now populate all entries for which there exists a class, i.e. that aren't gaps
         for api_class in self._api_classes:
             for property_enum in property_enums_for_class[api_class.classname]:
-                self._descriptor_indices[property_enum] = api_class.index
+                self._descriptor_indices[property_enum] = {'id': api_class.index, 'api': api_class.classname}
 
     @template_expander.use_jinja('CSSPropertyDescriptor.cpp.tmpl')
     def generate_property_descriptor_cpp(self):
