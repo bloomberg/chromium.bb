@@ -658,6 +658,11 @@ void FrameSelection::SelectAll() {
     if (select_start_target->DispatchEvent(Event::CreateCancelableBubble(
             EventTypeNames::selectstart)) != DispatchEventResult::kNotCanceled)
       return;
+    // The frame may be detached due to selectstart event.
+    if (!IsAvailable()) {
+      // Reached by editing/selection/selectstart_detach_frame.html
+      return;
+    }
     // |root| may be detached due to selectstart event.
     if (!root->isConnected() || expected_document != root->GetDocument())
       return;
