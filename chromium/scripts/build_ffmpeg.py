@@ -440,16 +440,17 @@ def main(argv):
               '--extra-cflags=-mfpu=vfpv3-d16',
           ])
       else:
-        configure_flags['Common'].extend([
-            # Location is for CrOS chroot. If you want to use this, enter chroot
-            # and copy ffmpeg to a location that is reachable.
-            '--enable-cross-compile',
-            '--target-os=linux',
-            '--cross-prefix=armv7a-cros-linux-gnueabi-',
-            '--extra-cflags=-mtune=cortex-a8',
-            # NOTE: we don't need softfp for this hardware.
-            '--extra-cflags=-mfloat-abi=hard',
-        ])
+        if host_arch != 'arm':
+          configure_flags['Common'].extend([
+              # Location is for CrOS chroot. If you want to use this, enter chroot
+              # and copy ffmpeg to a location that is reachable.
+              '--enable-cross-compile',
+              '--target-os=linux',
+              '--cross-prefix=armv7a-cros-linux-gnueabi-',
+              '--extra-cflags=-mtune=cortex-a8',
+              # NOTE: we don't need softfp for this hardware.
+              '--extra-cflags=-mfloat-abi=hard',
+          ])
 
         if target_arch == 'arm-neon':
           configure_flags['Common'].extend([
