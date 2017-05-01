@@ -105,7 +105,7 @@ static inline ImageBitmapSource* ToImageBitmapSourceInternal(
     return value.getAsImageBitmap();
   if (value.isOffscreenCanvas())
     return value.getAsOffscreenCanvas();
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

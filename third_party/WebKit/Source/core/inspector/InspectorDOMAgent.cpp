@@ -1344,7 +1344,7 @@ static protocol::DOM::ShadowRootType GetShadowRootType(
     case ShadowRootType::kClosed:
       return protocol::DOM::ShadowRootTypeEnum::Closed;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return protocol::DOM::ShadowRootTypeEnum::UserAgent;
 }
 

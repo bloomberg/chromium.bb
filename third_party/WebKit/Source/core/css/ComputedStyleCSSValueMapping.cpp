@@ -179,7 +179,7 @@ static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
       return CSSIdentifierValue::Create(CSSValueLuminance);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return nullptr;
 }
@@ -284,7 +284,7 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
                      (layout_box->OffsetHeight() + client_offset.Height());
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       return ZoomAdjustedPixelValue(position, style);
     }

@@ -79,7 +79,7 @@ AtomicString FontBuilder::GenericFontFamilyName(
     FontDescription::GenericFamilyType generic_family) const {
   switch (generic_family) {
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     case FontDescription::kNoFamily:
       return AtomicString();
     case FontDescription::kStandardFamily:
@@ -249,7 +249,7 @@ static FontOrientation ComputeFontOrientation(const ComputedStyle& style) {
     case kTextOrientationSideways:
       return FontOrientation::kVerticalRotated;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return FontOrientation::kVerticalMixed;
   }
 }

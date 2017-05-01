@@ -486,7 +486,7 @@ class InspectorCSSAgent::ModifyRuleAction final
         return style_sheet_->SetKeyframeKey(new_range_, old_text_, nullptr,
                                             nullptr, exception_state);
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return false;
   }
@@ -510,7 +510,7 @@ class InspectorCSSAgent::ModifyRuleAction final
             old_range_, new_text_, &new_range_, &old_text_, exception_state);
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return css_rule_;
   }

@@ -315,7 +315,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
 #undef DEFINE_STRING_MAPPING
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -568,7 +568,7 @@ std::unique_ptr<TracedValue> InspectorLayoutEvent::EndData(
     CreateQuad(value.get(), "root", quads[0]);
     SetGeneratingNodeInfo(value.get(), root_for_this_layout, "rootNode");
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   return value;
 }
