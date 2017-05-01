@@ -52,7 +52,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -2070,9 +2069,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // filled in until a user interact with the form.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        CrossSiteIframeNotFillTest) {
-  // Setup the mock host resolver
-  host_resolver()->AddRule("*", "127.0.0.1");
-
   // Here we need to dynamically create the iframe because the port
   // embedded_test_server ran on was dynamically allocated, so the iframe's src
   // attribute can only be determined at run time.
@@ -2230,9 +2226,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   if (!content::AreAllSitesIsolatedForTesting()) {
     return;
   }
-
-  // Setup the mock host resolver
-  host_resolver()->AddRule("*", "127.0.0.1");
 
   // Navigate the main frame.
   GURL main_frame_url = embedded_test_server()->GetURL(
@@ -3273,7 +3266,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
 
   // We need to serve from a non-localhost context for the form to be treated as
   // Not Secure.
-  host_resolver()->AddRule("example.com", "127.0.0.1");
   NavigationObserver observer(WebContents());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -3329,7 +3321,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
 
   // We need to serve from a non-localhost context for the form to be treated as
   // Not Secure.
-  host_resolver()->AddRule("example.com", "127.0.0.1");
   NavigationObserver observer(WebContents());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(

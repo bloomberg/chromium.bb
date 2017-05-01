@@ -123,6 +123,11 @@ class BrowserActionApiTest : public ExtensionApiTest {
   BrowserActionApiTest() {}
   ~BrowserActionApiTest() override {}
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  protected:
   BrowserActionTestUtil* GetBrowserActionsBar() {
     if (!browser_action_test_util_)
@@ -734,7 +739,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
 // primarily targets --isolate-extensions and --site-per-process modes, where
 // the iframe runs in a separate process.  See https://crbug.com/546267.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
@@ -833,7 +837,6 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
   void SetUpOnMainThread() override {
     BrowserActionApiTest::SetUpOnMainThread();
 
-    host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Load an extension with a pop-up.

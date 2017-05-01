@@ -23,6 +23,10 @@ class ExtensionPageCaptureApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 class PageCaptureSaveAsMHTMLDelegate
@@ -44,7 +48,6 @@ class PageCaptureSaveAsMHTMLDelegate
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTML) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
@@ -62,7 +65,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTML) {
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
                        PublicSessionRequestAllowed) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   // Set Public Session state.
@@ -81,7 +83,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
                        PublicSessionRequestDenied) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Set Public Session state.
   chromeos::LoginState::Get()->SetLoggedInState(

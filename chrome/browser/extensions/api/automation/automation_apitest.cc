@@ -65,12 +65,12 @@ class AutomationApiTest : public ExtensionApiTest {
         test_data.AppendASCII("extensions/api_test")
         .AppendASCII(kSitesDir));
     ASSERT_TRUE(ExtensionApiTest::StartEmbeddedTestServer());
-    host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
   }
 
  public:
-  void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 };
 

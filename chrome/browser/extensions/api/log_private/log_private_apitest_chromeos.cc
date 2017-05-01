@@ -74,6 +74,7 @@ class LogPrivateApiTest : public ExtensionApiTest {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
         std::unique_ptr<chromeos::DebugDaemonClient>(
             new TestDebugDaemonClient(tar_file_path)));
+    host_resolver()->AddRule("www.test.com", "127.0.0.1");
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -89,7 +90,6 @@ class LogPrivateApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(LogPrivateApiTest, DumpLogsAndCaptureEvents) {
   // Setup dummy HTTP server.
-  host_resolver()->AddRule("www.test.com", "127.0.0.1");
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&LogPrivateApiTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(StartEmbeddedTestServer());

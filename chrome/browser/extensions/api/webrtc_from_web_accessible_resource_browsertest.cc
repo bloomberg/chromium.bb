@@ -60,6 +60,11 @@ class WebRtcFromWebAccessibleResourceTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("a.com", "127.0.0.1");
+  }
+
  protected:
   GURL GetTestServerInsecureUrl(const std::string& path) {
     GURL url = embedded_test_server()->GetURL(path);
@@ -85,7 +90,6 @@ class WebRtcFromWebAccessibleResourceTest : public ExtensionApiTest {
 // getUserMedia(), even if it is embedded in an insecure context.
 IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
                        GetUserMediaInWebAccessibleResourceSuccess) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadTestExtension();
@@ -109,7 +113,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
 // embedded in an insecure context.
 IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
                        GetUserMediaInWebAccessibleResourceFail) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadTestExtension();

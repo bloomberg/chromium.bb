@@ -37,7 +37,6 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
   ~WebstoreInstallerTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
  protected:

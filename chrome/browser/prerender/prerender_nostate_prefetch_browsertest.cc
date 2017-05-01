@@ -73,6 +73,7 @@ class NoStatePrefetchBrowserTest
     test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   // Set up a request counter for |path|, which is also the location of the data
@@ -268,7 +269,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchImage) {
 // Checks that a cross-domain prefetching works correctly.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
   static const std::string secondary_domain = "www.foo.com";
-  host_resolver()->AddRule(secondary_domain, "127.0.0.1");
   GURL cross_domain_url(base::StringPrintf(
       "http://%s:%d/%s", secondary_domain.c_str(),
       embedded_test_server()->host_port_pair().port(), kPrefetchPage));
@@ -281,7 +281,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
 // Checks that response header CSP is respected.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ResponseHeaderCSP) {
   static const std::string secondary_domain = "foo.bar";
-  host_resolver()->AddRule(secondary_domain, "127.0.0.1");
   RequestCounter main_page;
   CountRequestFor(kPrefetchResponseHeaderCSP, &main_page);
   RequestCounter first_script;
@@ -303,7 +302,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ResponseHeaderCSP) {
 // response-header CSP. See crbug/656581.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, MetaTagCSP) {
   static const std::string secondary_domain = "foo.bar";
-  host_resolver()->AddRule(secondary_domain, "127.0.0.1");
   RequestCounter main_page;
   CountRequestFor(kPrefetchMetaCSP, &main_page);
   RequestCounter first_script;

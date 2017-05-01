@@ -139,7 +139,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     test_server_.reset(new net::EmbeddedTestServer);
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
     ASSERT_TRUE(test_server_->Start());
-
+    host_resolver()->AddRule("*", "127.0.0.1");
     ExtensionApiTest::SetUpOnMainThread();
   }
 
@@ -297,7 +297,6 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateCrossSite) {
 
   // Navigate to a URL on a different hostname.
   static const char kInitialHost[] = "www.example.com";
-  host_resolver()->AddRule(kInitialHost, "127.0.0.1");
   GURL::Replacements replacements;
   replacements.SetHostStr(kInitialHost);
   GURL initial_url =

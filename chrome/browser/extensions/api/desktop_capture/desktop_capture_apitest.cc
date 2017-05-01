@@ -151,6 +151,11 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
         SetPickerFactoryForTests(NULL);
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
  protected:
   GURL GetURLForPath(const std::string& host, const std::string& path) {
     std::string port = base::UintToString(embedded_test_server()->port());
@@ -244,7 +249,6 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
   embedded_test_server()->ServeFilesFromDirectory(test_data.AppendASCII(
       "extensions/api_test/desktop_capture_delegate"));
   ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
 
   // Load extension.
   base::FilePath extension_path =
