@@ -75,6 +75,14 @@ enum LatencyComponentType {
       INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
 };
 
+enum SourceEventType {
+  UNKNOWN,
+  WHEEL,
+  TOUCH,
+  OTHER,
+  SOURCE_EVENT_TYPE_LAST = OTHER,
+};
+
 struct LatencyComponentId {
   LatencyComponentType type;
   int64 id;
@@ -107,4 +115,5 @@ struct LatencyInfo {
   int64 trace_id;
   bool coalesced;
   bool terminated;
+  SourceEventType source_event_type;
 };
