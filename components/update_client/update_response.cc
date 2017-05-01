@@ -20,7 +20,6 @@
 
 namespace update_client {
 
-static const char* kExpectedResponseProtocol = "3.0";
 const char UpdateResponse::Result::kCohort[] = "cohort";
 const char UpdateResponse::Result::kCohortHint[] = "cohorthint";
 const char UpdateResponse::Result::kCohortName[] = "cohortname";
@@ -367,11 +366,12 @@ bool UpdateResponse::Parse(const std::string& response_xml) {
   }
 
   // Check for the response "protocol" attribute.
-  if (GetAttribute(root, "protocol") != kExpectedResponseProtocol) {
+  const auto protocol = GetAttribute(root, "protocol");
+  if (protocol != kProtocolVersion) {
     ParseError(
         "Missing/incorrect protocol on response tag "
-        "(expected '%s')",
-        kExpectedResponseProtocol);
+        "(expected '%s', found '%s')",
+        kProtocolVersion, protocol.c_str());
     return false;
   }
 

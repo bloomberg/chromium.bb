@@ -9,7 +9,7 @@ namespace update_client {
 
 const char* kValidXml =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -27,7 +27,7 @@ const char* kValidXml =
 
 const char* valid_xml_with_hash =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -45,7 +45,7 @@ const char* valid_xml_with_hash =
 
 const char* valid_xml_with_invalid_sizes =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -67,7 +67,7 @@ const char* valid_xml_with_invalid_sizes =
 
 const char* kInvalidValidXmlMissingCodebase =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -84,7 +84,7 @@ const char* kInvalidValidXmlMissingCodebase =
 
 const char* kInvalidValidXmlMissingManifest =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -96,7 +96,7 @@ const char* kInvalidValidXmlMissingManifest =
 
 const char* kMissingAppId =
     "<?xml version='1.0'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app>"
     "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
     "               version='1.2.3.4'/>"
@@ -105,7 +105,7 @@ const char* kMissingAppId =
 
 const char* kInvalidCodebase =
     "<?xml version='1.0'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345' status='ok'>"
     "  <updatecheck codebase='example.com/extension_1.2.3.4.crx'"
     "               version='1.2.3.4'/>"
@@ -114,7 +114,7 @@ const char* kInvalidCodebase =
 
 const char* kMissingVersion =
     "<?xml version='1.0'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345' status='ok'>"
     "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'/>"
     " </app>"
@@ -122,7 +122,7 @@ const char* kMissingVersion =
 
 const char* kInvalidVersion =
     "<?xml version='1.0'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345' status='ok'>"
     "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx' "
     "               version='1.2.3.a'/>"
@@ -134,7 +134,7 @@ const char* kInvalidVersion =
 const char* kUsesNamespacePrefix =
     "<?xml version='1.0' encoding='UTF-8'?>"
     "<g:response xmlns:g='http://www.google.com/update2/response' "
-    "protocol='3.0'>"
+    "protocol='3.1'>"
     " <g:app appid='12345'>"
     "   <g:updatecheck status='ok'>"
     "     <g:urls>"
@@ -153,7 +153,7 @@ const char* kUsesNamespacePrefix =
 // not cause problems.
 const char* kSimilarTagnames =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response xmlns:a='http://a' protocol='3.0'>"
+    "<response xmlns:a='http://a' protocol='3.1'>"
     " <a:app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -174,7 +174,7 @@ const char* kSimilarTagnames =
 // Includes a <daystart> tag.
 const char* kWithDaystart =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <daystart elapsed_seconds='456'/>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
@@ -193,7 +193,7 @@ const char* kWithDaystart =
 // Indicates no updates available - this should not be a parse error.
 const char* kNoUpdate =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "  <updatecheck status='noupdate'/>"
     " </app>"
@@ -202,7 +202,7 @@ const char* kNoUpdate =
 // Includes two <app> tags, one with an error.
 const char* kTwoAppsOneError =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='aaaaaaaa' status='error-unknownApplication'>"
     "  <updatecheck status='error-internal'/>"
     " </app>"
@@ -223,7 +223,7 @@ const char* kTwoAppsOneError =
 // Includes two <app> tags, both of which set the cohort.
 const char* kTwoAppsSetCohort =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='aaaaaaaa' cohort='1:2q3/'>"
     "  <updatecheck status='noupdate'/>"
     " </app>"
@@ -244,7 +244,7 @@ const char* kTwoAppsSetCohort =
 // Includes a run action for an update check with status='ok'.
 const char* kUpdateCheckStatusOkWithRunAction =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='ok'>"
     "     <urls>"
@@ -266,7 +266,7 @@ const char* kUpdateCheckStatusOkWithRunAction =
 // Includes a run action for an update check with status='noupdate'.
 const char* kUpdateCheckStatusNoUpdateWithRunAction =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345'>"
     "   <updatecheck status='noupdate'>"
     "     <actions>"
@@ -279,7 +279,7 @@ const char* kUpdateCheckStatusNoUpdateWithRunAction =
 // Includes a run action for an update check with status='error'.
 const char* kUpdateCheckStatusErrorWithRunAction =
     "<?xml version='1.0' encoding='UTF-8'?>"
-    "<response protocol='3.0'>"
+    "<response protocol='3.1'>"
     " <app appid='12345' status='ok'>"
     "  <updatecheck status='error-osnotsupported'>"
     "     <actions>"

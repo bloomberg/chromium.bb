@@ -360,7 +360,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
@@ -574,7 +574,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
@@ -846,7 +846,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
@@ -1124,7 +1124,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         /*
         Fake the following response:
         <?xml version='1.0' encoding='UTF-8'?>
-        <response protocol='3.0'>
+        <response protocol='3.1'>
           <app appid='ihfokbkgjpifnbbojhneepfflplebdkc'>
             <updatecheck status='ok'>
               <urls>
@@ -1164,7 +1164,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         /*
         Fake the following response:
         <?xml version='1.0' encoding='UTF-8'?>
-        <response protocol='3.0'>
+        <response protocol='3.1'>
           <app appid='ihfokbkgjpifnbbojhneepfflplebdkc'>
             <updatecheck status='ok'>
               <urls>
@@ -1432,7 +1432,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
@@ -1627,7 +1627,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         /*
         Fake the following response:
         <?xml version='1.0' encoding='UTF-8'?>
-        <response protocol='3.0'>
+        <response protocol='3.1'>
           <app appid='ihfokbkgjpifnbbojhneepfflplebdkc'>
             <updatecheck status='ok'>
               <urls>
@@ -1669,7 +1669,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         /*
         Fake the following response:
         <?xml version='1.0' encoding='UTF-8'?>
-        <response protocol='3.0'>
+        <response protocol='3.1'>
           <app appid='ihfokbkgjpifnbbojhneepfflplebdkc'>
             <updatecheck status='ok'>
               <urls>
@@ -2045,7 +2045,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
@@ -2681,7 +2681,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       Fake the following response:
 
       <?xml version='1.0' encoding='UTF-8'?>
-      <response protocol='3.0'>
+      <response protocol='3.1'>
         <app appid='jebgalgnebhfojomionfpkfelancnnkf'>
           <updatecheck status='ok'>
             <urls>
