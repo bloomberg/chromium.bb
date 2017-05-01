@@ -1415,8 +1415,6 @@ source_set("browser") {
     "streams/stream_write_observer.h",
     "theme_helper_mac.h",
     "theme_helper_mac.mm",
-    "tracing/arc_tracing_agent.cc",
-    "tracing/arc_tracing_agent.h",
     "tracing/background_memory_tracing_observer.cc",
     "tracing/background_memory_tracing_observer.h",
     "tracing/background_tracing_config_impl.cc",
@@ -1544,6 +1542,12 @@ source_set("browser") {
     sources += [
       "tracing/power_tracing_agent.cc",
       "tracing/power_tracing_agent.h",
+    ]
+  }
+  if (is_chromeos) {
+    sources += [
+      "tracing/arc_tracing_agent.cc",
+      "tracing/arc_tracing_agent.h",
     ]
   }
 

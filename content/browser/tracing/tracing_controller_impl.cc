@@ -598,10 +598,11 @@ void TracingControllerImpl::OnEndAgentTracingAcked(
       // The Windows kernel events are kept into a JSON format stored as string
       // and must not be escaped.
       trace_data_sink_->AddAgentTrace(events_label, events_str_ptr->data());
-    } else if (agent_name != kArcTracingAgentName) {
-      // ARC trace data is obtained via systrace. Ignore the empty data.
-      // Quote other trace data as JSON strings and merge them into
-      // |trace_data_sink_|.
+    } else if (agent_name == kArcTracingAgentName) {
+      // The ARC events are kept into a JSON format stored as string
+      // and must not be escaped.
+      trace_data_sink_->AddTraceChunk(events_str_ptr->data());
+    } else {
       trace_data_sink_->AddAgentTrace(
           events_label, base::GetQuotedJSONString(events_str_ptr->data()));
     }

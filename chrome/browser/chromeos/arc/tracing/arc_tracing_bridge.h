@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
@@ -34,6 +35,7 @@ class ArcTracingBridge
 
   // content::ArcTracingAgent::Delegate overrides:
   void StartTracing(const base::trace_event::TraceConfig& trace_config,
+                    base::ScopedFD write_fd,
                     const StartTracingCallback& callback) override;
   void StopTracing(const StopTracingCallback& callback) override;
 
