@@ -23,6 +23,8 @@ static_library("client") {
     "connect_to_host_info.h",
     "cursor_shape_stub_proxy.cc",
     "cursor_shape_stub_proxy.h",
+    "desktop_viewport.cc",
+    "desktop_viewport.h",
     "dual_buffer_frame_consumer.cc",
     "dual_buffer_frame_consumer.h",
     "empty_cursor_filter.cc",
@@ -47,6 +49,8 @@ static_library("client") {
     "software_video_renderer.h",
     "touch_input_scaler.cc",
     "touch_input_scaler.h",
+    "view_matrix.cc",
+    "view_matrix.h",
   ]
   set_sources_assignment_filter(sources_assignment_filter)
 
@@ -102,6 +106,7 @@ source_set("unit_tests") {
     "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
     "client_telemetry_logger_unittest.cc",
+    "desktop_viewport_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
     "key_event_mapper_unittest.cc",
