@@ -1486,8 +1486,8 @@ void Editor::ChangeSelectionAfterCommand(
     Client().RespondToChangedSelection(
         frame_, GetFrame()
                     .Selection()
-                    .ComputeVisibleSelectionInDOMTreeDeprecated()
-                    .GetSelectionType());
+                    .GetSelectionInDOMTree()
+                    .SelectionTypeWithLegacyGranularity());
   }
 }
 
