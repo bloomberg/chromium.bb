@@ -143,6 +143,9 @@ else ()
   # Add -Wshadow only for C files to avoid massive gtest warning spam.
   add_c_flag_if_supported("-Wshadow")
 
+  # Add -Wundef only for C files to avoid massive gtest warning spam.
+  add_c_flag_if_supported("-Wundef")
+
   if (ENABLE_WERROR)
     add_compiler_flag_if_supported("-Werror")
   endif ()
