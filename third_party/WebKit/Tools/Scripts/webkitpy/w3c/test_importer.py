@@ -230,7 +230,7 @@ class TestImporter(object):
         test_copier = TestCopier(self.host, temp_repo_path)
         test_copier.do_import()
 
-        self.run(['git', 'add', '--all', 'LayoutTests/external/%s' % dest_dir_name])
+        self.run(['git', 'add', '--all', 'external/%s' % dest_dir_name])
 
         self._delete_orphaned_baselines(dest_path)
 
