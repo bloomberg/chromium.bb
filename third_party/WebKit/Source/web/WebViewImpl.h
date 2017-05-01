@@ -44,7 +44,6 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebFloatSize.h"
@@ -98,7 +97,6 @@ class WebViewScheduler;
 
 class WEB_EXPORT WebViewImpl final
     : NON_EXPORTED_BASE(public WebViewBase),
-      public RefCounted<WebViewImpl>,
       NON_EXPORTED_BASE(public WebGestureCurveTarget),
       public PageWidgetEventHandler,
       public WebScheduler::InterventionReporter,
@@ -267,7 +265,7 @@ class WEB_EXPORT WebViewImpl final
   float ClampPageScaleFactorToLimits(float) const override;
   void ResetScaleStateImmediately() override;
 
-  HitTestResult CoreHitTestResultAt(const WebPoint&);
+  HitTestResult CoreHitTestResultAt(const WebPoint&) override;
   void InvalidateRect(const IntRect&) override;
 
   void SetBaseBackgroundColor(WebColor) override;
@@ -462,7 +460,7 @@ class WEB_EXPORT WebViewImpl final
   WebRect ComputeBlockBound(const WebPoint&, bool ignore_clipping);
 
   WebLayerTreeView* LayerTreeView() const override { return layer_tree_view_; }
-  CompositorAnimationHost* AnimationHost() const {
+  CompositorAnimationHost* AnimationHost() const override {
     return animation_host_.get();
   }
 
@@ -482,8 +480,8 @@ class WEB_EXPORT WebViewImpl final
   void ForceNextWebGLContextCreationToFail() override;
   void ForceNextDrawingBufferCreationToFail() override;
 
-  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient();
-  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient();
+  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
+  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
 
   IntSize MainFrameSize() override;
   WebDisplayMode DisplayMode() const override { return display_mode_; }
@@ -529,10 +527,10 @@ class WEB_EXPORT WebViewImpl final
 
   // Overrides the compositor visibility. See the description of
   // m_overrideCompositorVisibility for more details.
-  void SetCompositorVisibility(bool);
+  void SetCompositorVisibility(bool) override;
 
   // TODO(lfg): Remove once WebViewFrameWidget is deleted.
-  void ScheduleAnimationForWidget();
+  void ScheduleAnimationForWidget() override;
   bool GetCompositionCharacterBounds(WebVector<WebRect>&) override;
 
   void UpdateBaseBackgroundColor();
@@ -594,8 +592,8 @@ class WEB_EXPORT WebViewImpl final
 
   float DeviceScaleFactor() const;
 
-  void SetRootGraphicsLayer(GraphicsLayer*);
-  void SetRootLayer(WebLayer*);
+  void SetRootGraphicsLayer(GraphicsLayer*) override;
+  void SetRootLayer(WebLayer*) override;
   void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*);
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*);
 
