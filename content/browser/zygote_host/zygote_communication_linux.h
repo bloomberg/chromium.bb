@@ -25,6 +25,9 @@ class Pickle;
 
 namespace content {
 
+// Handles interprocess communication with the Linux zygote process. The zygote
+// does not use standard Chrome IPC or mojo, see:
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 class CONTENT_EXPORT ZygoteCommunication {
  public:
   ZygoteCommunication();

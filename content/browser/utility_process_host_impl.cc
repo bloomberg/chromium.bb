@@ -100,7 +100,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #elif defined(OS_POSIX)
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  ZygoteHandle* GetZygote() override {
+  ZygoteHandle GetZygote() override {
     if (no_sandbox_ || !exposed_dir_.empty())
       return nullptr;
     return GetGenericZygote();

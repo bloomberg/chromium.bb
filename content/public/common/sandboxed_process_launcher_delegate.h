@@ -50,9 +50,12 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
   virtual void PostSpawnTarget(base::ProcessHandle process) {}
 
 #elif defined(OS_POSIX)
+
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // Override this to return true to use the setuid sandbox.
-  virtual ZygoteHandle* GetZygote();
+  // Returns the zygote used to launch the process.
+  // NOTE: For now Chrome always uses the same zygote for performance reasons.
+  // http://crbug.com/569191
+  virtual ZygoteHandle GetZygote();
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
   // Override this if the process needs a non-empty environment map.

@@ -230,12 +230,12 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
 
   // Tickle the zygote host so it forks now.
   ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
-  *GetGenericZygote() = CreateZygote();
+  ZygoteHandle generic_zygote = CreateGenericZygote();
   // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
   // proxy. It is currently done this way due to concerns about race
   // conditions.
   ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
-      (*GetGenericZygote())->GetSandboxStatus());
+      generic_zygote->GetSandboxStatus());
 }
 #endif
 

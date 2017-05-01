@@ -181,7 +181,7 @@ class NaClSandboxedProcessLauncherDelegate
     }
   }
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-  content::ZygoteHandle* GetZygote() override {
+  content::ZygoteHandle GetZygote() override {
     return content::GetGenericZygote();
   }
 #endif  // OS_WIN
