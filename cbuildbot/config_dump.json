@@ -10539,11 +10539,11 @@
         "boards": [
             "guado_labstation"
         ],
-        "hw_tests": [
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": true\n}"
-        ],
+        "hw_tests": [],
+        "hwqual": false,
         "image_test": false,
         "images": [
+            "base",
             "test"
         ],
         "paygen": false,

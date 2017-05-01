@@ -3374,14 +3374,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       ),
 
       'guado_labstation-release': {
-          'hw_tests': [
-              config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
-                                      num=1, timeout=120*60, warn_only=True,
-                                      async=True, retry=False, max_retries=None,
-                                      file_bugs=False),
-          ],
+          'hw_tests': [],
+          'hwqual':False,
           'image_test':False,
-          'images':['test'],
+          'images':['base', 'test'],
           'signer_tests':False,
           'paygen':False,
           'vm_tests':[],
