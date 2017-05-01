@@ -45,10 +45,8 @@ class AudioPostProcessor {
   // always non-zero and less than or equal to 20ms of audio.
   // AudioPostProcessor must always provide |frames| frames of data back
   // (may output 0’s)
-  // |volume| is the attenuation level (multiplier) of the stream.
-  // |volume| is between 0 and 1 inclusive.
+  // |volume| is the Cast Volume applied to the stream (normalized to 0-1)
   // AudioPostProcessor should assume that it has already been applied.
-  // TODO(bshaya): Change |volume| to Cast System Volume.
   // Returns the current rendering delay of the filter in frames,
   // or negative if an error occurred during processing.
   // If an error occurred during processing, |data| should be unchanged.

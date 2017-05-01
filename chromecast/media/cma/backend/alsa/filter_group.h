@@ -26,25 +26,32 @@ namespace media {
 
 class PostProcessingPipeline;
 
-// FilterGroup contains state for an AudioFilter.
-// It takes multiple StreamMixerAlsa::InputQueues,
-// mixes them, and processes them.
+// FilterGroup mixes StreamMixerAlsa::InputQueues and/or FilterGroups,
+// mixes their outputs, and applies DSP to them.
 
-// ActiveInputs are added with AddActiveInput(), then cleared when
+// FilterGroups are added at construction. These cannot be removed.
+
+// InputQueues are added with AddActiveInput(), then cleared when
 // MixAndFilter() is called (they must be added each time data is queried).
 class FilterGroup {
  public:
-  // |input_types| is a set of strings that is used as a filter to determine
-  // if an input belongs to this group (InputQueue->name() must exactly match an
-  // entry in |input_types| to be processed by this group.
-  // |filter_type| is passed to AudioFilterFactory to create an AudioFilter.
-  FilterGroup(const std::unordered_set<std::string>& input_types,
-              AudioContentType content_type,
-              int channels,
-              const base::ListValue* filter_list);
-  ~FilterGroup();
+  // |name| is used for debug printing
+  // |filter_list| is a list of {"processor": LIBRARY_NAME, "configs": CONFIG}
+  //    that is used to create PostProcessingPipeline.
+  // |device_ids| is a set of strings that is used as a filter to determine
+  //   if an InputQueue belongs to this group (InputQueue->name() must exactly
+  //   match an entry in |device_ids| to be processed by this group).
+  // |mixed_inputs| are FilterGroups that will be mixed into this FilterGroup.
+  //   ex: the final mix ("mix") FilterGroup mixes all other filter groups.
+  // FilterGroups currently use either InputQueues OR FilterGroups as inputs,
+  //   but there is no technical limitation preventing mixing input classes.
+  FilterGroup(int num_channels,
+              const std::string& name,
+              const base::ListValue* filter_list,
+              const std::unordered_set<std::string>& device_ids,
+              const std::vector<FilterGroup*>& mixed_inputs);
 
-  AudioContentType content_type() const { return content_type_; }
+  ~FilterGroup();
 
   // Sets the sample rate of the post-processors.
   void Initialize(int output_samples_per_second);
@@ -55,40 +62,47 @@ class FilterGroup {
   // Adds |input| to |active_inputs_|.
   void AddActiveInput(StreamMixerAlsa::InputQueue* input);
 
-  // Retrieves a pointer to the output buffer |interleaved_|.
-  std::vector<uint8_t>* GetInterleaved();
-
   // Mixes all active inputs and passes them through the audio filter.
-  bool MixAndFilter(int chunk_size);
+  // Returns the largest volume of all streams with data.
+  //         return value will be zero IFF there is no data and
+  //         the PostProcessingPipeline is not ringing.
+  float MixAndFilter(int chunk_size);
 
-  // Overwrites |interleaved_| with 0's, ensuring at least
-  // |chunk_size| bytes.
-  void ClearInterleaved(int chunk_size);
+  // Gets the current delay of this filter group's AudioPostProcessors.
+  // (Not recursive).
+  int64_t GetRenderingDelayMicroseconds();
 
   // Clear all |active_inputs_|. This should be called before AddActiveInputs
   // on each mixing iteration.
   void ClearActiveInputs();
 
-  // Resets the PostProcessingPipeline, removing all AudioPostProcessors.
-  void DisablePostProcessingForTest();
+  // Retrieves a pointer to the output buffer.
+  ::media::AudioBus* data() { return mixed_.get(); }
+
+  // Get the last used volume.
+  float last_volume() const { return last_volume_; }
+
+  std::string name() const { return name_; }
 
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
-  int BytesPerOutputFormatSample();
 
-  const std::unordered_set<std::string> input_types_;
-  const AudioContentType content_type_;
   const int num_channels_;
+  const std::string name_;
+  const std::unordered_set<std::string> device_ids_;
+  std::vector<FilterGroup*> mixed_inputs_;
   std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
+  int frames_zeroed_ = 0;
+  float last_volume_ = 0.0f;
+  int64_t delay_frames_ = 0;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and
   // allocations.
   std::unique_ptr<::media::AudioBus> temp_;
   std::unique_ptr<::media::AudioBus> mixed_;
-  std::vector<uint8_t> interleaved_;
   std::vector<float*> channels_;
 
   std::unique_ptr<PostProcessingPipeline> post_processing_pipeline_;
