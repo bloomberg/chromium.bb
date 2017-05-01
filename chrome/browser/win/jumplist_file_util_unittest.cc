@@ -52,7 +52,7 @@ TEST_F(JumpListFileUtilTest, DeleteDirectoryContent) {
 
   // Delete the directory content using DeleteDirectoryContent(). The file
   // should be deleted and the directory remains.
-  ASSERT_EQ(DeleteDirectoryContent(dir_path, kFileDeleteLimit), SUCCEED);
+  DeleteDirectoryContent(dir_path, kFileDeleteLimit);
   EXPECT_FALSE(PathExists(file_name));
   EXPECT_TRUE(DirectoryExists(dir_path));
 }
@@ -66,14 +66,14 @@ TEST_F(JumpListFileUtilTest, DeleteSubDirectory) {
   ASSERT_NO_FATAL_FAILURE(CreateDirectory(test_subdir));
 
   // Delete the directory using DeleteDirectory(), which should fail because
-  // a subdirectory exists.
-  ASSERT_EQ(DeleteDirectory(dir_path, kFileDeleteLimit),
-            FAIL_SUBDIRECTORY_EXISTS);
+  // a subdirectory exists. Therefore, both root directory and sub-directory
+  // should still exist.
+  DeleteDirectory(dir_path, kFileDeleteLimit);
   EXPECT_TRUE(DirectoryExists(dir_path));
   EXPECT_TRUE(DirectoryExists(test_subdir));
 
   // Delete the subdirectory alone should be working.
-  ASSERT_EQ(DeleteDirectory(test_subdir, kFileDeleteLimit), SUCCEED);
+  DeleteDirectory(test_subdir, kFileDeleteLimit);
   EXPECT_TRUE(DirectoryExists(dir_path));
   EXPECT_FALSE(DirectoryExists(test_subdir));
 }
@@ -92,11 +92,11 @@ TEST_F(JumpListFileUtilTest, DeleteMaxFilesAllowed) {
   // Delete the directory content using DeleteDirectoryContent().
   // Sine the maximum files allowed to delete is 1, only 1 out of the 2
   // files is deleted. Therefore, the directory is not empty yet.
-  ASSERT_EQ(DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest), SUCCEED);
+  DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest);
   EXPECT_FALSE(base::IsDirectoryEmpty(dir_path));
 
   // Delete another file, and now the directory is empty.
-  ASSERT_EQ(DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest), SUCCEED);
+  DeleteDirectoryContent(dir_path, kFileDeleteLimitForTest);
   EXPECT_TRUE(base::IsDirectoryEmpty(dir_path));
   EXPECT_TRUE(DirectoryExists(dir_path));
 }
