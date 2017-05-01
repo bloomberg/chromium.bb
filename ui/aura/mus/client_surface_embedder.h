@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "cc/surfaces/surface_reference_factory.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace cc {
@@ -61,6 +63,8 @@ class ClientSurfaceEmbedder {
   std::unique_ptr<ui::Layer> bottom_gutter_;
 
   gfx::Insets client_area_insets_;
+
+  scoped_refptr<cc::SurfaceReferenceFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSurfaceEmbedder);
 };
