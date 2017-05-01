@@ -196,3 +196,21 @@ in `src/third_party/closure_compiler/compiled_resources2.gyp`:
 This file is used by the
 [Closure compiler bot](https://build.chromium.org/p/chromium.fyi/builders/Closure%20Compilation%20Linux)
 to automatically compile your code on every commit.
+
+## Externs
+
+[Externs files](https://github.com/google/closure-compiler/wiki/FAQ#how-do-i-write-an-externs-file)
+define APIs external to your JavaScript. They provide the compiler with the type
+information needed to check usage of these APIs in your JavaScript, much like
+forward declarations do in C++.
+
+Third-party libraries like Polymer often provide externs. Chrome must also
+provide externs for its extension APIs. Whenever an extension API's `idl` or
+`json` schema is updated in Chrome, the corresponding externs file must be
+regenerated:
+
+```shell
+./tools/json_schema_compiler/compiler.py -g externs \
+  extensions/common/api/your_api_here.idl \
+  > third_party/closure_compiler/externs/your_api_here.js
+```
