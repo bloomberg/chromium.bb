@@ -5,20 +5,18 @@
 #ifndef DEVICE_USB_USB_SERVICE_ANDROID_H_
 #define DEVICE_USB_USB_SERVICE_ANDROID_H_
 
-#include <string>
+#include <jni.h>
+
 #include <unordered_map>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "device/usb/usb_device_android.h"
 #include "device/usb/usb_service.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace device {
+
+class UsbDeviceAndroid;
 
 // USB service implementation for Android. This is a stub implementation that
 // does not return any devices.
@@ -27,8 +25,7 @@ class UsbServiceAndroid : public UsbService {
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
 
-  UsbServiceAndroid(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  UsbServiceAndroid();
   ~UsbServiceAndroid() override;
 
   // Methods called by Java.

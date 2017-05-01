@@ -26,9 +26,8 @@ bool UsbServiceAndroid::RegisterJNI(JNIEnv* env) {
   return RegisterNativesImpl(env);  // Generated in ChromeUsbService_jni.h
 }
 
-UsbServiceAndroid::UsbServiceAndroid(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : UsbService(blocking_task_runner), weak_factory_(this) {
+UsbServiceAndroid::UsbServiceAndroid()
+    : UsbService(nullptr), weak_factory_(this) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(
       Java_ChromeUsbService_create(env, base::android::GetApplicationContext(),
@@ -39,8 +38,8 @@ UsbServiceAndroid::UsbServiceAndroid(
   for (jsize i = 0; i < length; ++i) {
     ScopedJavaLocalRef<jobject> usb_device(
         env, env->GetObjectArrayElement(devices.obj(), i));
-    scoped_refptr<UsbDeviceAndroid> device(UsbDeviceAndroid::Create(
-        env, weak_factory_.GetWeakPtr(), blocking_task_runner, usb_device));
+    scoped_refptr<UsbDeviceAndroid> device =
+        UsbDeviceAndroid::Create(env, weak_factory_.GetWeakPtr(), usb_device);
     AddDevice(device);
   }
 }
@@ -53,8 +52,8 @@ UsbServiceAndroid::~UsbServiceAndroid() {
 void UsbServiceAndroid::DeviceAttached(JNIEnv* env,
                                        const JavaRef<jobject>& caller,
                                        const JavaRef<jobject>& usb_device) {
-  scoped_refptr<UsbDeviceAndroid> device(UsbDeviceAndroid::Create(
-      env, weak_factory_.GetWeakPtr(), blocking_task_runner(), usb_device));
+  scoped_refptr<UsbDeviceAndroid> device =
+      UsbDeviceAndroid::Create(env, weak_factory_.GetWeakPtr(), usb_device);
   AddDevice(device);
   NotifyDeviceAdded(device);
 }

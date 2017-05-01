@@ -18,6 +18,8 @@ if (use_udev) {
       "udev_linux.h",
       "udev_loader.cc",
       "udev_loader.h",
+      "udev_watcher.cc",
+      "udev_watcher.h",
     ]
 
     deps = [

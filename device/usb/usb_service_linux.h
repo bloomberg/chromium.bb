@@ -10,10 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "device/usb/usb_service.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace device {
 
 struct UsbDeviceDescriptor;
@@ -21,8 +17,7 @@ class UsbDeviceLinux;
 
 class UsbServiceLinux : public UsbService {
  public:
-  explicit UsbServiceLinux(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_in);
+  UsbServiceLinux();
   ~UsbServiceLinux() override;
 
   // device::UsbService implementation
