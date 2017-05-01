@@ -16,6 +16,8 @@ namespace content {
 namespace {
 
 const size_t kTenSeconds = 10 * 1000 * 1000;
+const base::TimeDelta kMaxRafDelay =
+    base::TimeDelta::FromMilliseconds(5 * 1000);
 
 class QueuedClosure : public MainThreadEventQueueTask {
  public:
@@ -217,7 +219,8 @@ MainThreadEventQueue::MainThreadEventQueue(
           allow_raf_aligned_input &&
           base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
       main_task_runner_(main_task_runner),
-      renderer_scheduler_(renderer_scheduler) {
+      renderer_scheduler_(renderer_scheduler),
+      use_raf_fallback_timer_(true) {
   if (enable_non_blocking_due_to_main_thread_responsiveness_flag_) {
     std::string group = base::FieldTrialList::FindFullName(
         "MainThreadResponsivenessScrollIntervention");
@@ -236,6 +239,7 @@ MainThreadEventQueue::MainThreadEventQueue(
           base::TimeDelta::FromMilliseconds(threshold_ms);
     }
   }
+  raf_fallback_timer_.SetTaskRunner(main_task_runner);
 }
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
@@ -406,10 +410,17 @@ static bool IsAsyncTouchMove(
   return touch_event.moved_beyond_slop_region && !event->originallyCancelable();
 }
 
+void MainThreadEventQueue::RafFallbackTimerFired() {
+  UMA_HISTOGRAM_BOOLEAN("Event.MainThreadEventQueue.FlushQueueNoBeginMainFrame",
+                        true);
+  DispatchRafAlignedInput(base::TimeTicks::Now());
+}
+
 void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   if (IsRafAlignedInputDisabled())
     return;
 
+  raf_fallback_timer_.Stop();
   size_t queue_size_at_start;
 
   // Record the queue size so that we only process
@@ -529,6 +540,11 @@ void MainThreadEventQueue::SendInputEventAck(const blink::WebInputEvent& event,
 
 void MainThreadEventQueue::SetNeedsMainFrame() {
   if (main_task_runner_->BelongsToCurrentThread()) {
+    if (use_raf_fallback_timer_) {
+      raf_fallback_timer_.Start(
+          FROM_HERE, kMaxRafDelay,
+          base::Bind(&MainThreadEventQueue::RafFallbackTimerFired, this));
+    }
     if (client_)
       client_->SetNeedsMainFrame();
     return;

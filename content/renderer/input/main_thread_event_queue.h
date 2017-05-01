@@ -118,6 +118,11 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool IsRafAlignedInputDisabled() const;
   bool IsRafAlignedEvent(
       const std::unique_ptr<MainThreadEventQueueTask>& item) const;
+  void RafFallbackTimerFired();
+
+  void set_use_raf_fallback_timer(bool use_timer) {
+    use_raf_fallback_timer_ = use_timer;
+  }
 
   friend class QueuedWebInputEvent;
   friend class MainThreadEventQueueTest;
@@ -149,6 +154,8 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   blink::scheduler::RendererScheduler* renderer_scheduler_;
+  base::OneShotTimer raf_fallback_timer_;
+  bool use_raf_fallback_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };
