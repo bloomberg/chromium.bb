@@ -680,6 +680,8 @@ bool DeviceDataManagerX11::GetDataRange(int deviceid,
   CHECK_GE(deviceid, 0);
   if (deviceid >= kMaxDeviceNum)
     return false;
+  if (valuator_lookup_[deviceid].empty())
+    return false;
   if (valuator_lookup_[deviceid][type] >= 0) {
     *min = valuator_min_[deviceid][type];
     *max = valuator_max_[deviceid][type];
