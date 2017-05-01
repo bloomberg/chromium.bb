@@ -1259,88 +1259,86 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   service_manager_context_.reset();
   mojo_ipc_support_.reset();
 
-  {
-    base::ThreadRestrictions::ScopedAllowWait allow_wait_for_join;
-
-    // Must be size_t so we can subtract from it.
-    for (size_t thread_id = BrowserThread::ID_COUNT - 1;
-         thread_id >= (BrowserThread::UI + 1); --thread_id) {
-      // Find the thread object we want to stop. Looping over all valid
-      // BrowserThread IDs and DCHECKing on a missing case in the switch
-      // statement helps avoid a mismatch between this code and the
-      // BrowserThread::ID enumeration.
-      //
-      // The destruction order is the reverse order of occurrence in the
-      // BrowserThread::ID list. The rationale for the order is as follows (need
-      // to be filled in a bit):
-      //
-      // - The IO thread is the only user of the CACHE thread.
-      //
-      // - The PROCESS_LAUNCHER thread must be stopped after IO in case
-      //   the IO thread posted a task to terminate a process on the
-      //   process launcher thread.
-      //
-      // - (Not sure why DB stops last.)
-      switch (thread_id) {
-        case BrowserThread::DB: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
-          ResetThread_DB(std::move(db_thread_));
-          break;
-        }
-        case BrowserThread::FILE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
-          // Clean up state that lives on or uses the FILE thread before it goes
-          // away.
-          save_file_manager_->Shutdown();
-          ResetThread_FILE(std::move(file_thread_));
-          break;
-        }
-        case BrowserThread::FILE_USER_BLOCKING: {
-          TRACE_EVENT0("shutdown",
-                       "BrowserMainLoop::Subsystem:FileUserBlockingThread");
-          ResetThread_FILE_USER_BLOCKING(std::move(file_user_blocking_thread_));
-          break;
-        }
-        case BrowserThread::PROCESS_LAUNCHER: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
-          ResetThread_PROCESS_LAUNCHER(std::move(process_launcher_thread_));
-          break;
-        }
-        case BrowserThread::CACHE: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
-          ResetThread_CACHE(std::move(cache_thread_));
-          break;
-        }
-        case BrowserThread::IO: {
-          TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
-          ResetThread_IO(std::move(io_thread_));
-          break;
-        }
-        case BrowserThread::UI:
-        case BrowserThread::ID_COUNT:
-          NOTREACHED();
-          break;
+  // Must be size_t so we can subtract from it.
+  for (size_t thread_id = BrowserThread::ID_COUNT - 1;
+       thread_id >= (BrowserThread::UI + 1);
+       --thread_id) {
+    // Find the thread object we want to stop. Looping over all valid
+    // BrowserThread IDs and DCHECKing on a missing case in the switch
+    // statement helps avoid a mismatch between this code and the
+    // BrowserThread::ID enumeration.
+    //
+    // The destruction order is the reverse order of occurrence in the
+    // BrowserThread::ID list. The rationale for the order is as
+    // follows (need to be filled in a bit):
+    //
+    //
+    // - The IO thread is the only user of the CACHE thread.
+    //
+    // - The PROCESS_LAUNCHER thread must be stopped after IO in case
+    //   the IO thread posted a task to terminate a process on the
+    //   process launcher thread.
+    //
+    // - (Not sure why DB stops last.)
+    switch (thread_id) {
+      case BrowserThread::DB: {
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
+        ResetThread_DB(std::move(db_thread_));
+        break;
       }
+      case BrowserThread::FILE: {
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
+        // Clean up state that lives on or uses the FILE thread before it goes
+        // away.
+        save_file_manager_->Shutdown();
+        ResetThread_FILE(std::move(file_thread_));
+        break;
+      }
+      case BrowserThread::FILE_USER_BLOCKING: {
+        TRACE_EVENT0("shutdown",
+                      "BrowserMainLoop::Subsystem:FileUserBlockingThread");
+        ResetThread_FILE_USER_BLOCKING(std::move(file_user_blocking_thread_));
+        break;
+      }
+      case BrowserThread::PROCESS_LAUNCHER: {
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
+        ResetThread_PROCESS_LAUNCHER(std::move(process_launcher_thread_));
+        break;
+      }
+      case BrowserThread::CACHE: {
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
+        ResetThread_CACHE(std::move(cache_thread_));
+        break;
+      }
+      case BrowserThread::IO: {
+        TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+        ResetThread_IO(std::move(io_thread_));
+        break;
+      }
+      case BrowserThread::UI:
+      case BrowserThread::ID_COUNT:
+        NOTREACHED();
+        break;
     }
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
-      ResetThread_IndexedDb(std::move(indexed_db_thread_));
-    }
+  }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
+    ResetThread_IndexedDb(std::move(indexed_db_thread_));
+  }
 
-    // Close the blocking I/O pool after the other threads. Other threads such
-    // as the I/O thread may need to schedule work like closing files or
-    // flushing data during shutdown, so the blocking pool needs to be
-    // available. There may also be slow operations pending that will blcok
-    // shutdown, so closing it here (which will block until required operations
-    // are complete) gives more head start for those operations to finish.
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
-      BrowserThreadImpl::ShutdownThreadPool();
-    }
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
-      base::TaskScheduler::GetInstance()->Shutdown();
-    }
+  // Close the blocking I/O pool after the other threads. Other threads such
+  // as the I/O thread may need to schedule work like closing files or flushing
+  // data during shutdown, so the blocking pool needs to be available. There
+  // may also be slow operations pending that will blcok shutdown, so closing
+  // it here (which will block until required operations are complete) gives
+  // more head start for those operations to finish.
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
+    BrowserThreadImpl::ShutdownThreadPool();
+  }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
+    base::TaskScheduler::GetInstance()->Shutdown();
   }
 
   // Must happen after the IO thread is shutdown since this may be accessed from
