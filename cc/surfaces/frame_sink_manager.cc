@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/framesink_manager.h"
+#include "cc/surfaces/frame_sink_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/surfaces/framesink_manager_client.h"
+#include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 
 #if DCHECK_IS_ON()
@@ -23,8 +23,7 @@ FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping()
 FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping(
     const FrameSinkSourceMapping& other) = default;
 
-FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
-}
+FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {}
 
 FrameSinkManager::FrameSinkManager() {}
 

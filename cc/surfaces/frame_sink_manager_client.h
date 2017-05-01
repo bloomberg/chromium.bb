@@ -1,8 +1,8 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CC_SURFACES_FRAMESINK_MANAGER_CLIENT_H_
-#define CC_SURFACES_FRAMESINK_MANAGER_CLIENT_H_
+#ifndef CC_SURFACES_FRAME_SINK_MANAGER_CLIENT_H_
+#define CC_SURFACES_FRAME_SINK_MANAGER_CLIENT_H_
 
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -19,4 +19,4 @@ class CC_SURFACES_EXPORT FrameSinkManagerClient {
 
 }  // namespace cc
 
-#endif  // CC_SURFACES_FRAMESINK_MANAGER_CLIENT_H_
+#endif  // CC_SURFACES_FRAME_SINK_MANAGER_CLIENT_H_
