@@ -807,10 +807,13 @@ Press Search or Shift to cancel.
         Session ends in <ph name="session_time_remaining">$1<ex>4 minutes 23 seconds</ex></ph>. You will be signed out.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto and the user can enable the rotation lock by tapping.">
-        Enable rotation lock
+        Auto rotate
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED" desc="The text shown in the tray menu when rotation is set to locked and tapping will disable the lock.">
-        Disable rotation lock
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LANDSCAPE" desc="The text shown in the tray menu when rotation is set locked to landscape.">
+        Landscape
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT" desc="The text shown in the tray menu when rotation is set locked to portrait.">
+        Portrait
       </message>
       <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_DISABLED" desc="The text shown in the tray menu when the virtual keyboard is disabled.">
         On-screen keyboard disabled

@@ -7,6 +7,7 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -18,6 +19,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -35,6 +37,15 @@ bool IsMaximizeModeWindowManagerEnabled() {
 
 bool IsUserRotationLocked() {
   return Shell::Get()->screen_orientation_controller()->user_rotation_locked();
+}
+
+bool IsCurrentRotationPortrait() {
+  display::Display::Rotation current_rotation =
+      ShellPort::Get()
+          ->GetDisplayInfo(display::Display::InternalDisplayId())
+          .GetActiveRotation();
+  return current_rotation == display::Display::ROTATE_90 ||
+         current_rotation == display::Display::ROTATE_270;
 }
 
 }  // namespace
@@ -102,14 +113,21 @@ RotationLockDefaultView::~RotationLockDefaultView() {
 
 void RotationLockDefaultView::Update() {
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-  icon_->SetImage(gfx::CreateVectorIcon(IsUserRotationLocked()
-                                            ? kSystemMenuRotationLockLockedIcon
-                                            : kSystemMenuRotationLockAutoIcon,
-                                        kMenuIconSize, style.GetIconColor()));
-
-  base::string16 label = l10n_util::GetStringUTF16(
-      IsUserRotationLocked() ? IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED
-                             : IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO);
+  base::string16 label;
+  if (IsUserRotationLocked()) {
+    icon_->SetImage(gfx::CreateVectorIcon(
+        IsCurrentRotationPortrait() ? kSystemMenuRotationLockPortraitIcon
+                                    : kSystemMenuRotationLockLandscapeIcon,
+        kMenuIconSize, style.GetIconColor()));
+    label = l10n_util::GetStringUTF16(
+        IsCurrentRotationPortrait()
+            ? IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT
+            : IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LANDSCAPE);
+  } else {
+    icon_->SetImage(gfx::CreateVectorIcon(kSystemMenuRotationLockAutoIcon,
+                                          kMenuIconSize, style.GetIconColor()));
+    label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO);
+  }
   label_->SetText(label);
   style.SetupLabel(label_);
 
@@ -164,7 +182,7 @@ TrayRotationLock::~TrayRotationLock() {
 }
 
 void TrayRotationLock::OnUserRotationLockChanged() {
-  tray_view()->SetVisible(ShouldBeVisible());
+  UpdateTrayImage();
 }
 
 views::View* TrayRotationLock::CreateDefaultView(LoginStatus status) {
@@ -174,7 +192,8 @@ views::View* TrayRotationLock::CreateDefaultView(LoginStatus status) {
 }
 
 void TrayRotationLock::OnMaximizeModeStarted() {
-  tray_view()->SetVisible(IsUserRotationLocked());
+  tray_view()->SetVisible(ShouldBeVisible());
+  UpdateTrayImage();
   Shell::Get()->screen_orientation_controller()->AddObserver(this);
 }
 
@@ -193,9 +212,14 @@ bool TrayRotationLock::GetInitialVisibility() {
   return ShouldBeVisible();
 }
 
+void TrayRotationLock::UpdateTrayImage() {
+  TrayImageItem::SetImageIcon(IsUserRotationLocked()
+                                  ? kSystemTrayRotationLockLockedIcon
+                                  : kSystemTrayRotationLockAutoIcon);
+}
+
 bool TrayRotationLock::ShouldBeVisible() {
-  return OnPrimaryDisplay() && IsMaximizeModeWindowManagerEnabled() &&
-         IsUserRotationLocked();
+  return OnPrimaryDisplay() && IsMaximizeModeWindowManagerEnabled();
 }
 
 bool TrayRotationLock::OnPrimaryDisplay() const {

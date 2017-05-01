@@ -41,10 +41,10 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   // Sets the color of the icon to |color|.
   void SetIconColor(SkColor color);
 
- private:
-  // Sets the current icon on |tray_view_|'s ImageView.
-  void UpdateImageOnImageView();
+  // Sets showing |icon| on |tray_view_|'s ImageView.
+  void SetImageIcon(const gfx::VectorIcon& icon);
 
+ private:
   // The icon and its current color.
   const gfx::VectorIcon& icon_;
   SkColor icon_color_;

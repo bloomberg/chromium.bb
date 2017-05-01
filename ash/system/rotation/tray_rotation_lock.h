@@ -45,8 +45,10 @@ class ASH_EXPORT TrayRotationLock
  private:
   friend class TrayRotationLockTest;
 
-  // True if |on_primary_display_|, maximize mode is enabled, and rotation is
-  // locked.
+  // Update tray image based on whether user rotation lock is enabled.
+  void UpdateTrayImage();
+
+  // True if |on_primary_display_|, maximize mode is enabled.
   bool ShouldBeVisible();
 
   // True if this is owned by a SystemTray on the primary display.
