@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -283,6 +285,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         if (CommandLine.getInstance().hasSwitch(
                     ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
             return true;
+        }
+
+        if (!info.webApkPackageName().startsWith(WEBAPK_PACKAGE_PREFIX)) {
+            return false;
         }
 
         if (isShellApkVersionOutOfDate(info)

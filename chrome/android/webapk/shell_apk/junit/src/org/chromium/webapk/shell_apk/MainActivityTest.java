@@ -28,10 +28,11 @@ import org.chromium.webapk.test.WebApkTestHelper;
  * Tests MainActivity.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, packageName = WebApkTestHelper.WEBAPK_PACKAGE_NAME)
+@Config(manifest = Config.NONE, packageName = MainActivityTest.WEBAPK_PACKAGE_NAME)
 public class MainActivityTest {
     private static final String HOST_BROWSER_PACKAGE_NAME = "truly.random";
 
+    protected static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
     private ShadowApplication mShadowApplication;
     private RobolectricPackageManager mPackageManager;
 
@@ -55,7 +56,7 @@ public class MainActivityTest {
         Bundle metaData = new Bundle();
         metaData.putString(WebApkMetaDataKeys.RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
         metaData.putString(WebApkMetaDataKeys.START_URL, "http://random.org");
-        WebApkTestHelper.registerWebApkWithMetaData(metaData);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, metaData);
 
         // Make intents to Google Play not throw ActivityNotFoundException.
         mPackageManager.addResolveInfoForIntent(
@@ -82,7 +83,7 @@ public class MainActivityTest {
         Bundle metaData = new Bundle();
         metaData.putString(WebApkMetaDataKeys.RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
         metaData.putString(WebApkMetaDataKeys.START_URL, "http://random.org");
-        WebApkTestHelper.registerWebApkWithMetaData(metaData);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, metaData);
 
         Robolectric.buildActivity(MainActivity.class).create();
 
