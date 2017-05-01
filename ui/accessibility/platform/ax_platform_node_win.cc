@@ -509,6 +509,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accState(
 
 STDMETHODIMP AXPlatformNodeWin::get_accHelp(
     VARIANT var_id, BSTR* help) {
+  COM_OBJECT_VALIDATE_1_ARG(help);
   return S_FALSE;
 }
 

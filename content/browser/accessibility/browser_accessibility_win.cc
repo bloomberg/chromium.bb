@@ -629,10 +629,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
   if (!instance_active())
     return E_FAIL;
 
-  if (!help)
-    return E_INVALIDARG;
-
-  return S_FALSE;
+  return GetPlatformNodeWin()->get_accHelp(var_id, help);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
