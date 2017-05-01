@@ -4958,6 +4958,18 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif
   new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
+#if CONFIG_INTRABC
+#if CONFIG_HIGHBITDEPTH
+  av1_setup_scale_factors_for_frame(
+      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      cm->use_highbitdepth);
+#else
+  av1_setup_scale_factors_for_frame(
+      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height);
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_INTRABC
 #if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {

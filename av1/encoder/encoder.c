@@ -4012,6 +4012,16 @@ static void set_frame_size(AV1_COMP *cpi) {
       ref_buf->buf = NULL;
     }
   }
+#if CONFIG_INTRABC
+#if CONFIG_HIGHBITDEPTH
+  av1_setup_scale_factors_for_frame(
+      &xd->sf_identity, cm->width, cm->height, cm->width, cm->height,
+      (buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0);
+#else
+  av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
+                                    cm->width, cm->height);
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_INTRABC
 
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
 }
