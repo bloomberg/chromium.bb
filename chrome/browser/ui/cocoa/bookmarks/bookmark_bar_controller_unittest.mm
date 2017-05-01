@@ -313,8 +313,14 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
   }
 
   void InstallAndToggleBar(BookmarkBarController* bar) {
-    // Loads the view.
-    [[bar controlledView] setResizeDelegate:resizeDelegate_];
+    // In OSX 10.10, the owner of a nib file is retain/autoreleased during the
+    // initialization of the nib. Wrapping the nib loading in an
+    // autoreleasepool ensures that tests can control the destruction timing of
+    // the controller.
+    @autoreleasepool {
+      // Forces loading of the nib.
+      [[bar controlledView] setResizeDelegate:resizeDelegate_];
+    }
     // Awkwardness to look like we've been installed.
     for (NSView* subView in [parent_view_ subviews])
       [subView removeFromSuperview];
@@ -361,49 +367,6 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
 
   BookmarkBarControllerNoOpen* noOpenBar() {
     return (BookmarkBarControllerNoOpen*)bar_.get();
-  }
-
-  // Verifies that the i-th button has the title of the i-th child node of
-  // |node|.
-  void VerifyButtonTitles(const BookmarkNode* node) {
-    ASSERT_LE((int)[[bar_ buttons] count], node->child_count());
-    int numButtons = [[bar_ buttons] count];
-    for (int i = 0; i < numButtons; i++) {
-      EXPECT_NSEQ([[[bar_ buttons] objectAtIndex:i] title],
-                  base::SysUTF16ToNSString(node->GetChild(i)->GetTitle()));
-    }
-  }
-
-  // Verifies that |view|
-  // * With a blank layout applied:
-  //  - Is hidden
-  //
-  // * With |layout| applied:
-  //  - Is visible
-  //  - Has x origin |expected_x_origin|
-  //  If |check_exact_width| is true:
-  //   - has width |expected_width|
-  //  Otherwise:
-  //   - has width > 0 (|expected_width| is ignored in this case)
-  void VerifyViewLayout(NSView* view,
-                        bookmarks::BookmarkBarLayout& layout,
-                        CGFloat expected_x_origin,
-                        CGFloat expected_width,
-                        bool check_exact_width) {
-    ASSERT_TRUE(view);
-
-    bookmarks::BookmarkBarLayout empty_layout = {};
-    [bar_ applyLayout:empty_layout animated:NO];
-    EXPECT_TRUE([view isHidden]);
-
-    [bar_ applyLayout:layout animated:NO];
-    EXPECT_CGFLOAT_EQ(NSMinX([view frame]), expected_x_origin);
-    CGFloat actual_width = NSWidth([view frame]);
-    if (check_exact_width) {
-      EXPECT_CGFLOAT_EQ(actual_width, expected_width);
-    } else {
-      EXPECT_GT(actual_width, 0);
-    }
   }
 };
 
@@ -454,6 +417,38 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   EXPECT_FALSE([[bar_ view] isHidden]);
   EXPECT_GT([resizeDelegate_ height], 0);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
+
+  // Make sure no buttons fall off the bar, either now or when resized
+  // bigger or smaller.
+  CGFloat sizes[] = { 300.0, -100.0, 200.0, -420.0 };
+  CGFloat previousX = 0.0;
+  for (unsigned x = 0; x < arraysize(sizes); x++) {
+    // Confirm the buttons moved from the last check (which may be
+    // init but that's fine).
+    CGFloat newX = [[bar_ offTheSideButton] frame].origin.x;
+    EXPECT_NE(previousX, newX);
+    previousX = newX;
+
+    // Confirm the buttons have a reasonable bounds. Recall that |-frame|
+    // returns rectangles in the superview's coordinates.
+    NSRect buttonViewFrame =
+        [[bar_ buttonView] convertRect:[[bar_ buttonView] frame]
+                              fromView:[[bar_ buttonView] superview]];
+    EXPECT_EQ([bar_ buttonView], [[bar_ offTheSideButton] superview]);
+    EXPECT_TRUE(NSContainsRect(buttonViewFrame,
+                               [[bar_ offTheSideButton] frame]));
+    EXPECT_EQ([bar_ buttonView], [[bar_ otherBookmarksButton] superview]);
+    EXPECT_TRUE(NSContainsRect(buttonViewFrame,
+                               [[bar_ otherBookmarksButton] frame]));
+
+    // Now move them implicitly.
+    // We confirm FrameChangeNotification works in the next unit test;
+    // we simply assume it works here to resize or reposition the
+    // buttons above.
+    NSRect frame = [[bar_ view] frame];
+    frame.size.width += sizes[x];
+    [[bar_ view] setFrame:frame];
+  }
 }
 
 // Test whether |-updateState:...| sets currentState as expected. Make
@@ -526,393 +521,38 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
   EXPECT_GT([bar toggles], 0);
 }
 
-TEST_F(BookmarkBarControllerTest, ApplyLayoutNoItemTextField) {
-  NSTextField* text_field = [[bar_ buttonView] noItemTextField];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |= bookmarks::kVisibleElementsMaskNoItemTextField;
-  layout.no_item_textfield_offset = 10;
-  layout.no_item_textfield_width = 20;
-
-  VerifyViewLayout(text_field, layout, 10, 20, true);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutImportBookmarksButton) {
-  NSButton* button = [[bar_ buttonView] importBookmarksButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  // This button never appears without the no item text field appearing, so
-  // show that too.
-  layout.visible_elements |= bookmarks::kVisibleElementsMaskNoItemTextField;
-  layout.no_item_textfield_offset = 10;
-  layout.no_item_textfield_width = 20;
-  layout.visible_elements |=
-      bookmarks::kVisibleElementsMaskImportBookmarksButton;
-  layout.import_bookmarks_button_offset = 30;
-  layout.import_bookmarks_button_width = 40;
-
-  VerifyViewLayout(button, layout, 30, 40, true);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutSupervisedButton) {
-  NSButton* button = [bar_ supervisedBookmarksButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |=
-      bookmarks::kVisibleElementsMaskSupervisedBookmarksButton;
-  layout.supervised_bookmarks_button_offset = 40;
-
-  VerifyViewLayout(button, layout, 40, CGFLOAT_MAX, false);
-}
-TEST_F(BookmarkBarControllerTest, ApplyLayoutManagedButton) {
-  NSButton* button = [bar_ managedBookmarksButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |=
-      bookmarks::kVisibleElementsMaskManagedBookmarksButton;
-  layout.managed_bookmarks_button_offset = 50;
-
-  VerifyViewLayout(button, layout, 50, CGFLOAT_MAX, false);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutOffTheSideButton) {
-  NSButton* button = [bar_ offTheSideButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |= bookmarks::kVisibleElementsMaskOffTheSideButton;
-  layout.off_the_side_button_offset = 100;
-
-  VerifyViewLayout(button, layout, 100, CGFLOAT_MAX, false);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutOtherBookmarksButton) {
-  NSButton* button = [bar_ otherBookmarksButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |=
-      bookmarks::kVisibleElementsMaskOtherBookmarksButton;
-  layout.other_bookmarks_button_offset = 110;
-
-  VerifyViewLayout(button, layout, 110, CGFLOAT_MAX, false);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutAppsButton) {
-  NSButton* button = [bar_ appsPageShortcutButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |= bookmarks::kVisibleElementsMaskAppsButton;
-  layout.apps_button_offset = 5;
-
-  VerifyViewLayout(button, layout, 5, CGFLOAT_MAX, false);
-}
-
-TEST_F(BookmarkBarControllerTest, ApplyLayoutBookmarkButtons) {
-  // Add some bookmarks
+// Confirm our "no items" container goes away when we add the 1st
+// bookmark, and comes back when we delete the bookmark.
+TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
-  GURL gurls[] = {
-      GURL("http://www.google.com/a"), GURL("http://www.google.com/b"),
-      GURL("http://www.google.com/c"), GURL("http://www.google.com/d")};
+  const BookmarkNode* bar = model->bookmark_bar_node();
 
-  base::string16 titles[] = {ASCIIToUTF16("a"), ASCIIToUTF16("b"),
-                             ASCIIToUTF16("c"), ASCIIToUTF16("d")};
-  for (size_t i = 0; i < arraysize(titles); i++)
-    bookmarks::AddIfNotBookmarked(model, gurls[i], titles[i]);
+  [bar_ loaded:model];
+  BookmarkBarView* view = [bar_ buttonView];
+  DCHECK(view);
+  NSView* noItemContainer = [view noItemContainer];
+  DCHECK(noItemContainer);
 
-  // Apply an empty layout. This should clear the buttons.
-  bookmarks::BookmarkBarLayout layout = {};
-  [bar_ applyLayout:layout animated:NO];
-  EXPECT_EQ([[bar_ buttons] count], 0U);
-
-  const BookmarkNode* parentNode = model->bookmark_bar_node();
-  EXPECT_EQ(parentNode->child_count(), 4);
-  // Ask the layout to show the first 2 nodes
-  for (int i = 0; i < 3; i++) {
-    const BookmarkNode* node = parentNode->GetChild(i);
-    layout.button_offsets[node->id()] =
-        bookmarks::kDefaultBookmarkWidth * (i + 1);
-  }
-  [bar_ applyLayout:layout animated:NO];
-  EXPECT_EQ([[bar_ buttons] count], 3U);
-  CGFloat lastMax = 0;
-  for (int i = 0; i < 3; i++) {
-    const BookmarkNode* node = parentNode->GetChild(i);
-    BookmarkButton* button = [[bar_ buttons] objectAtIndex:i];
-    EXPECT_EQ([button bookmarkNode], node);
-    EXPECT_CGFLOAT_EQ(NSMinX([button frame]),
-                      bookmarks::kDefaultBookmarkWidth * (i + 1));
-    EXPECT_GT(NSWidth([button frame]), 0);
-    EXPECT_EQ([button superview], [bar_ buttonView]);
-    // Ensure buttons don't overlap.
-    EXPECT_GT(NSMinX([button frame]), lastMax);
-    lastMax = NSMaxX([button frame]);
-  }
-  VerifyButtonTitles(parentNode);
-}
-// TODO(lgrey): Add tests for RTL in a follow-up.
-// crbug.com/648554
-
-TEST_F(BookmarkBarControllerTest, LayoutNoBookmarks) {
-  // With no apps button, or managed/supervised buttons:
-  profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  // Only the no item text field and import bookmarks button are showing.
-  EXPECT_EQ(
-      layout.visible_elements,
-      (unsigned int)(bookmarks::kVisibleElementsMaskImportBookmarksButton |
-                     bookmarks::kVisibleElementsMaskNoItemTextField));
-
-  EXPECT_EQ(layout.VisibleButtonCount(), 0U);
-
-  // The import bookmarks button is after the no item text field and they don't
-  // overlap
-  EXPECT_GT(layout.import_bookmarks_button_offset,
-            layout.no_item_textfield_offset + layout.no_item_textfield_width);
-  // And they both have a width
-  EXPECT_GT(layout.no_item_textfield_width, 0);
-  EXPECT_GT(layout.import_bookmarks_button_width, 0);
-  // And start at the correct offset
-  EXPECT_EQ(layout.no_item_textfield_offset,
-            bookmarks::kBookmarkLeftMargin +
-                bookmarks::kInitialNoItemTextFieldXOrigin);
-  // With apps button:
-  profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, true);
-  layout = [bar_ layoutFromCurrentState];
-
-  // Only the apps button, no item text field and import bookmarks button are
-  // showing.
-  EXPECT_EQ(
-      layout.visible_elements,
-      (unsigned int)(bookmarks::kVisibleElementsMaskImportBookmarksButton |
-                     bookmarks::kVisibleElementsMaskNoItemTextField |
-                     bookmarks::kVisibleElementsMaskAppsButton));
-  EXPECT_EQ(layout.VisibleButtonCount(), 0U);
-  // The no item text field is after the apps button
-  EXPECT_GT(layout.no_item_textfield_offset, layout.apps_button_offset);
-
-  // And the apps button is at the correct offset
-  EXPECT_EQ(layout.apps_button_offset, bookmarks::kBookmarkLeftMargin);
-
-  // TODO(lgrey): It seems prohibitively difficult/maybe impossible
-  // to test the managed/supervised buttons at this time.
-}
-
-TEST_F(BookmarkBarControllerTest, LayoutManagedAppsButton) {
-  // By default the pref is not managed and the apps shortcut is shown.
-  sync_preferences::TestingPrefServiceSyncable* prefs =
-      profile()->GetTestingPrefService();
-  EXPECT_FALSE(prefs->IsManagedPreference(
-      bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsAppsButtonVisible());
-
-  // Hide the apps shortcut by policy, via the managed pref.
-  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        base::MakeUnique<base::Value>(false));
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_FALSE(layout.IsAppsButtonVisible());
-
-  // And try showing it via policy too.
-  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        base::MakeUnique<base::Value>(true));
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsAppsButtonVisible());
-}
-
-TEST_F(BookmarkBarControllerTest, NoItemsResizing) {
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible() &&
-              layout.IsImportBookmarksButtonVisible());
-  CGFloat oldOffset = layout.import_bookmarks_button_offset;
-  CGFloat oldWidth = layout.import_bookmarks_button_width;
-  CGRect viewFrame = [[bar_ view] frame];
-  CGFloat originalViewWidth = NSWidth(viewFrame);
-  // Assert that the import bookmarks button fits.
-  EXPECT_GT(originalViewWidth, oldOffset + oldWidth);
-  // Resize the view to cut the import bookmarks button in half.
-  viewFrame.size.width = oldOffset + oldWidth * 0.5;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible() &&
-              layout.IsImportBookmarksButtonVisible());
-  EXPECT_CGFLOAT_EQ(layout.import_bookmarks_button_offset, oldOffset);
-  EXPECT_LT(layout.import_bookmarks_button_width, oldWidth);
-  // Resize the view to cut off the import bookmarks button entirely.
-  viewFrame.size.width = layout.import_bookmarks_button_offset - 1;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_FALSE(layout.IsImportBookmarksButtonVisible());
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible());
-  // Now, cut the text field in half
-  oldOffset = layout.no_item_textfield_offset;
-  oldWidth = layout.no_item_textfield_width;
-  viewFrame.size.width = oldOffset + oldWidth * 0.5;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible());
-  EXPECT_CGFLOAT_EQ(layout.no_item_textfield_offset, oldOffset);
-  EXPECT_LT(layout.no_item_textfield_width, oldWidth);
-  // Make the view too small to fit either.
-  viewFrame.size.width = bookmarks::kBookmarkLeftMargin;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_FALSE(layout.IsNoItemTextFieldVisible() ||
-               layout.IsImportBookmarksButtonVisible());
-  // Sanity check
-  viewFrame.size.width = originalViewWidth;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible() &&
-              layout.IsImportBookmarksButtonVisible());
-}
-
-TEST_F(BookmarkBarControllerTest, LayoutOtherBookmarks) {
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
-  const BookmarkNode* otherBookmarks = model->other_node();
-  model->AddURL(otherBookmarks, otherBookmarks->child_count(),
-                ASCIIToUTF16("TheOther"), GURL("http://www.other.com"));
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsOtherBookmarksButtonVisible());
-  EXPECT_EQ(layout.VisibleButtonCount(), 0U);
-  EXPECT_GT(layout.other_bookmarks_button_offset, 0);
-  CGFloat offsetFromMaxX =
-      NSWidth([[bar_ view] frame]) - layout.other_bookmarks_button_offset;
-  // Resize the view and ensure the button stays pinned to the right edge.
-  CGRect viewFrame = [[bar_ view] frame];
-  // Half of the original size
-  viewFrame.size.width = std::ceil(NSWidth(viewFrame) * 0.5);
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsOtherBookmarksButtonVisible());
-  EXPECT_GT(layout.other_bookmarks_button_offset, 0);
-  EXPECT_CGFLOAT_EQ(NSWidth(viewFrame) - layout.other_bookmarks_button_offset,
-                    offsetFromMaxX);
-  // 150% of the original size
-  viewFrame.size.width = NSWidth(viewFrame) * 3;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsOtherBookmarksButtonVisible());
-  EXPECT_CGFLOAT_EQ(NSWidth(viewFrame) - layout.other_bookmarks_button_offset,
-                    offsetFromMaxX);
-}
-
-TEST_F(BookmarkBarControllerTest, LayoutBookmarks) {
-  // Apps button shows up by default, first test without it.
-  profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
-
-  // Add some bookmarks.
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
-  const BookmarkNode* barNode = model->bookmark_bar_node();
-  GURL gurls[] = {GURL("http://www.google.com/a"),
-                  GURL("http://www.google.com/b"),
-                  GURL("http://www.google.com/c")};
-  base::string16 titles[] = {ASCIIToUTF16("a"), ASCIIToUTF16("b"),
-                             ASCIIToUTF16("c")};
-  for (size_t i = 0; i < arraysize(titles); i++)
-    bookmarks::AddIfNotBookmarked(model, gurls[i], titles[i]);
-
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_EQ(layout.VisibleButtonCount(), (size_t)barNode->child_count());
-  EXPECT_FALSE(layout.IsOffTheSideButtonVisible());
-  EXPECT_EQ(layout.button_offsets.size(), (size_t)barNode->child_count());
-  EXPECT_EQ(layout.button_offsets[barNode->GetChild(0)->id()],
-            bookmarks::kBookmarkLeftMargin);
-  // Assert that the buttons are in order.
-  CGFloat lastOffset = 0;
-  for (int i = 0; i < barNode->child_count(); i++) {
-    CGFloat offset = layout.button_offsets[barNode->GetChild(i)->id()];
-    EXPECT_GT(offset, lastOffset);
-    lastOffset = offset;
-  }
-}
-
-TEST_F(BookmarkBarControllerTest, NoItemUIHiddenWithBookmarks) {
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
-  const BookmarkNode* barNode = model->bookmark_bar_node();
-
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible() &&
-              layout.IsImportBookmarksButtonVisible());
-
-  const BookmarkNode* node =
-      model->AddURL(barNode, barNode->child_count(), ASCIIToUTF16("title"),
-                    GURL("http://www.google.com"));
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_FALSE(layout.IsNoItemTextFieldVisible() ||
-               layout.IsImportBookmarksButtonVisible());
-
+  EXPECT_FALSE([noItemContainer isHidden]);
+  const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
+                                           ASCIIToUTF16("title"),
+                                           GURL("http://www.google.com"));
+  EXPECT_TRUE([noItemContainer isHidden]);
   model->Remove(node);
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsNoItemTextFieldVisible() &&
-              layout.IsImportBookmarksButtonVisible());
-}
+  EXPECT_FALSE([noItemContainer isHidden]);
 
-TEST_F(BookmarkBarControllerTest, LayoutBookmarksResize) {
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
-  const BookmarkNode* barNode = model->bookmark_bar_node();
-  for (int i = 0; i < 20; i++) {
-    model->AddURL(barNode, barNode->child_count(), ASCIIToUTF16("title"),
-                  GURL("http://www.google.com"));
-  }
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_LT(layout.VisibleButtonCount(), 20U);
-  size_t originalButtonCount = layout.VisibleButtonCount();
-  EXPECT_TRUE(layout.IsOffTheSideButtonVisible());
-
-  CGRect viewFrame = [[bar_ view] frame];
-  // Increase the width of the view. More buttons should be visible.
-  viewFrame.size.width += 200;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_GT(layout.VisibleButtonCount(), originalButtonCount);
-
-  // Decrease the width of the view to below what it was originally.
-  // Less buttons should be visible.
-  viewFrame.size.width -= 400;
-  [[bar_ view] setFrame:viewFrame];
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_LT(layout.VisibleButtonCount(), originalButtonCount);
-
-  // NB: This part overlaps a little with |OffTheSideButtonHidden|
-  // but we just want to check the layout here, whereas that test
-  // ensures the folder is closed when the button goes away.
-  //
-  // Find the number of buttons at which the off-the-side button disappears.
-  EXPECT_TRUE(layout.IsOffTheSideButtonVisible());
-  bool crossoverPointFound = false;
-
-  // Bound the number of iterations in case the button never
-  // disappears.
-  const int maxToRemove = 20;
-  for (int i = 0; i < maxToRemove; i++) {
-    if (!layout.IsOffTheSideButtonVisible()) {
-      crossoverPointFound = true;
-      break;
-    }
-    model->Remove(barNode->GetChild(barNode->child_count() - 1));
-    layout = [bar_ layoutFromCurrentState];
-  }
-
-  // Either something is broken, or the test needs to be redone.
-  ASSERT_TRUE(crossoverPointFound);
-  EXPECT_FALSE(layout.IsOffTheSideButtonVisible());
-
-  // Add a button and ensure the off the side button appears again.
-  model->AddURL(barNode, barNode->child_count(), ASCIIToUTF16("title"),
-                GURL("http://www.google.com"));
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsOffTheSideButtonVisible());
-
-  // If the off-the-side button is visible, this means we have more
-  // buttons than we can show, so adding another shouldn't increase
-  // the button count.
-  size_t buttonCountBeforeAdding = layout.VisibleButtonCount();
-  model->AddURL(barNode, barNode->child_count(), ASCIIToUTF16("title"),
-                GURL("http://www.google.com"));
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_EQ(layout.VisibleButtonCount(), buttonCountBeforeAdding);
+  // Now try it using a bookmark from the Other Bookmarks.
+  const BookmarkNode* otherBookmarks = model->other_node();
+  node = model->AddURL(otherBookmarks, otherBookmarks->child_count(),
+                       ASCIIToUTF16("TheOther"),
+                       GURL("http://www.other.com"));
+  EXPECT_FALSE([noItemContainer isHidden]);
+  // Move it from Other Bookmarks to the bar.
+  model->Move(node, bar, 0);
+  EXPECT_TRUE([noItemContainer isHidden]);
+  // Move it back to Other Bookmarks from the bar.
+  model->Move(node, otherBookmarks, 0);
+  EXPECT_FALSE([noItemContainer isHidden]);
 }
 
 // Confirm off the side button only enabled when reasonable.
@@ -920,12 +560,12 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
 
   [bar_ loaded:model];
-  EXPECT_TRUE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   for (int i = 0; i < 2; i++) {
     bookmarks::AddIfNotBookmarked(
         model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
-    EXPECT_TRUE([[bar_ offTheSideButton] isHidden]);
+    EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
 
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -934,12 +574,12 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
                   ASCIIToUTF16("super duper wide title"),
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
-  EXPECT_FALSE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Open the "off the side" and start deleting nodes.  Make sure
   // deletion of the last node in "off the side" causes the folder to
   // close.
-  EXPECT_FALSE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
   NSButton* offTheSideButton = [bar_ offTheSideButton];
   // Open "off the side" menu.
   [bar_ openOffTheSideFolderFromButton:offTheSideButton];
@@ -948,13 +588,13 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   [bbfc setIgnoreAnimations:YES];
   while (!parent->empty()) {
     // We've completed the job so we're done.
-    if ([[bar_ offTheSideButton] isHidden])
+    if ([bar_ offTheSideButtonIsHidden])
       break;
     // Delete the last button.
     model->Remove(parent->GetChild(parent->child_count() - 1));
     // If last one make sure the menu is closed and the button is hidden.
     // Else make sure menu stays open.
-    if ([[bar_ offTheSideButton] isHidden]) {
+    if ([bar_ offTheSideButtonIsHidden]) {
       EXPECT_FALSE([bar_ folderController]);
     } else {
       EXPECT_TRUE([bar_ folderController]);
@@ -977,7 +617,7 @@ TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
     model->AddURL(parent, parent->child_count(), ASCIIToUTF16(title.str()),
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
-  EXPECT_FALSE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Open "off the side" menu.
   NSButton* offTheSideButton = [bar_ offTheSideButton];
@@ -1045,7 +685,14 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  NSView* buttonView = [bar_ buttonView];
   EXPECT_EQ(0U, [[bar_ buttons] count]);
+  unsigned int initial_subview_count = [[buttonView subviews] count];
+
+  // Make sure a redundant call doesn't choke
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  EXPECT_EQ(initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl1("http://superfriends.hall-of-justice.edu");
   // Short titles increase the chances of this test succeeding if the view is
@@ -1055,24 +702,33 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   base::string16 title1(ASCIIToUTF16("x"));
   bookmarks::AddIfNotBookmarked(model, gurl1, title1);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
+  EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
   base::string16 title2(ASCIIToUTF16("y"));
   bookmarks::AddIfNotBookmarked(model, gurl2, title2);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
+  EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 
   for (int i = 0; i < 3; i++) {
     bookmarks::RemoveAllBookmarks(model, gurl2);
     EXPECT_EQ(1U, [[bar_ buttons] count]);
+    EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
     // and bring it back
     bookmarks::AddIfNotBookmarked(model, gurl2, title2);
     EXPECT_EQ(2U, [[bar_ buttons] count]);
+    EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
   }
+
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  EXPECT_EQ(initial_subview_count, [[buttonView subviews] count]);
 
   // Explicit test of loaded: since this is a convenient spot
   [bar_ loaded:model];
   EXPECT_EQ(2U, [[bar_ buttons] count]);
+  EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 }
 
 // Make sure we don't create too many buttons; we only really need
@@ -1100,7 +756,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
   // Add 10 more (to the front of the list so the on-screen buttons
   // would change) and make sure the count stays the same.
   for (int i=0; i<10; i++) {
-    model->AddURL(parent, 0,  // index is 0, so front, not end
+    model->AddURL(parent, 0,  /* index is 0, so front, not end */
                   ASCIIToUTF16("title"), GURL("http://www.google.com"));
   }
 
@@ -1110,6 +766,107 @@ TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
   [[bar_ view] setFrame:frame];
   int finalcount = [[bar_ buttons] count];
   EXPECT_GT(finalcount, count);
+}
+
+// Make sure that each button we add marches to the right and does not
+// overlap with the previous one.
+TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
+  base::scoped_nsobject<NSMutableArray> cells([[NSMutableArray alloc] init]);
+
+  CGFloat widths[] = { 10, 10, 100, 10, 500, 500, 80000, 60000, 1, 345 };
+  for (unsigned int i = 0; i < arraysize(widths); i++) {
+    NSCell* cell = [[CellWithDesiredSize alloc]
+                     initTextCell:@"foo"
+                      desiredSize:NSMakeSize(widths[i], 30)];
+    [cells addObject:cell];
+    [cell release];
+  }
+
+  int x_offset = 0;
+  CGFloat x_end = x_offset;  // end of the previous button
+  for (unsigned int i = 0; i < arraysize(widths); i++) {
+    NSRect r = [bar_ frameForBookmarkButtonFromCell:[cells objectAtIndex:i]
+                                            xOffset:&x_offset];
+    EXPECT_GE(r.origin.x, x_end);
+    x_end = NSMaxX(r);
+  }
+}
+
+TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
+  WithNoAnimation at_all; // Turn off Cocoa auto animation in this scope.
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  GURL gurl1("http://www.google.com");
+  base::string16 title1(ASCIIToUTF16("x"));
+  bookmarks::AddIfNotBookmarked(model, gurl1, title1);
+
+  GURL gurl2("http://www.google.com/blah");
+  base::string16 title2(ASCIIToUTF16("y"));
+  bookmarks::AddIfNotBookmarked(model, gurl2, title2);
+
+  EXPECT_EQ(2U, [[bar_ buttons] count]);
+  CGFloat width_1 = [[[bar_ buttons] objectAtIndex:0] frame].size.width;
+  CGFloat x_2 = [[[bar_ buttons] objectAtIndex:1] frame].origin.x;
+
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  [[first cell] setTitle:@"This is a really big title; watch out mom!"];
+  [bar_ checkForBookmarkButtonGrowth:first];
+
+  // Make sure the 1st button is now wider, the 2nd one is moved over,
+  // and they don't overlap.
+  NSRect frame_1 = [[[bar_ buttons] objectAtIndex:0] frame];
+  NSRect frame_2 = [[[bar_ buttons] objectAtIndex:1] frame];
+  EXPECT_GT(frame_1.size.width, width_1);
+  EXPECT_GT(frame_2.origin.x, x_2);
+  EXPECT_GE(frame_2.origin.x, frame_1.origin.x + frame_1.size.width);
+}
+
+TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+
+  const char* urls[] = { "https://secret.url.com",
+                         "http://super.duper.web.site.for.doodz.gov",
+                         "http://www.foo-bar-baz.com/" };
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  for (unsigned int i = 0; i < arraysize(urls); i++) {
+    model->AddURL(parent, parent->child_count(),
+                  ASCIIToUTF16("title"), GURL(urls[i]));
+  }
+  EXPECT_EQ(3, parent->child_count());
+  const BookmarkNode* middle_node = parent->GetChild(1);
+  model->Remove(middle_node);
+
+  EXPECT_EQ(2, parent->child_count());
+  EXPECT_EQ(parent->GetChild(0)->url(), GURL(urls[0]));
+  // node 2 moved into spot 1
+  EXPECT_EQ(parent->GetChild(1)->url(), GURL(urls[2]));
+}
+
+// TODO(jrg): write a test to confirm that nodeFaviconLoaded calls
+// checkForBookmarkButtonGrowth:.
+
+TEST_F(BookmarkBarControllerTest, Cell) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  [bar_ loaded:model];
+
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  model->AddURL(parent, parent->child_count(),
+                ASCIIToUTF16("supertitle"),
+                GURL("http://superfriends.hall-of-justice.edu"));
+  const BookmarkNode* node = parent->GetChild(0);
+
+  NSCell* cell = [bar_ cellForBookmarkNode:node];
+  EXPECT_TRUE(cell);
+  EXPECT_NSEQ(@"supertitle", [cell title]);
+  EXPECT_EQ(node, [[cell representedObject] pointerValue]);
+  EXPECT_TRUE([cell menu]);
+
+  // Empty cells still have a menu.
+  cell = [bar_ cellForBookmarkNode:nil];
+  EXPECT_TRUE([cell menu]);
+  // Even empty cells have a title (of "(empty)")
+  EXPECT_TRUE([cell title]);
+
+  // cell is autoreleased; no need to release here
 }
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
@@ -1141,10 +898,10 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
                   ASCIIToUTF16("super duper wide title"),
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   NSButton* offTheSideButton = [bar_ offTheSideButton];
   EXPECT_TRUE(offTheSideButton);
-  EXPECT_FALSE([offTheSideButton isHidden]);
   [offTheSideButton otherMouseUp:
       cocoa_test_event_utils::MouseEventWithType(NSOtherMouseUp, 0)];
 
@@ -1168,13 +925,18 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   [bar_ loaded:model];
-  EXPECT_FALSE([[[bar_ buttonView] noItemTextField] isHidden]);
+  EXPECT_FALSE([[[bar_ buttonView] noItemContainer] isHidden]);
 }
 
-TEST_F(BookmarkBarControllerTest, DisplaysImportBookmarksButtonOnEmpty) {
+TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+
+  const BookmarkNode* parent = model->bookmark_bar_node();
+  model->AddURL(parent, parent->child_count(),
+                ASCIIToUTF16("title"), GURL("http://one.com"));
+
   [bar_ loaded:model];
-  EXPECT_FALSE([[[bar_ buttonView] importBookmarksButton] isHidden]);
+  EXPECT_TRUE([[[bar_ buttonView] noItemContainer] isHidden]);
 }
 
 TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
@@ -1509,7 +1271,7 @@ TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
 TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
 
   // It starts hidden.
-  EXPECT_TRUE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   // Create some buttons.
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
@@ -1527,7 +1289,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
                 GURL("http://framma-lamma.com"));
 
   // Should no longer be hidden.
-  EXPECT_FALSE([[bar_ offTheSideButton] isHidden]);
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Open it; make sure we have a folder controller.
   EXPECT_FALSE([bar_ folderController]);
@@ -1666,6 +1428,258 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   EXPECT_FALSE([bar_ isAnimationRunning]);
 }
 
+TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
+
+  // Validate initial model.
+  std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+
+  // Remember how many buttons are showing.
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
+  NSArray* buttons = [bar_ buttons];
+
+  // Move a button around a bit.
+  [bar_ moveButtonFromIndex:0 toIndex:2];
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:2] title]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+  [bar_ moveButtonFromIndex:2 toIndex:0];
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:2] title]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+
+  // Add a couple of buttons.
+  const BookmarkNode* parent = root->GetChild(1); // Purloin an existing node.
+  const BookmarkNode* node = parent->GetChild(0);
+  [bar_ addButtonForNode:node atIndex:0];
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:3] title]);
+  EXPECT_EQ(oldDisplayedButtons + 1, [bar_ displayedButtonCount]);
+  node = parent->GetChild(1);
+  [bar_ addButtonForNode:node atIndex:-1];
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:3] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:4] title]);
+  EXPECT_EQ(oldDisplayedButtons + 2, [bar_ displayedButtonCount]);
+
+  // Remove a couple of buttons.
+  [bar_ removeButton:4 animate:NO];
+  [bar_ removeButton:1 animate:NO];
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:2] title]);
+  EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
+}
+
+TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
+  NSRect viewFrame = NSMakeRect(0.0, 0.0, 500.0, 50.0);
+  NSView* view = [[[NSView alloc] initWithFrame:viewFrame] autorelease];
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:500.0];
+  EXPECT_EQ(500.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:450.0];
+  EXPECT_EQ(450.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:40.0];
+  EXPECT_EQ(40.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:31.0];
+  EXPECT_EQ(31.0, NSWidth([view frame]));
+  EXPECT_FALSE([view isHidden]);
+  [bar_ shrinkOrHideView:view forMaxX:29.0];
+  EXPECT_TRUE([view isHidden]);
+}
+
+// Simulate coarse browser window width change and ensure that the bookmark
+// buttons that should be visible are visible.
+TEST_F(BookmarkBarControllerTest, RedistributeButtonsOnBarAsNeeded) {
+  // Hide the apps shortcut.
+  profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Add three buttons to the bookmark bar.
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  // Make long labels to test coarse resizes. After 16 digits, text eliding
+  // starts.
+  const std::string model_string(
+      "0000000000000000 1111111111111111 2222222222222222 ");
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
+  NSRect frame = [[bar_ view] frame];
+  frame.size.width = 400;  // Typical minimum browser size.
+  [[bar_ view] setFrame:frame];
+  EXPECT_EQ(2, [bar_ displayedButtonCount]);
+
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    frame.size.width = 800;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(3, [bar_ displayedButtonCount]);
+
+    const BookmarkNode* last = model->bookmark_bar_node()->GetChild(2);
+    EXPECT_TRUE(last);
+    [bar_ startPulsingBookmarkNode:last];
+
+    frame.size.width = 400;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(2, [bar_ displayedButtonCount]);
+  }
+
+  // Regression test for http://crbug.com/616051.
+  [bar_ stopPulsingBookmarkNode];
+}
+
+// Simiulate browser window width change and ensure that the bookmark buttons
+// that should be visible are visible.
+// Appears to fail on Mac 10.11 bot on the waterfall; http://crbug.com/612640.
+TEST_F(BookmarkBarControllerTest, DISABLED_LastBookmarkResizeBehavior) {
+  // Hide the apps shortcut.
+  profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Add three buttons to the bookmark bar.
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
+  [bar_ frameDidChange];
+
+  // Step through simulated window resizings. In resizing from the first width
+  // to the second, the bookmark bar should transition from displaying one
+  // button to two. Of the next 5 widths, the third transitions the bar from
+  // displaying two buttons to three. The next width (200.0) resizes the bar to
+  // a large width that does not change the number of visible buttons, and the
+  // remaining widths step through all the previous resizings in reverse, which
+  // should correspond to the previous number of visible buttons.
+  //
+  // To recalibrate this test for new OS releases, etc., determine values for
+  // |view_widths[1]| and |view_widths[4]| which will cause a visible button
+  // transition from 1 -> 2 and 2 -> 3, respectively. With those two widths you
+  // can easily compute all widths from 0 through 6. |view_widths[7]| is always
+  // 200.0, and the remainder are the reverse of widths 0 through 6. When all
+  // three buttons are visible, be sure to sanity check with frames (i.e. under
+  // MD the first button should start at x=10, and there should be 16pt of space
+  // between the buttons).
+  //
+  // The default font changed between OSX Mavericks, OSX Yosemite, and
+  // OSX El Capitan, so this test requires different widths to trigger the
+  // appropriate results.
+  CGFloat view_widths_el_capitan[] =
+      { 139.0, 140.0, 150.0, 151.0, 152.0, 153.0,
+        154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
+        150.0, 140.0, 139.0 };
+  CGFloat view_widths_yosemite[] =
+      { 140.0, 141.0, 150.0, 151.0, 152.0, 153.0,
+        154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
+        150.0, 141.0, 140.0 };
+  CGFloat view_widths_rest[] =
+      { 142.0, 143.0, 153.0, 154.0, 155.0, 156.0,
+        157.0, 200.0, 157.0, 156.0, 155.0, 154.0,
+        153.0, 143.0, 142.0 };
+  CGFloat* view_widths = NULL;
+  if (base::mac::IsOS10_11()) {
+    view_widths = view_widths_el_capitan;
+  } else if (base::mac::IsOS10_10()) {
+    view_widths = view_widths_yosemite;
+  } else {
+    view_widths = view_widths_rest;
+  }
+
+  BOOL off_the_side_button_is_hidden_results[] =
+      { NO, NO, NO, NO, YES, YES, YES, YES, YES, YES, YES, NO, NO, NO, NO};
+  int displayed_button_count_results[] =
+      { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 1 };
+  for (unsigned int i = 0; i < arraysize(view_widths_yosemite); ++i) {
+    NSRect frame = [[bar_ view] frame];
+    frame.size.width = view_widths[i] + bookmarks::kBookmarkRightMargin;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(off_the_side_button_is_hidden_results[i],
+              [bar_ offTheSideButtonIsHidden]);
+    EXPECT_EQ(displayed_button_count_results[i], [bar_ displayedButtonCount]);
+  }
+}
+
+TEST_F(BookmarkBarControllerTest, BookmarksWithAppsPageShortcut) {
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* root = model->bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
+  bookmarks::test::AddNodesFromModelString(model, root, model_string);
+  [bar_ frameDidChange];
+
+  // Apps page shortcut button should be visible.
+  ASSERT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Bookmarks should be to the right of the Apps page shortcut button.
+  CGFloat apps_button_right = NSMaxX([[bar_ appsPageShortcutButton] frame]);
+  CGFloat right = apps_button_right;
+  NSArray* buttons = [bar_ buttons];
+  for (size_t i = 0; i < [buttons count]; ++i) {
+    EXPECT_LE(right, NSMinX([[buttons objectAtIndex:i] frame]));
+    right = NSMaxX([[buttons objectAtIndex:i] frame]);
+  }
+
+  // Removing the Apps button should move every bookmark to the left.
+  profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+  EXPECT_GT(apps_button_right, NSMinX([[buttons objectAtIndex:0] frame]));
+  for (size_t i = 1; i < [buttons count]; ++i) {
+    EXPECT_LE(NSMaxX([[buttons objectAtIndex:i - 1] frame]),
+              NSMinX([[buttons objectAtIndex:i] frame]));
+  }
+}
+
+TEST_F(BookmarkBarControllerTest, BookmarksWithoutAppsPageShortcut) {
+  // The no item containers should be to the right of the Apps button.
+  ASSERT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+  CGFloat apps_button_right = NSMaxX([[bar_ appsPageShortcutButton] frame]);
+  EXPECT_LE(apps_button_right,
+            NSMinX([[[bar_ buttonView] noItemTextfield] frame]));
+  EXPECT_LE(NSMaxX([[[bar_ buttonView] noItemTextfield] frame]),
+            NSMinX([[[bar_ buttonView] importBookmarksButton] frame]));
+
+  // Removing the Apps button should move the no item containers to the left.
+  profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+  EXPECT_GT(apps_button_right,
+            NSMinX([[[bar_ buttonView] noItemTextfield] frame]));
+  EXPECT_LE(NSMaxX([[[bar_ buttonView] noItemTextfield] frame]),
+            NSMinX([[[bar_ buttonView] importBookmarksButton] frame]));
+}
+
+TEST_F(BookmarkBarControllerTest, ManagedShowAppsShortcutInBookmarksBar) {
+  // By default the pref is not managed and the apps shortcut is shown.
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
+  EXPECT_FALSE(prefs->IsManagedPreference(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
+  EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // Hide the apps shortcut by policy, via the managed pref.
+  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+                        base::MakeUnique<base::Value>(false));
+  EXPECT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
+
+  // And try showing it via policy too.
+  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+                        base::MakeUnique<base::Value>(true));
+  EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
+}
+
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {
 public:
  void SetUp() override {
@@ -1749,7 +1763,7 @@ class BookmarkBarControllerNotificationTest : public CocoaProfileTest {
            initialWidth:NSWidth(parent_frame)
                delegate:nil]);
 
-    // Loads the view
+    // Forces loading of the nib.
     [[bar_ controlledView] setResizeDelegate:resizeDelegate_];
     // Awkwardness to look like we've been installed.
     [parent_view_ addSubview:[bar_ view]];
@@ -1827,13 +1841,13 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   std::string actualModelString = bookmarks::test::ModelStringFromNode(root);
   EXPECT_EQ(model_string, actualModelString);
 
-  // Ensure that the off-the-side button is showing.
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  ASSERT_TRUE(layout.IsOffTheSideButtonVisible());
+  // Insure that the off-the-side is not showing.
+  ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Remember how many buttons are showing and are available.
-  int oldDisplayedButtons = layout.VisibleButtonCount();
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
   int oldChildCount = root->child_count();
+
   // Pop up the off-the-side menu.
   BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
   ASSERT_TRUE(otsButton);
@@ -1853,19 +1867,11 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   [otsController dragButton:draggedButton
                          to:[targetButton center]
                        copy:YES];
-  // Close
-  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
-                           withObject:otsButton];
-  // Open
-  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
-                           withObject:otsButton];
-
   // There should still be the same number of buttons in the bar
   // and off-the-side should have one more.
-  layout = [bar_ layoutFromCurrentState];
-  int newDisplayedButtons = layout.VisibleButtonCount();
+  int newDisplayedButtons = [bar_ displayedButtonCount];
   int newChildCount = root->child_count();
-  int newOTSCount = (int)[[[bar_ folderController] buttons] count];
+  int newOTSCount = (int)[[otsController buttons] count];
   EXPECT_EQ(oldDisplayedButtons, newDisplayedButtons);
   EXPECT_EQ(oldChildCount + 1, newChildCount);
   EXPECT_EQ(oldOTSCount + 1, newOTSCount);
@@ -1893,12 +1899,11 @@ TEST_F(BookmarkBarControllerDragDropTest, DragOffTheSideToOther) {
   std::string actualOtherString = bookmarks::test::ModelStringFromNode(other);
   EXPECT_EQ(other_string, actualOtherString);
 
-  // Ensure that the off-the-side button is showing.
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  ASSERT_TRUE(layout.IsOffTheSideButtonVisible());
+  // Insure that the off-the-side is showing.
+  ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
 
   // Remember how many buttons are showing and are available.
-  int oldDisplayedButtons = layout.VisibleButtonCount();
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
   int oldRootCount = root->child_count();
   int oldOtherCount = other->child_count();
 
@@ -2047,7 +2052,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   // Hide the apps shortcut.
   profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
-  ASSERT_TRUE([[bar_ appsPageShortcutButton] isHidden]);
+  ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
 
   // Validate initial model.
   std::string actualModel = bookmarks::test::ModelStringFromNode(root);

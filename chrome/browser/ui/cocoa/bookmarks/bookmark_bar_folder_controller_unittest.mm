@@ -790,11 +790,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
       "4f2f1b 4f2f2b 4f2f3b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
   EXPECT_EQ(expected_string, bookmarks::test::ModelStringFromNode(root));
 
-  // Reopen the window.
-  [[toFolder target] performSelector:@selector(openBookmarkFolderFromButton:)
-                          withObject:toFolder];
+  // Verify the window still appears by looking for its controller.
   EXPECT_TRUE([bar_ folderController]);
-  folderController = [bar_ folderController];
 
   // Gather the new frames.
   NSRect newToFolderFrame = [toFolder frame];
