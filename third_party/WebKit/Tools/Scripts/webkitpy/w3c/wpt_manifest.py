@@ -117,7 +117,7 @@ class WPTManifest(object):
 
         cmd = ['python', manifest_exec_path, '--work', '--tests-root', dest_path]
         _log.debug('Running command: %s', ' '.join(cmd))
-        proc = executive.popen(cmd, stdout=executive.PIPE, stderr=executive.PIPE, stdin=executive.PIPE, cwd=finder.webkit_base())
+        proc = executive.popen(cmd, stdout=executive.PIPE, stderr=executive.PIPE, stdin=executive.PIPE)
         out, err = proc.communicate('')
         if proc.returncode:
             _log.info('# ret> %d', proc.returncode)
