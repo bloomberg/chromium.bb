@@ -59,42 +59,6 @@ std::string ForegroundEidGenerator::EidData::DataInHex() const {
   return str + "]";
 }
 
-ForegroundEidGenerator::DataWithTimestamp::DataWithTimestamp(
-    const std::string& data,
-    const int64_t start_timestamp_ms,
-    const int64_t end_timestamp_ms)
-    : data(data),
-      start_timestamp_ms(start_timestamp_ms),
-      end_timestamp_ms(end_timestamp_ms) {
-  DCHECK(start_timestamp_ms < end_timestamp_ms);
-  DCHECK(data.size());
-}
-
-ForegroundEidGenerator::DataWithTimestamp::DataWithTimestamp(
-    const DataWithTimestamp& other)
-    : data(other.data),
-      start_timestamp_ms(other.start_timestamp_ms),
-      end_timestamp_ms(other.end_timestamp_ms) {
-  DCHECK(start_timestamp_ms < end_timestamp_ms);
-  DCHECK(data.size());
-}
-
-bool ForegroundEidGenerator::DataWithTimestamp::ContainsTime(
-    const int64_t timestamp_ms) const {
-  return start_timestamp_ms <= timestamp_ms && timestamp_ms < end_timestamp_ms;
-}
-
-std::string ForegroundEidGenerator::DataWithTimestamp::DataInHex() const {
-  std::stringstream ss;
-  ss << "0x" << std::hex;
-
-  for (size_t i = 0; i < data.size(); i++) {
-    ss << static_cast<int>(data.data()[i]);
-  }
-
-  return ss.str();
-}
-
 ForegroundEidGenerator::ForegroundEidGenerator()
     : ForegroundEidGenerator(base::MakeUnique<RawEidGeneratorImpl>(),
                              base::MakeUnique<base::DefaultClock>()) {}
@@ -135,7 +99,7 @@ ForegroundEidGenerator::GenerateBackgroundScanFilter(
   return base::WrapUnique(new EidData(*current_eid, std::move(adjacent_eid)));
 }
 
-std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 ForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
@@ -211,7 +175,7 @@ std::vector<std::string> ForegroundEidGenerator::GeneratePossibleAdvertisements(
   return possible_advertisements;
 }
 
-std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 ForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
@@ -237,7 +201,7 @@ ForegroundEidGenerator::GenerateAdvertisement(
                                                 end_of_period_timestamp_ms));
 }
 
-std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 ForegroundEidGenerator::GenerateEidDataWithTimestamp(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms,
@@ -247,7 +211,7 @@ ForegroundEidGenerator::GenerateEidDataWithTimestamp(
                                       end_of_period_timestamp_ms, nullptr);
 }
 
-std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 ForegroundEidGenerator::GenerateEidDataWithTimestamp(
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds,
     const int64_t start_of_period_timestamp_ms,

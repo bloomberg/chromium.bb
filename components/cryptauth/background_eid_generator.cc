@@ -54,23 +54,24 @@ BackgroundEidGenerator::BackgroundEidGenerator(
     : raw_eid_generator_(std::move(raw_eid_generator)),
       clock_(std::move(clock)) {}
 
-std::vector<std::string> BackgroundEidGenerator::GenerateNearestEids(
+std::vector<DataWithTimestamp> BackgroundEidGenerator::GenerateNearestEids(
     const std::vector<BeaconSeed>& beacon_seeds) const {
   int64_t now_timestamp_ms = clock_->Now().ToJavaTime();
-  std::vector<std::string> eids;
+  std::vector<DataWithTimestamp> eids;
 
-  PA_LOG(INFO) << "Generating EIDs:";
   for (int i = -kEidLookAhead; i <= kEidLookAhead; ++i) {
     int64_t timestamp_ms = now_timestamp_ms + i * kEidPeriodMs;
-    std::unique_ptr<std::string> eid = GenerateEid(timestamp_ms, beacon_seeds);
+    std::unique_ptr<DataWithTimestamp> eid =
+        GenerateEid(timestamp_ms, beacon_seeds);
     if (eid)
       eids.push_back(*eid);
   }
 
+  PA_LOG(INFO) << "Generated EIDs: " << DataWithTimestamp::ToDebugString(eids);
   return eids;
 }
 
-std::unique_ptr<std::string> BackgroundEidGenerator::GenerateEid(
+std::unique_ptr<DataWithTimestamp> BackgroundEidGenerator::GenerateEid(
     int64_t timestamp_ms,
     const std::vector<BeaconSeed>& beacon_seeds) const {
   const BeaconSeed* beacon_seed =
@@ -88,8 +89,8 @@ std::unique_ptr<std::string> BackgroundEidGenerator::GenerateEid(
   std::string eid = raw_eid_generator_->GenerateEid(
       beacon_seed->data(), start_of_period_ms, nullptr);
 
-  PA_LOG(INFO) << "  " << start_of_period_ms << ": " << eid;
-  return base::MakeUnique<std::string>(eid);
+  return base::MakeUnique<DataWithTimestamp>(eid, start_of_period_ms,
+                                             start_of_period_ms + kEidPeriodMs);
 }
 
 }  // cryptauth

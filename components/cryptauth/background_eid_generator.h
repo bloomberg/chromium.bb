@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/time/clock.h"
+#include "components/cryptauth/data_with_timestamp.h"
 
 namespace cryptauth {
 
@@ -33,7 +34,7 @@ class BackgroundEidGenerator {
 
   // Returns a list of the nearest EIDs from the current time. Note that the
   // list of EIDs is sorted from earliest timestamp to latest.
-  virtual std::vector<std::string> GenerateNearestEids(
+  virtual std::vector<DataWithTimestamp> GenerateNearestEids(
       const std::vector<BeaconSeed>& beacon_seed) const;
 
  private:
@@ -44,7 +45,7 @@ class BackgroundEidGenerator {
   // Helper function to generate the EID for any |timestamp_ms|, properly
   // calculating the start of the period. Returns nullptr if |timestamp_ms| is
   // outside of range of |beacon_seeds|.
-  std::unique_ptr<std::string> GenerateEid(
+  std::unique_ptr<DataWithTimestamp> GenerateEid(
       int64_t timestamp_ms,
       const std::vector<BeaconSeed>& beacon_seeds) const;
 

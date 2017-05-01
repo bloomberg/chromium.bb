@@ -359,7 +359,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 TEST_F(CryptAuthForegroundEidGeneratorTest, GenerateAdvertisementData) {
   SetTestTime(kDefaultCurrentTime);
 
-  std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp> data =
+  std::unique_ptr<DataWithTimestamp> data =
       eid_generator_->GenerateAdvertisement(kDefaultAdvertisingDevicePublicKey,
                                             scanning_device_beacon_seeds_);
   ASSERT_TRUE(data);
@@ -376,7 +376,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateAdvertisementData_NoSeedForPeriod) {
   SetTestTime(kDefaultCurrentTime + 4 * kNumMsInEidSeedPeriod);
 
-  std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp> data =
+  std::unique_ptr<DataWithTimestamp> data =
       eid_generator_->GenerateAdvertisement(kDefaultAdvertisingDevicePublicKey,
                                             scanning_device_beacon_seeds_);
   EXPECT_FALSE(data);
@@ -387,7 +387,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   SetTestTime(kDefaultCurrentTime + 4 * kNumMsInEidSeedPeriod);
 
   std::vector<BeaconSeed> empty;
-  std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp> data =
+  std::unique_ptr<DataWithTimestamp> data =
       eid_generator_->GenerateAdvertisement(kDefaultAdvertisingDevicePublicKey,
                                             empty);
   EXPECT_FALSE(data);
@@ -637,8 +637,8 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest, DataWithTimestamp_ContainsTime) {
-  ForegroundEidGenerator::DataWithTimestamp data_with_timestamp(
-      "data", /* start */ 1000L, /* end */ 2000L);
+  DataWithTimestamp data_with_timestamp("data", /* start */ 1000L,
+                                        /* end */ 2000L);
   EXPECT_FALSE(data_with_timestamp.ContainsTime(999L));
   EXPECT_TRUE(data_with_timestamp.ContainsTime(1000L));
   EXPECT_TRUE(data_with_timestamp.ContainsTime(1500L));

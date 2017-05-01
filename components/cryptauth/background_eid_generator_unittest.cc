@@ -48,9 +48,12 @@ BeaconSeed CreateBeaconSeed(const std::string& data,
   return seed;
 }
 
-std::string CreateEid(const std::string& eid_seed,
-                      int64_t start_of_period_timestamp_ms) {
-  return eid_seed + "|" + std::to_string(start_of_period_timestamp_ms);
+DataWithTimestamp CreateEid(const std::string& eid_seed,
+                            int64_t start_of_period_timestamp_ms) {
+  std::string data =
+      eid_seed + "|" + std::to_string(start_of_period_timestamp_ms);
+  return DataWithTimestamp(data, start_of_period_timestamp_ms,
+                           start_of_period_timestamp_ms + kEidPeriodMs);
 }
 
 class TestRawEidGenerator : public RawEidGenerator {
@@ -62,8 +65,8 @@ class TestRawEidGenerator : public RawEidGenerator {
   std::string GenerateEid(const std::string& eid_seed,
                           int64_t start_of_period_timestamp_ms,
                           std::string const* extra_entropy) override {
-    // ASSERT_FALSE(extra_entropy);
-    return CreateEid(eid_seed, start_of_period_timestamp_ms);
+    EXPECT_FALSE(extra_entropy);
+    return CreateEid(eid_seed, start_of_period_timestamp_ms).data;
   }
 
  private:
@@ -111,14 +114,14 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
 TEST_F(CryptAuthBackgroundEidGeneratorTest, BeaconSeedsExpired) {
   SetTestTime(beacon_seeds_[beacon_seeds_.size() - 1].end_time_millis() +
               kEidCount * kEidPeriodMs);
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
   EXPECT_EQ(0u, eids.size());
 }
 
 TEST_F(CryptAuthBackgroundEidGeneratorTest, BeaconSeedsValidInFuture) {
   SetTestTime(beacon_seeds_[0].start_time_millis() - kEidCount * kEidPeriodMs);
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
   EXPECT_EQ(0u, eids.size());
 }
@@ -128,7 +131,7 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsUseSameBeaconSeed) {
       beacon_seeds_[0].start_time_millis() + kEidCount * kEidPeriodMs;
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
 
   std::string seed = beacon_seeds_[0].data();
@@ -145,7 +148,7 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, EidsAcrossBeaconSeeds) {
   int64_t start_period_ms = beacon_seeds_[1].start_time_millis();
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
 
   std::string seed0 = beacon_seeds_[0].data();
@@ -162,7 +165,7 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtStartOfRange) {
   int64_t start_period_ms = beacon_seeds_[0].start_time_millis();
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
 
   std::string seed = beacon_seeds_[0].data();
@@ -176,7 +179,7 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest, CurrentTimeAtEndOfRange) {
   int64_t start_period_ms = beacon_seeds_[3].end_time_millis() - kEidPeriodMs;
   SetTestTime(start_period_ms + kEidPeriodMs / 2);
 
-  std::vector<std::string> eids =
+  std::vector<DataWithTimestamp> eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
 
   std::string seed = beacon_seeds_[3].data();

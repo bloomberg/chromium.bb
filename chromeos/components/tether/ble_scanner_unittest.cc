@@ -101,12 +101,11 @@ const int64_t fake_beacon_seed2_end_ms = adjacent_eid_end_ms;
 
 std::unique_ptr<cryptauth::ForegroundEidGenerator::EidData>
 CreateFakeBackgroundScanFilter() {
-  cryptauth::ForegroundEidGenerator::DataWithTimestamp current(
-      current_eid_data, current_eid_start_ms, current_eid_end_ms);
+  cryptauth::DataWithTimestamp current(current_eid_data, current_eid_start_ms,
+                                       current_eid_end_ms);
 
-  std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
-      adjacent = base::MakeUnique<
-          cryptauth::ForegroundEidGenerator::DataWithTimestamp>(
+  std::unique_ptr<cryptauth::DataWithTimestamp> adjacent =
+      base::MakeUnique<cryptauth::DataWithTimestamp>(
           adjacent_eid_data, adjacent_eid_start_ms, adjacent_eid_end_ms);
 
   return base::MakeUnique<cryptauth::ForegroundEidGenerator::EidData>(

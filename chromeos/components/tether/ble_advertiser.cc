@@ -32,8 +32,7 @@ void BleAdvertiser::BleAdvertisementUnregisterHandlerImpl::
 
 BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
     scoped_refptr<device::BluetoothAdapter> adapter,
-    std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
-        advertisement_data,
+    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
     std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler)
     : adapter_(adapter),
       is_initializing_advertising_(false),
@@ -211,9 +210,9 @@ bool BleAdvertiser::StartAdvertisingToDevice(
     return false;
   }
 
-  std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
-      advertisement = eid_generator_->GenerateAdvertisement(
-          local_device_public_key, remote_beacon_seeds);
+  std::unique_ptr<cryptauth::DataWithTimestamp> advertisement =
+      eid_generator_->GenerateAdvertisement(local_device_public_key,
+                                            remote_beacon_seeds);
   if (!advertisement) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "

@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/clock.h"
+#include "components/cryptauth/data_with_timestamp.h"
 
 namespace cryptauth {
 
@@ -40,22 +41,6 @@ struct RemoteDevice;
 // See go/proximity-auth-ble-advertising.
 class ForegroundEidGenerator {
  public:
-  // Stores EID-related data and timestamps at which time this data becomes
-  // active or inactive.
-  struct DataWithTimestamp {
-    DataWithTimestamp(const std::string& data,
-                      const int64_t start_timestamp_ms,
-                      const int64_t end_timestamp_ms);
-    DataWithTimestamp(const DataWithTimestamp& other);
-
-    bool ContainsTime(const int64_t timestamp_ms) const;
-    std::string DataInHex() const;
-
-    const std::string data;
-    const int64_t start_timestamp_ms;
-    const int64_t end_timestamp_ms;
-  };
-
   // Data for both a current and adjacent EID. The current EID *must* be
   // supplied, but adjacent data may be null. Each EID consists of a 2-byte EID
   // value paired with the timestamp at which time this value becomes active or

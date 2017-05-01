@@ -24,7 +24,7 @@ MockForegroundEidGenerator::GenerateBackgroundScanFilter(
     return nullptr;
   }
 
-  std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp> adjacent_data;
+  std::unique_ptr<DataWithTimestamp> adjacent_data;
   if (background_scan_filter_->adjacent_data) {
     adjacent_data = base::MakeUnique<DataWithTimestamp>(
         background_scan_filter_->adjacent_data->data,
@@ -36,7 +36,7 @@ MockForegroundEidGenerator::GenerateBackgroundScanFilter(
                                    std::move(adjacent_data));
 }
 
-std::unique_ptr<ForegroundEidGenerator::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 MockForegroundEidGenerator::GenerateAdvertisement(
     const std::string& advertising_device_public_key,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {

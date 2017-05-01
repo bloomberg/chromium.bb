@@ -15,9 +15,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
+#include "components/cryptauth/raw_eid_generator.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -167,11 +169,11 @@ bool BluetoothLowEnergyConnectionFinder::IsRightDevice(
     return false;
 
   std::string service_data_string(service_data->begin(), service_data->end());
-  std::vector<std::string> nearest_eids =
+  std::vector<cryptauth::DataWithTimestamp> nearest_eids =
       eid_generator_->GenerateNearestEids(beacon_seeds_);
-  for (const std::string& eid : nearest_eids) {
-    if (eid == service_data_string) {
-      PA_LOG(INFO) << "Found a matching EID: " << eid;
+  for (const cryptauth::DataWithTimestamp& eid : nearest_eids) {
+    if (eid.data == service_data_string) {
+      PA_LOG(INFO) << "Found a matching EID: " << eid.DataInHex();
       return true;
     }
   }

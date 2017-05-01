@@ -40,6 +40,8 @@ static_library("cryptauth") {
     "cryptauth_gcm_manager_impl.h",
     "cryptauth_service.cc",
     "cryptauth_service.h",
+    "data_with_timestamp.cc",
+    "data_with_timestamp.h",
     "device_to_device_authenticator.cc",
     "device_to_device_authenticator.h",
     "device_to_device_initiator_operations.cc",
