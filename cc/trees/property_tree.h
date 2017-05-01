@@ -507,9 +507,9 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   ScrollNode* FindNodeFromElementId(ElementId id);
 
  private:
-  using ScrollOffsetMap = std::unordered_map<int, gfx::ScrollOffset>;
+  using ScrollOffsetMap = base::flat_map<int, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
-      std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>;
+      base::flat_map<int, scoped_refptr<SyncedScrollOffset>>;
 
   int currently_scrolling_node_id_;
 
@@ -646,12 +646,9 @@ class CC_EXPORT PropertyTrees final {
   // from layer id to the respective property node. Completing that work is
   // pending the launch of Slimming Paint v2 and reworking UI compositor logic
   // to produce cc property trees and these maps.
-  std::unordered_map<ElementId, int, ElementIdHash>
-      element_id_to_effect_node_index;
-  std::unordered_map<ElementId, int, ElementIdHash>
-      element_id_to_scroll_node_index;
-  std::unordered_map<ElementId, int, ElementIdHash>
-      element_id_to_transform_node_index;
+  base::flat_map<ElementId, int> element_id_to_effect_node_index;
+  base::flat_map<ElementId, int> element_id_to_scroll_node_index;
+  base::flat_map<ElementId, int> element_id_to_transform_node_index;
 
   std::vector<int> always_use_active_tree_opacity_effect_ids;
   TransformTree transform_tree;
