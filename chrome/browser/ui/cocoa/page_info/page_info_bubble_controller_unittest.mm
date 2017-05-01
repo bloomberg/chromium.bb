@@ -9,9 +9,11 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest_mac.h"
@@ -87,13 +89,13 @@ const content_settings::SettingSource kTestSettingSources[] = {
     content_settings::SETTING_SOURCE_POLICY,
     content_settings::SETTING_SOURCE_EXTENSION};
 
-class PageInfoBubbleControllerTest : public CocoaTest {
+class PageInfoBubbleControllerTest : public CocoaProfileTest {
  public:
   PageInfoBubbleControllerTest() { controller_ = nil; }
 
   void TearDown() override {
     [controller_ close];
-    CocoaTest::TearDown();
+    CocoaProfileTest::TearDown();
   }
 
  protected:
@@ -109,11 +111,11 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     // The controller cleans up after itself when the window closes.
     controller_ = [PageInfoBubbleControllerForTesting alloc];
     [controller_ setDefaultWindowWidth:default_width];
-    [controller_
-        initWithParentWindow:test_window()
-            pageInfoUIBridge:bridge_
-                 webContents:web_contents_factory_.CreateWebContents(&profile_)
-                         url:GURL("https://www.google.com")];
+    [controller_ initWithParentWindow:browser()->window()->GetNativeWindow()
+                     pageInfoUIBridge:bridge_
+                          webContents:web_contents_factory_.CreateWebContents(
+                                          browser()->profile())
+                                  url:GURL("https://www.google.com")];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
@@ -191,8 +193,6 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     return num_non_user_settings;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
   content::TestWebContentsFactory web_contents_factory_;
 
   PageInfoBubbleControllerForTesting* controller_;  // Weak, owns self.
@@ -316,6 +316,22 @@ TEST_F(PageInfoBubbleControllerTest, WindowWidth) {
       }
     }
   }
+}
+
+// Tests the page icon decoration's active state.
+TEST_F(PageInfoBubbleControllerTest, PageIconDecorationActiveState) {
+  NSWindow* window = browser()->window()->GetNativeWindow();
+  BrowserWindowController* controller =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  LocationBarDecoration* decoration =
+      [controller locationBarBridge]->GetPageInfoDecoration();
+
+  CreateBubble();
+  EXPECT_TRUE([[controller_ window] isVisible]);
+  EXPECT_TRUE(decoration->active());
+
+  [controller_ close];
+  EXPECT_FALSE(decoration->active());
 }
 
 }  // namespace

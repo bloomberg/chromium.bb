@@ -11,10 +11,11 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class LocationBarDecoration;
 class PageInfoUIBridge;
 
 namespace content {
@@ -31,7 +32,7 @@ struct SecurityInfo;
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the favicon or security lock icon.
-@interface PageInfoBubbleController : OmniboxDecorationBubbleController {
+@interface PageInfoBubbleController : BaseBubbleController {
  @private
   content::WebContents* webContents_;
 
@@ -94,6 +95,13 @@ struct SecurityInfo;
   // Bridge which implements the PageInfoUI interface and forwards
   // methods on to this class.
   std::unique_ptr<PageInfoUIBridge> bridge_;
+
+  // The omnibox icon the bubble is anchored to. The icon is set as active
+  // when the bubble is opened, and inactive when the bubble is closed.
+  // Usually we would override OmniboxDecorationBubbleController but the page
+  // info icon has a race condition where it might switch between
+  // LocationIconDecoration and SecurityStateBubbleDecoration.
+  LocationBarDecoration* decoration_;  // Weak.
 }
 
 // Designated initializer. The controller will release itself when the bubble

@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
@@ -241,10 +242,24 @@ bool IsInternalURL(const GURL& url) {
   return self;
 }
 
-- (LocationBarDecoration*)decorationForBubble {
+- (void)showWindow:(id)sender {
   BrowserWindowController* controller = [[self parentWindow] windowController];
-  LocationBarViewMac* location_bar = [controller locationBarBridge];
-  return location_bar ? location_bar->GetPageInfoDecoration() : nullptr;
+  LocationBarViewMac* locationBar = [controller locationBarBridge];
+  if (locationBar) {
+    decoration_ = locationBar->GetPageInfoDecoration();
+    decoration_->SetActive(true);
+  }
+
+  [super showWindow:sender];
+}
+
+- (void)close {
+  if (decoration_) {
+    decoration_->SetActive(false);
+    decoration_ = nullptr;
+  }
+
+  [super close];
 }
 
 - (Profile*)profile {
