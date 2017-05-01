@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
@@ -13,9 +12,11 @@
 
 <dom-module id="settings-bluetooth-subpage">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared iron-flex">
       .container {
         @apply(--settings-list-frame-padding);
+        display: flex;
+        flex-direction: column;
         min-height: 10px;
         overflow-y: auto;
       }
@@ -57,7 +58,7 @@
         hidden="[[!showNoDevices_(bluetoothToggleState, pairedDeviceList_)]]">
       $i18n{bluetoothNoDevices}
     </div>
-    <div id="pairedContainer" class="container layout vertical"
+    <div id="pairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, pairedDeviceList_)]]">
       <iron-list id="pairedDevices" class="vertical-list"
@@ -82,7 +83,7 @@
         hidden="[[!showNoDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
       $i18n{bluetoothNoDevicesFound}
     </div>
-    <div id="unpairedContainer" class="container layout vertical"
+    <div id="unpairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
       <iron-list id="unpairedDevices" class="vertical-list"

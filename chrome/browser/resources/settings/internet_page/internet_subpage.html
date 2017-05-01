@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
@@ -9,7 +9,7 @@
 
 <dom-module id="settings-internet-subpage">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared iron-flex">
       #networkListDiv {
         /* cr-network-list is padded to the right to allow space for a ripple */
         -webkit-padding-end: calc(var(--settings-box-row-padding) -
@@ -40,6 +40,10 @@
 
       .no-networks {
         margin: 4px;
+      }
+
+      cr-network-list {
+        flex: 1;
       }
     </style>
 
@@ -86,7 +90,7 @@
         </div>
 
         <!-- List of networks or 'None'. -->
-        <cr-network-list id="networkList" class="flex" show-buttons
+        <cr-network-list id="networkList" show-buttons
             hidden$="[[!networkStateList_.length]]"
             networks="[[networkStateList_]]"
             on-selected="onNetworkSelected_">
@@ -106,7 +110,7 @@
                   on-tap="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
               </paper-icon-button>
             </div>
-            <cr-network-list class="flex" show-buttons
+            <cr-network-list show-buttons
                 hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
                 networks="[[getThirdPartyVpnNetworks_(thirdPartyVpns_, item)]]"
                 on-selected="onNetworkSelected_">

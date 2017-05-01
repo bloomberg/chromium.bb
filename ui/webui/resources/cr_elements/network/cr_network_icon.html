@@ -2,20 +2,16 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/network/network_icons.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 
 <dom-module id="cr-network-icon">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         display: inline-flex;
         overflow: hidden;
         padding: 2px;
         position: relative;
-      }
-
-      /* Included for options UI. TODO(stevenjb): Remove. */
-      [hidden] {
-        display: none !important;
       }
 
       #icon {

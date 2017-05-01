@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
@@ -53,7 +52,7 @@
       <template is="dom-if" route-path="/bluetoothDevices">
         <settings-subpage associated-control="[[$$('#bluetoothDevices')]]"
             page-title="$i18n{bluetoothPageTitle}">
-          <settings-bluetooth-subpage 
+          <settings-bluetooth-subpage
               adapter-state="[[adapterState_]]"
               bluetooth-toggle-state="{{bluetoothToggleState_}}"
               bluetooth-toggle-disabled="[[bluetoothToggleDisabled_]]"
