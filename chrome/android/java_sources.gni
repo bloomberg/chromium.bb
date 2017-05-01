@@ -1264,7 +1264,7 @@ chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApiImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrWindowAndroid.java",
-  "javatests/src/org/chromium/chrome/browser/vr_shell/OnDispatchTouchEventCallback.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/OnDispatchTouchEventCallback.java",
 ]
 
 chrome_test_java_sources = [
