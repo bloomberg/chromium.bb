@@ -10,6 +10,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
@@ -59,7 +60,7 @@ void ArcTracingBridge::OnCategoriesReady(
   // ignored when calling |StartTracing|.
   categories_.clear();
   for (const auto& category : categories) {
-    categories_.push_back({category, kCategoryPrefix + category});
+    categories_.emplace_back(Category{category, kCategoryPrefix + category});
     // Show the category name in the selection UI.
     base::trace_event::TraceLog::GetCategoryGroupEnabled(
         categories_.back().full_name.c_str());
@@ -68,6 +69,7 @@ void ArcTracingBridge::OnCategoriesReady(
 
 void ArcTracingBridge::StartTracing(
     const base::trace_event::TraceConfig& trace_config,
+    base::ScopedFD write_fd,
     const StartTracingCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -87,7 +89,9 @@ void ArcTracingBridge::StartTracing(
       selected_categories.push_back(category.name);
   }
 
-  tracing_instance->StartTracing(selected_categories, callback);
+  tracing_instance->StartTracing(selected_categories,
+                                 mojo::WrapPlatformFile(write_fd.release()),
+                                 callback);
 }
 
 void ArcTracingBridge::StopTracing(const StopTracingCallback& callback) {

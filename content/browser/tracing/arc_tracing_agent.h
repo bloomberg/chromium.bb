@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TRACING_ARC_TRACING_AGENT_H_
 
 #include "base/callback_forward.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/tracing_agent.h"
@@ -33,6 +34,7 @@ class CONTENT_EXPORT ArcTracingAgent : public base::trace_event::TracingAgent {
     // Starts tracing in ARC container.
     virtual void StartTracing(
         const base::trace_event::TraceConfig& trace_config,
+        base::ScopedFD write_fd,
         const StartTracingCallback& callback) = 0;
 
     // Stops tracing in ARC container.
