@@ -243,6 +243,15 @@ public class MinidumpUploadCallable implements Callable<Integer> {
             Log.e(TAG, "Ignoring invalidly bound crash dump: '" + mFileToUpload + "'");
             return null;
         }
+        // Note: The regex allows all alphanumeric characters, as well as dashes.
+        // This matches the code that generates minidumps boundaries:
+        // https://chromium.googlesource.com/crashpad/crashpad/+/0c322ecc3f711c34fbf85b2cbe69f38b8dbccf05/util/net/http_multipart_builder.cc#36
+        if (!boundary.matches("^[a-zA-Z0-9-]*$")) {
+            Log.e(TAG,
+                    "Ignoring invalidly bound crash dump '" + mFileToUpload
+                            + "' due to invalid boundary characters: '" + boundary + "'");
+            return null;
+        }
         boundary = boundary.substring(2);  // Remove the initial --
         return boundary;
     }

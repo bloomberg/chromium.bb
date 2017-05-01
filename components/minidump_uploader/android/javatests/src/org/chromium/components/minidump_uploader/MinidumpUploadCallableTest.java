@@ -38,8 +38,9 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
      * minidumps correctly.
      */
     public static class TestHttpURLConnection extends HttpURLConnection {
-        private static final String EXPECTED_CONTENT_TYPE_VALUE =
+        static final String DEFAULT_EXPECTED_CONTENT_TYPE =
                 String.format(MinidumpUploadCallable.CONTENT_TYPE_TMPL, BOUNDARY);
+        private final String mExpectedContentType;
 
         /**
          * The value of the "Content-Type" property if the property has been set.
@@ -47,14 +48,19 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         private String mContentTypePropertyValue = "";
 
         public TestHttpURLConnection(URL url) {
+            this(url, DEFAULT_EXPECTED_CONTENT_TYPE);
+        }
+
+        public TestHttpURLConnection(URL url, String contentType) {
             super(url);
+            mExpectedContentType = contentType;
             assertEquals(MinidumpUploadCallable.CRASH_URL_STRING, url.toString());
         }
 
         @Override
         public void disconnect() {
             // Check that the "Content-Type" property has been set and the property's value.
-            assertEquals(EXPECTED_CONTENT_TYPE_VALUE, mContentTypePropertyValue);
+            assertEquals(mExpectedContentType, mContentTypePropertyValue);
         }
 
         @Override
@@ -99,10 +105,16 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
      * minidumps correctly.
      */
     public static class TestHttpURLConnectionFactory implements HttpURLConnectionFactory {
+        String mContentType;
+
+        public TestHttpURLConnectionFactory() {
+            mContentType = TestHttpURLConnection.DEFAULT_EXPECTED_CONTENT_TYPE;
+        }
+
         @Override
         public HttpURLConnection createHttpURLConnection(String url) {
             try {
-                return new TestHttpURLConnection(new URL(url));
+                return new TestHttpURLConnection(new URL(url), mContentType);
             } catch (IOException e) {
                 return null;
             }
@@ -400,6 +412,54 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new File(mCrashDir, mTestUpload.getName().replace(".forced", ".skipped"));
         assertFalse(expectedSkippedFileAfterUpload.exists());
         assertTrue(mExpectedFileAfterUpload.exists());
+    }
+
+    // This is a regression test for http://crbug.com/712420
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCallWithInvalidMinidumpBoundary() throws Exception {
+        // Include an invalid character, '[', in the test string.
+        setUpMinidumpFile(mTestUpload, "--InvalidBoundaryWithSpecialCharacter--[");
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager() {
+                    { mIsEnabledForTests = true; }
+                };
+        HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory() {
+            { mContentType = ""; }
+        };
+
+        MinidumpUploadCallable minidumpUploadCallable =
+                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+
+        assertEquals(
+                MinidumpUploadCallable.UPLOAD_FAILURE, minidumpUploadCallable.call().intValue());
+        assertFalse(mExpectedFileAfterUpload.exists());
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCallWithValidMinidumpBoundary() throws Exception {
+        // Include all valid characters in the test string.
+        final String boundary = "--0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        final String expectedContentType =
+                String.format(MinidumpUploadCallable.CONTENT_TYPE_TMPL, boundary);
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager() {
+                    { mIsEnabledForTests = true; }
+                };
+        HttpURLConnectionFactory httpURLConnectionFactory = new TestHttpURLConnectionFactory() {
+            { mContentType = expectedContentType; }
+        };
+
+        setUpMinidumpFile(mTestUpload, boundary);
+
+        MinidumpUploadCallable minidumpUploadCallable =
+                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+
+        assertEquals(
+                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        assertTrue(mExpectedFileAfterUpload.exists());
+        assertValidUploadLogEntry();
     }
 
     @SmallTest
