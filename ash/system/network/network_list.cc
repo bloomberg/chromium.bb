@@ -630,7 +630,7 @@ HoverHighlightView* NetworkListView::CreateViewForNetwork(
   container->SetTooltipText(info.tooltip);
   views::View* controlled_icon = CreateControlledByExtensionView(info);
   if (controlled_icon)
-    container->AddChildView(controlled_icon);
+    container->AddRightView(controlled_icon);
   return container;
 }
 
@@ -661,17 +661,12 @@ views::View* NetworkListView::CreateControlledByExtensionView(
   if (!extension_info)
     return nullptr;
 
-  // Get the tooltip text.
-  base::string16 tooltip_text = l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16(extension_info->extension_name));
-
-  views::ImageView* controlled_icon =
-      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
-
+  views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
       gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
-  controlled_icon->SetTooltipText(tooltip_text);
+  controlled_icon->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
+      base::UTF8ToUTF16(extension_info->extension_name)));
   return controlled_icon;
 }
 
