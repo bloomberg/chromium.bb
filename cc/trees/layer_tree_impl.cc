@@ -1142,7 +1142,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
-      if (!layer->is_drawn_render_surface_layer_list_member())
+      if (!layer->contributes_to_drawn_render_surface())
         continue;
       ++layers_updated_count;
       tile_priorities_updated |= layer->UpdateTiles();
@@ -1457,7 +1457,7 @@ void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
   for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
     LayerImpl* layer_impl = *it;
-    if (!layer_impl->is_drawn_render_surface_layer_list_member())
+    if (!layer_impl->contributes_to_drawn_render_surface())
       continue;
     layer_impl->GetAllPrioritizedTilesForTracing(prioritized_tiles);
   }
@@ -1469,7 +1469,7 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->BeginArray("render_surface_layer_list");
   for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
-    if (!(*it)->is_drawn_render_surface_layer_list_member())
+    if (!(*it)->contributes_to_drawn_render_surface())
       continue;
     TracedValue::AppendIDRef(*it, state);
   }
@@ -1803,7 +1803,7 @@ static const gfx::Transform SurfaceScreenSpaceTransform(
       layer->layer_tree_impl()->property_trees();
   RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
   DCHECK(render_surface);
-  return layer->is_drawn_render_surface_layer_list_member()
+  return layer->contributes_to_drawn_render_surface()
              ? render_surface->screen_space_transform()
              : property_trees
                    ->ToScreenSpaceTransformWithoutSurfaceContentsScale(
@@ -1956,7 +1956,7 @@ LayerTreeImpl::FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
 struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const {
     return layer->scrollable() ||
-           layer->is_drawn_render_surface_layer_list_member() ||
+           layer->contributes_to_drawn_render_surface() ||
            !layer->touch_event_handler_region().IsEmpty();
   }
 };

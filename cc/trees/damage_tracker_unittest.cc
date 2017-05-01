@@ -180,8 +180,8 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
   LayerImpl* child = root->test_properties()->children[0];
 
   EXPECT_EQ(2, root->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child->contributes_to_drawn_render_surface());
 
   gfx::Rect root_damage_rect;
   EXPECT_TRUE(root->GetRenderSurface()->damage_tracker()->GetDamageRectIfValid(

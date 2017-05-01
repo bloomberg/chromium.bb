@@ -573,7 +573,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSimpleClippedLayer) {
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
   ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
-  EXPECT_TRUE(child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
   // Hit testing for a point outside the layer should return a null pointer.
   // Despite the child layer being very large, it should be clipped to the root
@@ -751,7 +751,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
   ASSERT_EQ(1, root_layer()->GetRenderSurface()->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
-  EXPECT_TRUE(child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
   // Hit testing for a point outside the layer should return a null pointer.
   gfx::PointF test_point(69.f, 69.f);
@@ -833,10 +833,10 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
 
   RenderSurfaceImpl* root_render_surface = root->GetRenderSurface();
   ASSERT_EQ(4, root_render_surface->num_contributors());
-  EXPECT_TRUE(root_layer()->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child1->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child2->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child1->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer()->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child1->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child2->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child1->contributes_to_drawn_render_surface());
 
   // Nothing overlaps the root at (1, 1), so hit testing there should find
   // the root layer.
@@ -1189,10 +1189,10 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   ASSERT_EQ(2, child1->GetRenderSurface()->num_contributors());
   ASSERT_EQ(1, child2->GetRenderSurface()->num_contributors());
   ASSERT_EQ(1, grand_child1->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root_layer()->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child1->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child1->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child2->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer()->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child1->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child1->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child2->contributes_to_drawn_render_surface());
 
   // Nothing overlaps the root at (1, 1), so hit testing there should find
   // the root layer.
@@ -1612,7 +1612,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
   ASSERT_EQ(1, root->GetRenderSurface()->num_contributors());
   LayerImpl* child_layer = host_impl().active_tree()->LayerById(456);
-  EXPECT_TRUE(child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
 
   // Hit checking for a point outside the layer should return a null pointer.
   // Despite the child layer being very large, it should be clipped to the root
@@ -1767,8 +1767,8 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   ASSERT_EQ(2, root->GetRenderSurface()->num_contributors());
   LayerImpl* touch_layer = host_impl().active_tree()->LayerById(123);
   LayerImpl* notouch_layer = host_impl().active_tree()->LayerById(1234);
-  EXPECT_TRUE(touch_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(notouch_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(touch_layer->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(notouch_layer->contributes_to_drawn_render_surface());
 
   gfx::PointF test_point(35.f, 35.f);
   LayerImpl* result_layer =
@@ -1824,7 +1824,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   // As test_layer doesn't draw content, it shouldn't contribute content to the
   // root surface.
   ASSERT_EQ(1u, GetRenderSurfaceList().size());
-  EXPECT_FALSE(test_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(test_layer->contributes_to_drawn_render_surface());
 
   // Hit testing for a point outside the test layer should return null pointer.
   // We also implicitly check that the updated screen space transform of a layer
@@ -1842,7 +1842,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
       host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
           test_point);
   EXPECT_FALSE(result_layer);
-  EXPECT_FALSE(test_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(test_layer->contributes_to_drawn_render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
       draw_property_utils::ScreenSpaceTransform(
@@ -1864,7 +1864,7 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
           test_point);
   ASSERT_TRUE(result_layer);
   ASSERT_EQ(test_layer, result_layer);
-  EXPECT_FALSE(result_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(result_layer->contributes_to_drawn_render_surface());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_screen_space_transform,
       draw_property_utils::ScreenSpaceTransform(

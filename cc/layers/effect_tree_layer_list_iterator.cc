@@ -17,9 +17,8 @@ EffectTreeLayerListIterator::EffectTreeLayerListIterator(
   layer_list_iterator_ = layer_tree_impl->rbegin();
 
   // Find the front-most drawn layer.
-  while (
-      layer_list_iterator_ != layer_tree_impl->rend() &&
-      !(*layer_list_iterator_)->is_drawn_render_surface_layer_list_member()) {
+  while (layer_list_iterator_ != layer_tree_impl->rend() &&
+         !(*layer_list_iterator_)->contributes_to_drawn_render_surface()) {
     layer_list_iterator_++;
   }
 
@@ -49,8 +48,7 @@ void EffectTreeLayerListIterator::operator++() {
       // Find the next drawn layer.
       layer_list_iterator_++;
       while (layer_list_iterator_ != layer_tree_impl_->rend() &&
-             !(*layer_list_iterator_)
-                  ->is_drawn_render_surface_layer_list_member()) {
+             !(*layer_list_iterator_)->contributes_to_drawn_render_surface()) {
         layer_list_iterator_++;
       }
       if (layer_list_iterator_ == layer_tree_impl_->rend()) {
