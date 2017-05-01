@@ -2490,7 +2490,7 @@ crbug.com/626703 external/wpt/XMLHttpRequest/send-authentication-existing-sessio
 crbug.com/626703 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/inside-worker/shared-script.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-shared-worker.html [ Timeout ]
-crbug.com/626703 external/wpt/fetch/api/basic/integrity-sharedworker.html [ Timeout ]
+crbug.com/626703 crbug.com/717157 external/wpt/fetch/api/basic/integrity-sharedworker.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/html/browsers/offline/no-appcache-in-shared-workers-historical.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/scripting/processing-model-2/unhandled-promise-rejections/promise-rejection-events.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/byte-length-queuing-strategy.sharedworker.html [ Timeout ]
