@@ -64,7 +64,6 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
     }
   }
 
-  VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
   CommitProcessor commit_processor(
       cycle->context()->model_type_registry()->commit_contributor_map());
   SyncerError commit_result = BuildAndPostCommits(request_types, nudge_tracker,
@@ -75,7 +74,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
 }
 
 bool Syncer::ConfigureSyncShare(
-    ModelTypeSet request_types,
+    const ModelTypeSet& request_types,
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
     SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
@@ -86,10 +85,11 @@ bool Syncer::ConfigureSyncShare(
   // need to be stopped or during shutdown when all datatypes are stopped. When
   // it happens we should adjust set of types to download to only include
   // registered types.
-  request_types.RetainAll(cycle->context()->GetEnabledTypes());
-  VLOG(1) << "Configuring types " << ModelTypeSetToString(request_types);
+  ModelTypeSet still_enabled_types =
+      Intersection(request_types, cycle->context()->GetEnabledTypes());
+  VLOG(1) << "Configuring types " << ModelTypeSetToString(still_enabled_types);
   HandleCycleBegin(cycle);
-  DownloadAndApplyUpdates(&request_types, cycle,
+  DownloadAndApplyUpdates(&still_enabled_types, cycle,
                           ConfigureGetUpdatesDelegate(source),
                           kCreateMobileBookmarksFolder);
   return HandleCycleEnd(cycle, source);
@@ -146,10 +146,12 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
   return !ExitRequested();
 }
 
-SyncerError Syncer::BuildAndPostCommits(ModelTypeSet request_types,
+SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
                                         NudgeTracker* nudge_tracker,
                                         SyncCycle* cycle,
                                         CommitProcessor* commit_processor) {
+  VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
+
   // The ExitRequested() check is unnecessary, since we should start getting
   // errors from the ServerConnectionManager if an exist has been requested.
   // However, it doesn't hurt to check it anyway.

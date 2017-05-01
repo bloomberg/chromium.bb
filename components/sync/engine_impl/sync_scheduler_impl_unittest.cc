@@ -51,7 +51,7 @@ class MockSyncer : public Syncer {
   MockSyncer();
   MOCK_METHOD3(NormalSyncShare, bool(ModelTypeSet, NudgeTracker*, SyncCycle*));
   MOCK_METHOD3(ConfigureSyncShare,
-               bool(ModelTypeSet,
+               bool(const ModelTypeSet&,
                     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
                     SyncCycle*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));

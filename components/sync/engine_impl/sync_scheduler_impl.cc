@@ -239,9 +239,8 @@ ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnblockedTypes() {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
-  std::unique_ptr<SyncCycle> dummy(SyncCycle::Build(cycle_context_, this));
   SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
-  event.snapshot = dummy->TakeSnapshot();
+  event.snapshot = SyncCycle(cycle_context_, this).TakeSnapshot();
   for (auto& observer : *cycle_context_->listeners())
     observer.OnSyncCycleEvent(event);
 }
@@ -429,9 +428,9 @@ void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
 
   DVLOG(2) << "Will run normal mode sync cycle with types "
            << ModelTypeSetToString(GetEnabledAndUnblockedTypes());
-  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
+  SyncCycle cycle(cycle_context_, this);
   bool success = syncer_->NormalSyncShare(GetEnabledAndUnblockedTypes(),
-                                          &nudge_tracker_, cycle.get());
+                                          &nudge_tracker_, &cycle);
 
   if (success) {
     // That cycle took care of any outstanding work we had.
@@ -447,7 +446,7 @@ void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
       AdjustPolling(UPDATE_INTERVAL);
     }
   } else {
-    HandleFailure(cycle->status_controller().model_neutral_state());
+    HandleFailure(cycle.status_controller().model_neutral_state());
   }
 }
 
@@ -465,10 +464,10 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   SDVLOG(2) << "Will run configure SyncShare with types "
             << ModelTypeSetToString(
                    pending_configure_params_->types_to_download);
-  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
-  bool success = syncer_->ConfigureSyncShare(
-      pending_configure_params_->types_to_download,
-      pending_configure_params_->source, cycle.get());
+  SyncCycle cycle(cycle_context_, this);
+  bool success =
+      syncer_->ConfigureSyncShare(pending_configure_params_->types_to_download,
+                                  pending_configure_params_->source, &cycle);
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";
@@ -476,7 +475,7 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
     pending_configure_params_.reset();
     HandleSuccess();
   } else {
-    HandleFailure(cycle->status_controller().model_neutral_state());
+    HandleFailure(cycle.status_controller().model_neutral_state());
     // Sync cycle might receive response from server that causes scheduler to
     // stop and draws pending_configure_params_ invalid.
     if (started_)
@@ -493,10 +492,10 @@ void SyncSchedulerImpl::DoClearServerDataSyncCycleJob(JobPriority priority) {
     return;
   }
 
-  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
-  const bool success = syncer_->PostClearServerData(cycle.get());
+  SyncCycle cycle(cycle_context_, this);
+  const bool success = syncer_->PostClearServerData(&cycle);
   if (!success) {
-    HandleFailure(cycle->status_controller().model_neutral_state());
+    HandleFailure(cycle.status_controller().model_neutral_state());
     return;
   }
 
@@ -538,9 +537,8 @@ void SyncSchedulerImpl::HandleFailure(
 void SyncSchedulerImpl::DoPollSyncCycleJob() {
   SDVLOG(2) << "Polling with types "
             << ModelTypeSetToString(GetEnabledAndUnblockedTypes());
-  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
-  bool success =
-      syncer_->PollSyncShare(GetEnabledAndUnblockedTypes(), cycle.get());
+  SyncCycle cycle(cycle_context_, this);
+  bool success = syncer_->PollSyncShare(GetEnabledAndUnblockedTypes(), &cycle);
 
   // Only restart the timer if the poll succeeded. Otherwise rely on normal
   // failure handling to retry with backoff.
@@ -548,7 +546,7 @@ void SyncSchedulerImpl::DoPollSyncCycleJob() {
     AdjustPolling(FORCE_RESET);
     HandleSuccess();
   } else {
-    HandleFailure(cycle->status_controller().model_neutral_state());
+    HandleFailure(cycle.status_controller().model_neutral_state());
   }
 }
 
