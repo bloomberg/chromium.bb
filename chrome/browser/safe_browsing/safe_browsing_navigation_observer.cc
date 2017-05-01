@@ -79,10 +79,9 @@ void SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
     web_contents->SetUserData(
         kWebContentsUserDataKey,
-        new SafeBrowsingNavigationObserver(
-            web_contents,
-            g_browser_process->safe_browsing_service()
-                ->navigation_observer_manager()));
+        base::MakeUnique<SafeBrowsingNavigationObserver>(
+            web_contents, g_browser_process->safe_browsing_service()
+                              ->navigation_observer_manager()));
   }
 }
 
