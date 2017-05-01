@@ -49,6 +49,7 @@
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/LineWidth.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/BlockFlowPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
@@ -256,7 +257,9 @@ LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node) : LayoutBlock(node) {
 LayoutBlockFlow::~LayoutBlockFlow() {}
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(Document* document) {
-  LayoutBlockFlow* layout_block_flow = new LayoutBlockFlow(nullptr);
+  LayoutBlockFlow* layout_block_flow = RuntimeEnabledFeatures::layoutNGEnabled()
+                                           ? new LayoutNGBlockFlow(nullptr)
+                                           : new LayoutBlockFlow(nullptr);
   layout_block_flow->SetDocumentForAnonymous(document);
   return layout_block_flow;
 }

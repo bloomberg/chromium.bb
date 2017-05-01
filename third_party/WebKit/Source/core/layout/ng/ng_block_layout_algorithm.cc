@@ -347,8 +347,11 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PrepareChildLayout(
   bool is_legacy_block =
       child->IsBlock() && !ToNGBlockNode(child)->CanUseNewLayout();
 
-  // Should collapse margins if inline or legacy block
-  if (child->IsInline() || is_legacy_block) {
+  // TODO(crbug.com/716930): We should also collapse margins below once we
+  // remove LayoutInline splitting.
+
+  // Should collapse margins if our child is a legacy block.
+  if (is_legacy_block) {
     curr_bfc_offset_.block_offset += curr_margin_strut_.Sum();
     MaybeUpdateFragmentBfcOffset(ConstraintSpace(), curr_bfc_offset_,
                                  &container_builder_);
@@ -563,6 +566,12 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder_.SetIsNewFormattingContext(is_new_bfc)
       .SetBfcOffset(child_bfc_offset);
 
+  // Float's margins are not included in child's space because:
+  // 1) Floats do not participate in margins collapsing.
+  // 2) Floats margins are used separately to calculate floating exclusions.
+  space_builder_.SetMarginStrut(child->IsFloating() ? NGMarginStrut()
+                                                    : curr_margin_strut_);
+
   if (child->IsInline()) {
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
     space_builder_.SetClearanceOffset(ConstraintSpace().ClearanceOffset());
@@ -575,12 +584,6 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
           GetClearanceOffset(constraint_space_->Exclusions(), child_style))
       .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
       .SetTextDirection(child_style.Direction());
-
-  // Float's margins are not included in child's space because:
-  // 1) Floats do not participate in margins collapsing.
-  // 2) Floats margins are used separately to calculate floating exclusions.
-  space_builder_.SetMarginStrut(child->IsFloating() ? NGMarginStrut()
-                                                    : curr_margin_strut_);
 
   LayoutUnit space_available;
   if (constraint_space_->HasBlockFragmentation()) {
