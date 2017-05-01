@@ -131,8 +131,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       launcher_page_event_dispatcher_;
 
   base::TimeDelta auto_launch_timeout_;
-  // Determines whether the current search was initiated by speech.
-  bool is_voice_query_;
 
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 

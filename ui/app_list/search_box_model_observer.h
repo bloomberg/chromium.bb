@@ -21,8 +21,8 @@ class APP_LIST_EXPORT SearchBoxModelObserver {
   // Invoked when selection model is changed.
   virtual void SelectionModelChanged() = 0;
 
-  // Invoked when text is changed.
-  virtual void TextChanged() = 0;
+  // Invoked when text or voice search flag is changed.
+  virtual void Update() = 0;
 
  protected:
   virtual ~SearchBoxModelObserver() {}

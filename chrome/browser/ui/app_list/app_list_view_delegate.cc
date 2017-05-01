@@ -108,7 +108,6 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
       profile_(NULL),
       model_(NULL),
-      is_voice_query_(false),
       template_url_service_observer_(this) {
   CHECK(controller_);
   speech_ui_.reset(new app_list::SpeechUIModel);
@@ -199,7 +198,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   }
 
   // Clear search query.
-  model_->search_box()->SetText(base::string16());
+  model_->search_box()->Update(base::string16(), false);
 }
 
 void AppListViewDelegate::SetUpSearchUI() {
@@ -277,7 +276,7 @@ app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
 
 void AppListViewDelegate::StartSearch() {
   if (search_controller_) {
-    search_controller_->Start(is_voice_query_);
+    search_controller_->Start();
     controller_->OnSearchStarted();
   }
   if (search_answer_delegate_)
@@ -296,7 +295,6 @@ void AppListViewDelegate::OpenSearchResult(
   if (auto_launch)
     base::RecordAction(base::UserMetricsAction("AppList_AutoLaunched"));
   search_controller_->OpenResult(result, event_flags);
-  is_voice_query_ = false;
 }
 
 void AppListViewDelegate::InvokeSearchResultAction(
@@ -311,10 +309,8 @@ base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
 }
 
 void AppListViewDelegate::AutoLaunchCanceled() {
-  if (is_voice_query_) {
+  if (model_ && model_->search_box()->is_voice_query()) {
     base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
-    // Cancelling the auto launch means we are no longer in a voice query.
-    is_voice_query_ = false;
   }
   auto_launch_timeout_ = base::TimeDelta();
 }
@@ -421,8 +417,7 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
   if (is_final) {
     auto_launch_timeout_ = base::TimeDelta::FromMilliseconds(
         kAutoLaunchDefaultTimeoutMilliSec);
-    is_voice_query_ = true;
-    model_->search_box()->SetText(result);
+    model_->search_box()->Update(result, true);
   }
 }
 
@@ -525,13 +520,11 @@ void AppListViewDelegate::OnTemplateURLServiceChanged() {
       TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
-  bool is_google =
+  const bool is_google =
       default_provider->GetEngineType(
-          template_url_service->search_terms_data()) ==
-      SEARCH_ENGINE_GOOGLE;
+          template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
   model_->SetSearchEngineIsGoogle(is_google);
-  search_answer_delegate_->Update();
 
   app_list::StartPageService* start_page_service =
       app_list::StartPageService::Get(profile_);

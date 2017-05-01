@@ -68,9 +68,11 @@ class APP_LIST_EXPORT SearchBoxModel {
     return selection_model_;
   }
 
-  // Sets/gets the text for the search box's Textfield.
-  void SetText(const base::string16& text);
+  // Sets/gets the text for the search box's Textfield and the voice search
+  // flag.
+  void Update(const base::string16& text, bool is_voice_query);
   const base::string16& text() const { return text_; }
+  bool is_voice_query() const { return is_voice_query_; }
 
   void AddObserver(SearchBoxModelObserver* observer);
   void RemoveObserver(SearchBoxModelObserver* observer);
@@ -81,6 +83,7 @@ class APP_LIST_EXPORT SearchBoxModel {
   base::string16 accessible_name_;
   gfx::SelectionModel selection_model_;
   base::string16 text_;
+  bool is_voice_query_ = false;
 
   base::ObserverList<SearchBoxModelObserver> observers_;
 

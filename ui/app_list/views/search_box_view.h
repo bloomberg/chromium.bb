@@ -103,7 +103,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void SpeechRecognitionButtonPropChanged() override;
   void HintTextChanged() override;
   void SelectionModelChanged() override;
-  void TextChanged() override;
+  void Update() override;
 
   // Overridden from SpeechUIModelObserver:
   void OnSpeechRecognitionStateChanged(

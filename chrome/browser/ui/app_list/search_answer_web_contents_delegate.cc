@@ -45,9 +45,13 @@ SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
   web_contents_->SetDelegate(this);
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
+
+  model->AddObserver(this);
 }
 
-SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {}
+SearchAnswerWebContentsDelegate::~SearchAnswerWebContentsDelegate() {
+  model_->RemoveObserver(this);
+}
 
 views::View* SearchAnswerWebContentsDelegate::web_view() {
   return web_view_.get();
@@ -61,6 +65,12 @@ void SearchAnswerWebContentsDelegate::Update() {
   received_answer_ = false;
   model_->SetSearchAnswerAvailable(false);
   current_request_url_ = GURL();
+
+  if (model_->search_box()->is_voice_query()) {
+    // No need to send a server request and show a card because launcher
+    // automatically closes upon voice queries.
+    return;
+  }
 
   if (!model_->search_engine_is_google())
     return;
@@ -151,6 +161,11 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
     return;
 
   model_->SetSearchAnswerAvailable(true);
+}
+
+void SearchAnswerWebContentsDelegate::OnSearchEngineIsGoogleChanged(
+    bool is_google) {
+  Update();
 }
 
 }  // namespace app_list

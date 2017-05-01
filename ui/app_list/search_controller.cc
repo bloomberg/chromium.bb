@@ -36,20 +36,20 @@ SearchController::SearchController(SearchBoxModel* search_box,
 SearchController::~SearchController() {
 }
 
-void SearchController::Start(bool is_voice_query) {
+void SearchController::Start() {
   Stop();
 
   base::string16 query;
   base::TrimWhitespace(search_box_->text(), base::TRIM_ALL, &query);
 
+  is_voice_query_ = search_box_->is_voice_query();
+
   dispatching_query_ = true;
   for (const auto& provider : providers_)
-    provider->Start(is_voice_query, query);
+    provider->Start(is_voice_query_, query);
 
   dispatching_query_ = false;
   query_for_recommendation_ = query.empty() ? true : false;
-
-  is_voice_query_ = is_voice_query;
 
   OnResultsChanged();
 
