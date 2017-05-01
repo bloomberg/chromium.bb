@@ -1551,12 +1551,18 @@ bool SourceBufferStream::IsEndOfStreamReached() const {
 const AudioDecoderConfig& SourceBufferStream::GetCurrentAudioDecoderConfig() {
   if (config_change_pending_)
     CompleteConfigChange();
+  // Trying to track down crash. http://crbug.com/715761
+  CHECK(current_config_index_ >= 0 &&
+        static_cast<size_t>(current_config_index_) < audio_configs_.size());
   return audio_configs_[current_config_index_];
 }
 
 const VideoDecoderConfig& SourceBufferStream::GetCurrentVideoDecoderConfig() {
   if (config_change_pending_)
     CompleteConfigChange();
+  // Trying to track down crash. http://crbug.com/715761
+  CHECK(current_config_index_ >= 0 &&
+        static_cast<size_t>(current_config_index_) < video_configs_.size());
   return video_configs_[current_config_index_];
 }
 

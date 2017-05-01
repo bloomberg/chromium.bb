@@ -284,12 +284,16 @@ DemuxerStream::Liveness ChunkDemuxerStream::liveness() const {
 AudioDecoderConfig ChunkDemuxerStream::audio_decoder_config() {
   CHECK_EQ(type_, AUDIO);
   base::AutoLock auto_lock(lock_);
+  // Trying to track down crash. http://crbug.com/715761
+  CHECK(stream_);
   return stream_->GetCurrentAudioDecoderConfig();
 }
 
 VideoDecoderConfig ChunkDemuxerStream::video_decoder_config() {
   CHECK_EQ(type_, VIDEO);
   base::AutoLock auto_lock(lock_);
+  // Trying to track down crash. http://crbug.com/715761
+  CHECK(stream_);
   return stream_->GetCurrentVideoDecoderConfig();
 }
 
