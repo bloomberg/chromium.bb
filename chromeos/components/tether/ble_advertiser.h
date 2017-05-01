@@ -70,8 +70,7 @@ class BleAdvertiser {
    public:
     IndividualAdvertisement(
         scoped_refptr<device::BluetoothAdapter> adapter,
-        std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
-            advertisement_data,
+        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
         std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler);
 
     // device::BluetoothAdapter::Observer
@@ -104,8 +103,7 @@ class BleAdvertiser {
 
     scoped_refptr<device::BluetoothAdapter> adapter_;
     bool is_initializing_advertising_;
-    std::unique_ptr<cryptauth::ForegroundEidGenerator::DataWithTimestamp>
-        advertisement_data_;
+    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
     std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler_;
     scoped_refptr<device::BluetoothAdvertisement> advertisement_;
 

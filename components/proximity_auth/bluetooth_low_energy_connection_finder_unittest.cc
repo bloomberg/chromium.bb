@@ -51,6 +51,7 @@ const char kEidForPreviousTimeQuantum[] = "\x12\x34";
 const char kEidForCurrentTimeQuantum[] = "\xab\xcd";
 const char kEidForNextTimeQuantum[] = "\x56\x78";
 const char kWrongEid[] = "\xff\xff";
+const int64_t kEidPeriodMs = 60 * 1000 * 15;  // 15 minutes.
 
 std::vector<cryptauth::BeaconSeed> CreateBeaconSeeds() {
   std::vector<cryptauth::BeaconSeed> beacon_seeds;
@@ -69,7 +70,7 @@ class FakeEidGenerator : public cryptauth::BackgroundEidGenerator {
       : connection_finder_(connection_finder) {}
   ~FakeEidGenerator() override {}
 
-  std::vector<std::string> GenerateNearestEids(
+  std::vector<cryptauth::DataWithTimestamp> GenerateNearestEids(
       const std::vector<cryptauth::BeaconSeed>& beacon_seed) const override;
 
  private:
@@ -131,9 +132,19 @@ class MockBluetoothLowEnergyConnectionFinder
 
 // Not declared in-line due to dependency on
 // MockBluetoothLowEnergyConnectionFinder.
-std::vector<std::string> FakeEidGenerator::GenerateNearestEids(
+std::vector<cryptauth::DataWithTimestamp> FakeEidGenerator::GenerateNearestEids(
     const std::vector<cryptauth::BeaconSeed>& beacon_seed) const {
-  return connection_finder_->nearest_eids();
+  std::vector<std::string> nearest_eids = connection_finder_->nearest_eids();
+
+  std::vector<cryptauth::DataWithTimestamp> eid_data_with_timestamps;
+  int64_t start_of_period_ms = 0;
+  for (const std::string& eid : nearest_eids) {
+    eid_data_with_timestamps.push_back(cryptauth::DataWithTimestamp(
+        eid, start_of_period_ms, start_of_period_ms + kEidPeriodMs));
+    start_of_period_ms += kEidPeriodMs;
+  }
+
+  return eid_data_with_timestamps;
 }
 
 }  // namespace
