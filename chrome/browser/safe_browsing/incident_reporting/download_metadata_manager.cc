@@ -61,6 +61,8 @@ const base::FilePath::CharType kDownloadMetadataBasename[] =
 // it is in progress.
 class DownloadItemData : public base::SupportsUserData::Data {
  public:
+  ~DownloadItemData() override {}
+
   // Sets the ClientDownloadRequest for a given DownloadItem.
   static void SetRequestForDownload(
       content::DownloadItem* item,
@@ -76,7 +78,6 @@ class DownloadItemData : public base::SupportsUserData::Data {
 
   explicit DownloadItemData(std::unique_ptr<ClientDownloadRequest> request)
       : request_(std::move(request)) {}
-  ~DownloadItemData() override {}
 
   std::unique_ptr<ClientDownloadRequest> request_;
 
@@ -91,7 +92,8 @@ const void* const DownloadItemData::kKey_ = &DownloadItemData::kKey_;
 void DownloadItemData::SetRequestForDownload(
     content::DownloadItem* item,
     std::unique_ptr<ClientDownloadRequest> request) {
-  item->SetUserData(&kKey_, new DownloadItemData(std::move(request)));
+  item->SetUserData(&kKey_,
+                    base::WrapUnique(new DownloadItemData(std::move(request))));
 }
 
 // static

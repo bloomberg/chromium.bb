@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -300,10 +301,10 @@ class DownloadUrlSBClient
     if (!item_)
       return;
 
-    item_->SetUserData(kDownloadReferrerChainDataKey,
-                       new ReferrerChainData(
-                           service_->IdentifyReferrerChain(
-                               item_->GetURL(), item_->GetWebContents())));
+    item_->SetUserData(
+        kDownloadReferrerChainDataKey,
+        base::MakeUnique<ReferrerChainData>(service_->IdentifyReferrerChain(
+            item_->GetURL(), item_->GetWebContents())));
   }
 
   void UpdateDownloadCheckStats(SBStatsType stat_type) {
@@ -1842,8 +1843,10 @@ void DownloadProtectionService::ShowDetailsForDownload(
 
 void DownloadProtectionService::SetDownloadPingToken(
     content::DownloadItem* item, const std::string& token) {
-  if (item)
-    item->SetUserData(kDownloadPingTokenKey, new DownloadPingToken(token));
+  if (item) {
+    item->SetUserData(kDownloadPingTokenKey,
+                      base::MakeUnique<DownloadPingToken>(token));
+  }
 }
 
 std::string DownloadProtectionService::GetDownloadPingToken(
