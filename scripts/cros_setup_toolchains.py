@@ -1225,13 +1225,6 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
-  # pylint: disable=global-statement
-  # Disable installing llvm pkgs till binary package is available
-  global LLVM_PKGS_TABLE
-  if options.usepkg:
-    LLVM_PKGS_TABLE = {
-        'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
-    }
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
