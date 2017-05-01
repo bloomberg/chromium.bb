@@ -947,12 +947,12 @@ class EBuild(object):
       return True
 
     if output:
-      logging.info('Determined that one of the rev_subdirs %s of ebuild %s was '
-                   'touched.', list(subdirs_to_rev), self.pkgname)
+      logging.info(' Rev: Determined that one+ of the ebuild %s rev_subdirs '
+                   'was touched %s', self.pkgname, list(subdirs_to_rev))
       return True
     else:
-      logging.info('Determined that none of the rev_subdirs %s of ebuild %s '
-                   'was touched.', list(subdirs_to_rev), self.pkgname)
+      logging.info('Skip: Determined that none of the ebuild %s rev_subdirs '
+                   'was touched %s', self.pkgname, list(subdirs_to_rev))
       return False
 
   @classmethod
