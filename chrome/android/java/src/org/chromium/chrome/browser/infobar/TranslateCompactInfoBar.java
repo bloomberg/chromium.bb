@@ -22,9 +22,12 @@ import org.chromium.ui.widget.Toast;
  */
 class TranslateCompactInfoBar extends InfoBar
         implements TabLayout.OnTabSelectedListener, TranslateMenuHelper.TranslateMenuListener {
+    public static final int TRANSLATING_INFOBAR = 1;
+
     private static final int SOURCE_TAB_INDEX = 0;
     private static final int TARGET_TAB_INDEX = 1;
 
+    private final int mInitialStep;
     private final TranslateOptions mOptions;
 
     private long mNativeTranslateInfoBarPtr;
@@ -33,18 +36,20 @@ class TranslateCompactInfoBar extends InfoBar
     private TranslateMenuHelper mMenuHelper;
 
     @CalledByNative
-    private static InfoBar create(String sourceLanguageCode, String targetLanguageCode,
+    private static InfoBar create(int initialStep, String sourceLanguageCode,
+            String targetLanguageCode, boolean alwaysTranslate, boolean triggeredFromMenu,
             String[] languages, String[] codes) {
-        return new TranslateCompactInfoBar(
-                sourceLanguageCode, targetLanguageCode, languages, codes);
+        return new TranslateCompactInfoBar(initialStep, sourceLanguageCode, targetLanguageCode,
+                alwaysTranslate, triggeredFromMenu, languages, codes);
     }
 
-    TranslateCompactInfoBar(String sourceLanguageCode, String targetLanguageCode,
-            String[] languages, String[] codes) {
+    TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
+            boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
+            String[] codes) {
         super(R.drawable.infobar_translate, null, null);
-        // TODO(googleo): Set correct values for the last 2.
-        mOptions = TranslateOptions.create(
-                sourceLanguageCode, targetLanguageCode, languages, codes, false, false);
+        mInitialStep = initialStep;
+        mOptions = TranslateOptions.create(sourceLanguageCode, targetLanguageCode, languages, codes,
+                alwaysTranslate, triggeredFromMenu);
     }
 
     @Override
@@ -60,6 +65,13 @@ class TranslateCompactInfoBar extends InfoBar
 
         mTabLayout = (TranslateTabLayout) content.findViewById(R.id.translate_infobar_tabs);
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
+
+        // Set translating status in the beginning for pages translated automatically.
+        if (mInitialStep == TRANSLATING_INFOBAR) {
+            mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
+            mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
+        }
+
         mTabLayout.addOnTabSelectedListener(this);
 
         content.findViewById(R.id.translate_infobar_menu_button)
