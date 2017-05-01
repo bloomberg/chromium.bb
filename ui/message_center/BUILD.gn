@@ -150,6 +150,8 @@ component("message_center") {
         "views/popup_alignment_delegate.h",
         "views/proportional_image_view.cc",
         "views/proportional_image_view.h",
+        "views/slide_out_controller.cc",
+        "views/slide_out_controller.h",
         "views/toast_contents_view.cc",
         "views/toast_contents_view.h",
       ]
@@ -221,6 +223,7 @@ test("message_center_unittests") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/events",
+    "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
