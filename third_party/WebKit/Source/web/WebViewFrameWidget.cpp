@@ -4,14 +4,15 @@
 
 #include "web/WebViewFrameWidget.h"
 
+#include "core/exported/WebViewBase.h"
+#include "core/layout/HitTestResult.h"
 #include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
-                                       WebViewImpl& web_view,
+                                       WebViewBase& web_view,
                                        WebLocalFrameImpl& main_frame)
     : client_(&client), web_view_(&web_view), main_frame_(&main_frame) {
   main_frame_->SetFrameWidget(this);
