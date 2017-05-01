@@ -52,23 +52,13 @@ Headers* Headers::Create(ExceptionState&) {
   return new Headers;
 }
 
-Headers* Headers::Create(
-    const ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders& init,
-    ExceptionState& exception_state) {
+Headers* Headers::Create(const HeadersInit& init,
+                         ExceptionState& exception_state) {
   // "The Headers(|init|) constructor, when invoked, must run these steps:"
   // "1. Let |headers| be a new Headers object whose guard is "none".
   Headers* headers = Create(exception_state);
   // "2. If |init| is given, fill headers with |init|. Rethrow any exception."
-  if (init.isByteStringSequenceSequence()) {
-    headers->FillWith(init.getAsByteStringSequenceSequence(), exception_state);
-  } else if (init.isByteStringByteStringRecord()) {
-    headers->FillWith(init.getAsByteStringByteStringRecord(), exception_state);
-  } else if (init.isHeaders()) {
-    // This branch will not be necessary once http://crbug.com/690428 is fixed.
-    headers->FillWith(init.getAsHeaders(), exception_state);
-  } else {
-    NOTREACHED();
-  }
+  headers->FillWith(init, exception_state);
   // "3. Return |headers|."
   return headers;
 }
@@ -225,6 +215,21 @@ void Headers::FillWith(const Headers* object, ExceptionState& exception_state) {
     append(header.first, header.second, exception_state);
     if (exception_state.HadException())
       return;
+  }
+}
+
+void Headers::FillWith(const HeadersInit& init,
+                       ExceptionState& exception_state) {
+  DCHECK_EQ(header_list_->size(), 0U);
+  if (init.isByteStringSequenceSequence()) {
+    FillWith(init.getAsByteStringSequenceSequence(), exception_state);
+  } else if (init.isByteStringByteStringRecord()) {
+    FillWith(init.getAsByteStringByteStringRecord(), exception_state);
+  } else if (init.isHeaders()) {
+    // This branch will not be necessary once http://crbug.com/690428 is fixed.
+    FillWith(init.getAsHeaders(), exception_state);
+  } else {
+    NOTREACHED();
   }
 }
 

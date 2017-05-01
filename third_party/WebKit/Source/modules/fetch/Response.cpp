@@ -15,7 +15,6 @@
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
-#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExecutionContext.h"
@@ -229,15 +228,7 @@ Response* Response::Create(ScriptState* script_state,
     r->response_->HeaderList()->ClearList();
     // "2. Fill |r|'s Headers object with |init|'s headers member. Rethrow
     // any exceptions."
-    if (init.headers().isByteStringSequenceSequence()) {
-      r->headers_->FillWith(init.headers().getAsByteStringSequenceSequence(),
-                            exception_state);
-    } else if (init.headers().isByteStringByteStringRecord()) {
-      r->headers_->FillWith(init.headers().getAsByteStringByteStringRecord(),
-                            exception_state);
-    } else if (init.headers().isHeaders()) {
-      r->headers_->FillWith(init.headers().getAsHeaders(), exception_state);
-    }
+    r->headers_->FillWith(init.headers(), exception_state);
     if (exception_state.HadException())
       return nullptr;
   }

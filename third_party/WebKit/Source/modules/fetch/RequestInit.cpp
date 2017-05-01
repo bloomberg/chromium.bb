@@ -11,7 +11,6 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
-#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "bindings/modules/v8/V8PasswordCredential.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
@@ -107,14 +106,9 @@ RequestInit::RequestInit(ExecutionContext* context,
   v8::Isolate* isolate = ToIsolate(context);
 
   if (is_header_set) {
-    ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders
-        headers_init;
     V8ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders::toImpl(
-        isolate, v8_headers, headers_init,
-        UnionTypeConversionMode::kNotNullable, exception_state);
-    if (exception_state.HadException())
-      return;
-    headers = Headers::Create(headers_init, exception_state);
+        isolate, v8_headers, headers, UnionTypeConversionMode::kNotNullable,
+        exception_state);
     if (exception_state.HadException())
       return;
   }
