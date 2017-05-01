@@ -17,6 +17,22 @@ from name_utilities import (
 from collections import defaultdict, OrderedDict
 from itertools import chain
 
+# Heuristic ordering of types from largest to smallest, used to sort fields by their alignment sizes.
+# Specifying the exact alignment sizes for each type is impossible because it's platform specific,
+# so we define an ordering instead.
+# The ordering comes from the data obtained in:
+# https://codereview.chromium.org/2841413002
+# TODO(shend): Put alignment sizes into code form, rather than linking to a CL which may disappear.
+ALIGNMENT_ORDER = [
+    'double',
+    'FillLayer', 'BorderData',  # Aligns like a void * (can be 32 or 64 bits)
+    'LengthBox', 'Length', 'float',
+    'StyleColor', 'Color', 'unsigned', 'int',
+    'short',
+    'char',
+    'bool'
+]
+
 # TODO(shend): Improve documentation and add docstrings.
 
 
@@ -267,14 +283,7 @@ def _create_fields(properties):
     return fields
 
 
-def _reorder_fields(fields):
-    """
-    Returns a list of fields ordered to minimise padding.
-    """
-    # Separate out bit fields from non bit fields
-    bit_fields = [field for field in fields if field.is_bit_field]
-    non_bit_fields = [field for field in fields if not field.is_bit_field]
-
+def _reorder_bit_fields(bit_fields):
     # Since fields cannot cross word boundaries, in order to minimize
     # padding, group fields into buckets so that as many buckets as possible
     # are exactly 32 bits. Although this greedy approach may not always
@@ -300,8 +309,28 @@ def _reorder_fields(fields):
         if not added_to_bucket:
             field_buckets.append([field])
 
+    return _flatten_list(field_buckets)
+
+
+def _reorder_non_bit_fields(non_bit_fields):
+    # A general rule of thumb is to sort members by their alignment requirement
+    # (from biggest aligned to smallest).
+    for field in non_bit_fields:
+        assert field.type_name in ALIGNMENT_ORDER, \
+            "Type {} has unknown alignment. Please update ALIGNMENT_ORDER to include it.".format(field.type_name)
+    return list(sorted(non_bit_fields, key=lambda f: ALIGNMENT_ORDER.index(f.type_name)))
+
+
+def _reorder_fields(fields):
+    """
+    Returns a list of fields ordered to minimise padding.
+    """
+    # Separate out bit fields from non bit fields
+    bit_fields = [field for field in fields if field.is_bit_field]
+    non_bit_fields = [field for field in fields if not field.is_bit_field]
+
     # Non bit fields go first, then the bit fields.
-    return list(non_bit_fields) + _flatten_list(field_buckets)
+    return _reorder_non_bit_fields(non_bit_fields) + _reorder_bit_fields(bit_fields)
 
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
