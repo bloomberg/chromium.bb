@@ -630,7 +630,7 @@
     },
     {
       name: "ModuleScripts",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "MojoJS",
