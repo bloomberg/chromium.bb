@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/api_type_reference_map.h"
 #include "extensions/renderer/argument_spec.h"
 #include "extensions/renderer/argument_spec_builder.h"
@@ -143,12 +144,15 @@ class APISignatureTest : public APIBindingTest {
                   base::StringPiece arg_values,
                   base::StringPiece expected_parsed_args,
                   bool expect_callback) {
-    RunTest(signature, arg_values, expected_parsed_args, expect_callback, true);
+    RunTest(signature, arg_values, expected_parsed_args, expect_callback, true,
+            std::string());
   }
 
   void ExpectFailure(const APISignature& signature,
-                     base::StringPiece arg_values) {
-    RunTest(signature, arg_values, base::StringPiece(), false, false);
+                     base::StringPiece arg_values,
+                     const std::string& expected_error) {
+    RunTest(signature, arg_values, base::StringPiece(), false, false,
+            expected_error);
   }
 
  private:
@@ -156,7 +160,8 @@ class APISignatureTest : public APIBindingTest {
                base::StringPiece arg_values,
                base::StringPiece expected_parsed_args,
                bool expect_callback,
-               bool should_succeed) {
+               bool should_succeed,
+               const std::string& expected_error) {
     SCOPED_TRACE(arg_values);
     v8::Local<v8::Context> context = MainContext();
     v8::Local<v8::Value> v8_args = V8ValueFromScriptSource(context, arg_values);
@@ -176,6 +181,8 @@ class APISignatureTest : public APIBindingTest {
     if (should_succeed) {
       EXPECT_EQ(ReplaceSingleQuotes(expected_parsed_args),
                 ValueToString(*result));
+    } else {
+      EXPECT_EQ(expected_error, error);
     }
   }
 
@@ -185,65 +192,83 @@ class APISignatureTest : public APIBindingTest {
 };
 
 TEST_F(APISignatureTest, BasicSignatureParsing) {
+  using namespace api_errors;
+
   v8::HandleScope handle_scope(isolate());
 
   {
     auto signature = OneString();
     ExpectPass(*signature, "['foo']", "['foo']", false);
     ExpectPass(*signature, "['']", "['']", false);
-    ExpectFailure(*signature, "[1]");
-    ExpectFailure(*signature, "[]");
-    ExpectFailure(*signature, "[{}]");
-    ExpectFailure(*signature, "['foo', 'bar']");
+    ExpectFailure(
+        *signature, "[1]",
+        ArgumentError("string", InvalidType(kTypeString, kTypeInteger)));
+    ExpectFailure(*signature, "[]", MissingRequiredArgument("string"));
+    ExpectFailure(
+        *signature, "[{}]",
+        ArgumentError("string", InvalidType(kTypeString, kTypeObject)));
+    ExpectFailure(*signature, "['foo', 'bar']", TooManyArguments());
   }
 
   {
     auto signature = StringAndInt();
     ExpectPass(*signature, "['foo', 42]", "['foo',42]", false);
     ExpectPass(*signature, "['foo', -1]", "['foo',-1]", false);
-    ExpectFailure(*signature, "[1]");
-    ExpectFailure(*signature, "['foo'];");
-    ExpectFailure(*signature, "[1, 'foo']");
-    ExpectFailure(*signature, "['foo', 'foo']");
-    ExpectFailure(*signature, "['foo', '1']");
-    ExpectFailure(*signature, "['foo', 2.3]");
+    ExpectFailure(
+        *signature, "[1]",
+        ArgumentError("string", InvalidType(kTypeString, kTypeInteger)));
+    ExpectFailure(*signature, "['foo'];", MissingRequiredArgument("int"));
+    ExpectFailure(
+        *signature, "[1, 'foo']",
+        ArgumentError("string", InvalidType(kTypeString, kTypeInteger)));
+    ExpectFailure(*signature, "['foo', 'foo']",
+                  ArgumentError("int", InvalidType(kTypeInteger, kTypeString)));
+    ExpectFailure(*signature, "['foo', '1']",
+                  ArgumentError("int", InvalidType(kTypeInteger, kTypeString)));
+    ExpectFailure(*signature, "['foo', 2.3]",
+                  ArgumentError("int", InvalidType(kTypeInteger, kTypeDouble)));
   }
 
   {
     auto signature = StringOptionalIntAndBool();
     ExpectPass(*signature, "['foo', 42, true]", "['foo',42,true]", false);
     ExpectPass(*signature, "['foo', true]", "['foo',null,true]", false);
-    ExpectFailure(*signature, "['foo', 'bar', true]");
+    ExpectFailure(
+        *signature, "['foo', 'bar', true]",
+        ArgumentError("bool", InvalidType(kTypeBoolean, kTypeString)));
   }
 
   {
     auto signature = OneObject();
     ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]", false);
     ExpectFailure(*signature,
-                  "[{ get prop1() { throw new Error('Badness'); } }]");
+                  "[{ get prop1() { throw new Error('Badness'); } }]",
+                  ArgumentError("obj", ScriptThrewError()));
   }
 
   {
     auto signature = NoArgs();
     ExpectPass(*signature, "[]", "[]", false);
-    ExpectFailure(*signature, "[0]");
-    ExpectFailure(*signature, "['']");
-    ExpectFailure(*signature, "[null]");
-    ExpectFailure(*signature, "[undefined]");
+    ExpectFailure(*signature, "[0]", TooManyArguments());
+    ExpectFailure(*signature, "['']", TooManyArguments());
+    ExpectFailure(*signature, "[null]", TooManyArguments());
+    ExpectFailure(*signature, "[undefined]", TooManyArguments());
   }
 
   {
     auto signature = IntAndCallback();
     ExpectPass(*signature, "[1, function() {}]", "[1]", true);
-    ExpectFailure(*signature, "[function() {}]");
-    ExpectFailure(*signature, "[1]");
+    ExpectFailure(
+        *signature, "[function() {}]",
+        ArgumentError("int", InvalidType(kTypeInteger, kTypeFunction)));
+    ExpectFailure(*signature, "[1]", MissingRequiredArgument("callback"));
   }
 
   {
     auto signature = OptionalIntAndCallback();
     ExpectPass(*signature, "[1, function() {}]", "[1]", true);
     ExpectPass(*signature, "[function() {}]", "[null]", true);
-    ExpectFailure(*signature, "[1]");
+    ExpectFailure(*signature, "[1]", MissingRequiredArgument("callback"));
   }
 
   {
@@ -251,7 +276,9 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
     ExpectPass(*signature, "[function() {}]", "[]", true);
     ExpectPass(*signature, "[]", "[]", false);
     ExpectPass(*signature, "[undefined]", "[]", false);
-    ExpectFailure(*signature, "[0]");
+    ExpectFailure(
+        *signature, "[0]",
+        ArgumentError("callback", InvalidType(kTypeFunction, kTypeInteger)));
   }
 
   {
@@ -262,12 +289,15 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
                false);
     ExpectPass(*signature, "[4, {foo: 'bar'}, {}]", "[4,{'foo':'bar'},{}]",
                false);
-    ExpectFailure(*signature, "[4, function() {}]");
-    ExpectFailure(*signature, "[4]");
+    ExpectFailure(*signature, "[4, function() {}]",
+                  ArgumentError("any", UnserializableValue()));
+    ExpectFailure(*signature, "[4]", MissingRequiredArgument("any"));
   }
 }
 
 TEST_F(APISignatureTest, TypeRefsTest) {
+  using namespace api_errors;
+
   v8::HandleScope handle_scope(isolate());
 
   {
@@ -275,14 +305,18 @@ TEST_F(APISignatureTest, TypeRefsTest) {
     ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]", false);
     ExpectPass(*signature, "[{prop1: 'foo', prop2: 2}]",
                "[{'prop1':'foo','prop2':2}]", false);
-    ExpectFailure(*signature, "[{prop1: 'foo', prop2: 'a'}]");
+    ExpectFailure(
+        *signature, "[{prop1: 'foo', prop2: 'a'}]",
+        ArgumentError("obj", PropertyError("prop2", InvalidType(kTypeInteger,
+                                                                kTypeString))));
   }
 
   {
     auto signature = RefEnum();
     ExpectPass(*signature, "['alpha']", "['alpha']", false);
     ExpectPass(*signature, "['beta']", "['beta']", false);
-    ExpectFailure(*signature, "['gamma']");
+    ExpectFailure(*signature, "['gamma']",
+                  ArgumentError("enum", InvalidEnumValue({"alpha", "beta"})));
   }
 }
 

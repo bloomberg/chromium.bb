@@ -43,6 +43,8 @@ std::string NotAnInstance(const char* instance_type);
 std::string InvalidChoice();
 std::string UnserializableValue();
 std::string ScriptThrewError();
+std::string TooManyArguments();
+std::string MissingRequiredArgument(const char* argument_name);
 
 // Returns an message indicating an error was found while parsing a given index
 // in an array.
@@ -51,6 +53,11 @@ std::string IndexError(uint32_t index, const std::string& error);
 // Returns a message indicating that an error was found while parsing a given
 // property on an object.
 std::string PropertyError(const char* property_name, const std::string& error);
+
+// Returns a message indicating that an error was found while parsing a given
+// parameter in an API signature.
+std::string ArgumentError(const std::string& parameter_name,
+                          const std::string& error);
 
 }  // namespace api_errors
 }  // namespace extensions

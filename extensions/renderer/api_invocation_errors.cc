@@ -87,6 +87,14 @@ std::string ScriptThrewError() {
   return "Script threw an error.";
 }
 
+std::string TooManyArguments() {
+  return "Too many arguments.";
+}
+
+std::string MissingRequiredArgument(const char* argument_name) {
+  return base::StringPrintf("Missing required argument '%s'.", argument_name);
+}
+
 std::string IndexError(uint32_t index, const std::string& error) {
   return base::StringPrintf("Error at index %u: %s", index, error.c_str());
 }
@@ -94,6 +102,12 @@ std::string IndexError(uint32_t index, const std::string& error) {
 std::string PropertyError(const char* property_name, const std::string& error) {
   return base::StringPrintf("Error at property '%s': %s", property_name,
                             error.c_str());
+}
+
+std::string ArgumentError(const std::string& parameter_name,
+                          const std::string& error) {
+  return base::StringPrintf("Error at parameter '%s': %s",
+                            parameter_name.c_str(), error.c_str());
 }
 
 }  // namespace api_errors
