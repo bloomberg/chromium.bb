@@ -319,6 +319,16 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'BrowserThread::GetBlockingPool',
+      (
+        'Use base/task_scheduler/post_task.h instead of the blocking pool. See',
+        'mapping between both APIs in content/public/browser/browser_thread.h.',
+        'For questions, contact base/task_scheduler/OWNERS.',
+      ),
+      True,
+      (),
+    ),
 )
 
 
