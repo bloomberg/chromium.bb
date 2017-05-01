@@ -1361,11 +1361,9 @@ SyncedScrollOffset* ScrollTree::GetOrCreateSyncedScrollOffset(int layer_id) {
 const SyncedScrollOffset* ScrollTree::GetSyncedScrollOffset(
     int layer_id) const {
   DCHECK(!property_trees()->is_main_thread);
-  if (layer_id_to_synced_scroll_offset_map_.find(layer_id) ==
-      layer_id_to_synced_scroll_offset_map_.end()) {
-    return nullptr;
-  }
-  return layer_id_to_synced_scroll_offset_map_.at(layer_id).get();
+  auto it = layer_id_to_synced_scroll_offset_map_.find(layer_id);
+  return it != layer_id_to_synced_scroll_offset_map_.end() ? it->second.get()
+                                                           : nullptr;
 }
 
 const gfx::ScrollOffset ScrollTree::current_scroll_offset(int layer_id) const {
