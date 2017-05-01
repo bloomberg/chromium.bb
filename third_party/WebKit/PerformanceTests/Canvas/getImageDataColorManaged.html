@@ -4,6 +4,9 @@
 <script src="../resources/runner.js"></script>
 <script>
 
+var canvas = document.createElement("canvas");
+var ctx = canvas.getContext("2d");
+
 var dataSize = 4000000;
 var dataU8 = new Uint8ClampedArray(dataSize);
 var dataU16 = new Uint16Array(dataSize);
@@ -45,30 +48,26 @@ function writeArray(array, accessLocations, arrayName) {
 }
 
 function ImageData_data_AccessTime() {
-    var experimental = new ImageData(1,1);  
-    imageData = experimental.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
+    imageData = ctx.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
     readArray(imageData.data, accessLocations);
     writeArray(imageData.data, accessLocations);
 }
 
 function ImageData_dataUnionU8_AccessTime() {
-    var experimental = new ImageData(1,1);  
-    imageDataU8 = experimental.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
+    imageDataU8 = ctx.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
     readArray(imageDataU8.dataUnion, accessLocations);
     writeArray(imageDataU8.dataUnion, accessLocations);
 
 }
 
 function ImageData_dataUnionU16_AccessTime() {
-    var experimental = new ImageData(1,1);  
-    imageDataU16 = experimental.createImageData(dataU16, 1000, 1000, {colorSpace: "srgb"});
+    imageDataU16 = ctx.createImageData(dataU16, 1000, 1000, {colorSpace: "srgb"});
     readArray(imageDataU16.dataUnion, accessLocations);
     writeArray(imageDataU16.dataUnion, accessLocations);
 }
 
 function ImageData_dataUnionF32_AccessTime() {
-    var experimental = new ImageData(1,1);  
-    imageDataF32 = experimental.createImageData(dataF32, 1000, 1000, {colorSpace: "srgb"});
+    imageDataF32 = ctx.createImageData(dataF32, 1000, 1000, {colorSpace: "srgb"});
     readArray(imageDataF32.dataUnion, accessLocations, "imageDataF32.dataUnion");
     writeArray(imageDataF32.dataUnion, accessLocations, "imageDataF32.dataUnion");
 }
