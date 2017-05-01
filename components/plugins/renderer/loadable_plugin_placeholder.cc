@@ -41,6 +41,7 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
   DCHECK(!is_blocked_for_power_saver_poster_);
   is_blocked_for_power_saver_poster_ = true;
 
+  DCHECK(render_frame());
   render_frame()->RegisterPeripheralPlugin(
       url::Origin(GURL(GetPluginParams().url)),
       base::Bind(&LoadablePluginPlaceholder::MarkPluginEssential,
@@ -181,6 +182,8 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
 void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     const gfx::Rect& unobscured_rect) {
   DCHECK(content::RenderThread::Get());
+  if (!render_frame())
+    return;
 
   if (!plugin() || !finished_loading_)
     return;
