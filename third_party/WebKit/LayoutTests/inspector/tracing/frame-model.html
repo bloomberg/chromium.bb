@@ -280,7 +280,10 @@ function test()
         var data = testData[testName];
         var performanceModel = InspectorTest.createPerformanceModelWithEvents(commonMetadata.concat(data));
         InspectorTest.addResult("Test: " + testName);
-        performanceModel.frameModel().frames().forEach(InspectorTest.dumpFrame, InspectorTest);
+        for (var frame of performanceModel.frameModel().frames()) {
+            InspectorTest.addResult(Timeline.TimelineUIUtils.frameDuration(frame).textContent);
+            InspectorTest.dumpFrame(frame);
+        }
     }
     InspectorTest.completeTest();
 }
