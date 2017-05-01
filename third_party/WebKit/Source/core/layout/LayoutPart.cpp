@@ -402,7 +402,7 @@ void LayoutPart::UpdateGeometryInternal(FrameOrPlugin& frame_or_plugin) {
   frame_or_plugin.SetFrameRect(frame_rect);
 }
 
-void LayoutPart::InvalidatePaintOfSubtreesIfNeeded(
+void LayoutPart::DeprecatedInvalidatePaintOfSubtrees(
     const PaintInvalidationState& paint_invalidation_state) {
   FrameView* frame_view = ChildFrameView();
   if (frame_view && !IsThrottledFrameView()) {
@@ -413,11 +413,11 @@ void LayoutPart::InvalidatePaintOfSubtreesIfNeeded(
             LayoutAPIShim::LayoutObjectFrom(frame_view->GetLayoutViewItem()))) {
       PaintInvalidationState child_view_paint_invalidation_state(
           paint_invalidation_state, *child_layout_view);
-      frame_view->InvalidateTreeIfNeeded(child_view_paint_invalidation_state);
+      frame_view->DeprecatedInvalidateTree(child_view_paint_invalidation_state);
     }
   }
 
-  LayoutReplaced::InvalidatePaintOfSubtreesIfNeeded(paint_invalidation_state);
+  LayoutReplaced::DeprecatedInvalidatePaintOfSubtrees(paint_invalidation_state);
 }
 
 bool LayoutPart::IsThrottledFrameView() const {

@@ -991,11 +991,6 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
 }
 
 PaintInvalidationReason LayoutBlock::InvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  return LayoutBox::InvalidatePaint(paint_invalidation_state);
-}
-
-PaintInvalidationReason LayoutBlock::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   return BlockPaintInvalidator(*this).InvalidatePaint(context);
 }

@@ -442,11 +442,6 @@ void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
 }
 
 PaintInvalidationReason LayoutView::InvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  return LayoutBlockFlow::InvalidatePaint(paint_invalidation_state);
-}
-
-PaintInvalidationReason LayoutView::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   return ViewPaintInvalidator(*this, context).InvalidatePaint();
 }

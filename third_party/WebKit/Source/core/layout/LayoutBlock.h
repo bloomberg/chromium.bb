@@ -494,8 +494,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  protected:
   PaintInvalidationReason InvalidatePaint(
-      const PaintInvalidationState&) override;
-  PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const override;
 
   void ClearPreviousVisualRects() override;

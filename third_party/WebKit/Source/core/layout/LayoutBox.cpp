@@ -1885,7 +1885,7 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(kPaintInvalidationFull);
 }
 
-PaintInvalidationReason LayoutBox::InvalidatePaint(
+PaintInvalidationReason LayoutBox::DeprecatedInvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   if (HasBoxDecorationBackground()
       // We also paint overflow controls in background phase.
@@ -1895,7 +1895,8 @@ PaintInvalidationReason LayoutBox::InvalidatePaint(
       layer.SetNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 
-  return LayoutBoxModelObject::InvalidatePaint(paint_invalidation_state);
+  return LayoutBoxModelObject::DeprecatedInvalidatePaint(
+      paint_invalidation_state);
 }
 
 PaintInvalidationReason LayoutBox::InvalidatePaint(

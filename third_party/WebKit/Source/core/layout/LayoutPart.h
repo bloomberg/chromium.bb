@@ -77,7 +77,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 
   // Overridden to invalidate the child frame if any.
-  void InvalidatePaintOfSubtreesIfNeeded(
+  void DeprecatedInvalidatePaintOfSubtrees(
       const PaintInvalidationState&) override;
 
  private:

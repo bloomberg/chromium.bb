@@ -474,7 +474,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void SimplifiedNormalFlowLayout() override;
   bool RecalcChildOverflowAfterStyleChange() override;
   void EnsureIsReadyForPaintInvalidation() override;
-  PaintInvalidationReason InvalidatePaint(
+  PaintInvalidationReason DeprecatedInvalidatePaint(
       const PaintInvalidationState&) override;
   PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const override;

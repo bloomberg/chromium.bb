@@ -267,8 +267,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                             LayoutObject* start_point,
                             bool check_parent = true);
 
-  // Returns the layer that will paint this object. If possible, use the faster
-  // PaintInvalidationState::paintingLayer() instead.
+  // Returns the layer that will paint this object. During paint invalidation,
+  // we should use the faster PaintInvalidatorContext::painting_layer instead.
   PaintLayer* PaintingLayer() const;
 
   // Scrolling is a LayoutBox concept, however some code just cares about
@@ -1389,7 +1389,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Walk the tree after layout issuing paint invalidations for layoutObjects
   // that have changed or moved, updating bounds that have changed, and clearing
   // paint invalidation state.
-  virtual void InvalidateTreeIfNeeded(const PaintInvalidationState&);
+  virtual void DeprecatedInvalidateTree(const PaintInvalidationState&);
 
   void SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
@@ -2077,13 +2077,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //
   // The function is overridden to handle special children (e.g. percentage
   // height descendants or reflections).
-  virtual void InvalidatePaintOfSubtreesIfNeeded(
+  virtual void DeprecatedInvalidatePaintOfSubtrees(
       const PaintInvalidationState& child_paint_invalidation_state);
 
   // This function generates the invalidation for this object only.
   // It doesn't recurse into other object, as this is handled by
-  // invalidatePaintOfSubtreesIfNeeded.
-  virtual PaintInvalidationReason InvalidatePaint(
+  // DeprecatedInvalidatePaintOfSubtrees.
+  virtual PaintInvalidationReason DeprecatedInvalidatePaint(
       const PaintInvalidationState&);
 
   void SetIsBackgroundAttachmentFixedObject(bool);

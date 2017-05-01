@@ -354,8 +354,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   PaintInvalidationReason InvalidatePaint(
       const PaintInvalidatorContext&) const override;
-  PaintInvalidationReason InvalidatePaint(
-      const PaintInvalidationState&) override;
 
  private:
   friend class LayoutTableCellTest;

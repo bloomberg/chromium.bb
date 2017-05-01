@@ -20,6 +20,9 @@ class LayoutObject;
 class LayoutView;
 class PaintLayer;
 
+// This is deprecated by PaintInvalidator when SlimmingPaintInvalidation is
+// enabled.
+//
 // PaintInvalidationState is an optimization used during the paint
 // invalidation phase.
 //

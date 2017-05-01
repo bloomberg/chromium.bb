@@ -1362,7 +1362,7 @@ void FrameView::UpdateLayout() {
   CheckDoesNotNeedLayout();
 }
 
-void FrameView::InvalidateTreeIfNeeded(
+void FrameView::DeprecatedInvalidateTree(
     const PaintInvalidationState& paint_invalidation_state) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
 
@@ -1379,7 +1379,8 @@ void FrameView::InvalidateTreeIfNeeded(
                root_for_paint_invalidation.DebugName().Ascii());
 
   InvalidatePaint(paint_invalidation_state);
-  root_for_paint_invalidation.InvalidateTreeIfNeeded(paint_invalidation_state);
+  root_for_paint_invalidation.DeprecatedInvalidateTree(
+      paint_invalidation_state);
 
 #if DCHECK_IS_ON()
   GetLayoutView()->AssertSubtreeClearedPaintInvalidationFlags();
@@ -3149,7 +3150,7 @@ void FrameView::UpdateLifecyclePhasesInternal(
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
         if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-          InvalidateTreeIfNeededRecursive();
+          DeprecatedInvalidateTreeRecursive();
 
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
           if (view.Compositor()->InCompositingMode())
@@ -3442,16 +3443,16 @@ void FrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   GetFrame().GetPage()->GetDragCaret().UpdateStyleAndLayoutIfNeeded();
 }
 
-void FrameView::InvalidateTreeIfNeededRecursive() {
+void FrameView::DeprecatedInvalidateTreeRecursive() {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PaintInvalidation.UpdateTime");
   {
     // For comparison to SlimmingPaintInvalidation.
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
-    InvalidateTreeIfNeededRecursiveInternal();
+    DeprecatedInvalidateTreeRecursiveInternal();
   }
 }
 
-void FrameView::InvalidateTreeIfNeededRecursiveInternal() {
+void FrameView::DeprecatedInvalidateTreeRecursiveInternal() {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
   CHECK(GetLayoutView());
 
@@ -3466,9 +3467,9 @@ void FrameView::InvalidateTreeIfNeededRecursiveInternal() {
       *GetLayoutView(), pending_delayed_paint_invalidations);
 
   if (Lifecycle().GetState() < DocumentLifecycle::kPaintInvalidationClean)
-    InvalidateTreeIfNeeded(root_paint_invalidation_state);
+    DeprecatedInvalidateTree(root_paint_invalidation_state);
 
-  // Some frames may be not reached during the above invalidateTreeIfNeeded
+  // Some frames may be not reached during the above DeprecatedInvalidateTree
   // because
   // - the frame is a detached frame; or
   // - it didn't need paint invalidation.
@@ -3483,7 +3484,7 @@ void FrameView::InvalidateTreeIfNeededRecursiveInternal() {
       // invalidation onto them here.
       if (!child_frame_view.GetLayoutView())
         continue;
-      child_frame_view.InvalidateTreeIfNeededRecursiveInternal();
+      child_frame_view.DeprecatedInvalidateTreeRecursiveInternal();
     }
   }
 

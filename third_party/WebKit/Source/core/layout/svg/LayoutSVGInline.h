@@ -61,7 +61,7 @@ class LayoutSVGInline : public LayoutInline {
  private:
   InlineFlowBox* CreateInlineFlowBox() final;
 
-  void InvalidateTreeIfNeeded(const PaintInvalidationState&) final;
+  void DeprecatedInvalidateTree(const PaintInvalidationState&) final;
 
   void WillBeDestroyed() final;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
