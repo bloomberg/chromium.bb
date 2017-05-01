@@ -26,12 +26,30 @@ namespace gpu {
 // GpuMemoryBufferManager::CreateGpuMemoryBuffer.
 // On Android, the handle is used in the GPU process to get a reference to the
 // ANativeWindow, using GpuSurfaceLookup (implemented by
-// ChildProcessSurfaceManager).
+// ChildProcessSurfaceManager).  We require that an Android Surface is provided
+// with the ANativeWindow, so one must provide an explicit GpuSurfaceTracker::
+// SurfaceRecord when adding it.
 // On Mac, the handle just passes through the GPU process, and is sent back via
 // GpuCommandBufferMsg_SwapBuffersCompleted to reference the surface.
 // This class is thread safe.
 class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
  public:
+  struct SurfaceRecord {
+#if defined(OS_ANDROID)
+    SurfaceRecord(gfx::AcceleratedWidget widget, jobject j_surface);
+#else   // defined(OS_ANDROID)
+    explicit SurfaceRecord(gfx::AcceleratedWidget widget);
+#endif  // !defined(OS_ANDROID)
+
+    SurfaceRecord(SurfaceRecord&&);
+    SurfaceRecord(const SurfaceRecord&) = delete;
+
+    gfx::AcceleratedWidget widget;
+#if defined(OS_ANDROID)
+    gl::ScopedJavaSurface surface;
+#endif
+  };
+
   // GpuSurfaceLookup implementation:
   // Returns the native widget associated with a given surface_handle.
   // On Android, this adds a reference on the ANativeWindow.
@@ -39,16 +57,15 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
       gpu::SurfaceHandle surface_handle) override;
 
 #if defined(OS_ANDROID)
-  void RegisterViewSurface(int surface_id, jobject j_surface);
-  void UnregisterViewSurface(int surface_id);
-  gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
+  gl::ScopedJavaSurface AcquireJavaSurface(
+      gpu::SurfaceHandle surface_handle) override;
 #endif
 
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }
 
   // Adds a surface for a native widget. Returns the surface ID.
-  int AddSurfaceForNativeWidget(gfx::AcceleratedWidget widget);
+  int AddSurfaceForNativeWidget(SurfaceRecord record);
 
   // Return true if the surface handle is registered with the tracker.
   bool IsValidSurfaceHandle(gpu::SurfaceHandle surface_handle) const;
@@ -64,7 +81,7 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   static GpuSurfaceTracker* GetInstance();
 
  private:
-  typedef std::map<gpu::SurfaceHandle, gfx::AcceleratedWidget> SurfaceMap;
+  using SurfaceMap = std::map<gpu::SurfaceHandle, SurfaceRecord>;
 
   friend struct base::DefaultSingletonTraits<GpuSurfaceTracker>;
 
@@ -74,12 +91,6 @@ class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   mutable base::Lock surface_map_lock_;
   SurfaceMap surface_map_;
   int next_surface_handle_;
-
-#if defined(OS_ANDROID)
-  base::Lock surface_view_map_lock_;
-  typedef std::map<gpu::SurfaceHandle, gl::ScopedJavaSurface> SurfaceViewMap;
-  SurfaceViewMap surface_view_map_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceTracker);
 };

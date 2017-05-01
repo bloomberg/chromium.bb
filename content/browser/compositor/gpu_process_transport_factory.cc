@@ -884,7 +884,8 @@ GpuProcessTransportFactory::CreatePerCompositorData(
     data->surface_handle = widget;
 #else
     gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
-    data->surface_handle = tracker->AddSurfaceForNativeWidget(widget);
+    data->surface_handle = tracker->AddSurfaceForNativeWidget(
+        gpu::GpuSurfaceTracker::SurfaceRecord(widget));
 #endif
   }
 
