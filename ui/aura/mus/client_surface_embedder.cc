@@ -46,14 +46,14 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
   // this is the case with window decorations provided by Window Manager.
   // This content should appear underneath the content of the embedded client.
   window_->layer()->StackAtTop(surface_layer_.get());
+  ref_factory_ = new StubSurfaceReferenceFactory();
 }
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
 void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
     const cc::SurfaceInfo& surface_info) {
-  surface_layer_->SetShowPrimarySurface(
-      surface_info, make_scoped_refptr(new StubSurfaceReferenceFactory));
+  surface_layer_->SetShowPrimarySurface(surface_info, ref_factory_);
   surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
 }
 
