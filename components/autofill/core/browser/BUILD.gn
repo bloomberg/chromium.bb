@@ -54,8 +54,6 @@ static_library("browser") {
     "autofill_regex_constants.h",
     "autofill_scanner.cc",
     "autofill_scanner.h",
-    "autofill_sync_constants.cc",
-    "autofill_sync_constants.h",
     "autofill_type.cc",
     "autofill_type.h",
     "autofill_wallet_data_type_controller.cc",

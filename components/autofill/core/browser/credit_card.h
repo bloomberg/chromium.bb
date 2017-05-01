@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 
@@ -21,7 +22,7 @@ namespace autofill {
 // A midline horizontal ellipsis (U+22EF).
 extern const base::char16 kMidlineEllipsis[];
 
-// A form group that stores credit card information.
+// A form group that stores card information.
 class CreditCard : public AutofillDataModel {
  public:
   enum RecordType {
@@ -39,7 +40,7 @@ class CreditCard : public AutofillDataModel {
     FULL_SERVER_CARD,
   };
 
-  // The status of this credit card. Only used for server cards.
+  // The status of this card. Only used for server cards.
   enum ServerStatus {
     EXPIRED,
     OK,
@@ -59,23 +60,25 @@ class CreditCard : public AutofillDataModel {
   // Returns a version of |number| that has any separator characters removed.
   static const base::string16 StripSeparators(const base::string16& number);
 
-  // The user-visible type of the card, e.g. 'Mastercard'.
-  static base::string16 TypeForDisplay(const std::string& type);
+  // The user-visible issuer network of the card, e.g. 'Mastercard'.
+  static base::string16 NetworkForDisplay(const std::string& network);
 
-  // The ResourceBundle ID for the appropriate credit card image.
-  static int IconResourceId(const std::string& type);
+  // The ResourceBundle ID for the appropriate card issuer network image.
+  static int IconResourceId(const std::string& network);
 
-  // Returns the internal representation of credit card type corresponding to
-  // the given |number|.  The credit card type is determined purely according to
-  // the Issuer Identification Number (IIN), a.k.a. the "Bank Identification
+  // Returns the internal representation of card issuer network corresponding to
+  // the given |number|.  The card issuer network is determined purely according
+  // to the Issuer Identification Number (IIN), a.k.a. the "Bank Identification
   // Number (BIN)", which is parsed from the relevant prefix of the |number|.
   // This function performs no additional validation checks on the |number|.
-  // Hence, the returned type for both the valid card "4111-1111-1111-1111" and
-  // the invalid card "4garbage" will be Visa, which has an IIN of 4.
-  static const char* GetCreditCardType(const base::string16& number);
+  // Hence, the returned issuer network for both the valid card
+  // "4111-1111-1111-1111" and the invalid card "4garbage" will be Visa, which
+  // has an IIN of 4.
+  static const char* GetCardNetwork(const base::string16& number);
 
-  // Type strings are defined at the bottom of this file, e.g. kVisaCard.
-  void SetTypeForMaskedCard(const char* type);
+  // Network issuer strings are defined at the bottom of this file, e.g.
+  // kVisaCard.
+  void SetNetworkForMaskedCard(base::StringPiece network);
 
   // Sets/gets the status of a server card.
   void SetServerStatus(ServerStatus status);
@@ -93,7 +96,7 @@ class CreditCard : public AutofillDataModel {
                const base::string16& value,
                const std::string& app_locale) override;
 
-  // Credit card preview summary, for example: "Visa - 1234", ", 01/2020".
+  // Card preview summary, for example: "Visa - 1234", ", 01/2020".
   const std::pair<base::string16, base::string16> LabelPieces() const;
 
   // Like LabelPieces, but appends the two pieces together.
@@ -102,18 +105,18 @@ class CreditCard : public AutofillDataModel {
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const base::string16& value);
 
-  // The last four digits of the credit card number (or possibly less if there
-  // aren't enough characters).
+  // The last four digits of the card number (or possibly less if there aren't
+  // enough characters).
   base::string16 LastFourDigits() const;
-  // The user-visible type of the card, e.g. 'Mastercard'.
-  base::string16 TypeForDisplay() const;
-  // A label for this credit card formatted as 'Cardname - 2345'.
-  base::string16 TypeAndLastFourDigits() const;
+  // The user-visible issuer network of the card, e.g. 'Mastercard'.
+  base::string16 NetworkForDisplay() const;
+  // A label for this card formatted as 'IssuerNetwork - 2345'.
+  base::string16 NetworkAndLastFourDigits() const;
 
-  // Localized expiration for this credit card formatted as 'Exp: 06/17'.
+  // Localized expiration for this card formatted as 'Exp: 06/17'.
   base::string16 AbbreviatedExpirationDateForDisplay() const;
 
-  const std::string& type() const { return type_; }
+  const std::string& network() const { return network_; }
 
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
@@ -132,17 +135,17 @@ class CreditCard : public AutofillDataModel {
 
   // If the card numbers for |this| and |imported_card| match, and merging the
   // two wouldn't result in unverified data overwriting verified data,
-  // overwrites |this| card's data with the data in |credit_card|.
-  // Returns true if the card numbers match, false otherwise.
+  // overwrites |this| card's data with the data in |imported_card|. Returns
+  // true if the card numbers match, false otherwise.
   bool UpdateFromImportedCard(const CreditCard& imported_card,
                               const std::string& app_locale) WARN_UNUSED_RESULT;
 
-  // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
-  // or < 0, or > 0 if it is different.  The implied ordering can be used for
-  // culling duplicates.  The ordering is based on collation order of the
-  // textual contents of the fields.
+  // Comparison for Sync.  Returns 0 if the card is the same as |this|, or < 0,
+  // or > 0 if it is different.  The implied ordering can be used for culling
+  // duplicates.  The ordering is based on collation order of the textual
+  // contents of the fields.
   // GUIDs, origins, labels, and unique IDs are not compared, only the values of
-  // the credit cards themselves.
+  // the cards themselves.
   int Compare(const CreditCard& credit_card) const;
 
   // Determines if |this| is a local version of the server card |other|.
@@ -169,16 +172,16 @@ class CreditCard : public AutofillDataModel {
   // not complete.
   bool IsValid() const;
 
-  // Returns the credit card number.
+  // Returns the card number.
   const base::string16& number() const { return number_; }
-  // Sets |number_| to |number| and computes the appropriate card |type_|.
+  // Sets |number_| to |number| and computes the appropriate card issuer
+  // |network_|.
   void SetNumber(const base::string16& number);
 
-  // Returns the date when the credit card was last used in autofill.
+  // Returns the date when the card was last used in autofill.
   base::string16 GetLastUsedDateForDisplay(const std::string& app_locale) const;
 
-  // Logs the number of days since the credit card was last used and records its
-  // use.
+  // Logs the number of days since the card was last used and records its use.
   void RecordAndLogUse();
 
   // Converts a string representation of a month (such as "February" or "feb."
@@ -188,7 +191,7 @@ class CreditCard : public AutofillDataModel {
                            const std::string& app_locale,
                            int* num);
 
-  // Returns whether the credit card is expired based on |current_time|.
+  // Returns whether the card is expired based on |current_time|.
   bool IsExpired(const base::Time& current_time) const;
 
   // Whether the card expiration date should be updated.
@@ -220,8 +223,8 @@ class CreditCard : public AutofillDataModel {
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
-  // The type of the card to fill in to the page, e.g. 'Mastercard'.
-  base::string16 TypeForFill() const;
+  // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
+  base::string16 NetworkForFill() const;
 
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
@@ -233,15 +236,16 @@ class CreditCard : public AutofillDataModel {
   // See enum definition above.
   RecordType record_type_;
 
-  // The credit card number. For MASKED_SERVER_CARDs, this number will
-  // just contain the last four digits of the card number.
+  // The card number. For MASKED_SERVER_CARDs, this number will just contain the
+  // last four digits of the card number.
   base::string16 number_;
 
   // The cardholder's name. May be empty.
   base::string16 name_on_card_;
 
-  // The type of the card. This is one of the k...Card constants below.
-  std::string type_;
+  // The network issuer of the card. This is one of the k...Card constants
+  // below.
+  std::string network_;
 
   // These members are zero if not present.
   int expiration_month_;

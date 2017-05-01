@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 71;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 72;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1229,16 +1229,61 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion70ToCurrent) {
     // Make sure that the values in masked_credit_cards are still present except
     // for the billing_address_id. The values are added to the table in
     // version_70.sql.
-    sql::Statement s_masked_cards(connection.GetUniqueStatement(
-        "SELECT id, status, name_on_card, type, last_four, exp_month, exp_year "
-        "FROM masked_credit_cards"));
+    sql::Statement s_masked_cards(
+        connection.GetUniqueStatement("SELECT id, status, name_on_card, "
+                                      "network, last_four, exp_month, exp_year "
+                                      "FROM masked_credit_cards"));
     ASSERT_TRUE(s_masked_cards.Step());
     EXPECT_EQ("card_1", s_masked_cards.ColumnString(0));
     EXPECT_EQ("status", s_masked_cards.ColumnString(1));
     EXPECT_EQ("bob", s_masked_cards.ColumnString(2));
-    EXPECT_EQ("MASKED", s_masked_cards.ColumnString(3));
+    EXPECT_EQ("VISA", s_masked_cards.ColumnString(3));
     EXPECT_EQ("1234", s_masked_cards.ColumnString(4));
     EXPECT_EQ(12, s_masked_cards.ColumnInt(5));
     EXPECT_EQ(2050, s_masked_cards.ColumnInt(6));
+  }
+}
+
+// Tests renaming "type" column into "network" for the "masked_credit_cards"
+// table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion71ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_71.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 71, 71));
+
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards", "network"));
+
+    EXPECT_TRUE(
+        connection.Execute("INSERT INTO masked_credit_cards(id, type) "
+                           "VALUES ('id', 'VISA')"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards", "type"));
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "network"));
+
+    sql::Statement s_cards_metadata(connection.GetUniqueStatement(
+        "SELECT id, network FROM masked_credit_cards"));
+    ASSERT_TRUE(s_cards_metadata.Step());
+    EXPECT_EQ("id", s_cards_metadata.ColumnString(0));
+    EXPECT_EQ("VISA", s_cards_metadata.ColumnString(1));
   }
 }

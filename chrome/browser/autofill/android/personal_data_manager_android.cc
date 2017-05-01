@@ -138,7 +138,7 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     JNIEnv* env,
     const CreditCard& card) {
   const data_util::PaymentRequestData& payment_request_data =
-      data_util::GetPaymentRequestData(card.type());
+      data_util::GetPaymentRequestData(card.network());
   return Java_CreditCard_create(
       env, ConvertUTF8ToJavaString(env, card.guid()),
       ConvertUTF8ToJavaString(env, card.origin()),
@@ -146,12 +146,12 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
       card.record_type() == CreditCard::FULL_SERVER_CARD,
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME_FULL)),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)),
-      ConvertUTF16ToJavaString(env, card.TypeAndLastFourDigits()),
+      ConvertUTF16ToJavaString(env, card.NetworkAndLastFourDigits()),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_EXP_MONTH)),
       ConvertUTF16ToJavaString(env,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       ConvertUTF8ToJavaString(env,
-                              payment_request_data.basic_card_payment_type),
+                              payment_request_data.basic_card_issuer_network),
       ResourceMapper::MapFromChromiumId(payment_request_data.icon_resource_id),
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()));
@@ -194,9 +194,10 @@ void PopulateNativeCreditCardFromJava(
       card->set_record_type(CreditCard::FULL_SERVER_CARD);
     } else {
       card->set_record_type(CreditCard::MASKED_SERVER_CARD);
-      card->SetTypeForMaskedCard(
-          data_util::GetCardTypeForBasicCardPaymentType(ConvertJavaStringToUTF8(
-              env, Java_CreditCard_getBasicCardPaymentType(env, jcard))));
+      card->SetNetworkForMaskedCard(
+          data_util::GetIssuerNetworkForBasicCardIssuerNetwork(
+              ConvertJavaStringToUTF8(
+                  env, Java_CreditCard_getBasicCardIssuerNetwork(env, jcard))));
     }
   }
 }
@@ -533,7 +534,8 @@ void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
   personal_data_manager_->UpdateServerCardMetadata(card);
 }
 
-ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::GetBasicCardPaymentType(
+ScopedJavaLocalRef<jstring>
+PersonalDataManagerAndroid::GetBasicCardIssuerNetwork(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jcard_number,
@@ -544,10 +546,10 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::GetBasicCardPaymentType(
       !IsValidCreditCardNumber(card_number)) {
     return ConvertUTF8ToJavaString(env, "");
   }
-  return ConvertUTF8ToJavaString(env,
-                                 data_util::GetPaymentRequestData(
-                                     CreditCard::GetCreditCardType(card_number))
-                                     .basic_card_payment_type);
+  return ConvertUTF8ToJavaString(
+      env,
+      data_util::GetPaymentRequestData(CreditCard::GetCardNetwork(card_number))
+          .basic_card_issuer_network);
 }
 
 void PersonalDataManagerAndroid::AddServerCreditCardForTest(

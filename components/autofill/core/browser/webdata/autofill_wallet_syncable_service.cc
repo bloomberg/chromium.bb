@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include <set>
+#include <map>
 #include <utility>
 
 #include "base/logging.h"
@@ -76,7 +76,7 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetServerStatus(ServerToLocalStatus(card.status()));
-  result.SetTypeForMaskedCard(CardTypeFromWalletCardType(card.type()));
+  result.SetNetworkForMaskedCard(CardTypeFromWalletCardType(card.type()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
                     base::UTF8ToUTF16(card.name_on_card()));
   result.SetExpirationMonth(card.exp_month());
@@ -362,4 +362,4 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
   return merge_result;
 }
 
-}  // namespace autofil
+}  // namespace autofill

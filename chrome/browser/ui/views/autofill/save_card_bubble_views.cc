@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -195,9 +196,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   views::ImageView* card_type_icon = new views::ImageView();
   card_type_icon->SetImage(
       ResourceBundle::GetSharedInstance()
-          .GetImageNamed(CreditCard::IconResourceId(card.type()))
+          .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
-  card_type_icon->SetTooltipText(card.TypeForDisplay());
+  card_type_icon->SetTooltipText(card.NetworkForDisplay());
   card_type_icon->SetBorder(
       views::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);

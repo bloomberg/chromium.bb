@@ -346,7 +346,7 @@ public class PersonalDataManager {
         private String mObfuscatedNumber;
         private String mMonth;
         private String mYear;
-        private String mBasicCardPaymentType;
+        private String mBasicCardIssuerNetwork;
         private int mIssuerIconDrawableId;
         private String mBillingAddressId;
         private String mServerId;
@@ -354,16 +354,16 @@ public class PersonalDataManager {
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
                 boolean isCached, String name, String number, String obfuscatedNumber, String month,
-                String year, String basicCardPaymentType, int enumeratedIconId,
+                String year, String basicCardIssuerNetwork, int enumeratedIconId,
                 String billingAddressId, String serverId) {
             return new CreditCard(guid, origin, isLocal, isCached, name, number, obfuscatedNumber,
-                    month, year, basicCardPaymentType, ResourceId.mapToDrawableId(enumeratedIconId),
-                    billingAddressId, serverId);
+                    month, year, basicCardIssuerNetwork,
+                    ResourceId.mapToDrawableId(enumeratedIconId), billingAddressId, serverId);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
                 String name, String number, String obfuscatedNumber, String month, String year,
-                String basicCardPaymentType, int issuerIconDrawableId, String billingAddressId,
+                String basicCardIssuerNetwork, int issuerIconDrawableId, String billingAddressId,
                 String serverId) {
             mGUID = guid;
             mOrigin = origin;
@@ -374,7 +374,7 @@ public class PersonalDataManager {
             mObfuscatedNumber = obfuscatedNumber;
             mMonth = month;
             mYear = year;
-            mBasicCardPaymentType = basicCardPaymentType;
+            mBasicCardIssuerNetwork = basicCardIssuerNetwork;
             mIssuerIconDrawableId = issuerIconDrawableId;
             mBillingAddressId = billingAddressId;
             mServerId = serverId;
@@ -384,7 +384,7 @@ public class PersonalDataManager {
             this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /*origin */,
                     true /* isLocal */, false /* isCached */, "" /* name */, "" /* number */,
                     "" /* obfuscatedNumber */, "" /* month */, "" /* year */,
-                    "" /* basicCardPaymentType */, 0 /* issuerIconDrawableId */,
+                    "" /* basicCardIssuerNetwork */, 0 /* issuerIconDrawableId */,
                     "" /* billingAddressId */, "" /* serverId */);
         }
 
@@ -393,7 +393,7 @@ public class PersonalDataManager {
         public CreditCard(String guid, String origin, String name, String number,
                 String obfuscatedNumber, String month, String year) {
             this(guid, origin, true /* isLocal */, false /* isCached */, name, number,
-                    obfuscatedNumber, month, year, "" /* basicCardPaymentType */,
+                    obfuscatedNumber, month, year, "" /* basicCardIssuerNetwork */,
                     0 /* issuerIconDrawableId */, "" /* billingAddressId */, "" /* serverId */);
         }
 
@@ -448,8 +448,8 @@ public class PersonalDataManager {
         }
 
         @CalledByNative("CreditCard")
-        public String getBasicCardPaymentType() {
-            return mBasicCardPaymentType;
+        public String getBasicCardIssuerNetwork() {
+            return mBasicCardIssuerNetwork;
         }
 
         public int getIssuerIconDrawableId() {
@@ -497,8 +497,8 @@ public class PersonalDataManager {
             mYear = year;
         }
 
-        public void setBasicCardPaymentType(String type) {
-            mBasicCardPaymentType = type;
+        public void setBasicCardIssuerNetwork(String network) {
+            mBasicCardIssuerNetwork = network;
         }
 
         public void setIssuerIconDrawableId(int id) {
@@ -692,9 +692,9 @@ public class PersonalDataManager {
         nativeUpdateServerCardBillingAddress(mPersonalDataManagerAndroid, card);
     }
 
-    public String getBasicCardPaymentType(String cardNumber, boolean emptyIfInvalid) {
+    public String getBasicCardIssuerNetwork(String cardNumber, boolean emptyIfInvalid) {
         ThreadUtils.assertOnUiThread();
-        return nativeGetBasicCardPaymentType(
+        return nativeGetBasicCardIssuerNetwork(
                 mPersonalDataManagerAndroid, cardNumber, emptyIfInvalid);
     }
 
@@ -921,7 +921,7 @@ public class PersonalDataManager {
             CreditCard card);
     private native void nativeUpdateServerCardBillingAddress(long nativePersonalDataManagerAndroid,
             CreditCard card);
-    private native String nativeGetBasicCardPaymentType(
+    private native String nativeGetBasicCardIssuerNetwork(
             long nativePersonalDataManagerAndroid, String cardNumber, boolean emptyIfInvalid);
     private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
             CreditCard card);

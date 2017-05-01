@@ -225,7 +225,7 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
       ShouldRequestExpirationDate()
           ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE
           : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
-      card_.TypeAndLastFourDigits());
+      card_.NetworkAndLastFourDigits());
 #endif
 }
 
@@ -240,7 +240,7 @@ base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
   }
   // The iOS UI shows the card details in the instructions text since they
   // don't fit in the title.
-  return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
+  return l10n_util::GetStringFUTF16(ids, card_.NetworkAndLastFourDigits());
 #else
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
@@ -252,8 +252,8 @@ base::string16 CardUnmaskPromptControllerImpl::GetOkButtonLabel() const {
 }
 
 int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
-  return card_.type() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
-                                              : IDR_CREDIT_CARD_CVC_HINT;
+  return card_.network() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
+                                                 : IDR_CREDIT_CARD_CVC_HINT;
 }
 
 bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
@@ -281,7 +281,7 @@ bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {
   base::string16 trimmed_text;
   base::TrimWhitespace(input_text, base::TRIM_ALL, &trimmed_text);
-  return IsValidCreditCardSecurityCode(trimmed_text, card_.type());
+  return IsValidCreditCardSecurityCode(trimmed_text, card_.network());
 }
 
 bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
@@ -310,7 +310,7 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
 }
 
 int CardUnmaskPromptControllerImpl::GetExpectedCvcLength() const {
-  return GetCvcLengthForCardType(card_.type());
+  return GetCvcLengthForCardType(card_.network());
 }
 
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()

@@ -304,7 +304,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
                 invalidFieldsCount++;
             }
 
-            if (PersonalDataManager.getInstance().getBasicCardPaymentType(
+            if (PersonalDataManager.getInstance().getBasicCardIssuerNetwork(
                         mCard.getNumber().toString(), true)
                     == null) {
                 mHasValidNumberAndName = false;

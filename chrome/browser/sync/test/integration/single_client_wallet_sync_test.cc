@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   ASSERT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
   ASSERT_EQ(kDefaultCardID, card->server_id());
   ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
-  ASSERT_EQ(autofill::kAmericanExpressCard, card->type());
+  ASSERT_EQ(autofill::kAmericanExpressCard, card->network());
   ASSERT_EQ(kDefaultCardExpMonth, card->expiration_month());
   ASSERT_EQ(kDefaultCardExpYear, card->expiration_year());
   ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardName),

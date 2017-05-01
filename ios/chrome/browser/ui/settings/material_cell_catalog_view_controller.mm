@@ -100,7 +100,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 const CGFloat kHorizontalImageFixedSize = 40;
 
 // Credit Card icon size.
-const CGFloat kCardTypeIconDimension = 25.0;
+const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
 }  // namespace
 
@@ -586,7 +586,8 @@ const CGFloat kCardTypeIconDimension = 25.0;
         autofill::data_util::GetPaymentRequestData(cardType);
     UIImage* cardTypeIcon =
         ResizeImage(NativeImage(data.icon_resource_id),
-                    CGSizeMake(kCardTypeIconDimension, kCardTypeIconDimension),
+                    CGSizeMake(kCardIssuerNetworkIconDimension,
+                               kCardIssuerNetworkIconDimension),
                     ProjectionMode::kAspectFillNoClipping);
     [cardTypeIcons addObject:cardTypeIcon];
   }

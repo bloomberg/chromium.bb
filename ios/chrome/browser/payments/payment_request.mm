@@ -125,12 +125,12 @@ void PaymentRequest::PopulateCreditCardCache() {
   credit_card_cache_.reserve(credit_cards_to_suggest.size());
 
   for (const auto* credit_card : credit_cards_to_suggest) {
-    std::string spec_card_type =
-        autofill::data_util::GetPaymentRequestData(credit_card->type())
-            .basic_card_payment_type;
+    std::string spec_issuer_network =
+        autofill::data_util::GetPaymentRequestData(credit_card->network())
+            .basic_card_issuer_network;
     if (std::find(supported_card_networks_.begin(),
                   supported_card_networks_.end(),
-                  spec_card_type) != supported_card_networks_.end()) {
+                  spec_issuer_network) != supported_card_networks_.end()) {
       credit_card_cache_.push_back(*credit_card);
       credit_cards_.push_back(&credit_card_cache_.back());
     }

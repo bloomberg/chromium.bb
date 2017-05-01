@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/i18n/char_iterator.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -126,15 +127,15 @@ void StripSuffixes(std::vector<base::StringPiece16>* name_tokens) {
 // none is found.
 size_t StartsWithAny(base::StringPiece16 name, const char** prefixes,
                      size_t prefix_count) {
-   base::string16 buffer;
-   for (size_t i = 0; i < prefix_count; i++) {
-     buffer.clear();
-     base::UTF8ToUTF16(prefixes[i], strlen(prefixes[i]), &buffer);
-     if (base::StartsWith(name, buffer, base::CompareCase::SENSITIVE)) {
-       return buffer.size();
-     }
-   }
-   return 0;
+  base::string16 buffer;
+  for (size_t i = 0; i < prefix_count; i++) {
+    buffer.clear();
+    base::UTF8ToUTF16(prefixes[i], strlen(prefixes[i]), &buffer);
+    if (base::StartsWith(name, buffer, base::CompareCase::SENSITIVE)) {
+      return buffer.size();
+    }
+  }
+  return 0;
 }
 
 // Returns true if |c| is a CJK (Chinese, Japanese, Korean) character, for any
@@ -406,22 +407,23 @@ bool ProfileMatchesFullName(base::StringPiece16 full_name,
   return false;
 }
 
-const PaymentRequestData& GetPaymentRequestData(const std::string& type) {
+const PaymentRequestData& GetPaymentRequestData(
+    const std::string& issuer_network) {
   for (const PaymentRequestData& data : kPaymentRequestData) {
-    if (type == data.card_type)
+    if (issuer_network == data.issuer_network)
       return data;
   }
   return kGenericPaymentRequestData;
 }
 
-const char* GetCardTypeForBasicCardPaymentType(
-    const std::string& basic_card_payment_type) {
+const char* GetIssuerNetworkForBasicCardIssuerNetwork(
+    const std::string& basic_card_issuer_network) {
   for (const PaymentRequestData& data : kPaymentRequestData) {
-    if (basic_card_payment_type == data.basic_card_payment_type) {
-      return data.card_type;
+    if (basic_card_issuer_network == data.basic_card_issuer_network) {
+      return data.issuer_network;
     }
   }
-  return kGenericPaymentRequestData.card_type;
+  return kGenericPaymentRequestData.issuer_network;
 }
 
 bool IsValidCountryCode(const std::string& country_code) {

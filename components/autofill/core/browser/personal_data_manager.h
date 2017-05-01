@@ -329,7 +329,7 @@ class PersonalDataManager : public KeyedService,
       ConvertWalletAddressesAndUpdateWalletCards_MergedProfile);
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
-      ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted);  // NOLINT
+      ConvertWalletAddressesAndUpdateWalletCards_NewCrd_AddressAlreadyConverted);  // NOLINT
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
       ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted);

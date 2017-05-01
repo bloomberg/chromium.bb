@@ -43,7 +43,7 @@ using ::AutofillTypeFromAutofillUIType;
 NSString* const kAutofillCreditCardEditCollectionViewId =
     @"kAutofillCreditCardEditCollectionViewId";
 
-const CGFloat kCardTypeIconDimension = 30.0;
+const CGFloat kCardIssuerNetworkIconDimension = 30.0;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierFields = kSectionIdentifierEnumZero,
@@ -318,13 +318,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Helper Methods
 
 - (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {
-  const char* cardType = autofill::CreditCard::GetCreditCardType(
+  const char* network = autofill::CreditCard::GetCardNetwork(
       base::SysNSStringToUTF16(cardNumber));
-  if (cardType != autofill::kGenericCard) {
+  if (network != autofill::kGenericCard) {
     int resourceID =
-        autofill::data_util::GetPaymentRequestData(cardType).icon_resource_id;
-    // Resize and set the card type icon.
-    CGFloat dimension = kCardTypeIconDimension;
+        autofill::data_util::GetPaymentRequestData(network).icon_resource_id;
+    // Resize and set the card issuer network icon.
+    CGFloat dimension = kCardIssuerNetworkIconDimension;
     return ResizeImage(NativeImage(resourceID),
                        CGSizeMake(dimension, dimension),
                        ProjectionMode::kAspectFillNoClipping);

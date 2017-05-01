@@ -477,13 +477,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)fillPaymentMethodItem:(PaymentMethodItem*)item
                withCreditCard:(autofill::CreditCard*)creditCard {
-  item.methodID = base::SysUTF16ToNSString(creditCard->TypeAndLastFourDigits());
+  item.methodID =
+      base::SysUTF16ToNSString(creditCard->NetworkAndLastFourDigits());
   item.methodDetail = base::SysUTF16ToNSString(
       creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
-  int cardTypeIconID =
-      autofill::data_util::GetPaymentRequestData(creditCard->type())
+  int issuerNetworkIconID =
+      autofill::data_util::GetPaymentRequestData(creditCard->network())
           .icon_resource_id;
-  item.methodTypeIcon = NativeImage(cardTypeIconID);
+  item.methodTypeIcon = NativeImage(issuerNetworkIconID);
 }
 
 - (void)fillContactInfoItem:(AutofillProfileItem*)item

@@ -898,7 +898,7 @@ bool AutofillManager::GetDeletionConfirmationText(const base::string16& value,
       return false;
 
     if (title)
-      title->assign(credit_card->TypeAndLastFourDigits());
+      title->assign(credit_card->NetworkAndLastFourDigits());
     if (body) {
       body->assign(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));
@@ -1249,7 +1249,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     for (const auto& field : submitted_form) {
       if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE &&
           IsValidCreditCardSecurityCode(field->value,
-                                        upload_request_.card.type())) {
+                                        upload_request_.card.network())) {
         upload_request_.cvc = field->value;
         break;
       }

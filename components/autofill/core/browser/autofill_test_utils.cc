@@ -254,7 +254,7 @@ CreditCard GetMaskedServerCard() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
                           "2109" /* Mastercard */, "12", "2020");
-  credit_card.SetTypeForMaskedCard(kMasterCard);
+  credit_card.SetNetworkForMaskedCard(kMasterCard);
   return credit_card;
 }
 
@@ -262,7 +262,7 @@ CreditCard GetMaskedServerCardAmex() {
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "b456");
   test::SetCreditCardInfo(&credit_card, "Justin Thyme",
                           "8431" /* Amex */, "9", "2020");
-  credit_card.SetTypeForMaskedCard(kAmericanExpressCard);
+  credit_card.SetNetworkForMaskedCard(kAmericanExpressCard);
   return credit_card;
 }
 
@@ -322,9 +322,8 @@ void SetServerCreditCards(AutofillTable* table,
   std::vector<CreditCard> as_masked_cards = cards;
   for (CreditCard& card : as_masked_cards) {
     card.set_record_type(CreditCard::MASKED_SERVER_CARD);
-    std::string type = card.type();
     card.SetNumber(card.LastFourDigits());
-    card.SetTypeForMaskedCard(type.c_str());
+    card.SetNetworkForMaskedCard(card.network());
   }
   table->SetServerCreditCards(as_masked_cards);
 

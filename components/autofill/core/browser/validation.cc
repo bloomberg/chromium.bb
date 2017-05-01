@@ -51,7 +51,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   // [1] http://www.merriampark.com/anatomycc.htm
   // [2] http://en.wikipedia.org/wiki/Bank_card_number
   // CardEditor.isCardNumberLengthMaxium() needs to be kept in sync.
-  const char* const type = CreditCard::GetCreditCardType(text);
+  const char* const type = CreditCard::GetCardNetwork(text);
   if (type == kAmericanExpressCard && number.size() != 15)
     return false;
   if (type == kDinersCard && number.size() != 14)
@@ -107,11 +107,11 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
   DCHECK(error_message);
 
   // The type check is cheaper than the credit card number check.
-  const std::string basic_card_payment_type =
+  const std::string basic_card_issuer_network =
       autofill::data_util::GetPaymentRequestData(
-          CreditCard::GetCreditCardType(text))
-          .basic_card_payment_type;
-  if (!supported_basic_card_networks.count(basic_card_payment_type)) {
+          CreditCard::GetCardNetwork(text))
+          .basic_card_issuer_network;
+  if (!supported_basic_card_networks.count(basic_card_issuer_network)) {
     *error_message = l10n_util::GetStringUTF16(
         IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE);
     return false;

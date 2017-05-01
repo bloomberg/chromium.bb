@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_VALIDATION_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_VALIDATION_H_
 
+#include <set>
+#include <string>
+
 #include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/string_piece_forward.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace base {

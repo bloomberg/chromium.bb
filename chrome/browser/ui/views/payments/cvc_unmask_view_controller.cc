@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,7 +117,7 @@ void CvcUnmaskViewController::OnUnmaskVerificationResult(
 
 base::string16 CvcUnmaskViewController::GetSheetTitle() {
   return l10n_util::GetStringFUTF16(IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
-                                    credit_card_.TypeAndLastFourDigits());
+                                    credit_card_.NetworkAndLastFourDigits());
 }
 
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
@@ -154,10 +156,10 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(anthonyvd): Consider using
   // CardUnmaskPromptControllerImpl::GetCvcImageRid.
-  cvc_image->SetImage(
-      rb.GetImageSkiaNamed(credit_card_.type() == autofill::kAmericanExpressCard
-                               ? IDR_CREDIT_CARD_CVC_HINT_AMEX
-                               : IDR_CREDIT_CARD_CVC_HINT));
+  cvc_image->SetImage(rb.GetImageSkiaNamed(
+      credit_card_.network() == autofill::kAmericanExpressCard
+          ? IDR_CREDIT_CARD_CVC_HINT_AMEX
+          : IDR_CREDIT_CARD_CVC_HINT));
   layout->AddView(cvc_image.release());
 
   std::unique_ptr<views::Textfield> cvc_field =

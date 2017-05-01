@@ -160,8 +160,8 @@ struct FormFieldData;
 //   status             Server's status of this card.
 //                      TODO(brettw) define constants for this.
 //   name_on_card
-//   type               Type of the credit card. This is one of the
-//                      kSyncCardType* strings.
+//   network            Issuer network of the card. For example, "VISA". Renamed
+//                      from "type" in version 72.
 //   last_four          Last four digits of the card number. For de-duping
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
@@ -331,7 +331,7 @@ class AutofillTable : public WebDatabaseTable,
   // Records a single Autofill profile in the autofill_profiles table.
   virtual bool AddAutofillProfile(const AutofillProfile& profile);
 
-  // Updates the database values for the specified profile.  Mulit-value aware.
+  // Updates the database values for the specified profile.  Multi-value aware.
   virtual bool UpdateAutofillProfile(const AutofillProfile& profile);
 
   // Removes a row from the autofill_profiles table.  |guid| is the identifier
@@ -463,6 +463,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion67AddMaskedCardBillingAddress();
   bool MigrateToVersion70AddSyncMetadata();
   bool MigrateToVersion71AddHasConvertedAndBillingAddressIdMetadata();
+  bool MigrateToVersion72RenameCardTypeToIssuerNetwork();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

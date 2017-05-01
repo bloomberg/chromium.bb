@@ -39,7 +39,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       // http://crbug.com/535784
       issuer_icon_id_(kNoIconID),
 #else
-      issuer_icon_id_(CreditCard::IconResourceId(card.type())),
+      issuer_icon_id_(CreditCard::IconResourceId(card.network())),
 #endif
       card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {

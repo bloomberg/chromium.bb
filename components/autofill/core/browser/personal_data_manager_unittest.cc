@@ -54,15 +54,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
-
 namespace autofill {
 namespace {
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
-const std::string kUTF8MidlineEllipsis =
+const char kUTF8MidlineEllipsis[] =
     "  "
     "\xE2\x80\xA2\xE2\x80\x86"
     "\xE2\x80\xA2\xE2\x80\x86"
@@ -357,7 +354,7 @@ class PersonalDataManagerTest : public PersonalDataManagerTestBase,
 TEST_F(PersonalDataManagerTest, AddProfile) {
   // Add profile0 to the database.
   AutofillProfile profile0(test::GetFullProfile());
-  profile0.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("j@s.com"));
+  profile0.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("j@s.com"));
   personal_data_->AddProfile(profile0);
 
   // Reload the database.
@@ -384,7 +381,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   // New profile with different email.
   AutofillProfile profile1 = profile0;
   profile1.set_guid(base::GenerateGUID());
-  profile1.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("john@smith.com"));
+  profile1.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("john@smith.com"));
 
   // Add the different profile.  This should save as a separate profile.
   // Note that if this same profile was "merged" it would collapse to one
@@ -409,7 +406,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
 
   // Add a profile to the database.
   AutofillProfile profile(test::GetFullProfile());
-  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("j@s.com"));
+  profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("j@s.com"));
   personal_data_->AddProfile(profile);
 
   // Reload the database.
@@ -472,7 +469,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 
   // Update, remove, and add.
-  profile0.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile0.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("John"));
   personal_data_->UpdateProfile(profile0);
   personal_data_->RemoveByGUID(profile1.guid());
   personal_data_->AddProfile(profile2);
@@ -525,7 +522,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   ExpectSameElements(cards, personal_data_->GetCreditCards());
 
   // Update, remove, and add.
-  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Joe"));
+  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Joe"));
   personal_data_->UpdateCreditCard(credit_card0);
   personal_data_->RemoveByGUID(credit_card1.guid());
   personal_data_->AddCreditCard(credit_card2);
@@ -667,8 +664,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   EXPECT_EQ(original_credit_card.origin(), cards2[0]->origin());
 
   // Try to update with data changed as well.
-  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
-  credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Joe"));
+  profile.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("John"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Joe"));
 
   personal_data_->UpdateProfile(profile);
   personal_data_->UpdateCreditCard(credit_card);
@@ -764,12 +761,12 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
                           "2109" /* Mastercard */, "12", "2999");
-  server_cards.back().SetTypeForMaskedCard(kMasterCard);
+  server_cards.back().SetNetworkForMaskedCard(kMasterCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
@@ -799,7 +796,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
 
   CreditCard* unmasked_card = &server_cards.front();
   unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
-  unmasked_card->SetNumber(ASCIIToUTF16("423456789012"));
+  unmasked_card->SetNumber(base::ASCIIToUTF16("423456789012"));
   EXPECT_NE(0, server_cards.front().Compare(
                    *personal_data_->GetCreditCards().front()));
   personal_data_->UpdateServerCreditCard(*unmasked_card);
@@ -813,7 +810,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
 
   CreditCard* remasked_card = &server_cards.back();
   remasked_card->set_record_type(CreditCard::MASKED_SERVER_CARD);
-  remasked_card->SetNumber(ASCIIToUTF16("8555"));
+  remasked_card->SetNumber(base::ASCIIToUTF16("8555"));
   EXPECT_NE(
       0, server_cards.back().Compare(*personal_data_->GetCreditCards().back()));
   personal_data_->UpdateServerCreditCard(*remasked_card);
@@ -926,17 +923,17 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
-  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("John"));
+  credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("John"));
   CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
-  credit_card1.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Paul"));
+  credit_card1.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Paul"));
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
-  credit_card2.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Ringo"));
+  credit_card2.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Ringo"));
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
-  credit_card3.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Other"));
+  credit_card3.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Other"));
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com");
-  credit_card4.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Ozzy"));
+  credit_card4.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Ozzy"));
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com");
-  credit_card5.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Dio"));
+  credit_card5.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Dio"));
 
   // Add the test credit cards to the database.
   personal_data_->AddCreditCard(credit_card0);
@@ -1056,8 +1053,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   // was open with a previous snapshot of the profiles, and something
   // [e.g. sync] removed a profile from the browser.  In this edge case, we will
   // end up in a consistent state by dropping the write).
-  profile0.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Mar"));
-  profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jo"));
+  profile0.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Mar"));
+  profile2.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Jo"));
   personal_data_->UpdateProfile(profile0);
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -1784,9 +1781,10 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // Full name, phone formatting and country are updated.
-  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
-  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+1 650-555-6666"));
-  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  expected.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("George Washington"));
+  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                      base::ASCIIToUTF16("+1 650-555-6666"));
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16("US"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
@@ -1863,7 +1861,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   test::SetProfileInfo(&expected2, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
-  expected2.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
+  expected2.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
@@ -1944,7 +1942,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   // The merge operation will populate the full name if it's empty.
-  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("George Washington"));
+  expected.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
@@ -2250,15 +2248,15 @@ TEST_F(PersonalDataManagerTest, ImportCreditCard_MonthSelectInvalidText) {
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111",
                         "Feb (2)", "2999");
   // Add option values and contents to the expiration month field.
-  ASSERT_EQ(ASCIIToUTF16("exp_month"), form.fields[2].name);
+  ASSERT_EQ(base::ASCIIToUTF16("exp_month"), form.fields[2].name);
   std::vector<base::string16> values;
-  values.push_back(ASCIIToUTF16("1"));
-  values.push_back(ASCIIToUTF16("2"));
-  values.push_back(ASCIIToUTF16("3"));
+  values.push_back(base::ASCIIToUTF16("1"));
+  values.push_back(base::ASCIIToUTF16("2"));
+  values.push_back(base::ASCIIToUTF16("3"));
   std::vector<base::string16> contents;
-  contents.push_back(ASCIIToUTF16("Jan (1)"));
-  contents.push_back(ASCIIToUTF16("Feb (2)"));
-  contents.push_back(ASCIIToUTF16("Mar (3)"));
+  contents.push_back(base::ASCIIToUTF16("Jan (1)"));
+  contents.push_back(base::ASCIIToUTF16("Feb (2)"));
+  contents.push_back(base::ASCIIToUTF16("Mar (3)"));
   form.fields[2].option_values = values;
   form.fields[2].option_contents = contents;
 
@@ -2417,7 +2415,7 @@ TEST_F(PersonalDataManagerTest,
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1111" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
   // Type the same data as the masked card into a form.
@@ -2977,7 +2975,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   new_verified_profile.set_guid(base::GenerateGUID());
   new_verified_profile.set_origin(kSettingsOrigin);
   new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
-                                  ASCIIToUTF16("1 234 567-8910"));
+                                  base::ASCIIToUTF16("1 234 567-8910"));
   EXPECT_TRUE(new_verified_profile.IsVerified());
 
   personal_data_->SaveImportedProfile(new_verified_profile);
@@ -2991,8 +2989,10 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   AutofillProfile expected(new_verified_profile);
-  expected.SetRawInfo(NAME_FULL, ASCIIToUTF16("Marion Mitchell Morrison"));
-  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("+1 234-567-8910"));
+  expected.SetRawInfo(NAME_FULL,
+                      base::ASCIIToUTF16("Marion Mitchell Morrison"));
+  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                      base::ASCIIToUTF16("+1 234-567-8910"));
   EXPECT_EQ(0, expected.Compare(*results[0]))
       << "result = {" << *results[0] << "} | expected = {" << expected << "}";
 }
@@ -3015,7 +3015,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
 
   CreditCard new_verified_card = credit_card;
   new_verified_card.set_guid(base::GenerateGUID());
-  new_verified_card.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("B. Small"));
+  new_verified_card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                               base::ASCIIToUTF16("B. Small"));
   EXPECT_TRUE(new_verified_card.IsVerified());
 
   personal_data_->SaveImportedCreditCard(new_verified_card);
@@ -3028,7 +3029,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
   // Expect that the saved credit card is updated.
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(ASCIIToUTF16("B. Small"),
+  EXPECT_EQ(base::ASCIIToUTF16("B. Small"),
             results[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 }
 
@@ -3195,31 +3196,33 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 
   // Saving or creating profiles from imported profiles shouldn't work.
-  steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
+  steve_jobs.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Steve"));
   personal_data_->SaveImportedProfile(steve_jobs);
 
-  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill Gates"));
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                        base::ASCIIToUTF16("Bill Gates"));
   personal_data_->SaveImportedCreditCard(bill_gates);
 
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
-  EXPECT_EQ(ASCIIToUTF16("Steven"),
+  EXPECT_EQ(base::ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(
-      ASCIIToUTF16("William H. Gates"),
+      base::ASCIIToUTF16("William H. Gates"),
       personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 
   // Updating existing profiles shouldn't work.
-  steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
+  steve_jobs.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Steve"));
   personal_data_->UpdateProfile(steve_jobs);
 
-  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill Gates"));
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL,
+                        base::ASCIIToUTF16("Bill Gates"));
   personal_data_->UpdateCreditCard(bill_gates);
 
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
-  EXPECT_EQ(ASCIIToUTF16("Steven"),
+  EXPECT_EQ(base::ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(
-      ASCIIToUTF16("William H. Gates"),
+      base::ASCIIToUTF16("William H. Gates"),
       personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME_FULL));
 
   // Removing shouldn't work.
@@ -3546,7 +3549,7 @@ TEST_F(PersonalDataManagerTest,
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -3556,7 +3559,7 @@ TEST_F(PersonalDataManagerTest,
 
   std::vector<Suggestion> suggestions =
       personal_data_->GetCreditCardSuggestions(AutofillType(CREDIT_CARD_NUMBER),
-                                               ASCIIToUTF16("12345678"));
+                                               base::ASCIIToUTF16("12345678"));
 
   // There should be no suggestions.
   ASSERT_EQ(0U, suggestions.size());
@@ -3575,14 +3578,14 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
   ASSERT_EQ(3U, suggestions.size());
 
   // Ordered as expected.
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
-  EXPECT_TRUE(suggestions[0].label.find(ASCIIToUTF16("9012")) !=
+  EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  EXPECT_TRUE(suggestions[0].label.find(base::ASCIIToUTF16("9012")) !=
               base::string16::npos);
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-  EXPECT_TRUE(suggestions[1].label.find(ASCIIToUTF16("8555")) !=
+  EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_TRUE(suggestions[1].label.find(base::ASCIIToUTF16("8555")) !=
               base::string16::npos);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_TRUE(suggestions[2].label.find(ASCIIToUTF16("2109")) !=
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_TRUE(suggestions[2].label.find(base::ASCIIToUTF16("2109")) !=
               base::string16::npos);
 }
 
@@ -3600,7 +3603,7 @@ TEST_F(PersonalDataManagerTest,
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(1));
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
@@ -3622,11 +3625,11 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(5U, suggestions.size());
 
   // All cards should be ordered as expected.
-  EXPECT_EQ(ASCIIToUTF16("Jesse James"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("Emmet Dalton"), suggestions[3].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[4].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Jesse James"), suggestions[0].value);
+  EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[1].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Emmet Dalton"), suggestions[3].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[4].value);
 }
 
 // Test that expired cards are ordered by frecency and are always suggested
@@ -3674,11 +3677,11 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
   ASSERT_EQ(3U, suggestions.size());
 
   // The never used non expired card should be suggested first.
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
 
   // The expired cards should be sorted by frecency
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[2].value);
 }
 
 // Test that a card that doesn't have a number is not shown in the suggestions
@@ -3717,9 +3720,10 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
           AutofillType(CREDIT_CARD_NUMBER),
           /* field_contents= */ base::string16());
   ASSERT_EQ(1U, suggestions.size());
-  EXPECT_EQ(UTF8ToUTF16("Amex" + kUTF8MidlineEllipsis + "8555"),
-            suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("04/99"), suggestions[0].label);
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "8555"),
+      suggestions[0].value);
+  EXPECT_EQ(base::ASCIIToUTF16("04/99"), suggestions[0].label);
 }
 
 // Tests the suggestions of duplicate local and server credit cards.
@@ -3739,7 +3743,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   server_cards.back().set_use_count(2);
   server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(15));
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   // This server card is identical to a local card, but has a different
   // card type. Not a dupe and therefore both should appear in the suggestions.
@@ -3749,7 +3753,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   server_cards.back().set_use_count(3);
   server_cards.back().set_use_date(AutofillClock::Now() -
                                    base::TimeDelta::FromDays(15));
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   // This unmasked server card is an exact dupe of a local card. Therefore only
   // this card should appear in the suggestions as full server cards have
@@ -3772,22 +3776,26 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
           AutofillType(CREDIT_CARD_NAME_FULL),
           /* field_contents= */ base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
+  EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(UTF8ToUTF16("Visa" + kUTF8MidlineEllipsis + "9012"),
-            suggestions[0].value);
-  EXPECT_EQ(UTF8ToUTF16("Amex" + kUTF8MidlineEllipsis + "8555"),
-            suggestions[1].value);
-  EXPECT_EQ(UTF8ToUTF16("MasterCard" + kUTF8MidlineEllipsis + "2109"),
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "9012"),
+      suggestions[0].value);
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "8555"),
+      suggestions[1].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("MasterCard") + kUTF8MidlineEllipsis +
+                              "2109"),
             suggestions[2].value);
-  EXPECT_EQ(UTF8ToUTF16("Visa" + kUTF8MidlineEllipsis + "2109"),
-            suggestions[3].value);
+  EXPECT_EQ(
+      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "2109"),
+      suggestions[3].value);
 }
 
 // Tests that a full server card can be a dupe of more than one local card.
@@ -3884,7 +3892,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
   masked_card.set_use_count(2);
   masked_card.set_use_date(AutofillClock::Now() -
                            base::TimeDelta::FromDays(15));
-  masked_card.SetTypeForMaskedCard(kVisaCard);
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
@@ -3914,7 +3922,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_FullServerAndMasked) {
   masked_card.set_use_count(2);
   masked_card.set_use_date(AutofillClock::Now() -
                            base::TimeDelta::FromDays(15));
-  masked_card.SetTypeForMaskedCard(kVisaCard);
+  masked_card.SetNetworkForMaskedCard(kVisaCard);
   credit_cards.push_back(&masked_card);
 
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
@@ -3941,7 +3949,7 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
   credit_card4.set_use_count(3);
   credit_card4.set_use_date(AutofillClock::Now() -
                             base::TimeDelta::FromDays(15));
-  credit_card4.SetTypeForMaskedCard(kVisaCard);
+  credit_card4.SetNetworkForMaskedCard(kVisaCard);
   credit_cards.push_back(&credit_card4);
 
   // Create a full server card that is slightly different of the two other
@@ -4028,12 +4036,12 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
                           "4444" /* Mastercard */, "12", "2999");
-  server_cards.back().SetTypeForMaskedCard(kMasterCard);
+  server_cards.back().SetNetworkForMaskedCard(kMasterCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
@@ -4067,7 +4075,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
 
   CreditCard* unmasked_card = &server_cards.front();
   unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
-  unmasked_card->SetNumber(ASCIIToUTF16("423456789012"));
+  unmasked_card->SetNumber(base::ASCIIToUTF16("423456789012"));
   EXPECT_NE(0, unmasked_card->Compare(
       *personal_data_->GetCreditCards().front()));
   personal_data_->UpdateServerCreditCard(*unmasked_card);
@@ -4131,7 +4139,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   // Upgrading to unmasked retains the usage stats (and increments them).
   CreditCard* unmasked_card2 = &server_cards[1];
   unmasked_card2->set_record_type(CreditCard::FULL_SERVER_CARD);
-  unmasked_card2->SetNumber(ASCIIToUTF16("5555555555554444"));
+  unmasked_card2->SetNumber(base::ASCIIToUTF16("5555555555554444"));
   personal_data_->UpdateServerCreditCard(*unmasked_card2);
 
   server_cards[1].set_guid(personal_data_->GetCreditCards()[1]->guid());
@@ -4150,7 +4158,7 @@ TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
 
@@ -4175,7 +4183,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1881" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
@@ -4239,456 +4247,448 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerCard) {
 typedef struct {
   autofill::ServerFieldType field_type;
   std::string field_value;
-  } ProfileField;
+} ProfileField;
 
-  typedef std::vector<ProfileField> ProfileFields;
+typedef std::vector<ProfileField> ProfileFields;
 
-  typedef struct {
-    // Each test starts with a default pre-existing profile and applies these
-    // changes to it.
-    ProfileFields changes_to_original;
-    // Each test saves a second profile. Applies these changes to the default
-    // values before saving.
-    ProfileFields changes_to_new;
-    // For tests with profile merging, makes sure that these fields' values are
-    // the ones we expect (depending on the test).
-    ProfileFields changed_field_values;
-  } SaveImportedProfileTestCase;
+typedef struct {
+  // Each test starts with a default pre-existing profile and applies these
+  // changes to it.
+  ProfileFields changes_to_original;
+  // Each test saves a second profile. Applies these changes to the default
+  // values before saving.
+  ProfileFields changes_to_new;
+  // For tests with profile merging, makes sure that these fields' values are
+  // the ones we expect (depending on the test).
+  ProfileFields changed_field_values;
+} SaveImportedProfileTestCase;
 
-  class SaveImportedProfileTest
-      : public PersonalDataManagerTestBase,
-        public testing::TestWithParam<SaveImportedProfileTestCase> {
-   public:
-    SaveImportedProfileTest() {}
-    ~SaveImportedProfileTest() override {}
+class SaveImportedProfileTest
+    : public PersonalDataManagerTestBase,
+      public testing::TestWithParam<SaveImportedProfileTestCase> {
+ public:
+  SaveImportedProfileTest() {}
+  ~SaveImportedProfileTest() override {}
 
-    void SetUp() override {
-      OSCryptMocker::SetUpWithSingleton();
-      prefs_ = test::PrefServiceForTesting();
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
-      web_database_ =
-          new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
-                                 base::ThreadTaskRunnerHandle::Get());
+  void SetUp() override {
+    OSCryptMocker::SetUpWithSingleton();
+    prefs_ = test::PrefServiceForTesting();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
+    web_database_ =
+        new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get());
 
-      // Setup account tracker.
-      signin_client_.reset(new TestSigninClient(prefs_.get()));
-      account_tracker_.reset(new AccountTrackerService());
-      account_tracker_->Initialize(signin_client_.get());
-      signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
-                                                      account_tracker_.get()));
-      signin_manager_->Initialize(prefs_.get());
+    // Setup account tracker.
+    signin_client_.reset(new TestSigninClient(prefs_.get()));
+    account_tracker_.reset(new AccountTrackerService());
+    account_tracker_->Initialize(signin_client_.get());
+    signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
+                                                    account_tracker_.get()));
+    signin_manager_->Initialize(prefs_.get());
 
-      // Hacky: hold onto a pointer but pass ownership.
-      autofill_table_ = new AutofillTable;
-      web_database_->AddTable(
-          std::unique_ptr<WebDatabaseTable>(autofill_table_));
-      web_database_->LoadDatabase();
-      autofill_database_service_ = new AutofillWebDataService(
-          web_database_, base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get(),
-          WebDataServiceBase::ProfileErrorCallback());
-      autofill_database_service_->Init();
+    // Hacky: hold onto a pointer but pass ownership.
+    autofill_table_ = new AutofillTable;
+    web_database_->AddTable(std::unique_ptr<WebDatabaseTable>(autofill_table_));
+    web_database_->LoadDatabase();
+    autofill_database_service_ = new AutofillWebDataService(
+        web_database_, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        WebDataServiceBase::ProfileErrorCallback());
+    autofill_database_service_->Init();
 
-      test::DisableSystemServices(prefs_.get());
-      ResetPersonalDataManager(USER_MODE_NORMAL);
+    test::DisableSystemServices(prefs_.get());
+    ResetPersonalDataManager(USER_MODE_NORMAL);
 
-      // Reset the deduping pref to its default value.
-      personal_data_->pref_service_->SetInteger(
-          prefs::kAutofillLastVersionDeduped, 0);
-      personal_data_->pref_service_->SetBoolean(
-          prefs::kAutofillProfileUseDatesFixed, false);
-    }
-
-    void TearDown() override {
-      // Order of destruction is important as AutofillManager relies on
-      // PersonalDataManager to be around when it gets destroyed.
-      signin_manager_->Shutdown();
-      signin_manager_.reset();
-
-      account_tracker_->Shutdown();
-      account_tracker_.reset();
-      signin_client_.reset();
-
-      test::DisableSystemServices(prefs_.get());
-      OSCryptMocker::TearDown();
-    }
-  };
-
-  TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
-    // Create the test clock.
-    TestAutofillClock test_clock;
-    auto test_case = GetParam();
-    // Set the time to a specific value.
-    test_clock.SetNow(kArbitraryTime);
-
-    SetupReferenceProfile();
-    const std::vector<AutofillProfile*>& initial_profiles =
-        personal_data_->GetProfiles();
-
-    // Apply changes to the original profile (if applicable).
-    for (ProfileField change : test_case.changes_to_original) {
-      initial_profiles.front()->SetRawInfo(
-          change.field_type, base::UTF8ToUTF16(change.field_value));
-    }
-
-    // Set the time to a bigger value.
-    test_clock.SetNow(kSomeLaterTime);
-
-    AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-    test::SetProfileInfo(&profile2, "Marion", "Mitchell", "Morrison",
-                         "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
-                         "Hollywood", "CA", "91601", "US", "12345678910");
-
-    // Apply changes to the second profile (if applicable).
-    for (ProfileField change : test_case.changes_to_new) {
-      profile2.SetRawInfo(change.field_type,
-                          base::UTF8ToUTF16(change.field_value));
-    }
-
-    personal_data_->SaveImportedProfile(profile2);
-
-    const std::vector<AutofillProfile*>& saved_profiles =
-        personal_data_->GetProfiles();
-
-    // If there are no merge changes to verify, make sure that two profiles were
-    // saved.
-    if (test_case.changed_field_values.empty()) {
-      EXPECT_EQ(2U, saved_profiles.size());
-    } else {
-      EXPECT_EQ(1U, saved_profiles.size());
-
-      // Make sure the new information was merged correctly.
-      for (ProfileField changed_field : test_case.changed_field_values) {
-        EXPECT_EQ(base::UTF8ToUTF16(changed_field.field_value),
-                  saved_profiles.front()->GetRawInfo(changed_field.field_type));
-      }
-      // Verify that the merged profile's use count, use date and modification
-      // date were properly updated.
-      EXPECT_EQ(1U, saved_profiles.front()->use_count());
-      EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->use_date());
-      EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->modification_date());
-    }
-
-    // Erase the profiles for the next test.
-    ResetProfiles();
+    // Reset the deduping pref to its default value.
+    personal_data_->pref_service_->SetInteger(
+        prefs::kAutofillLastVersionDeduped, 0);
+    personal_data_->pref_service_->SetBoolean(
+        prefs::kAutofillProfileUseDatesFixed, false);
   }
 
-  INSTANTIATE_TEST_CASE_P(
-      PersonalDataManagerTest,
-      SaveImportedProfileTest,
-      testing::Values(
-          // Test that saving an identical profile except for the name results
-          // in two profiles being saved.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{NAME_FIRST, "Marionette"}}},
+  void TearDown() override {
+    // Order of destruction is important as AutofillManager relies on
+    // PersonalDataManager to be around when it gets destroyed.
+    signin_manager_->Shutdown();
+    signin_manager_.reset();
 
-          // Test that saving an identical profile except with the middle name
-          // initial instead of the full middle name results in the profiles
-          // getting merged and the full middle name being kept.
-          SaveImportedProfileTestCase{
-              ProfileFields(),
-              {{NAME_MIDDLE, "M"}},
-              {{NAME_MIDDLE, "Mitchell"},
-               {NAME_FULL, "Marion Mitchell Morrison"}}},
+    account_tracker_->Shutdown();
+    account_tracker_.reset();
+    signin_client_.reset();
 
-          // Test that saving an identical profile except with the full middle
-          // name instead of the middle name initial results in the profiles
-          // getting merged and the full middle name replacing the initial.
-          SaveImportedProfileTestCase{{{NAME_MIDDLE, "M"}},
-                                      {{NAME_MIDDLE, "Mitchell"}},
-                                      {{NAME_MIDDLE, "Mitchell"}}},
+    test::DisableSystemServices(prefs_.get());
+    OSCryptMocker::TearDown();
+  }
+};
 
-          // Test that saving an identical profile except with no middle name
-          // results in the profiles getting merged and the full middle name
-          // being kept.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{NAME_MIDDLE, ""}},
-                                      {{NAME_MIDDLE, "Mitchell"}}},
+TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
+  // Create the test clock.
+  TestAutofillClock test_clock;
+  auto test_case = GetParam();
+  // Set the time to a specific value.
+  test_clock.SetNow(kArbitraryTime);
 
-          // Test that saving an identical profile except with a middle name
-          // initial results in the profiles getting merged and the middle name
-          // initial being saved.
-          SaveImportedProfileTestCase{{{NAME_MIDDLE, ""}},
-                                      {{NAME_MIDDLE, "M"}},
-                                      {{NAME_MIDDLE, "M"}}},
+  SetupReferenceProfile();
+  const std::vector<AutofillProfile*>& initial_profiles =
+      personal_data_->GetProfiles();
 
-          // Test that saving an identical profile except with a middle name
-          // results in the profiles getting merged and the full middle name
-          // being saved.
-          SaveImportedProfileTestCase{{{NAME_MIDDLE, ""}},
-                                      {{NAME_MIDDLE, "Mitchell"}},
-                                      {{NAME_MIDDLE, "Mitchell"}}},
+  // Apply changes to the original profile (if applicable).
+  for (ProfileField change : test_case.changes_to_original) {
+    initial_profiles.front()->SetRawInfo(change.field_type,
+                                         base::UTF8ToUTF16(change.field_value));
+  }
 
-          // Test that saving a identical profile except with the full name set
-          // instead of the name parts results in the two profiles being merged
-          // and all the name parts kept and the full name being added.
-          SaveImportedProfileTestCase{
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, ""},
-              },
-              {
-                  {NAME_FIRST, ""},
-                  {NAME_MIDDLE, ""},
-                  {NAME_LAST, ""},
-                  {NAME_FULL, "Marion Mitchell Morrison"},
-              },
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, "Marion Mitchell Morrison"},
-              },
-          },
+  // Set the time to a bigger value.
+  test_clock.SetNow(kSomeLaterTime);
 
-          // Test that saving a identical profile except with the name parts set
-          // instead of the full name results in the two profiles being merged
-          // and the full name being kept and all the name parts being added.
-          SaveImportedProfileTestCase{
-              {
-                  {NAME_FIRST, ""},
-                  {NAME_MIDDLE, ""},
-                  {NAME_LAST, ""},
-                  {NAME_FULL, "Marion Mitchell Morrison"},
-              },
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, ""},
-              },
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, "Marion Mitchell Morrison"},
-              },
-          },
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
 
-          // Test that saving a profile that has only a full name set does not
-          // get merged with a profile with only the name parts set if the names
-          // are different.
-          SaveImportedProfileTestCase{
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, ""},
-              },
-              {
-                  {NAME_FIRST, ""},
-                  {NAME_MIDDLE, ""},
-                  {NAME_LAST, ""},
-                  {NAME_FULL, "John Thompson Smith"},
-              },
-          },
+  // Apply changes to the second profile (if applicable).
+  for (ProfileField change : test_case.changes_to_new) {
+    profile2.SetRawInfo(change.field_type,
+                        base::UTF8ToUTF16(change.field_value));
+  }
 
-          // Test that saving a profile that has only the name parts set does
-          // not get merged with a profile with only the full name set if the
-          // names are different.
-          SaveImportedProfileTestCase{
-              {
-                  {NAME_FIRST, ""},
-                  {NAME_MIDDLE, ""},
-                  {NAME_LAST, ""},
-                  {NAME_FULL, "John Thompson Smith"},
-              },
-              {
-                  {NAME_FIRST, "Marion"},
-                  {NAME_MIDDLE, "Mitchell"},
-                  {NAME_LAST, "Morrison"},
-                  {NAME_FULL, ""},
-              },
-          },
+  personal_data_->SaveImportedProfile(profile2);
 
-          // Test that saving an identical profile except for the first address
-          // line results in two profiles being saved.
-          SaveImportedProfileTestCase{
-              ProfileFields(),
-              {{ADDRESS_HOME_LINE1, "123 Aquarium St."}}},
+  const std::vector<AutofillProfile*>& saved_profiles =
+      personal_data_->GetProfiles();
 
-          // Test that saving an identical profile except for the second address
-          // line results in two profiles being saved.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{ADDRESS_HOME_LINE2, "unit 7"}}},
+  // If there are no merge changes to verify, make sure that two profiles were
+  // saved.
+  if (test_case.changed_field_values.empty()) {
+    EXPECT_EQ(2U, saved_profiles.size());
+  } else {
+    EXPECT_EQ(1U, saved_profiles.size());
 
-          // Tests that saving an identical profile that has a new piece of
-          // information (company name) results in a merge and that the original
-          // empty value gets overwritten by the new information.
-          SaveImportedProfileTestCase{{{COMPANY_NAME, ""}},
-                                      ProfileFields(),
-                                      {{COMPANY_NAME, "Fox"}}},
+    // Make sure the new information was merged correctly.
+    for (ProfileField changed_field : test_case.changed_field_values) {
+      EXPECT_EQ(base::UTF8ToUTF16(changed_field.field_value),
+                saved_profiles.front()->GetRawInfo(changed_field.field_type));
+    }
+    // Verify that the merged profile's use count, use date and modification
+    // date were properly updated.
+    EXPECT_EQ(1U, saved_profiles.front()->use_count());
+    EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->use_date());
+    EXPECT_EQ(kSomeLaterTime, saved_profiles.front()->modification_date());
+  }
 
-          // Tests that saving an identical profile except a loss of information
-          // results in a merge but the original value is not overwritten (no
-          // information loss).
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{COMPANY_NAME, ""}},
-                                      {{COMPANY_NAME, "Fox"}}},
+  // Erase the profiles for the next test.
+  ResetProfiles();
+}
 
-          // Tests that saving an identical profile except a slightly different
-          // postal code results in a merge with the new value kept.
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "R2C 0A1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C0A1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "R2C0A1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C 0A1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C 0A1"}}},
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "r2c 0a1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C0A1"}},
-                                      {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
+INSTANTIATE_TEST_CASE_P(
+    PersonalDataManagerTest,
+    SaveImportedProfileTest,
+    testing::Values(
+        // Test that saving an identical profile except for the name results
+        // in two profiles being saved.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{NAME_FIRST, "Marionette"}}},
 
-          // Tests that saving an identical profile plus a new piece of
-          // information on the address line 2 results in a merge and that the
-          // original empty value gets overwritten by the new information.
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE2, ""}},
-                                      ProfileFields(),
-                                      {{ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving an identical profile except with the middle name
+        // initial instead of the full middle name results in the profiles
+        // getting merged and the full middle name being kept.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{NAME_MIDDLE, "M"}},
+                                    {{NAME_MIDDLE, "Mitchell"},
+                                     {NAME_FULL, "Marion Mitchell Morrison"}}},
 
-          // Tests that saving an identical profile except a loss of information
-          // on the address line 2 results in a merge but that the original
-          // value gets not overwritten (no information loss).
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{ADDRESS_HOME_LINE2, ""}},
-                                      {{ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving an identical profile except with the full middle
+        // name instead of the middle name initial results in the profiles
+        // getting merged and the full middle name replacing the initial.
+        SaveImportedProfileTestCase{{{NAME_MIDDLE, "M"}},
+                                    {{NAME_MIDDLE, "Mitchell"}},
+                                    {{NAME_MIDDLE, "Mitchell"}}},
 
-          // Tests that saving an identical except with more punctuation in the
-          // fist address line, while the second is empty, results in a merge
-          // and that the original address gets overwritten.
-          SaveImportedProfileTestCase{
-              {{ADDRESS_HOME_LINE2, ""}},
-              {{ADDRESS_HOME_LINE2, ""}, {ADDRESS_HOME_LINE1, "123, Zoo St."}},
-              {{ADDRESS_HOME_LINE1, "123, Zoo St."}}},
+        // Test that saving an identical profile except with no middle name
+        // results in the profiles getting merged and the full middle name
+        // being kept.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{NAME_MIDDLE, ""}},
+                                    {{NAME_MIDDLE, "Mitchell"}}},
 
-          // Tests that saving an identical profile except with less punctuation
-          // in the fist address line, while the second is empty, results in a
-          // merge and that the longer address is retained.
-          SaveImportedProfileTestCase{
-              {{ADDRESS_HOME_LINE2, ""}, {ADDRESS_HOME_LINE1, "123, Zoo St."}},
-              {{ADDRESS_HOME_LINE2, ""}},
-              {{ADDRESS_HOME_LINE1, "123 Zoo St"}}},
+        // Test that saving an identical profile except with a middle name
+        // initial results in the profiles getting merged and the middle name
+        // initial being saved.
+        SaveImportedProfileTestCase{{{NAME_MIDDLE, ""}},
+                                    {{NAME_MIDDLE, "M"}},
+                                    {{NAME_MIDDLE, "M"}}},
 
-          // Tests that saving an identical profile except additional
-          // punctuation in the two address lines results in a merge and that
-          // the newer address is retained.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{ADDRESS_HOME_LINE1, "123, Zoo St."},
-                                       {ADDRESS_HOME_LINE2, "unit. 5"}},
-                                      {{ADDRESS_HOME_LINE1, "123, Zoo St."},
-                                       {ADDRESS_HOME_LINE2, "unit. 5"}}},
+        // Test that saving an identical profile except with a middle name
+        // results in the profiles getting merged and the full middle name
+        // being saved.
+        SaveImportedProfileTestCase{{{NAME_MIDDLE, ""}},
+                                    {{NAME_MIDDLE, "Mitchell"}},
+                                    {{NAME_MIDDLE, "Mitchell"}}},
 
-          // Tests that saving an identical profile except less punctuation in
-          // the two address lines results in a merge and that the newer address
-          // is retained.
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE1, "123, Zoo St."},
-                                       {ADDRESS_HOME_LINE2, "unit. 5"}},
-                                      ProfileFields(),
-                                      {{ADDRESS_HOME_LINE1, "123 Zoo St"},
-                                       {ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving a identical profile except with the full name set
+        // instead of the name parts results in the two profiles being merged
+        // and all the name parts kept and the full name being added.
+        SaveImportedProfileTestCase{
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, ""},
+            },
+            {
+                {NAME_FIRST, ""},
+                {NAME_MIDDLE, ""},
+                {NAME_LAST, ""},
+                {NAME_FULL, "Marion Mitchell Morrison"},
+            },
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, "Marion Mitchell Morrison"},
+            },
+        },
 
-          // Tests that saving an identical profile with accented characters in
-          // the two address lines results in a merge and that the newer address
-          // is retained.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{ADDRESS_HOME_LINE1, "123 Zôö St"},
-                                       {ADDRESS_HOME_LINE2, "üñìt 5"}},
-                                      {{ADDRESS_HOME_LINE1, "123 Zôö St"},
-                                       {ADDRESS_HOME_LINE2, "üñìt 5"}}},
+        // Test that saving a identical profile except with the name parts set
+        // instead of the full name results in the two profiles being merged
+        // and the full name being kept and all the name parts being added.
+        SaveImportedProfileTestCase{
+            {
+                {NAME_FIRST, ""},
+                {NAME_MIDDLE, ""},
+                {NAME_LAST, ""},
+                {NAME_FULL, "Marion Mitchell Morrison"},
+            },
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, ""},
+            },
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, "Marion Mitchell Morrison"},
+            },
+        },
 
-          // Tests that saving an identical profile without accented characters
-          // in the two address lines results in a merge and that the newer
-          // address is retained.
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE1, "123 Zôö St"},
-                                       {ADDRESS_HOME_LINE2, "üñìt 5"}},
-                                      ProfileFields(),
-                                      {{ADDRESS_HOME_LINE1, "123 Zoo St"},
-                                       {ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving a profile that has only a full name set does not
+        // get merged with a profile with only the name parts set if the names
+        // are different.
+        SaveImportedProfileTestCase{
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, ""},
+            },
+            {
+                {NAME_FIRST, ""},
+                {NAME_MIDDLE, ""},
+                {NAME_LAST, ""},
+                {NAME_FULL, "John Thompson Smith"},
+            },
+        },
 
-          // Tests that saving an identical profile except that the address line
-          // 1 is in the address line 2 results in a merge and that the
-          // multi-lne address is retained.
-          SaveImportedProfileTestCase{
-              ProfileFields(),
-              {{ADDRESS_HOME_LINE1, "123 Zoo St, unit 5"},
-               {ADDRESS_HOME_LINE2, ""}},
-              {{ADDRESS_HOME_LINE1, "123 Zoo St"},
-               {ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving a profile that has only the name parts set does
+        // not get merged with a profile with only the full name set if the
+        // names are different.
+        SaveImportedProfileTestCase{
+            {
+                {NAME_FIRST, ""},
+                {NAME_MIDDLE, ""},
+                {NAME_LAST, ""},
+                {NAME_FULL, "John Thompson Smith"},
+            },
+            {
+                {NAME_FIRST, "Marion"},
+                {NAME_MIDDLE, "Mitchell"},
+                {NAME_LAST, "Morrison"},
+                {NAME_FULL, ""},
+            },
+        },
 
-          // Tests that saving an identical profile except that the address line
-          // 2 contains part of the old address line 1 results in a merge and
-          // that the original address lines of the reference profile get
-          // overwritten.
-          SaveImportedProfileTestCase{
-              {{ADDRESS_HOME_LINE1, "123 Zoo St, unit 5"},
-               {ADDRESS_HOME_LINE2, ""}},
-              ProfileFields(),
-              {{ADDRESS_HOME_LINE1, "123 Zoo St"},
-               {ADDRESS_HOME_LINE2, "unit 5"}}},
+        // Test that saving an identical profile except for the first address
+        // line results in two profiles being saved.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Aquarium St."}}},
 
-          // Tests that saving an identical profile except that the state is the
-          // abbreviation instead of the full form results in a merge and that
-          // the original state gets overwritten.
-          SaveImportedProfileTestCase{{{ADDRESS_HOME_STATE, "California"}},
-                                      ProfileFields(),
-                                      {{ADDRESS_HOME_STATE, "CA"}}},
+        // Test that saving an identical profile except for the second address
+        // line results in two profiles being saved.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE2, "unit 7"}}},
 
-          // Tests that saving an identical profile except that the state is the
-          // full form instead of the abbreviation results in a merge and that
-          // the abbreviated state is retained.
-          SaveImportedProfileTestCase{ProfileFields(),
-                                      {{ADDRESS_HOME_STATE, "California"}},
-                                      {{ADDRESS_HOME_STATE, "CA"}}},
+        // Tests that saving an identical profile that has a new piece of
+        // information (company name) results in a merge and that the original
+        // empty value gets overwritten by the new information.
+        SaveImportedProfileTestCase{{{COMPANY_NAME, ""}},
+                                    ProfileFields(),
+                                    {{COMPANY_NAME, "Fox"}}},
 
-          // Tests that saving and identical profile except that the company
-          // name has different punctuation and case results in a merge and that
-          // the syntax of the new profile replaces the old one.
-          SaveImportedProfileTestCase{{{COMPANY_NAME, "Stark inc"}},
-                                      {{COMPANY_NAME, "Stark Inc."}},
-                                      {{COMPANY_NAME, "Stark Inc."}}}));
+        // Tests that saving an identical profile except a loss of information
+        // results in a merge but the original value is not overwritten (no
+        // information loss).
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{COMPANY_NAME, ""}},
+                                    {{COMPANY_NAME, "Fox"}}},
 
-  // Tests that MergeProfile tries to merge the imported profile into the
-  // existing profile in decreasing order of frecency.
-  TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
-    // Create two very similar profiles except with different company names.
-    std::unique_ptr<AutofillProfile> profile1 =
-        base::MakeUnique<AutofillProfile>(base::GenerateGUID(),
-                                          "https://www.example.com");
-    test::SetProfileInfo(profile1.get(), "Homer", "Jay", "Simpson",
-                         "homer.simpson@abc.com", "SNP",
-                         "742 Evergreen Terrace", "", "Springfield", "IL",
-                         "91601", "US", "12345678910");
-    AutofillProfile* profile2 =
-        new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
-    test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
-                         "homer.simpson@abc.com", "Fox",
-                         "742 Evergreen Terrace", "", "Springfield", "IL",
-                         "91601", "US", "12345678910");
+        // Tests that saving an identical profile except a slightly different
+        // postal code results in a merge with the new value kept.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "R2C 0A1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C0A1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "R2C0A1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C 0A1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C 0A1"}}},
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_ZIP, "r2c 0a1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C0A1"}},
+                                    {{ADDRESS_HOME_ZIP, "R2C0A1"}}},
 
-    // Give the "Fox" profile a bigger frecency score.
-    profile2->set_use_count(15);
+        // Tests that saving an identical profile plus a new piece of
+        // information on the address line 2 results in a merge and that the
+        // original empty value gets overwritten by the new information.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE2, ""}},
+                                    ProfileFields(),
+                                    {{ADDRESS_HOME_LINE2, "unit 5"}}},
 
-    // Create the |existing_profiles| vector.
-    std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
-    existing_profiles.push_back(std::move(profile1));
-    existing_profiles.push_back(base::WrapUnique(profile2));
+        // Tests that saving an identical profile except a loss of information
+        // on the address line 2 results in a merge but that the original
+        // value gets not overwritten (no information loss).
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE2, ""}},
+                                    {{ADDRESS_HOME_LINE2, "unit 5"}}},
 
-    // Create a new imported profile with no company name.
-    AutofillProfile imported_profile(base::GenerateGUID(),
-                                     "https://www.example.com");
-    test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
-                         "homer.simpson@abc.com", "", "742 Evergreen Terrace",
-                         "", "Springfield", "IL", "91601", "US", "12345678910");
+        // Tests that saving an identical except with more punctuation in the
+        // fist address line, while the second is empty, results in a merge
+        // and that the original address gets overwritten.
+        SaveImportedProfileTestCase{
+            {{ADDRESS_HOME_LINE2, ""}},
+            {{ADDRESS_HOME_LINE2, ""}, {ADDRESS_HOME_LINE1, "123, Zoo St."}},
+            {{ADDRESS_HOME_LINE1, "123, Zoo St."}}},
 
-    // Merge the imported profile into the existing profiles.
-    std::vector<AutofillProfile> profiles;
-    std::string guid = personal_data_->MergeProfile(
-        imported_profile, &existing_profiles, "US-EN", &profiles);
+        // Tests that saving an identical profile except with less punctuation
+        // in the fist address line, while the second is empty, results in a
+        // merge and that the longer address is retained.
+        SaveImportedProfileTestCase{
+            {{ADDRESS_HOME_LINE2, ""}, {ADDRESS_HOME_LINE1, "123, Zoo St."}},
+            {{ADDRESS_HOME_LINE2, ""}},
+            {{ADDRESS_HOME_LINE1, "123 Zoo St"}}},
 
-    // The new profile should be merged into the "fox" profile.
-    EXPECT_EQ(profile2->guid(), guid);
+        // Tests that saving an identical profile except additional
+        // punctuation in the two address lines results in a merge and that
+        // the newer address is retained.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123, Zoo St."},
+                                     {ADDRESS_HOME_LINE2, "unit. 5"}},
+                                    {{ADDRESS_HOME_LINE1, "123, Zoo St."},
+                                     {ADDRESS_HOME_LINE2, "unit. 5"}}},
+
+        // Tests that saving an identical profile except less punctuation in
+        // the two address lines results in a merge and that the newer address
+        // is retained.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE1, "123, Zoo St."},
+                                     {ADDRESS_HOME_LINE2, "unit. 5"}},
+                                    ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Zoo St"},
+                                     {ADDRESS_HOME_LINE2, "unit 5"}}},
+
+        // Tests that saving an identical profile with accented characters in
+        // the two address lines results in a merge and that the newer address
+        // is retained.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Zôö St"},
+                                     {ADDRESS_HOME_LINE2, "üñìt 5"}},
+                                    {{ADDRESS_HOME_LINE1, "123 Zôö St"},
+                                     {ADDRESS_HOME_LINE2, "üñìt 5"}}},
+
+        // Tests that saving an identical profile without accented characters
+        // in the two address lines results in a merge and that the newer
+        // address is retained.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE1, "123 Zôö St"},
+                                     {ADDRESS_HOME_LINE2, "üñìt 5"}},
+                                    ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Zoo St"},
+                                     {ADDRESS_HOME_LINE2, "unit 5"}}},
+
+        // Tests that saving an identical profile except that the address line
+        // 1 is in the address line 2 results in a merge and that the
+        // multi-lne address is retained.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Zoo St, unit 5"},
+                                     {ADDRESS_HOME_LINE2, ""}},
+                                    {{ADDRESS_HOME_LINE1, "123 Zoo St"},
+                                     {ADDRESS_HOME_LINE2, "unit 5"}}},
+
+        // Tests that saving an identical profile except that the address line
+        // 2 contains part of the old address line 1 results in a merge and
+        // that the original address lines of the reference profile get
+        // overwritten.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_LINE1, "123 Zoo St, unit 5"},
+                                     {ADDRESS_HOME_LINE2, ""}},
+                                    ProfileFields(),
+                                    {{ADDRESS_HOME_LINE1, "123 Zoo St"},
+                                     {ADDRESS_HOME_LINE2, "unit 5"}}},
+
+        // Tests that saving an identical profile except that the state is the
+        // abbreviation instead of the full form results in a merge and that
+        // the original state gets overwritten.
+        SaveImportedProfileTestCase{{{ADDRESS_HOME_STATE, "California"}},
+                                    ProfileFields(),
+                                    {{ADDRESS_HOME_STATE, "CA"}}},
+
+        // Tests that saving an identical profile except that the state is the
+        // full form instead of the abbreviation results in a merge and that
+        // the abbreviated state is retained.
+        SaveImportedProfileTestCase{ProfileFields(),
+                                    {{ADDRESS_HOME_STATE, "California"}},
+                                    {{ADDRESS_HOME_STATE, "CA"}}},
+
+        // Tests that saving and identical profile except that the company
+        // name has different punctuation and case results in a merge and that
+        // the syntax of the new profile replaces the old one.
+        SaveImportedProfileTestCase{{{COMPANY_NAME, "Stark inc"}},
+                                    {{COMPANY_NAME, "Stark Inc."}},
+                                    {{COMPANY_NAME, "Stark Inc."}}}));
+
+// Tests that MergeProfile tries to merge the imported profile into the
+// existing profile in decreasing order of frecency.
+TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
+  // Create two very similar profiles except with different company names.
+  std::unique_ptr<AutofillProfile> profile1 = base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile1.get(), "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  AutofillProfile* profile2 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Give the "Fox" profile a bigger frecency score.
+  profile2->set_use_count(15);
+
+  // Create the |existing_profiles| vector.
+  std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
+  existing_profiles.push_back(std::move(profile1));
+  existing_profiles.push_back(base::WrapUnique(profile2));
+
+  // Create a new imported profile with no company name.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Merge the imported profile into the existing profiles.
+  std::vector<AutofillProfile> profiles;
+  std::string guid = personal_data_->MergeProfile(
+      imported_profile, &existing_profiles, "US-EN", &profiles);
+
+  // The new profile should be merged into the "fox" profile.
+  EXPECT_EQ(profile2->guid(), guid);
 }
 
 // Tests that MergeProfile produces a merged profile with the expected usage
@@ -5170,21 +5170,22 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MergedProfileValues) {
   EXPECT_EQ(profile3.guid(), profiles[0]->guid());
   // The address syntax that results from the merge should be the one from the
   // imported profile (highest frecency).
-  EXPECT_EQ(UTF8ToUTF16("742. Evergreen Terrace"),
+  EXPECT_EQ(base::UTF8ToUTF16("742. Evergreen Terrace"),
             profiles[0]->GetRawInfo(ADDRESS_HOME_LINE1));
   // The middle name should be full, even if the profile with the higher
   // frecency only had an initial (no loss of information).
-  EXPECT_EQ(UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
   // The specified phone number from profile1 should be kept (no loss of
   // information).
-  EXPECT_EQ(UTF8ToUTF16("12345678910"),
+  EXPECT_EQ(base::UTF8ToUTF16("12345678910"),
             profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   // The specified company name from profile2 should be kept (no loss of
   // information).
-  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(base::UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
   // The specified country from the imported profile shoudl be kept (no loss of
   // information).
-  EXPECT_EQ(UTF8ToUTF16("US"), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::UTF8ToUTF16("US"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
   // The use count that results from the merge should be the max of all the
   // profiles use counts.
   EXPECT_EQ(10U, profiles[0]->use_count());
@@ -5629,17 +5630,18 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
   // |Homer3|'s data:
   // The address should be saved with the syntax of |Homer1| since it has the
   // highest frecency score.
-  EXPECT_EQ(UTF8ToUTF16("742. Evergreen Terrace"),
+  EXPECT_EQ(base::UTF8ToUTF16("742. Evergreen Terrace"),
             profiles[0]->GetRawInfo(ADDRESS_HOME_LINE1));
   // The middle name should be the full version found in |Homer2|,
-  EXPECT_EQ(UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::UTF8ToUTF16("Jay"), profiles[0]->GetRawInfo(NAME_MIDDLE));
   // The phone number from |Homer2| should be kept (no loss of information).
-  EXPECT_EQ(UTF8ToUTF16("12345678910"),
+  EXPECT_EQ(base::UTF8ToUTF16("12345678910"),
             profiles[0]->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   // The company name from |Homer3| should be kept (no loss of information).
-  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(base::UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
   // The country from |Homer1| profile should be kept (no loss of information).
-  EXPECT_EQ(UTF8ToUTF16("US"), profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::UTF8ToUTF16("US"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_COUNTRY));
   // The use count that results from the merge should be the max of Homer 1, 2
   // and 3's respective use counts.
   EXPECT_EQ(10U, profiles[0]->use_count());
@@ -5712,7 +5714,6 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_NopIfOneProfile) {
   EnableAutofillProfileCleanup();
   EXPECT_FALSE(personal_data_->ApplyDedupingRoutine());
 }
-
 
 // Tests that ApplyDedupingRoutine is not run a second time on the same major
 // version.
@@ -5808,7 +5809,8 @@ TEST_F(PersonalDataManagerTest,
                        "77401", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
   GetServerProfiles.back().set_use_count(100);
   autofill_table_->SetServerProfiles(GetServerProfiles);
 
@@ -5826,7 +5828,7 @@ TEST_F(PersonalDataManagerTest,
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1111" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
@@ -5867,7 +5869,7 @@ TEST_F(PersonalDataManagerTest,
 
   // Make sure that the two profiles have not merged.
   ASSERT_EQ(2U, profiles.size());
-  EXPECT_EQ(UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(local_profile, *profiles[1]);
 
   // Make sure that the billing address id of the two cards now point to the
@@ -5879,7 +5881,7 @@ TEST_F(PersonalDataManagerTest,
 
   // Make sure that the added address has the email address of the currently
   // signed-in user.
-  EXPECT_EQ(UTF8ToUTF16("syncuser@example.com"),
+  EXPECT_EQ(base::UTF8ToUTF16("syncuser@example.com"),
             profiles[0]->GetRawInfo(EMAIL_ADDRESS));
 }
 
@@ -5915,7 +5917,8 @@ TEST_F(PersonalDataManagerTest,
                        "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
   GetServerProfiles.back().set_use_count(100);
   autofill_table_->SetServerProfiles(GetServerProfiles);
 
@@ -5933,7 +5936,7 @@ TEST_F(PersonalDataManagerTest,
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1111" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
@@ -5976,10 +5979,11 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(1U, profiles.size());
 
   // Check that the values were merged.
-  EXPECT_EQ(UTF8ToUTF16("john@doe.com"),
+  EXPECT_EQ(base::UTF8ToUTF16("john@doe.com"),
             profiles[0]->GetRawInfo(EMAIL_ADDRESS));
-  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
-  EXPECT_EQ(UTF8ToUTF16("32801"), profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
+  EXPECT_EQ(base::UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(base::UTF8ToUTF16("32801"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
 
   // Make sure that the billing address id of the two cards now point to the
   // converted profile.
@@ -6076,7 +6080,8 @@ TEST_F(
                        "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
   GetServerProfiles.back().set_use_count(100);
 
   // Add a similar server profile.
@@ -6087,7 +6092,8 @@ TEST_F(
                        "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
   GetServerProfiles.back().set_use_count(200);
   autofill_table_->SetServerProfiles(GetServerProfiles);
 
@@ -6105,7 +6111,7 @@ TEST_F(
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1111" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId2);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
@@ -6152,12 +6158,13 @@ TEST_F(
   // Make sure that the two Wallet addresses merged together and were added as
   // a new local profile.
   ASSERT_EQ(2U, profiles.size());
-  EXPECT_EQ(UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::UTF8ToUTF16("John"), profiles[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(local_profile, *profiles[1]);
 
   // Check that the values were merged.
-  EXPECT_EQ(UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
-  EXPECT_EQ(UTF8ToUTF16("32801"), profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
+  EXPECT_EQ(base::UTF8ToUTF16("Fox"), profiles[0]->GetRawInfo(COMPANY_NAME));
+  EXPECT_EQ(base::UTF8ToUTF16("32801"),
+            profiles[0]->GetRawInfo(ADDRESS_HOME_ZIP));
 
   // Make sure that the billing address id of the two cards now point to the
   // converted profile.
@@ -6171,7 +6178,7 @@ TEST_F(
 // address was already converted in the past.
 TEST_F(
     PersonalDataManagerTest,
-    ConvertWalletAddressesAndUpdateWalletCards_NewCard_AddressAlreadyConverted) {
+    ConvertWalletAddressesAndUpdateWalletCards_NewCrd_AddressAlreadyConverted) {
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -6190,7 +6197,8 @@ TEST_F(
                        "1212 Center", "Bld. 5", "Orlando", "FL", "", "US", "");
   // Wallet only provides a full name, so the above first and last names
   // will be ignored when the profile is written to the DB.
-  GetServerProfiles.back().SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  GetServerProfiles.back().SetRawInfo(NAME_FULL,
+                                      base::ASCIIToUTF16("John Doe"));
   GetServerProfiles.back().set_use_count(100);
   autofill_table_->SetServerProfiles(GetServerProfiles);
 
@@ -6200,7 +6208,7 @@ TEST_F(
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card1"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1111" /* Visa */, "01", "2999");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId);
   test::SetServerCreditCards(autofill_table_, server_cards);
 
@@ -6238,7 +6246,7 @@ TEST_F(
       CreditCard(CreditCard::MASKED_SERVER_CARD, "server_card2"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "1112" /* Visa */, "01", "2888");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
   server_cards.back().set_billing_address_id(kServerAddressId);
   test::SetServerCreditCards(autofill_table_, server_cards);
 

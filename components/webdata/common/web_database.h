@@ -6,6 +6,7 @@
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "components/webdata/common/web_database_table.h"

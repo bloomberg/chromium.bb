@@ -133,7 +133,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   for (const std::string& supported_network :
        spec()->supported_card_networks()) {
     const std::string autofill_card_type =
-        autofill::data_util::GetCardTypeForBasicCardPaymentType(
+        autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork(
             supported_network);
     std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
         autofill::data_util::GetPaymentRequestData(autofill_card_type)
