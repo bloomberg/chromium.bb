@@ -8749,10 +8749,10 @@ static int64_t handle_inter_mode(
     best_mv[0].as_int = cur_mv[0].as_int;
     best_mv[1].as_int = cur_mv[1].as_int;
     memset(&best_compound_data, 0, sizeof(INTERINTER_COMPOUND_DATA));
-    av1_cost_tokens(compound_type_cost, cm->fc->compound_type_prob[bsize],
-                    av1_compound_type_tree);
 
     if (masked_compound_used) {
+      av1_cost_tokens(compound_type_cost, cm->fc->compound_type_prob[bsize],
+                      av1_compound_type_tree);
       // get inter predictors to use for masked compound modes
       av1_build_inter_predictors_for_planes_single_buf(
           xd, bsize, 0, 0, mi_row, mi_col, 0, preds0, strides);
