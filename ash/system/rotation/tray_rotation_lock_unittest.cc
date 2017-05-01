@@ -115,24 +115,11 @@ TEST_F(TrayRotationLockTest, CreateTrayView) {
 }
 
 // Tests that when the tray view is created, while MaximizeMode is active, that
-// it is not visible.
+// it must be visible, and becomes invisible exiting MaximizeMode.
 TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeMode) {
   TearDownViews();
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
-  SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
-  EXPECT_FALSE(tray_view()->visible());
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      false);
-}
-
-// Tests that when the tray view is created, while MaximizeMode is active, and
-// rotation is locked, that it is visible.
-TEST_F(TrayRotationLockTest, CreateTrayViewDuringMaximizeModeAndRotationLock) {
-  TearDownViews();
-  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
-      true);
-  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
   EXPECT_TRUE(tray_view()->visible());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
@@ -153,8 +140,8 @@ TEST_F(TrayRotationLockTest, TrayViewVisibilityChangesDuringMaximizeMode) {
   EXPECT_FALSE(tray_view()->visible());
 }
 
-// Tests that the when the tray view is created for a secondary display, that
-// it is not visible, and that MaximizeMode does not affect visibility.
+// Tests that when the tray view is created for a secondary display, that it is
+// not visible, and that MaximizeMode does not affect visibility.
 TEST_F(TrayRotationLockTest, CreateSecondaryTrayView) {
   UpdateDisplay("400x400,200x200");
 
@@ -185,6 +172,7 @@ TEST_F(TrayRotationLockTest, CreateDefaultViewDuringMaximizeMode) {
   EXPECT_TRUE(default_view()->visible());
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
+  EXPECT_FALSE(default_view()->visible());
 }
 
 // Tests that the enabling of MaximizeMode affects a previously created default
@@ -210,7 +198,7 @@ TEST_F(TrayRotationLockTest, CreateSecondaryDefaultView) {
 }
 
 // Tests that activating the default view causes the display to have its
-// rotation locked, and that the tray view becomes visible.
+// rotation locked.
 TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   MaximizeModeController* maximize_mode_controller =
       Shell::Get()->maximize_mode_controller();
@@ -218,7 +206,7 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
       Shell::Get()->screen_orientation_controller();
   ASSERT_FALSE(screen_orientation_controller->rotation_locked());
   maximize_mode_controller->EnableMaximizeModeWindowManager(true);
-  ASSERT_FALSE(tray_view()->visible());
+  ASSERT_TRUE(tray_view()->visible());
 
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));

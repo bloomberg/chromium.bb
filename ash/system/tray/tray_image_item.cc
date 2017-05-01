@@ -34,7 +34,7 @@ views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   CHECK(!tray_view_);
   tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
-  UpdateImageOnImageView();
+  SetImageIcon(icon_);
   tray_view_->SetVisible(GetInitialVisibility());
   return tray_view_;
 }
@@ -45,15 +45,15 @@ void TrayImageItem::DestroyTrayView() {
 
 void TrayImageItem::SetIconColor(SkColor color) {
   icon_color_ = color;
-  UpdateImageOnImageView();
+  SetImageIcon(icon_);
 }
 
-void TrayImageItem::UpdateImageOnImageView() {
+void TrayImageItem::SetImageIcon(const gfx::VectorIcon& icon) {
   if (!tray_view_)
     return;
 
   tray_view_->image_view()->SetImage(
-      gfx::CreateVectorIcon(icon_, kTrayIconSize, icon_color_));
+      gfx::CreateVectorIcon(icon, kTrayIconSize, icon_color_));
 }
 
 }  // namespace ash
