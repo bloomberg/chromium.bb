@@ -5403,9 +5403,9 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   // hidden itself.
   ASSERT_EQ(1u, render_surface_list.size());
   ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child_layer->contributes_to_drawn_render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
@@ -5447,9 +5447,9 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   // hidden itself and the grand child.
   ASSERT_EQ(1u, render_surface_list.size());
   ASSERT_EQ(1, root_layer->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child_layer->contributes_to_drawn_render_surface());
 }
 
 void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
@@ -5557,25 +5557,23 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
   // The root render surface should have 2 contributing layers.
   EXPECT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(
-      copy_grand_parent_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(copy_grand_parent_layer->contributes_to_drawn_render_surface());
   EXPECT_FALSE(copy_grand_parent_sibling_before_layer
-                   ->is_drawn_render_surface_layer_list_member());
+                   ->contributes_to_drawn_render_surface());
   EXPECT_FALSE(copy_grand_parent_sibling_after_layer
-                   ->is_drawn_render_surface_layer_list_member());
+                   ->contributes_to_drawn_render_surface());
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
   ASSERT_EQ(1, copy_parent_layer->GetRenderSurface()->num_contributors());
-  EXPECT_FALSE(copy_parent_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(copy_parent_layer->contributes_to_drawn_render_surface());
 
   // The copy layer's render surface should have 2 contributing layers.
   ASSERT_EQ(2, copy_layer->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(copy_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(copy_child_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(
-      copy_grand_child_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(copy_layer->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(copy_child_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(copy_grand_child_layer->contributes_to_drawn_render_surface());
 
   // copy_grand_parent, copy_parent shouldn't be drawn because they are hidden,
   // but the copy_layer and copy_child should be drawn for the copy request.
@@ -5648,7 +5646,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   // The root render surface should have only 2 contributing layer, since the
   // other layers are clipped away.
   ASSERT_EQ(2, root_layer->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(root_layer->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
@@ -6283,7 +6281,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(1u, render_surface_list_impl()->size());
-  EXPECT_TRUE(grand_child->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(grand_child->contributes_to_drawn_render_surface());
 
   // As all layers have identity transform, we shouldn't check for backface
   // visibility.
@@ -6623,9 +6621,9 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   // Despite the fact that we visited the above layers out of order to get the
   // correct clip, the layer lists should be unaffected.
   EXPECT_EQ(3, root->GetRenderSurface()->num_contributors());
-  EXPECT_TRUE(scroll_child->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(scroll_parent->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(scroll_grandparent->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(scroll_child->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(scroll_parent->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(scroll_grandparent->contributes_to_drawn_render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
@@ -8374,11 +8372,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   // Start with nothing being drawn.
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   std::set<LayerImpl*> expected;
   std::set<LayerImpl*> actual;
@@ -8392,11 +8390,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   actual.clear();
@@ -8409,11 +8407,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(grand_child1_raw);
@@ -8432,11 +8430,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(grand_child2_raw);
@@ -8452,13 +8450,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child_raw->test_properties()
-                  ->mask_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+                  ->mask_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(grand_child2_raw);
@@ -8474,13 +8472,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child_raw->test_properties()
-                  ->mask_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+                  ->mask_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(grand_child2_raw);
@@ -8497,13 +8495,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(child_raw->contributes_to_drawn_render_surface());
   EXPECT_FALSE(child_raw->test_properties()
-                   ->mask_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+                   ->mask_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   actual.clear();
@@ -8516,13 +8514,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child_raw->contributes_to_drawn_render_surface());
   EXPECT_TRUE(child_raw->test_properties()
-                  ->mask_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+                  ->mask_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(child_raw);
@@ -8543,11 +8541,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
-  EXPECT_TRUE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(parent_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(grand_parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(parent_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(child_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child1_raw->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(grand_child2_raw->contributes_to_drawn_render_surface());
 
   expected.clear();
   expected.insert(grand_parent_raw);
@@ -9021,7 +9019,7 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawProperties(root);
   // Since animated has singular transform, it is not be part of render
   // surface layer list but should be rastered.
-  EXPECT_FALSE(animated->is_drawn_render_surface_layer_list_member());
+  EXPECT_FALSE(animated->contributes_to_drawn_render_surface());
   EXPECT_TRUE(animated->raster_even_if_not_in_rsll());
 
   // The animated layer has a singular transform and maps to a non-empty rect in
@@ -9057,8 +9055,8 @@ TEST_F(LayerTreeHostCommonTest,
   // surface layer list.
   LayerImpl* active_animated =
       host_impl()->active_tree()->LayerById(animated->id());
-  EXPECT_TRUE(active_root->is_drawn_render_surface_layer_list_member());
-  EXPECT_FALSE(active_animated->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(active_root->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(active_animated->contributes_to_drawn_render_surface());
 
   // Since animated has singular transform, it is not be part of render
   // surface layer list but should be rastered.
@@ -10344,9 +10342,10 @@ TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
   ExecuteCalculateDrawProperties(root);
 
   // The render surface created for the mask has no contributing content, so the
-  // mask isn't a drawn RSLL member. This means it has an empty visible rect,
-  // but its screen space transform can still be computed correctly on-demand.
-  EXPECT_FALSE(mask->is_drawn_render_surface_layer_list_member());
+  // mask doesn't contribute to a drawn render surface. This means it has an
+  // empty visible rect, but its screen space transform can still be computed
+  // correctly on-demand.
+  EXPECT_FALSE(mask->contributes_to_drawn_render_surface());
   EXPECT_EQ(gfx::Rect(), mask->visible_layer_rect());
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform, mask->ScreenSpaceTransform());
 
@@ -10354,7 +10353,7 @@ TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
   child->SetDrawsContent(true);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(mask->is_drawn_render_surface_layer_list_member());
+  EXPECT_TRUE(mask->contributes_to_drawn_render_surface());
   EXPECT_EQ(gfx::Rect(20, 20), mask->visible_layer_rect());
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform, mask->ScreenSpaceTransform());
 

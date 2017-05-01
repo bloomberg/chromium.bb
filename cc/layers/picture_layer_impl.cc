@@ -1403,9 +1403,8 @@ bool PictureLayerImpl::IsOnActiveOrPendingTree() const {
 }
 
 bool PictureLayerImpl::HasValidTilePriorities() const {
-  return IsOnActiveOrPendingTree() &&
-         (is_drawn_render_surface_layer_list_member() ||
-          raster_even_if_not_in_rsll());
+  return IsOnActiveOrPendingTree() && (contributes_to_drawn_render_surface() ||
+                                       raster_even_if_not_in_rsll());
 }
 
 void PictureLayerImpl::InvalidateRegionForImages(

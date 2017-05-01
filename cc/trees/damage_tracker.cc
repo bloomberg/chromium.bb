@@ -114,7 +114,7 @@ void DamageTracker::UpdateDamageTracking(
   int current_target_effect_id = EffectTree::kContentsRootNodeId;
   DCHECK(effect_tree.GetRenderSurface(current_target_effect_id));
   for (LayerImpl* layer : *layer_tree_impl) {
-    if (!layer->is_drawn_render_surface_layer_list_member())
+    if (!layer->contributes_to_drawn_render_surface())
       continue;
 
     int next_target_effect_id = layer->render_target_effect_tree_index();

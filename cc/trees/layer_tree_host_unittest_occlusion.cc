@@ -52,8 +52,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
-    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(root->contributes_to_drawn_render_surface());
+    EXPECT_TRUE(child->contributes_to_drawn_render_surface());
 
     EXPECT_OCCLUSION_EQ(
         Occlusion(child->DrawTransform(), SimpleEnclosedRegion(),
@@ -109,8 +109,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     RenderSurfaceImpl* surface = child->GetRenderSurface();
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
-    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(root->contributes_to_drawn_render_surface());
+    EXPECT_TRUE(child->contributes_to_drawn_render_surface());
     EXPECT_TRUE(child->GetRenderSurface());
     EXPECT_EQ(child->GetRenderSurface(), child->render_target());
 
@@ -177,8 +177,8 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     LayerImpl* mask = surface->MaskLayer();
 
     // Verify the draw properties are valid.
-    EXPECT_TRUE(root->is_drawn_render_surface_layer_list_member());
-    EXPECT_TRUE(child->is_drawn_render_surface_layer_list_member());
+    EXPECT_TRUE(root->contributes_to_drawn_render_surface());
+    EXPECT_TRUE(child->contributes_to_drawn_render_surface());
     EXPECT_TRUE(child->GetRenderSurface());
     EXPECT_EQ(child->GetRenderSurface(), child->render_target());
 

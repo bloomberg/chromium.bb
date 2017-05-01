@@ -66,7 +66,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
-      is_drawn_render_surface_layer_list_member_(false),
+      contributes_to_drawn_render_surface_(false),
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       safe_opaque_background_color_(0),
@@ -866,7 +866,7 @@ void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
 
 gfx::Transform LayerImpl::DrawTransform() const {
   // Only drawn layers have up-to-date draw properties.
-  if (!is_drawn_render_surface_layer_list_member()) {
+  if (!contributes_to_drawn_render_surface()) {
     if (GetPropertyTrees()->non_root_surfaces_enabled) {
       return draw_property_utils::DrawTransform(this, GetTransformTree(),
                                                 GetEffectTree());
@@ -881,7 +881,7 @@ gfx::Transform LayerImpl::DrawTransform() const {
 
 gfx::Transform LayerImpl::ScreenSpaceTransform() const {
   // Only drawn layers have up-to-date draw properties.
-  if (!is_drawn_render_surface_layer_list_member()) {
+  if (!contributes_to_drawn_render_surface()) {
     return draw_property_utils::ScreenSpaceTransform(this, GetTransformTree());
   }
 

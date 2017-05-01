@@ -197,7 +197,7 @@ void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
 
 void DebugRectHistory::SaveLayerAnimationBoundsRects(LayerTreeImpl* tree_impl) {
   for (auto it = tree_impl->rbegin(); it != tree_impl->rend(); ++it) {
-    if (!(*it)->is_drawn_render_surface_layer_list_member())
+    if (!(*it)->contributes_to_drawn_render_surface())
       continue;
 
     // TODO(avallee): Figure out if we should show something for a layer who's
