@@ -763,7 +763,7 @@ int get_shear_params(WarpedMotionParams *wm) {
   int16_t shift;
   int16_t y = resolve_divisor_32(abs(mat[2]), &shift) * (mat[2] < 0 ? -1 : 1);
   int64_t v;
-  v = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) * y;
+  v = ((int64_t)mat[4] * (1 << WARPEDMODEL_PREC_BITS)) * y;
   wm->gamma =
       clamp((int)ROUND_POWER_OF_TWO_SIGNED_64(v, shift), INT16_MIN, INT16_MAX);
   v = ((int64_t)mat[3] * mat[4]) * y;
@@ -1562,14 +1562,16 @@ static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   wm->wmmat[2] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Px[1] * (int64_t)iDet;
   wm->wmmat[3] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = (dux << WARPEDMODEL_PREC_BITS) - sux * wm->wmmat[2] - suy * wm->wmmat[3];
+  v = (dux * (1 << WARPEDMODEL_PREC_BITS)) - sux * wm->wmmat[2] -
+      suy * wm->wmmat[3];
   wm->wmmat[0] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   v = Py[0] * (int64_t)iDet;
   wm->wmmat[4] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
   v = Py[1] * (int64_t)iDet;
   wm->wmmat[5] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED_64(v, shift));
-  v = (duy << WARPEDMODEL_PREC_BITS) - sux * wm->wmmat[4] - suy * wm->wmmat[5];
+  v = (duy * (1 << WARPEDMODEL_PREC_BITS)) - sux * wm->wmmat[4] -
+      suy * wm->wmmat[5];
   wm->wmmat[1] = (int32_t)(ROUND_POWER_OF_TWO_SIGNED(v, 3));
 
   wm->wmmat[6] = wm->wmmat[7] = 0;
