@@ -474,7 +474,17 @@ STDMETHODIMP AXPlatformNodeWin::get_accName(
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name, target);
 
-  return target->GetStringAttributeAsBstr(ui::AX_ATTR_NAME, name);
+  HRESULT result = target->GetStringAttributeAsBstr(ui::AX_ATTR_NAME, name);
+  if (FAILED(result) && MSAARole() == ROLE_SYSTEM_DOCUMENT && GetParent()) {
+    // Hack: Some versions of JAWS crash if they get an empty name on
+    // a document that's the child of an iframe, so always return a
+    // nonempty string for this role.  https://crbug.com/583057
+    base::string16 str = L" ";
+
+    *name = SysAllocString(str.c_str());
+    DCHECK(*name);
+  }
+  return result;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accParent(
