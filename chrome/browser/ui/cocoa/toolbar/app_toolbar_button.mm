@@ -8,6 +8,8 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "chrome/grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -33,6 +35,7 @@
   view_id_util::SetID(self, VIEW_ID_APP_MENU);
   severity_ = AppMenuIconController::Severity::NONE;
   type_ = AppMenuIconController::IconType::NONE;
+  [self setToolTip:l10n_util::GetNSString(IDS_APPMENU_TOOLTIP)];
 }
 
 - (const gfx::VectorIcon*)vectorIcon {
