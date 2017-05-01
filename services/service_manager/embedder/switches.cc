@@ -24,6 +24,9 @@ const char kDefaultServicePrefetchArgument[] = "/prefetch:8";
 
 #endif  // defined(OS_WIN)
 
+// Disable the in-process stack traces.
+const char kDisableInProcessStackTraces[] = "disable-in-process-stack-traces";
+
 // Controls whether console logging is enabled and optionally configures where
 // it's routed.
 const char kEnableLogging[] = "enable-logging";

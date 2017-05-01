@@ -49,6 +49,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
@@ -221,13 +222,14 @@ void BrowserChildProcessHostImpl::Launch(
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
-    switches::kDisableLogging,
-    switches::kEnableLogging,
-    switches::kIPCConnectionTimeout,
-    switches::kLoggingLevel,
-    switches::kTraceToConsole,
-    switches::kV,
-    switches::kVModule,
+      service_manager::switches::kDisableInProcessStackTraces,
+      switches::kDisableLogging,
+      switches::kEnableLogging,
+      switches::kIPCConnectionTimeout,
+      switches::kLoggingLevel,
+      switches::kTraceToConsole,
+      switches::kV,
+      switches::kVModule,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));

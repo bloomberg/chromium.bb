@@ -57,6 +57,7 @@
 #include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/embedder/switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -634,8 +635,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // happen before crash reporting is initialized (which for chrome happens in
     // the call to PreSandboxStartup() on the delegate below), because otherwise
     // this would interfere with signal handlers used by crash reporting.
-    if (should_enable_stack_dump && !command_line.HasSwitch(
-            switches::kDisableInProcessStackTraces)) {
+    if (should_enable_stack_dump &&
+        !command_line.HasSwitch(
+            service_manager::switches::kDisableInProcessStackTraces)) {
       base::debug::EnableInProcessStackDumping();
     }
 #endif  // !defined(OFFICIAL_BUILD)

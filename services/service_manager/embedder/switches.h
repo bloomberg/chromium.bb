@@ -16,6 +16,8 @@ SERVICE_MANAGER_EMBEDDER_EXPORT
 extern const char kDefaultServicePrefetchArgument[];
 #endif  // defined(OS_WIN)
 
+SERVICE_MANAGER_EMBEDDER_EXPORT extern const char
+    kDisableInProcessStackTraces[];
 SERVICE_MANAGER_EMBEDDER_EXPORT extern const char kEnableLogging[];
 SERVICE_MANAGER_EMBEDDER_EXPORT extern const char kProcessType[];
 SERVICE_MANAGER_EMBEDDER_EXPORT extern const char kProcessTypeServiceManager[];
