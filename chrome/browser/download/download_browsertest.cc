@@ -431,6 +431,7 @@ class DownloadTest : public InProcessBrowserTest {
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(InitialSetup());
+    host_resolver()->AddRule("www.a.com", "127.0.0.1");
   }
 
   void TearDownOnMainThread() override {
@@ -2811,7 +2812,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
 // This test ensures that a cross-domain download correctly sets the referrer
 // according to the referrer policy.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
-  host_resolver()->AddRule("www.a.com", "127.0.0.1");
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
   embedded_test_server()->RegisterRequestHandler(

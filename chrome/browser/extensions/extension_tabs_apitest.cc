@@ -20,6 +20,15 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
+class ExtensionApiTabTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+};
+
 #if defined(USE_AURA) || defined(OS_MACOSX)
 // Maximizing/fullscreen popup window doesn't work on aura's managed mode.
 // See bug crbug.com/116305.
@@ -29,11 +38,11 @@
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif  // defined(USE_AURA) || defined(OS_MACOSX)
 
-class ExtensionApiNewTabTest : public ExtensionApiTest {
+class ExtensionApiNewTabTest : public ExtensionApiTabTest {
  public:
   ExtensionApiNewTabTest() {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    ExtensionApiTabTest::SetUpCommandLine(command_line);
     // Override the default which InProcessBrowserTest adds if it doesn't see a
     // homepage.
     command_line->AppendSwitchASCII(
@@ -51,12 +60,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, Tabs) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabAudible) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabAudible) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "audible.html")) << message_;
 }
 
 // http://crbug.com/521410
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabMuted) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabMuted) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "muted.html")) << message_;
 }
 
@@ -66,24 +75,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabMuted) {
 #else
 #define MAYBE_Tabs2 Tabs2
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs2) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_Tabs2) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud2.html")) << message_;
 }
 
 // crbug.com/149924
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabDuplicate) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabDuplicate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "duplicate.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabSize) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabSize) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "tab_size.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabUpdate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "update.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabPinned) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
 }
 
@@ -93,20 +102,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
 #else
 #define MAYBE_TabMove TabMove
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabMove) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabMove) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabEvents) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabRelativeURLs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabRelativeURLs) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "relative_urls.html"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabQuery) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabQuery) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "query.html")) << message_;
 }
 
@@ -116,11 +125,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabQuery) {
 #else
 #define MAYBE_TabHighlight TabHighlight
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabHighlight) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabHighlight) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "highlight.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabCrashBrowser) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
 }
 
@@ -130,55 +139,44 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
 #else
 #define MAYBE_TabOpener TabOpener
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOpener) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabOpener) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "opener.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabGetCurrent) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabGetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabConnect) {
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabOnRemoved) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabOnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabReload) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabReload) {
   ASSERT_TRUE(RunExtensionTest("tabs/reload")) << message_;
 }
 
-class ExtensionApiCaptureTest : public ExtensionApiTest {
+class ExtensionApiCaptureTest : public ExtensionApiTabTest {
  public:
   ExtensionApiCaptureTest() {}
 
   void SetUp() override {
     EnablePixelOutput();
-    ExtensionApiTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    ExtensionApiTabTest::SetUp();
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest,
                        DISABLED_CaptureVisibleTabJpeg) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_jpeg.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, DISABLED_CaptureVisibleTabPng) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_png.html")) << message_;
 }
@@ -206,11 +204,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleDisabled) {
                                   "test_disabled.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnCreated) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabsOnCreated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_created")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabsOnUpdated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
 
@@ -220,25 +218,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
 #else
 #define MAYBE_TabsNoPermissions TabsNoPermissions
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabsNoPermissions) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabsNoPermissions) {
   ASSERT_TRUE(RunExtensionTest("tabs/no_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, HostPermission) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, HostPermission) {
   ASSERT_TRUE(RunExtensionTest("tabs/host_permission")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, UpdateWindowResize) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, UpdateWindowResize) {
   ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, FocusWindowDoesNotUnmaximize) {
   HWND window =
       browser()->window()->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
   ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
@@ -247,11 +240,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
 }
 #endif  // OS_WIN
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_UpdateWindowShowState) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_UpdateWindowShowState) {
   ASSERT_TRUE(RunExtensionTest("window_update/show_state")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, IncognitoDisabledByPref) {
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
                                       IncognitoModePrefs::DISABLED);
 
@@ -260,21 +253,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
   ASSERT_TRUE(RunExtensionTest("tabs/incognito_disabled")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_GetViewsOfCreatedPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_GetViewsOfCreatedPopup) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_popup.html"))
       << message_;
 }
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_GetViewsOfCreatedWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_GetViewsOfCreatedWindow) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OnUpdatedDiscardedState) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, OnUpdatedDiscardedState) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "discarded.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabOpenerCraziness) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabOpenerCraziness) {
   ASSERT_TRUE(RunExtensionTest("tabs/tab_opener_id"));
 }
 

@@ -254,8 +254,9 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
 
+    // Ensure that |embedded_test_server()| serves both domains used below.
+    host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
@@ -1786,8 +1787,6 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
                        MAYBE_SimpleCrossSiteFill) {
-  // Ensure that |embedded_test_server()| serves both domains used below.
-  host_resolver()->AddRule("*", "127.0.0.1");
 
   CreateTestProfile();
 
@@ -1833,8 +1832,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
 // This test verifies that credit card (payment card list) popup works when the
 // form is inside an OOPIF.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
-  // Ensure that |embedded_test_server()| serves both domains used below.
-  host_resolver()->AddRule("*", "127.0.0.1");
 
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(

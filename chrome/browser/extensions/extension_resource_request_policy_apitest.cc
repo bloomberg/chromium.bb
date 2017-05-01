@@ -29,14 +29,18 @@ class ExtensionResourceRequestPolicyTest : public ExtensionApiTest {
     command_line->AppendSwitch(
         extensions::switches::kAllowLegacyExtensionManifests);
   }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
 };
 
 // Note, this mostly tests the logic of chrome/renderer/extensions/
 // extension_resource_request_policy.*, but we have it as a browser test so that
 // can make sure it works end-to-end.
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtensionWithFlags(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("extension"),
@@ -156,7 +160,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, MAYBE_Video) {
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        MAYBE_WebAccessibleResources) {
   std::string result;
-  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("web_accessible")));
@@ -230,7 +233,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        LinkToWebAccessibleResources) {
   std::string result;
-  ASSERT_TRUE(embedded_test_server()->Start());
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("extension_resource_request_policy")
           .AppendASCII("web_accessible"));
@@ -294,7 +296,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        WebAccessibleResourcesWithCSP) {
   std::string result;
-  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("web_accessible")));
@@ -323,7 +324,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        IframeNavigateToInaccessible) {
-  ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("extension_resource_request_policy")
           .AppendASCII("some_accessible")));

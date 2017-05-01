@@ -110,6 +110,11 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(::switches::kNoProxyServer);
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   // Loads the extension, which temporarily starts the lazy background page
   // to dispatch the onInstalled event. We wait until it shuts down again.
   const Extension* LoadExtensionAndWait(const std::string& test_name) {
@@ -284,7 +289,6 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
 // Tests that the lazy background page stays alive until all network requests
 // are complete.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LazyBackgroundObserver page_complete;
@@ -636,8 +640,8 @@ class LazyBackgroundPageIsolatedExtensionsApiTest
   LazyBackgroundPageIsolatedExtensionsApiTest() {}
   ~LazyBackgroundPageIsolatedExtensionsApiTest() override {}
 
-  void SetUpInProcessBrowserTestFixture() override {
-    LazyBackgroundPageApiTest::SetUpInProcessBrowserTestFixture();
+  void SetUpOnMainThread() override {
+    LazyBackgroundPageApiTest::SetUpOnMainThread();
 
     // This is needed to allow example.com to actually resolve and load in
     // tests.

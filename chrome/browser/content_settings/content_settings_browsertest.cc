@@ -278,13 +278,16 @@ class ContentSettingsStrictSecureCookiesBrowserTest
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   }
+  void SetUpOnMainThread() override {
+    ContentSettingsTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 // This test verifies that if strict secure cookies is enabled, the site
 // settings accurately reflect that an attempt to create a secure cookie by an
 // insecure origin fails.
 IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);

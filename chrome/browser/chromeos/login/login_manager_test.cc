@@ -116,16 +116,12 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
   MixinBasedBrowserTest::SetUpCommandLine(command_line);
 }
 
-void LoginManagerTest::SetUpInProcessBrowserTestFixture() {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  MixinBasedBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
 void LoginManagerTest::SetUpOnMainThread() {
   LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
 
   // Start the accept thread as the sandbox host process has already been
   // spawned.
+  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->StartAcceptingConnections();
 
   FakeGaia::AccessTokenInfo token_info;

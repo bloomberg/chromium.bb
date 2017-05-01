@@ -8,31 +8,34 @@
 const base::FilePath::CharType kFtpDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRBackgroundPage) {
-  host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
+class CrossOriginXHR : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*.com", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, BackgroundPage) {
   ASSERT_TRUE(StartFTPServer(base::FilePath(kFtpDocRoot)));
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/background_page")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRAllURLs) {
-  host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, AllURLs) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/all_urls")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRContentScript) {
-  host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, ContentScript) {
   ASSERT_TRUE(StartFTPServer(base::FilePath(kFtpDocRoot)));
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/content_script")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRFileAccess) {
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, FileAccess) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRNoFileAccess) {
+IN_PROC_BROWSER_TEST_F(CrossOriginXHR, NoFileAccess) {
   ASSERT_TRUE(RunExtensionTestNoFileAccess(
       "cross_origin_xhr/no_file_access")) << message_;
 }

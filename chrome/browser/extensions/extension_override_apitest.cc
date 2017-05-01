@@ -36,6 +36,12 @@ namespace extensions {
 
 class ExtensionOverrideTest : public ExtensionApiTest {
  protected:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
   bool CheckHistoryOverridesContainsNoDupes() {
     // There should be no duplicate entries in the preferences.
     const base::DictionaryValue* overrides =
@@ -204,9 +210,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewTabIncognito) {
 // See https://crbug.com/700124.
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest,
                        SubframeNavigationInOverridenNTPDoesNotAffectFocus) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   // Load an extension that overrides the new tab page.
   const Extension* extension = LoadExtension(data_dir().AppendASCII("newtab"));
 

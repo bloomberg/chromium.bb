@@ -46,6 +46,11 @@ class ProcessManagementTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(
         extensions::switches::kEnableExperimentalExtensionApis);
   }
+
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 class ChromeWebStoreProcessTest : public ExtensionBrowserTest {
@@ -88,7 +93,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
@@ -234,7 +238,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   // allocated.
   content::RenderProcessHost::SetMaxRendererProcessCount(6);
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // The app under test acts on URLs whose host is "localhost",
@@ -283,7 +286,6 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
 
 IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
                        NavigateExtensionTabToWebViaPost) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an extension.
@@ -396,9 +398,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWebStoreProcessTest,
 
 // This test verifies that blocked navigations to extensions pages do not
 // overwrite process-per-site map inside content/.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
                        NavigateToBlockedExtensionPageInNewTab) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an extension, which will block a request for a specific page in it.

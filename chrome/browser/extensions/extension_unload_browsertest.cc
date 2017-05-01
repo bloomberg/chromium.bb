@@ -14,7 +14,13 @@
 
 namespace extensions {
 
-using ExtensionUnloadBrowserTest = ExtensionBrowserTest;
+class ExtensionUnloadBrowserTest : public ExtensionBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("maps.google.com", "127.0.0.1");
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, TestUnload) {
   // Load an extension that installs unload and beforeunload listeners.
@@ -41,7 +47,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, TestUnload) {
 // After an extension is uninstalled, network requests from its content scripts
 // should fail but not kill the renderer process.
 IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, UnloadWithContentScripts) {
-  host_resolver()->AddRule("maps.google.com", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an extension with a content script that has a button to send XHRs.

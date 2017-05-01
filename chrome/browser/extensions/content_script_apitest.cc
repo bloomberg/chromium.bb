@@ -251,6 +251,11 @@ class ContentScriptApiTest : public ExtensionApiTest,
             ? "1"
             : "0");
   }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAllFrames) {
@@ -319,8 +324,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
                        ContentScriptIgnoreHostPermissions) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
-  host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest(
       "content_scripts/dont_match_host_permissions")) << message_;
@@ -335,7 +338,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptViewSource) {
 // crbug.com/126257 -- content scripts should not get injected into other
 // extensions.
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptOtherExtensions) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   // First, load extension that sets up content script.
   ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/injector"))
@@ -361,11 +363,15 @@ class ContentScriptCssInjectionTest : public ExtensionApiTest {
         ::switches::kAppsGalleryURL,
         base::StringPrintf("http://%s", kWebstoreDomain));
   }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
 };
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
                        ContentScriptDuplicateScriptInjection) {
-  host_resolver()->AddRule("maps.google.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   GURL url(
@@ -403,7 +409,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
                        ContentScriptInjectsStyles) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("content_scripts")
                                           .AppendASCII("css_injection")));
@@ -500,7 +505,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
                        MAYBE_ContentScriptPermissionsApi) {
   extensions::PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   extensions::PermissionsRequestFunction::SetAutoConfirmForTests(true);
-  host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/permissions")) << message_;
 }
@@ -512,7 +516,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddRuntimeBlockedHost("*", "*://example.com/*");
   }
-  host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
@@ -692,7 +695,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
                        DontInjectContentScriptsInBackgroundPages) {
-  host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Load two extensions, one with an iframe to a.com in its background page,
   // the other, a content script for a.com. The latter should never be able to

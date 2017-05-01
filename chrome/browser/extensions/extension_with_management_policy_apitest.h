@@ -19,6 +19,7 @@ class ExtensionApiTestWithManagementPolicy : public ExtensionApiTest {
   ExtensionApiTestWithManagementPolicy();
   ~ExtensionApiTestWithManagementPolicy() override;
   void SetUpInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
 
  protected:
   policy::MockConfigurationPolicyProvider policy_provider_;

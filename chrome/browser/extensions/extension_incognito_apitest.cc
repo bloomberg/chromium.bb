@@ -22,9 +22,16 @@
 using content::WebContents;
 using extensions::ResultCatcher;
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
+class IncognitoApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(StartEmbeddedTestServer());
+  }
+};
 
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoNoScript) {
   // Loads a simple extension which attempts to change the title of every page
   // that loads to "modified".
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("incognito")
@@ -53,10 +60,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
 #define MAYBE_IncognitoYesScript IncognitoYesScript
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoYesScript) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, MAYBE_IncognitoYesScript) {
   // Load a dummy extension. This just tests that we don't regress a
   // crash fix when multiple incognito- and non-incognito-enabled extensions
   // are mixed.
@@ -91,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoYesScript) {
 // Tests that an extension which is enabled for incognito mode doesn't
 // accidentially create and incognito profile.
 // Test disabled due to http://crbug.com/89054.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(
       "incognito/dont_create_profile")) << message_;
@@ -100,13 +104,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_DontCreateIncognitoProfile) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Incognito) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_Incognito) {
 #else
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, Incognito) {
 #endif
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   ResultCatcher catcher;
 
   // Open incognito window and navigate to test page.
@@ -123,10 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
 // http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoSplitMode) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher;
@@ -159,13 +157,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
 // events or callbacks.
 #if defined(OS_WIN)
 // http://crbug.com/120484
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoDisabled) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoDisabled) {
 #else
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoDisabled) {
 #endif
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
   ResultCatcher catcher;
   ExtensionTestMessageListener listener("createIncognitoTab", true);
 
@@ -185,10 +180,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
 
 // Test that opening a popup from an incognito browser window works properly.
 // http://crbug.com/180759.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoPopup) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
+IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoPopup) {
   ResultCatcher catcher;
 
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_

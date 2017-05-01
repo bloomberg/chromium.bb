@@ -252,6 +252,8 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
+    host_resolver()->AddRule("*", "127.0.0.1");
+
     // Start the accept thread as the sandbox host process has already been
     // spawned.
     embedded_test_server()->StartAcceptingConnections();
@@ -262,12 +264,6 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override { settings_helper_.RestoreProvider(); }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
 
   std::string GetAppIds() const {
     KioskAppManager::Apps apps;
