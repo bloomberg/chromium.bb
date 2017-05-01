@@ -3323,6 +3323,15 @@ extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 // for current URL.
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+// Name & description for the heap profiling flag.
+extern const char kEnableHeapProfilingName[];
+extern const char kEnableHeapProfilingDescription[];
+
+// Descriptions of the different heap profiling modes.
+extern const char kEnableHeapProfilingModePseudo[];
+extern const char kEnableHeapProfilingModeNative[];
+extern const char kEnableHeapProfilingTaskProfiler[];
+
 }  // namespace flag_descriptions
 
 #endif  // CHROME_BROWSER_FLAG_DESCRIPTIONS_H_

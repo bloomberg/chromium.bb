@@ -187,7 +187,7 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
 
   std::string profiling_mode = CommandLine::ForCurrentProcess()
       ->GetSwitchValueASCII(switches::kEnableHeapProfiling);
-  if (profiling_mode == "") {
+  if (profiling_mode == switches::kEnableHeapProfilingModePseudo) {
     AllocationContextTracker::SetCaptureMode(
         AllocationContextTracker::CaptureMode::PSEUDO_STACK);
 #if !defined(OS_NACL)

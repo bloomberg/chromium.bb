@@ -3058,4 +3058,14 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kEnableHeapProfilingName[] = "Heap profiling";
+
+const char kEnableHeapProfilingDescription[] = "Enables heap profiling.";
+
+const char kEnableHeapProfilingModePseudo[] = "Enabled (pseudo mode)";
+
+const char kEnableHeapProfilingModeNative[] = "Enabled (native mode)";
+
+const char kEnableHeapProfilingTaskProfiler[] = "Enabled (task mode)";
+
 }  // namespace flag_descriptions
