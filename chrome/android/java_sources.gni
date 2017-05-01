@@ -472,6 +472,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/TranslateNeverPanel.java",
   "java/src/org/chromium/chrome/browser/infobar/TranslateOptions.java",
   "java/src/org/chromium/chrome/browser/infobar/TranslateSubPanel.java",
+  "java/src/org/chromium/chrome/browser/infobar/TranslateSnackbarController.java",
   "java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/translate/TranslateMenu.java",
   "java/src/org/chromium/chrome/browser/infobar/translate/TranslateMenuHelper.java",

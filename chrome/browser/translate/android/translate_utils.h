@@ -25,6 +25,16 @@ class TranslateUtils {
     OPTION_NEVER_TRANSLATE_SITE
   };
 
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.infobar
+  // GENERATED_JAVA_PREFIX_TO_STRIP:TYPE_
+  enum TranslateSnackbarType {
+    TYPE_NONE,
+    TYPE_ALWAYS_TRANSLATE,
+    TYPE_NEVER_TRANSLATE,
+    TYPE_NEVER_TRANSLATE_SITE
+  };
+
   static base::android::ScopedJavaLocalRef<jobjectArray> GetJavaLanguages(
       JNIEnv* env,
       translate::TranslateInfoBarDelegate* delegate);

@@ -107,14 +107,17 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
     jboolean value) {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (option == TranslateUtils::OPTION_ALWAYS_TRANSLATE) {
-    if (delegate->ShouldAlwaysTranslate() != value)
+    if (delegate->ShouldAlwaysTranslate() != value) {
       delegate->ToggleAlwaysTranslate();
+    }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE) {
-    if (value && delegate->IsTranslatableLanguageByPrefs())
+    if (value && delegate->IsTranslatableLanguageByPrefs()) {
       delegate->ToggleTranslatableLanguageByPrefs();
+    }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
-    if (value && !delegate->IsSiteBlacklisted())
+    if (value && !delegate->IsSiteBlacklisted()) {
       delegate->ToggleSiteBlacklist();
+    }
   } else {
     DCHECK(false);
   }
