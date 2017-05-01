@@ -35,6 +35,15 @@ public class LocaleManager {
     public static final String PREF_WAS_IN_SPECIAL_LOCALE = "LocaleManager_WAS_IN_SPECIAL_LOCALE";
     public static final String SPECIAL_LOCALE_ID = "US";
 
+    /** The current state regarding search engine promo dialogs. */
+    @IntDef({SEARCH_ENGINE_PROMO_SHOULD_CHECK, SEARCH_ENGINE_PROMO_CHECKED_NOT_SHOWN,
+            SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SearchEnginePromoState {}
+    public static final int SEARCH_ENGINE_PROMO_SHOULD_CHECK = -1;
+    public static final int SEARCH_ENGINE_PROMO_CHECKED_NOT_SHOWN = 0;
+    public static final int SEARCH_ENGINE_PROMO_CHECKED_AND_SHOWN = 1;
+
     /** The different types of search engine promo dialogs. */
     @IntDef({SEARCH_ENGINE_PROMO_DONT_SHOW, SEARCH_ENGINE_PROMO_SHOW_SOGOU,
             SEARCH_ENGINE_PROMO_SHOW_EXISTING, SEARCH_ENGINE_PROMO_SHOW_NEW})
@@ -45,6 +54,9 @@ public class LocaleManager {
     public static final int SEARCH_ENGINE_PROMO_SHOW_SOGOU = 0;
     public static final int SEARCH_ENGINE_PROMO_SHOW_EXISTING = 1;
     public static final int SEARCH_ENGINE_PROMO_SHOW_NEW = 2;
+
+    protected static final String KEY_SEARCH_ENGINE_PROMO_SHOW_STATE =
+            "com.android.chrome.SEARCH_ENGINE_PROMO_SHOWN";
 
     private static final int SNACKBAR_DURATION_MS = 6000;
 

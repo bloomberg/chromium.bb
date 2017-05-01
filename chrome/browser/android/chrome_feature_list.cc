@@ -71,6 +71,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &NTPShowGoogleGInOmniboxFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebSharing,
+    &kSearchEnginePromoExistingDevice,
+    &kSearchEnginePromoNewDevice,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabsInCBD,
