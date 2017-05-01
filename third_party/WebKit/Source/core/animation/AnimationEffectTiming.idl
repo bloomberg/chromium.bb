@@ -13,6 +13,6 @@
     [RaisesException=Setter] attribute double iterationStart;
     [RaisesException=Setter] attribute unrestricted double iterations;
     [RaisesException=Setter] attribute (unrestricted double or DOMString) duration;
-    attribute DOMString direction;
+    attribute PlaybackDirection direction;
     [RaisesException=Setter] attribute DOMString easing;
 };
