@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/mac/scoped_nsobject.h"
@@ -133,6 +134,67 @@ const NSTimeInterval kDragHoverOpenDelay = 0.7;
 // no opportunity for overlap.
 const NSTimeInterval kDragHoverCloseDelay = 0.4;
 
+enum BookmarkBarVisibleElementsMask {
+  kVisibleElementsMaskNone = 0,
+  kVisibleElementsMaskAppsButton = 1 << 0,
+  kVisibleElementsMaskManagedBookmarksButton = 1 << 1,
+  kVisibleElementsMaskSupervisedBookmarksButton = 1 << 2,
+  kVisibleElementsMaskOffTheSideButton = 1 << 3,
+  kVisibleElementsMaskOtherBookmarksButton = 1 << 4,
+  kVisibleElementsMaskNoItemTextField = 1 << 5,
+  kVisibleElementsMaskImportBookmarksButton = 1 << 6,
+};
+
+// Specifies the location and visibility of the various sub-elements
+// of the bookmark bar. Allows calculating the layout and actually
+// applying it to views to be decoupled. For example, applying
+// the layout in an RTL context transforms all horizontal offsets
+// transparently.
+struct BookmarkBarLayout {
+ public:
+  BookmarkBarLayout();
+  ~BookmarkBarLayout();
+  BookmarkBarLayout(BookmarkBarLayout&& other);
+  BookmarkBarLayout& operator=(BookmarkBarLayout&& other);
+
+  bool IsAppsButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskAppsButton;
+  }
+  bool IsManagedBookmarksButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskManagedBookmarksButton;
+  }
+  bool IsSupervisedBookmarksButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskSupervisedBookmarksButton;
+  }
+  bool IsOffTheSideButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskOffTheSideButton;
+  }
+  bool IsOtherBookmarksButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskOtherBookmarksButton;
+  }
+  bool IsNoItemTextFieldVisible() const {
+    return visible_elements & kVisibleElementsMaskNoItemTextField;
+  }
+  bool IsImportBookmarksButtonVisible() const {
+    return visible_elements & kVisibleElementsMaskImportBookmarksButton;
+  }
+  size_t VisibleButtonCount() const { return button_offsets.size(); }
+
+  unsigned int visible_elements;
+  CGFloat apps_button_offset;
+  CGFloat managed_bookmarks_button_offset;
+  CGFloat supervised_bookmarks_button_offset;
+  CGFloat off_the_side_button_offset;
+  CGFloat other_bookmarks_button_offset;
+  CGFloat no_item_textfield_offset;
+  CGFloat no_item_textfield_width;
+  CGFloat import_bookmarks_button_offset;
+  CGFloat import_bookmarks_button_width;
+  CGFloat max_x;
+
+  std::unordered_map<int64_t, CGFloat> button_offsets;
+};
+
 }  // namespace bookmarks
 
 // The interface for the bookmark bar controller's delegate. Currently, the
@@ -226,9 +288,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
       buttonView_;  // Contains 'no items' text fields.
   base::scoped_nsobject<BookmarkButton> offTheSideButton_;  // aka the chevron.
 
-  NSRect originalNoItemsRect_;  // Original, pre-resized field rect.
-  NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
-
   // "Apps" button on the left side.
   base::scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
 
@@ -252,15 +311,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // us avoid a rebuild until we've grown the window bigger than our
   // initial build.
   CGFloat savedFrameWidth_;
-
-  // The number of buttons we display in the bookmark bar.  This does
-  // not include the "off the side" chevron or the "Other Bookmarks"
-  // button.  We use this number to determine if we need to display
-  // the chevron, and to know what to place in the chevron's menu.
-  // Since we create everything before doing layout we can't be sure
-  // that all bookmark buttons we create will be visible.  Thus,
-  // [buttons_ count] isn't a definitive check.
-  int displayedButtonCount_;
 
   // A state flag which tracks when the bar's folder menus should be shown.
   // An initial click in any of the folder buttons turns this on and
@@ -427,28 +477,29 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)
+- (bookmarks::BookmarkBarLayout)layoutFromCurrentState;
+- (void)applyLayout:(const bookmarks::BookmarkBarLayout&)layout
+           animated:(BOOL)animated;
 - (void)openBookmarkFolder:(id)sender;
 - (void)openOrCloseBookmarkFolderForOffTheSideButton;
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
-- (BOOL)offTheSideButtonIsHidden;
-- (BOOL)appsPageShortcutButtonIsHidden;
+- (BookmarkButton*)otherBookmarksButton;
+- (BookmarkButton*)managedBookmarksButton;
+- (BookmarkButton*)supervisedBookmarksButton;
 - (BookmarkButton*)otherBookmarksButton;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;
-- (int)displayedButtonCount;
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
 - (void)clearBookmarkBar;
 - (BookmarkButtonCell*)cellForBookmarkNode:(const bookmarks::BookmarkNode*)node;
 - (BookmarkButtonCell*)cellForCustomButtonWithText:(NSString*)text
                                              image:(NSImage*)image;
-- (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;
 - (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
-- (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;
 - (void)unhighlightBookmark:(const bookmarks::BookmarkNode*)node;
 
 @end
