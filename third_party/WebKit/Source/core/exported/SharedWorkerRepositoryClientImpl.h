@@ -32,6 +32,7 @@
 #define SharedWorkerRepositoryClientImpl_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 class WebSharedWorkerRepositoryClient;
 
-class SharedWorkerRepositoryClientImpl final
+class CORE_EXPORT SharedWorkerRepositoryClientImpl final
     : public SharedWorkerRepositoryClient {
   WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
   USING_FAST_MALLOC(SharedWorkerRepositoryClientImpl);

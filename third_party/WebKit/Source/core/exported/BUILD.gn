@@ -5,6 +5,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("exported") {
   sources = [
+    "SharedWorkerRepositoryClientImpl.cpp",
+    "SharedWorkerRepositoryClientImpl.h",
     "WebAssociatedURLLoaderImpl.cpp",
     "WebAssociatedURLLoaderImpl.h",
     "WebBlob.cpp",
