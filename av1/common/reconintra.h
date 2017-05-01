@@ -27,8 +27,34 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bw, int bh,
                              const uint8_t *ref, int ref_stride, uint8_t *dst,
                              int dst_stride, int aoff, int loff, int plane);
 
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
 // Mapping of interintra to intra mode for use in the intra component
+#if REDUCED_INTERINTRA_MODES == 1
+static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
+  DC_PRED, V_PRED, H_PRED,
+#if CONFIG_ALT_INTRA
+  SMOOTH_PRED
+#else
+  TM_PRED
+#endif
+};
+
+// Mapping of intra mode to the interintra mode
+static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
+  II_DC_PRED,     II_V_PRED,     II_H_PRED, II_V_PRED,
+#if CONFIG_ALT_INTRA
+  II_SMOOTH_PRED,
+#else
+  II_TM_PRED,
+#endif
+  II_V_PRED,      II_H_PRED,     II_H_PRED, II_V_PRED,
+#if CONFIG_ALT_INTRA
+  II_SMOOTH_PRED, II_SMOOTH_PRED
+#else
+  II_TM_PRED
+#endif
+};
+#else
 static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
   DC_PRED,     V_PRED,    H_PRED,    D45_PRED, D135_PRED,
   D117_PRED,   D153_PRED, D207_PRED, D63_PRED,
@@ -47,7 +73,8 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 #endif
   II_TM_PRED
 };
-#endif  // CONFIG_EXT_INTER
+#endif
+#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -1081,10 +1081,20 @@ static const aom_prob default_compound_type_probs[BLOCK_SIZES]
                                                  [COMPOUND_TYPES - 1];
 #endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
+#if CONFIG_INTERINTRA
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   208, 208, 208, 208,
 };
 
+#if REDUCED_INTERINTRA_MODES == 1
+static const aom_prob
+    default_interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1] = {
+      { 65, 32, 144 },   // block_size < 8x8
+      { 132, 68, 165 },  // block_size < 16x16
+      { 173, 80, 176 },  // block_size < 32x32
+      { 221, 135, 194 }  // block_size >= 32x32
+    };
+#else  // REDUCED_INTERINTRA_MODES
 #if CONFIG_ALT_INTRA
 static const aom_prob
     default_interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1] = {
@@ -1102,6 +1112,7 @@ static const aom_prob
       { 221, 135, 38, 194, 248, 121, 96, 85, 29 }  // block_size >= 32x32
     };
 #endif  // CONFIG_ALT_INTRA
+#endif  // REDUCED_INTERINTRA_MODES
 
 static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
@@ -1112,6 +1123,7 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
   208, 208, 208
 #endif  // CONFIG_EXT_PARTITION
 };
+#endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 
 // Change this section appropriately once warped motion is supported
@@ -1272,6 +1284,18 @@ const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
 
 #if CONFIG_EXT_INTER
 /* clang-format off */
+#if CONFIG_INTERINTRA
+#if REDUCED_INTERINTRA_MODES == 1
+const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
+  -II_DC_PRED, 2,        /* 0 = II_DC_NODE     */
+#if CONFIG_ALT_INTRA
+  -II_SMOOTH_PRED, 4,    /* 1 = II_SMOOTH_PRED */
+#else
+  -II_TM_PRED, 4,        /* 1 = II_TM_NODE     */
+#endif
+  -II_V_PRED, -II_H_PRED /* 2 = II_V_NODE      */
+};
+#else  // REDUCED_INTERINTRA_MODES
 #if CONFIG_ALT_INTRA
 const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
   -II_DC_PRED,   2,               /* 0 = II_DC_NODE   */
@@ -1298,6 +1322,8 @@ const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
   -II_D153_PRED, -II_D207_PRED      /* 8 = II_D153_NODE   */
 };
 #endif
+#endif  // REDUCED_INTERINTRA_MODES
+#endif  // CONFIG_INTERINTRA
 
 const aom_tree_index av1_inter_compound_mode_tree
     [TREE_SIZE(INTER_COMPOUND_MODES)] = {
@@ -4385,9 +4411,11 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
            default_inter_singleref_comp_mode_probs);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
+#if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
+#endif
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_SUPERTX
   av1_copy(fc->supertx_prob, default_supertx_prob);

@@ -199,9 +199,11 @@ typedef struct frame_contexts {
                                           [INTER_SINGLEREF_COMP_MODES - 1];
 #endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob compound_type_prob[BLOCK_SIZES][COMPOUND_TYPES - 1];
+#if CONFIG_INTERINTRA
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];
   aom_prob wedge_interintra_prob[BLOCK_SIZES];
+#endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1];
@@ -369,9 +371,11 @@ typedef struct FRAME_COUNTS {
   unsigned int inter_singleref_comp_mode[INTER_MODE_CONTEXTS]
                                         [INTER_SINGLEREF_COMP_MODES];
 #endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_INTERINTRA
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES][2];
+#endif  // CONFIG_INTERINTRA
   unsigned int compound_interinter[BLOCK_SIZES][COMPOUND_TYPES];
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -479,8 +483,10 @@ extern int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
 
 #if CONFIG_EXT_INTER
+#if CONFIG_INTERINTRA
 extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
+#endif
 extern const aom_tree_index
     av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
 #if CONFIG_COMPOUND_SINGLEREF

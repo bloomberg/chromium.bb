@@ -439,10 +439,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
         av1_cost_tokens((int *)cpi->inter_compound_mode_cost[i],
                         cm->fc->inter_compound_mode_probs[i],
                         av1_inter_compound_mode_tree);
+#if CONFIG_INTERINTRA
       for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
         av1_cost_tokens((int *)cpi->interintra_mode_cost[i],
                         cm->fc->interintra_mode_prob[i],
                         av1_interintra_mode_tree);
+#endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       for (i = BLOCK_8X8; i < BLOCK_SIZES; i++) {

@@ -383,8 +383,10 @@ typedef struct MB_MODE_INFO {
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_EXT_INTER
+#if CONFIG_INTERINTRA
   // interintra members
   INTERINTRA_MODE interintra_mode;
+#endif
   // TODO(debargha): Consolidate these flags
   int use_wedge_interintra;
   int interintra_wedge_index;

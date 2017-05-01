@@ -368,6 +368,21 @@ typedef enum {
 } MOTION_MODE;
 
 #if CONFIG_EXT_INTER
+#if CONFIG_INTERINTRA
+#define REDUCED_INTERINTRA_MODES 0
+#if REDUCED_INTERINTRA_MODES == 1
+typedef enum {
+  II_DC_PRED = 0,
+  II_V_PRED,
+  II_H_PRED,
+#if CONFIG_ALT_INTRA
+  II_SMOOTH_PRED,
+#else
+  II_TM_PRED,
+#endif  // CONFIG_ALT_INTRA
+  INTERINTRA_MODES
+} INTERINTRA_MODE;
+#else
 typedef enum {
   II_DC_PRED = 0,
   II_V_PRED,
@@ -384,6 +399,8 @@ typedef enum {
   II_TM_PRED,
   INTERINTRA_MODES
 } INTERINTRA_MODE;
+#endif
+#endif
 
 typedef enum {
   COMPOUND_AVERAGE = 0,

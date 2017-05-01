@@ -1333,7 +1333,7 @@ void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                     int mi_row, int mi_col, BUFFER_SET *ctx,
                                     BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0, 0);
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
   if (is_interintra_pred(&xd->mi[0]->mbmi)) {
     BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
                                { xd->plane[0].dst.stride, 0, 0 } };
@@ -1343,7 +1343,7 @@ void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 #else
   (void)ctx;
-#endif  // CONFIG_EXT_INTER
+#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
 }
 
 void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -1351,7 +1351,7 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 1,
                                     MAX_MB_PLANE - 1);
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
   if (is_interintra_pred(&xd->mi[0]->mbmi)) {
     BUFFER_SET default_ctx = {
       { NULL, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
@@ -1364,7 +1364,7 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 #else
   (void)ctx;
-#endif  // CONFIG_EXT_INTER
+#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
 }
 
 // TODO(afergs): Check if ctx can be made constant
@@ -1373,7 +1373,7 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0,
                                     MAX_MB_PLANE - 1);
-#if CONFIG_EXT_INTER
+#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
   if (is_interintra_pred(&xd->mi[0]->mbmi)) {
     BUFFER_SET default_ctx = {
       { xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
@@ -1388,7 +1388,7 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 #else
   (void)ctx;
-#endif  // CONFIG_EXT_INTER
+#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
 }
 
 void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
@@ -2534,6 +2534,7 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_EXT_INTER
 /* clang-format off */
+#if CONFIG_INTERINTRA
 #if CONFIG_EXT_PARTITION
 static const int ii_weights1d[MAX_SB_SIZE] = {
   60, 58, 56, 54, 52, 50, 48, 47, 45, 44, 42, 41, 39, 38, 37, 35, 34, 33, 32,
@@ -2615,6 +2616,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       }
       break;
 
+#if REDUCED_INTERINTRA_MODES == 0
     case II_D63_PRED:
     case II_D117_PRED:
       for (i = 0; i < bh; ++i) {
@@ -2643,20 +2645,6 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
       }
       break;
 
-    case II_D135_PRED:
-#if CONFIG_ALT_INTRA
-    case II_SMOOTH_PRED:
-#endif
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = ii_weights1d[(i < j ? i : j) * size_scale];
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
     case II_D45_PRED:
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
@@ -2669,8 +2657,29 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
         }
       }
       break;
+#endif
 
+#if REDUCED_INTERINTRA_MODES == 0 || CONFIG_ALT_INTRA
+#if REDUCED_INTERINTRA_MODES == 0
+    case II_D135_PRED:
+#endif
+#if CONFIG_ALT_INTRA
+    case II_SMOOTH_PRED:
+#endif
+      for (i = 0; i < bh; ++i) {
+        for (j = 0; j < bw; ++j) {
+          int scale = ii_weights1d[(i < j ? i : j) * size_scale];
+          comppred[i * compstride + j] =
+              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
+                            interpred[i * interstride + j]);
+        }
+      }
+      break;
+#endif
+
+#if !(REDUCED_INTERINTRA_MODES == 1 && CONFIG_ALT_INTRA)
     case II_TM_PRED:
+#endif
     case II_DC_PRED:
     default:
       for (i = 0; i < bh; ++i) {
@@ -2734,6 +2743,7 @@ static void combine_interintra_highbd(
       }
       break;
 
+#if REDUCED_INTERINTRA_MODES == 0
     case II_D63_PRED:
     case II_D117_PRED:
       for (i = 0; i < bh; ++i) {
@@ -2762,20 +2772,6 @@ static void combine_interintra_highbd(
       }
       break;
 
-    case II_D135_PRED:
-#if CONFIG_ALT_INTRA
-    case II_SMOOTH_PRED:
-#endif
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) {
-          int scale = ii_weights1d[(i < j ? i : j) * size_scale];
-          comppred[i * compstride + j] =
-              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
-                            interpred[i * interstride + j]);
-        }
-      }
-      break;
-
     case II_D45_PRED:
       for (i = 0; i < bh; ++i) {
         for (j = 0; j < bw; ++j) {
@@ -2788,8 +2784,29 @@ static void combine_interintra_highbd(
         }
       }
       break;
+#endif
 
+#if REDUCED_INTERINTRA_MODES == 0 || CONFIG_ALT_INTRA
+#if REDUCED_INTERINTRA_MODES == 0
+    case II_D135_PRED:
+#endif
+#if CONFIG_ALT_INTRA
+    case II_SMOOTH_PRED:
+#endif
+      for (i = 0; i < bh; ++i) {
+        for (j = 0; j < bw; ++j) {
+          int scale = ii_weights1d[(i < j ? i : j) * size_scale];
+          comppred[i * compstride + j] =
+              AOM_BLEND_A64(scale, intrapred[i * intrastride + j],
+                            interpred[i * interstride + j]);
+        }
+      }
+      break;
+#endif
+
+#if !(REDUCED_INTERINTRA_MODES == 1 && CONFIG_ALT_INTRA)
     case II_TM_PRED:
+#endif
     case II_DC_PRED:
     default:
       for (i = 0; i < bh; ++i) {
@@ -2901,6 +2918,7 @@ void av1_build_interintra_predictors(MACROBLOCKD *xd, uint8_t *ypred,
   av1_build_interintra_predictors_sbuv(xd, upred, vpred, ustride, vstride, ctx,
                                        bsize);
 }
+#endif  // CONFIG_INTERINTRA
 
 // Builds the inter-predictor for the single ref case
 // for use in the encoder to search the wedges efficiently.
