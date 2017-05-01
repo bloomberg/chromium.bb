@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/api_invocation_errors.h"
 #include "extensions/renderer/argument_spec.h"
 #include "gin/arguments.h"
 
@@ -84,6 +85,10 @@ class ArgumentParser {
   std::string* error_;
   size_t current_index_ = 0;
 
+  // An error to pass while parsing arguments to avoid having to allocate a new
+  // std::string on the stack multiple times.
+  std::string parse_error_;
+
   DISALLOW_COPY_AND_ASSIGN(ArgumentParser);
 };
 
@@ -158,6 +163,11 @@ class BaseValueArgumentParser : public ArgumentParser {
 };
 
 bool ArgumentParser::ParseArguments() {
+  if (arguments_.size() > signature_.size()) {
+    *error_ = api_errors::TooManyArguments();
+    return false;
+  }
+
   bool signature_has_callback = HasCallback(signature_);
 
   size_t end_size =
@@ -170,8 +180,15 @@ bool ArgumentParser::ParseArguments() {
   if (signature_has_callback && !ParseCallback(*signature_.back()))
     return false;
 
-  if (current_index_ != arguments_.size())
+  if (current_index_ != arguments_.size()) {
+    // This can potentially happen even if the check above for too many
+    // arguments succeeds when optional parameters are omitted. For instance,
+    // if the signature expects (optional int, function callback) and the caller
+    // provides (function callback, object random), the first size check and
+    // callback spec would succeed, but we wouldn't consume all the arguments.
+    *error_ = api_errors::TooManyArguments();
     return false;  // Extra arguments aren't allowed.
+  }
 
   return true;
 }
@@ -180,7 +197,7 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
   v8::Local<v8::Value> value = next_argument();
   if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
     if (!spec.optional()) {
-      *error_ = "Missing required argument: " + spec.name();
+      *error_ = api_errors::MissingRequiredArgument(spec.name().c_str());
       return false;
     }
     // This is safe to call even if |arguments| is at the end (which can happen
@@ -191,9 +208,10 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
     return true;
   }
 
-  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(), error_)) {
+  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(),
+                          &parse_error_)) {
     if (!spec.optional()) {
-      *error_ = "Missing required argument: " + spec.name();
+      *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
       return false;
     }
 
@@ -210,7 +228,7 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
   v8::Local<v8::Value> value = next_argument();
   if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
     if (!spec.optional()) {
-      *error_ = "Missing required argument: " + spec.name();
+      *error_ = api_errors::MissingRequiredArgument(spec.name().c_str());
       return false;
     }
     ConsumeArgument();
@@ -218,8 +236,9 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
     return true;
   }
 
-  if (!value->IsFunction()) {
-    *error_ = "Argument is wrong type: " + spec.name();
+  if (!spec.ParseArgument(context_, value, type_refs_, nullptr,
+                          &parse_error_)) {
+    *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
     return false;
   }
 

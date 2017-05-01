@@ -420,8 +420,10 @@ bool ArgumentSpec::ParseArgumentToObject(
     // HasOwnProperty() check here in the future, if we desire.
     // See also comment in ParseArgumentToArray() about passing in custom
     // crazy values here.
-    if (!object->Get(context, key).ToLocal(&prop_value))
+    if (!object->Get(context, key).ToLocal(&prop_value)) {
+      *error = api_errors::ScriptThrewError();
       return false;
+    }
 
     // Note: We don't serialize undefined or null values.
     // TODO(devlin): This matches current behavior, but it is correct?

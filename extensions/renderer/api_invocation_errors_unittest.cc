@@ -22,6 +22,15 @@ TEST(APIInvocationErrors, ChainedErrors) {
       "Invalid type: expected string, found integer.",
       PropertyError("foo",
                     IndexError(1, InvalidType(kTypeString, kTypeInteger))));
+
+  EXPECT_EQ(
+      "Error at parameter 'foo': Invalid type: expected string, found integer.",
+      ArgumentError("foo", InvalidType(kTypeString, kTypeInteger)));
+  EXPECT_EQ(
+      "Error at parameter 'foo': Error at index 0: "
+      "Invalid type: expected string, found integer.",
+      ArgumentError("foo",
+                    IndexError(0, InvalidType(kTypeString, kTypeInteger))));
 }
 
 }  // namespace api_errors
