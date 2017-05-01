@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -18,7 +18,6 @@
 #include "chromeos/login/auth/key.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
@@ -288,13 +287,16 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
       AccountId::FromUserEmail(user_id));
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
-  PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
-          .get(),
-      FROM_HERE, base::Bind(&LoadPasswordData, profile_path),
-      base::Bind(&OnPasswordDataLoaded, success_callback, failure_callback));
+  PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::BindOnce(&LoadPasswordData, profile_path),
+      base::BindOnce(&OnPasswordDataLoaded, success_callback,
+                     failure_callback));
 }
 
 std::string SupervisedUserAuthentication::BuildPasswordSignature(
