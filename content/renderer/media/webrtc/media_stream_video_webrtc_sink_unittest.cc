@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/mock_constraint_factory.h"
@@ -18,7 +19,9 @@ namespace {
 
 class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
  public:
-  MediaStreamVideoWebRtcSinkTest() {
+  MediaStreamVideoWebRtcSinkTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     scoped_feature_list_.InitAndDisableFeature(
         features::kMediaStreamOldVideoConstraints);
   }
@@ -62,7 +65,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   MockMediaStreamRegistry registry_;
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources in |registry_| into believing they are on the right threads.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -85,7 +88,9 @@ TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionConstraintPassThrough) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
  public:
-  MediaStreamVideoWebRtcSinkOldConstraintsTest() {
+  MediaStreamVideoWebRtcSinkOldConstraintsTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     scoped_feature_list_.InitAndEnableFeature(
         features::kMediaStreamOldVideoConstraints);
   }
@@ -129,7 +134,7 @@ class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
   MockMediaStreamRegistry registry_;
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources in |registry_| into believing they are on the right threads.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

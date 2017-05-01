@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,7 +84,9 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
 class HTMLVideoElementCapturerSourceTest : public testing::Test {
  public:
   HTMLVideoElementCapturerSourceTest()
-      : web_media_player_(new MockWebMediaPlayer()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        web_media_player_(new MockWebMediaPlayer()),
         html_video_capturer_(new HtmlVideoElementCapturerSource(
             web_media_player_->AsWeakPtr(),
             base::ThreadTaskRunnerHandle::Get())) {}
@@ -108,7 +111,7 @@ class HTMLVideoElementCapturerSourceTest : public testing::Test {
  protected:
   // We need some kind of message loop to allow |html_video_capturer_| to
   // schedule capture events.
-  const base::MessageLoopForUI message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<MockWebMediaPlayer> web_media_player_;
   std::unique_ptr<HtmlVideoElementCapturerSource> html_video_capturer_;

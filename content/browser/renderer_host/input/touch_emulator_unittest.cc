@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,9 @@ class TouchEmulatorTest : public testing::Test,
                           public TouchEmulatorClient {
  public:
   TouchEmulatorTest()
-      : shift_pressed_(false),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        shift_pressed_(false),
         mouse_pressed_(false),
         ack_touches_synchronously_(true),
         last_mouse_x_(-1),
@@ -245,6 +247,7 @@ class TouchEmulatorTest : public testing::Test,
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<TouchEmulator> emulator_;
   std::vector<WebInputEvent::Type> forwarded_events_;
   double last_event_time_seconds_;
@@ -255,7 +258,6 @@ class TouchEmulatorTest : public testing::Test,
   int last_mouse_x_;
   int last_mouse_y_;
   std::vector<WebTouchEvent> touch_events_to_ack_;
-  base::MessageLoopForUI message_loop_;
   WebCursor cursor_;
 };
 

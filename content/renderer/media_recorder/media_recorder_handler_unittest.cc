@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
@@ -72,7 +73,9 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                                  public blink::WebMediaRecorderHandlerClient {
  public:
   MediaRecorderHandlerTest()
-      : media_recorder_handler_(new MediaRecorderHandler()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        media_recorder_handler_(new MediaRecorderHandler()),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
                       kTestAudioSampleRate) {
@@ -132,7 +135,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources in |registry_| into believing they are on the right threads.
-  const base::MessageLoopForUI message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
   MockMediaStreamRegistry registry_;
 
