@@ -21,6 +21,8 @@ shared_library("libcast_media_1.0_audio") {
   sources = [
     "cast_media_shlib.cc",
     "media_codec_support_cast_audio.cc",
+    "post_processing_pipeline_impl.cc",
+    "post_processing_pipeline_impl.h",
   ]
 
   deps = [
@@ -28,6 +30,7 @@ shared_library("libcast_media_1.0_audio") {
     "//base",
     "//chromecast/base",
     "//chromecast/public",
+    "//chromecast/public/media",
     "//media",
   ]
 }
@@ -44,7 +47,6 @@ source_set("alsa_cma_backend") {
     "filter_group.h",
     "media_pipeline_backend_alsa.cc",
     "media_pipeline_backend_alsa.h",
-    "post_processing_pipeline.cc",
     "post_processing_pipeline.h",
     "post_processing_pipeline_parser.cc",
     "post_processing_pipeline_parser.h",

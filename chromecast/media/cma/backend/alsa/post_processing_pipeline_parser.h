@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "base/macros.h"
 
@@ -18,30 +20,47 @@ class ListValue;
 namespace chromecast {
 namespace media {
 
+// Helper class to hold information about a stream pipeline.
+struct StreamPipelineDescriptor {
+  // The format for pipeline is:
+  // [ {"processor": "PATH_TO_SHARED_OBJECT",
+  //    "config": "CONFIGURATION_STRING"},
+  //   {"processor": "PATH_TO_SHARED_OBJECT",
+  //    "config": "CONFIGURATION_STRING"},
+  //    ... ]
+  base::ListValue* pipeline;
+  std::unordered_set<std::string> stream_types;
+
+  StreamPipelineDescriptor(
+      base::ListValue* pipeline_in,
+      const std::unordered_set<std::string>& stream_types_in);
+  ~StreamPipelineDescriptor();
+  StreamPipelineDescriptor(const StreamPipelineDescriptor& other);
+  StreamPipelineDescriptor operator=(const StreamPipelineDescriptor& other) =
+      delete;
+};
+
 // Helper class to parse post-processing pipeline descriptor file.
 class PostProcessingPipelineParser {
  public:
-  PostProcessingPipelineParser();
+  // |json|, if provided, is used instead of reading from file.
+  // |json| should be provided in tests only.
+  explicit PostProcessingPipelineParser(const std::string& json = "");
   ~PostProcessingPipelineParser();
 
-  // Reads the pipeline descriptor file and does preliminary parsing.
-  // Crashes with fatal log if parsing fails.
-  void Initialize();
+  std::vector<StreamPipelineDescriptor> GetStreamPipelines();
 
-  // Gets the list of processors for a given stream type.
-  // The format will be:
-  // [
-  //   {"processor": "PATH_TO_SHARED_OBJECT",
-  //    "config": "CONFIGURATION_STRING"},
-  //   {"processor": "PATH_TO_SHARED_OBJECT",
-  //    "config": "CONFIGURATION_STRING"},
-  //    ...
-  // ]
-  base::ListValue* GetPipelineByDeviceId(const std::string& device_id);
+  // Gets the list of processors for the mix/linearize stages.
+  // Same format as StreamPipelineDescriptor.pipeline
+  base::ListValue* GetMixPipeline();
+  base::ListValue* GetLinearizePipeline();
+
+  static std::string GetFilePath();
 
  private:
+  base::ListValue* GetPipelineByKey(const std::string& key);
+
   std::unique_ptr<base::DictionaryValue> config_dict_;
-  base::DictionaryValue* pipeline_dict_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipelineParser);
 };
