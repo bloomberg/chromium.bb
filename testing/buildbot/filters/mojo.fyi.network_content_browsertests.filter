@@ -1,0 +1,9 @@
+# http://crbug.com/715640
+BackgroundSyncBrowserTest*
+ServiceWorker*
+
+# http://crbug.com/715677
+Blob*
+
+# http://crbug.com/715630
+DownloadContentTest.*
