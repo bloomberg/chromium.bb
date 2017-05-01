@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,8 +27,7 @@ import java.util.List;
  * the photo picker, for example the RecyclerView and the bitmap caches.
  */
 public class PickerCategoryView extends RelativeLayout
-        implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
-                   DecoderServiceHost.ServiceReadyCallback, OnMenuItemClickListener {
+        implements FileEnumWorkerTask.FilesEnumeratedCallback, OnMenuItemClickListener {
     // The dialog that owns us.
     private PhotoPickerDialog mDialog;
 
@@ -47,9 +45,6 @@ public class PickerCategoryView extends RelativeLayout
 
     // The callback to notify the listener of decisions reached in the picker.
     private PhotoPickerListener mListener;
-
-    // The host class for the decoding service.
-    private DecoderServiceHost mDecoderServiceHost;
 
     // The RecyclerView showing the images.
     private RecyclerView mRecyclerView;
@@ -76,9 +71,6 @@ public class PickerCategoryView extends RelativeLayout
     // A worker task for asynchronously enumerating files off the main thread.
     private FileEnumWorkerTask mWorkerTask;
 
-    // Whether the connection to the service has been established.
-    private boolean mServiceReady;
-
     public PickerCategoryView(Context context) {
         super(context);
         postConstruction(context);
@@ -91,11 +83,6 @@ public class PickerCategoryView extends RelativeLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     private void postConstruction(Context context) {
         mContext = context;
-
-        mDecoderServiceHost = new DecoderServiceHost(this);
-        mDecoderServiceHost.bind(mContext);
-
-        enumerateBitmaps();
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
 
@@ -120,20 +107,17 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(mColumns, mPadding));
 
         // TODO(finnur): Implement caching.
+        // TODO(finnur): Remove this once the decoder service is in place.
+        prepareBitmaps();
     }
 
     /**
-     * Severs the connection to the decoding utility process and cancels any outstanding requests.
+     * Cancels any outstanding requests.
      */
     public void onDialogDismissed() {
         if (mWorkerTask != null) {
             mWorkerTask.cancel(true);
             mWorkerTask = null;
-        }
-
-        if (mDecoderServiceHost != null) {
-            mDecoderServiceHost.unbind(mContext);
-            mDecoderServiceHost = null;
         }
     }
 
@@ -157,25 +141,8 @@ public class PickerCategoryView extends RelativeLayout
     @Override
     public void filesEnumeratedCallback(List<PickerBitmap> files) {
         mPickerBitmaps = files;
-        processBitmaps();
-    }
-
-    // DecoderServiceHost.ServiceReadyCallback:
-
-    @Override
-    public void serviceReady() {
-        mServiceReady = true;
-        processBitmaps();
-    }
-
-    // RecyclerView.RecyclerListener:
-
-    @Override
-    public void onViewRecycled(RecyclerView.ViewHolder holder) {
-        PickerBitmapViewHolder bitmapHolder = (PickerBitmapViewHolder) holder;
-        String filePath = bitmapHolder.getFilePath();
-        if (filePath != null) {
-            getDecoderServiceHost().cancelDecodeImage(filePath);
+        if (files != null && files.size() > 0) {
+            mPickerAdapter.notifyDataSetChanged();
         }
     }
 
@@ -195,16 +162,6 @@ public class PickerCategoryView extends RelativeLayout
         return false;
     }
 
-    /**
-     * Start loading of bitmaps, once files have been enumerated and service is
-     * ready to decode.
-     */
-    private void processBitmaps() {
-        if (mServiceReady && mPickerBitmaps != null) {
-            mPickerAdapter.notifyDataSetChanged();
-        }
-    }
-
     // Simple accessors:
 
     public int getImageSize() {
@@ -217,10 +174,6 @@ public class PickerCategoryView extends RelativeLayout
 
     public List<PickerBitmap> getPickerBitmaps() {
         return mPickerBitmaps;
-    }
-
-    public DecoderServiceHost getDecoderServiceHost() {
-        return mDecoderServiceHost;
     }
 
     public boolean isMultiSelectAllowed() {
@@ -259,15 +212,14 @@ public class PickerCategoryView extends RelativeLayout
     }
 
     /**
-     * Asynchronously enumerates bitmaps on disk.
+     * Prepares bitmaps for loading.
      */
-    private void enumerateBitmaps() {
+    private void prepareBitmaps() {
         if (mWorkerTask != null) {
             mWorkerTask.cancel(true);
         }
 
-        mWorkerTask =
-                new FileEnumWorkerTask(this, new MimeTypeFileFilter(Arrays.asList("image/*")));
+        mWorkerTask = new FileEnumWorkerTask(this, new MimeTypeFileFilter("image/*"));
         mWorkerTask.execute();
     }
 
