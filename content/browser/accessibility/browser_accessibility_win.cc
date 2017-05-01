@@ -659,29 +659,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
   if (!instance_active())
     return E_FAIL;
 
-  if (!name)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  base::string16 name_str = target->name();
-  if (name_str.empty()) {
-    if (target->ia2_role() == ROLE_SYSTEM_DOCUMENT && PlatformGetParent()) {
-      // Hack: Some versions of JAWS crash if they get an empty name on
-      // a document that's the child of an iframe, so always return a
-      // nonempty string for this role.  https://crbug.com/583057
-      name_str = L" ";
-    } else {
-      return S_FALSE;
-    }
-  }
-
-  *name = SysAllocString(name_str.c_str());
-
-  DCHECK(*name);
-  return S_OK;
+  return GetPlatformNodeWin()->get_accName(var_id, name);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
