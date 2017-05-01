@@ -233,6 +233,9 @@ void ChromePluginPlaceholder::PluginListChanged() {
   if (!GetFrame() || !plugin())
     return;
 
+  // Checking with GetFrame() is equivalent to checking render_frame().
+  DCHECK(render_frame());
+
   ChromeViewHostMsg_GetPluginInfo_Output output;
   std::string mime_type(GetPluginParams().mime_type.Utf8());
   render_frame()->Send(new ChromeViewHostMsg_GetPluginInfo(
@@ -289,6 +292,8 @@ void ChromePluginPlaceholder::ShowContextMenu(
     const blink::WebMouseEvent& event) {
   if (context_menu_request_id_)
     return;  // Don't allow nested context menu requests.
+  if (!render_frame())
+    return;
 
   content::ContextMenuParams params;
 
@@ -361,6 +366,7 @@ blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
 }
 
 void ChromePluginPlaceholder::OnBlockedTinyContent() {
+  DCHECK(render_frame());
   if (did_send_blocked_content_notification_)
     return;
 
