@@ -6,7 +6,7 @@
 # certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the full
 # format.
 
-version_id: 2
+version_id: 3
 
 # https://captive-portal.badssl.com leaf.
 # This is a test certificate, always keep it at the top.
@@ -54,6 +54,12 @@ captive_portal_cert {
   sha256_hash: "sha256/IJPCDSE5tM9H3nuD5m6RU2i9KDdPXVn4qmC/ULlcZzc="
 }
 
+# hotelwifi.com
+# https://crt.sh/?q=f9dca04c4ac67f346c505c6a9bdc931c5272547dbb512a138c4459a903b023c7
+captive_portal_cert {
+  sha256_hash: "sha256/0Gy8RMdbxHNWR2GQJ62QKDXORYf5JmMmnr1FJFPYpzM="
+}
+
 # Innflux
 # Issuer: C=US, ST=Arizona, L=Scottsdale, O=GoDaddy.com, Inc.,
 #         OU=http://certs.godaddy.com/repository/,
@@ -86,6 +92,12 @@ captive_portal_cert {
   sha256_hash: "sha256/UwOkRGMlP0K/mKNJdpQ0sTg2ean9Tje8UTOvFYzt1GE="
 }
 
+# mobicare.com.br
+# https://crt.sh/?q=bf9a13fc64b18221a6f0360e95ba54714d8ebf70a0291b7ea5f357be30436a7a
+captive_portal_cert {
+  sha256_hash: "sha256/w7KUXE4/BAo1YVZdO3mBsrMpu4IQuN0mhUXUI//agVU="
+}
+
 # ombord.info
 # https://crt.sh/?q=f849586eedb4c754fc53e4352948d36097ae7fec50abc5f93c08239719c8184a
 captive_portal_cert {
@@ -99,6 +111,13 @@ captive_portal_cert {
 #          CN=hautdebitmobile.orange.fr
 captive_portal_cert {
   sha256_hash: "sha256/AUSXlKDCf1X30WhWeAWbjToABfBkJrKWPL6KwEi5VH0="
+}
+
+# virginwifi.io
+# Issuer: O=GeoTrust Inc., CN=RapidSSL SHA256 CA - G2, C=US
+# Subject: CN=*.virginwifi.io
+captive_portal_cert {
+  sha256_hash: "sha256/zSyVjjFJMIeXK0ktVTIjewwr6U5OePRqyY/nEXTI4P8="
 }
 
 # wifipass.org
