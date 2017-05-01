@@ -23,6 +23,7 @@
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/notification_view.h"
+#include "ui/views/controls/slide_out_view.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace message_center {
