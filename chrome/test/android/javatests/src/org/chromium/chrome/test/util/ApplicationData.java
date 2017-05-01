@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.test.util;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.v4.content.ContextCompat;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
@@ -37,40 +40,33 @@ public final class ApplicationData {
      *
      * @param targetContext the target Context.
      */
-    public static void clearAppData(Context targetContext) {
-        final String appDir = getAppDirFromTargetContext(targetContext);
+    public static void clearAppData(final Context targetContext) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     private boolean mDataRemoved;
 
+                    @SuppressLint("CommitPrefEdits")
                     @Override
                     public boolean isSatisfied() {
-                        if (!mDataRemoved && !removeAppData(appDir)) {
+                        SharedPreferences multidexPrefs =
+                                targetContext.getSharedPreferences("multidex.version", 0);
+                        if (!mDataRemoved && !removeAppData(targetContext)) {
                             return false;
                         }
                         mDataRemoved = true;
                         // We have to make sure the cache directory still exists, as the framework
                         // will try to create it otherwise and will fail for sandbox processes with
                         // a NullPointerException.
-                        File cacheDir = new File(appDir, "cache");
+                        File cacheDir = new File(ContextCompat.getDataDir(targetContext), "cache");
+                        // Removing app data cleared out all shared prefs. Multidex uses shared
+                        // prefs to cache hashes of the secondary dexes it has extracted; without
+                        // them, it'll attempt to reextract the dexes the next time the tests
+                        // start up.
+                        multidexPrefs.edit().commit();
                         return cacheDir.exists() || cacheDir.mkdir();
                     }
                 },
                 MAX_CLEAR_APP_DATA_TIMEOUT_MS, CLEAR_APP_DATA_POLL_INTERVAL_MS);
-    }
-
-    /**
-     * Find the absolute path of the application data directory for the given target context.
-     *
-     * When this is invoked from tests, the target context from the instrumentation must be used.
-     *
-     * @param targetContext the target Context.
-     *
-     * @return the absolute path of the application data directory.
-     */
-    public static String getAppDirFromTargetContext(Context targetContext) {
-        String cacheDir = targetContext.getCacheDir().getAbsolutePath();
-        return cacheDir.substring(0, cacheDir.lastIndexOf('/'));
     }
 
     /**
@@ -80,12 +76,14 @@ public final class ApplicationData {
      *
      * @return whether removal succeeded.
      */
-    private static boolean removeAppData(String appDir) {
-        File[] files = new File(appDir).listFiles();
+    private static boolean removeAppData(final Context targetContext) {
+        File dataDir = ContextCompat.getDataDir(targetContext);
+        File codeCacheDir = ContextCompat.getCodeCacheDir(targetContext);
+        File[] files = dataDir.listFiles();
         if (files == null) return true;
         for (File file : files) {
-            if (!(file.getName().equals("lib")
-                    || file.getName().equals("incremental-install-files"))
+            if (!(file.getName().equals("lib") || file.getName().equals("incremental-install-files")
+                        || file.getName().equals(codeCacheDir.getName()))
                     && !removeFile(file)) {
                 return false;
             }
