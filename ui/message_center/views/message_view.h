@@ -16,8 +16,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/slide_out_controller.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/slide_out_view.h"
 
 namespace views {
 class Painter;
@@ -36,9 +35,7 @@ const int kWebNotificationIconSize = 40;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
-class MESSAGE_CENTER_EXPORT MessageView
-    : public views::View,
-      public views::SlideOutController::Delegate {
+class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView {
  public:
   MessageView(MessageCenterController* controller,
               const Notification& notification);
@@ -50,8 +47,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
 
-  // Creates a shadow around the notification and changes slide-out behavior.
-  void SetIsNested();
+  // Creates a shadow around the notification.
+  void CreateShadowBorder();
 
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
@@ -60,7 +57,7 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   void OnCloseButtonPressed();
 
-  // views::View
+  // Overridden from views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -69,11 +66,9 @@ class MESSAGE_CENTER_EXPORT MessageView
   void OnFocus() override;
   void OnBlur() override;
   void Layout() override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::SlideOutController::Delegate
-  ui::Layer* GetSlideOutLayer() override;
-  void OnSlideOut() override;
+  // Overridden from ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
@@ -85,6 +80,9 @@ class MESSAGE_CENTER_EXPORT MessageView
   }
 
  protected:
+  // Overridden from views::SlideOutView:
+  void OnSlideOut() override;
+
   // Creates and add close button to view hierarchy when necessary. Derived
   // classes should call this after its view hierarchy is populated to ensure
   // it is on top of other views.
@@ -110,12 +108,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   base::string16 display_source_;
 
   std::unique_ptr<views::Painter> focus_painter_;
-
-  views::SlideOutController slide_out_controller_;
-
-  // True if |this| is embedded in another view. Equivalent to |!top_level| in
-  // MessageViewFactory parlance.
-  bool is_nested_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };

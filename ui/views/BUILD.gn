@@ -229,6 +229,8 @@ component("views") {
     "controls/scrollbar/scroll_bar_views.h",
     "controls/separator.cc",
     "controls/separator.h",
+    "controls/slide_out_view.cc",
+    "controls/slide_out_view.h",
     "controls/slider.cc",
     "controls/slider.h",
     "controls/styled_label.cc",
