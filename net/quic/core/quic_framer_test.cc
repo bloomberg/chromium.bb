@@ -20,9 +20,9 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
 using testing::Return;
@@ -289,7 +289,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   std::vector<std::unique_ptr<string>> stream_data_;
 };
 
-class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicFramerTest : public QuicTestWithParam<QuicVersion> {
  public:
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
@@ -438,7 +438,6 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     return BuildUnsizedDataPacket(&framer_, header, frames, packet_size);
   }
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   QuicVersion version_;

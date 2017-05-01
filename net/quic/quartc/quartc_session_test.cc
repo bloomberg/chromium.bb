@@ -20,6 +20,7 @@
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/impl/quic_chromium_clock.h"
+#include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/quartc/quartc_alarm_factory.h"
 #include "net/quic/quartc/quartc_packet_writer.h"
 #include "net/quic/test_tools/quic_test_utils.h"

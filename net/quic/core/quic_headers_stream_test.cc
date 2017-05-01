@@ -18,6 +18,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
@@ -27,7 +28,6 @@
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
 using testing::_;
@@ -207,7 +207,7 @@ struct TestParams {
   HpackDecoderChoice hpack_decoder;
 };
 
-class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
+class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
  public:
   // Constructing the test_params_ object will set the necessary flags before
   // the MockQuicConnection is constructed, which we need because the latter
@@ -375,7 +375,6 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   const TestParams test_params_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;

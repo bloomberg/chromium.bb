@@ -24,6 +24,8 @@
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -35,9 +37,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
 #include "net/test/gtest_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
 using testing::AnyNumber;
@@ -686,7 +686,7 @@ std::vector<TestParams> GetTestParams() {
   return params;
 }
 
-class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
+class QuicConnectionTest : public QuicTestWithParam<TestParams> {
  protected:
   QuicConnectionTest()
       : connection_id_(42),
@@ -1060,8 +1060,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     QuicFramerPeer::SetPerspective(&peer_framer_,
                                    InvertPerspective(perspective));
   }
-
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
 
   QuicConnectionId connection_id_;
   QuicFramer framer_;

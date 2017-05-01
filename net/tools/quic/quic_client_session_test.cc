@@ -12,6 +12,7 @@
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_spdy_client_stream.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -20,7 +21,6 @@
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using google::protobuf::implicit_cast;
 using std::string;
@@ -62,7 +62,7 @@ class TestQuicClientSession : public QuicClientSession {
   }
 };
 
-class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicClientSessionTest : public QuicTestWithParam<QuicVersion> {
  protected:
   QuicClientSessionTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),

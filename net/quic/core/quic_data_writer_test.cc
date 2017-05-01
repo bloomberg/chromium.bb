@@ -9,8 +9,8 @@
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
@@ -39,7 +39,7 @@ std::vector<TestParams> GetTestParams() {
   return params;
 }
 
-class QuicDataWriterTest : public ::testing::TestWithParam<TestParams> {};
+class QuicDataWriterTest : public QuicTestWithParam<TestParams> {};
 
 INSTANTIATE_TEST_CASE_P(QuicDataWriterTests,
                         QuicDataWriterTest,

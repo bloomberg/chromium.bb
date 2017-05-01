@@ -18,14 +18,13 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/quic_time_wait_list_manager_peer.h"
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Args;
 using testing::Assign;
@@ -68,7 +67,7 @@ class MockFakeTimeEpollServer : public FakeTimeEpollServer {
                void(int64_t timeout_in_us, EpollAlarmCallbackInterface* alarm));
 };
 
-class QuicTimeWaitListManagerTest : public ::testing::Test {
+class QuicTimeWaitListManagerTest : public QuicTest {
  protected:
   QuicTimeWaitListManagerTest()
       : helper_(&epoll_server_, QuicAllocator::BUFFER_POOL),
@@ -126,7 +125,6 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
                                                packet_number, "data");
   }
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
   QuicEpollConnectionHelper helper_;
   QuicEpollAlarmFactory alarm_factory_;

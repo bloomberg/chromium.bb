@@ -179,14 +179,6 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicFrames& frames,
                                    size_t packet_size);
 
-// When constructed, checks that all QUIC flags have their correct default
-// values and when destructed, restores those values.
-class QuicFlagSaver {
- public:
-  QuicFlagSaver();
-  ~QuicFlagSaver();
-};
-
 // Compute SHA-1 hash of the supplied std::string.
 std::string Sha1Hash(QuicStringPiece data);
 
