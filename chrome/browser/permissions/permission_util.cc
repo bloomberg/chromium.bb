@@ -94,6 +94,10 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return PermissionRequestType::PERMISSION_FLASH;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      return PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;

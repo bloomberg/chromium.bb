@@ -9,6 +9,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,6 +65,10 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_MIDI;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      return IDR_INFOBAR_MEDIA_STREAM_MIC;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -84,6 +89,10 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return ui::kMidiIcon;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return kExtensionIcon;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      return ui::kMicrophoneIcon;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return ui::kVideocamIcon;
     default:
       NOTREACHED();
       return kExtensionIcon;
@@ -111,6 +120,12 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
 #endif
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       message_id = IDS_FLASH_PERMISSION_FRAGMENT;
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT;
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
       break;
     default:
       NOTREACHED();

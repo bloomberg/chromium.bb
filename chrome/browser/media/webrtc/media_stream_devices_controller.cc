@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +24,7 @@
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -387,6 +388,28 @@ void MediaStreamDevicesController::PromptAnswered(ContentSetting setting,
   RunCallback();
 }
 
+void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
+    const std::vector<ContentSetting>& responses) {
+  DCHECK(responses.size() == 1 || responses.size() == 2);
+
+  // The audio setting will always be the first one in the vector, if it was
+  // requested.
+  if (audio_setting_ == CONTENT_SETTING_ASK)
+    audio_setting_ = responses.front();
+
+  if (video_setting_ == CONTENT_SETTING_ASK)
+    video_setting_ = responses.back();
+
+  for (ContentSetting response : responses) {
+    if (response == CONTENT_SETTING_BLOCK)
+      denial_reason_ = content::MEDIA_DEVICE_PERMISSION_DENIED;
+    else if (response == CONTENT_SETTING_ASK)
+      denial_reason_ = content::MEDIA_DEVICE_PERMISSION_DISMISSED;
+  }
+
+  RunCallback();
+}
+
 #if defined(OS_ANDROID)
 void MediaStreamDevicesController::AndroidOSPromptAnswered(bool allowed) {
   DCHECK(audio_setting_ != CONTENT_SETTING_ASK &&
@@ -416,10 +439,10 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     PermissionPromptDelegate* delegate) {
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      request.render_process_id, request.render_frame_id);
   content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(request.render_process_id,
-                                           request.render_frame_id));
+      content::WebContents::FromRenderFrameHost(rfh);
   if (request.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
     MediaPermissionRequestLogger::LogRequest(
         web_contents, request.render_process_id, request.render_frame_id,
@@ -435,13 +458,32 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
   if (is_asking_for_audio || is_asking_for_video) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    delegate->ShowPrompt(
-        request.user_gesture, web_contents,
-        base::MakeUnique<Request>(
-            profile, is_asking_for_audio, is_asking_for_video,
-            request.security_origin,
-            base::Bind(&MediaStreamDevicesController::PromptAnswered,
-                       base::Passed(&controller))));
+    if (base::FeatureList::IsEnabled(
+            features::kUsePermissionManagerForMediaRequests)) {
+      std::vector<ContentSettingsType> content_settings_types;
+
+      if (is_asking_for_audio)
+        content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+      if (is_asking_for_video) {
+        content_settings_types.push_back(
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+      }
+
+      PermissionManager::Get(profile)->RequestPermissions(
+          content_settings_types, rfh, request.security_origin,
+          request.user_gesture,
+          base::Bind(
+              &MediaStreamDevicesController::PromptAnsweredGroupedRequest,
+              base::Passed(&controller)));
+    } else {
+      delegate->ShowPrompt(
+          request.user_gesture, web_contents,
+          base::MakeUnique<Request>(
+              profile, is_asking_for_audio, is_asking_for_video,
+              request.security_origin,
+              base::Bind(&MediaStreamDevicesController::PromptAnswered,
+                         base::Passed(&controller))));
+    }
     return;
   }
 

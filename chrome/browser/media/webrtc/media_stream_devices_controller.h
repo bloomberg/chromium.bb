@@ -108,7 +108,12 @@ class MediaStreamDevicesController {
 
   // Called when a permission prompt has been answered, with the |response| and
   // whether the choice should be persisted.
+  // TODO(raymes): Remove this once crbug.com/606138 is fixed.
   void PromptAnswered(ContentSetting response, bool persist);
+
+  // Called when a permission prompt is answered through the PermissionManager.
+  void PromptAnsweredGroupedRequest(
+      const std::vector<ContentSetting>& responses);
 
 #if defined(OS_ANDROID)
   // Called when the Android OS-level prompt is answered.
