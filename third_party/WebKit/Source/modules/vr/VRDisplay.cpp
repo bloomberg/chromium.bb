@@ -211,7 +211,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   // If the VRDisplay is already presenting, however, repeated calls are
   // allowed outside a user gesture so that the presented content may be
   // updated.
-  if (first_present && !UserGestureIndicator::UtilizeUserGesture() &&
+  if (first_present && !UserGestureIndicator::ProcessingUserGesture() &&
       !in_display_activate_) {
     DOMException* exception = DOMException::Create(
         kInvalidStateError, "API can only be initiated by a user gesture.");

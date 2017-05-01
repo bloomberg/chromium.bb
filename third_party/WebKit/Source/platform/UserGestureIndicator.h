@@ -33,22 +33,6 @@
 
 namespace blink {
 
-// Callback to be invoked when the state of a UserGestureIndicator is
-// used (only during the scope of a UserGestureIndicator, does
-// not flow with the UserGestureToken).  It's the responsibility of the
-// caller to ensure the UserGestureUtilizedCallback is kept alive as long
-// as the UserGestureIndicator it's used in.
-// Note that this doesn't currently track EVERY way in which the
-// state of a UserGesture can be read (sometimes it's just propagated
-// elsewhere, or otherwise read in a way that's hard to know if it will
-// actually be used), but should include the primary use cases.  Therefore
-// this is suitable mainly for diagnostics and measurement purposes.
-class PLATFORM_EXPORT UserGestureUtilizedCallback {
- public:
-  virtual ~UserGestureUtilizedCallback() = default;
-  virtual void UserGestureUtilized() = 0;
-};
-
 // A UserGestureToken represents a user gesture. It can be referenced and saved
 // for later (see, e.g., DOMTimer, which propagates user gestures to the timer
 // fire in certain situations). Passing it to a UserGestureIndicator will cause
@@ -67,16 +51,6 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   void SetTimeoutPolicy(TimeoutPolicy);
   void ResetTimestamp();
 
-  // If this UserGestureToken is wrapped in a UserGestureIndicator, and the
-  // UserGestureIndicator is the lowest on the callstack (and therefore this
-  // UserGestureToken is UserGestureIndicator::s_rootToken), then the callback
-  // provided here will be called when this UserGestureToken is utilized.
-  // Calling setUserGestureUtilizedCallback() on a UserGestureToken that is not
-  // UserGestureIndicator::s_rootToken would be unsafe and never result in a
-  // callback, so it will fail a CHECK() instead.
-  void SetUserGestureUtilizedCallback(UserGestureUtilizedCallback*);
-  void UserGestureUtilized();
-
  protected:
   UserGestureToken(Status);
 
@@ -86,7 +60,6 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   size_t consumable_gestures_;
   double timestamp_;
   TimeoutPolicy timeout_policy_;
-  UserGestureUtilizedCallback* usage_callback_;
 };
 
 class PLATFORM_EXPORT UserGestureIndicator final {
@@ -100,22 +73,12 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   // needs to be thread-safe
 
   // Returns whether a user gesture is currently in progress.
-  // Does not invoke the UserGestureUtilizedCallback.  Consider calling
-  // utilizeUserGesture instead if you know for sure that the return value
-  // will have an effect.
   static bool ProcessingUserGesture();
   static bool ProcessingUserGestureThreadSafe();
-
-  // Indicates that a user gesture (if any) is being used, without preventing it
-  // from being used again.  Returns whether a user gesture is currently in
-  // progress.  If true, invokes (and then clears) any
-  // UserGestureUtilizedCallback.
-  static bool UtilizeUserGesture();
 
   // Mark the current user gesture (if any) as having been used, such that
   // it cannot be used again.  This is done only for very security-sensitive
   // operations like creating a new process.
-  // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
   static bool ConsumeUserGesture();
   static bool ConsumeUserGestureThreadSafe();
 

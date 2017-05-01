@@ -270,7 +270,7 @@ unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
 }
 
 bool LocalDOMWindow::AllowPopUp(LocalFrame& first_frame) {
-  if (UserGestureIndicator::UtilizeUserGesture())
+  if (UserGestureIndicator::ProcessingUserGesture())
     return true;
 
   Settings* settings = first_frame.GetSettings();

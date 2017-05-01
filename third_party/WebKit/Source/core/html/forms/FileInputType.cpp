@@ -132,7 +132,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!UserGestureIndicator::UtilizeUserGesture())
+  if (!UserGestureIndicator::ProcessingUserGesture())
     return;
 
   if (ChromeClient* chrome_client = this->GetChromeClient()) {

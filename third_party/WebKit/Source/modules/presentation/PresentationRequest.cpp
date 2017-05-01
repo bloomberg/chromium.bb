@@ -135,7 +135,8 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
       !context_settings ||
       context_settings->GetPresentationRequiresUserGesture();
 
-  if (is_user_gesture_required && !UserGestureIndicator::UtilizeUserGesture())
+  if (is_user_gesture_required &&
+      !UserGestureIndicator::ProcessingUserGesture())
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

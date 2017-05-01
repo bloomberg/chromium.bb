@@ -648,7 +648,7 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   Settings* settings = frame.GetSettings();
   bool default_value =
       (settings && settings->GetJavaScriptCanAccessClipboard()) ||
-      UserGestureIndicator::UtilizeUserGesture();
+      UserGestureIndicator::ProcessingUserGesture();
   return frame.GetEditor().Client().CanCopyCut(&frame, default_value);
 }
 

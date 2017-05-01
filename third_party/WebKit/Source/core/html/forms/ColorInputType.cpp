@@ -149,7 +149,7 @@ void ColorInputType::HandleDOMActivateEvent(Event* event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!UserGestureIndicator::UtilizeUserGesture())
+  if (!UserGestureIndicator::ProcessingUserGesture())
     return;
 
   ChromeClient* chrome_client = this->GetChromeClient();

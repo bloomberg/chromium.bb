@@ -34,7 +34,7 @@ class TestUserGestureToken final : public UserGestureToken {
 
 // Checks for the initial state of UserGestureIndicator.
 TEST(UserGestureIndicatorTest, InitialState) {
-  EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
   EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
 }
@@ -43,7 +43,7 @@ TEST(UserGestureIndicatorTest, ConstructedWithNewUserGesture) {
   UserGestureIndicator user_gesture_scope(
       TestUserGestureToken::Create(UserGestureToken::kNewGesture));
 
-  EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 
   EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
@@ -52,7 +52,7 @@ TEST(UserGestureIndicatorTest, ConstructedWithNewUserGesture) {
 TEST(UserGestureIndicatorTest, ConstructedWithUserGesture) {
   UserGestureIndicator user_gesture_scope(TestUserGestureToken::Create());
 
-  EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 
   EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
@@ -61,7 +61,7 @@ TEST(UserGestureIndicatorTest, ConstructedWithUserGesture) {
 TEST(UserGestureIndicatorTest, ConstructedWithNoUserGesture) {
   UserGestureIndicator user_gesture_scope(nullptr);
 
-  EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
 
   EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
@@ -72,11 +72,11 @@ TEST(UserGestureIndicatorTest, DestructUserGestureIndicator) {
   {
     UserGestureIndicator user_gesture_scope(TestUserGestureToken::Create());
 
-    EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
     EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   }
 
-  EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
   EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
 }
@@ -87,7 +87,7 @@ TEST(UserGestureIndicatorTest, ScopedNewUserGestureIndicators) {
   UserGestureIndicator user_gesture_scope(
       TestUserGestureToken::Create(UserGestureToken::kNewGesture));
 
-  EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   {
     // Construct inner UserGestureIndicator.
@@ -95,19 +95,19 @@ TEST(UserGestureIndicatorTest, ScopedNewUserGestureIndicators) {
     UserGestureIndicator inner_user_gesture(
         TestUserGestureToken::Create(UserGestureToken::kNewGesture));
 
-    EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
     EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 
     // Consume inner gesture.
     EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
   }
 
-  EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 
   // Consume root gesture.
   EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-  EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
+  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 }
 
@@ -127,79 +127,6 @@ TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
   // gesture.
   EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
-}
-
-class UsedCallback : public UserGestureUtilizedCallback {
- public:
-  UsedCallback() : used_count_(0) {}
-
-  void UserGestureUtilized() override { used_count_++; }
-
-  unsigned GetAndResetUsedCount() {
-    unsigned cur_count = used_count_;
-    used_count_ = 0;
-    return cur_count;
-  }
-
- private:
-  unsigned used_count_;
-};
-
-// Tests callback invocation.
-TEST(UserGestureIndicatorTest, Callback) {
-  UsedCallback cb;
-
-  {
-    UserGestureIndicator user_gesture_scope(TestUserGestureToken::Create());
-    UserGestureIndicator::CurrentToken()->SetUserGestureUtilizedCallback(&cb);
-    EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-
-    // Untracked doesn't invoke the callback
-    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
-    EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-
-    // But processingUserGesture does
-    EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
-    EXPECT_EQ(1u, cb.GetAndResetUsedCount());
-
-    // But only the first time
-    EXPECT_TRUE(UserGestureIndicator::UtilizeUserGesture());
-    EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-    EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-  }
-  EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-
-  {
-    UserGestureIndicator user_gesture_scope(TestUserGestureToken::Create());
-    UserGestureIndicator::CurrentToken()->SetUserGestureUtilizedCallback(&cb);
-
-    // Consume also invokes the callback
-    EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-    EXPECT_EQ(1u, cb.GetAndResetUsedCount());
-
-    // But only once
-    EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
-    EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
-    EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-  }
-
-  {
-    std::unique_ptr<UserGestureIndicator> user_gesture_scope(
-        new UserGestureIndicator(TestUserGestureToken::Create()));
-    RefPtr<UserGestureToken> token = UserGestureIndicator::CurrentToken();
-    token->SetUserGestureUtilizedCallback(&cb);
-    user_gesture_scope.reset();
-
-    // The callback should be cleared when the UseGestureIndicator is deleted.
-    EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
-    EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-  }
-
-  // The callback isn't invoked outside the scope of the UGI
-  EXPECT_FALSE(UserGestureIndicator::UtilizeUserGesture());
-  EXPECT_EQ(0u, cb.GetAndResetUsedCount());
-  EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
-  EXPECT_EQ(0u, cb.GetAndResetUsedCount());
 }
 
 TEST(UserGestureIndicatorTest, Timeouts) {
