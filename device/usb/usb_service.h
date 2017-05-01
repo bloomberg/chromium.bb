@@ -54,6 +54,9 @@ class UsbService : public base::NonThreadSafe {
   static std::unique_ptr<UsbService> Create(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
+  // Creates a SequencedTaskRunner appropriate for blocking I/O operations.
+  static scoped_refptr<base::SequencedTaskRunner> CreateBlockingTaskRunner();
+
   virtual ~UsbService();
 
   scoped_refptr<UsbDevice> GetDevice(const std::string& guid);

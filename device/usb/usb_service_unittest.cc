@@ -5,10 +5,10 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/base/features.h"
 #include "device/test/test_device_client.h"
@@ -24,15 +24,18 @@ namespace {
 
 class UsbServiceTest : public ::testing::Test {
  public:
+  UsbServiceTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        io_thread_(base::TestIOThread::kAutoStart) {}
+
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoopForUI);
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-    device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
+    device_client_.reset(new TestDeviceClient(io_thread_.task_runner()));
   }
 
  protected:
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<base::TestIOThread> io_thread_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::TestIOThread io_thread_;
   std::unique_ptr<TestDeviceClient> device_client_;
 };
 
@@ -77,7 +80,7 @@ TEST_F(UsbServiceTest, ClaimGadget) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget);
 
   scoped_refptr<UsbDevice> device = gadget->GetDevice();
@@ -90,7 +93,7 @@ TEST_F(UsbServiceTest, DisconnectAndReconnect) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget);
   ASSERT_TRUE(gadget->Disconnect());
   ASSERT_TRUE(gadget->Reconnect());
@@ -101,7 +104,7 @@ TEST_F(UsbServiceTest, Shutdown) {
     return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget);
 
   base::RunLoop loop;

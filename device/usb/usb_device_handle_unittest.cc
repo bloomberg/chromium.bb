@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
@@ -25,18 +26,18 @@ namespace {
 
 class UsbDeviceHandleTest : public ::testing::Test {
  public:
-  void SetUp() override {
-    message_loop_.reset(new base::MessageLoopForUI);
-    io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-    device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
-  }
+  UsbDeviceHandleTest()
+      : io_thread_(base::TestIOThread::kAutoStart),
+        scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        device_client_(io_thread_.task_runner()) {}
 
  protected:
-  std::unique_ptr<base::TestIOThread> io_thread_;
+  base::TestIOThread io_thread_;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<TestDeviceClient> device_client_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestDeviceClient device_client_;
 };
 
 class TestOpenCallback {
@@ -132,7 +133,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -200,7 +201,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -268,7 +269,7 @@ TEST_F(UsbDeviceHandleTest, ControlTransfer) {
     return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
 
   TestOpenCallback open_device;
@@ -300,7 +301,7 @@ TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -330,7 +331,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnClose) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -361,7 +362,7 @@ TEST_F(UsbDeviceHandleTest, CancelOnDisconnect) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -394,7 +395,7 @@ TEST_F(UsbDeviceHandleTest, Timeout) {
   }
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 
@@ -425,7 +426,7 @@ TEST_F(UsbDeviceHandleTest, CloseReentrancy) {
     return;
 
   std::unique_ptr<UsbTestGadget> gadget =
-      UsbTestGadget::Claim(io_thread_->task_runner());
+      UsbTestGadget::Claim(io_thread_.task_runner());
   ASSERT_TRUE(gadget.get());
   ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
 

@@ -17,14 +17,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/base/device_monitor_linux.h"
+#include "device/udev_linux/udev_watcher.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_device_linux.h"
 #include "device/usb/webusb_descriptors.h"
@@ -67,65 +67,65 @@ void OnDeviceOpenedToReadDescriptors(
 
 }  // namespace
 
-class UsbServiceLinux::FileThreadHelper : public DeviceMonitorLinux::Observer {
+class UsbServiceLinux::FileThreadHelper : public UdevWatcher::Observer {
  public:
-  FileThreadHelper(base::WeakPtr<UsbServiceLinux> service,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FileThreadHelper(base::WeakPtr<UsbServiceLinux> service);
   ~FileThreadHelper() override;
 
   void Start();
 
  private:
-  // DeviceMonitorLinux::Observer:
-  void OnDeviceAdded(udev_device* udev_device) override;
-  void OnDeviceRemoved(udev_device* device) override;
+  // UdevWatcher::Observer
+  void OnDeviceAdded(ScopedUdevDevicePtr device) override;
+  void OnDeviceRemoved(ScopedUdevDevicePtr device) override;
 
-  base::ThreadChecker thread_checker_;
-  ScopedObserver<DeviceMonitorLinux, DeviceMonitorLinux::Observer> observer_;
+  std::unique_ptr<UdevWatcher> watcher_;
 
-  // |service_| can only be checked for validity on |task_runner_|'s thread.
+  // |service_| can only be checked for validity on |task_runner_|'s sequence.
   base::WeakPtr<UsbServiceLinux> service_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
 };
 
 UsbServiceLinux::FileThreadHelper::FileThreadHelper(
-    base::WeakPtr<UsbServiceLinux> service,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : observer_(this), service_(service), task_runner_(std::move(task_runner)) {
-  thread_checker_.DetachFromThread();
+    base::WeakPtr<UsbServiceLinux> service)
+    : service_(service), task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+  // Detaches from the sequence on which this object was created. It will be
+  // bound to its owning sequence when Start() is called.
+  sequence_checker_.DetachFromSequence();
 }
 
 UsbServiceLinux::FileThreadHelper::~FileThreadHelper() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 // static
 void UsbServiceLinux::FileThreadHelper::Start() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(thread_checker_.CalledOnValidThread());
 
-  DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
-  observer_.Add(monitor);
-  monitor->Enumerate(
-      base::Bind(&FileThreadHelper::OnDeviceAdded, base::Unretained(this)));
+  watcher_ = UdevWatcher::StartWatching(this);
+  watcher_->EnumerateExistingDevices();
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&UsbServiceLinux::HelperStarted, service_));
 }
 
 void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
-    udev_device* udev_device) {
-  const char* subsystem = udev_device_get_subsystem(udev_device);
+    ScopedUdevDevicePtr device) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  const char* subsystem = udev_device_get_subsystem(device.get());
   if (!subsystem || strcmp(subsystem, "usb") != 0)
     return;
 
-  const char* value = udev_device_get_devnode(udev_device);
+  const char* value = udev_device_get_devnode(device.get());
   if (!value)
     return;
   std::string device_path = value;
 
-  const char* sysfs_path = udev_device_get_syspath(udev_device);
+  const char* sysfs_path = udev_device_get_syspath(device.get());
   if (!sysfs_path)
     return;
 
@@ -147,22 +147,22 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
   }
 
   std::string manufacturer;
-  value = udev_device_get_sysattr_value(udev_device, "manufacturer");
+  value = udev_device_get_sysattr_value(device.get(), "manufacturer");
   if (value)
     manufacturer = value;
 
   std::string product;
-  value = udev_device_get_sysattr_value(udev_device, "product");
+  value = udev_device_get_sysattr_value(device.get(), "product");
   if (value)
     product = value;
 
   std::string serial_number;
-  value = udev_device_get_sysattr_value(udev_device, "serial");
+  value = udev_device_get_sysattr_value(device.get(), "serial");
   if (value)
     serial_number = value;
 
   unsigned active_configuration = 0;
-  value = udev_device_get_sysattr_value(udev_device, "bConfigurationValue");
+  value = udev_device_get_sysattr_value(device.get(), "bConfigurationValue");
   if (value)
     base::StringToUint(value, &active_configuration);
 
@@ -172,9 +172,10 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
                             serial_number, active_configuration));
 }
 
-void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(udev_device* device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const char* device_path = udev_device_get_devnode(device);
+void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
+    ScopedUdevDevicePtr device) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  const char* device_path = udev_device_get_devnode(device.get());
   if (device_path) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&UsbServiceLinux::OnDeviceRemoved, service_,
@@ -182,11 +183,9 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(udev_device* device) {
   }
 }
 
-UsbServiceLinux::UsbServiceLinux(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_in)
-    : UsbService(std::move(blocking_task_runner_in)), weak_factory_(this) {
-  helper_ = base::MakeUnique<FileThreadHelper>(weak_factory_.GetWeakPtr(),
-                                               task_runner());
+UsbServiceLinux::UsbServiceLinux()
+    : UsbService(CreateBlockingTaskRunner()), weak_factory_(this) {
+  helper_ = base::MakeUnique<FileThreadHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
@@ -230,9 +229,9 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  scoped_refptr<UsbDeviceLinux> device(new UsbDeviceLinux(
-      device_path, descriptor, manufacturer, product, serial_number,
-      active_configuration, blocking_task_runner()));
+  scoped_refptr<UsbDeviceLinux> device(
+      new UsbDeviceLinux(device_path, descriptor, manufacturer, product,
+                         serial_number, active_configuration));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(base::Bind(&OnDeviceOpenedToReadDescriptors,

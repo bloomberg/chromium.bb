@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
@@ -46,9 +47,9 @@ void UsbService::Observer::WillDestroyUsbService() {}
 std::unique_ptr<UsbService> UsbService::Create(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
 #if defined(OS_ANDROID)
-  return base::WrapUnique(new UsbServiceAndroid(blocking_task_runner));
+  return base::WrapUnique(new UsbServiceAndroid());
 #elif defined(USE_UDEV)
-  return base::WrapUnique(new UsbServiceLinux(blocking_task_runner));
+  return base::WrapUnique(new UsbServiceLinux());
 #elif defined(OS_WIN)
   if (base::FeatureList::IsEnabled(kNewUsbBackend))
     return base::WrapUnique(new UsbServiceWin(blocking_task_runner));
@@ -59,6 +60,17 @@ std::unique_ptr<UsbService> UsbService::Create(
 #else
   return nullptr;
 #endif
+}
+
+// static
+scoped_refptr<base::SequencedTaskRunner>
+UsbService::CreateBlockingTaskRunner() {
+  return base::CreateSequencedTaskRunnerWithTraits(
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::USER_VISIBLE)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 }
 
 UsbService::~UsbService() {

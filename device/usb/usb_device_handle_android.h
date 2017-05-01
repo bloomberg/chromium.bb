@@ -7,7 +7,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "device/usb/usb_device_handle_usbfs.h"
 
 namespace device {
@@ -21,7 +20,6 @@ class UsbDeviceHandleAndroid : public UsbDeviceHandleUsbfs {
   static scoped_refptr<UsbDeviceHandleAndroid> Create(
       JNIEnv* env,
       scoped_refptr<UsbDevice> device,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::android::JavaRef<jobject>& usb_connection);
 
  private:
@@ -29,7 +27,6 @@ class UsbDeviceHandleAndroid : public UsbDeviceHandleUsbfs {
   UsbDeviceHandleAndroid(
       scoped_refptr<UsbDevice> device,
       base::ScopedFD fd,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::android::JavaRef<jobject>& wrapper);
   ~UsbDeviceHandleAndroid() override;
 

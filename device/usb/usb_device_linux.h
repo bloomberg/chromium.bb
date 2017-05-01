@@ -12,7 +12,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/webusb_descriptors.h"
@@ -52,8 +52,7 @@ class UsbDeviceLinux : public UsbDevice {
                  const std::string& manufacturer_string,
                  const std::string& product_string,
                  const std::string& serial_number,
-                 uint8_t active_configuration,
-                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+                 uint8_t active_configuration);
 
   ~UsbDeviceLinux() override;
 
@@ -64,16 +63,18 @@ class UsbDeviceLinux : public UsbDevice {
                           const std::string& error_name,
                           const std::string& error_message);
 #else
-  void OpenOnBlockingThread(const OpenCallback& callback);
+  void OpenOnBlockingThread(
+      const OpenCallback& callback,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 #endif  // defined(OS_CHROMEOS)
-  void Opened(base::ScopedFD fd, const OpenCallback& callback);
+  void Opened(base::ScopedFD fd,
+              const OpenCallback& callback,
+              scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   const std::string device_path_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceLinux);
 };
