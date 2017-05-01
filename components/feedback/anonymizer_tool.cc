@@ -41,11 +41,12 @@ namespace {
 // (?-s) turns off "dot matches newline" for the remainder of the regex.
 // (?:regex) denotes non-capturing parentheses group.
 const char* kCustomPatternsWithContext[] = {
-    "(\\bCell ID: ')([0-9a-fA-F]+)(')",                  // ModemManager
-    "(\\bLocation area code: ')([0-9a-fA-F]+)(')",       // ModemManager
-    "(?i-s)(\\bssid[= ]')(.+)(')",                       // wpa_supplicant
-    "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()",  // wpa_supplicant
-    "(?-s)(\\[SSID=)(.+?)(\\])",                         // shill
+    "(\\bCell ID: ')([0-9a-fA-F]+)(')",                      // ModemManager
+    "(\\bLocation area code: ')([0-9a-fA-F]+)(')",           // ModemManager
+    "(?i-s)(\\bssid[= ]')(.+)(')",                           // wpa_supplicant
+    "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()",      // wpa_supplicant
+    "(?-s)(\\[SSID=)(.+?)(\\])",                             // shill
+    "(?i-s)(serial\\s*number\\s*:\\s*)([0-9a-zA-Z\\-]+)()",  // Serial numbers
 };
 
 // Helper macro: Non capturing group
