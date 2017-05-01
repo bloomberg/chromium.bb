@@ -150,6 +150,18 @@ if (window.testRunner) {
             return;
         }
         currentTest = test;
+
+        if (test.tracingCategories && !test.traceEventsToMeasure) {
+            PerfTestRunner.logFatalError("test's tracingCategories is " +
+                "specified but test's traceEventsToMeasure is empty");
+            return;
+        }
+
+        if (test.traceEventsToMeasure && !test.tracingCategories) {
+            PerfTestRunner.logFatalError("test's traceEventsToMeasure is " +
+                "specified but test's tracingCategories is empty");
+            return;
+        }
         iterationCount = test.iterationCount || (window.testRunner ? 5 : 20);
         if (test.warmUpCount && test.warmUpCount > 0)
             completedIterations = -test.warmUpCount;
@@ -165,6 +177,13 @@ if (window.testRunner) {
                 scheduleNextRun(scheduler, runner);
             });
         } else if (runner) {
+            if (test.tracingCategories && !(window.testRuner &&
+                  window.testRunner.supportTracing)) {
+                PerfTestRunner.log("Tracing based metrics are specified but " +
+                    "tracing is not supported on this platform. To get those " +
+                    "metrics from this test, you can run the test using " +
+                    "tools/perf/run_benchmarks script.");
+            }
             scheduleNextRun(scheduler, runner);
         }
     }
