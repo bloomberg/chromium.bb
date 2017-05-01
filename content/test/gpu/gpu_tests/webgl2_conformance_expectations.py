@@ -1032,6 +1032,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
 
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
+        ['linux', 'amd'], bug=705865)
+    self.Fail('conformance2/textures/image/' +
+        'tex-2d-r11f_g11f_b10f-rgb-float.html',
+        ['linux', 'amd'], bug=705865)
+
     # Uniform buffer related failures
     self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
         ['linux', 'amd'], bug=483282)
