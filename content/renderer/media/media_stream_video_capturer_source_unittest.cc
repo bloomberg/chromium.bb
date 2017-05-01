@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_video_sink.h"
@@ -104,7 +105,9 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
  public:
   MediaStreamVideoCapturerSourceTest()
-      : child_process_(new ChildProcess()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        child_process_(new ChildProcess()),
         source_(nullptr),
         delegate_(nullptr),
         source_stopped_(false) {
@@ -181,7 +184,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources below into believing they are on the right threads.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ChildProcess> child_process_;
 
   blink::WebMediaStreamSource webkit_source_;
@@ -287,7 +290,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
 class MediaStreamVideoCapturerSourceOldConstraintsTest : public testing::Test {
  public:
   MediaStreamVideoCapturerSourceOldConstraintsTest()
-      : child_process_(new ChildProcess()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        child_process_(new ChildProcess()),
         source_(nullptr),
         delegate_(nullptr),
         source_stopped_(false) {
@@ -367,7 +372,7 @@ class MediaStreamVideoCapturerSourceOldConstraintsTest : public testing::Test {
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
   // and Sources below into believing they are on the right threads.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ChildProcess> child_process_;
 
   blink::WebMediaStreamSource webkit_source_;

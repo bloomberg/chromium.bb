@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -39,7 +40,10 @@ class GestureEventQueueTest : public testing::Test,
   GestureEventQueueTest() : GestureEventQueueTest(false) {}
 
   GestureEventQueueTest(bool enable_compositor_event_queue)
-      : acked_gesture_event_count_(0), sent_gesture_event_count_(0) {
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        acked_gesture_event_count_(0),
+        sent_gesture_event_count_(0) {
     if (enable_compositor_event_queue)
       feature_list_.InitAndEnableFeature(features::kVsyncAlignedInputEvents);
     else
@@ -195,13 +199,13 @@ class GestureEventQueueTest : public testing::Test,
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<GestureEventQueue> queue_;
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;
   WebGestureEvent last_acked_event_;
   std::unique_ptr<InputEventAckState> sync_ack_result_;
   std::unique_ptr<WebGestureEvent> sync_followup_event_;
-  base::MessageLoopForUI message_loop_;
   base::test::ScopedFeatureList feature_list_;
 };
 

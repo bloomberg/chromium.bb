@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -140,7 +141,9 @@ class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
                                  public MouseWheelEventQueueClient {
  public:
   MouseWheelEventQueueTest()
-      : acked_event_count_(0),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
     scroll_latching_enabled_ = GetParam();
     queue_.reset(new MouseWheelEventQueue(this, scroll_latching_enabled_));
@@ -444,11 +447,11 @@ class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
     }
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MouseWheelEventQueue> queue_;
   std::vector<std::unique_ptr<WebInputEvent>> sent_events_;
   size_t acked_event_count_;
   InputEventAckState last_acked_event_state_;
-  base::MessageLoopForUI message_loop_;
   WebMouseWheelEvent last_acked_event_;
   int64_t scroll_end_timeout_ms_;
   bool scroll_latching_enabled_;

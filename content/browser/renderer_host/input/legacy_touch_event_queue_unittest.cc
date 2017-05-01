@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -43,7 +44,9 @@ class LegacyTouchEventQueueTest : public testing::Test,
                                   public TouchEventQueueClient {
  public:
   LegacyTouchEventQueueTest()
-      : acked_event_count_(0),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         slop_length_dips_(0) {}
 
@@ -324,6 +327,7 @@ class LegacyTouchEventQueueTest : public testing::Test,
     queue_->OnHasTouchEventHandlers(true);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<LegacyTouchEventQueue> queue_;
   size_t acked_event_count_;
   WebTouchEvent last_acked_event_;
@@ -335,7 +339,6 @@ class LegacyTouchEventQueueTest : public testing::Test,
   std::unique_ptr<InputEventAckState> sync_ack_result_;
   double slop_length_dips_;
   gfx::PointF anchor_;
-  base::MessageLoopForUI message_loop_;
   std::deque<int> sent_events_ids_;
 };
 

@@ -6,11 +6,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -37,7 +37,9 @@ ACTION_P(RunClosure, closure) {
 class MediaStreamVideoSourceTest : public ::testing::Test {
  public:
   MediaStreamVideoSourceTest()
-      : child_process_(new ChildProcess()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        child_process_(new ChildProcess()),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0),
         result_(MEDIA_DEVICE_OK),
@@ -242,7 +244,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
       track_to_release_.Reset();
     }
   }
-  const base::MessageLoopForUI message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::unique_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;
@@ -380,7 +382,9 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
 class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
  public:
   MediaStreamVideoSourceOldConstraintsTest()
-      : child_process_(new ChildProcess()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        child_process_(new ChildProcess()),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0),
         result_(MEDIA_DEVICE_OK),
@@ -582,7 +586,7 @@ class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
       track_to_release_.Reset();
     }
   }
-  const base::MessageLoopForUI message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::unique_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;

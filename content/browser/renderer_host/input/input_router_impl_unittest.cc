@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -152,7 +153,9 @@ bool EventListIsSubset(
 class InputRouterImplTest : public testing::Test {
  public:
   InputRouterImplTest(bool raf_aligned_touch = true,
-                      bool wheel_scroll_latching = true) {
+                      bool wheel_scroll_latching = true)
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     if (raf_aligned_touch && wheel_scroll_latching) {
       feature_list_.InitWithFeatures(
           {features::kRafAlignedTouchInputEvents,
@@ -460,7 +463,7 @@ class InputRouterImplTest : public testing::Test {
   std::unique_ptr<InputRouterImpl> input_router_;
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   SyntheticWebTouchEvent touch_event_;
 
   base::test::ScopedFeatureList feature_list_;
