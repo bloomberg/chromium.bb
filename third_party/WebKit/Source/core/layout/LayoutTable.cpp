@@ -1725,13 +1725,13 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   RecalcCollapsedBordersIfNeeded();
 }
 
-PaintInvalidationReason LayoutTable::InvalidatePaint(
+PaintInvalidationReason LayoutTable::DeprecatedInvalidatePaint(
     const PaintInvalidationState& paint_invalidation_state) {
   if (ShouldCollapseBorders() && !collapsed_borders_.IsEmpty())
     paint_invalidation_state.PaintingLayer()
         .SetNeedsPaintPhaseDescendantBlockBackgrounds();
 
-  return LayoutBlock::InvalidatePaint(paint_invalidation_state);
+  return LayoutBlock::DeprecatedInvalidatePaint(paint_invalidation_state);
 }
 
 PaintInvalidationReason LayoutTable::InvalidatePaint(

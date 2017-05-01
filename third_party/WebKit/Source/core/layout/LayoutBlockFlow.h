@@ -477,7 +477,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                        IncludeBlockVisualOverflowOrNot) const override;
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-  PaintInvalidationReason InvalidatePaint(
+  PaintInvalidationReason DeprecatedInvalidatePaint(
       const PaintInvalidationState&) override;
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 

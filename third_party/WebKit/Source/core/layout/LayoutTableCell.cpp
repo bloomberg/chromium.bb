@@ -1483,9 +1483,4 @@ PaintInvalidationReason LayoutTableCell::InvalidatePaint(
   return TableCellPaintInvalidator(*this, context).InvalidatePaint();
 }
 
-PaintInvalidationReason LayoutTableCell::InvalidatePaint(
-    const PaintInvalidationState& state) {
-  return LayoutBlockFlow::InvalidatePaint(state);
-}
-
 }  // namespace blink

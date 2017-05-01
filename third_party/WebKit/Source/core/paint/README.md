@@ -1,7 +1,7 @@
 # `Source/core/paint`
 
 This directory contains implementation of painters of layout objects. It covers
-the following document lifecycle states:
+the following document lifecycle phases:
 
 *   PaintInvalidation (`InPaintInvalidation` and `PaintInvalidationClean`)
 *   PrePaint (`InPrePaint` and `PrePaintClean`)
@@ -90,17 +90,16 @@ are treated in different ways during painting:
     container.
 
 *   Paint invalidation container: the nearest object on the compositing
-    container chain which is composited.
+    container chain which is composited. Slimming paint V2 doesn't have this
+    concept.
 
 *   Visual rect: the bounding box of all pixels that will be painted by a
     display item client.
 
-## Paint invalidation
+## PaintInvalidation (Deprecated by [PrePaint](#PrePaint))
 
 Paint invalidation marks anything that need to be painted differently from the
 original cached painting.
-
-### Slimming paint v1
 
 Paint invalidation is a document cycle stage after compositing update and before
 paint. During the previous stages, objects are marked for needing paint
@@ -116,7 +115,7 @@ the following information to `GraphicsLayer`s and `PaintController`s:
     pixels. They are generated based on visual rects of invalidated display item
     clients.
 
-#### `PaintInvalidationState`
+### `PaintInvalidationState`
 
 `PaintInvalidationState` is an optimization used during the paint invalidation
 phase. Before the paint invalidation tree walk, a root `PaintInvalidationState`
@@ -185,10 +184,10 @@ item clients when their painting will change.
 `LayoutInline`s and `LayoutText`s are marked for full paint invalidation if
 needed when new style is set on them. During paint invalidation, we invalidate
 the `InlineFlowBox`s directly contained by the `LayoutInline` in
-`LayoutInline::invalidateDisplayItemClients()` and `InlineTextBox`s contained by
-the `LayoutText` in `LayoutText::invalidateDisplayItemClients()`. We don't need
+`LayoutInline::InvalidateDisplayItemClients()` and `InlineTextBox`s contained by
+the `LayoutText` in `LayoutText::InvalidateDisplayItemClients()`. We don't need
 to traverse into the subtree of `InlineFlowBox`s in
-`LayoutInline::invalidateDisplayItemClients()` because the descendant
+`LayoutInline::InvalidateDisplayItemClients()` because the descendant
 `InlineFlowBox`s and `InlineTextBox`s will be handled by their owning
 `LayoutInline`s and `LayoutText`s, respectively, when changed style is propagated.
 
@@ -205,21 +204,18 @@ implementation, the combined first line style of `LayoutInline` is identified
 with `FIRST_LINE_INHERITED` pseudo ID.
 
 The normal paint invalidation of texts doesn't work for first line because
-*   `ComputedStyle::visualInvalidationDiff()` can't detect first line style
+*   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
     changes;
 *   The normal paint invalidation is based on whole LayoutObject's, not aware of
     the first line.
 
 We have a special path for first line style change: the style system informs the
 layout system when the computed first-line style changes through
-`LayoutObject::firstLineStyleDidChange()`. When this happens, we invalidate all
+`LayoutObject::FirstLineStyleDidChange()`. When this happens, we invalidate all
 `InlineBox`es in the first line.
 
-### Slimming paint v2
-
-TODO(wangxianzhu): add details
-
-## [`PrePaintTreeWalk`](PrePaintTreeWalk.h) (Slimming Paint invalidation/v2 only)
+## PrePaint (Slimming paint invalidation/v2 only)
+[`PrePaintTreeWalk`](PrePaintTreeWalk.h)
 
 During `InPrePaint` document lifecycle state, this class is called to walk the
 whole layout tree, beginning from the root FrameView, across frame boundaries.
@@ -241,7 +237,7 @@ The `NeedsPaintPropertyUpdate`, `SubtreeNeedsPaintPropertyUpdate` and
 `DescendantNeedsPaintPropertyUpdate` dirty bits on `LayoutObject` control how
 much of the layout tree is traversed during each `PrePaintTreeWalk`.
 
-### Fragments
+#### Fragments
 
 In the absence of multicolumn/pagination, there is a 1:1 correspondence between
 self-painting `PaintLayer`s and `FragmentData`. If there is
@@ -257,41 +253,45 @@ transform will point to the ith parent's transform.
 See [`LayoutMultiColumnFlowThread.h`](../layout/LayoutMultiColumnFlowThread.h)
 for a much more detail about multicolumn/pagination.
 
-###   Paint invalidation: `PaintInvalidator` implements a tree walk that
-performs paint invalidation. TODO(wangxianzhu): expand on this.
+### Paint invalidation
+[`PaintInvalidator`](PaintInvalidator.h)
 
-### [`PaintPropertyTreeBuilder`](PaintPropertyTreeBuilder.h) (Slimming Paint invalidation only)
+This class replaces [`PaintInvalidationState`] for SlimmingPaintInvalidation.
+The main difference is that in PaintInvalidator, visual rects and locations
+are computed by `GeometryMapper`(../../platform/graphics/paint/GeometryMapper.h),
+based on paint properties produced by `PaintPropertyTreeBuilder`.
 
-## Paint result caching
+TODO(wangxianzhu): Combine documentation of PaintInvalidation phase into here.
+
+## Paint
+
+### Paint result caching
 
 `PaintController` holds the previous painting result as a cache of display
 items. If some painter would generate results same as those of the previous
 painting, we'll skip the painting and reuse the display items from cache.
 
-### Display item caching
+#### Display item caching
 
 When a painter would create a `DrawingDisplayItem` exactly the same as the
 display item created in the previous painting, we'll reuse the previous one
 instead of repainting it.
 
-### Subsequence caching
+#### Subsequence caching
 
-When possible, we enclose the display items that
-`PaintLayerPainter::paintContents()` generates (including display items
-generated by sublayers) in a pair of `BeginSubsequence/EndSubsequence` display
-items.
-
-In a subsequence paint, if the layer would generate exactly the same display
-items, we'll get the whole subsequence from the cache instead of repainting
-them.
+When possible, we create a scoped `SubsequenceRecorder` in
+`PaintLayerPainter::PaintContents()` to record all display items generated in
+the scope as a "subsequence". Before painting a layer, if we are sure that the
+layer will generate exactly the same display items as the previous paint, we'll
+get the whole subsequence from the cache instead of repainting them.
 
 There are many conditions affecting
 *   whether we need to generate subsequence for a PaintLayer;
 *   whether we can use cached subsequence for a PaintLayer.
-See `shouldCreateSubsequence()` and `shouldRepaintSubsequence()` in
+See `ShouldCreateSubsequence()` and `shouldRepaintSubsequence()` in
 `PaintLayerPainter.cpp` for the conditions.
 
-## Empty paint phase optimization
+### Empty paint phase optimization
 
 During painting, we walk the layout tree multiple times for multiple paint
 phases. Sometimes a layer contain nothing needing a certain paint phase and we
@@ -300,32 +300,31 @@ can skip tree walk for such empty phases. Now we have optimized
 and `PaintPhaseFloat` for empty paint phases.
 
 During paint invalidation, we set the containing self-painting layer's
-`needsPaintPhaseXXX` flag if the object has something needing to be painted in
+`NeedsPaintPhaseXXX` flag if the object has something needing to be painted in
 the paint phase.
 
 During painting, we check the flag before painting a paint phase and skip the
 tree walk if the flag is not set.
 
-It's hard to clear a `needsPaintPhaseXXX` flag when a layer no longer needs the
+It's hard to clear a `NeedsPaintPhaseXXX` flag when a layer no longer needs the
 paint phase, so we never clear the flags. Instead, we use another set of flags
-(`previousPaintPhaseXXXWasEmpty`) to record if a painting of a phase actually
+(`PreviousPaintPhaseXXXWasEmpty`) to record if a painting of a phase actually
 produced nothing. We'll skip the next painting of the phase if the flag is set,
-regardless of the corresponding `needsPaintPhaseXXX` flag. We will clear the
-`previousPaintPhaseXXXWasEmpty` flags when we paint with different clipping,
+regardless of the corresponding `NeedsPaintPhaseXXX` flag. We will clear the
+`PreviousPaintPhaseXXXWasEmpty` flags when we paint with different clipping,
 scroll offset or interest rect from the previous paint.
 
-We don't clear the `previousPaintPhaseXXXWasEmpty` flags when the layer is
-marked `needsRepaint`. Instead we clear the flag when the corresponding
-`needsPaintPhaseXXX` is set. This ensures that we won't clear
-`previousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
-cause the paint phases to become non-empty.
+We don't clear the `PreviousPaintPhaseXXXWasEmpty` flags when the layer is
+marked `NeedsRepaint`. Instead we clear the flag when the corresponding
+`NeedsPaintPhaseXXX` is set. This ensures that we won't clear
+`PreviousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
 
 When layer structure changes, and we are not invalidate paint of the changed
-subtree, we need to manually update the `needsPaintPhaseXXX` flags. For example,
+subtree, we need to manually update the `NeedsPaintPhaseXXX` flags. For example,
 if an object changes style and creates a self-painting-layer, we copy the flags
 from its containing self-painting layer to this layer, assuming that this layer
 needs all paint phases that its container self-painting layer needs.
 
-We could update the `needsPaintPhaseXXX` flags in a separate tree walk, but that
+We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
 would regress performance of the first paint. For slimming paint v2, we can
 update the flags during the pre-painting tree walk to simplify the logics.

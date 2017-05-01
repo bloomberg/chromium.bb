@@ -893,7 +893,7 @@ class CORE_EXPORT FrameView final
   };
 
   // Only for LayoutPart to traverse into sub frames during paint invalidation.
-  void InvalidateTreeIfNeeded(const PaintInvalidationState&);
+  void DeprecatedInvalidateTree(const PaintInvalidationState&);
 
  private:
   explicit FrameView(LocalFrame&, IntRect);
@@ -927,7 +927,7 @@ class CORE_EXPORT FrameView final
   void UpdateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState target_state);
 
-  void InvalidateTreeIfNeededRecursive();
+  void DeprecatedInvalidateTreeRecursive();
   void ScrollContentsIfNeededRecursive();
   void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
@@ -935,7 +935,7 @@ class CORE_EXPORT FrameView final
   void PaintGraphicsLayerRecursively(GraphicsLayer*);
 
   void UpdateStyleAndLayoutIfNeededRecursiveInternal();
-  void InvalidateTreeIfNeededRecursiveInternal();
+  void DeprecatedInvalidateTreeRecursiveInternal();
 
   // TODO(wangxianzhu): Remove the parameter and use m_paintController for SPv2.
   void NotifyPaint(const PaintController&) const;
