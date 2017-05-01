@@ -253,10 +253,28 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'import_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'import_controller',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:command_handler_deps',
+        '../../../externs/compiled_resources2.gyp:es6_workaround',
+        '../../background/js/compiled_resources2.gyp:media_import_handler',
+        '../../background/js/compiled_resources2.gyp:media_scanner',
+        '../../common/js/compiled_resources2.gyp:importer_common',
+        'actions_controller',
+        'dialog_type',
+        'directory_tree_naming_controller',
+        'file_selection',
+        'file_transfer_controller',
+        'naming_controller',
+        'providers_model',
+        'spinner_controller',
+        'task_controller',
+        'ui/compiled_resources2.gyp:directory_tree',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'launch_param',
       'dependencies': [
