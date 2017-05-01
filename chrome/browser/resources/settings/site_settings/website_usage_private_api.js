@@ -26,6 +26,7 @@ Polymer({
     },
   },
 
+  /** @override */
   attached: function() {
     settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance = this;
   },

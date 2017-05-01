@@ -28,6 +28,7 @@ Polymer({
     devices: Array,
   },
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('updateDevicesMenu',
         this.updateDevicesMenu_.bind(this));

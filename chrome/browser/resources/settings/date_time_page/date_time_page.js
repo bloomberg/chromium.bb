@@ -94,6 +94,7 @@ Polymer({
         'prefs.cros.system.timezone.value, timeZoneAutoDetect_)',
   ],
 
+  /** @override */
   attached: function() {
     this.addWebUIListener(
         'time-zone-auto-detect-policy',

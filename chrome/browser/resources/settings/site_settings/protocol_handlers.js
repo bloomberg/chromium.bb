@@ -61,6 +61,7 @@ Polymer({
     toggleOnLabel: String,
   },
 
+  /** @override */
   ready: function() {
     this.addWebUIListener('setHandlersEnabled',
         this.setHandlersEnabled_.bind(this));

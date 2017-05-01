@@ -47,7 +47,9 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() { return loadTimeData.getBoolean('isGuest'); }
+      value: function() {
+        return loadTimeData.getBoolean('isGuest');
+      }
     },
 
 // <if expr="_google_chrome and not chromeos">
@@ -124,6 +126,7 @@ Polymer({
     'doNotTrackDialogIf.dom-change': 'onDoNotTrackDomChange_',
   },
 
+  /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
 

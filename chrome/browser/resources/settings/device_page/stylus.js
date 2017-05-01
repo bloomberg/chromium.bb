@@ -27,27 +27,28 @@ Polymer({
      */
     appChoices_: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
      * True if the ARC container has not finished starting yet.
      * @private
      */
-    waitingForAndroid_: {
-      type: Boolean,
-      value: false
-    },
+    waitingForAndroid_: {type: Boolean, value: false},
   },
 
 
   /** @private {?settings.DevicePageBrowserProxy} */
   browserProxy_: null,
 
+  /** @override */
   created: function() {
     this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
   },
 
+  /** @override */
   ready: function() {
     this.browserProxy_.setNoteTakingAppsUpdatedCallback(
         this.onNoteAppsUpdated_.bind(this));
