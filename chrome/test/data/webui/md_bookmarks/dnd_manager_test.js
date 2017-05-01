@@ -109,7 +109,7 @@ suite('drag and drop', function() {
     list = app.$$('bookmarks-list');
     rootFolderNode = app.$$('bookmarks-folder-node');
     dndManager = app.dndManager_;
-    dndManager.dropIndicator_.disableTimeoutForTesting();
+    dndManager.disableTimeoutsForTesting();
     Polymer.dom.flush();
   });
 
