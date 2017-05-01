@@ -76,13 +76,15 @@ class CC_EXPORT ScrollbarAnimationController {
   void DidMouseDown();
   void DidMouseUp();
   void DidMouseLeave();
-  void DidMouseMoveNear(ScrollbarOrientation, float);
+  void DidMouseMove(const gfx::PointF& device_viewport_point);
 
   // Called when Blink wants to show the scrollbars (via
   // ScrollableArea::showOverlayScrollbars).
   void DidRequestShowFromMainThread();
 
-  bool MouseIsOverScrollbar(ScrollbarOrientation orientation) const;
+  // These methods are public for testing.
+  bool MouseIsOverScrollbarThumb(ScrollbarOrientation orientation) const;
+  bool MouseIsNearScrollbarThumb(ScrollbarOrientation orientation) const;
   bool MouseIsNearScrollbar(ScrollbarOrientation orientation) const;
   bool MouseIsNearAnyScrollbar() const;
 
@@ -121,9 +123,6 @@ class CC_EXPORT ScrollbarAnimationController {
 
   bool Captured() const;
 
-  bool CalcNeedTriggerScrollbarShow(ScrollbarOrientation orientation,
-                                    float distance) const;
-
   void ApplyOpacityToScrollbars(float opacity);
 
   ScrollbarAnimationControllerClient* client_;
@@ -134,7 +133,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   base::TimeDelta fade_duration_;
 
-  bool need_trigger_scrollbar_show_;
+  bool need_trigger_scrollbar_fade_in_;
 
   bool is_animating_;
   AnimationChange animation_change_;
@@ -149,6 +148,7 @@ class CC_EXPORT ScrollbarAnimationController {
 
   const bool show_scrollbars_on_scroll_gesture_;
   const bool need_thinning_animation_;
+
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>
       vertical_controller_;
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>

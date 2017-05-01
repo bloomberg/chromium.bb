@@ -107,7 +107,8 @@ bool ScrollbarLayerImplBase::SetThumbThicknessScaleFactor(float factor) {
   return true;
 }
 
-gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
+gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRectWithThumbThicknessScale(
+    float thumb_thickness_scale_factor) const {
   // Thumb extent is the length of the thumb in the scrolling direction, thumb
   // thickness is in the perpendicular direction. Here's an example of a
   // horizontal scrollbar - inputs are above the scrollbar, computed values
@@ -185,7 +186,7 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   }
 
   float thumb_thickness_adjustment =
-      thumb_thickness * (1.f - thumb_thickness_scale_factor_);
+      thumb_thickness * (1.f - thumb_thickness_scale_factor);
 
   gfx::RectF thumb_rect;
   if (orientation_ == HORIZONTAL) {
@@ -204,6 +205,16 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   }
 
   return gfx::ToEnclosingRect(thumb_rect);
+}
+
+gfx::Rect ScrollbarLayerImplBase::ComputeExpandedThumbQuadRect() const {
+  DCHECK(is_overlay_scrollbar());
+  return ComputeThumbQuadRectWithThumbThicknessScale(1.f);
+}
+
+gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
+  return ComputeThumbQuadRectWithThumbThicknessScale(
+      thumb_thickness_scale_factor_);
 }
 
 void ScrollbarLayerImplBase::SetOverlayScrollbarLayerOpacityAnimated(
