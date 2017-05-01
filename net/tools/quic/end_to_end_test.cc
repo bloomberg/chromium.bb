@@ -34,6 +34,7 @@
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -293,7 +294,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   QuicClient* client_;
 };
 
-class EndToEndTest : public ::testing::TestWithParam<TestParams> {
+class EndToEndTest : public QuicTestWithParam<TestParams> {
  protected:
   EndToEndTest()
       : initialized_(false),
@@ -602,7 +603,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     stream_factory_ = factory;
   }
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   bool initialized_;
   QuicSocketAddress server_address_;
   string server_hostname_;

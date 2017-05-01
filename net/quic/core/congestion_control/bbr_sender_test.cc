@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -20,7 +21,6 @@
 #include "net/quic/test_tools/simulator/quic_endpoint.h"
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
@@ -64,7 +64,7 @@ const QuicTime::Delta kTestRtt =
     (kTestPropagationDelay + kLocalPropagationDelay + kTestTransferTime) * 2;
 const QuicByteCount kTestBdp = kTestRtt * kTestLinkBandwidth;
 
-class BbrSenderTest : public ::testing::Test {
+class BbrSenderTest : public QuicTest {
  protected:
   BbrSenderTest()
       : simulator_(),
@@ -126,7 +126,6 @@ class BbrSenderTest : public ::testing::Test {
   const QuicClock* clock_;
   const RttStats* rtt_stats_;
   BbrSender* sender_;
-  QuicFlagSaver flags_;
 
   // Enables BBR on |endpoint| and returns the associated BBR congestion
   // controller.

@@ -17,13 +17,12 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
 using testing::InSequence;
@@ -102,7 +101,7 @@ struct PacketContents {
 
 }  // namespace
 
-class QuicPacketGeneratorTest : public ::testing::Test {
+class QuicPacketGeneratorTest : public QuicTest {
  public:
   QuicPacketGeneratorTest()
       : framer_(AllSupportedVersions(),

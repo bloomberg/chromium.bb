@@ -6,16 +6,16 @@
 
 #include "net/quic/core/quic_versions.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
 namespace {
 
-TEST(QuicVersionManagerTest, QuicVersionManager) {
-  QuicFlagSaver flags;
+class QuicVersionManagerTest : public QuicTest {};
+
+TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
   QuicVersionManager manager(AllSupportedVersions());

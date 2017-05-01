@@ -17,6 +17,7 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
 #include "net/quic/test_tools/quic_buffered_packet_store_peer.h"
@@ -166,7 +167,7 @@ class MockServerConnection : public MockQuicConnection {
   QuicDispatcher* dispatcher_;
 };
 
-class QuicDispatcherTest : public ::testing::Test {
+class QuicDispatcherTest : public QuicTest {
  public:
   QuicDispatcherTest()
       : QuicDispatcherTest(crypto_test_utils::ProofSourceForTesting()) {}
@@ -320,7 +321,6 @@ class QuicDispatcherTest : public ::testing::Test {
         .as_string();
   }
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   EpollServer eps_;
   QuicEpollConnectionHelper helper_;
   MockQuicConnectionHelper mock_helper_;
