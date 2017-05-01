@@ -1860,7 +1860,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     mbmi->mode = ZEROMV;
-    if (bsize < BLOCK_8X8) {
+    if (bsize < BLOCK_8X8 && !unify_bsize) {
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid usage of segement feature on small blocks");
       return;
