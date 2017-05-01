@@ -32,10 +32,9 @@ class CC_EXPORT UIResourceBitmap {
     ETC1
   };
 
-  gfx::Size GetSize() const { return size_; }
+  gfx::Size GetSize() const { return gfx::Size(info_.width(), info_.height()); }
   UIResourceFormat GetFormat() const { return format_; }
-  bool GetOpaque() const { return opaque_; }
-  void SetOpaque(bool opaque) { opaque_ = opaque; }
+  bool GetOpaque() const { return info_.isOpaque(); }
 
   // Draw the UIResourceBitmap onto the provided |canvas| using the style
   // information specified by |paint|.
@@ -51,7 +50,7 @@ class CC_EXPORT UIResourceBitmap {
 
   // Returns the memory usage of the bitmap.
   size_t EstimateMemoryUsage() const {
-    return pixel_ref_ ? pixel_ref_->rowBytes() * size_.height() : 0;
+    return pixel_ref_ ? pixel_ref_->rowBytes() * info_.height() : 0;
   }
 
   const uint8_t* GetPixels() const {
@@ -62,13 +61,12 @@ class CC_EXPORT UIResourceBitmap {
   friend class AutoLockUIResourceBitmap;
 
   void Create(sk_sp<SkPixelRef> pixel_ref,
-              const gfx::Size& size,
+              const SkImageInfo& info,
               UIResourceFormat format);
 
   sk_sp<SkPixelRef> pixel_ref_;
   UIResourceFormat format_;
-  gfx::Size size_;
-  bool opaque_;
+  SkImageInfo info_;
 };
 
 }  // namespace cc

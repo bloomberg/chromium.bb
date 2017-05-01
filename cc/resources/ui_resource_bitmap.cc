@@ -36,23 +36,20 @@ UIResourceBitmap::UIResourceFormat SkColorTypeToUIResourceFormat(
 }  // namespace
 
 void UIResourceBitmap::Create(sk_sp<SkPixelRef> pixel_ref,
-                              const gfx::Size& size,
+                              const SkImageInfo& info,
                               UIResourceFormat format) {
-  DCHECK(size.width());
-  DCHECK(size.height());
+  DCHECK(info.width());
+  DCHECK(info.height());
   DCHECK(pixel_ref);
   DCHECK(pixel_ref->isImmutable());
   format_ = format;
-  size_ = size;
+  info_ = info;
   pixel_ref_ = std::move(pixel_ref);
-
-  // Default values for secondary parameters.
-  opaque_ = (format == ETC1);
 }
 
 void UIResourceBitmap::DrawToCanvas(SkCanvas* canvas, SkPaint* paint) {
   SkBitmap bitmap;
-  bitmap.setInfo(pixel_ref_.get()->info(), pixel_ref_.get()->rowBytes());
+  bitmap.setInfo(info_, pixel_ref_.get()->rowBytes());
   bitmap.setPixelRef(pixel_ref_, 0, 0);
   canvas->drawBitmap(bitmap, 0, 0, paint);
   canvas->flush();
@@ -63,11 +60,8 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   DCHECK(skbitmap.isImmutable());
 
   sk_sp<SkPixelRef> pixel_ref = sk_ref_sp(skbitmap.pixelRef());
-  const SkImageInfo& info = pixel_ref->info();
-  Create(std::move(pixel_ref), gfx::Size(info.width(), info.height()),
+  Create(std::move(pixel_ref), skbitmap.info(),
          SkColorTypeToUIResourceFormat(skbitmap.colorType()));
-
-  SetOpaque(skbitmap.isOpaque());
 }
 
 UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
@@ -77,13 +71,14 @@ UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
   sk_sp<SkPixelRef> pixel_ref(
       SkMallocPixelRef::MakeAllocate(info, info.minRowBytes(), NULL));
   pixel_ref->setImmutable();
-  Create(std::move(pixel_ref), size, UIResourceBitmap::RGBA8);
-  SetOpaque(is_opaque);
+  Create(std::move(pixel_ref), info, UIResourceBitmap::RGBA8);
 }
 
 UIResourceBitmap::UIResourceBitmap(sk_sp<SkPixelRef> pixel_ref,
                                    const gfx::Size& size) {
-  Create(std::move(pixel_ref), size, UIResourceBitmap::ETC1);
+  SkImageInfo info =
+      SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
+  Create(std::move(pixel_ref), info, UIResourceBitmap::ETC1);
 }
 
 UIResourceBitmap::UIResourceBitmap(const UIResourceBitmap& other) = default;
