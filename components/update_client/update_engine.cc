@@ -219,14 +219,6 @@ void UpdateEngine::UpdateCheckComplete(const UpdateContextIterator& it) {
   const auto& update_context = *it;
   DCHECK(update_context);
 
-  if (update_context->update_check_error) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&UpdateEngine::UpdateComplete, base::Unretained(this), it,
-                   Error::UPDATE_CHECK_ERROR));
-    return;
-  }
-
   for (const auto& id : update_context->ids)
     update_context->component_queue.push(id);
 
@@ -244,9 +236,12 @@ void UpdateEngine::HandleComponent(const UpdateContextIterator& it) {
   auto& queue = update_context->component_queue;
 
   if (queue.empty()) {
+    const Error error = update_context->update_check_error
+                            ? Error::UPDATE_CHECK_ERROR
+                            : Error::NONE;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&UpdateEngine::UpdateComplete,
-                              base::Unretained(this), it, Error::NONE));
+                              base::Unretained(this), it, error));
     return;
   }
 

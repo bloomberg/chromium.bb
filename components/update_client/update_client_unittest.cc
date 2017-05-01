@@ -2890,4 +2890,108 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   update_client->RemoveObserver(&observer);
 }
 
+// Tests the scenario where the update check fails.
+TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
+  class DataCallbackFake {
+   public:
+    static void Callback(const std::vector<std::string>& ids,
+                         std::vector<CrxComponent>* components) {
+      CrxComponent crx;
+      crx.name = "test_jebg";
+      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx.version = base::Version("0.9");
+      crx.installer = base::MakeShared<TestInstaller>();
+      components->push_back(crx);
+    }
+  };
+
+  class CompletionCallbackFake {
+   public:
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      EXPECT_EQ(Error::UPDATE_CHECK_ERROR, error);
+      quit_closure.Run();
+    }
+  };
+
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config,
+        PersistedData* metadata) {
+      return base::MakeUnique<FakeUpdateChecker>();
+    }
+
+    bool CheckForUpdates(
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const std::string& additional_attributes,
+        bool enabled_component_updates,
+        const UpdateCheckCallback& update_check_callback) override {
+      EXPECT_TRUE(enabled_component_updates);
+      EXPECT_EQ(1u, ids_to_check.size());
+      const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
+      EXPECT_EQ(id, ids_to_check.front());
+      EXPECT_EQ(1u, components.count(id));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(update_check_callback, -1, 0));
+
+      return true;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+      return base::MakeUnique<FakeCrxDownloader>();
+    }
+
+    FakeCrxDownloader()
+        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeShared<UpdateClientImpl>(
+          config(), base::MakeUnique<FakePingManager>(config()),
+          &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
+
+  MockObserver observer;
+  InSequence seq;
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1)
+      .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+        CrxUpdateItem item;
+        update_client->GetCrxUpdateState(id, &item);
+        EXPECT_EQ(ComponentState::kUpdateError, item.state);
+      }));
+
+  update_client->AddObserver(&observer);
+
+  const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
+  update_client->Update(
+      ids, base::Bind(&DataCallbackFake::Callback),
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+
+  RunThreads();
+
+  update_client->RemoveObserver(&observer);
+}
+
 }  // namespace update_client
