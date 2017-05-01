@@ -19,6 +19,7 @@ source_set("preferences") {
   deps = [
     "//components/prefs",
     "//services/preferences/public/cpp",
+    "//services/preferences/public/cpp/lib",
     "//services/preferences/public/interfaces",
     "//services/preferences/tracked",
     "//services/service_manager/public/cpp",

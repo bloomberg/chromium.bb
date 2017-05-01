@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/prefs/pref_store.h"
@@ -46,12 +48,24 @@ class COMPONENTS_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   virtual bool GetMutableValue(const std::string& key,
                                base::Value** result) = 0;
 
-  // Triggers a value changed notification. This function needs to be called
-  // if one retrieves a list or dictionary with GetMutableValue and change its
-  // value. SetValue takes care of notifications itself. Note that
-  // ReportValueChanged will trigger notifications even if nothing has changed.
-  // |flags| is a bitmask of PrefWriteFlags.
+  // Triggers a value changed notification. This function or
+  // ReportSubValuesChanged needs to be called if one retrieves a list or
+  // dictionary with GetMutableValue and change its value. SetValue takes care
+  // of notifications itself. Note that ReportValueChanged will trigger
+  // notifications even if nothing has changed.  |flags| is a bitmask of
+  // PrefWriteFlags.
   virtual void ReportValueChanged(const std::string& key, uint32_t flags) = 0;
+
+  // Triggers a value changed notification for |path_components| in the |key|
+  // pref. This function or ReportValueChanged needs to be called if one
+  // retrieves a list or dictionary with GetMutableValue and change its value.
+  // SetValue takes care of notifications itself. Note that
+  // ReportSubValuesChanged will trigger notifications even if nothing has
+  // changed. |flags| is a bitmask of PrefWriteFlags.
+  virtual void ReportSubValuesChanged(
+      const std::string& key,
+      std::set<std::vector<std::string>> path_components,
+      uint32_t flags);
 
   // Same as SetValue, but doesn't generate notifications. This is used by
   // PrefService::GetMutableUserPref() in order to put empty entries

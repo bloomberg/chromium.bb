@@ -4,6 +4,8 @@
 
 source_set("cpp") {
   sources = [
+    "dictionary_value_update.cc",
+    "dictionary_value_update.h",
     "persistent_pref_store_client.cc",
     "persistent_pref_store_client.h",
     "pref_registry_serializer.cc",
@@ -18,6 +20,8 @@ source_set("cpp") {
     "pref_store_client_mixin.h",
     "pref_store_impl.cc",
     "pref_store_impl.h",
+    "scoped_pref_update.cc",
+    "scoped_pref_update.h",
   ]
 
   public_deps = [
@@ -29,6 +33,7 @@ source_set("cpp") {
 
   deps = [
     "//mojo/public/cpp/bindings",
+    "//services/preferences/public/cpp/lib",
   ]
 }
 

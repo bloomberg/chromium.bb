@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -58,7 +59,7 @@ class PrefStoreClientMixin : public BasePrefStore,
   void OnInitializationCompleted(bool succeeded) override;
 
   void OnPrefChanged(const std::string& key,
-                     std::unique_ptr<base::Value> value);
+                     mojom::PrefUpdateValuePtr update_value);
 
   // Cached preferences.
   // If null, indicates that initialization failed.

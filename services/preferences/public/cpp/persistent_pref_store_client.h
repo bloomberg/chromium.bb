@@ -5,8 +5,12 @@
 #ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PERSISTENT_PREF_STORE_CLIENT_H_
 #define SERVICES_PREFERENCES_PUBLIC_CPP_PERSISTENT_PREF_STORE_CLIENT_H_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -43,6 +47,10 @@ class PersistentPrefStoreClient
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
+  void ReportSubValuesChanged(
+      const std::string& key,
+      std::set<std::vector<std::string>> path_components,
+      uint32_t flags) override;
   void SetValueSilently(const std::string& key,
                         std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
@@ -66,7 +74,9 @@ class PersistentPrefStoreClient
                                     prefs::mojom::PrefStoreConnectionPtr>
                      other_pref_stores);
 
-  void QueueWrite(const std::string& key, uint32_t flags);
+  void QueueWrite(const std::string& key,
+                  std::set<std::vector<std::string>> path_components,
+                  uint32_t flags);
   void FlushPendingWrites();
 
   mojom::PrefStoreConnectorPtr connector_;
@@ -74,7 +84,8 @@ class PersistentPrefStoreClient
   bool read_only_ = false;
   PrefReadError read_error_ = PersistentPrefStore::PREF_READ_ERROR_NONE;
   mojom::PersistentPrefStorePtr pref_store_;
-  std::map<std::string, uint32_t> pending_writes_;
+  std::map<std::string, std::pair<std::set<std::vector<std::string>>, uint32_t>>
+      pending_writes_;
 
   std::unique_ptr<ReadErrorDelegate> error_delegate_;
   std::vector<PrefValueStore::PrefStoreType> already_connected_types_;

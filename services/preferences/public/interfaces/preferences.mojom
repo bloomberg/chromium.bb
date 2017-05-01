@@ -99,13 +99,29 @@ interface PrefStoreConnector {
        map<PrefStoreType, PrefStoreConnection> connections);
 };
 
+// An update to a subcomponent of a pref.
+struct SubPrefUpdate {
+  // The path to the changed value within the pref.
+  array<string> path;
+  // The new value; a null |value| indicates a delete.
+  mojo.common.mojom.Value? value;
+};
+
+union PrefUpdateValue {
+  // Updates to several values within a pref (e.g. inside a dictionary stored
+  // under the pref key).
+  array<SubPrefUpdate> split_updates;
+  // An atomic update to the pref. A null |atomic_update| indicates a delete.
+  mojo.common.mojom.Value? atomic_update;
+};
+
 // An update to a pref.
 struct PrefUpdate {
   // The key of the pref being updated.
   string key;
-  // The new value; a null |value| indicates a delete.
-  mojo.common.mojom.Value? value;
-  //|flags| is a bitmask of WritablePrefStore::PrefWriteFlags.
+  // The value update.
+  PrefUpdateValue value;
+  // |flags| is a bitmask of WritablePrefStore::PrefWriteFlags.
   uint32 flags;
 };
 

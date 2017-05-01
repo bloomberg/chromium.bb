@@ -5,6 +5,7 @@
 #ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_IMPL_H_
 #define SERVICES_PREFERENCES_PUBLIC_CPP_PREF_STORE_IMPL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
