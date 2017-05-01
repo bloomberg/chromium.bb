@@ -46,7 +46,7 @@
 namespace blink {
 
 MediaStreamCenter& MediaStreamCenter::Instance() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(MediaStreamCenter, center, ());
   return center;
 }

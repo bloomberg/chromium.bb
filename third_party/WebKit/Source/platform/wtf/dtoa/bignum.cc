@@ -170,34 +170,34 @@ namespace double_conversion {
 
 
     void Bignum::AddBignum(const Bignum& other) {
-        ASSERT(IsClamped());
-        ASSERT(other.IsClamped());
+      DCHECK(IsClamped());
+      DCHECK(other.IsClamped());
 
-        // If this has a greater exponent than other append zero-bigits to this.
-        // After this call exponent_ <= other.exponent_.
-        Align(other);
+      // If this has a greater exponent than other append zero-bigits to this.
+      // After this call exponent_ <= other.exponent_.
+      Align(other);
 
-        // There are two possibilities:
-        //   aaaaaaaaaaa 0000  (where the 0s represent a's exponent)
-        //     bbbbb 00000000
-        //   ----------------
-        //   ccccccccccc 0000
-        // or
-        //    aaaaaaaaaa 0000
-        //  bbbbbbbbb 0000000
-        //  -----------------
-        //  cccccccccccc 0000
-        // In both cases we might need a carry bigit.
+      // There are two possibilities:
+      //   aaaaaaaaaaa 0000  (where the 0s represent a's exponent)
+      //     bbbbb 00000000
+      //   ----------------
+      //   ccccccccccc 0000
+      // or
+      //    aaaaaaaaaa 0000
+      //  bbbbbbbbb 0000000
+      //  -----------------
+      //  cccccccccccc 0000
+      // In both cases we might need a carry bigit.
 
-        EnsureCapacity(1 + Max(BigitLength(), other.BigitLength()) - exponent_);
-        Chunk carry = 0;
-        int bigit_pos = other.exponent_ - exponent_;
-        ASSERT(bigit_pos >= 0);
-        for (int i = 0; i < other.used_digits_; ++i) {
-            Chunk sum = bigits_[bigit_pos] + other.bigits_[i] + carry;
-            bigits_[bigit_pos] = sum & kBigitMask;
-            carry = sum >> kBigitSize;
-            bigit_pos++;
+      EnsureCapacity(1 + Max(BigitLength(), other.BigitLength()) - exponent_);
+      Chunk carry = 0;
+      int bigit_pos = other.exponent_ - exponent_;
+      ASSERT(bigit_pos >= 0);
+      for (int i = 0; i < other.used_digits_; ++i) {
+        Chunk sum = bigits_[bigit_pos] + other.bigits_[i] + carry;
+        bigits_[bigit_pos] = sum & kBigitMask;
+        carry = sum >> kBigitSize;
+        bigit_pos++;
         }
 
         while (carry != 0) {
@@ -207,26 +207,26 @@ namespace double_conversion {
             bigit_pos++;
         }
         used_digits_ = Max(bigit_pos, used_digits_);
-        ASSERT(IsClamped());
+        DCHECK(IsClamped());
     }
 
 
     void Bignum::SubtractBignum(const Bignum& other) {
-        ASSERT(IsClamped());
-        ASSERT(other.IsClamped());
-        // We require this to be bigger than other.
-        ASSERT(LessEqual(other, *this));
+      DCHECK(IsClamped());
+      DCHECK(other.IsClamped());
+      // We require this to be bigger than other.
+      ASSERT(LessEqual(other, *this));
 
-        Align(other);
+      Align(other);
 
-        int offset = other.exponent_ - exponent_;
-        Chunk borrow = 0;
-        int i;
-        for (i = 0; i < other.used_digits_; ++i) {
-            ASSERT((borrow == 0) || (borrow == 1));
-            Chunk difference = bigits_[i + offset] - other.bigits_[i] - borrow;
-            bigits_[i + offset] = difference & kBigitMask;
-            borrow = difference >> (kChunkSize - 1);
+      int offset = other.exponent_ - exponent_;
+      Chunk borrow = 0;
+      int i;
+      for (i = 0; i < other.used_digits_; ++i) {
+        ASSERT((borrow == 0) || (borrow == 1));
+        Chunk difference = bigits_[i + offset] - other.bigits_[i] - borrow;
+        bigits_[i + offset] = difference & kBigitMask;
+        borrow = difference >> (kChunkSize - 1);
         }
         while (borrow != 0) {
             Chunk difference = bigits_[i + offset] - borrow;
@@ -341,24 +341,25 @@ namespace double_conversion {
 
 
     void Bignum::Square() {
-        ASSERT(IsClamped());
-        int product_length = 2 * used_digits_;
-        EnsureCapacity(product_length);
+      DCHECK(IsClamped());
+      int product_length = 2 * used_digits_;
+      EnsureCapacity(product_length);
 
-        // Comba multiplication: compute each column separately.
-        // Example: r = a2a1a0 * b2b1b0.
-        //    r =  1    * a0b0 +
-        //        10    * (a1b0 + a0b1) +
-        //        100   * (a2b0 + a1b1 + a0b2) +
-        //        1000  * (a2b1 + a1b2) +
-        //        10000 * a2b2
-        //
-        // In the worst case we have to accumulate nb-digits products of digit*digit.
-        //
-        // Assert that the additional number of bits in a DoubleChunk are enough to
-        // sum up used_digits of Bigit*Bigit.
-        if ((1 << (2 * (kChunkSize - kBigitSize))) <= used_digits_) {
-            UNIMPLEMENTED();
+      // Comba multiplication: compute each column separately.
+      // Example: r = a2a1a0 * b2b1b0.
+      //    r =  1    * a0b0 +
+      //        10    * (a1b0 + a0b1) +
+      //        100   * (a2b0 + a1b1 + a0b2) +
+      //        1000  * (a2b1 + a1b2) +
+      //        10000 * a2b2
+      //
+      // In the worst case we have to accumulate nb-digits products of
+      // digit*digit.
+      //
+      // Assert that the additional number of bits in a DoubleChunk are enough
+      // to sum up used_digits of Bigit*Bigit.
+      if ((1 << (2 * (kChunkSize - kBigitSize))) <= used_digits_) {
+        UNIMPLEMENTED();
         }
         DoubleChunk accumulator = 0;
         // First shift the digits so we don't overwrite them.
@@ -487,14 +488,14 @@ namespace double_conversion {
 
     // Precondition: this/other < 16bit.
     uint16_t Bignum::DivideModuloIntBignum(const Bignum& other) {
-        ASSERT(IsClamped());
-        ASSERT(other.IsClamped());
-        ASSERT(other.used_digits_ > 0);
+      DCHECK(IsClamped());
+      DCHECK(other.IsClamped());
+      ASSERT(other.used_digits_ > 0);
 
-        // Easy case: if we have less digits than the divisor than the result is 0.
-        // Note: this handles the case where this == 0, too.
-        if (BigitLength() < other.BigitLength()) {
-            return 0;
+      // Easy case: if we have less digits than the divisor than the result is
+      // 0. Note: this handles the case where this == 0, too.
+      if (BigitLength() < other.BigitLength()) {
+        return 0;
         }
 
         Align(other);
@@ -569,16 +570,17 @@ namespace double_conversion {
 
 
     bool Bignum::ToHexString(char* buffer, int buffer_size) const {
-        ASSERT(IsClamped());
-        // Each bigit must be printable as separate hex-character.
-        ASSERT(kBigitSize % 4 == 0);
-        const int kHexCharsPerBigit = kBigitSize / 4;
+      DCHECK(IsClamped());
+      // Each bigit must be printable as separate hex-character.
+      ASSERT(kBigitSize % 4 == 0);
+      const int kHexCharsPerBigit = kBigitSize / 4;
 
-        if (used_digits_ == 0) {
-            if (buffer_size < 2) return false;
-            buffer[0] = '0';
-            buffer[1] = '\0';
-            return true;
+      if (used_digits_ == 0) {
+        if (buffer_size < 2)
+          return false;
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return true;
         }
         // We add 1 for the terminating '\0' character.
         int needed_chars = (BigitLength() - 1) * kHexCharsPerBigit +
@@ -616,29 +618,34 @@ namespace double_conversion {
 
 
     int Bignum::Compare(const Bignum& a, const Bignum& b) {
-        ASSERT(a.IsClamped());
-        ASSERT(b.IsClamped());
-        int bigit_length_a = a.BigitLength();
-        int bigit_length_b = b.BigitLength();
-        if (bigit_length_a < bigit_length_b) return -1;
-        if (bigit_length_a > bigit_length_b) return +1;
-        for (int i = bigit_length_a - 1; i >= Min(a.exponent_, b.exponent_); --i) {
-            Chunk bigit_a = a.BigitAt(i);
-            Chunk bigit_b = b.BigitAt(i);
-            if (bigit_a < bigit_b) return -1;
-            if (bigit_a > bigit_b) return +1;
-            // Otherwise they are equal up to this digit. Try the next digit.
+      DCHECK(a.IsClamped());
+      DCHECK(b.IsClamped());
+      int bigit_length_a = a.BigitLength();
+      int bigit_length_b = b.BigitLength();
+      if (bigit_length_a < bigit_length_b)
+        return -1;
+      if (bigit_length_a > bigit_length_b)
+        return +1;
+      for (int i = bigit_length_a - 1; i >= Min(a.exponent_, b.exponent_);
+           --i) {
+        Chunk bigit_a = a.BigitAt(i);
+        Chunk bigit_b = b.BigitAt(i);
+        if (bigit_a < bigit_b)
+          return -1;
+        if (bigit_a > bigit_b)
+          return +1;
+        // Otherwise they are equal up to this digit. Try the next digit.
         }
         return 0;
     }
 
 
     int Bignum::PlusCompare(const Bignum& a, const Bignum& b, const Bignum& c) {
-        ASSERT(a.IsClamped());
-        ASSERT(b.IsClamped());
-        ASSERT(c.IsClamped());
-        if (a.BigitLength() < b.BigitLength()) {
-            return PlusCompare(b, a, c);
+      DCHECK(a.IsClamped());
+      DCHECK(b.IsClamped());
+      DCHECK(c.IsClamped());
+      if (a.BigitLength() < b.BigitLength()) {
+        return PlusCompare(b, a, c);
         }
         if (a.BigitLength() + 1 < c.BigitLength()) return -1;
         if (a.BigitLength() > c.BigitLength()) return +1;

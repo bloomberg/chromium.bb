@@ -53,11 +53,11 @@ class PLATFORM_EXPORT PNGImageEncoderState final {
       Vector<unsigned char>* output);
   ~PNGImageEncoderState();
   png_struct* Png() {
-    ASSERT(png_);
+    DCHECK(png_);
     return png_;
   }
   png_info* Info() {
-    ASSERT(info_);
+    DCHECK(info_);
     return info_;
   }
 

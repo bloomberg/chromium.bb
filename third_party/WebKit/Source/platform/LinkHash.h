@@ -46,10 +46,10 @@ struct LinkHashHash {
 
   // See AlreadyHashed::avoidDeletedValue.
   static unsigned AvoidDeletedValue(LinkHash hash64) {
-    ASSERT(hash64);
+    DCHECK(hash64);
     unsigned hash = static_cast<unsigned>(hash64);
     unsigned new_hash = hash | (!(hash + 1) << 31);
-    ASSERT(new_hash);
+    DCHECK(new_hash);
     ASSERT(new_hash != 0xFFFFFFFF);
     return new_hash;
   }

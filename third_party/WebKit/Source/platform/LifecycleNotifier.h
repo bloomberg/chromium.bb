@@ -81,7 +81,7 @@ template <typename T, typename Observer>
 inline LifecycleNotifier<T, Observer>::~LifecycleNotifier() {
   // FIXME: Enable the following ASSERT. Also see a FIXME in
   // Document::detachLayoutTree().
-  // ASSERT(!m_observers.size());
+  // DCHECK(!m_observers.size());
 }
 
 // Determine if |contextDestroyed(Observer*) is a public method on

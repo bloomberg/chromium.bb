@@ -95,7 +95,7 @@ class PLATFORM_EXPORT TransformState {
     // FIXME: this assumes that the quad being added is in the coordinate system
     // of the current state.  This breaks if we're simultaneously mapping a
     // point.  https://bugs.webkit.org/show_bug.cgi?id=106680
-    ASSERT(!map_point_);
+    DCHECK(!map_point_);
     accumulated_offset_ = LayoutSize();
     last_planar_quad_ = quad;
   }

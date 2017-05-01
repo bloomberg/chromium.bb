@@ -51,7 +51,7 @@ class DecimalStepRange {
 
   Decimal ClampValue(Decimal value) const {
     const Decimal result = minimum + ((value - minimum) / step).Round() * step;
-    ASSERT(result.IsFinite());
+    DCHECK(result.IsFinite());
     return result > maximum ? result - step : result;
   }
 };

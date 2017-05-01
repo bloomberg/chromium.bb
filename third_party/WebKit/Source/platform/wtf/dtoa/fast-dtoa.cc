@@ -714,7 +714,7 @@ namespace double_conversion {
                   int* length,
                   int* decimal_point) {
         ASSERT(v > 0);
-        ASSERT(!Double(v).IsSpecial());
+        DCHECK(!Double(v).IsSpecial());
 
         bool result = false;
         int decimal_exponent = 0;

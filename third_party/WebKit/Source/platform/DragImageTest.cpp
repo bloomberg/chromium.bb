@@ -60,7 +60,7 @@ class TestImage : public Image {
   }
 
   IntSize Size() const override {
-    ASSERT(image_);
+    DCHECK(image_);
 
     return IntSize(image_->width(), image_->height());
   }

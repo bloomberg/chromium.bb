@@ -147,7 +147,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
 
   if (run_state_ == RunState::kWaitingToCancelOnCompositor ||
       run_state_ == RunState::kWaitingToCancelOnCompositorButNewScroll) {
-    ASSERT(animation_curve_);
+    DCHECK(animation_curve_);
     target_offset_ = target_offset;
     if (RegisterAndScheduleAnimation())
       run_state_ = RunState::kWaitingToCancelOnCompositorButNewScroll;

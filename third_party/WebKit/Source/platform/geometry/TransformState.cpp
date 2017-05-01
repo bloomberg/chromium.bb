@@ -156,7 +156,7 @@ void TransformState::ApplyTransform(
 }
 
 void TransformState::Flatten(bool* was_clamped) {
-  ASSERT(!force_accumulating_transform_);
+  DCHECK(!force_accumulating_transform_);
   if (was_clamped)
     *was_clamped = false;
 

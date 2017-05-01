@@ -40,12 +40,12 @@ namespace blink {
 const char BlobURL::kBlobProtocol[] = "blob";
 
 KURL BlobURL::CreatePublicURL(SecurityOrigin* security_origin) {
-  ASSERT(security_origin);
+  DCHECK(security_origin);
   return CreateBlobURL(security_origin->ToString());
 }
 
 String BlobURL::GetOrigin(const KURL& url) {
-  ASSERT(url.ProtocolIs(kBlobProtocol));
+  DCHECK(url.ProtocolIs(kBlobProtocol));
 
   unsigned start_index = url.PathStart();
   unsigned end_index = url.PathAfterLastSlash();
@@ -57,7 +57,7 @@ KURL BlobURL::CreateInternalStreamURL() {
 }
 
 KURL BlobURL::CreateBlobURL(const String& origin_string) {
-  ASSERT(!origin_string.IsEmpty());
+  DCHECK(!origin_string.IsEmpty());
   String url_string =
       "blob:" + origin_string + '/' + CreateCanonicalUUIDString();
   return KURL::CreateIsolated(kParsedURLString, url_string);

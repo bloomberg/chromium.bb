@@ -11,18 +11,18 @@ namespace blink {
 static unsigned g_plugin_script_forbidden_count = 0;
 
 PluginScriptForbiddenScope::PluginScriptForbiddenScope() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   ++g_plugin_script_forbidden_count;
 }
 
 PluginScriptForbiddenScope::~PluginScriptForbiddenScope() {
-  ASSERT(IsMainThread());
-  ASSERT(g_plugin_script_forbidden_count);
+  DCHECK(IsMainThread());
+  DCHECK(g_plugin_script_forbidden_count);
   --g_plugin_script_forbidden_count;
 }
 
 bool PluginScriptForbiddenScope::IsForbidden() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   return g_plugin_script_forbidden_count > 0;
 }
 

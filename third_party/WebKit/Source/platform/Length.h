@@ -141,7 +141,7 @@ class PLATFORM_EXPORT Length {
   // FIXME: Make this private (if possible) or at least rename it
   // (http://crbug.com/432707).
   inline float Value() const {
-    ASSERT(!IsCalculated());
+    DCHECK(!IsCalculated());
     return GetFloatValue();
   }
 
@@ -207,7 +207,7 @@ class PLATFORM_EXPORT Length {
   // functions it's impossible to determine the sign or zero-ness. We assume all
   // calc values are positive and non-zero for now.
   bool IsZero() const {
-    ASSERT(!IsMaxSizeNone());
+    DCHECK(!IsMaxSizeNone());
     if (IsCalculated())
       return false;
 
@@ -280,7 +280,7 @@ class PLATFORM_EXPORT Length {
   }
 
   float GetFloatValue() const {
-    ASSERT(!IsMaxSizeNone());
+    DCHECK(!IsMaxSizeNone());
     return is_float_ ? float_value_ : int_value_;
   }
   float NonNanCalculatedValue(LayoutUnit max_value) const;
@@ -291,14 +291,14 @@ class PLATFORM_EXPORT Length {
 
  private:
   int GetIntValue() const {
-    ASSERT(!IsMaxSizeNone());
+    DCHECK(!IsMaxSizeNone());
     return is_float_ ? static_cast<int>(float_value_) : int_value_;
   }
 
   Length BlendMixedTypes(const Length& from, double progress, ValueRange) const;
 
   int CalculationHandle() const {
-    ASSERT(IsCalculated());
+    DCHECK(IsCalculated());
     return GetIntValue();
   }
   void IncrementCalculatedRef() const;

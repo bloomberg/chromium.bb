@@ -358,7 +358,7 @@ namespace double_conversion {
                                                 int* length,
                                                 int* point) {
         Vector<char> vector(buffer, buffer_length);
-        ASSERT(!Double(v).IsSpecial());
+        DCHECK(!Double(v).IsSpecial());
         ASSERT(mode == SHORTEST || requested_digits >= 0);
 
         if (Double(v).Sign() < 0) {

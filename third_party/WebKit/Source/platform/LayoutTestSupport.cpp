@@ -51,7 +51,7 @@ bool LayoutTestSupport::IsMockThemeEnabledForTest() {
 }
 
 void LayoutTestSupport::SetMockThemeEnabledForTest(bool value) {
-  ASSERT(g_is_running_layout_test);
+  DCHECK(g_is_running_layout_test);
   g_is_mock_theme_enabled = value;
 }
 

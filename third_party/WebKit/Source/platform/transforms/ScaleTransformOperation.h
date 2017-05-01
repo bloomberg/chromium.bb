@@ -79,7 +79,7 @@ class PLATFORM_EXPORT ScaleTransformOperation final
 
   ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
       : x_(sx), y_(sy), z_(sz), type_(type) {
-    ASSERT(IsMatchingOperationType(type));
+    DCHECK(IsMatchingOperationType(type));
   }
 
   double x_;

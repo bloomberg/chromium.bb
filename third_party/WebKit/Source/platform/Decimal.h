@@ -128,7 +128,7 @@ class PLATFORM_EXPORT Decimal {
   Decimal operator/(const Decimal&) const;
 
   int Exponent() const {
-    ASSERT(IsFinite());
+    DCHECK(IsFinite());
     return data_.Exponent();
   }
 

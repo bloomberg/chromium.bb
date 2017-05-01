@@ -48,7 +48,7 @@ TimerBase::TimerBase(RefPtr<WebTaskRunner> web_task_runner)
       thread_(CurrentThread()),
 #endif
       weak_ptr_factory_(this) {
-  ASSERT(web_task_runner_);
+  DCHECK(web_task_runner_);
 }
 
 TimerBase::~TimerBase() {
@@ -78,7 +78,7 @@ void TimerBase::Stop() {
 }
 
 double TimerBase::NextFireInterval() const {
-  ASSERT(IsActive());
+  DCHECK(IsActive());
   double current = TimerMonotonicallyIncreasingTime();
   if (next_fire_time_ < current)
     return 0;
