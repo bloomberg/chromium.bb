@@ -9,14 +9,8 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/stack_view/card_view.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
-#import "ios/chrome/browser/ui/stack_view/title_label.h"
 #import "ios/chrome/browser/ui/ui_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -40,14 +34,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
 
 }  // namespace
 
-@interface CardStackLayoutManager () {
-  NSMutableArray* cards_;
-  // YES if the previous call to one of {|scrollCardAtIndex|,
-  // |handleMultitouchWithFirstDelta|} was to the former method; NO otherwise.
-  BOOL treatOverExtensionAsScroll_;
-  NSUInteger previousFirstPinchCardIndex_;
-  NSUInteger previousSecondPinchCardIndex_;
-}
+@interface CardStackLayoutManager ()
 
 // Exposes |kMinStackStaggerAmount| for tests.
 - (CGFloat)minStackStaggerAmount;
@@ -207,7 +194,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
 
 - (id)init {
   if ((self = [super init])) {
-    cards_ = [[NSMutableArray alloc] init];
+    cards_.reset([[NSMutableArray alloc] init]);
     layoutIsVertical_ = YES;
     lastStartStackCardIndex_ = -1;
     firstEndStackCardIndex_ = -1;
@@ -260,7 +247,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
   NSUInteger i = 0;
   CGFloat previousFirstCardOffset = 0;
   CGFloat newFirstCardOffset = 0;
-  for (StackCard* card in cards_) {
+  for (StackCard* card in cards_.get()) {
     CGFloat offset = [self cardOffsetOnLayoutAxis:card];
     card.size = cardSize_;
     CGFloat newOffset = offset;
@@ -302,7 +289,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
 
 - (void)setLayoutAxisPosition:(CGFloat)position {
   layoutAxisPosition_ = position;
-  for (StackCard* card in cards_) {
+  for (StackCard* card in cards_.get()) {
     LayoutRect layout = card.layout;
     if (layoutIsVertical_)
       layout.position.leading = position - 0.5 * layout.size.width;
@@ -1141,7 +1128,7 @@ const CGFloat kScrollAwayFromNeighborAmount = 200;
 }
 
 - (void)setSynchronizeCardViews:(BOOL)synchronizeViews {
-  for (StackCard* card in cards_) {
+  for (StackCard* card in cards_.get()) {
     card.synchronizeView = synchronizeViews;
   }
 }

@@ -12,10 +12,6 @@
 #include "ios/chrome/browser/ui/toolbar/new_tab_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UserMetricsAction;
 
 namespace {
@@ -25,19 +21,19 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
 }
 
 @implementation StackViewToolbarController {
-  UIView* _stackViewToolbar;
-  NewTabButton* _openNewTabButton;
+  base::scoped_nsobject<UIView> _stackViewToolbar;
+  base::scoped_nsobject<NewTabButton> _openNewTabButton;
 }
 
 - (instancetype)initWithStackViewToolbar {
   self = [super initWithStyle:ToolbarControllerStyleDarkMode];
   if (self) {
-    _stackViewToolbar =
-        [[UIView alloc] initWithFrame:[self specificControlsArea]];
+    _stackViewToolbar.reset(
+        [[UIView alloc] initWithFrame:[self specificControlsArea]]);
     [_stackViewToolbar setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                            UIViewAutoresizingFlexibleWidth];
 
-    _openNewTabButton = [[NewTabButton alloc] initWithFrame:CGRectZero];
+    _openNewTabButton.reset([[NewTabButton alloc] initWithFrame:CGRectZero]);
 
     [_openNewTabButton
         setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
@@ -65,11 +61,11 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
 }
 
 - (NewTabButton*)openNewTabButton {
-  return _openNewTabButton;
+  return _openNewTabButton.get();
 }
 
 - (IBAction)recordUserMetrics:(id)sender {
-  if (sender == _openNewTabButton)
+  if (sender == _openNewTabButton.get())
     base::RecordAction(UserMetricsAction("MobileToolbarStackViewNewTab"));
   else
     [super recordUserMetrics:sender];

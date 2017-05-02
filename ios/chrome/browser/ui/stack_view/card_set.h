@@ -47,22 +47,22 @@ struct LayoutRect;
 @interface CardSet : NSObject
 // The layout manager for the set.
 // TODO(stuartmorgan): See if this can reasonably be internalized.
-@property(weak, nonatomic, readonly) CardStackLayoutManager* stackModel;
+@property(nonatomic, readonly) CardStackLayoutManager* stackModel;
 // An array of StackCards in the same order as the tabs in the tab model.
-@property(weak, nonatomic, readonly) NSArray* cards;
+@property(nonatomic, readonly) NSArray* cards;
 // The card corresponding to the currently selected tab in the tab model.
 // Setting this property will change the selection in the tab model.
-@property(nonatomic, weak, readwrite) StackCard* currentCard;
+@property(nonatomic, assign, readwrite) StackCard* currentCard;
 // Set to the card that is currently animating closed, if any.
-@property(nonatomic, weak, readwrite) StackCard* closingCard;
+@property(nonatomic, assign, readwrite) StackCard* closingCard;
 // The view that cards should be displayed in. Changing the display view will
 // remove cards from the previous view, but they will not be re-displayed in the
 // new view without a call to updateCardVisibilities.
-@property(nonatomic, strong, readwrite) UIView* displayView;
+@property(nonatomic, retain, readwrite) UIView* displayView;
 // The side on which the close button should be displayed.
 @property(nonatomic, readonly) CardCloseButtonSide closeButtonSide;
 // The object to be notified about addition and removal of cards.
-@property(nonatomic, weak, readwrite) id<CardSetObserver> observer;
+@property(nonatomic, assign, readwrite) id<CardSetObserver> observer;
 // While YES, changes to the tab model will not affect the card stack. When
 // this is changed back to NO, the card stack will be completely rebuilt, so
 // this should be used very carefully.

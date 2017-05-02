@@ -26,7 +26,8 @@
 #include <algorithm>
 
 #import "base/mac/foundation_util.h"
-
+#import "base/mac/objc_property_releaser.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
@@ -41,10 +42,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #import "ui/gfx/ios/uikit_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using ios::material::TimingFunction;
 
@@ -88,10 +85,10 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 @interface CardTabView : UIView
 
 @property(nonatomic, assign) CardCloseButtonSide closeButtonSide;
-@property(nonatomic, strong) UIImageView* favIconView;
-@property(nonatomic, strong) UIImage* favicon;
-@property(nonatomic, strong) CloseButton* closeButton;
-@property(nonatomic, strong) TitleLabel* titleLabel;
+@property(nonatomic, retain) UIImageView* favIconView;
+@property(nonatomic, retain) UIImage* favicon;
+@property(nonatomic, retain) CloseButton* closeButton;
+@property(nonatomic, retain) TitleLabel* titleLabel;
 @property(nonatomic, assign) BOOL isIncognito;
 
 // Layout helper selectors that calculate the frames for subviews given the
@@ -127,7 +124,9 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 
 @end
 
-@implementation CardTabView
+@implementation CardTabView {
+  base::mac::ObjCPropertyReleaser _propertyReleaser_CardTabView;
+}
 
 #pragma mark - Property Implementation
 
@@ -147,6 +146,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   if (!self)
     return self;
 
+  _propertyReleaser_CardTabView.Init(self, [CardTabView class]);
   _isIncognito = isIncognito;
 
   UIImage* image = ImageWithName(@"default_favicon", _isIncognito);
@@ -272,6 +272,8 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 
 - (void)setFavicon:(UIImage*)favicon {
   if (favicon != _favicon) {
+    [favicon retain];
+    [_favicon release];
     _favicon = favicon;
     [self updateFaviconImage];
   }
@@ -435,8 +437,8 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 #pragma mark -
 
 @interface CardView () {
-  UIImageView* _contents;
-  CardTabView* _tab;
+  base::scoped_nsobject<UIImageView> _contents;
+  base::scoped_nsobject<CardTabView> _tab;
   id _cardCloseTarget;  // weak
   SEL _cardCloseAction;
   id _accessibilityTarget;  // weak
@@ -445,12 +447,12 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   BOOL _isIncognito;  // YES if the card should use the incognito styling.
 
   // Pieces of the card frame, split into four UIViews.
-  UIImageView* _frameLeft;
-  UIImageView* _frameRight;
-  UIImageView* _frameTop;
-  UIImageView* _frameBottom;
-  UIImageView* _frameShadowImageView;
-  CALayer* _shadowMask;
+  base::scoped_nsobject<UIImageView> _frameLeft;
+  base::scoped_nsobject<UIImageView> _frameRight;
+  base::scoped_nsobject<UIImageView> _frameTop;
+  base::scoped_nsobject<UIImageView> _frameBottom;
+  base::scoped_nsobject<UIImageView> _frameShadowImageView;
+  base::scoped_nsobject<CALayer> _shadowMask;
 }
 
 // The LayoutRect for the CardTabView.
@@ -509,7 +511,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   self.contentMode = UIViewContentModeRedraw;
 
   CGRect shadowFrame = UIEdgeInsetsInsetRect(bounds, kCardShadowLayoutOutsets);
-  _frameShadowImageView = [[UIImageView alloc] initWithFrame:shadowFrame];
+  _frameShadowImageView.reset([[UIImageView alloc] initWithFrame:shadowFrame]);
   [_frameShadowImageView
       setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                            UIViewAutoresizingFlexibleHeight)];
@@ -524,7 +526,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   [_frameShadowImageView setImage:image];
 
   CGRect snapshotFrame = UIEdgeInsetsInsetRect(bounds, kCardImageInsets);
-  _contents = [[UIImageView alloc] initWithFrame:snapshotFrame];
+  _contents.reset([[UIImageView alloc] initWithFrame:snapshotFrame]);
   [_contents setClipsToBounds:YES];
   [_contents setContentMode:UIViewContentModeScaleAspectFill];
   [_contents setFrame:snapshotFrame];
@@ -537,7 +539,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   UIEdgeInsets imageStretchInsets = UIEdgeInsetsMake(
       0.5 * image.size.height, 0.0, 0.5 * image.size.height, 0.0);
   image = [image resizableImageWithCapInsets:imageStretchInsets];
-  _frameLeft = [[UIImageView alloc] initWithImage:image];
+  _frameLeft.reset([[UIImageView alloc] initWithImage:image]);
   [self addSubview:_frameLeft];
 
   image = [UIImage imageNamed:isIncognito ? @"border_frame_incognito_right"
@@ -545,7 +547,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   imageStretchInsets = UIEdgeInsetsMake(0.5 * image.size.height, 0.0,
                                         0.5 * image.size.height, 0.0);
   image = [image resizableImageWithCapInsets:imageStretchInsets];
-  _frameRight = [[UIImageView alloc] initWithImage:image];
+  _frameRight.reset([[UIImageView alloc] initWithImage:image]);
   [self addSubview:_frameRight];
 
   image = [UIImage imageNamed:isIncognito ? @"border_frame_incognito_top"
@@ -553,7 +555,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   imageStretchInsets = UIEdgeInsetsMake(0.0, 0.5 * image.size.width, 0.0,
                                         0.5 * image.size.width);
   image = [image resizableImageWithCapInsets:imageStretchInsets];
-  _frameTop = [[UIImageView alloc] initWithImage:image];
+  _frameTop.reset([[UIImageView alloc] initWithImage:image]);
   [self addSubview:_frameTop];
 
   image = [UIImage imageNamed:isIncognito ? @"border_frame_incognito_bottom"
@@ -561,11 +563,12 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
   imageStretchInsets = UIEdgeInsetsMake(0.0, 0.5 * image.size.width, 0.0,
                                         0.5 * image.size.width);
   image = [image resizableImageWithCapInsets:imageStretchInsets];
-  _frameBottom = [[UIImageView alloc] initWithImage:image];
+  _frameBottom.reset([[UIImageView alloc] initWithImage:image]);
   [self addSubview:_frameBottom];
 
-  _tab = [[CardTabView alloc] initWithFrame:LayoutRectGetRect([self tabLayout])
-                                isIncognito:_isIncognito];
+  _tab.reset([[CardTabView alloc]
+      initWithFrame:LayoutRectGetRect([self tabLayout])
+        isIncognito:_isIncognito]);
   [_tab setCloseButtonSide:IsPortrait() ? CardCloseButtonSide::TRAILING
                                         : CardCloseButtonSide::LEADING];
   [[_tab closeButton] addTarget:self
@@ -644,10 +647,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 }
 
 - (void)closeButtonWasTapped:(id)sender {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [_cardCloseTarget performSelector:_cardCloseAction withObject:self];
-#pragma clang diagnostic pop
   // Disable the tab's close button to prevent touch handling from the button
   // while it's animating closed.
   [_tab closeButton].enabled = NO;
@@ -679,7 +679,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 }
 
 - (void)updateImageBoundsAndZoom {
-  UIImageView* imageView = _contents;
+  UIImageView* imageView = _contents.get();
   DCHECK(!CGRectEqualToRect(self.bounds, CGRectZero));
 
   imageView.frame = UIEdgeInsetsInsetRect(self.bounds, kCardImageInsets);
@@ -698,7 +698,8 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 
   // Create copy of animation (animations become immutable after they're added
   // to the layer).
-  CAAnimationGroup* updatedAnimation = [snapshotAnimation copy];
+  base::scoped_nsobject<CAAnimationGroup> updatedAnimation(
+      static_cast<CAAnimationGroup*>([snapshotAnimation copy]));
   // Extract begin and end sizes of the card.
   CAAnimation* cardAnimation =
       [self.layer animationForKey:kCardViewAnimationKey];
@@ -745,7 +746,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 
   if (self.shouldMaskShadow) {
     if (!_shadowMask) {
-      _shadowMask = [[CALayer alloc] init];
+      _shadowMask.reset([[CALayer alloc] init]);
       [_shadowMask setBackgroundColor:[UIColor blackColor].CGColor];
     }
     [_frameShadowImageView layer].mask = _shadowMask;
@@ -951,7 +952,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
                                          forKey:kCardViewAnimationKey];
     if (self.shouldMaskShadow) {
       frameAnimation = FrameAnimationMake(
-          _shadowMask, [self shadowMaskFrameForBounds:beginBounds],
+          _shadowMask.get(), [self shadowMaskFrameForBounds:beginBounds],
           [self shadowMaskFrameForBounds:endBounds]);
       frameAnimation.duration = frameDuration;
       frameAnimation.timingFunction = frameTiming;
@@ -1028,10 +1029,7 @@ UIImage* ImageWithName(NSString* image_name, BOOL is_incognito) {
 }
 
 - (void)elementDidBecomeFocused:(id)sender {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [_accessibilityTarget performSelector:_accessibilityAction withObject:sender];
-#pragma clang diagnostic pop
 }
 
 @end

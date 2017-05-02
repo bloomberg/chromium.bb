@@ -68,7 +68,7 @@ typedef enum {
 - (CGRect)inactiveDeckRegion;
 
 // The currently active card set.
-@property(nonatomic, weak, readonly) CardSet* activeCardSet;
+@property(nonatomic, readonly) CardSet* activeCardSet;
 
 // The current transition style.
 @property(nonatomic, assign) StackTransitionStyle transitionStyle;
@@ -78,13 +78,13 @@ typedef enum {
 @property(nonatomic, assign) BOOL transitionWasCancelled;
 
 // The owner of |transitionToolbarController|.
-@property(nonatomic, strong) id<ToolbarOwner> transitionToolbarOwner;
+@property(nonatomic, retain) id<ToolbarOwner> transitionToolbarOwner;
 
 // The toolbar controller used in transition animations.
-@property(nonatomic, strong) ToolbarController* transitionToolbarController;
+@property(nonatomic, retain) ToolbarController* transitionToolbarController;
 
 // The dummy view used in the transition animation.
-@property(nonatomic, strong) UIView* dummyToolbarBackgroundView;
+@property(nonatomic, retain) UIView* dummyToolbarBackgroundView;
 
 // The cached frame of the transition toolbar's frame.
 @property(nonatomic, assign) CGRect transitionToolbarFrame;
@@ -92,7 +92,7 @@ typedef enum {
 // Records which card was tapped mid-presentation animation, if any.
 // TODO(crbug.com/546209): Implement reversed animations for dismissing with a
 // new selected card mid-presentation.
-@property(nonatomic, strong) StackCard* transitionTappedCard;
+@property(nonatomic, retain) StackCard* transitionTappedCard;
 
 // |YES| if there is card set animation being processed.
 @property(nonatomic, readonly) BOOL inActiveDeckChangeAnimation;
