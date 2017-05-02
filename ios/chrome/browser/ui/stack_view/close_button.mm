@@ -6,8 +6,12 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation CloseButton {
-  id _accessibilityTarget;  // weak
+  __weak id _accessibilityTarget;
   SEL _accessibilityAction;
 }
 
@@ -20,7 +24,10 @@
 }
 
 - (void)accessibilityElementDidBecomeFocused {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [_accessibilityTarget performSelector:_accessibilityAction withObject:self];
+#pragma clang diagnostic pop
 }
 
 @end

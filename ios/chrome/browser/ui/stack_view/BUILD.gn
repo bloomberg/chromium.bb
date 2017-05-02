@@ -52,6 +52,7 @@ bundle_data("resources") {
 }
 
 source_set("stack_view") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "card_set.h",
     "card_set.mm",

@@ -15,15 +15,7 @@
 // Encapsulates a stack of cards and their layout behavior, supporting
 // fanning the cards out along an axis and gathering them to fit in a given
 // area.
-@interface CardStackLayoutManager : NSObject {
- @private
-  base::scoped_nsobject<NSMutableArray> cards_;
-  // YES if the previous call to one of {|scrollCardAtIndex|,
-  // |handleMultitouchWithFirstDelta|} was to the former method; NO otherwise.
-  BOOL treatOverExtensionAsScroll_;
-  NSUInteger previousFirstPinchCardIndex_;
-  NSUInteger previousSecondPinchCardIndex_;
-}
+@interface CardStackLayoutManager : NSObject
 
 // The size of a card. Setting this property preserves card origins with the
 // exception that cards are moved as necessary to satisfy placement constraints
