@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -12,10 +13,10 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -158,10 +159,15 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_ModalDialog) {
 
   EXPECT_NO_FATAL_FAILURE(LoadTestPageAndWaitForMouseOver(tab));
 
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(tab);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::UTF8ToUTF16("alert()"));
-  app_modal::AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  dialog_wait.Run();
+
   // Cancel the dialog.
-  alert->CloseModalDialog();
+  js_helper->HandleJavaScriptDialog(tab, false, nullptr);
 
   tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16("done()"));
   const base::string16 success_title = base::ASCIIToUTF16("without mouseleave");

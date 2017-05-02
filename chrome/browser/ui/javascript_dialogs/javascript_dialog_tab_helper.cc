@@ -88,6 +88,10 @@ void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
   dialog_shown_ = callback;
 }
 
+bool JavaScriptDialogTabHelper::IsShowingDialogForTesting() const {
+  return !!dialog_;
+}
+
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     content::WebContents* alerting_web_contents,
     const GURL& origin_url,

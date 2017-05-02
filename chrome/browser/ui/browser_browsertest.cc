@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -492,10 +493,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   WebContents* second_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(second_tab);
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(second_tab);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('Activate!');"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  alert->CloseModalDialog();
+  dialog_wait.Run();
+  js_helper->HandleJavaScriptDialog(second_tab, true, nullptr);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 }
@@ -600,17 +605,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
   // even if the renderer tries to synchronously create more.
   // See http://crbug.com/312490.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('one'); alert('two');"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
   // A cross-site navigation should force the dialog to close.
   GURL url2("http://www.example.com/empty.html");
   ui_test_utils::NavigateToURL(browser(), url2);
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Make sure input events still work in the renderer process.
   EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
@@ -657,14 +664,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
       browser(), GURL("data:text/html, <html><body></body></html>"));
 
   // Create an iframe that opens an alert dialog.
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("f = document.createElement('iframe');"
                    "f.srcdoc = '<script>alert(1)</script>';"
                    "document.body.appendChild(f);"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
   // Crash the renderer process and ensure the dialog is gone.
   content::RenderProcessHost* child_process = contents->GetRenderProcessHost();
@@ -673,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   child_process->Shutdown(0, false);
   crash_observer.Wait();
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Make sure subsequent navigations work.
   GURL url2("data:text/html,foo");
@@ -683,17 +692,19 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
 // Make sure modal dialogs within a guestview are closed when an interstitial
 // page is showing. See crbug.com/482380.
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+
   // Navigate to a PDF, which is loaded within a guestview.
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL pdf_with_dialog(embedded_test_server()->GetURL("/alert_dialog.pdf"));
   ui_test_utils::NavigateToURL(browser(), pdf_with_dialog);
 
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
-
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
   TestInterstitialPage* interstitial =
       new TestInterstitialPage(contents, false, GURL());
@@ -701,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
 
   // The interstitial should have closed the dialog.
   EXPECT_TRUE(contents->ShowingInterstitialPage());
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   interstitial->DontProceed();
 }
@@ -1886,12 +1897,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("alert('Dialog showing!');"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+  dialog_wait.Run();
+  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
   TestInterstitialPage* interstitial =
       new TestInterstitialPage(contents, false, GURL());
@@ -1899,7 +1912,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
 
   // The interstitial should have closed the dialog.
   EXPECT_TRUE(contents->ShowingInterstitialPage());
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Don't proceed and wait for interstitial to detach. This doesn't destroy
   // |contents|.

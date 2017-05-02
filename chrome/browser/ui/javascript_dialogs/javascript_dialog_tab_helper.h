@@ -37,6 +37,7 @@ class JavaScriptDialogTabHelper
   ~JavaScriptDialogTabHelper() override;
 
   void SetDialogShownCallbackForTesting(base::Closure callback);
+  bool IsShowingDialogForTesting() const;
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,

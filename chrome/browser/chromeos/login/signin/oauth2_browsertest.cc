@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -30,8 +32,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -54,8 +54,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using app_modal::AppModalDialog;
-using app_modal::JavaScriptAppModalDialog;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
@@ -802,11 +800,18 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
   StartNewUserSession(false);
 
   // Try to open a page from google.com.
-  Browser* browser =
-      FindOrCreateVisibleBrowser(profile());
+  Browser* browser = FindOrCreateVisibleBrowser(profile());
   ui_test_utils::NavigateToURLWithDisposition(
       browser, fake_google_page_url_, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
+
+  // JavaScript dialog wait setup.
+  content::WebContents* tab =
+      browser->tab_strip_model()->GetActiveWebContents();
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(tab);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();
@@ -830,11 +835,8 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
 
   // Check that real page is no longer blocked by the throttle and that the
   // real page pops up JS dialog.
-  AppModalDialog* dialog = ui_test_utils::WaitForAppModalDialog();
-  ASSERT_TRUE(dialog->IsJavaScriptModalDialog());
-  JavaScriptAppModalDialog* js_dialog =
-      static_cast<JavaScriptAppModalDialog*>(dialog);
-  js_dialog->native_dialog()->AcceptAppModalDialog();
+  dialog_wait.Run();
+  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
 
   ui_test_utils::GetCurrentTabTitle(browser, &title);
   DVLOG(1) << "Loaded page at the end : " << title;
