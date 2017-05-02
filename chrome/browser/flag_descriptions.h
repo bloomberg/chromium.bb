@@ -1760,11 +1760,17 @@ extern const char kForceUiDirectionName[];
 // Description for the flag to force a specific UI direction.
 extern const char kForceUiDirectionDescription[];
 
-// Name for the option to force left-to-right UI direction mode.
-extern const char kForceUiDirectionLtr[];
+// Name for the flag to force a specific text rendering direction.
+extern const char kForceTextDirectionName[];
 
-// Name for the option to force right-to-left UI direction mode.
-extern const char kForceUiDirectionRtl[];
+// Description for the flag to force a specific text rendering direction.
+extern const char kForceTextDirectionDescription[];
+
+// Name for the option to force left-to-right UI or text direction mode.
+extern const char kForceDirectionLtr[];
+
+// Name for the option to force right-to-left UI or text direction mode.
+extern const char kForceDirectionRtl[];
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 

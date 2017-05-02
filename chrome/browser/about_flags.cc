@@ -528,10 +528,18 @@ const FeatureEntry::Choice kCrosRegionsModeChoices[] = {
 
 const FeatureEntry::Choice kForceUIDirectionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kForceUiDirectionLtr, switches::kForceUIDirection,
-     switches::kForceUIDirectionLTR},
-    {flag_descriptions::kForceUiDirectionRtl, switches::kForceUIDirection,
-     switches::kForceUIDirectionRTL},
+    {flag_descriptions::kForceDirectionLtr, switches::kForceUIDirection,
+     switches::kForceDirectionLTR},
+    {flag_descriptions::kForceDirectionRtl, switches::kForceUIDirection,
+     switches::kForceDirectionRTL},
+};
+
+const FeatureEntry::Choice kForceTextDirectionChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kForceDirectionLtr, switches::kForceTextDirection,
+     switches::kForceDirectionLTR},
+    {flag_descriptions::kForceDirectionRtl, switches::kForceTextDirection,
+     switches::kForceDirectionRTL},
 };
 
 #if defined(OS_ANDROID)
@@ -2078,6 +2086,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-ui-direction", flag_descriptions::kForceUiDirectionName,
      flag_descriptions::kForceUiDirectionDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceUIDirectionChoices)},
+    {"force-text-direction", flag_descriptions::kForceTextDirectionName,
+     flag_descriptions::kForceTextDirectionDescription, kOsAll,
+     MULTI_VALUE_TYPE(kForceTextDirectionChoices)},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-md-extensions",
      flag_descriptions::kEnableMaterialDesignExtensionsName,
