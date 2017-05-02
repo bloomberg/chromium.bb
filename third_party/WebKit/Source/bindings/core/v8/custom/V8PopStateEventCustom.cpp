@@ -77,7 +77,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(
     if (event->SerializedState())
       result = event->SerializedState()->Deserialize(isolate);
     else
-      result = event->state().V8ValueFor(script_state);
+      result = event->state(script_state).V8Value();
     if (result.IsEmpty())
       result = v8::Null(isolate);
     V8SetReturnValue(info, CacheState(script_state, info.Holder(), result));
