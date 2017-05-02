@@ -7,9 +7,11 @@
  */
 
 /**
- * Specifies page visibility in guest mode in cr and cros.
+ * Specifies page visibility. Only pages that have conditional visibility
+ * (e.g. in Guest mode) have defined entries.
  * @typedef {{
  *   advancedSettings: (boolean|undefined),
+ *   androidApps: (boolean|undefined),
  *   appearance: (boolean|undefined|AppearancePageVisibility),
  *   dateTime: (boolean|undefined|DateTimePageVisibility),
  *   defaultBrowser: (boolean|undefined),
@@ -21,37 +23,37 @@
  *   reset:(boolean|undefined),
  * }}
  */
-var GuestModePageVisibility;
+var PageVisibility;
 
 /**
  * @typedef {{
- *   bookmarksBar: boolean,
- *   homeButton: boolean,
- *   pageZoom: boolean,
- *   setTheme: boolean,
- *   setWallpaper: boolean,
+ *   bookmarksBar: (boolean|undefined),
+ *   homeButton: (boolean|undefined),
+ *   pageZoom: (boolean|undefined),
+ *   setTheme: (boolean|undefined),
+ *   setWallpaper: (boolean|undefined),
  * }}
  */
 var AppearancePageVisibility;
 
 /**
  * @typedef {{
- *   timeZoneSelector: boolean,
+ *   timeZoneSelector: (boolean|undefined),
  * }}
  */
 var DateTimePageVisibility;
 
 /**
  * @typedef {{
- *   googleDrive: boolean
+ *   googleDrive: (boolean|undefined)
  * }}
  */
 var DownloadsPageVisibility;
 
 /**
  * @typedef {{
- *   networkPrediction: boolean,
- *   searchPrediction: boolean,
+ *   networkPrediction: (boolean|undefined),
+ *   searchPrediction: (boolean|undefined),
  * }}
  */
 var PrivacyPageVisibility;

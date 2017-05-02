@@ -482,7 +482,6 @@ CrSettingsRtlTest.prototype = {
 };
 
 TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
-  settingsHidePagesByDefaultForTest = true;
   settings_rtl_tests.registerDrawerPanelTests();
   mocha.run();
 });

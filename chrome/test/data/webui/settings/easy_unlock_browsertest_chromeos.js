@@ -24,7 +24,6 @@ SettingsEasyUnlockBrowserTest.prototype = {
   /** @override */
   preLoad: function() {
     SettingsPageBrowserTest.prototype.preLoad.call(this);
-    settingsHidePagesByDefaultForTest = true;
   },
 };
 

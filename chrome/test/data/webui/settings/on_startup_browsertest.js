@@ -40,7 +40,6 @@ OnStartupSettingsBrowserTest.prototype = {
   /** @override */
   preLoad: function() {
     SettingsPageBrowserTest.prototype.preLoad.call(this);
-    settingsHidePagesByDefaultForTest = true;
   },
 };
 
@@ -59,9 +58,6 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
 
   suite('OnStartupHandler', function() {
     suiteSetup(function() {
-      self.basicPage.set('pageVisibility.onStartup', true);
-      Polymer.dom.flush();
-
       settingsPrefs = document.querySelector('settings-ui').$$(
           'settings-prefs');
       assertTrue(!!settingsPrefs);
