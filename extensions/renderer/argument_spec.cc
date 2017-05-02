@@ -407,11 +407,17 @@ bool ArgumentSpec::ParseArgumentToObject(
 
     ArgumentSpec* property_spec = nullptr;
     auto iter = properties_.find(*utf8_key);
+    bool allow_unserializable = false;
     if (iter != properties_.end()) {
       property_spec = iter->second.get();
       seen_properties.insert(property_spec);
     } else if (additional_properties_) {
       property_spec = additional_properties_.get();
+      // additionalProperties: {type: any} is often used to allow anything
+      // through, including things that would normally break serialization like
+      // functions, or even NaN. If the additional properties are of
+      // ArgumentType::ANY, allow anything, even if it doesn't serialize.
+      allow_unserializable = property_spec->type_ == ArgumentType::ANY;
     } else {
       *error = api_errors::UnexpectedProperty(*utf8_key);
       return false;
@@ -451,6 +457,8 @@ bool ArgumentSpec::ParseArgumentToObject(
     if (!property_spec->ParseArgument(context, prop_value, refs,
                                       result ? &property : nullptr,
                                       &property_error)) {
+      if (allow_unserializable)
+        continue;
       *error = api_errors::PropertyError(*utf8_key, property_error);
       return false;
     }
