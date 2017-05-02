@@ -33,7 +33,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
  public:
   ~RendererWebAudioDeviceImpl() override;
 
-  static std::unique_ptr<RendererWebAudioDeviceImpl> Create(
+  static RendererWebAudioDeviceImpl* Create(
       media::ChannelLayout layout,
       int channels,
       const blink::WebAudioLatencyHint& latency_hint,

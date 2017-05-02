@@ -48,8 +48,7 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder*) override;
   blink::WebData LoadResource(const char* name) override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
-      override;
+  blink::WebStorageNamespace* CreateLocalStorageNamespace() override;
   virtual void dispatchStorageEvent(const blink::WebString& key,
       const blink::WebString& oldValue, const blink::WebString& newValue,
       const blink::WebString& origin, const blink::WebURL& url,

@@ -35,7 +35,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 
 using blink::WebString;
 using midi::mojom::PortState;
@@ -51,7 +50,7 @@ std::unique_ptr<MIDIAccessor> MIDIAccessor::Create(MIDIAccessorClient* client) {
 MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client) : client_(client) {
   DCHECK(client);
 
-  accessor_ = Platform::Current()->CreateMIDIAccessor(this);
+  accessor_ = WTF::WrapUnique(Platform::Current()->CreateMIDIAccessor(this));
 
   DCHECK(accessor_);
 }

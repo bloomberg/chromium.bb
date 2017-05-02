@@ -18,7 +18,6 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,15 +66,14 @@ class MockWebAudioDevice : public WebAudioDevice {
 
 class BaseAudioContextTestPlatform : public TestingPlatformSupport {
  public:
-  std::unique_ptr<WebAudioDevice> CreateAudioDevice(
-      unsigned number_of_input_channels,
-      unsigned number_of_channels,
-      const WebAudioLatencyHint& latency_hint,
-      WebAudioDevice::RenderCallback*,
-      const WebString& device_id,
-      const WebSecurityOrigin&) override {
-    return WTF::MakeUnique<MockWebAudioDevice>(AudioHardwareSampleRate(),
-                                               AudioHardwareBufferSize());
+  WebAudioDevice* CreateAudioDevice(unsigned number_of_input_channels,
+                                    unsigned number_of_channels,
+                                    const WebAudioLatencyHint& latency_hint,
+                                    WebAudioDevice::RenderCallback*,
+                                    const WebString& device_id,
+                                    const WebSecurityOrigin&) override {
+    return new MockWebAudioDevice(AudioHardwareSampleRate(),
+                                  AudioHardwareBufferSize());
   }
 
   double AudioHardwareSampleRate() override { return 44100; }

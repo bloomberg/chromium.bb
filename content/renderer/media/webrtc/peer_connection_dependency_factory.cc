@@ -117,7 +117,7 @@ PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   DCHECK(!pc_factory_);
 }
 
-std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+blink::WebRTCPeerConnectionHandler*
 PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client) {
   // Save histogram data so we can see how much PeerConnetion is used.
@@ -125,7 +125,7 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
   // webKitRTCPeerConnection.
   UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
 
-  return base::MakeUnique<RTCPeerConnectionHandler>(client, this);
+  return new RTCPeerConnectionHandler(client, this);
 }
 
 const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&

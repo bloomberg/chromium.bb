@@ -23,15 +23,13 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   void RenderThreadStarted() override;
   void RenderFrameCreated(RenderFrame* render_frame) override;
   void RenderViewCreated(RenderView* render_view) override;
-  std::unique_ptr<blink::WebMediaStreamCenter>
-  OverrideCreateWebMediaStreamCenter(
+  blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client) override;
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  OverrideCreateWebRTCPeerConnectionHandler(
+  blink::WebRTCPeerConnectionHandler* OverrideCreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client) override;
-  std::unique_ptr<blink::WebMIDIAccessor> OverrideCreateMIDIAccessor(
+  blink::WebMIDIAccessor* OverrideCreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
-  std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(
+  blink::WebAudioDevice* OverrideCreateAudioDevice(
       const blink::WebAudioLatencyHint& latency_hint) override;
   blink::WebClipboard* OverrideWebClipboard() override;
   blink::WebThemeEngine* OverrideThemeEngine() override;

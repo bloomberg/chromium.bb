@@ -61,8 +61,7 @@ void InputHandlerWrapper::WillShutdown() {
   input_handler_manager_->RemoveInputHandler(routing_id_);
 }
 
-std::unique_ptr<blink::WebGestureCurve>
-InputHandlerWrapper::CreateFlingAnimationCurve(
+blink::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
     blink::WebGestureDevice deviceSource,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {

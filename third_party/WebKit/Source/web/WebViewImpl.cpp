@@ -700,11 +700,11 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       fling_source_device_ = event.source_device;
       DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);
       std::unique_ptr<WebGestureCurve> fling_curve =
-          Platform::Current()->CreateFlingAnimationCurve(
+          WTF::WrapUnique(Platform::Current()->CreateFlingAnimationCurve(
               event.source_device,
               WebFloatPoint(event.data.fling_start.velocity_x,
                             event.data.fling_start.velocity_y),
-              WebSize());
+              WebSize()));
       DCHECK(fling_curve);
       gesture_animation_ = WebActiveGestureAnimation::CreateAtAnimationStart(
           std::move(fling_curve), this);
@@ -1012,9 +1012,9 @@ void WebViewImpl::TransferActiveWheelFlingAnimation(
   global_position_on_fling_start_ = parameters.global_point;
   fling_modifier_ = parameters.modifiers;
   std::unique_ptr<WebGestureCurve> curve =
-      Platform::Current()->CreateFlingAnimationCurve(
+      WTF::WrapUnique(Platform::Current()->CreateFlingAnimationCurve(
           parameters.source_device, WebFloatPoint(parameters.delta),
-          parameters.cumulative_scroll);
+          parameters.cumulative_scroll));
   DCHECK(curve);
   gesture_animation_ = WebActiveGestureAnimation::CreateWithTimeOffset(
       std::move(curve), this, parameters.start_time);

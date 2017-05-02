@@ -503,7 +503,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     return;
   }
 
-  peer_handler_ = Platform::Current()->CreateRTCPeerConnectionHandler(this);
+  peer_handler_ = WTF::WrapUnique(
+      Platform::Current()->CreateRTCPeerConnectionHandler(this));
   if (!peer_handler_) {
     closed_ = true;
     stopped_ = true;
@@ -924,7 +925,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   DCHECK(!key_params.IsNull());
 
   std::unique_ptr<WebRTCCertificateGenerator> certificate_generator =
-      Platform::Current()->CreateRTCCertificateGenerator();
+      WTF::WrapUnique(Platform::Current()->CreateRTCCertificateGenerator());
 
   // |keyParams| was successfully constructed, but does the certificate
   // generator support these parameters?

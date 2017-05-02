@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,13 +33,12 @@ class MockWebAudioDevice : public WebAudioDevice {
 
 class AudioContextTestPlatform : public TestingPlatformSupport {
  public:
-  std::unique_ptr<WebAudioDevice> CreateAudioDevice(
-      unsigned number_of_input_channels,
-      unsigned number_of_channels,
-      const WebAudioLatencyHint& latency_hint,
-      WebAudioDevice::RenderCallback*,
-      const WebString& device_id,
-      const WebSecurityOrigin&) override {
+  WebAudioDevice* CreateAudioDevice(unsigned number_of_input_channels,
+                                    unsigned number_of_channels,
+                                    const WebAudioLatencyHint& latency_hint,
+                                    WebAudioDevice::RenderCallback*,
+                                    const WebString& device_id,
+                                    const WebSecurityOrigin&) override {
     double buffer_size = 0;
     const double interactive_size = AudioHardwareBufferSize();
     const double balanced_size = AudioHardwareBufferSize() * 2;
@@ -66,8 +64,7 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
         break;
     }
 
-    return WTF::MakeUnique<MockWebAudioDevice>(AudioHardwareSampleRate(),
-                                               buffer_size);
+    return new MockWebAudioDevice(AudioHardwareSampleRate(), buffer_size);
   }
 
   double AudioHardwareSampleRate() override { return 44100; }

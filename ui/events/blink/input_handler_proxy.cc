@@ -993,8 +993,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
       const float vy = gesture_event.data.fling_start.velocity_y;
       current_fling_velocity_ = gfx::Vector2dF(vx, vy);
       DCHECK(!current_fling_velocity_.IsZero());
-      fling_curve_ = client_->CreateFlingAnimationCurve(
-          gesture_event.source_device, WebFloatPoint(vx, vy), blink::WebSize());
+      fling_curve_.reset(client_->CreateFlingAnimationCurve(
+          gesture_event.source_device, WebFloatPoint(vx, vy),
+          blink::WebSize()));
       disallow_horizontal_fling_scroll_ = !vx;
       disallow_vertical_fling_scroll_ = !vy;
       TRACE_EVENT_ASYNC_BEGIN2("input,benchmark,rail",
@@ -1235,8 +1236,8 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
       disallow_horizontal_fling_scroll_ = !velocity.x;
       disallow_vertical_fling_scroll_ = !velocity.y;
       last_fling_boost_event_ = WebGestureEvent();
-      fling_curve_ = client_->CreateFlingAnimationCurve(
-          gesture_event.source_device, velocity, blink::WebSize());
+      fling_curve_.reset(client_->CreateFlingAnimationCurve(
+          gesture_event.source_device, velocity, blink::WebSize()));
       fling_parameters_.start_time = gesture_event.TimeStampSeconds();
       fling_parameters_.delta = velocity;
       fling_parameters_.point = WebPoint(gesture_event.x, gesture_event.y);
