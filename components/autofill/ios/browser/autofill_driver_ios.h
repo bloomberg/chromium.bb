@@ -74,7 +74,7 @@ class AutofillDriverIOS : public AutofillDriver,
   web::WebState* web_state_;
 
   // AutofillDriverIOSBridge instance that is passed in.
-  id<AutofillDriverIOSBridge> bridge_;
+  __unsafe_unretained id<AutofillDriverIOSBridge> bridge_;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.

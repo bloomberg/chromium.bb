@@ -12,6 +12,10 @@
 #include "ios/web/public/web_thread.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(autofill::AutofillDriverIOS);
 
 namespace autofill {

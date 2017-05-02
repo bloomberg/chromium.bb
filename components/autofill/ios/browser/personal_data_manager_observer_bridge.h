@@ -40,7 +40,7 @@ class PersonalDataManagerObserverBridge : public PersonalDataManagerObserver {
   void OnInsufficientFormData() override;
 
  private:
-  id<PersonalDataManagerObserverBridgeDelegate> delegate_;  // Weak.
+  __unsafe_unretained id<PersonalDataManagerObserverBridgeDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerObserverBridge);
 };
