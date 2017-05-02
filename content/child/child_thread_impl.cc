@@ -631,16 +631,6 @@ service_manager::Connector* ChildThreadImpl::GetConnector() {
   return service_manager_connection_->GetConnector();
 }
 
-const service_manager::BindSourceInfo& ChildThreadImpl::GetBrowserServiceInfo()
-    const {
-  DCHECK(IsConnectedToBrowser());
-  return browser_info_;
-}
-
-bool ChildThreadImpl::IsConnectedToBrowser() const {
-  return connected_to_browser_;
-}
-
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
   return &router_;
@@ -735,10 +725,6 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
 void ChildThreadImpl::StartServiceManagerConnection() {
   DCHECK(service_manager_connection_);
   service_manager_connection_->Start();
-  // We don't care about storing the id, since if this pipe closes we're toast.
-  service_manager_connection_->AddOnConnectHandler(
-      base::Bind(&ChildThreadImpl::OnServiceConnect,
-                 weak_factory_.GetWeakPtr()));
 }
 
 bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
@@ -835,15 +821,6 @@ void ChildThreadImpl::GetAssociatedInterface(
   Listener* route = router_.GetRoute(routing_id);
   if (route)
     route->OnAssociatedInterfaceRequest(name, request.PassHandle());
-}
-
-void ChildThreadImpl::OnServiceConnect(
-    const service_manager::BindSourceInfo& remote_info) {
-  if (remote_info.identity.name() != mojom::kBrowserServiceName)
-    return;
-  DCHECK(!connected_to_browser_);
-  connected_to_browser_ = true;
-  browser_info_ = remote_info;
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {

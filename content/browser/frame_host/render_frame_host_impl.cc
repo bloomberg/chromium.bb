@@ -3684,8 +3684,9 @@ void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (interface_registry_.get()) {
-    interface_registry_->BindInterface(GetProcess()->GetChildIdentity(),
-                                       interface_name,
+    service_manager::BindSourceInfo source_info(
+        GetProcess()->GetChildIdentity(), service_manager::CapabilitySet());
+    interface_registry_->BindInterface(source_info, interface_name,
                                        std::move(interface_pipe));
   }
 }

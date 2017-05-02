@@ -531,7 +531,7 @@ class ChromeServiceChromeOS
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(remote_info.identity, name, std::move(handle));
+    interfaces_.BindInterface(remote_info, name, std::move(handle));
   }
 
   // mash::mojom::Launchable:
@@ -3249,7 +3249,7 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (source_info.identity.name() == content::mojom::kGpuServiceName &&
       gpu_binder_registry_.CanBindInterface(interface_name)) {
-    gpu_binder_registry_.BindInterface(source_info.identity, interface_name,
+    gpu_binder_registry_.BindInterface(source_info, interface_name,
                                        std::move(*interface_pipe));
   }
 }

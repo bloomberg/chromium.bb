@@ -55,7 +55,7 @@ void Navigation::OnBindInterface(
     return;
   }
   client_user_id_ = remote_user_id;
-  registry_.BindInterface(source_info.identity, interface_name,
+  registry_.BindInterface(source_info, interface_name,
                           std::move(interface_pipe));
 }
 

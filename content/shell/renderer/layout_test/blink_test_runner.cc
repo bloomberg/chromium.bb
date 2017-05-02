@@ -733,7 +733,7 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
       render_view()->GetMainRenderFrame()->GetInterfaceRegistry();
   blink::mojom::AppBannerControllerRequest request =
       mojo::MakeRequest(&app_banner_service_->controller());
-  registry->BindInterface(service_manager::Identity(),
+  registry->BindInterface(service_manager::BindSourceInfo(),
                           blink::mojom::AppBannerController::Name_,
                           request.PassMessagePipe());
   app_banner_service_->SendBannerPromptRequest(event_platforms, callback);

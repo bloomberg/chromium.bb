@@ -1318,9 +1318,7 @@ void RenderFrameImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // TODO(beng): We should be getting this info from the frame factory request.
-  service_manager::BindSourceInfo browser_info =
-      ChildThreadImpl::current()->GetBrowserServiceInfo();
-  interface_registry_->BindInterface(browser_info.identity, interface_name,
+  interface_registry_->BindInterface(browser_info_, interface_name,
                                      std::move(interface_pipe));
 }
 
@@ -1682,8 +1680,10 @@ void RenderFrameImpl::BindEngagement(
 }
 
 void RenderFrameImpl::BindFrame(
+    const service_manager::BindSourceInfo& browser_info,
     mojom::FrameRequest request,
     mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker) {
+  browser_info_ = browser_info;
   frame_binding_.Bind(std::move(request));
   frame_host_interface_broker_ = std::move(frame_host_interface_broker);
   frame_host_interface_broker_->GetInterfaceProvider(
@@ -2739,12 +2739,9 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
-  // TODO(beng): We should be getting this info from the frame factory request.
-  service_manager::BindSourceInfo browser_info =
-      ChildThreadImpl::current()->GetBrowserServiceInfo();
   service_manager::Connector* connector = ChildThread::Get()->GetConnector();
   connector->FilterInterfaces(
-      mojom::kNavigation_FrameSpec, browser_info.identity, std::move(request),
+      mojom::kNavigation_FrameSpec, browser_info_.identity, std::move(request),
       interface_provider_bindings_.CreateInterfacePtrAndBind(this));
 }
 

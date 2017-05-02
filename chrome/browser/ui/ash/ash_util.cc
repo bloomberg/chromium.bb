@@ -40,8 +40,7 @@ class EmbeddedAshService : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(remote_info.identity, interface_name,
-                              std::move(handle));
+    interfaces_.BindInterface(remote_info, interface_name, std::move(handle));
   }
 
  private:

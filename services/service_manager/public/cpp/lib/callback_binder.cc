@@ -15,24 +15,22 @@ GenericCallbackBinder::GenericCallbackBinder(
 GenericCallbackBinder::~GenericCallbackBinder() {}
 
 void GenericCallbackBinder::BindInterface(
-    const Identity& remote_identity,
+    const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
   if (task_runner_) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&GenericCallbackBinder::RunCallbackOnTaskRunner, callback_,
-                    base::Passed(&handle)));
+        FROM_HERE, base::Bind(&GenericCallbackBinder::RunCallback, callback_,
+                              base::Passed(&handle)));
     return;
   }
-  callback_.Run(std::move(handle));
+  RunCallback(callback_, std::move(handle));
 }
 
 // static
-void GenericCallbackBinder::RunCallbackOnTaskRunner(
-    const BindCallback& callback,
-    mojo::ScopedMessagePipeHandle client_handle) {
-  callback.Run(std::move(client_handle));
+void GenericCallbackBinder::RunCallback(const BindCallback& callback,
+                                        mojo::ScopedMessagePipeHandle handle) {
+  callback.Run(std::move(handle));
 }
 
 }  // namespace internal

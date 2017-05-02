@@ -477,9 +477,11 @@ class CONTENT_EXPORT RenderThreadImpl
   void AddEmbeddedWorkerRoute(int32_t routing_id, IPC::Listener* listener);
   void RemoveEmbeddedWorkerRoute(int32_t routing_id);
 
-  void RegisterPendingFrameCreate(int routing_id,
-                                  mojom::FrameRequest frame,
-                                  mojom::FrameHostInterfaceBrokerPtr host);
+  void RegisterPendingFrameCreate(
+      const service_manager::BindSourceInfo& source_info,
+      int routing_id,
+      mojom::FrameRequest frame,
+      mojom::FrameHostInterfaceBrokerPtr host);
 
   mojom::StoragePartitionService* GetStoragePartitionService();
 
@@ -741,10 +743,14 @@ class CONTENT_EXPORT RenderThreadImpl
   class PendingFrameCreate : public base::RefCounted<PendingFrameCreate> {
    public:
     PendingFrameCreate(
+        const service_manager::BindSourceInfo& source_info,
         int routing_id,
         mojom::FrameRequest frame_request,
         mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker);
 
+    const service_manager::BindSourceInfo& browser_info() const {
+      return browser_info_;
+    }
     mojom::FrameRequest TakeFrameRequest() { return std::move(frame_request_); }
     mojom::FrameHostInterfaceBrokerPtr TakeInterfaceBroker() {
       frame_host_interface_broker_.set_connection_error_handler(
@@ -760,6 +766,7 @@ class CONTENT_EXPORT RenderThreadImpl
     // Mojo error handler.
     void OnConnectionError();
 
+    service_manager::BindSourceInfo browser_info_;
     int routing_id_;
     mojom::FrameRequest frame_request_;
     mojom::FrameHostInterfaceBrokerPtr frame_host_interface_broker_;

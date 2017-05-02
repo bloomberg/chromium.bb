@@ -365,7 +365,7 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
     if (registry_.CanBindInterface(interface_name)) {
-      registry_.BindInterface(source_info.identity, interface_name,
+      registry_.BindInterface(source_info, interface_name,
                               std::move(*interface_pipe));
     } else {
       GetContentClient()->browser()->BindInterfaceRequest(

@@ -11,7 +11,7 @@
 
 namespace service_manager {
 
-class Identity;
+struct BindSourceInfo;
 
 class InterfaceBinder {
  public:
@@ -20,7 +20,7 @@ class InterfaceBinder {
   // Asks the InterfaceBinder to bind an implementation of the specified
   // interface to the request passed via |handle|. If the InterfaceBinder binds
   // an implementation it must take ownership of the request handle.
-  virtual void BindInterface(const Identity& remote_identity,
+  virtual void BindInterface(const BindSourceInfo& source_info,
                              const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle handle) = 0;
 };
