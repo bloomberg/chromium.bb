@@ -2444,7 +2444,7 @@ crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution
 crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution-with-collapsed-tracks-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid-1/alignment/grid-content-distribution-with-collapsed-tracks-003.html [ Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-appendbuffer-quota-exceeded.html [ Timeout ]
-crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Crash ]
+crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-duration.html [ Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
