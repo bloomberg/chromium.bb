@@ -524,8 +524,8 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(
   StreamContext* stream_context =
       GetStreamContextForResourceContext(info->GetContext());
 
-  std::unique_ptr<StreamResourceHandler> handler(
-      new StreamResourceHandler(request, stream_context->registry(), origin));
+  std::unique_ptr<StreamResourceHandler> handler(new StreamResourceHandler(
+      request, stream_context->registry(), origin, false));
 
   info->set_is_stream(true);
   std::unique_ptr<StreamInfo> stream_info(new StreamInfo);
@@ -1477,7 +1477,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
                              request_data.fetch_request_context_type,
                              request_data.fetch_mixed_content_context_type,
                              requester_info->appcache_service(), child_id,
-                             route_id, std::move(handler));
+                             route_id, std::move(handler), nullptr, nullptr);
 }
 
 std::unique_ptr<ResourceHandler>
@@ -1490,7 +1490,9 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     AppCacheService* appcache_service,
     int child_id,
     int route_id,
-    std::unique_ptr<ResourceHandler> handler) {
+    std::unique_ptr<ResourceHandler> handler,
+    NavigationURLLoaderImplCore* navigation_loader_core,
+    std::unique_ptr<StreamHandle> stream_handle) {
   // The InterceptingResourceHandler will replace its next handler with an
   // appropriate one based on the MIME type of the response if needed. It
   // should be placed at the end of the chain, just before |handler|.
@@ -1502,7 +1504,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   // Add a NavigationResourceThrottle for navigations.
   // PlzNavigate: the throttle is unnecessary as communication with the UI
-  // thread is handled by the NavigationURLloader.
+  // thread is handled by the NavigationResourceHandler below.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
     throttles.push_back(base::MakeUnique<NavigationResourceThrottle>(
         request, delegate_, fetch_request_context_type,
@@ -1545,6 +1547,19 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add the post mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
       std::move(handler), request, std::move(post_mime_sniffing_throttles)));
+
+  if (IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
+    DCHECK(navigation_loader_core);
+    DCHECK(stream_handle);
+    // PlzNavigate
+    // Add a NavigationResourceHandler that will control the flow of navigation.
+    handler.reset(new NavigationResourceHandler(
+        request, std::move(handler), navigation_loader_core, delegate(),
+        std::move(stream_handle)));
+  } else {
+    DCHECK(!navigation_loader_core);
+    DCHECK(!stream_handle);
+  }
 
   PluginService* plugin_service = nullptr;
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2073,8 +2088,19 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         new_request.get(), appcache_handle_core->host(), resource_type, false);
   }
 
+  StreamContext* stream_context =
+      GetStreamContextForResourceContext(resource_context);
+  // Note: the stream should be created with immediate mode set to true to
+  // ensure that data read will be flushed to the reader as soon as it's
+  // available. Otherwise, we risk delaying transmitting the body of the
+  // resource to the renderer, which will delay parsing accordingly.
   std::unique_ptr<ResourceHandler> handler(
-      new NavigationResourceHandler(new_request.get(), loader, delegate()));
+      new StreamResourceHandler(new_request.get(), stream_context->registry(),
+                                new_request->url().GetOrigin(), true));
+  std::unique_ptr<StreamHandle> stream_handle =
+      static_cast<StreamResourceHandler*>(handler.get())
+          ->stream()
+          ->CreateHandle();
 
   // TODO(davidben): Fix the dependency on child_id/route_id. Those are used
   // by the ResourceScheduler. currently it's a no-op.
@@ -2086,7 +2112,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
                            : nullptr,
       -1,  // child_id
       -1,  // route_id
-      std::move(handler));
+      std::move(handler), loader, std::move(stream_handle));
 
   BeginRequestInternal(std::move(new_request), std::move(handler));
 }

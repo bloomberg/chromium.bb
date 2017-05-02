@@ -13,12 +13,14 @@ namespace content {
 
 StreamResourceHandler::StreamResourceHandler(net::URLRequest* request,
                                              StreamRegistry* registry,
-                                             const GURL& origin)
+                                             const GURL& origin,
+                                             bool immediate_mode)
     : ResourceHandler(request) {
   writer_.InitializeStream(registry, origin,
                            base::Bind(&StreamResourceHandler::OutOfBandCancel,
                                       base::Unretained(this), net::ERR_ABORTED,
                                       true /* tell_renderer */));
+  writer_.set_immediate_mode(immediate_mode);
 }
 
 StreamResourceHandler::~StreamResourceHandler() {
