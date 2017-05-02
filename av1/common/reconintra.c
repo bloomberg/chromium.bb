@@ -2404,7 +2404,8 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
         const int col_off_2 = col_off + half_block_width_unit;
         // Save the last column of left square sub-block as 'left' column for
         // right square sub-block.
-        if (src_2 != dst_2 || ref_stride != dst_stride) {
+        const int save_src = src_2 != dst_2 || ref_stride != dst_stride;
+        if (save_src) {
 #if CONFIG_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
@@ -2428,7 +2429,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                                    ref_stride, dst_2, dst_stride, col_off_2,
                                    row_off, plane);
         // Restore the last column of left square sub-block.
-        if (src_2 != dst_2 || ref_stride != dst_stride) {
+        if (save_src) {
 #if CONFIG_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
