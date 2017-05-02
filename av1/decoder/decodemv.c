@@ -510,6 +510,17 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
       if (coded_tx_size > max_txsize_lookup[bsize]) {
         assert(coded_tx_size == max_txsize_lookup[bsize] + 1);
+#if CONFIG_RECT_TX_EXT
+        if (is_quarter_tx_allowed(xd, &xd->mi[0]->mbmi, is_inter)) {
+          int quarter_tx = aom_read(r, cm->fc->quarter_tx_size_prob, ACCT_STR);
+          FRAME_COUNTS *counts = xd->counts;
+
+          if (counts) ++counts->quarter_tx_size[quarter_tx];
+          return quarter_tx ? quarter_txsize_lookup[bsize]
+                            : max_txsize_rect_lookup[bsize];
+        }
+#endif  // CONFIG_RECT_TX_EXT
+
         return max_txsize_rect_lookup[bsize];
       }
 #else
@@ -1077,9 +1088,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   }
 #endif
 
-  mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
 
 #if CONFIG_INTRABC
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {

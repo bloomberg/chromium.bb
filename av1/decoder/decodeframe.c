@@ -4518,6 +4518,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if !CONFIG_EC_ADAPT
   if (cm->tx_mode == TX_MODE_SELECT) read_tx_size_probs(fc, &r);
 #endif
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+  if (cm->tx_mode == TX_MODE_SELECT)
+    av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 
 #if CONFIG_LV_MAP
   av1_read_txb_probs(fc, cm->tx_mode, &r);

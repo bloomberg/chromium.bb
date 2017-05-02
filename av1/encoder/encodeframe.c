@@ -5525,7 +5525,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
       cm->tx_mode = ALLOW_32X32 + CONFIG_TX64X64;
 #else
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+    if (cm->tx_mode == TX_MODE_SELECT && counts->quarter_tx_size[1] == 0) {
+#else
     if (cm->tx_mode == TX_MODE_SELECT) {
+#endif
 #if CONFIG_TX64X64
       int count4x4 = 0;
       int count8x8_8x8p = 0, count8x8_lp = 0;
@@ -6068,6 +6072,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
       ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
 #endif
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+      if (is_quarter_tx_allowed(xd, mbmi, is_inter) &&
+          mbmi->tx_size != txsize_sqr_up_map[mbmi->tx_size]) {
+        ++td->counts->quarter_tx_size[mbmi->tx_size ==
+                                      quarter_txsize_lookup[mbmi->sb_type]];
+      }
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX

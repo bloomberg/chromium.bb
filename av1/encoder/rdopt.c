@@ -1234,7 +1234,9 @@ static void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
                                BLOCK_SIZE plane_bsize, int blk_row, int blk_col,
                                BLOCK_SIZE tx_bsize, int *width, int *height,
                                int *visible_width, int *visible_height) {
+#if !(CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT)
   assert(tx_bsize <= plane_bsize);
+#endif  // !(CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT)
   int txb_height = block_size_high[tx_bsize];
   int txb_width = block_size_wide[tx_bsize];
   const int block_height = block_size_high[plane_bsize];
@@ -1270,7 +1272,12 @@ static unsigned pixel_sse(const AV1_COMP *const cpi, const MACROBLOCKD *xd,
                      &txb_cols, &txb_rows, &visible_cols, &visible_rows);
   assert(visible_rows > 0);
   assert(visible_cols > 0);
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+  if ((txb_rows == visible_rows && txb_cols == visible_cols) &&
+      tx_bsize < BLOCK_SIZES) {
+#else
   if (txb_rows == visible_rows && txb_cols == visible_cols) {
+#endif
     unsigned sse;
     cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
     return sse;
@@ -1795,7 +1802,12 @@ static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
     const int tx_size_ctx = get_tx_size_context(xd);
-    const int r_tx_size = cpi->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
+    int r_tx_size = cpi->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+    if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
+      r_tx_size += av1_cost_bit(cm->fc->quarter_tx_size_prob,
+                                tx_size == quarter_txsize_lookup[bsize]);
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
     return r_tx_size;
   } else {
     return 0;
@@ -2198,6 +2210,56 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
     }
   }
+
+#if CONFIG_RECT_TX_EXT
+  // test 1:4/4:1 tx
+  int evaluate_quarter_tx = 0;
+  if (is_quarter_tx_allowed(xd, mbmi, is_inter)) {
+    if (tx_select) {
+      evaluate_quarter_tx = 1;
+    } else {
+      const TX_SIZE chosen_tx_size =
+          tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
+      evaluate_quarter_tx = chosen_tx_size == quarter_txsize_lookup[bs];
+    }
+  }
+  if (evaluate_quarter_tx) {
+    TX_TYPE tx_start = DCT_DCT;
+    TX_TYPE tx_end = TX_TYPES;
+#if CONFIG_TXK_SEL
+    // The tx_type becomes dummy when lv_map is on. The tx_type search will be
+    // performed in av1_search_txk_type()
+    tx_end = DCT_DCT + 1;
+#endif
+    TX_TYPE tx_type;
+    for (tx_type = tx_start; tx_type < tx_end; ++tx_type) {
+      if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) continue;
+      const TX_SIZE tx_size = quarter_txsize_lookup[bs];
+      RD_STATS this_rd_stats;
+      int ext_tx_set =
+          get_ext_tx_set(tx_size, bs, is_inter, cm->reduced_tx_set_used);
+      if ((is_inter && ext_tx_used_inter[ext_tx_set][tx_type]) ||
+          (!is_inter && ext_tx_used_intra[ext_tx_set][tx_type])) {
+        rd =
+            txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, tx_size);
+        if (rd < best_rd) {
+#if CONFIG_TXK_SEL
+          memcpy(best_txk_type, mbmi->txk_type,
+                 sizeof(best_txk_type[0]) * num_blk);
+#endif
+          best_tx_type = tx_type;
+          best_tx_size = tx_size;
+          best_rd = rd;
+          *rd_stats = this_rd_stats;
+        }
+      }
+#if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+      const int is_inter = is_inter_block(mbmi);
+      if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
+#endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+    }
+  }
+#endif  // CONFIG_RECT_TX_EXT
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
   if (tx_select) {
@@ -3442,12 +3504,14 @@ static const uint8_t gradient_to_angle_bin[2][7][16] = {
   },
 };
 
+/* clang-format off */
 static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
   0, 2, 6, 0, 4, 3, 5, 7, 1, 0,
 #if CONFIG_ALT_INTRA
   0,
 #endif  // CONFIG_ALT_INTRA
 };
+/* clang-format on */
 
 static void angle_estimation(const uint8_t *src, int src_stride, int rows,
                              int cols, BLOCK_SIZE bsize,

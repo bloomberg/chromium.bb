@@ -1663,6 +1663,10 @@ static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
 #endif  // CONFIG_TX64X64
                                           };
 
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+static const aom_prob default_quarter_tx_size_prob = 192;
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+
 #if CONFIG_LOOP_RESTORATION
 const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)] = {
@@ -4337,6 +4341,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->tx_size_probs, default_tx_size_prob);
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+  fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 #if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
 #endif
@@ -4669,6 +4676,10 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
         aom_tree_merge_probs(av1_tx_size_tree[i], pre_fc->tx_size_probs[i][j],
                              counts->tx_size[i][j], fc->tx_size_probs[i][j]);
     }
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+    fc->quarter_tx_size_prob = av1_mode_mv_merge_probs(
+        pre_fc->quarter_tx_size_prob, counts->quarter_tx_size);
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
   }
 
 #if CONFIG_VAR_TX

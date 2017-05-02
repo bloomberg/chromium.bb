@@ -463,8 +463,6 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int depth = tx_size_to_depth(coded_tx_size);
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
     assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
-    assert(
-        IMPLIES(is_rect_tx(tx_size), tx_size == max_txsize_rect_lookup[bsize]));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
 #if CONFIG_EC_MULTISYMBOL
@@ -475,6 +473,11 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                     ec_ctx->tx_size_probs[tx_size_cat][tx_size_ctx],
                     &tx_size_encodings[tx_size_cat][depth]);
 #endif
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+    if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
+      aom_write(w, tx_size == quarter_txsize_lookup[bsize],
+                cm->fc->quarter_tx_size_prob);
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
   }
 }
 
@@ -4709,6 +4712,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if !CONFIG_EC_ADAPT
   update_txfm_probs(cm, header_bc, counts);
 #endif
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+  if (cm->tx_mode == TX_MODE_SELECT)
+    av1_cond_prob_diff_update(header_bc, &cm->fc->quarter_tx_size_prob,
+                              cm->counts.quarter_tx_size, probwt);
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 #if CONFIG_LV_MAP
   av1_write_txb_probs(cpi, header_bc);
 #else

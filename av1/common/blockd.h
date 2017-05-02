@@ -761,24 +761,24 @@ static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
 
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
-  const TX_SIZE tx_size2 = txsize_sqr_up_map[tx_size];
-  tx_size = txsize_sqr_map[tx_size];
+  const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
+  const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
 #if CONFIG_CB4X4 && USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   (void)bs;
-  if (tx_size > TX_32X32) return EXT_TX_SET_DCTONLY;
+  if (tx_size_sqr > TX_32X32) return EXT_TX_SET_DCTONLY;
 #else
-  if (tx_size > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
+  if (tx_size_sqr > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
 #endif
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
-  if (tx_size2 == TX_32X32)
+  if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (is_inter)
-    return (tx_size == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
-                                : EXT_TX_SET_ALL16);
+    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
+                                    : EXT_TX_SET_ALL16);
   else
-    return (tx_size == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
-                                : EXT_TX_SET_DTT4_IDTX_1DDCT);
+    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
+                                    : EXT_TX_SET_DTT4_IDTX_1DDCT);
 }
 
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
@@ -887,6 +887,45 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
   return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
          !xd->lossless[mbmi->segment_id];
 }
+
+#if CONFIG_RECT_TX_EXT
+static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
+  static const char LUT_QTTX[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+    0,  // BLOCK_2X2
+    0,  // BLOCK_2X4
+    0,  // BLOCK_4X2
+#endif
+    0,  // BLOCK_4X4
+    0,  // BLOCK_4X8
+    0,  // BLOCK_8X4
+    0,  // BLOCK_8X8
+    1,  // BLOCK_8X16
+    1,  // BLOCK_16X8
+    0,  // BLOCK_16X16
+    0,  // BLOCK_16X32
+    0,  // BLOCK_32X16
+    0,  // BLOCK_32X32
+    0,  // BLOCK_32X64
+    0,  // BLOCK_64X32
+    0,  // BLOCK_64X64
+#if CONFIG_EXT_PARTITION
+    0,  // BLOCK_64X128
+    0,  // BLOCK_128X64
+    0,  // BLOCK_128X128
+#endif  // CONFIG_EXT_PARTITION
+  };
+
+  return LUT_QTTX[bsize];
+}
+
+static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
+                                        const MB_MODE_INFO *mbmi,
+                                        int is_inter) {
+  return is_quarter_tx_allowed_bsize(mbmi->sb_type) && is_inter &&
+         !xd->lossless[mbmi->segment_id];
+}
+#endif  // CONFIG_RECT_TX_EXT
 #endif  // CONFIG_RECT_TX
 #endif  // CONFIG_EXT_TX
 

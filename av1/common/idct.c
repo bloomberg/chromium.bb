@@ -1377,7 +1377,7 @@ static void inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 // These will be used by the masked-tx experiment in the future.
-#if CONFIG_MASKED_TX && 0
+#if CONFIG_RECT_TX && CONFIG_EXT_TX && CONFIG_RECT_TX_EXT
 static void inv_txfm_add_4x16(const tran_low_t *input, uint8_t *dest,
                               int stride, int eob, TX_TYPE tx_type) {
   (void)eob;
@@ -1401,7 +1401,7 @@ static void inv_txfm_add_32x8(const tran_low_t *input, uint8_t *dest,
   (void)eob;
   av1_iht32x8_256_add(input, dest, stride, tx_type);
 }
-#endif  // CONFIG_MASKED_TX
+#endif
 
 static void inv_txfm_add_8x16(const tran_low_t *input, uint8_t *dest,
                               int stride, int eob, TX_TYPE tx_type) {
@@ -2798,6 +2798,12 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
     case TX_2X2:
       inv_txfm_add_2x2(input, dest, stride, eob, tx_type, lossless);
       break;
+#endif
+#if CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
+    case TX_32X8: inv_txfm_add_32x8(input, dest, stride, eob, tx_type); break;
+    case TX_8X32: inv_txfm_add_8x32(input, dest, stride, eob, tx_type); break;
+    case TX_16X4: inv_txfm_add_16x4(input, dest, stride, eob, tx_type); break;
+    case TX_4X16: inv_txfm_add_4x16(input, dest, stride, eob, tx_type); break;
 #endif
     default: assert(0 && "Invalid transform size"); break;
   }
