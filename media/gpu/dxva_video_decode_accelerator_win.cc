@@ -1778,49 +1778,60 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
   if (D3D11Device())
     g_last_device_removed_reason = D3D11Device()->GetDeviceRemovedReason();
 
-  MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
-  DWORD status = 0;
-  HRESULT hr;
-  {
-    ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
-    g_last_process_output_time = GetCurrentQPC();
-    hr = decoder_->ProcessOutput(0,  // No flags
-                                 1,  // # of out streams to pull from
-                                 &output_data_buffer, &status);
-  }
-  IMFCollection* events = output_data_buffer.pEvents;
-  if (events != NULL) {
-    DVLOG(1) << "Got events from ProcessOuput, but discarding";
-    events->Release();
-  }
   base::win::ScopedComPtr<IMFSample> output_sample;
-  output_sample.Attach(output_data_buffer.pSample);
-  if (FAILED(hr)) {
-    // A stream change needs further ProcessInput calls to get back decoder
-    // output which is why we need to set the state to stopped.
-    if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
-      if (!SetDecoderOutputMediaType(MFVideoFormat_NV12) &&
-          !SetDecoderOutputMediaType(MFVideoFormat_P010) &&
-          !SetDecoderOutputMediaType(MFVideoFormat_P016)) {
-        // Decoder didn't let us set NV12 output format. Not sure as to why
-        // this can happen. Give up in disgust.
-        NOTREACHED() << "Failed to set decoder output media type to NV12";
-        SetState(kStopped);
-      } else {
-        DVLOG(1) << "Received output format change from the decoder."
-                    " Recursively invoking DoDecode";
-        DoDecode(color_space);
-      }
-      return;
-    } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
-      // No more output from the decoder. Stop playback.
-      SetState(kStopped);
-      return;
-    } else {
-      NOTREACHED() << "Unhandled error in DoDecode()";
-      g_last_unhandled_error = hr;
-      return;
+  int retries = 10;
+  while (true) {
+    output_sample.Reset();
+    MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
+    DWORD status = 0;
+    HRESULT hr;
+    {
+      ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
+      g_last_process_output_time = GetCurrentQPC();
+      hr = decoder_->ProcessOutput(0,  // No flags
+                                   1,  // # of out streams to pull from
+                                   &output_data_buffer, &status);
     }
+    IMFCollection* events = output_data_buffer.pEvents;
+    if (events != NULL) {
+      DVLOG(1) << "Got events from ProcessOuput, but discarding";
+      events->Release();
+    }
+    output_sample.Attach(output_data_buffer.pSample);
+    if (FAILED(hr)) {
+      // A stream change needs further ProcessInput calls to get back decoder
+      // output which is why we need to set the state to stopped.
+      if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
+        if (!SetDecoderOutputMediaType(MFVideoFormat_NV12) &&
+            !SetDecoderOutputMediaType(MFVideoFormat_P010) &&
+            !SetDecoderOutputMediaType(MFVideoFormat_P016)) {
+          // Decoder didn't let us set NV12 output format. Not sure as to why
+          // this can happen. Give up in disgust.
+          NOTREACHED() << "Failed to set decoder output media type to NV12";
+          SetState(kStopped);
+        } else {
+          if (retries-- > 0) {
+            DVLOG(1) << "Received format change from the decoder, retrying.";
+            continue;  // Retry
+          } else {
+            RETURN_AND_NOTIFY_ON_FAILURE(
+                false, "Received too many format changes from decoder.",
+                PLATFORM_FAILURE, );
+          }
+        }
+        return;
+      } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
+        // No more output from the decoder. Stop playback.
+        SetState(kStopped);
+        return;
+      } else {
+        NOTREACHED() << "Unhandled error in DoDecode()";
+        g_last_unhandled_error = hr;
+        return;
+      }
+    }
+
+    break;  // No more retries needed.
   }
   TRACE_EVENT_ASYNC_END0("gpu", "DXVAVideoDecodeAccelerator.Decoding", this);
 
