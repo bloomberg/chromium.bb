@@ -4605,11 +4605,8 @@ void RenderFrameImpl::DidObserveLoadingBehavior(
     observer.DidObserveLoadingBehavior(behavior);
 }
 
-void RenderFrameImpl::DidCreateScriptContext(blink::WebLocalFrame* frame,
-                                             v8::Local<v8::Context> context,
+void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  DCHECK_EQ(frame_, frame);
-
   for (auto& observer : observers_)
     observer.DidCreateScriptContext(context, world_id);
 }
