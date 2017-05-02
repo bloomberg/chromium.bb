@@ -52,7 +52,7 @@ class TranslateCompactInfoBar extends InfoBar
     TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
             boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
             String[] codes) {
-        super(R.drawable.infobar_translate, null, null);
+        super(R.drawable.infobar_translate_compact, null, null);
         mInitialStep = initialStep;
         mOptions = TranslateOptions.create(sourceLanguageCode, targetLanguageCode, languages, codes,
                 alwaysTranslate, triggeredFromMenu);
