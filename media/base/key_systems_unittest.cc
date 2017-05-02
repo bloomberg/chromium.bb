@@ -39,10 +39,10 @@ const char kVideoFoo[] = "video/foo";
 
 // Pick some arbitrary bit fields as long as they are not in conflict with the
 // real ones.
-enum TestCodec {
-  TEST_CODEC_FOO_AUDIO = 1 << 10,  // An audio codec for foo container.
+enum TestCodec : uint32_t {
+  TEST_CODEC_FOO_AUDIO = 1 << 29,  // An audio codec for foo container.
   TEST_CODEC_FOO_AUDIO_ALL = TEST_CODEC_FOO_AUDIO,
-  TEST_CODEC_FOO_VIDEO = 1 << 11,  // A video codec for foo container.
+  TEST_CODEC_FOO_VIDEO = 1 << 30,  // A video codec for foo container.
   TEST_CODEC_FOO_VIDEO_ALL = TEST_CODEC_FOO_VIDEO,
   TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
 };

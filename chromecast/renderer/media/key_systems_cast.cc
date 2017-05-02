@@ -29,6 +29,33 @@ namespace chromecast {
 namespace media {
 namespace {
 
+#if defined(PLAYREADY_CDM_AVAILABLE) || \
+    (defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_ANDROID))
+SupportedCodecs GetCastEmeSupportedCodecs() {
+  SupportedCodecs codecs =
+      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
+      ::media::EME_CODEC_COMMON_VP9 | ::media::EME_CODEC_WEBM_VP8 |
+      ::media::EME_CODEC_WEBM_VP9;
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_HEVC;
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_DV_AVC;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_AC3 | ::media::EME_CODEC_MP4_EAC3;
+#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+
+  return codecs;
+}
+#endif
+
 #if defined(PLAYREADY_CDM_AVAILABLE)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
  public:
@@ -44,18 +71,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
   SupportedCodecs GetSupportedCodecs() const override {
-    SupportedCodecs codecs =
-        ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    codecs |= ::media::EME_CODEC_MP4_HEVC;
-#endif
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-    codecs |= ::media::EME_CODEC_MP4_DV_AVC;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
-#endif
-#endif
-    return codecs;
+    return GetCastEmeSupportedCodecs();
   }
 
   EmeConfigRule GetRobustnessConfigRule(
@@ -110,19 +126,9 @@ void AddChromecastKeySystems(
   cdm::AddAndroidWidevine(key_systems_properties);
 #else
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
-  ::media::SupportedCodecs codecs =
-      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
-      ::media::EME_CODEC_MP4_VP9 | ::media::EME_CODEC_WEBM_VP8 |
-      ::media::EME_CODEC_WEBM_VP9;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_HEVC;
-#endif
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_DV_AVC;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  codecs |= ::media::EME_CODEC_MP4_DV_HEVC;
-#endif
-#endif
+
+  SupportedCodecs codecs = GetCastEmeSupportedCodecs();
+
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,                     // Regular codecs.
       Robustness::HW_SECURE_ALL,  // Max audio robustness.

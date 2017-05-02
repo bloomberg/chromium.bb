@@ -59,7 +59,11 @@ static const NamedCodec kCodecStrings[] = {
     {"vp9.0", EME_CODEC_WEBM_VP9},      // VP9.
     {"vp09", EME_CODEC_COMMON_VP9},     // New multi-part VP9 for WebM and MP4.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    {"mp4a", EME_CODEC_MP4_AAC},   // AAC.
+    {"mp4a", EME_CODEC_MP4_AAC},  // AAC.
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+    {"ac-3", EME_CODEC_MP4_AC3},   // AC3.
+    {"ec-3", EME_CODEC_MP4_EAC3},  // EAC3.
+#endif
     {"avc1", EME_CODEC_MP4_AVC1},  // AVC1.
     {"avc3", EME_CODEC_MP4_AVC1},  // AVC3.
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
