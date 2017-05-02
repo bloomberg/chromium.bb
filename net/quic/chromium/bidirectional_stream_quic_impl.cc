@@ -268,15 +268,26 @@ void BidirectionalStreamQuicImpl::OnDataAvailable() {
 }
 
 void BidirectionalStreamQuicImpl::OnClose() {
+  DCHECK(session_);
   DCHECK(stream_);
 
-  if (stream_->connection_error() == QUIC_NO_ERROR &&
-      stream_->stream_error() == QUIC_STREAM_NO_ERROR) {
-    ResetStream();
+  if (stream_->connection_error() != QUIC_NO_ERROR ||
+      stream_->stream_error() != QUIC_STREAM_NO_ERROR) {
+    NotifyError(was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
+                                         : ERR_QUIC_HANDSHAKE_FAILED);
     return;
   }
-  NotifyError(was_handshake_confirmed_ ? ERR_QUIC_PROTOCOL_ERROR
-                                       : ERR_QUIC_HANDSHAKE_FAILED);
+
+  if (!stream_->fin_sent() || !stream_->fin_received()) {
+    // The connection must have been closed by the peer with QUIC_NO_ERROR,
+    // which is improper.
+    NotifyError(ERR_UNEXPECTED);
+    return;
+  }
+
+  // The connection was closed normally so there is no need to notify
+  // the delegate.
+  ResetStream();
 }
 
 void BidirectionalStreamQuicImpl::OnError(int error) {
@@ -350,6 +361,11 @@ void BidirectionalStreamQuicImpl::NotifyStreamReady() {
 }
 
 void BidirectionalStreamQuicImpl::ResetStream() {
+  if (session_) {
+    session_->RemoveObserver(this);
+    session_ = nullptr;
+  }
+
   if (!stream_)
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
