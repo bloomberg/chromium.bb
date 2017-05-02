@@ -95,8 +95,8 @@ namespace {
 bool WARN_UNUSED_RESULT IsDisplayingText(Browser* browser,
                                          const std::string& text) {
   std::string command = base::StringPrintf(
-      "var textContent = document.body.innerText;"
-      "var hasText = textContent.indexOf('%s') >= 0;"
+      "var textContent = document.body.innerText.toLowerCase();"
+      "var hasText = textContent.indexOf('%s'.toLowerCase()) >= 0;"
       "domAutomationController.send(hasText);",
       text.c_str());
   bool result = false;
