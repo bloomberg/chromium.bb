@@ -17,6 +17,8 @@ blink_modules_sources("csspaint") {
     "PaintWorklet.h",
     "PaintWorkletGlobalScope.cpp",
     "PaintWorkletGlobalScope.h",
+    "PaintWorkletGlobalScopeProxy.cpp",
+    "PaintWorkletGlobalScopeProxy.h",
     "WindowPaintWorklet.cpp",
     "WindowPaintWorklet.h",
   ]

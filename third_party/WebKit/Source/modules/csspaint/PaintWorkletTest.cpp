@@ -31,8 +31,9 @@ class PaintWorkletTest : public testing::Test {
 };
 
 TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
-  PaintWorkletGlobalScope* global_scope =
-      GetPaintWorklet()->GetWorkletGlobalScopeProxy();
+  PaintWorkletGlobalScopeProxy* proxy = PaintWorkletGlobalScopeProxy::From(
+      GetPaintWorklet()->GetWorkletGlobalScopeProxy());
+  PaintWorkletGlobalScope* global_scope = proxy->global_scope();
   global_scope->ScriptController()->Evaluate(
       ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
 

@@ -13,8 +13,9 @@ namespace blink {
 class ScriptSourceCode;
 class WorkletPendingTasks;
 
-// A proxy to talk to the worklet global scope. The global scope may exist in
-// the main thread or on a different thread.
+// Abstracts communication from (Main/Threaded)Worklet on the main thread to
+// (Main/Threaded)WorkletGlobalScope so that Worklet class doesn't have to care
+// about the thread WorkletGlobalScope runs on.
 class CORE_EXPORT WorkletGlobalScopeProxy {
  public:
   virtual ~WorkletGlobalScopeProxy() {}

@@ -22,7 +22,7 @@ class MainThreadWorkletTest : public ::testing::Test {
         ToIsolate(page_->GetFrame().GetDocument()));
   }
 
-  void TearDown() override { global_scope_->TerminateWorkletGlobalScope(); }
+  void TearDown() override { global_scope_->Terminate(); }
 
  protected:
   RefPtr<SecurityOrigin> security_origin_;

@@ -10,7 +10,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/WorkletScriptLoader.h"
 #include "core/workers/WorkletGlobalScope.h"
-#include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
 
 namespace blink {
@@ -21,7 +20,6 @@ class ScriptSourceCode;
 
 class CORE_EXPORT MainThreadWorkletGlobalScope
     : public WorkletGlobalScope,
-      public WorkletGlobalScopeProxy,
       public WorkletScriptLoader::Client,
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(MainThreadWorkletGlobalScope);
@@ -40,11 +38,9 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   void CountDeprecation(UseCounter::Feature) final;
   WorkerThread* GetThread() const final;
 
-  // WorkletGlobalScopeProxy
   void FetchAndInvokeScript(const KURL& module_url_record,
-                            WorkletPendingTasks*) final;
-  void EvaluateScript(const ScriptSourceCode&) final;
-  void TerminateWorkletGlobalScope() final;
+                            WorkletPendingTasks*);
+  void Terminate();
 
   // WorkletScriptLoader::Client
   void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,
