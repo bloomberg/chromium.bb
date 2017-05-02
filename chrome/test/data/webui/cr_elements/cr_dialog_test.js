@@ -172,7 +172,9 @@ suite('cr-dialog', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog" show-scroll-borders>
         <div class="title">title</div>
-        <div class="body">body</div>
+        <div class="body">
+          <div style="height: 100px">tall content</div>
+        </div>
       </dialog>`;
 
     var dialog = document.body.querySelector('dialog');
@@ -213,7 +215,7 @@ suite('cr-dialog', function() {
     observer.observe(bodyContainer, {attributes: true});
 
     // Height is normally set via CSS, but mixin doesn't work with innerHTML.
-    bodyContainer.style.height = '1px';
+    bodyContainer.style.height = '60px';  // Element has "min-height: 60px".
     bodyContainer.scrollTop = 100;
   });
 });
