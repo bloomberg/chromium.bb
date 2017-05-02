@@ -368,6 +368,21 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
       1);
 }
 
+TEST_F(TranslateManagerTest, DontTranslateIfOfflineBeforeTranslate) {
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, kAcceptLanguages));
+  translate_manager_->GetLanguageState().LanguageDetermined("de", true);
+  translate_manager_->InitiateTranslation("de");
+
+  // Trigger translate page.
+  network_notifier_.SimulateOffline();
+  translate_manager_->TranslatePage("de", "en", false);
+
+  // Don't expect calls if network is off.
+  EXPECT_FALSE(driver_.TranslatePage_is_called());
+}
+
 // Utility function to set the threshold params
 void ChangeThresholdInParams(
     const char* initiate_translation_confidence_threshold,

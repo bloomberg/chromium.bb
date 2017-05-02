@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
@@ -258,6 +259,10 @@ void ContentTranslateDriver::OnPageTranslated(
     TranslateErrors::Type error_type) {
   if (cancelled)
     return;
+
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    error_type = TranslateErrors::NETWORK;
+  }
 
   translate_manager_->PageTranslated(
       original_lang, translated_lang, error_type);

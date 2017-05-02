@@ -34,7 +34,7 @@ class MockTranslateDriver : public TranslateDriver {
   void TranslatePage(int page_seq_no,
                      const std::string& translate_script,
                      const std::string& source_lang,
-                     const std::string& target_lang) override {}
+                     const std::string& target_lang) override;
 
   void RevertTranslation(int page_seq_no) override {}
 
@@ -58,9 +58,12 @@ class MockTranslateDriver : public TranslateDriver {
     return on_translate_enabled_changed_called_;
   }
 
+  bool TranslatePage_is_called() const { return translate_page_is_called_; }
+
  private:
   bool on_is_page_translated_changed_called_;
   bool on_translate_enabled_changed_called_;
+  bool translate_page_is_called_;
   LanguageState language_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTranslateDriver);
