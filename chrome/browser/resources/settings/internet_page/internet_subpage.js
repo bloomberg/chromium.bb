@@ -380,7 +380,7 @@ Polymer({
     var state = e.detail;
     e.target.blur();
     if (this.canConnect_(state, this.globalPolicy, this.defaultNetwork)) {
-      this.connectToNetwork_(state);
+      this.fire('network-connect', {networkProperties: state});
       return;
     }
     this.fire('show-detail', state);
@@ -407,27 +407,6 @@ Polymer({
       return false;
     }
     return true;
-  },
-
-  /**
-   * Handles UI requests to connect to a network.
-   * TODO(stevenjb): Handle Cellular activation, etc.
-   * @param {!CrOnc.NetworkStateProperties} state The network state.
-   * @private
-   */
-  connectToNetwork_: function(state) {
-    this.networkingPrivate.startConnect(state.GUID, function() {
-      if (chrome.runtime.lastError) {
-        var message = chrome.runtime.lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
-          return;
-        }
-        console.error(
-            'Unexpected networkingPrivate.startConnect error: ' + message +
-                ' For: ' + state.GUID);
-      }
-    });
   },
 
   /**

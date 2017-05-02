@@ -556,3 +556,19 @@ CrOnc.getRoutingPrefixAsLength = function(netmask) {
 CrOnc.proxyMatches = function(a, b) {
   return a.Host == b.Host && a.Port == b.Port;
 };
+
+/**
+ * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+ *     networkProperties The ONC network properties or state properties.
+ * @return {boolean}
+ */
+CrOnc.shouldShowTetherDialogBeforeConnection = function(networkProperties) {
+  // Only show for Tether networks.
+  if (networkProperties.Type != CrOnc.Type.TETHER)
+    return false;
+
+  // Show if there are no Tether properties or if there are Tether properties
+  // and they indicate that a connection has not yet occurred to this host.
+  return !networkProperties.Tether ||
+      !networkProperties.Tether.HasConnectedToHost;
+}

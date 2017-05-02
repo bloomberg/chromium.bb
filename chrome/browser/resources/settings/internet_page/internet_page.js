@@ -104,6 +104,7 @@ Polymer({
   // Element event listeners
   listeners: {
     'device-enabled-toggled': 'onDeviceEnabledToggled_',
+    'network-connect': 'onNetworkConnect_',
     'show-detail': 'onShowDetail_',
     'show-known-networks': 'onShowKnownNetworks_',
     'show-networks': 'onShowNetworks_',
@@ -384,5 +385,42 @@ Polymer({
    */
   getAddThirdParrtyVpnLabel_: function(provider) {
     return this.i18n('internetAddThirdPartyVPN', provider.ProviderName);
-  }
+  },
+
+  /**
+   * Handles UI requests to connect to a network.
+   * TODO(stevenjb): Handle Cellular activation, etc.
+   * @param {!{detail:
+   *            {networkProperties:
+                   (!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties),
+   *             bypassConnectionDialog: (boolean|undefined)}}} event
+   * @private
+   */
+  onNetworkConnect_: function(event) {
+    var properties = event.detail.networkProperties;
+    if (!event.detail.bypassConnectionDialog &&
+        CrOnc.shouldShowTetherDialogBeforeConnection(properties)) {
+      var params = new URLSearchParams;
+      params.append('guid', properties.GUID);
+      params.append('type', properties.Type);
+      params.append('name', CrOnc.getNetworkName(properties));
+      params.append('showTetherDialog', true.toString());
+
+      settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
+      return;
+    }
+
+    this.networkingPrivate.startConnect(properties.GUID, function() {
+      if (chrome.runtime.lastError) {
+        var message = chrome.runtime.lastError.message;
+        if (message == 'connecting' || message == 'connect-canceled' ||
+            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+          return;
+        }
+        console.error(
+            'Unexpected networkingPrivate.startConnect error: ' + message +
+                ' For: ' + properties.GUID);
+      }
+    });
+  },
 });
