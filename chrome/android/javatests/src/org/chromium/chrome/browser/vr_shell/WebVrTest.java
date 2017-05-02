@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrUtils.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
 import android.os.Build;
@@ -15,7 +16,6 @@ import android.support.test.filters.SmallTest;
 import android.widget.TextView;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 
@@ -113,11 +113,8 @@ public class WebVrTest extends VrTestBase {
      * Tests that screen touches are still registered when the viewer is
      * Cardboard.
      */
-    /*
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
-    */
-    @DisabledTest(message = "crbug.com/713781")
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         String testName = "test_screen_taps_registered";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
