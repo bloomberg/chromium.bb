@@ -1279,6 +1279,9 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_DISABLE_VALUE_TYPE(
             ash::switches::kAshDisableScreenOrientationLock),
     },
+    {"enable-tether", flag_descriptions::kTetherName,
+     flag_descriptions::kTetherDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTether)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

@@ -959,6 +959,12 @@ const char kBootAnimation[] = "Boot animation";
 const char kBootAnimationDescription[] =
     "Wallpaper boot animation (except for OOBE case).";
 
+const char kTetherName[] = "Instant Tethering";
+
+const char kTetherDescription[] =
+    "Enables Instant Tethering. Instant Tethering allows your nearby Google "
+    "phone to share its Internet connection with this device.";
+
 #endif  // defined(OS_CHROMEOS)
 
 const char kAcceleratedVideoDecodeName[] = "Hardware-accelerated video decode";
