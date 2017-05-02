@@ -4,6 +4,7 @@
 
 #include "components/renderer_context_menu/context_menu_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -24,8 +25,9 @@ class ContextMenuDelegateUserData : public base::SupportsUserData::Data {
 }  // namespace
 
 ContextMenuDelegate::ContextMenuDelegate(content::WebContents* web_contents) {
-  web_contents->SetUserData(&kMenuDelegateUserDataKey,
-                            new ContextMenuDelegateUserData(this));
+  web_contents->SetUserData(
+      &kMenuDelegateUserDataKey,
+      base::MakeUnique<ContextMenuDelegateUserData>(this));
 }
 
 ContextMenuDelegate::~ContextMenuDelegate() {

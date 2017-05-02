@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -87,7 +88,8 @@ GuestViewManager* GuestViewManager::CreateWithDelegate(
     } else {
       guest_manager = new GuestViewManager(context, std::move(delegate));
     }
-    context->SetUserData(kGuestViewManagerKeyName, guest_manager);
+    context->SetUserData(kGuestViewManagerKeyName,
+                         base::WrapUnique(guest_manager));
   }
   return guest_manager;
 }

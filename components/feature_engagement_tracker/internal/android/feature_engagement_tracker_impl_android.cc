@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 #include "jni/FeatureEngagementTrackerImpl_jni.h"
@@ -43,7 +44,8 @@ FeatureEngagementTrackerImplAndroid* FromFeatureEngagementTrackerImpl(
   if (!impl_android) {
     impl_android =
         new FeatureEngagementTrackerImplAndroid(impl, GetAllFeatures());
-    impl->SetUserData(kFeatureEngagementTrackerImplAndroidKey, impl_android);
+    impl->SetUserData(kFeatureEngagementTrackerImplAndroidKey,
+                      base::WrapUnique(impl_android));
   }
   return impl_android;
 }

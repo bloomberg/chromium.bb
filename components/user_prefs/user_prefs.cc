@@ -5,6 +5,7 @@
 #include "components/user_prefs/user_prefs.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/prefs/pref_service.h"
 
@@ -34,7 +35,7 @@ void UserPrefs::Set(base::SupportsUserData* context, PrefService* prefs) {
   DCHECK(context);
   DCHECK(prefs);
   DCHECK(!context->GetUserData(UserDataKey()));
-  context->SetUserData(UserDataKey(), new UserPrefs(prefs));
+  context->SetUserData(UserDataKey(), base::WrapUnique(new UserPrefs(prefs)));
 }
 
 UserPrefs::UserPrefs(PrefService* prefs) : prefs_(prefs) {

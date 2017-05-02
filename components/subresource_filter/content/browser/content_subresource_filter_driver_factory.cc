@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -59,9 +60,10 @@ void ContentSubresourceFilterDriverFactory::CreateForWebContents(
     std::unique_ptr<SubresourceFilterClient> client) {
   if (FromWebContents(web_contents))
     return;
-  web_contents->SetUserData(kWebContentsUserDataKey,
-                            new ContentSubresourceFilterDriverFactory(
-                                web_contents, std::move(client)));
+  web_contents->SetUserData(
+      kWebContentsUserDataKey,
+      base::MakeUnique<ContentSubresourceFilterDriverFactory>(
+          web_contents, std::move(client)));
 }
 
 // static

@@ -74,7 +74,7 @@ void InterceptNavigationDelegate::Associate(
     WebContents* web_contents,
     std::unique_ptr<InterceptNavigationDelegate> delegate) {
   web_contents->SetUserData(kInterceptNavigationDelegateUserDataKey,
-                            delegate.release());
+                            std::move(delegate));
 }
 
 // static

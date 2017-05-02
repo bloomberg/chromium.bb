@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 
@@ -20,8 +21,9 @@ void PDFWebContentsHelper::CreateForWebContentsWithClient(
     std::unique_ptr<PDFWebContentsHelperClient> client) {
   if (FromWebContents(contents))
     return;
-  contents->SetUserData(UserDataKey(),
-                        new PDFWebContentsHelper(contents, std::move(client)));
+  contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new PDFWebContentsHelper(contents, std::move(client))));
 }
 
 PDFWebContentsHelper::PDFWebContentsHelper(
