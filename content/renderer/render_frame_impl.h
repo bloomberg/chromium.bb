@@ -34,6 +34,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
@@ -86,6 +87,7 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
+struct FrameMsg_CommitDataNetworkService_Params;
 struct FrameMsg_MixedContentFound_Params;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
@@ -755,6 +757,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetPepperVolume(int32_t pp_instance, double volume);
 #endif  // ENABLE_PLUGINS
 
+  mojom::URLLoaderFactory* GetURLLoaderFactory() {
+    return url_loader_factory_.get();
+  }
+
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 
@@ -901,11 +907,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
-  void OnCommitNavigation(const ResourceResponseHead& response,
-                          const GURL& stream_url,
-                          mojo::DataPipeConsumerHandle handle,
-                          const CommonNavigationParams& common_params,
-                          const RequestNavigationParams& request_params);
+  void OnCommitNavigation(
+      const ResourceResponseHead& response,
+      const GURL& stream_url,
+      const FrameMsg_CommitDataNetworkService_Params& commit_data,
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params);
   void OnFailedNavigation(const CommonNavigationParams& common_params,
                           const RequestNavigationParams& request_params,
                           bool has_stale_copy_in_cache,
@@ -1440,6 +1447,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
+
+  mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

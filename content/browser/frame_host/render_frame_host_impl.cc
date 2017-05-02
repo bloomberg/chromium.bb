@@ -3011,9 +3011,12 @@ void RenderFrameHostImpl::CommitNavigation(
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
-  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url,
-                                     handle.release(), common_params,
-                                     request_params));
+  FrameMsg_CommitDataNetworkService_Params commit_data;
+  commit_data.handle = handle.release();
+  // TODO(scottmg): Pass a factory for SW, etc. once we have one.
+  commit_data.url_loader_factory = mojo::MessagePipeHandle();
+  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, commit_data,
+                                     common_params, request_params));
 
   // If a network request was made, update the Previews state.
   if (ShouldMakeNetworkRequestForURL(common_params.url) &&

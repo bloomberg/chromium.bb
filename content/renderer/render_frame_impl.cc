@@ -5235,7 +5235,7 @@ void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
 void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
-    mojo::DataPipeConsumerHandle handle,
+    const FrameMsg_CommitDataNetworkService_Params& commit_data,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
   CHECK(IsBrowserSideNavigationEnabled());
@@ -5244,11 +5244,18 @@ void RenderFrameImpl::OnCommitNavigation(
   std::unique_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
-  stream_override->consumer_handle = mojo::ScopedDataPipeConsumerHandle(handle);
+  stream_override->consumer_handle =
+      mojo::ScopedDataPipeConsumerHandle(commit_data.handle);
   stream_override->response = response;
   stream_override->redirects = request_params.redirects;
   stream_override->redirect_responses = request_params.redirect_response;
   stream_override->redirect_infos = request_params.redirect_infos;
+
+  if (commit_data.url_loader_factory.is_valid()) {
+    // Chrome doesn't use interface versioning.
+    url_loader_factory_.Bind(mojom::URLLoaderFactoryPtrInfo(
+        mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
+  }
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.

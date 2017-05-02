@@ -5,6 +5,7 @@
 #include "content/test/test_render_frame.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/common/associated_interface_provider.h"
@@ -64,8 +65,8 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
   // PlzNavigate
   if (IsBrowserSideNavigationEnabled()) {
     OnCommitNavigation(ResourceResponseHead(), GURL(),
-                       mojo::DataPipeConsumerHandle(), common_params,
-                       request_params);
+                       FrameMsg_CommitDataNetworkService_Params(),
+                       common_params, request_params);
   } else {
     OnNavigate(common_params, start_params, request_params);
   }
