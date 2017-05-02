@@ -281,11 +281,6 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
     child.SetNeedsLayout(LayoutInvalidationReason::kGridChanged, kMarkOnlyThis);
   }
 
-  // We need to clear the stretched height to properly compute logical height
-  // during layout.
-  if (child.NeedsLayout())
-    child.ClearOverrideLogicalContentHeight();
-
   child.LayoutIfNeeded();
 
   if (auto baseline_extent = ExtentForBaselineAlignment(child))
