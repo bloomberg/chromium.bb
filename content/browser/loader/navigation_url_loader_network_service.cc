@@ -30,9 +30,9 @@
 namespace content {
 
 namespace {
+
 static base::LazyInstance<mojom::URLLoaderFactoryPtr>::Leaky
     g_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
-}
 
 // This function is called on the IO thread for POST/PUT requests for
 // attaching blob information to the request body.
@@ -51,6 +51,8 @@ void HandleRequestsWithBody(
                   url_loader, base::Passed(&request)));
 }
 
+}  // namespace
+
 NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     ResourceContext* resource_context,
     StoragePartition* storage_partition,
@@ -66,15 +68,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       "navigation", "Navigation timeToResponseStarted", this,
       request_info->common_params.navigation_start, "FrameTreeNode id",
       request_info->frame_tree_node_id);
-
-  // TODO(scottmg): Maybe some of this setup should be done only once, instead
-  // of every time.
-  if (g_url_loader_factory.Get().get()) {
-    url_loader_factory_ = std::move(g_url_loader_factory.Get());
-  } else {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &url_loader_factory_);
-  }
 
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = base::MakeUnique<ResourceRequest>();
@@ -206,10 +199,22 @@ void NavigationURLLoaderNetworkService::StartURLRequest(
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   binding_.Bind(&url_loader_client_ptr_to_pass);
 
-  url_loader_factory_->CreateLoaderAndStart(
+  GetURLLoaderFactory().CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr_), 0 /* routing_id? */,
       0 /* request_id? */, mojom::kURLLoadOptionSendSSLInfo, *request,
       std::move(url_loader_client_ptr_to_pass));
+}
+
+mojom::URLLoaderFactory&
+NavigationURLLoaderNetworkService::GetURLLoaderFactory() {
+  // TODO(yzshen): We will need the ability to customize the factory per frame
+  // e.g., for appcache or service worker.
+  if (!g_url_loader_factory.Get()) {
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        mojom::kNetworkServiceName, &g_url_loader_factory.Get());
+  }
+
+  return *g_url_loader_factory.Get();
 }
 
 }  // namespace content

@@ -40,7 +40,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
       NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderNetworkService() override;
 
-  // Overrides the URLLoaderFactory for the next request.
+  // Overrides the URLLoaderFactory for subsequent requests. Passing a null
+  // pointer will restore the default behavior.
   static CONTENT_EXPORT void OverrideURLLoaderFactoryForTesting(
       mojom::URLLoaderFactoryPtr url_loader_factory);
 
@@ -72,9 +73,10 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   void ConnectURLLoaderFactory(
       std::unique_ptr<service_manager::Connector> connector);
 
+  mojom::URLLoaderFactory& GetURLLoaderFactory();
+
   NavigationURLLoaderDelegate* delegate_;
 
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;

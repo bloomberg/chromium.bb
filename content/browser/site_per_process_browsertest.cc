@@ -2565,8 +2565,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   EXPECT_EQ("null", child->current_origin().Serialize());
 
   // Try again after re-enabling host resolution.
-  if (!network_service)
+  if (network_service) {
+    NavigationURLLoaderNetworkService::OverrideURLLoaderFactoryForTesting(
+        nullptr);
+  } else {
     host_resolver()->AddRule("*", "127.0.0.1");
+  }
 
   NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
   EXPECT_TRUE(observer.last_navigation_succeeded());
