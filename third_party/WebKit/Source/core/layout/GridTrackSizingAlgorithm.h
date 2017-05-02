@@ -21,8 +21,6 @@ class Grid;
 class GridTrackSizingAlgorithmStrategy;
 class LayoutGrid;
 
-enum SizingOperation { kTrackSizing, kIntrinsicSizeComputation };
-
 enum TrackSizeComputationPhase {
   kResolveIntrinsicMinimums,
   kResolveContentBasedMinimums,
@@ -86,7 +84,6 @@ class GridTrackSizingAlgorithm final {
   // the algorithm.
   void Setup(GridTrackSizingDirection,
              size_t num_tracks,
-             SizingOperation,
              Optional<LayoutUnit> available_space,
              Optional<LayoutUnit> free_space);
   void Run();
@@ -190,7 +187,6 @@ class GridTrackSizingAlgorithm final {
   Vector<size_t> flexible_sized_tracks_index_;
 
   GridTrackSizingDirection direction_;
-  SizingOperation sizing_operation_;
 
   Grid& grid_;
 
