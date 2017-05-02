@@ -45,10 +45,13 @@ void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
 void TestPaletteDelegate::CancelPartialScreenshot() {}
 
 bool TestPaletteDelegate::IsMetalayerSupported() {
-  return false;
+  return is_metalayer_supported_;
 }
 
-void TestPaletteDelegate::ShowMetalayer(const base::Closure& closed) {}
+void TestPaletteDelegate::ShowMetalayer(const base::Closure& closed) {
+  ++show_metalayer_count_;
+  metalayer_closed_ = closed;
+}
 
 void TestPaletteDelegate::HideMetalayer() {}
 
