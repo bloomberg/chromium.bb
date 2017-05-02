@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.3",
+  "version": "13.4",
   "entries": [
     {
       "id": 1,
@@ -1566,6 +1566,25 @@
         "type": "win"
       },
       "multi_gpu_style": "amd_switchable",
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 147,
+      "description": "Explicit multisample resolve is broken on Adreno 4xx on Android 7.0",
+      "comment": "Corresponds to GPU driver bug #174",
+      "cr_bugs": [696126],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "between",
+          "value": "7.0.0",
+          "value2": "7.0.99",
+          "comment": "Only initial version of N."
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
         "webgl2"
       ]
