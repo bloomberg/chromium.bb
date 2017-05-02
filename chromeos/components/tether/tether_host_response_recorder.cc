@@ -26,6 +26,14 @@ TetherHostResponseRecorder::TetherHostResponseRecorder(
 
 TetherHostResponseRecorder::~TetherHostResponseRecorder() {}
 
+void TetherHostResponseRecorder::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void TetherHostResponseRecorder::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void TetherHostResponseRecorder::RecordSuccessfulTetherAvailabilityResponse(
     const cryptauth::RemoteDevice& remote_device) {
   AddRecentResponse(remote_device.GetDeviceId(),
@@ -39,8 +47,10 @@ TetherHostResponseRecorder::GetPreviouslyAvailableHostIds() const {
 
 void TetherHostResponseRecorder::RecordSuccessfulConnectTetheringResponse(
     const cryptauth::RemoteDevice& remote_device) {
-  AddRecentResponse(remote_device.GetDeviceId(),
-                    prefs::kMostRecentConnectTetheringResponderIds);
+  if (AddRecentResponse(remote_device.GetDeviceId(),
+                        prefs::kMostRecentConnectTetheringResponderIds)) {
+    NotifyObserversPreviouslyConnectedHostIdsChanged();
+  }
 }
 
 std::vector<std::string>
@@ -48,10 +58,25 @@ TetherHostResponseRecorder::GetPreviouslyConnectedHostIds() const {
   return GetDeviceIdsForPref(prefs::kMostRecentConnectTetheringResponderIds);
 }
 
-void TetherHostResponseRecorder::AddRecentResponse(
+void TetherHostResponseRecorder::
+    NotifyObserversPreviouslyConnectedHostIdsChanged() {
+  for (Observer& observer : observer_list_) {
+    observer.OnPreviouslyConnectedHostIdsChanged();
+  }
+}
+
+bool TetherHostResponseRecorder::AddRecentResponse(
     const std::string& device_id,
     const std::string& pref_name) {
   const base::ListValue* ids = pref_service_->GetList(pref_name);
+
+  std::string first_device_id_in_list;
+  ids->GetString(0u, &first_device_id_in_list);
+  if (device_id == first_device_id_in_list) {
+    // If the device ID that is being inserted is already at the front of the
+    // list, there is nothing to do.
+    return false;
+  }
 
   // Create a mutable copy of the stored IDs, or create one if it has yet to be
   // stored.
@@ -68,6 +93,8 @@ void TetherHostResponseRecorder::AddRecentResponse(
 
   // Store the updated list back in |pref_service_|.
   pref_service_->Set(pref_name, *updated_ids);
+
+  return true;
 }
 
 std::vector<std::string> TetherHostResponseRecorder::GetDeviceIdsForPref(

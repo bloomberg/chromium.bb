@@ -36,6 +36,7 @@ class ActiveHost;
 class ActiveHostNetworkStateUpdater;
 class BleConnectionManager;
 class DeviceIdTetherNetworkGuidMap;
+class HostScanCache;
 class HostScanner;
 class HostScanDevicePrioritizer;
 class LocalDeviceDataProvider;
@@ -125,6 +126,7 @@ class Initializer : public OAuth2TokenService::Observer {
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;
   std::unique_ptr<TetherNetworkDisconnectionHandler>
       tether_network_disconnection_handler_;
+  std::unique_ptr<HostScanCache> host_scan_cache_;
   std::unique_ptr<HostScanner> host_scanner_;
 
   base::WeakPtrFactory<Initializer> weak_ptr_factory_;
