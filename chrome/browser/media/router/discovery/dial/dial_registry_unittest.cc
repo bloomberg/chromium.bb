@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/simple_test_clock.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/router/discovery/dial/dial_service.h"
@@ -44,7 +45,10 @@ class MockDialService : public DialService {
 
 class MockDialRegistry : public DialRegistry {
  public:
-  MockDialRegistry() : DialRegistry(), time_(Time::Now()) {}
+  MockDialRegistry() : DialRegistry(), clock_(new base::SimpleTestClock()) {
+    // Takes ownership of |clock|.
+    SetClockForTest(base::WrapUnique(clock_));
+  }
 
   ~MockDialRegistry() override {
     // Don't let the DialRegistry delete this.
@@ -55,12 +59,9 @@ class MockDialRegistry : public DialRegistry {
 
   // Returns the mock Dial service.
   MockDialService& mock_service() { return mock_service_; }
-
-  void set_time(Time time) { time_ = time; }
+  base::SimpleTestClock* clock() const { return clock_; }
 
  protected:
-  base::Time Now() const override { return time_; }
-
   std::unique_ptr<DialService> CreateDialService() override {
     return base::WrapUnique(&mock_service_);
   }
@@ -73,21 +74,22 @@ class MockDialRegistry : public DialRegistry {
  private:
   MockDialService mock_service_;
 
-  // Set to mock out the current time.
-  Time time_;
+  // Owned by DialRegistry.
+  base::SimpleTestClock* const clock_;
 };
 
 class DialRegistryTest : public testing::Test {
  public:
   DialRegistryTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        first_device_("first", GURL("http://127.0.0.1/dd.xml"), Time::Now()),
-        second_device_("second", GURL("http://127.0.0.2/dd.xml"), Time::Now()),
-        third_device_("third", GURL("http://127.0.0.3/dd.xml"), Time::Now()) {
-    registry_ = base::MakeUnique<MockDialRegistry>();
+        registry_(new MockDialRegistry()),
+        first_device_("first", GURL("http://127.0.0.1/dd.xml"), Now()),
+        second_device_("second", GURL("http://127.0.0.2/dd.xml"), Now()),
+        third_device_("third", GURL("http://127.0.0.3/dd.xml"), Now()),
+        list_with_first_device_({first_device_}),
+        list_with_second_device_({second_device_}),
+        list_with_first_second_devices_({first_device_, second_device_}) {
     registry_->RegisterObserver(&mock_observer_);
-    list_with_first_device_.push_back(first_device_);
-    list_with_second_device_.push_back(second_device_);
   }
 
  protected:
@@ -98,7 +100,19 @@ class DialRegistryTest : public testing::Test {
                 RemoveObserver(A<DialService::Observer*>()));
   }
 
+  void VerifyAndResetMocks() {
+    testing::Mock::VerifyAndClearExpectations(&registry_->mock_service());
+    testing::Mock::VerifyAndClearExpectations(&mock_observer_);
+  }
+
+  Time Now() const { return registry_->clock()->Now(); }
+
+  void AdvanceTime(base::TimeDelta duration) {
+    registry_->clock()->Advance(duration);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
+
   std::unique_ptr<MockDialRegistry> registry_;
   MockDialObserver mock_observer_;
   const DialDeviceData first_device_;
@@ -106,8 +120,9 @@ class DialRegistryTest : public testing::Test {
   const DialDeviceData third_device_;
 
   const DialRegistry::DeviceList empty_list_;
-  DialRegistry::DeviceList list_with_first_device_;
-  DialRegistry::DeviceList list_with_second_device_;
+  const DialRegistry::DeviceList list_with_first_device_;
+  const DialRegistry::DeviceList list_with_second_device_;
+  const DialRegistry::DeviceList list_with_first_second_devices_;
 };
 
 TEST_F(DialRegistryTest, TestAddRemoveListeners) {
@@ -138,17 +153,14 @@ TEST_F(DialRegistryTest, TestNoDevicesDiscovered) {
 }
 
 TEST_F(DialRegistryTest, TestDevicesDiscovered) {
-  DialRegistry::DeviceList expected_list2;
-  expected_list2.push_back(first_device_);
-  expected_list2.push_back(second_device_);
-
   SetListenerExpectations();
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
   EXPECT_CALL(registry_->mock_service(), Discover());
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
+  EXPECT_CALL(mock_observer_,
+              OnDialDeviceEvent(list_with_first_second_devices_));
 
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(nullptr);
@@ -163,10 +175,6 @@ TEST_F(DialRegistryTest, TestDevicesDiscovered) {
 }
 
 TEST_F(DialRegistryTest, TestDevicesDiscoveredWithTwoListeners) {
-  DialRegistry::DeviceList expected_list2;
-  expected_list2.push_back(first_device_);
-  expected_list2.push_back(second_device_);
-
   SetListenerExpectations();
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
@@ -174,7 +182,8 @@ TEST_F(DialRegistryTest, TestDevicesDiscoveredWithTwoListeners) {
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_))
       .Times(2);
   EXPECT_CALL(registry_->mock_service(), Discover());
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
+  EXPECT_CALL(mock_observer_,
+              OnDialDeviceEvent(list_with_first_second_devices_));
 
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(nullptr);
@@ -192,36 +201,61 @@ TEST_F(DialRegistryTest, TestDevicesDiscoveredWithTwoListeners) {
 }
 
 TEST_F(DialRegistryTest, TestDeviceExpires) {
-  SetListenerExpectations();
   InSequence s;
+
+  EXPECT_CALL(registry_->mock_service(),
+              AddObserver(A<DialService::Observer*>()));
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
-  EXPECT_CALL(registry_->mock_service(), Discover());
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
 
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDeviceDiscovered(nullptr, first_device_);
   registry_->OnDiscoveryFinished(nullptr);
+  VerifyAndResetMocks();
 
-  registry_->set_time(Time::Now() + TimeDelta::FromSeconds(300));
+  // First device has not expired yet.
+  EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_,
+              OnDialDeviceEvent(list_with_first_second_devices_));
+
+  AdvanceTime(TimeDelta::FromSeconds(100));
+  DialDeviceData second_device_discovered_later = second_device_;
+  second_device_discovered_later.set_response_time(Now());
 
   registry_->DoDiscovery();
   registry_->OnDiscoveryRequest(nullptr);
+  registry_->OnDeviceDiscovered(nullptr, second_device_discovered_later);
   registry_->OnDiscoveryFinished(nullptr);
+  VerifyAndResetMocks();
+
+  // First device has expired, second device has not expired yet.
+  EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_second_device_));
+
+  AdvanceTime(TimeDelta::FromSeconds(200));
+  registry_->DoDiscovery();
+  registry_->OnDiscoveryRequest(nullptr);
+  registry_->OnDiscoveryFinished(nullptr);
+  VerifyAndResetMocks();
+
+  // Second device has expired.
+  EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
+
+  AdvanceTime(TimeDelta::FromSeconds(200));
+  registry_->DoDiscovery();
+  registry_->OnDiscoveryRequest(nullptr);
+  registry_->OnDiscoveryFinished(nullptr);
+  VerifyAndResetMocks();
+
+  EXPECT_CALL(registry_->mock_service(),
+              RemoveObserver(A<DialService::Observer*>()));
   registry_->OnListenerRemoved();
 }
 
 TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
-  std::vector<Time> discovery_times;
-  discovery_times.push_back(Time::Now());
-  discovery_times.push_back(discovery_times[0] + TimeDelta::FromSeconds(300));
-  discovery_times.push_back(discovery_times[1] + TimeDelta::FromSeconds(300));
-
-  DialDeviceData rediscovered_device("first", GURL("http://127.0.0.1/dd.xml"),
-                                     discovery_times[2]);
-
   SetListenerExpectations();
 
   InSequence s;
@@ -233,21 +267,23 @@ TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
 
-  registry_->set_time(discovery_times[0]);
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDeviceDiscovered(nullptr, first_device_);
   registry_->OnDiscoveryFinished(nullptr);
 
   // Will expire "first" device as it is not discovered this time.
-  registry_->set_time(discovery_times[1]);
+  AdvanceTime(TimeDelta::FromSeconds(300));
   registry_->DoDiscovery();
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDiscoveryFinished(nullptr);
 
-  // "first" device is rediscovered 30 seconds later.  We pass a device object
+  // "first" device is rediscovered 300 seconds later.  We pass a device object
   // with a newer discovery time so it is not pruned immediately.
-  registry_->set_time(discovery_times[2]);
+  AdvanceTime(TimeDelta::FromSeconds(300));
+  DialDeviceData rediscovered_device = first_device_;
+  rediscovered_device.set_response_time(Now());
+
   registry_->DoDiscovery();
   registry_->OnDiscoveryRequest(nullptr);
   registry_->OnDeviceDiscovered(nullptr, rediscovered_device);
@@ -257,16 +293,13 @@ TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
 }
 
 TEST_F(DialRegistryTest, TestRemovingListenerDoesNotClearList) {
-  DialRegistry::DeviceList expected_list2;
-  expected_list2.push_back(first_device_);
-  expected_list2.push_back(second_device_);
-
   InSequence s;
   EXPECT_CALL(registry_->mock_service(),
               AddObserver(A<DialService::Observer*>()));
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
+  EXPECT_CALL(mock_observer_,
+              OnDialDeviceEvent(list_with_first_second_devices_));
   EXPECT_CALL(registry_->mock_service(),
               RemoveObserver(A<DialService::Observer*>()));
 
@@ -282,7 +315,8 @@ TEST_F(DialRegistryTest, TestRemovingListenerDoesNotClearList) {
   EXPECT_CALL(registry_->mock_service(),
               AddObserver(A<DialService::Observer*>()));
   EXPECT_CALL(registry_->mock_service(), Discover());
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
+  EXPECT_CALL(mock_observer_,
+              OnDialDeviceEvent(list_with_first_second_devices_));
   EXPECT_CALL(registry_->mock_service(),
               RemoveObserver(A<DialService::Observer*>()));
 

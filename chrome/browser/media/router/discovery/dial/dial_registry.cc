@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -43,10 +44,10 @@ DialRegistry::DialRegistry()
       registry_generation_(0),
       last_event_registry_generation_(0),
       label_count_(0),
-      refresh_interval_delta_(
-          base::TimeDelta::FromSeconds(kDialRefreshIntervalSecs)),
-      expiration_delta_(base::TimeDelta::FromSeconds(kDialExpirationSecs)),
-      max_devices_(kDialMaxDevices) {
+      refresh_interval_delta_(TimeDelta::FromSeconds(kDialRefreshIntervalSecs)),
+      expiration_delta_(TimeDelta::FromSeconds(kDialExpirationSecs)),
+      max_devices_(kDialMaxDevices),
+      clock_(new base::DefaultClock()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
   // This is a leaky singleton, so there's no code to remove |this| as an
@@ -71,10 +72,6 @@ std::unique_ptr<DialService> DialRegistry::CreateDialService() {
 
 void DialRegistry::ClearDialService() {
   dial_.reset();
-}
-
-base::Time DialRegistry::Now() const {
-  return Time::Now();
 }
 
 void DialRegistry::OnListenerAdded() {
@@ -123,6 +120,10 @@ void DialRegistry::AddDeviceForTest(const DialDeviceData& device_data) {
       std::make_pair(device_data.label(), test_data.get()));
   device_by_id_map_.insert(
       std::make_pair(device_data.device_id(), std::move(test_data)));
+}
+
+void DialRegistry::SetClockForTest(std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 bool DialRegistry::ReadyToDiscover() {
@@ -219,7 +220,7 @@ bool DialRegistry::PruneExpiredDevices() {
 }
 
 bool DialRegistry::IsDeviceExpired(const DialDeviceData& device) const {
-  Time now = Now();
+  Time now = clock_->Now();
 
   // Check against our default expiration timeout.
   Time default_expiration_time = device.response_time() + expiration_delta_;
