@@ -1069,17 +1069,20 @@ class ReportStage(generic_stages.BuilderStage,
     return super(ReportStage, self)._HandleStageException(exc_info)
 
 
-class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
+class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   """Stage to detect irrelevant changes for slave per board base.
 
   This stage will get the irrelevant changes for the current board of the build,
   and record the irrelevant changes and the subsystem of the relevant changes
   test to board_metadata.
+
+  Changes relevant to this build will be logged to create links to them
+  in the builder output.
   """
 
   def __init__(self, builder_run, board, changes, suffix=None, **kwargs):
-    super(DetectIrrelevantChangesStage, self).__init__(builder_run, board,
-                                                       suffix=suffix, **kwargs)
+    super(DetectRelevantChangesStage, self).__init__(builder_run, board,
+                                                     suffix=suffix, **kwargs)
     # changes is a list of GerritPatch instances.
     self.changes = changes
 
@@ -1164,7 +1167,7 @@ class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    """Run DetectIrrelevantChangesStage."""
+    """Run DetectRelevantChangesStage."""
     irrelevant_changes = None
     if not self._run.config.master:
       # Slave writes the irrelevant changes to current board to metadata.
@@ -1184,19 +1187,20 @@ class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
         # irrelevant changes in this stage. For builds with multiple board
         # configurations, irrelevant changes have to be sorted and reocrded in
         # Completion stage which means each board has detected and recorded its
-        # irrelevant changes to metadata in the DetectIrrelevantChanges stage.
+        # irrelevant changes to metadata in the DetectRelevantChanges stage.
 
         # Record the irrelevant changes to CIDB.
         self._RecordIrrelevantChanges(irrelevant_changes)
 
-    if irrelevant_changes:
-      relevant_changes = list(set(self.changes) - irrelevant_changes)
-      logging.info('Below are the irrelevant changes for board: %s.',
+    relevant_changes = list(set(self.changes) - irrelevant_changes)
+    if relevant_changes:
+      logging.info('Below are the relevant changes for board: %s.',
                    self._current_board)
       validation_pool.ValidationPool.PrintLinksToChanges(
-          list(irrelevant_changes))
+          list(relevant_changes))
     else:
-      relevant_changes = self.changes
+      logging.info('No changes are relevant for board: %s.',
+                   self._current_board)
 
     subsystem_set = self.GetSubsystemToTest(relevant_changes)
     logging.info('Subsystems need to be tested: %s. Empty set represents '

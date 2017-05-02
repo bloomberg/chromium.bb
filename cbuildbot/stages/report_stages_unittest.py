@@ -471,10 +471,10 @@ class ReportStageNoSyncTest(AbstractReportStageTestCase):
     self.RunStage()
 
 
-class DetectIrrelevantChangesStageTest(
+class DetectRelevantChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase,
     patch_unittest.MockPatchBase):
-  """Test the DetectIrrelevantChangesStage."""
+  """Test the DetectRelevantChangesStage."""
 
   def setUp(self):
     self.changes = self.GetPatches(how_many=2)
@@ -510,9 +510,9 @@ class DetectIrrelevantChangesStageTest(
     self.assertEqual(results, expected)
 
   def ConstructStage(self):
-    return report_stages.DetectIrrelevantChangesStage(self._run,
-                                                      self._current_board,
-                                                      self.changes)
+    return report_stages.DetectRelevantChangesStage(self._run,
+                                                    self._current_board,
+                                                    self.changes)
 
   def testRecordIrrelevantChanges(self):
     """Test RecordIrrelevantChanges."""

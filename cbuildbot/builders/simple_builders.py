@@ -177,7 +177,7 @@ class SimpleBuilder(generic_builders.Builder):
 
     changes = self._GetChangesUnderTest()
     if changes:
-      self._RunStage(report_stages.DetectIrrelevantChangesStage, board,
+      self._RunStage(report_stages.DetectRelevantChangesStage, board,
                      changes, builder_run=builder_run)
 
     # While this stage list is run in parallel, the order here dictates the
