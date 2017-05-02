@@ -416,7 +416,7 @@ public class ChromeBackupAgent extends BackupAgent {
     /**
      * Record the restore histogram. To be called from Chrome itself once it is running.
      */
-    static void recordRestoreHistogram() {
+    public static void recordRestoreHistogram() {
         int restoreStatus = getRestoreStatus();
         // Ensure restore status is only recorded once
         if (restoreStatus != RESTORE_STATUS_RECORDED) {
