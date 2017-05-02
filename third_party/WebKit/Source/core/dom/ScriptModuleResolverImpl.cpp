@@ -73,10 +73,7 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
     return ScriptModule();
   }
 
-  // Step 6. Assert: resolved module script's instantiation state is
-  // "instantiated" (and thus its module record is not null).
-  CHECK_EQ(module_script->InstantiationState(),
-           ModuleInstantiationState::kInstantiated);
+  // Step 6. Assert: resolved module script's module record is not null.
   ScriptModule record = module_script->Record();
   CHECK(!record.IsNull());
 
