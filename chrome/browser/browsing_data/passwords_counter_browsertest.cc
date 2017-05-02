@@ -332,12 +332,15 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, RestartOnSyncChange) {
 
   // We stop syncing passwords in particular. This restarts the counter.
   syncer::ModelTypeSet everything_except_passwords =
-      syncer::ModelTypeSet::All();
+      syncer::UserSelectableTypes();
   everything_except_passwords.Remove(syncer::PASSWORDS);
   auto sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(everything_except_passwords);
+  sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
+                                     everything_except_passwords);
+  ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
   sync_blocker.reset();
   WaitForCountingOrConfirmFinished();
+  ASSERT_FALSE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
   EXPECT_FALSE(PasswordSyncEnabled());
 
   // If password sync is not affected, the counter is not restarted.

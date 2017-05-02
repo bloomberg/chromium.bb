@@ -84,7 +84,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (pref_name == browsing_data::prefs::kDeleteFormData) {
     return base::MakeUnique<browsing_data::AutofillCounter>(
         WebDataServiceFactory::GetAutofillWebDataForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS));
+            profile, ServiceAccessType::EXPLICIT_ACCESS),
+        ProfileSyncServiceFactory::GetForProfile(profile));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteDownloadHistory)

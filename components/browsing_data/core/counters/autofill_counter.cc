@@ -8,29 +8,49 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/sync/driver/sync_service.h"
+
+namespace {
+
+bool IsAutofillSyncEnabled(const syncer::SyncService* sync_service) {
+  return sync_service && sync_service->IsFirstSetupComplete() &&
+         sync_service->IsSyncActive() &&
+         sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL);
+}
+
+}  // namespace
 
 namespace browsing_data {
 
 AutofillCounter::AutofillCounter(
-    scoped_refptr<autofill::AutofillWebDataService> web_data_service)
+    scoped_refptr<autofill::AutofillWebDataService> web_data_service,
+    syncer::SyncService* sync_service)
     : web_data_service_(web_data_service),
+      sync_service_(sync_service),
       suggestions_query_(0),
       credit_cards_query_(0),
       addresses_query_(0),
       num_suggestions_(0),
       num_credit_cards_(0),
-      num_addresses_(0) {}
+      num_addresses_(0),
+      autofill_sync_enabled_() {}
 
 AutofillCounter::~AutofillCounter() {
   CancelAllRequests();
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 void AutofillCounter::OnInitialized() {
   DCHECK(web_data_service_);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
+  autofill_sync_enabled_ = IsAutofillSyncEnabled(sync_service_);
 }
 
 const char* AutofillCounter::GetPrefName() const {
@@ -150,8 +170,9 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   if (suggestions_query_ || credit_cards_query_ || addresses_query_)
     return;
 
-  std::unique_ptr<Result> reported_result(new AutofillResult(
-      this, num_suggestions_, num_credit_cards_, num_addresses_));
+  auto reported_result = base::MakeUnique<AutofillResult>(
+      this, num_suggestions_, num_credit_cards_, num_addresses_,
+      autofill_sync_enabled_);
   ReportResult(std::move(reported_result));
 }
 
@@ -164,15 +185,25 @@ void AutofillCounter::CancelAllRequests() {
     web_data_service_->CancelRequest(addresses_query_);
 }
 
+void AutofillCounter::OnStateChanged(syncer::SyncService* sync) {
+  bool sync_enabled_new = IsAutofillSyncEnabled(sync);
+  if (autofill_sync_enabled_ != sync_enabled_new) {
+    autofill_sync_enabled_ = sync_enabled_new;
+    Restart();
+  }
+}
+
 // AutofillCounter::AutofillResult ---------------------------------------------
 
 AutofillCounter::AutofillResult::AutofillResult(const AutofillCounter* source,
                                                 ResultInt num_suggestions,
                                                 ResultInt num_credit_cards,
-                                                ResultInt num_addresses)
+                                                ResultInt num_addresses,
+                                                bool autofill_sync_enabled_)
     : FinishedResult(source, num_suggestions),
       num_credit_cards_(num_credit_cards),
-      num_addresses_(num_addresses) {}
+      num_addresses_(num_addresses),
+      autofill_sync_enabled_(autofill_sync_enabled_) {}
 
 AutofillCounter::AutofillResult::~AutofillResult() {}
 
