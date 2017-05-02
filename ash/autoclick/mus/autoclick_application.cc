@@ -94,7 +94,7 @@ void AutoclickApplication::OnStart() {
 }
 
 void AutoclickApplication::OnBindInterface(
-    const service_manager::ServiceInfo& remote_info,
+    const service_manager::BindSourceInfo& remote_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(remote_info.identity, interface_name,

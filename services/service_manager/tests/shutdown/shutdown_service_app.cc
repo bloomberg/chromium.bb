@@ -5,10 +5,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
 
@@ -29,7 +29,7 @@ class ShutdownServiceApp
 
  private:
   // service_manager::Service:
-  void OnBindInterface(const ServiceInfo& source_info,
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(source_info.identity, interface_name,

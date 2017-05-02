@@ -16,7 +16,7 @@
 #include "services/preferences/persistent_pref_store_factory.h"
 #include "services/preferences/persistent_pref_store_impl.h"
 #include "services/preferences/public/cpp/pref_store_impl.h"
-#include "services/service_manager/public/cpp/service_info.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace prefs {
 namespace {
@@ -212,7 +212,7 @@ void PrefStoreManagerImpl::Init(
 void PrefStoreManagerImpl::OnStart() {}
 
 void PrefStoreManagerImpl::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,

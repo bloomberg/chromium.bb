@@ -15,7 +15,7 @@ Service::~Service() = default;
 
 void Service::OnStart() {}
 
-void Service::OnBindInterface(const ServiceInfo& source_info,
+void Service::OnBindInterface(const BindSourceInfo& source,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {}
 
@@ -42,11 +42,10 @@ void ForwardingService::OnStart() {
 }
 
 void ForwardingService::OnBindInterface(
-    const ServiceInfo& remote_info,
+    const BindSourceInfo& source,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  target_->OnBindInterface(remote_info, interface_name,
-                           std::move(interface_pipe));
+  target_->OnBindInterface(source, interface_name, std::move(interface_pipe));
 }
 
 bool ForwardingService::OnServiceManagerConnectionLost() {

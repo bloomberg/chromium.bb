@@ -37,7 +37,7 @@ void ActiveProfilePrefService::Create(
 void ActiveProfilePrefService::OnStart() {}
 
 void ActiveProfilePrefService::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // N.B. This check is important as not doing it would allow one user to read

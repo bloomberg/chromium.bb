@@ -28,7 +28,7 @@ void ServiceTestClient::OnStart() {
 }
 
 void ServiceTestClient::OnBindInterface(
-    const ServiceInfo& source_info,
+    const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {}
 

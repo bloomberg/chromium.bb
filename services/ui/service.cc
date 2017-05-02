@@ -224,9 +224,10 @@ void Service::OnStart() {
 #endif
 }
 
-void Service::OnBindInterface(const service_manager::ServiceInfo& source_info,
-                              const std::string& interface_name,
-                              mojo::ScopedMessagePipeHandle interface_pipe) {
+void Service::OnBindInterface(
+    const service_manager::BindSourceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,
                           std::move(interface_pipe));
 }

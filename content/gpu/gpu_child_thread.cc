@@ -88,7 +88,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
   };
 
   // ConnectionFilter:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {

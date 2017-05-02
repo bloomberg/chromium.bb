@@ -42,7 +42,7 @@ class PackagedApp
 
  private:
   // service_manager::Service:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(source_info.identity, interface_name,
@@ -112,7 +112,7 @@ class Package : public service_manager::ForwardingService,
 
  private:
   // ForwardingService:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     if (registry_.CanBindInterface(interface_name)) {

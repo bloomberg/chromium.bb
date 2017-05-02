@@ -528,7 +528,7 @@ class ChromeServiceChromeOS
   }
 
   // service_manager::Service:
-  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override {
     interfaces_.BindInterface(remote_info.identity, name, std::move(handle));
@@ -3244,7 +3244,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToFrame(
 }
 
 void ChromeContentBrowserClient::BindInterfaceRequest(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (source_info.identity.name() == content::mojom::kGpuServiceName &&

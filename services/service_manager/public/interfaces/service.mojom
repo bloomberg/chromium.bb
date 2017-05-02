@@ -9,13 +9,15 @@ import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "services/service_manager/public/interfaces/interface_provider_spec.mojom";
 import "services/service_manager/public/interfaces/service_control.mojom";
 
-// Metadata describing an instance of a service.
-struct ServiceInfo {
+// Metadata describing an instance of a service that originated a call to
+// BindInterface().
+struct BindSourceInfo {
   // The service's identity.
   Identity identity;
 
-  // The service's interface provider specs, from its manifest.
-  map<string, InterfaceProviderSpec> interface_provider_specs;
+  // An array of the capabilities exposed by the target that are required by the
+  // source.
+  CapabilitySet required_capabilities;
 };
 
 // Implemented by any service which is known to the Service Manager, for which
@@ -45,8 +47,8 @@ interface Service {
   //  control_request
   //    An optional associated ServiceControl request.
   //
-  OnStart(ServiceInfo info) => (Connector&? connector_request,
-                                associated ServiceControl&? control_request);
+  OnStart(Identity identity) => (Connector&? connector_request,
+                                 associated ServiceControl&? control_request);
 
   // Called when a request to bind an interface is received from another
   // ("source") service. This is the result of that service calling
@@ -58,8 +60,8 @@ interface Service {
   //
   // Parameters:
   //
-  //  source_info
-  //    Contains the source identity and interface provider specs.
+  //  source
+  //    Contains information about the source of the request.
   //
   //  interface_name
   //    The name of the interface to be bound.
@@ -67,11 +69,7 @@ interface Service {
   //  interface_pipe
   //    The message pipe to bind the interface implementation to.
   //
-  // TODO(beng): It occurs to me that |source_info| leaks all metadata about
-  //             the source's capability requirements to the target. This seems
-  //             undesirable. The metadata supplied here should be germane to
-  //             fulfilling this request and no more.
-  OnBindInterface(ServiceInfo source_info,
+  OnBindInterface(BindSourceInfo source,
                   string interface_name,
                   handle<message_pipe> interface_pipe) => ();
 };

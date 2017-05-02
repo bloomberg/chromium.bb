@@ -218,9 +218,10 @@ class ServiceManager::Instance
 
     pending_service_connections_++;
     service_->OnBindInterface(
-        ServiceInfo(params->source(), source_specs),
-        params->interface_name(),
-        params->TakeInterfaceRequestPipe(),
+        BindSourceInfo(
+            params->source(),
+            GetRequestedCapabilities(source_connection_spec, identity_)),
+        params->interface_name(), params->TakeInterfaceRequestPipe(),
         base::Bind(&Instance::OnConnectComplete, base::Unretained(this)));
     return true;
   }
@@ -237,9 +238,8 @@ class ServiceManager::Instance
     service_.set_connection_error_handler(
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
                    service_manager_->GetWeakPtr()));
-    service_->OnStart(ServiceInfo(identity_, interface_provider_specs_),
-                      base::Bind(&Instance::OnStartComplete,
-                                 base::Unretained(this)));
+    service_->OnStart(identity_, base::Bind(&Instance::OnStartComplete,
+                                            base::Unretained(this)));
   }
 
   bool StartWithFilePath(const base::FilePath& path) {
@@ -285,7 +285,7 @@ class ServiceManager::Instance
   uint32_t id() const { return id_; }
 
   // Service:
-  void OnBindInterface(const ServiceInfo& source_info,
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     Instance* source =
@@ -643,7 +643,7 @@ class ServiceManager::ServiceImpl : public Service {
   ~ServiceImpl() override {}
 
   // Service:
-  void OnBindInterface(const ServiceInfo& source_info,
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     // The only interface ServiceManager exposes is mojom::ServiceManager, and

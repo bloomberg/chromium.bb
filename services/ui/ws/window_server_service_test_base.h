@@ -17,7 +17,7 @@ class WindowServerServiceTestBase : public service_manager::test::ServiceTest {
   ~WindowServerServiceTestBase() override;
 
   virtual void OnBindInterface(
-      const service_manager::ServiceInfo& source_info,
+      const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 

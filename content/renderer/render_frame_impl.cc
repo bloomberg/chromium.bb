@@ -1318,7 +1318,7 @@ void RenderFrameImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // TODO(beng): We should be getting this info from the frame factory request.
-  service_manager::ServiceInfo browser_info =
+  service_manager::BindSourceInfo browser_info =
       ChildThreadImpl::current()->GetBrowserServiceInfo();
   interface_registry_->BindInterface(browser_info.identity, interface_name,
                                      std::move(interface_pipe));
@@ -2740,7 +2740,7 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
   // TODO(beng): We should be getting this info from the frame factory request.
-  service_manager::ServiceInfo browser_info =
+  service_manager::BindSourceInfo browser_info =
       ChildThreadImpl::current()->GetBrowserServiceInfo();
   service_manager::Connector* connector = ChildThread::Get()->GetConnector();
   connector->FilterInterfaces(

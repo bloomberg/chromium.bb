@@ -26,7 +26,7 @@ class DataDecoderService : public service_manager::Service {
 
   // service_manager::Service:
   void OnStart() override;
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 

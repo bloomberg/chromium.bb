@@ -68,7 +68,7 @@ class CdmFactory;
 namespace service_manager {
 class BinderRegistry;
 class Service;
-struct ServiceInfo;
+struct BindSourceInfo;
 }
 
 namespace net {
@@ -685,7 +685,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // received from |source_info.identity|. If the request is bound,
   // |interface_pipe| will become invalid (taken by the client).
   virtual void BindInterfaceRequest(
-      const service_manager::ServiceInfo& source_info,
+      const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 

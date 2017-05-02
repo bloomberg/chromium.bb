@@ -61,8 +61,7 @@ class ServiceContext : public mojom::Service {
   ~ServiceContext() override;
 
   Connector* connector() { return connector_.get(); }
-  const ServiceInfo& local_info() const { return local_info_; }
-  const Identity& identity() const { return local_info_.identity; }
+  const Identity& identity() const { return identity_; }
 
   // Specify a closure to be run when the Service calls QuitNow(), typically
   // in response to Service::OnServiceManagerConnectionLost().
@@ -109,13 +108,11 @@ class ServiceContext : public mojom::Service {
   friend class service_manager::Service;
 
   // mojom::Service:
-  void OnStart(const ServiceInfo& info,
-               const OnStartCallback& callback) override;
-  void OnBindInterface(
-      const ServiceInfo& source_info,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe,
-      const OnBindInterfaceCallback& callback) override;
+  void OnStart(const Identity& info, const OnStartCallback& callback) override;
+  void OnBindInterface(const BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe,
+                       const OnBindInterfaceCallback& callback) override;
 
   void OnConnectionError();
 
@@ -126,7 +123,7 @@ class ServiceContext : public mojom::Service {
   std::unique_ptr<service_manager::Service> service_;
   mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
-  service_manager::ServiceInfo local_info_;
+  service_manager::Identity identity_;
 
   // This instance's control interface to the service manager. Note that this
   // is unbound and therefore invalid until OnStart() is called.

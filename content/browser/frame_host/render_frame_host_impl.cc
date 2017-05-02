@@ -1689,15 +1689,6 @@ void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
   swapout_event_monitor_timeout_.reset();
 }
 
-void RenderFrameHostImpl::OnRendererConnect(
-    const service_manager::ServiceInfo& local_info,
-    const service_manager::ServiceInfo& remote_info) {
-  if (remote_info.identity.name() != mojom::kRendererServiceName)
-    return;
-  browser_info_ = local_info;
-  renderer_info_ = remote_info;
-}
-
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   if (!is_active())
     return;
@@ -3087,17 +3078,6 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   static_cast<AssociatedInterfaceRegistry*>(associated_registry_.get())
       ->AddInterface(base::Bind(make_binding, base::Unretained(this)));
 
-  ServiceManagerConnection* service_manager_connection =
-      BrowserContext::GetServiceManagerConnectionFor(
-          GetProcess()->GetBrowserContext());
-  // |service_manager_connection| may not be set in unit tests using
-  // TestBrowserContext.
-  if (service_manager_connection) {
-    on_connect_handler_id_ = service_manager_connection->AddOnConnectHandler(
-        base::Bind(&RenderFrameHostImpl::OnRendererConnect,
-        weak_ptr_factory_.GetWeakPtr()));
-  }
-
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   BindInterface(GetProcess(), &frame_factory);
@@ -3115,15 +3095,6 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
   interface_registry_.reset();
-
-  ServiceManagerConnection* service_manager_connection =
-      BrowserContext::GetServiceManagerConnectionFor(
-          GetProcess()->GetBrowserContext());
-  // |service_manager_connection| may be null in tests using TestBrowserContext.
-  if (service_manager_connection) {
-    service_manager_connection->RemoveOnConnectHandler(on_connect_handler_id_);
-    on_connect_handler_id_ = 0;
-  }
 
   frame_.reset();
   frame_host_interface_broker_binding_.Close();

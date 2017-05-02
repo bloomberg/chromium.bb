@@ -37,8 +37,7 @@ class CONTENT_EXPORT ServiceManagerConnection {
   using ServiceRequestHandler =
       base::Callback<void(service_manager::mojom::ServiceRequest)>;
   using OnConnectHandler =
-      base::Callback<void(const service_manager::ServiceInfo&,
-                          const service_manager::ServiceInfo&)>;
+      base::Callback<void(const service_manager::BindSourceInfo&)>;
   using Factory =
       base::Callback<std::unique_ptr<ServiceManagerConnection>(void)>;
 
@@ -79,10 +78,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // implementation. Use this to initiate connections as this object's Identity.
   virtual service_manager::Connector* GetConnector() = 0;
 
-  // Returns the service_manager::ServiceInfo for the current service and the
-  // browser service (if this is not the browser service).
-  virtual const service_manager::ServiceInfo& GetLocalInfo() const = 0;
-  virtual const service_manager::ServiceInfo& GetBrowserInfo() const = 0;
+  // Returns the service_manager::BindSourceInfo for the browser service (if
+  // this is not the browser service).
+  virtual const service_manager::BindSourceInfo& GetBrowserInfo() const = 0;
 
   // Sets a closure that is called when the connection is lost. Note that
   // connection may already have been closed, in which case |closure| will be

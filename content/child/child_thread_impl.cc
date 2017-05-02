@@ -267,7 +267,7 @@ class ChannelBootstrapFilter : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
@@ -631,14 +631,8 @@ service_manager::Connector* ChildThreadImpl::GetConnector() {
   return service_manager_connection_->GetConnector();
 }
 
-const service_manager::ServiceInfo&
-    ChildThreadImpl::GetChildServiceInfo() const {
-  DCHECK(IsConnectedToBrowser());
-  return child_info_;
-}
-
-const service_manager::ServiceInfo&
-    ChildThreadImpl::GetBrowserServiceInfo() const {
+const service_manager::BindSourceInfo& ChildThreadImpl::GetBrowserServiceInfo()
+    const {
   DCHECK(IsConnectedToBrowser());
   return browser_info_;
 }
@@ -844,13 +838,11 @@ void ChildThreadImpl::GetAssociatedInterface(
 }
 
 void ChildThreadImpl::OnServiceConnect(
-    const service_manager::ServiceInfo& local_info,
-    const service_manager::ServiceInfo& remote_info) {
+    const service_manager::BindSourceInfo& remote_info) {
   if (remote_info.identity.name() != mojom::kBrowserServiceName)
     return;
   DCHECK(!connected_to_browser_);
   connected_to_browser_ = true;
-  child_info_ = local_info;
   browser_info_ = remote_info;
 }
 

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/network/network_service_url_loader_factory_impl.h"
-#include "services/service_manager/public/cpp/service_info.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ NetworkService::NetworkService(
 NetworkService::~NetworkService() = default;
 
 void NetworkService::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_->BindInterface(source_info.identity, interface_name,

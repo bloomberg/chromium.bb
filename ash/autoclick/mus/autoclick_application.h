@@ -39,7 +39,7 @@ class AutoclickApplication
  private:
   // service_manager::Service:
   void OnStart() override;
-  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
