@@ -456,12 +456,44 @@ SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(
   return SVGTransformTearOff::Create(matrix);
 }
 
-AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform() const {
+AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
+    CTMScope mode) const {
   AffineTransform transform;
   if (!IsOutermostSVGSVGElement()) {
     SVGLengthContext length_context(this);
     transform.Translate(x_->CurrentValue()->Value(length_context),
                         y_->CurrentValue()->Value(length_context));
+  } else if (mode == kScreenScope) {
+    if (LayoutObject* layout_object = this->GetLayoutObject()) {
+      TransformationMatrix transform;
+      // Adjust for the zoom level factored into CSS coordinates (WK bug
+      // #96361).
+      transform.Scale(1.0 / layout_object->StyleRef().EffectiveZoom());
+
+      // Origin in the document. (This, together with the inverse-scale above,
+      // performs the same operation as
+      // Document::adjustFloatRectForScrollAndAbsoluteZoom, but in
+      // transformation matrix form.)
+      if (FrameView* view = GetDocument().View()) {
+        LayoutRect visible_content_rect(view->VisibleContentRect());
+        transform.Translate(-visible_content_rect.X(),
+                            -visible_content_rect.Y());
+      }
+
+      // Apply transforms from our ancestor coordinate space, including any
+      // non-SVG ancestor transforms.
+      transform.Multiply(layout_object->LocalToAbsoluteTransform());
+
+      // At the SVG/HTML boundary (aka LayoutSVGRoot), we need to apply the
+      // localToBorderBoxTransform to map an element from SVG viewport
+      // coordinates to CSS box coordinates.
+      transform.Multiply(
+          ToLayoutSVGRoot(layout_object)->LocalToBorderBoxTransform());
+      // Drop any potential non-affine parts, because we're not able to convey
+      // that information further anyway until getScreenCTM returns a DOMMatrix
+      // (4x4 matrix.)
+      return transform.ToAffineTransform();
+    }
   }
   if (!HasEmptyViewBox()) {
     FloatSize size = CurrentViewportSize();

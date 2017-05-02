@@ -51,7 +51,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   SVGElement* nearestViewportElement() const;
   SVGElement* farthestViewportElement() const;
 
-  AffineTransform LocalCoordinateSpaceTransform() const override {
+  AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override {
     return CalculateTransform(kIncludeMotionTransform);
   }
   AffineTransform* AnimateMotionTransform() override;

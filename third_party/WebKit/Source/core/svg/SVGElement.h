@@ -83,9 +83,10 @@ class CORE_EXPORT SVGElement : public Element {
 
   enum CTMScope {
     kNearestViewportScope,  // Used by SVGGraphicsElement::getCTM()
+    kScreenScope,           // Used by SVGGraphicsElement::getScreenCTM()
     kAncestorScope  // Used by SVGSVGElement::get{Enclosure|Intersection}List()
   };
-  virtual AffineTransform LocalCoordinateSpaceTransform() const;
+  virtual AffineTransform LocalCoordinateSpaceTransform(CTMScope) const;
   virtual bool NeedsPendingResourceHandling() const { return true; }
 
   bool InstanceUpdatesBlocked() const;

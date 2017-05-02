@@ -157,7 +157,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
   Member<SVGAnimatedLength> width_;
   Member<SVGAnimatedLength> height_;
 
-  AffineTransform LocalCoordinateSpaceTransform() const override;
+  AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override;
 
   Member<SMILTimeContainer> time_container_;
   Member<SVGPoint> translation_;

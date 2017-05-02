@@ -48,7 +48,7 @@ class SVGPatternElement final : public SVGElement,
 
   void CollectPatternAttributes(PatternAttributes&) const;
 
-  AffineTransform LocalCoordinateSpaceTransform() const override;
+  AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override;
 
   SVGAnimatedLength* x() const { return x_.Get(); }
   SVGAnimatedLength* y() const { return y_.Get(); }
