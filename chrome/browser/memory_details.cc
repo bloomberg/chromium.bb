@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -213,11 +213,15 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
     child_info.push_back(info);
   }
 
-  // Now go do expensive memory lookups on the blocking pool.
-  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+  // Now go do expensive memory lookups in a thread pool.
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::BindOnce(&MemoryDetails::CollectProcessData, this, child_info),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::BindOnce(&MemoryDetails::CollectProcessData, this, child_info));
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {
