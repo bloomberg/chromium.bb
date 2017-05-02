@@ -149,7 +149,7 @@ suite('cr-dialog', function() {
   // dialog has been opened.
   test('body scrollable border not added before modal shown', function(done) {
     document.body.innerHTML = `
-      <dialog is="cr-dialog" show-scroll-borders>
+      <dialog is="cr-dialog">
         <div class="title">title</div>
         <div class="body">body</div>
       </dialog>`;
@@ -170,7 +170,7 @@ suite('cr-dialog', function() {
 
   test('dialog body scrollable border when appropriate', function(done) {
     document.body.innerHTML = `
-      <dialog is="cr-dialog" show-scroll-borders>
+      <dialog is="cr-dialog">
         <div class="title">title</div>
         <div class="body">
           <div style="height: 100px">tall content</div>
