@@ -263,7 +263,7 @@ void BluetoothSocketWin::DoListen(
   // is called on |socket_fd| directly.
   std::unique_ptr<net::TCPSocket> scoped_socket(
       new net::TCPSocket(NULL, NULL, net::NetLogSource()));
-  scoped_socket->AdoptListenSocket(socket_fd);
+  scoped_socket->AdoptUnconnectedSocket(socket_fd);
 
   SOCKADDR_BTH sa;
   struct sockaddr* sock_addr = reinterpret_cast<struct sockaddr*>(&sa);
