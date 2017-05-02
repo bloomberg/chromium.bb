@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 
-#include "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
@@ -12,25 +11,26 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @class BrowserViewController;
 
 @interface TabSwitcherTransitionContextContent () {
-  base::scoped_nsobject<TabSwitcherTabStripPlaceholderView>
-      _tabStripPlaceholderView;
-  base::WeakNSObject<BrowserViewController> _bvc;
+  TabSwitcherTabStripPlaceholderView* _tabStripPlaceholderView;
+  __weak BrowserViewController* _bvc;
 }
 
 @end
 
 @implementation TabSwitcherTransitionContextContent {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_tabSwitcherTransitionContextContent;
 }
 
 + (instancetype)tabSwitcherTransitionContextContentFromBVC:
     (BrowserViewController*)bvc {
   TabSwitcherTransitionContextContent* transitionContextContent =
-      [[[TabSwitcherTransitionContextContent alloc] init] autorelease];
+      [[TabSwitcherTransitionContextContent alloc] init];
 
   transitionContextContent.initialTabID = bvc.tabModel.currentTab.tabId;
 
@@ -40,17 +40,16 @@
   }
 
   UIView* toolbarView = [[bvc toolbarController] view];
-  base::scoped_nsobject<UIView> toolbarSnapshotView;
+  UIView* toolbarSnapshotView;
   if ([toolbarView window]) {
-    toolbarSnapshotView.reset(
-        [[toolbarView snapshotViewAfterScreenUpdates:NO] retain]);
+    toolbarSnapshotView = [toolbarView snapshotViewAfterScreenUpdates:NO];
   } else {
-    toolbarSnapshotView.reset([[UIView alloc] initWithFrame:toolbarView.frame]);
+    toolbarSnapshotView = [[UIView alloc] initWithFrame:toolbarView.frame];
     [toolbarSnapshotView layer].contents = static_cast<id>(
         CaptureViewWithOption(toolbarView, 1, kClientSideRendering).CGImage);
   }
   transitionContextContent.toolbarSnapshotView = toolbarSnapshotView;
-  transitionContextContent->_bvc.reset(bvc);
+  transitionContextContent->_bvc = bvc;
   return transitionContextContent;
 }
 
@@ -65,8 +64,6 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _propertyReleaser_tabSwitcherTransitionContextContent.Init(
-        self, [TabSwitcherTransitionContextContent class]);
   }
   return self;
 }
@@ -74,8 +71,6 @@
 @end
 
 @implementation TabSwitcherTransitionContext {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_tabSwitcherTransitionContext;
 }
 
 + (instancetype)
@@ -83,7 +78,7 @@ tabSwitcherTransitionContextWithCurrent:(BrowserViewController*)currentBVC
                                 mainBVC:(BrowserViewController*)mainBVC
                                  otrBVC:(BrowserViewController*)otrBVC {
   TabSwitcherTransitionContext* transitionContext =
-      [[[TabSwitcherTransitionContext alloc] init] autorelease];
+      [[TabSwitcherTransitionContext alloc] init];
   Tab* currentTab = [[currentBVC tabModel] currentTab];
   UIImage* tabSnapshotImage =
       [currentTab generateSnapshotWithOverlay:YES visibleFrameOnly:YES];
@@ -108,8 +103,6 @@ tabSwitcherTransitionContextWithCurrent:(BrowserViewController*)currentBVC
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _propertyReleaser_tabSwitcherTransitionContext.Init(
-        self, [TabSwitcherTransitionContext class]);
   }
   return self;
 }

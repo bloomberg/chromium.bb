@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -23,6 +22,10 @@
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 TabSwitcherPanelOverlayType PanelOverlayTypeFromSignInPanelsType(
     TabSwitcherSignInPanelsType signInPanelType) {
@@ -63,12 +66,12 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 @implementation TabSwitcherPanelOverlayView {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  base::scoped_nsobject<UIView> _container;
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UILabel> _subtitleLabel;
-  base::scoped_nsobject<MDCButton> _textButton;
-  base::scoped_nsobject<MDCButton> _floatingButton;
-  base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
+  UIView* _container;
+  UILabel* _titleLabel;
+  UILabel* _subtitleLabel;
+  MDCButton* _textButton;
+  MDCButton* _floatingButton;
+  MDCActivityIndicator* _activityIndicator;
   std::string _recordedMetricString;
 }
 
@@ -80,12 +83,12 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
   if (self) {
     _browserState = browserState;
     // Create and add container. Will be vertically and horizontally centered.
-    _container.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _container = [[UIView alloc] initWithFrame:CGRectZero];
     [_container setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:_container];
 
     // Create and add title label to the container.
-    _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_titleLabel setFont:[MDCTypography headlineFont]];
     [_titleLabel
@@ -98,7 +101,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     [_container addSubview:_titleLabel];
 
     // Create and add subtitle label to the container.
-    _subtitleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_subtitleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_subtitleLabel setFont:[MDCTypography subheadFont]];
     [_subtitleLabel
@@ -109,7 +112,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     [_container addSubview:_subtitleLabel];
 
     // Create and add button to the container.
-    _textButton.reset([[MDCRaisedButton alloc] init]);
+    _textButton = [[MDCRaisedButton alloc] init];
     [_textButton setElevation:MDCShadowElevationNone
                      forState:UIControlStateNormal];
     MDCPalette* buttonPalette = [MDCPalette cr_bluePalette];
@@ -125,14 +128,14 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     [_container addSubview:_textButton];
 
     // Create and add floatingButton to the container.
-    _floatingButton.reset([[MDCFloatingButton alloc] init]);
+    _floatingButton = [[MDCFloatingButton alloc] init];
     [_floatingButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[_floatingButton imageView] setTintColor:[UIColor whiteColor]];
     [_container addSubview:_floatingButton];
 
     // Create and add activity indicator to the container.
-    _activityIndicator.reset(
-        [[MDCActivityIndicator alloc] initWithFrame:CGRectZero]);
+    _activityIndicator =
+        [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
     [_activityIndicator setCycleColors:ActivityIndicatorBrandedCycleColors()];
     [_activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_container addSubview:_activityIndicator];
@@ -141,11 +144,11 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     AddSameCenterXConstraint(_container, _titleLabel);
     AddSameCenterXConstraint(_container, _subtitleLabel);
     NSDictionary* viewsDictionary = @{
-      @"title" : _titleLabel.get(),
-      @"subtitle" : _subtitleLabel.get(),
-      @"button" : _textButton.get(),
-      @"floatingButton" : _floatingButton.get(),
-      @"activityIndicator" : _activityIndicator.get(),
+      @"title" : _titleLabel,
+      @"subtitle" : _subtitleLabel,
+      @"button" : _textButton,
+      @"floatingButton" : _floatingButton,
+      @"activityIndicator" : _activityIndicator,
     };
     AddSameCenterXConstraint(_container, _textButton);
     AddSameCenterXConstraint(_container, _floatingButton);
@@ -163,7 +166,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
         @[
           @"H:|-(>=0)-[container(==containerWidth@999)]-(>=0)-|",
         ],
-        @{ @"container" : _container.get() },
+        @{ @"container" : _container },
         @{ @"containerWidth" : @(kContainerWidth) }, self);
   }
   return self;
@@ -203,60 +206,52 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_EMPTY:
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_OUT:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_PROMO)]
-          autorelease];
+                             IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_PROMO)];
       buttonTitle =
           l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_BUTTON);
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_SIGNED_IN_SYNC_OFF:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_ENABLE_SYNC_TITLE)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                             IDS_IOS_TAB_SWITCHER_ENABLE_SYNC_TITLE)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_SYNC_IS_OFF)] autorelease];
+                             IDS_IOS_TAB_SWITCHER_SYNC_IS_OFF)];
       buttonTitle =
           l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_ENABLE_SYNC_BUTTON);
       break;
     case TabSwitcherPanelOverlayType::
         OVERLAY_PANEL_USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_NO_TABS_TO_SYNC_PROMO)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                             IDS_IOS_TAB_SWITCHER_NO_TABS_TO_SYNC_PROMO)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS)]
-          autorelease];
+                             IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS)];
       break;
     case TabSwitcherPanelOverlayType::
         OVERLAY_PANEL_USER_SIGNED_IN_SYNC_IN_PROGRESS:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_SYNC_IN_PROGRESS_PROMO)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                             IDS_IOS_TAB_SWITCHER_SYNC_IN_PROGRESS_PROMO)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_SYNC_IS_OFF)] autorelease];
+                             IDS_IOS_TAB_SWITCHER_SYNC_IS_OFF)];
       spinnerIsHidden = NO;
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_OPEN_TABS:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:
               l10n_util::GetNSString(
-                  IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                  IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS)]
-          autorelease];
+                             IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS)];
       buttonImage = [UIImage imageNamed:@"tabswitcher_new_tab_fab"];
       buttonImage = [buttonImage
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -270,15 +265,13 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
           l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_CREATE_NEW_TAB);
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_INCOGNITO_TABS:
-      titleString = [[[NSMutableAttributedString alloc]
+      titleString = [[NSMutableAttributedString alloc]
           initWithString:
               l10n_util::GetNSString(
-                  IDS_IOS_TAB_SWITCHER_NO_LOCAL_INCOGNITO_TABS_PROMO)]
-          autorelease];
-      subtitleString = [[[NSMutableAttributedString alloc]
+                  IDS_IOS_TAB_SWITCHER_NO_LOCAL_INCOGNITO_TABS_PROMO)];
+      subtitleString = [[NSMutableAttributedString alloc]
           initWithString:l10n_util::GetNSString(
-                             IDS_IOS_TAB_SWITCHER_NO_LOCAL_INCOGNITO_TABS)]
-          autorelease];
+                             IDS_IOS_TAB_SWITCHER_NO_LOCAL_INCOGNITO_TABS)];
       buttonImage = [UIImage imageNamed:@"tabswitcher_new_tab_fab"];
       buttonImage = [buttonImage
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -293,8 +286,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       break;
   };
 
-  base::scoped_nsobject<NSMutableParagraphStyle> titleStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* titleStyle = [[NSMutableParagraphStyle alloc] init];
   [titleStyle setMinimumLineHeight:kTitleMinimumLineHeight];
   [titleStyle setAlignment:NSTextAlignmentCenter];
   [titleStyle setLineBreakMode:NSLineBreakByWordWrapping];
@@ -303,8 +295,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
                       range:NSMakeRange(0, [titleString length])];
   [_titleLabel setAttributedText:titleString];
 
-  base::scoped_nsobject<NSMutableParagraphStyle> subtitleStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* subtitleStyle =
+      [[NSMutableParagraphStyle alloc] init];
   [subtitleStyle setMinimumLineHeight:kSubtitleMinimunLineHeight];
   [subtitleStyle setAlignment:NSTextAlignmentCenter];
   [subtitleStyle setLineBreakMode:NSLineBreakByWordWrapping];
@@ -395,10 +387,9 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 - (void)showSignIn {
   base::RecordAction(base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
-  base::scoped_nsobject<ShowSigninCommand> command([[ShowSigninCommand alloc]
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
-      signInAccessPoint:signin_metrics::AccessPoint::
-                            ACCESS_POINT_TAB_SWITCHER]);
+      signInAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER];
   [self chromeExecuteCommand:command];
 }
 

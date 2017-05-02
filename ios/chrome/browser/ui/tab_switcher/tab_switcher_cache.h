@@ -29,7 +29,7 @@ struct PendingSnapshotRequest {
 // cached and freed under memory pressure.
 @interface TabSwitcherCache : NSObject<TabModelObserver>
 
-@property(nonatomic, readonly) TabModel* mainTabModel;
+@property(weak, nonatomic, readonly) TabModel* mainTabModel;
 
 // Request a snapshot for the given |tab| of the given |size|, |completionBlock|
 // will be called with the requested snapshot. Must be called from the main

@@ -32,7 +32,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 + (NSString*)identifier;
 
 // The cell delegate.
-@property(nonatomic, assign) id<SessionCellDelegate> delegate;
+@property(nonatomic, unsafe_unretained) id<SessionCellDelegate> delegate;
 
 @end
 
@@ -41,7 +41,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 
 // Returns the top bar of the cell. The top bar holds the favicon and the tab
 // title.
-@property(nonatomic, readonly) UIView* topBar;
+@property(unsafe_unretained, nonatomic, readonly) UIView* topBar;
 
 // Sets the cell's appearance using information in |tab|.
 // The delegate needs to be set before calling this method.

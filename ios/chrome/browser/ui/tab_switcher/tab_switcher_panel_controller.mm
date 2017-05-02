@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
@@ -15,6 +14,10 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_view.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_session_changes.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -34,12 +37,12 @@ void FillVectorWithHashesUsingDistantSession(
                                          UICollectionViewDelegate,
                                          SessionCellDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  base::scoped_nsobject<TabSwitcherPanelView> _panelView;
-  base::scoped_nsobject<TabSwitcherModel> _model;
+  TabSwitcherPanelView* _panelView;
+  TabSwitcherModel* _model;
   std::string _sessionTag;
   TabSwitcherSessionType _sessionType;
-  base::scoped_nsobject<TabSwitcherCache> _cache;
-  base::scoped_nsobject<TabSwitcherPanelOverlayView> _overlayView;
+  TabSwitcherCache* _cache;
+  TabSwitcherPanelOverlayView* _overlayView;
   std::unique_ptr<const synced_sessions::DistantSession> _distantSession;
   std::unique_ptr<const TabModelSnapshot> _localSession;
 }
@@ -61,7 +64,7 @@ void FillVectorWithHashesUsingDistantSession(
   if (self) {
     DCHECK(model);
     _sessionType = TabSwitcherSessionType::DISTANT_SESSION;
-    _model.reset([model retain]);
+    _model = model;
     _distantSession = [model distantSessionForTag:sessionTag];
     _sessionTag = sessionTag;
     _browserState = browserState;
@@ -78,9 +81,9 @@ void FillVectorWithHashesUsingDistantSession(
   if (self) {
     DCHECK(model);
     _sessionType = sessionType;
-    _model.reset([model retain]);
+    _model = model;
     _localSession = [model tabModelSnapshotForLocalSession:sessionType];
-    _cache.reset([cache retain]);
+    _cache = cache;
     _browserState = browserState;
     [self loadView];
   }
@@ -311,9 +314,9 @@ void FillVectorWithHashesUsingDistantSession(
   DCHECK(TabSwitcherSessionTypeIsLocalSession(_sessionType));
 
   if (!_overlayView) {
-    _overlayView.reset([[TabSwitcherPanelOverlayView alloc]
-        initWithFrame:[_panelView bounds]
-         browserState:_browserState]);
+    _overlayView =
+        [[TabSwitcherPanelOverlayView alloc] initWithFrame:[_panelView bounds]
+                                              browserState:_browserState];
     [_overlayView
         setOverlayType:
             (_sessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION)
@@ -339,10 +342,9 @@ void FillVectorWithHashesUsingDistantSession(
 }
 
 - (void)loadView {
-  _panelView.reset(
-      [[TabSwitcherPanelView alloc] initWithSessionType:_sessionType]);
-  _panelView.get().collectionView.dataSource = self;
-  _panelView.get().collectionView.delegate = self;
+  _panelView = [[TabSwitcherPanelView alloc] initWithSessionType:_sessionType];
+  _panelView.collectionView.dataSource = self;
+  _panelView.collectionView.delegate = self;
 }
 
 - (synced_sessions::DistantSession const*)distantSession {

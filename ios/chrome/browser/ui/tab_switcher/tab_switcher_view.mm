@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -19,6 +18,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kHeaderHeight = 95;
 const CGFloat kNewTabButtonMarginFromEdges = 48;
@@ -26,10 +29,10 @@ const CGFloat kNewTabButtonWidth = 48;
 }
 
 @interface TabSwitcherView ()<UIScrollViewDelegate> {
-  base::scoped_nsobject<TabSwitcherHeaderView> _headerView;
-  base::scoped_nsobject<UIScrollView> _scrollView;
-  base::scoped_nsobject<MDCButton> _openNewTabButton;
-  base::scoped_nsobject<NSMutableArray> _panels;
+  TabSwitcherHeaderView* _headerView;
+  UIScrollView* _scrollView;
+  MDCButton* _openNewTabButton;
+  NSMutableArray* _panels;
   ios_internal::NewTabButtonStyle _openNewTabButtonStyle;
   NSInteger _previousPanelIndex;
 }
@@ -61,7 +64,7 @@ const CGFloat kNewTabButtonWidth = 48;
   if (self) {
     _openNewTabButtonStyle = ios_internal::NewTabButtonStyle::UNINITIALIZED;
     [self loadSubviews];
-    _panels.reset([[NSMutableArray alloc] init]);
+    _panels = [[NSMutableArray alloc] init];
     _previousPanelIndex = -1;
   }
   return self;
@@ -104,7 +107,7 @@ const CGFloat kNewTabButtonWidth = 48;
 }
 
 - (void)removePanelViewAtIndex:(NSUInteger)index updateScrollView:(BOOL)update {
-  DCHECK_EQ([[_panels objectAtIndex:index] superview], _scrollView.get());
+  DCHECK_EQ([[_panels objectAtIndex:index] superview], _scrollView);
   [[_panels objectAtIndex:index] removeFromSuperview];
   [_panels removeObjectAtIndex:index];
   if (update)
@@ -171,14 +174,14 @@ const CGFloat kNewTabButtonWidth = 48;
 
 - (void)loadSubviews {
   // Creates and add the header view showing the list of panels.
-  base::scoped_nsobject<TabSwitcherHeaderView> headerView(
-      [[TabSwitcherHeaderView alloc] initWithFrame:[self headerViewFrame]]);
+  TabSwitcherHeaderView* headerView =
+      [[TabSwitcherHeaderView alloc] initWithFrame:[self headerViewFrame]];
   [self addSubview:headerView];
   _headerView = headerView;
 
   // Creates and add the scrollview containing the panels.
-  base::scoped_nsobject<UIScrollView> scrollView(
-      [[UIScrollView alloc] initWithFrame:[self scrollViewFrame]]);
+  UIScrollView* scrollView =
+      [[UIScrollView alloc] initWithFrame:[self scrollViewFrame]];
   [scrollView setBackgroundColor:[[MDCPalette greyPalette] tint900]];
   [scrollView setAlwaysBounceHorizontal:YES];
   [scrollView setDelegate:self];
@@ -190,7 +193,7 @@ const CGFloat kNewTabButtonWidth = 48;
   _scrollView = scrollView;
 
   // Creates and add the floating new tab button.
-  _openNewTabButton.reset([[MDCFloatingButton alloc] init]);
+  _openNewTabButton = [[MDCFloatingButton alloc] init];
   UIImage* openNewTabButtonImage =
       [[UIImage imageNamed:@"tabswitcher_new_tab_fab"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];

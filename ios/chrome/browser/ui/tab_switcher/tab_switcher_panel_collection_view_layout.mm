@@ -7,7 +7,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat minWidthOfTab = 200;
@@ -20,8 +23,8 @@ const CGFloat kMaxCellHeightWidthRatio = 1.8;
 
 @implementation TabSwitcherPanelCollectionViewLayout {
   // Keeps track of the inserted and deleted index paths.
-  base::scoped_nsobject<NSMutableArray> _deletedIndexPaths;
-  base::scoped_nsobject<NSMutableArray> _insertedIndexPaths;
+  NSMutableArray* _deletedIndexPaths;
+  NSMutableArray* _insertedIndexPaths;
 }
 
 - (int)maxRowCountWithColumnCount:(int)columnCount inBounds:(CGSize)boundsSize {

@@ -6,6 +6,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 TabModelSnapshot::TabModelSnapshot(TabModel* tabModel) {
   for (Tab* tab in tabModel) {
@@ -31,7 +36,7 @@ size_t TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(Tab* tab) {
   std::stringstream ss;
   // lastVisitedTimestamp is used as an approximation for whether the tab's
   // snapshot changed.
-  ss << tab.tabId << std::endl
+  ss << base::SysNSStringToUTF8(tab.tabId) << std::endl
      << base::SysNSStringToUTF8(tab.urlDisplayString) << std::endl
      << std::hexfloat << tab.lastVisitedTimestamp << std::endl;
   return std::hash<std::string>()(ss.str());

@@ -50,6 +50,7 @@ bundle_data("resources") {
 }
 
 source_set("tab_switcher") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_model_snapshot.h",
     "tab_model_snapshot.mm",

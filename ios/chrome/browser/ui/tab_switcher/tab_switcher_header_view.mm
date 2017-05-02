@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_view.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -16,6 +14,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kCollectionViewTopMargin = 39.0;
@@ -41,7 +43,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 // we want the accessibilityFrame to resize itself using autoresizing masks.
 @interface AccessiblePanelSelectorView : UIView {
   // The delegate which receives actions.
-  base::WeakNSProtocol<id<AccessiblePanelSelectorDelegate>> _delegate;
+  __weak id<AccessiblePanelSelectorDelegate> _delegate;
 }
 - (void)setDelegate:(id<AccessiblePanelSelectorDelegate>)delegate;
 @end
@@ -49,7 +51,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 @implementation AccessiblePanelSelectorView
 
 - (void)setDelegate:(id<AccessiblePanelSelectorDelegate>)delegate {
-  _delegate.reset(delegate);
+  _delegate = delegate;
 }
 
 - (UIAccessibilityTraits)accessibilityTraits {
@@ -74,11 +76,11 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 @interface TabSwitcherHeaderView ()<UICollectionViewDataSource,
                                     UICollectionViewDelegate,
                                     AccessiblePanelSelectorDelegate> {
-  base::scoped_nsobject<UICollectionViewFlowLayout> _flowLayout;
-  base::scoped_nsobject<UICollectionView> _collectionView;
-  base::scoped_nsobject<AccessiblePanelSelectorView> _accessibilityView;
-  base::scoped_nsobject<UIButton> _dismissButton;
-  base::scoped_nsobject<UIView> _activeSpaceIndicatorView;
+  UICollectionViewFlowLayout* _flowLayout;
+  UICollectionView* _collectionView;
+  AccessiblePanelSelectorView* _accessibilityView;
+  UIButton* _dismissButton;
+  UIView* _activeSpaceIndicatorView;
 
   BOOL _performingUpdate;
 }
@@ -133,13 +135,14 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
            completion:(ProceduralBlock)completion {
   DCHECK(updateBlock);
 
-  __block TabSwitcherHeaderView* weakSelf = self;
+  __weak TabSwitcherHeaderView* weakSelf = self;
   [_collectionView performBatchUpdates:^{
-    if (!weakSelf)
+    TabSwitcherHeaderView* strongSelf = weakSelf;
+    if (!strongSelf)
       return;
-    weakSelf->_performingUpdate = YES;
-    updateBlock(weakSelf);
-    weakSelf->_performingUpdate = NO;
+    strongSelf->_performingUpdate = YES;
+    updateBlock(strongSelf);
+    strongSelf->_performingUpdate = NO;
   }
       completion:^(BOOL finished) {
         // Reestablish selection after the update.
@@ -165,7 +168,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 }
 
 - (UIView*)dismissButton {
-  return _dismissButton.get();
+  return _dismissButton;
 }
 
 #pragma mark - Private
@@ -202,7 +205,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 
 - (NSArray*)indexPathArrayWithIndexes:(NSArray*)indexes {
   NSMutableArray* array =
-      [[[NSMutableArray alloc] initWithCapacity:indexes.count] autorelease];
+      [[NSMutableArray alloc] initWithCapacity:indexes.count];
   for (NSNumber* index in indexes) {
     [array
         addObject:[NSIndexPath indexPathForItem:[index intValue] inSection:0]];
@@ -211,8 +214,8 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 }
 
 - (void)loadSubviews {
-  base::scoped_nsobject<UICollectionViewFlowLayout> flowLayout(
-      [[UICollectionViewFlowLayout alloc] init]);
+  UICollectionViewFlowLayout* flowLayout =
+      [[UICollectionViewFlowLayout alloc] init];
   [flowLayout setMinimumLineSpacing:0];
   [flowLayout setMinimumInteritemSpacing:0];
   const CGSize cellSize =
@@ -221,9 +224,9 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   [flowLayout setScrollDirection:UICollectionViewScrollDirectionHorizontal];
   _flowLayout = flowLayout;
 
-  _collectionView.reset([[UICollectionView alloc]
-             initWithFrame:[self collectionViewFrame]
-      collectionViewLayout:flowLayout]);
+  _collectionView =
+      [[UICollectionView alloc] initWithFrame:[self collectionViewFrame]
+                         collectionViewLayout:flowLayout];
   [_collectionView setDelegate:self];
   [_collectionView setDataSource:self];
   [_collectionView registerClass:[TabSwitcherHeaderCell class]
@@ -237,8 +240,8 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   [_collectionView setAccessibilityElementsHidden:YES];
   [self addSubview:_collectionView];
 
-  _accessibilityView.reset([[AccessiblePanelSelectorView alloc]
-      initWithFrame:[self collectionViewFrame]]);
+  _accessibilityView = [[AccessiblePanelSelectorView alloc]
+      initWithFrame:[self collectionViewFrame]];
   [_accessibilityView
       setAutoresizingMask:UIViewAutoresizingFlexibleBottomMargin |
                           UIViewAutoresizingFlexibleWidth];
@@ -246,7 +249,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   [_accessibilityView setUserInteractionEnabled:NO];
   [self addSubview:_accessibilityView];
 
-  _dismissButton.reset([[UIButton alloc] initWithFrame:CGRectZero]);
+  _dismissButton = [[UIButton alloc] initWithFrame:CGRectZero];
   UIImage* dismissImage =
       [UIImage imageNamed:@"tabswitcher_tab_switcher_button"];
   dismissImage =
@@ -270,7 +273,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
     @"H:[dismissButton(==buttonWidth)]-0-|",
   ];
   NSDictionary* viewsDictionary = @{
-    @"dismissButton" : _dismissButton.get(),
+    @"dismissButton" : _dismissButton,
   };
   NSDictionary* metrics = @{
     @"buttonHeight" : @(kDismissButtonHeight),
@@ -279,8 +282,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   ApplyVisualConstraintsWithMetricsAndOptions(
       constraints, viewsDictionary, metrics, LayoutOptionForRTLSupport(), self);
 
-  base::scoped_nsobject<UIView> activeSpaceIndicatorView(
-      [[UIView alloc] initWithFrame:CGRectZero]);
+  UIView* activeSpaceIndicatorView = [[UIView alloc] initWithFrame:CGRectZero];
   [activeSpaceIndicatorView
       setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]];
   [activeSpaceIndicatorView
