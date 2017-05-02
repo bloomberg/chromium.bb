@@ -422,7 +422,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
   testDone();
 });
 
-//Test with multiple destinations
+// Test with multiple destinations
 TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreMultipleDestinations',
     function() {
   var origin = cr.isChromeOS ? "chrome_os" : "local";
@@ -695,17 +695,17 @@ TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
   checkSectionVisible($('media-size-settings'), true);
   checkSectionVisible(scalingSettings, true);
 
-  //Change scaling input
+  // Change scaling input
   var scalingInput = scalingSettings.querySelector('.user-value');
-  expectEquals(scalingInput.value, '100');
+  expectEquals('100', scalingInput.value);
   scalingInput.stepUp(5);
-  expectEquals(scalingInput.value, '105');
+  expectEquals('105', scalingInput.value);
 
   // Trigger the event
-  var enter = document.createEvent('Event');
-  enter.initEvent('keydown');
-  enter.keyCode = 'Enter';
-  scalingInput.dispatchEvent(enter);
+  var enterEvent = document.createEvent('Event');
+  enterEvent.initEvent('keydown');
+  enterEvent.keyCode = 'Enter';
+  scalingInput.dispatchEvent(enterEvent);
   expectFalse(
       fitToPageContainer.querySelector('.checkbox').checked);
 
@@ -1161,19 +1161,19 @@ TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
 
   var loadingMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-loading-message')[0];
-  expectEquals(true, loadingMessageEl.hidden);
+  expectTrue(loadingMessageEl.hidden);
 
   var previewFailedMessageEl = previewAreaEl.getElementsByClassName(
       'preview-area-preview-failed-message')[0];
-  expectEquals(true, previewFailedMessageEl.hidden);
+  expectTrue(previewFailedMessageEl.hidden);
 
   var printFailedMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-print-failed')[0];
-  expectEquals(true, printFailedMessageEl.hidden);
+  expectTrue(printFailedMessageEl.hidden);
 
   var customMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-custom-message')[0];
-  expectEquals(false, customMessageEl.hidden);
+  expectFalse(customMessageEl.hidden);
 
   testDone();
 });
@@ -1380,11 +1380,13 @@ TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
   // increments by 1 for each startGetPreview call it makes. It should only
   // make one such call during initialization or there will be a race; see
   // crbug.com/666595
-  expectEquals(printPreview.previewArea_.previewGenerator_.inFlightRequestId_,
-    -1);
+  expectEquals(
+      -1,
+      printPreview.previewArea_.previewGenerator_.inFlightRequestId_);
   this.setInitialSettings();
-  expectEquals(printPreview.previewArea_.previewGenerator_.inFlightRequestId_,
-    0);
+  expectEquals(
+      0,
+      printPreview.previewArea_.previewGenerator_.inFlightRequestId_);
   testDone();
 });
 
