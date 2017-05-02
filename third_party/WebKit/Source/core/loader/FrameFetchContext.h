@@ -147,9 +147,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   MHTMLArchive* Archive() const override;
 
-  ResourceLoadPriority ModifyPriorityForExperiments(
-      ResourceLoadPriority) override;
-
   RefPtr<WebTaskRunner> LoadingTaskRunner() const override;
 
   std::unique_ptr<WebURLLoader> CreateURLLoader() override;

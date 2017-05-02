@@ -204,11 +204,6 @@ class PLATFORM_EXPORT FetchContext
 
   virtual MHTMLArchive* Archive() const { return nullptr; }
 
-  virtual ResourceLoadPriority ModifyPriorityForExperiments(
-      ResourceLoadPriority priority) {
-    return priority;
-  }
-
   virtual RefPtr<WebTaskRunner> LoadingTaskRunner() const { return nullptr; }
 
   PlatformProbeSink* GetPlatformProbeSink() const {

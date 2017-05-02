@@ -1273,21 +1273,6 @@
             ]
         }
     ],
-    "LowPriorityIFrames": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "lowPriorityIframes": "true"
-                    }
-                }
-            ]
-        }
-    ],
     "MacAllowBackgroundingProcesses": [
         {
             "platforms": [

@@ -180,7 +180,7 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
 class BlinkSettingsFieldTrialTest : public testing::Test {
  public:
   static const char kParserFieldTrialName[];
-  static const char kIFrameFieldTrialName[];
+  static const char kPreloadScanningFieldTrialName[];
   static const char kFakeGroupName[];
   static const char kDefaultGroupName[];
 
@@ -237,8 +237,8 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
 
 const char BlinkSettingsFieldTrialTest::kParserFieldTrialName[] =
     "BackgroundHtmlParserTokenLimits";
-const char BlinkSettingsFieldTrialTest::kIFrameFieldTrialName[] =
-    "LowPriorityIFrames";
+const char BlinkSettingsFieldTrialTest::kPreloadScanningFieldTrialName[] =
+    "HtmlPreloadScanning";
 const char BlinkSettingsFieldTrialTest::kFakeGroupName[] = "FakeGroup";
 const char BlinkSettingsFieldTrialTest::kDefaultGroupName[] = "Default";
 
@@ -275,7 +275,7 @@ TEST_F(BlinkSettingsFieldTrialTest, FieldTrialEnabled) {
 TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsEnabled) {
   CreateFieldTrialWithParams(kParserFieldTrialName, kFakeGroupName,
                              "key1", "value1", "key2", "value2");
-  CreateFieldTrialWithParams(kIFrameFieldTrialName, kFakeGroupName,
+  CreateFieldTrialWithParams(kPreloadScanningFieldTrialName, kFakeGroupName,
                              "keyA", "valueA", "keyB", "valueB");
   AppendContentBrowserClientSwitches();
   EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
@@ -286,7 +286,7 @@ TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsEnabled) {
 TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsDuplicateKeys) {
   CreateFieldTrialWithParams(kParserFieldTrialName, kFakeGroupName,
                              "key1", "value1", "key2", "value2");
-  CreateFieldTrialWithParams(kIFrameFieldTrialName, kFakeGroupName,
+  CreateFieldTrialWithParams(kPreloadScanningFieldTrialName, kFakeGroupName,
                              "key2", "duplicate", "key3", "value3");
   AppendContentBrowserClientSwitches();
   EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));

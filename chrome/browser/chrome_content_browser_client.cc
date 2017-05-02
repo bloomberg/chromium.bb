@@ -1635,9 +1635,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
       // Keys: doHtmlPreloadScanning
       "HtmlPreloadScanning",
 
-      // Keys: lowPriorityIframes
-      "LowPriorityIFrames",
-
       // Keys: disallowFetchForDocWrittenScriptsInMainFrame
       //       disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections
       //       disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G
