@@ -66,20 +66,6 @@ void UnpackStreamDependencyValues(uint32_t packed,
 // used. This code is isolated to hopefully make merging into Chromium easier.
 std::unique_ptr<SpdyFramerDecoderAdapter> DecoderAdapterFactory(
     SpdyFramer* outer) {
-  if (FLAGS_use_nested_spdy_framer_decoder) {
-    // Since chromium_reloadable_flag_spdy_use_http2_frame_decoder_adapter can
-    // be flipped on in any test when all the feature flags are on,
-    // it can unintentionally override use_nested_spdy_framer_decoder which is
-    // used to validate that the adapter technique is working. Therefore, we
-    // give precedence to use_nested_spdy_framer_decoder.
-    if (FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter) {
-      VLOG(1) << "Both NestedSpdyFramerDecoder and Http2FrameDecoderAdapter "
-              << "are enabled. NestedSpdyFramerDecoder selected.";
-    }
-    DVLOG(1) << "Creating NestedSpdyFramerDecoder.";
-    return CreateNestedSpdyFramerDecoder(outer);
-  }
-
   if (FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter) {
     DVLOG(1) << "Creating Http2FrameDecoderAdapter.";
     return CreateHttp2FrameDecoderAdapter(outer);

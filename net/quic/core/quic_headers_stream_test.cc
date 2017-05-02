@@ -135,15 +135,12 @@ class ForceHolAckListener : public QuicAckListenerInterface {
 
 enum Http2DecoderChoice {
   HTTP2_DECODER_SPDY,
-  HTTP2_DECODER_NESTED_SPDY,
   HTTP2_DECODER_NEW
 };
 std::ostream& operator<<(std::ostream& os, Http2DecoderChoice v) {
   switch (v) {
     case HTTP2_DECODER_SPDY:
       return os << "SPDY";
-    case HTTP2_DECODER_NESTED_SPDY:
-      return os << "NESTED_SPDY";
     case HTTP2_DECODER_NEW:
       return os << "NEW";
   }
@@ -173,15 +170,9 @@ struct TestParams {
         hpack_decoder(testing::get<3>(params)) {
     switch (http2_decoder) {
       case HTTP2_DECODER_SPDY:
-        FLAGS_use_nested_spdy_framer_decoder = false;
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
-        break;
-      case HTTP2_DECODER_NESTED_SPDY:
-        FLAGS_use_nested_spdy_framer_decoder = true;
         FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
         break;
       case HTTP2_DECODER_NEW:
-        FLAGS_use_nested_spdy_framer_decoder = false;
         FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
         // Http2FrameDecoderAdapter needs the new header methods, else
         // --use_http2_frame_decoder_adapter=true will be ignored.
@@ -402,7 +393,6 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::Values(Perspective::IS_CLIENT,
                                          Perspective::IS_SERVER),
                        ::testing::Values(HTTP2_DECODER_SPDY,
-                                         HTTP2_DECODER_NESTED_SPDY,
                                          HTTP2_DECODER_NEW),
                        ::testing::Values(HPACK_DECODER_SPDY, HPACK_DECODER3)));
 

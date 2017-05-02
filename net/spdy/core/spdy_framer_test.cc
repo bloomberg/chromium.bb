@@ -744,7 +744,7 @@ SpdyStringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
                          frame.size() - framer.GetHeadersMinimumSize());
 }
 
-enum DecoderChoice { DECODER_SELF, DECODER_NESTED, DECODER_HTTP2 };
+enum DecoderChoice { DECODER_SELF, DECODER_HTTP2 };
 enum HpackChoice { HPACK_DECODER_1, HPACK_DECODER_3 };
 enum Output { USE, NOT_USE };
 
@@ -758,15 +758,9 @@ class SpdyFramerTest : public ::testing::TestWithParam<
     auto param = GetParam();
     switch (std::get<0>(param)) {
       case DECODER_SELF:
-        FLAGS_use_nested_spdy_framer_decoder = false;
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
-        break;
-      case DECODER_NESTED:
-        FLAGS_use_nested_spdy_framer_decoder = true;
         FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
         break;
       case DECODER_HTTP2:
-        FLAGS_use_nested_spdy_framer_decoder = false;
         FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
         break;
     }
@@ -818,7 +812,6 @@ class SpdyFramerTest : public ::testing::TestWithParam<
 INSTANTIATE_TEST_CASE_P(SpdyFramerTests,
                         SpdyFramerTest,
                         ::testing::Combine(::testing::Values(DECODER_SELF,
-                                                             DECODER_NESTED,
                                                              DECODER_HTTP2),
                                            ::testing::Values(HPACK_DECODER_1,
                                                              HPACK_DECODER_3),
