@@ -148,6 +148,13 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void AdjustPolling(PollAdjustType type);
 
   // Helper to restart pending_wakeup_timer_.
+  // This function need to be called in 3 conditions, backoff/throttling
+  // happens, unbackoff/unthrottling happens and after |PerformDelayedNudge|
+  // runs.
+  // This function is for scheduling unbackoff/unthrottling jobs, and the
+  // poriority is, global unbackoff/unthrottling job first, if there is no
+  //  global backoff/throttling, then try to schedule types
+  // unbackoff/unthrottling job.
   void RestartWaiting();
 
   // Determines if we're allowed to contact the server right now.
@@ -216,6 +223,8 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // is the most flexible place to do this bookkeeping.
   void UpdateNudgeTimeRecords(ModelTypeSet types);
 
+  bool IsEarlierThanCurrentPendingJob(const base::TimeDelta& delay);
+
   // Used for logging.
   const std::string name_;
 
@@ -240,6 +249,8 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
 
   std::unique_ptr<BackoffDelayProvider> delay_provider_;
 
+  // TODO(gangwu): http://crbug.com/714868 too many timers in this class, try to
+  // reduce them.
   // The event that will wake us up.
   // When the whole client got throttling or backoff, we will delay this timer
   // as well.
