@@ -1597,9 +1597,16 @@ const char kForceUiDirectionDescription[] =
     "Explicitly force the UI to left-to-right (LTR) or right-to-left (RTL) "
     "mode, overriding the default direction of the UI language.";
 
-const char kForceUiDirectionLtr[] = "Left-to-right";
+const char kForceTextDirectionName[] = "Force text direction";
 
-const char kForceUiDirectionRtl[] = "Right-to-left";
+const char kForceTextDirectionDescription[] =
+    "Explicitly force the per-character directionality of UI text to "
+    "left-to-right (LTR) or right-to-left (RTL) mode, overriding the "
+    "default direction of the character language.";
+
+const char kForceDirectionLtr[] = "Left-to-right";
+
+const char kForceDirectionRtl[] = "Right-to-left";
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 

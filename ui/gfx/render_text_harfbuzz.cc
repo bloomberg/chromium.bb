@@ -7,6 +7,8 @@
 #include <limits>
 #include <set>
 
+#include "base/command_line.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
@@ -605,6 +607,26 @@ struct CaseInsensitiveCompare {
            0;
   }
 };
+
+// Applies a forced text rendering direction if specified by a command-line
+// switch.
+void CheckForcedDirection(UBiDiLevel* level) {
+  static bool has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceTextDirection);
+  if (!has_switch)
+    return;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceTextDirection)) {
+    std::string force_flag =
+        command_line->GetSwitchValueASCII(switches::kForceTextDirection);
+
+    if (force_flag == switches::kForceDirectionRTL)
+      *level = UBIDI_RTL;
+    if (force_flag == switches::kForceDirectionLTR)
+      *level = UBIDI_LTR;
+  }
+}
 
 }  // namespace
 
@@ -1382,6 +1404,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
     CHECK_GT(static_cast<size_t>(script_item_break), run_break);
+    CheckForcedDirection(&run->level);
     // Odd BiDi embedding levels correspond to RTL runs.
     run->is_rtl = (run->level % 2) == 1;
     // Find the length and script of this script run.
