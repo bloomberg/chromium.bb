@@ -11573,7 +11573,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
     rate2 += av1_get_switchable_rate(cpi, xd);
   } else {
 #if CONFIG_DUAL_FILTER
-    for (i = 0; i < 4; ++i) mbmi->interp_filter[0] = cm->interp_filter;
+    for (i = 0; i < 4; ++i) mbmi->interp_filter[i] = cm->interp_filter;
 #else
     mbmi->interp_filter = cm->interp_filter;
 #endif  // CONFIG_DUAL_FILTER
