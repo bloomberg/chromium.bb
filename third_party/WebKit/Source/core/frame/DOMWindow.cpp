@@ -106,7 +106,7 @@ DOMWindow* DOMWindow::top() const {
   if (!GetFrame())
     return nullptr;
 
-  return GetFrame()->Tree().Top()->DomWindow();
+  return GetFrame()->Tree().Top().DomWindow();
 }
 
 DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) const {
@@ -228,7 +228,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
                  source_document->Url())) {
     UseCounter::Count(GetFrame(), UseCounter::kPostMessageFromInsecureToSecure);
     if (MixedContentChecker::IsMixedContent(
-            GetFrame()->Tree().Top()->GetSecurityContext()->GetSecurityOrigin(),
+            GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin(),
             source_document->Url())) {
       UseCounter::Count(GetFrame(),
                         UseCounter::kPostMessageFromInsecureToSecureToplevel);

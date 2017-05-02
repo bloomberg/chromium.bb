@@ -562,11 +562,11 @@ void TextAutosizer::UpdatePageInfo() {
 
     // FIXME: With out-of-process iframes, the top frame can be remote and
     // doesn't have sizing information. Just return if this is the case.
-    Frame* frame = document_->GetFrame()->Tree().Top();
-    if (frame->IsRemoteFrame())
+    Frame& frame = document_->GetFrame()->Tree().Top();
+    if (frame.IsRemoteFrame())
       return;
 
-    LocalFrame* main_frame = ToLocalFrame(frame);
+    LocalFrame& main_frame = ToLocalFrame(frame);
     IntSize frame_size =
         document_->GetSettings()->TextAutosizingWindowSizeOverride();
     if (frame_size.IsEmpty())
@@ -575,7 +575,7 @@ void TextAutosizer::UpdatePageInfo() {
     page_info_.frame_width_ =
         horizontal_writing_mode ? frame_size.Width() : frame_size.Height();
 
-    IntSize layout_size = main_frame->View()->GetLayoutSize();
+    IntSize layout_size = main_frame.View()->GetLayoutSize();
     page_info_.layout_width_ =
         horizontal_writing_mode ? layout_size.Width() : layout_size.Height();
 
@@ -586,7 +586,7 @@ void TextAutosizer::UpdatePageInfo() {
 
     // If the page has a meta viewport or @viewport, don't apply the device
     // scale adjustment.
-    if (!main_frame->GetDocument()
+    if (!main_frame.GetDocument()
              ->GetViewportDescription()
              .IsSpecifiedByAuthor()) {
       page_info_.device_scale_adjustment_ =

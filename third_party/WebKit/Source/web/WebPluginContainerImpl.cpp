@@ -729,7 +729,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
     return;
   ToChromeClientImpl(page->GetChromeClient())
       .SetCursorForPlugin(cursor_info,
-                          parent_view->GetFrame().LocalFrameRoot());
+                          &parent_view->GetFrame().LocalFrameRoot());
 }
 
 void WebPluginContainerImpl::HandleDragEvent(MouseEvent* event) {

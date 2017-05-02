@@ -554,7 +554,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
 
   // TODO(paulmeyer): Isn't |m_page->dragController()| the same as |this|?
   if (!page_->GetDragController().CanProcessDrag(
-          drag_data, *inner_frame->LocalFrameRoot())) {
+          drag_data, inner_frame->LocalFrameRoot())) {
     page_->GetDragCaret().Clear();
     return false;
   }
@@ -1212,8 +1212,7 @@ void DragController::DoSystemDrag(DragImage* image,
   did_initiate_drag_ = true;
   drag_initiator_ = frame->GetDocument();
 
-  LocalFrame* main_frame = frame->LocalFrameRoot();
-  FrameView* main_frame_view = main_frame->View();
+  FrameView* main_frame_view = frame->LocalFrameRoot().View();
   IntPoint adjusted_drag_location = main_frame_view->RootFrameToContents(
       frame->View()->ContentsToRootFrame(drag_location));
   IntPoint adjusted_event_pos = main_frame_view->RootFrameToContents(

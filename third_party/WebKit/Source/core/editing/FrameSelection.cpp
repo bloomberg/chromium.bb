@@ -1053,7 +1053,7 @@ DEFINE_TRACE(FrameSelection) {
 
 void FrameSelection::ScheduleVisualUpdate() const {
   if (Page* page = frame_->GetPage())
-    page->Animator().ScheduleVisualUpdate(frame_->LocalFrameRoot());
+    page->Animator().ScheduleVisualUpdate(&frame_->LocalFrameRoot());
 }
 
 void FrameSelection::ScheduleVisualUpdateForPaintInvalidationIfNeeded() const {

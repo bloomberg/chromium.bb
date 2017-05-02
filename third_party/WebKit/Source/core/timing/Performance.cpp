@@ -155,7 +155,7 @@ void Performance::UpdateLongTaskInstrumentation() {
     return;
 
   if (HasObserverFor(PerformanceEntry::kLongTask)) {
-    UseCounter::Count(GetFrame()->LocalFrameRoot(),
+    UseCounter::Count(&GetFrame()->LocalFrameRoot(),
                       UseCounter::kLongTaskObserver);
     GetFrame()->GetPerformanceMonitor()->Subscribe(
         PerformanceMonitor::kLongTask, kLongTaskThreshold, this);

@@ -268,14 +268,14 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   // We always send hitTestResultAtPoint to the main frame if we have one,
   // otherwise we might hit areas that are obscured by higher frames.
   if (frame_->GetPage()) {
-    LocalFrame* main_frame = frame_->LocalFrameRoot();
-    if (main_frame && frame_ != main_frame) {
+    LocalFrame& main_frame = frame_->LocalFrameRoot();
+    if (frame_ != &main_frame) {
       FrameView* frame_view = frame_->View();
-      FrameView* main_view = main_frame->View();
+      FrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
         IntPoint main_frame_point = main_view->RootFrameToContents(
             frame_view->ContentsToRootFrame(RoundedIntPoint(point)));
-        return main_frame->GetEventHandler().HitTestResultAtPoint(
+        return main_frame.GetEventHandler().HitTestResultAtPoint(
             main_frame_point, hit_type, padding);
       }
     }
@@ -379,7 +379,7 @@ void EventHandler::UpdateCursor() {
 
   // We must do a cross-frame hit test because the frame that triggered the
   // cursor update could be occluded by a different frame.
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
   FrameView* view = frame_->View();
   if (!view || !view->ShouldSetCursor())
@@ -638,7 +638,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   UserGestureIndicator gesture_indicator(
       DocumentUserGestureToken::Create(frame_->GetDocument()));
   frame_->LocalFrameRoot()
-      ->GetEventHandler()
+      .GetEventHandler()
       .last_mouse_down_user_gesture_token_ =
       UserGestureIndicator::CurrentToken();
 
@@ -981,11 +981,11 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   // correct behavior.
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (frame_->LocalFrameRoot()
-          ->GetEventHandler()
+          .GetEventHandler()
           .last_mouse_down_user_gesture_token_) {
     gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
         frame_->LocalFrameRoot()
-            ->GetEventHandler()
+            .GetEventHandler()
             .last_mouse_down_user_gesture_token_.Release()));
   } else {
     gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
@@ -1175,16 +1175,16 @@ Node* EventHandler::UpdateMouseEventTargetNode(Node* target_node) {
 
 bool EventHandler::IsTouchPointerIdActiveOnFrame(int pointer_id,
                                                  LocalFrame* frame) const {
-  DCHECK_EQ(frame_, frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   return pointer_event_manager_->IsTouchPointerIdActiveOnFrame(pointer_id,
                                                                frame);
 }
 
 bool EventHandler::RootFrameTouchPointerActiveInCurrentFrame(
     int pointer_id) const {
-  return frame_ != frame_->LocalFrameRoot() &&
+  return frame_ != &frame_->LocalFrameRoot() &&
          frame_->LocalFrameRoot()
-             ->GetEventHandler()
+             .GetEventHandler()
              .IsTouchPointerIdActiveOnFrame(pointer_id, frame_);
 }
 
@@ -1197,8 +1197,8 @@ void EventHandler::SetPointerCapture(int pointer_id, EventTarget* target) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot()->GetEventHandler().SetPointerCapture(pointer_id,
-                                                                  target);
+    frame_->LocalFrameRoot().GetEventHandler().SetPointerCapture(pointer_id,
+                                                                 target);
   } else {
     pointer_event_manager_->SetPointerCapture(pointer_id, target);
   }
@@ -1206,8 +1206,8 @@ void EventHandler::SetPointerCapture(int pointer_id, EventTarget* target) {
 
 void EventHandler::ReleasePointerCapture(int pointer_id, EventTarget* target) {
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot()->GetEventHandler().ReleasePointerCapture(
-        pointer_id, target);
+    frame_->LocalFrameRoot().GetEventHandler().ReleasePointerCapture(pointer_id,
+                                                                     target);
   } else {
     pointer_event_manager_->ReleasePointerCapture(pointer_id, target);
   }
@@ -1216,7 +1216,7 @@ void EventHandler::ReleasePointerCapture(int pointer_id, EventTarget* target) {
 bool EventHandler::HasPointerCapture(int pointer_id,
                                      const EventTarget* target) const {
   if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    return frame_->LocalFrameRoot()->GetEventHandler().HasPointerCapture(
+    return frame_->LocalFrameRoot().GetEventHandler().HasPointerCapture(
         pointer_id, target);
   } else {
     return pointer_event_manager_->HasPointerCapture(pointer_id, target);
@@ -1311,7 +1311,7 @@ WebInputEventResult EventHandler::HandleWheelEvent(
 WebInputEventResult EventHandler::HandleGestureEvent(
     const WebGestureEvent& gesture_event) {
   // Propagation to inner frames is handled below this function.
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   DCHECK_NE(0, gesture_event.FrameScale());
 
   // Scrolling-related gesture events invoke EventHandler recursively for each
@@ -1336,7 +1336,7 @@ WebInputEventResult EventHandler::HandleGestureEvent(
     return WebInputEventResult::kNotHandled;
 
   // Propagation to inner frames is handled below this function.
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
   // Non-scrolling related gesture events do a single cross-frame hit-test and
   // jump directly to the inner most frame. This matches handleMousePressEvent
@@ -1480,7 +1480,7 @@ bool EventHandler::BestZoomableAreaForTouchPoint(const IntPoint& touch_center,
 // new frame
 void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
                                                  Element* inner_element) {
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
   HeapVector<Member<LocalFrame>> new_hover_frame_chain;
   LocalFrame* new_hover_frame_in_document =
@@ -1541,7 +1541,7 @@ void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
 // frame.
 void EventHandler::UpdateGestureTargetNodeForMouseEvent(
     const GestureEventWithHitTestResults& targeted_event) {
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
   // Behaviour of this function is as follows:
   // - Create the chain of all entered frames.
@@ -1638,7 +1638,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
     bool read_only) {
   TRACE_EVENT0("input", "EventHandler::targetGestureEvent");
 
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
   // Scrolling events get hit tested per frame (like wheel events do).
   ASSERT(!gesture_event.IsScrollEvent());
 
@@ -1906,7 +1906,7 @@ void EventHandler::ScheduleHoverStateUpdate() {
 void EventHandler::ScheduleCursorUpdate() {
   // We only want one timer for the page, rather than each frame having it's own
   // timer competing which eachother (since there's only one mouse cursor).
-  ASSERT(frame_ == frame_->LocalFrameRoot());
+  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
 
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!cursor_update_timer_.IsActive())

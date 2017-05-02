@@ -101,14 +101,13 @@ void IntersectionObservation::UpdateShouldReportRootBoundsAfterDomChange() {
   LocalFrame* target_frame = Target()->GetDocument().GetFrame();
   if (!target_frame)
     return;
-  Frame* root_frame = target_frame->Tree().Top();
-  DCHECK(root_frame);
-  if (root_frame == target_frame) {
+  Frame& root_frame = target_frame->Tree().Top();
+  if (&root_frame == target_frame) {
     should_report_root_bounds_ = true;
   } else {
     should_report_root_bounds_ =
         target_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-            root_frame->GetSecurityContext()->GetSecurityOrigin());
+            root_frame.GetSecurityContext()->GetSecurityOrigin());
   }
 }
 

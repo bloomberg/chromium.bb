@@ -175,7 +175,7 @@ TEST_F(LinkSelectionTest, HandCursorDuringLinkDrag) {
                    kSendDownEvent);
   main_frame_->GetFrame()
       ->LocalFrameRoot()
-      ->GetEventHandler()
+      .GetEventHandler()
       .ScheduleCursorUpdate();
   testing::RunDelayedTasks(50);
   const auto& cursor =
@@ -188,7 +188,7 @@ TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
                    WebInputEvent::kAltKey, kSendDownEvent);
   main_frame_->GetFrame()
       ->LocalFrameRoot()
-      ->GetEventHandler()
+      .GetEventHandler()
       .ScheduleCursorUpdate();
   testing::RunDelayedTasks(50);
   const auto& cursor =
@@ -208,7 +208,7 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
   // Hide context menu.
   frame->GetPage()->GetContextMenuController().ClearContextMenu();
 
-  frame->LocalFrameRoot()->GetEventHandler().ScheduleCursorUpdate();
+  frame->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
   testing::RunDelayedTasks(50);
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();

@@ -175,9 +175,9 @@ WebInputEventResult GestureManager::HandleGestureTap(
   // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
   // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
-    LocalFrame* main_frame = frame_->LocalFrameRoot();
-    if (main_frame && main_frame->View())
-      main_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+    LocalFrame& main_frame = frame_->LocalFrameRoot();
+    if (main_frame.View())
+      main_frame.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
     adjusted_point = frame_view->RootFrameToContents(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
@@ -237,9 +237,9 @@ WebInputEventResult GestureManager::HandleGestureTap(
   // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
   // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
-    LocalFrame* main_frame = frame_->LocalFrameRoot();
-    if (main_frame && main_frame->View())
-      main_frame->View()->UpdateAllLifecyclePhases();
+    LocalFrame& main_frame = frame_->LocalFrameRoot();
+    if (main_frame.View())
+      main_frame.View()->UpdateAllLifecyclePhases();
     adjusted_point = frame_view->RootFrameToContents(tapped_position);
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
         frame_, adjusted_point, hit_type);

@@ -75,14 +75,14 @@ Frame* FrameTree::Parent() const {
   return this_frame_->Client()->Parent();
 }
 
-Frame* FrameTree::Top() const {
+Frame& FrameTree::Top() const {
   // FIXME: top() should never return null, so here are some hacks to deal
   // with EmptyLocalFrameClient and cases where the frame is detached
   // already...
   if (!this_frame_->Client())
-    return this_frame_;
+    return *this_frame_;
   Frame* candidate = this_frame_->Client()->Top();
-  return candidate ? candidate : this_frame_.Get();
+  return candidate ? *candidate : *this_frame_;
 }
 
 Frame* FrameTree::NextSibling() const {
@@ -154,7 +154,7 @@ Frame* FrameTree::Find(const AtomicString& name) const {
     return this_frame_;
 
   if (EqualIgnoringASCIICase(name, "_top"))
-    return Top();
+    return &Top();
 
   if (EqualIgnoringASCIICase(name, "_parent"))
     return Parent() ? Parent() : this_frame_.Get();
@@ -299,7 +299,7 @@ void showFrameTree(const blink::Frame* frame) {
     return;
   }
 
-  printFrames(frame->Tree().Top(), frame, 0);
+  printFrames(&frame->Tree().Top(), frame, 0);
 }
 
 #endif

@@ -942,7 +942,7 @@ std::unique_ptr<TracedValue> FrameEventData(LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   bool is_main_frame = frame && frame->IsMainFrame();
   value->SetBoolean("isMainFrame", is_main_frame);
-  value->SetString("page", ToHexString(frame->LocalFrameRoot()));
+  value->SetString("page", ToHexString(&frame->LocalFrameRoot()));
   return value;
 }
 
@@ -1147,7 +1147,7 @@ std::unique_ptr<TracedValue> InspectorTracingStartedInFrame::Data(
     LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("sessionId", session_id);
-  value->SetString("page", ToHexString(frame->LocalFrameRoot()));
+  value->SetString("page", ToHexString(&frame->LocalFrameRoot()));
   value->BeginArray("frames");
   for (Frame* f = frame; f; f = f->Tree().TraverseNext(frame)) {
     if (!f->IsLocalFrame())

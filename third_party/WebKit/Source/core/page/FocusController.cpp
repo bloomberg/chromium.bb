@@ -822,7 +822,7 @@ Frame* FocusController::FocusedOrMainFrame() const {
   // FIXME: This is a temporary hack to ensure that we return a LocalFrame, even
   // when the mainFrame is remote.  FocusController needs to be refactored to
   // deal with RemoteFrames cross-process focus transfers.
-  for (Frame* frame = page_->MainFrame()->Tree().Top(); frame;
+  for (Frame* frame = &page_->MainFrame()->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (frame->IsLocalRoot())
       return frame;
@@ -978,8 +978,8 @@ bool FocusController::AdvanceFocusInDocumentOrder(
       document->ClearFocusedElement();
       document->SetSequentialFocusNavigationStartingPoint(nullptr);
       SetFocusedFrame(nullptr);
-      ToRemoteFrame(frame->LocalFrameRoot()->Tree().Parent())
-          ->AdvanceFocus(type, frame->LocalFrameRoot());
+      ToRemoteFrame(frame->LocalFrameRoot().Tree().Parent())
+          ->AdvanceFocus(type, &frame->LocalFrameRoot());
       return true;
     }
 
@@ -1144,7 +1144,7 @@ void FocusController::SetActive(bool active) {
   Frame* frame = FocusedOrMainFrame();
   if (frame->IsLocalFrame()) {
     Document* const document =
-        ToLocalFrame(frame)->LocalFrameRoot()->GetDocument();
+        ToLocalFrame(frame)->LocalFrameRoot().GetDocument();
     DCHECK(document);
     if (!document->IsActive())
       return;
