@@ -265,6 +265,9 @@ const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
+// Enables action handler apps (e.g. creating new notes) on lock screen.
+const char kEnableLockScreenApps[] = "enable-lock-screen-apps";
+
 // Enables Kiosk mode for Chrome OS. Note this switch refers to retail mode
 // rather than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
