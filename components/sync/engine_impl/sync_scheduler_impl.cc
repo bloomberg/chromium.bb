@@ -149,6 +149,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {
   DCHECK(CalledOnValidThread());
+
   Stop();
 }
 
@@ -162,6 +163,8 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
 }
 
 void SyncSchedulerImpl::OnConnectionStatusChange() {
+  DCHECK(CalledOnValidThread());
+
   if (HttpResponse::CONNECTION_UNAVAILABLE ==
       cycle_context_->connection_manager()->server_status()) {
     // Optimistically assume that the connection is fixed and try
@@ -187,6 +190,7 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
 
 void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
   DCHECK(CalledOnValidThread());
+
   std::string thread_name = base::PlatformThread::GetName();
   if (thread_name.empty())
     thread_name = "<Main thread>";
@@ -239,6 +243,7 @@ ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnblockedTypes() {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
+
   SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
   event.snapshot = SyncCycle(cycle_context_, this).TakeSnapshot();
   for (auto& observer : *cycle_context_->listeners())
@@ -274,12 +279,14 @@ void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
   DCHECK(!pending_configure_params_);
   DCHECK(!params.report_success_task.is_null());
   CHECK(started_) << "Scheduler must be running to clear.";
+
   pending_clear_params_ = base::MakeUnique<ClearParams>(params);
   TrySyncCycleJob();
 }
 
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
   DCHECK(CalledOnValidThread());
+
   if (IsCurrentlyThrottled()) {
     SDVLOG(1) << "Unable to run a job because we're throttled.";
     return false;
@@ -391,9 +398,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
   if (!CanRunNudgeJobNow(NORMAL_PRIORITY))
     return;
 
-  TimeTicks incoming_run_time = TimeTicks::Now() + delay;
-  if (pending_wakeup_timer_.IsRunning() &&
-      (pending_wakeup_timer_.desired_run_time() < incoming_run_time)) {
+  if (!IsEarlierThanCurrentPendingJob(delay)) {
     // Old job arrives sooner than this one.  Don't reschedule it.
     return;
   }
@@ -419,6 +424,7 @@ const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
 
 void SyncSchedulerImpl::SetDefaultNudgeDelay(TimeDelta delay_ms) {
   DCHECK(CalledOnValidThread());
+
   nudge_tracker_.SetDefaultNudgeDelay(delay_ms);
 }
 
@@ -531,7 +537,6 @@ void SyncSchedulerImpl::HandleFailure(
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
               << wait_interval_->length.InMilliseconds() << "ms.";
   }
-  RestartWaiting();
 }
 
 void SyncSchedulerImpl::DoPollSyncCycleJob() {
@@ -552,6 +557,7 @@ void SyncSchedulerImpl::DoPollSyncCycleJob() {
 
 void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
+
   TimeTicks now = TimeTicks::Now();
   // Update timing information for how often datatypes are triggering nudges.
   for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
@@ -576,6 +582,7 @@ TimeDelta SyncSchedulerImpl::GetPollInterval() {
 
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
   DCHECK(CalledOnValidThread());
+
   if (!started_)
     return;
 
@@ -619,7 +626,16 @@ void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
 
 void SyncSchedulerImpl::RestartWaiting() {
   if (wait_interval_.get()) {
-    // Global throttling or backoff
+    // Global throttling or backoff.
+    if (!IsEarlierThanCurrentPendingJob(wait_interval_->length)) {
+      // We check here because if we do not check here, and we already scheduled
+      // a global unblock job, we will schedule another unblock job which has
+      // same waiting time, then the job will be run later than expected. Even
+      // we did not schedule an unblock job when code reach here, it is ok since
+      // |TrySyncCycleJobImpl| will call this function after the scheduled job
+      // got run.
+      return;
+    }
     NotifyRetryTime(base::Time::Now() + wait_interval_->length);
     SDVLOG(2) << "Starting WaitInterval timer of length "
               << wait_interval_->length.InMilliseconds() << "ms.";
@@ -637,6 +653,9 @@ void SyncSchedulerImpl::RestartWaiting() {
     // Per-datatype throttled or backed off.
     TimeDelta time_until_next_unblock =
         nudge_tracker_.GetTimeUntilNextUnblock();
+    if (!IsEarlierThanCurrentPendingJob(time_until_next_unblock)) {
+      return;
+    }
     pending_wakeup_timer_.Start(FROM_HERE, time_until_next_unblock,
                                 base::Bind(&SyncSchedulerImpl::OnTypesUnblocked,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -676,12 +695,13 @@ void SyncSchedulerImpl::TrySyncCycleJob() {
 }
 
 void SyncSchedulerImpl::TrySyncCycleJobImpl() {
+  DCHECK(CalledOnValidThread());
+
   JobPriority priority = next_sync_cycle_job_priority_;
   next_sync_cycle_job_priority_ = NORMAL_PRIORITY;
 
   nudge_tracker_.SetSyncCycleStartTime(TimeTicks::Now());
 
-  DCHECK(CalledOnValidThread());
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
       SDVLOG(2) << "Found pending configure job";
@@ -706,17 +726,7 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
            cycle_context_->connection_manager()->HasInvalidAuthToken());
   }
 
-  if (IsBackingOff() && !pending_wakeup_timer_.IsRunning()) {
-    // If we succeeded, our wait interval would have been cleared.  If it hasn't
-    // been cleared, then we should increase our backoff interval and schedule
-    // another retry.
-    TimeDelta length = delay_provider_->GetDelay(wait_interval_->length);
-    wait_interval_ = base::MakeUnique<WaitInterval>(
-        WaitInterval::EXPONENTIAL_BACKOFF, length);
-    SDVLOG(2) << "Sync cycle failed.  Will back off for "
-              << wait_interval_->length.InMilliseconds() << "ms.";
-    RestartWaiting();
-  }
+  RestartWaiting();
 }
 
 void SyncSchedulerImpl::PollTimerCallback() {
@@ -749,14 +759,16 @@ void SyncSchedulerImpl::Unthrottle() {
 
 void SyncSchedulerImpl::OnTypesUnblocked() {
   DCHECK(CalledOnValidThread());
+
   nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
   NotifyBlockedTypesChanged(nudge_tracker_.GetBlockedTypes());
 
-  RestartWaiting();
-
   // Maybe this is a good time to run a nudge job.  Let's try it.
+  // If not a good time, reschedule a new run.
   if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY))
     TrySyncCycleJob();
+  else
+    RestartWaiting();
 }
 
 void SyncSchedulerImpl::PerformDelayedNudge() {
@@ -803,12 +815,14 @@ void SyncSchedulerImpl::NotifyBlockedTypesChanged(ModelTypeSet types) {
 
 bool SyncSchedulerImpl::IsBackingOff() const {
   DCHECK(CalledOnValidThread());
+
   return wait_interval_.get() &&
          wait_interval_->mode == WaitInterval::EXPONENTIAL_BACKOFF;
 }
 
 void SyncSchedulerImpl::OnThrottled(const TimeDelta& throttle_duration) {
   DCHECK(CalledOnValidThread());
+
   wait_interval_ = base::MakeUnique<WaitInterval>(WaitInterval::THROTTLED,
                                                   throttle_duration);
   NotifyRetryTime(base::Time::Now() + wait_interval_->length);
@@ -820,17 +834,20 @@ void SyncSchedulerImpl::OnThrottled(const TimeDelta& throttle_duration) {
 
 void SyncSchedulerImpl::OnTypesThrottled(ModelTypeSet types,
                                          const TimeDelta& throttle_duration) {
+  DCHECK(CalledOnValidThread());
+
   TimeTicks now = TimeTicks::Now();
 
   SDVLOG(1) << "Throttling " << ModelTypeSetToString(types) << " for "
             << throttle_duration.InMinutes() << " minutes.";
 
   nudge_tracker_.SetTypesThrottledUntil(types, throttle_duration, now);
-  RestartWaiting();
   NotifyBlockedTypesChanged(nudge_tracker_.GetBlockedTypes());
 }
 
 void SyncSchedulerImpl::OnTypesBackedOff(ModelTypeSet types) {
+  DCHECK(CalledOnValidThread());
+
   TimeTicks now = TimeTicks::Now();
 
   for (ModelTypeSet::Iterator type = types.First(); type.Good(); type.Inc()) {
@@ -846,12 +863,12 @@ void SyncSchedulerImpl::OnTypesBackedOff(ModelTypeSet types) {
     SDVLOG(1) << "Backing off " << ModelTypeToString(type.Get()) << " for "
               << length.InSeconds() << " second.";
   }
-  RestartWaiting();
   NotifyBlockedTypesChanged(nudge_tracker_.GetBlockedTypes());
 }
 
 bool SyncSchedulerImpl::IsCurrentlyThrottled() {
   DCHECK(CalledOnValidThread());
+
   return wait_interval_.get() &&
          wait_interval_->mode == WaitInterval::THROTTLED;
 }
@@ -859,6 +876,7 @@ bool SyncSchedulerImpl::IsCurrentlyThrottled() {
 void SyncSchedulerImpl::OnReceivedShortPollIntervalUpdate(
     const TimeDelta& new_interval) {
   DCHECK(CalledOnValidThread());
+
   if (new_interval == syncer_short_poll_interval_seconds_)
     return;
   SDVLOG(1) << "Updating short poll interval to " << new_interval.InMinutes()
@@ -870,6 +888,7 @@ void SyncSchedulerImpl::OnReceivedShortPollIntervalUpdate(
 void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
     const TimeDelta& new_interval) {
   DCHECK(CalledOnValidThread());
+
   if (new_interval == syncer_long_poll_interval_seconds_)
     return;
   SDVLOG(1) << "Updating long poll interval to " << new_interval.InMinutes()
@@ -881,10 +900,13 @@ void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
 void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(
     const std::map<ModelType, TimeDelta>& nudge_delays) {
   DCHECK(CalledOnValidThread());
+
   nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
 }
 
 void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
+  DCHECK(CalledOnValidThread());
+
   if (size > 0)
     nudge_tracker_.SetHintBufferSize(size);
   else
@@ -894,6 +916,7 @@ void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
 void SyncSchedulerImpl::OnSyncProtocolError(
     const SyncProtocolError& sync_protocol_error) {
   DCHECK(CalledOnValidThread());
+
   if (ShouldRequestEarlyExit(sync_protocol_error)) {
     SDVLOG(2) << "Sync Scheduler requesting early exit.";
     Stop();
@@ -906,23 +929,38 @@ void SyncSchedulerImpl::OnSyncProtocolError(
 }
 
 void SyncSchedulerImpl::OnReceivedGuRetryDelay(const TimeDelta& delay) {
+  DCHECK(CalledOnValidThread());
+
   nudge_tracker_.SetNextRetryTime(TimeTicks::Now() + delay);
   retry_timer_.Start(FROM_HERE, delay, this,
                      &SyncSchedulerImpl::RetryTimerCallback);
 }
 
 void SyncSchedulerImpl::OnReceivedMigrationRequest(ModelTypeSet types) {
+  DCHECK(CalledOnValidThread());
+
   for (auto& observer : *cycle_context_->listeners())
     observer.OnMigrationRequested(types);
 }
 
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {
   DCHECK(CalledOnValidThread());
+
   cycle_context_->set_notifications_enabled(notifications_enabled);
   if (notifications_enabled)
     nudge_tracker_.OnInvalidationsEnabled();
   else
     nudge_tracker_.OnInvalidationsDisabled();
+}
+
+bool SyncSchedulerImpl::IsEarlierThanCurrentPendingJob(const TimeDelta& delay) {
+  TimeTicks incoming_run_time = TimeTicks::Now() + delay;
+  if (pending_wakeup_timer_.IsRunning() &&
+      (pending_wakeup_timer_.desired_run_time() < incoming_run_time)) {
+    // Old job arrives sooner than this one.
+    return false;
+  }
+  return true;
 }
 
 #undef SDVLOG_LOC
