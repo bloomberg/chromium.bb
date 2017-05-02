@@ -128,6 +128,8 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
  * shaper face data
  */
 
+HB_SHAPER_DATA_ENSURE_DEFINE(ot, face)
+
 hb_ot_shaper_face_data_t *
 _hb_ot_shaper_face_data_create (hb_face_t *face)
 {
@@ -144,6 +146,8 @@ _hb_ot_shaper_face_data_destroy (hb_ot_shaper_face_data_t *data)
 /*
  * shaper font data
  */
+
+HB_SHAPER_DATA_ENSURE_DEFINE(ot, font)
 
 struct hb_ot_shaper_font_data_t {};
 
@@ -374,7 +378,6 @@ hb_ot_shape_setup_masks_fraction (hb_ot_shape_context_t *c)
     post_mask = c->plan->numr_mask | c->plan->frac_mask;
   }
 
-  /* TODO look in pre/post context text also. */
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)

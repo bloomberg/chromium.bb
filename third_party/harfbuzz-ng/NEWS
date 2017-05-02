@@ -1,3 +1,40 @@
+Overview of changes leading to 1.4.6
+Sunday, April 23, 2017
+====================================
+
+- Graphite2: Fix RTL positioning issue.
+- Backlist GDEF of more versions of Padauk and Tahoma.
+- New, experimental, cmake alternative build system.
+
+
+Overview of changes leading to 1.4.5
+Friday, March 10, 2017
+====================================
+
+- Revert "Fix Context lookup application when moving back after a glyph..."
+  This introduced memory access problems.  To be fixed properly soon.
+
+
+Overview of changes leading to 1.4.4
+Sunday, March 5, 2017
+====================================
+
+- Fix Context lookup application when moving back after a glyph deletion.
+- Fix buffer-overrun in Bengali.
+
+
+Overview of changes leading to 1.4.3
+Saturday, February 25, 2017
+====================================
+
+- Route Adlam script to Arabic shaper.
+- Misc fixes.
+- New API:
+  hb_font_set_face()
+- Deprecate API:
+  hb_graphite2_font_get_gr_font()
+
+
 Overview of changes leading to 1.4.2
 Monday, January 23, 2017
 ====================================

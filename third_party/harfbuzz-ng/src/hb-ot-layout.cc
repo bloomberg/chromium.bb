@@ -39,8 +39,6 @@
 #include "hb-ot-map-private.hh"
 
 
-HB_SHAPER_DATA_ENSURE_DECLARE(ot, face)
-
 hb_ot_layout_t *
 _hb_ot_layout_create (hb_face_t *face)
 {
@@ -103,14 +101,28 @@ _hb_ot_layout_create (hb_face_t *face)
       || (928 == gdef_len && 59332 == gpos_len && 23298 == gsub_len)
       /* sha1sum:6d400781948517c3c0441ba42acb309584b73033  tahomabd.ttf from Windows 8.1 */
       || (940 == gdef_len && 60732 == gpos_len && 23310 == gsub_len)
+      /* tahoma.ttf v6.04 from Windows 8.1 x64, see https://bugzilla.mozilla.org/show_bug.cgi?id=1279925 */
+      || (964 == gdef_len && 60072 == gpos_len && 23836 == gsub_len)
+      /* tahomabd.ttf v6.04 from Windows 8.1 x64, see https://bugzilla.mozilla.org/show_bug.cgi?id=1279925 */
+      || (976 == gdef_len && 61456 == gpos_len && 23832 == gsub_len)
       /* sha1sum:e55fa2dfe957a9f7ec26be516a0e30b0c925f846  tahoma.ttf from Windows 10 */
       || (994 == gdef_len && 60336 == gpos_len && 24474 == gsub_len)
       /* sha1sum:7199385abb4c2cc81c83a151a7599b6368e92343  tahomabd.ttf from Windows 10 */
       || (1006 == gdef_len && 61740 == gpos_len && 24470 == gsub_len)
+      /* tahoma.ttf v6.91 from Windows 10 x64, see https://bugzilla.mozilla.org/show_bug.cgi?id=1279925 */
+      || (1006 == gdef_len && 61346 == gpos_len && 24576 == gsub_len)
+      /* tahomabd.ttf v6.91 from Windows 10 x64, see https://bugzilla.mozilla.org/show_bug.cgi?id=1279925 */
+      || (1018 == gdef_len && 62828 == gpos_len && 24572 == gsub_len)
+      /* sha1sum:b9c84d820c49850d3d27ec498be93955b82772b5  tahoma.ttf from Windows 10 AU */
+      || (1006 == gdef_len && 61352 == gpos_len && 24576 == gsub_len)
+      /* sha1sum:2bdfaab28174bdadd2f3d4200a30a7ae31db79d2  tahomabd.ttf from Windows 10 AU */
+      || (1018 == gdef_len && 62834 == gpos_len && 24572 == gsub_len)
       /* sha1sum:b0d36cf5a2fbe746a3dd277bffc6756a820807a7  Tahoma.ttf from Mac OS X 10.9 */
       || (832 == gdef_len && 47162 == gpos_len && 7324 == gsub_len)
       /* sha1sum:12fc4538e84d461771b30c18b5eb6bd434e30fba  Tahoma Bold.ttf from Mac OS X 10.9 */
       || (844 == gdef_len && 45474 == gpos_len && 7302 == gsub_len)
+      /* sha1sum:eb8afadd28e9cf963e886b23a30b44ab4fd83acc  himalaya.ttf from Windows 7 */
+      || (180 == gdef_len && 7254 == gpos_len && 13054 == gsub_len)
       /* sha1sum:73da7f025b238a3f737aa1fde22577a6370f77b0  himalaya.ttf from Windows 8 */
       || (192 == gdef_len && 7254 == gpos_len && 12638 == gsub_len)
       /* sha1sum:6e80fd1c0b059bbee49272401583160dc1e6a427  himalaya.ttf from Windows 8.1 */
@@ -121,6 +133,14 @@ _hb_ot_layout_create (hb_face_t *face)
       /* 2c0c90c6f6087ffbfea76589c93113a9cbb0e75f  cantarell-fonts-0.0.21/otf/Cantarell-Bold.otf */
       /* 55461f5b853c6da88069ffcdf7f4dd3f8d7e3e6b  cantarell-fonts-0.0.21/otf/Cantarell-Bold-Oblique.otf */
       || (188 == gdef_len && 3426 == gpos_len && 264 == gsub_len)
+      /* d125afa82a77a6475ac0e74e7c207914af84b37a padauk-2.80/Padauk.ttf RHEL 7.2 */
+      || (1058 == gdef_len && 11818 == gpos_len && 47032 == gsub_len)
+      /* 0f7b80437227b90a577cc078c0216160ae61b031 padauk-2.80/Padauk-Bold.ttf RHEL 7.2*/
+      || (1046 == gdef_len && 12600 == gpos_len && 47030 == gsub_len)
+      /* d3dde9aa0a6b7f8f6a89ef1002e9aaa11b882290 padauk-2.80/Padauk.ttf Ubuntu 16.04 */
+      || (1058 == gdef_len && 16770 == gpos_len && 71796 == gsub_len)
+      /* 5f3c98ccccae8a953be2d122c1b3a77fd805093f padauk-2.80/Padauk-Bold.ttf Ubuntu 16.04 */
+      || (1046 == gdef_len && 17862 == gpos_len && 71790 == gsub_len)
       /* 6c93b63b64e8b2c93f5e824e78caca555dc887c7 padauk-2.80/Padauk-book.ttf */
       || (1046 == gdef_len && 17112 == gpos_len && 71788 == gsub_len)
       /* d89b1664058359b8ec82e35d3531931125991fb9 padauk-2.80/Padauk-bookbold.ttf */
