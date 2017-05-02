@@ -117,7 +117,7 @@ class CORE_EXPORT ImageBitmap final
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const override;
+                                            const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override {
     return !image_->OriginClean();
   }

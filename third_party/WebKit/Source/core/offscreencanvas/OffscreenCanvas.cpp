@@ -18,6 +18,8 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/MathExtras.h"
@@ -109,7 +111,7 @@ PassRefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     SnapshotReason reason,
-    const FloatSize& size) const {
+    const FloatSize& size) {
   if (!context_) {
     *status = kInvalidSourceImageStatus;
     sk_sp<SkSurface> surface =
@@ -235,6 +237,38 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
         size_.Height()));
   }
   return frame_dispatcher_.get();
+}
+
+void OffscreenCanvas::DiscardImageBuffer() {
+  image_buffer_.reset();
+  needs_matrix_clip_restore_ = true;
+}
+
+ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
+  if (!image_buffer_) {
+    IntSize surface_size(width(), height());
+    OpacityMode opacity_mode =
+        context_->CreationAttributes().hasAlpha() ? kNonOpaque : kOpaque;
+    std::unique_ptr<ImageBufferSurface> surface;
+    if (RuntimeEnabledFeatures::accelerated2dCanvasEnabled()) {
+      surface.reset(
+          new AcceleratedImageBufferSurface(surface_size, opacity_mode));
+    }
+
+    if (!surface || !surface->IsValid()) {
+      surface.reset(new UnacceleratedImageBufferSurface(
+          surface_size, opacity_mode, kInitializeImagePixels));
+    }
+
+    image_buffer_ = ImageBuffer::Create(std::move(surface));
+
+    if (needs_matrix_clip_restore_) {
+      needs_matrix_clip_restore_ = false;
+      context_->RestoreCanvasMatrixClipStack(image_buffer_->Canvas());
+    }
+  }
+
+  return image_buffer_.get();
 }
 
 ScriptPromise OffscreenCanvas::Commit(RefPtr<StaticBitmapImage> image,

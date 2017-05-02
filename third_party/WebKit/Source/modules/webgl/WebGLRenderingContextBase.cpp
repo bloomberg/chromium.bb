@@ -1500,15 +1500,17 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->Buffer())
+  if (!canvas()->GetOrCreateImageBuffer())
     return false;
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!canvas()->Buffer()->CopyRenderingResultsFromDrawingBuffer(
-          GetDrawingBuffer(), source_buffer)) {
+  if (!canvas()
+           ->GetOrCreateImageBuffer()
+           ->CopyRenderingResultsFromDrawingBuffer(GetDrawingBuffer(),
+                                                   source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
     // handle before reaching this point.  If that assumption ever stops holding
@@ -4965,7 +4967,7 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     GLint yoffset,
     const IntRect& source_sub_rectangle) {
   if (!canvas->Is3d()) {
-    ImageBuffer* buffer = canvas->Buffer();
+    ImageBuffer* buffer = canvas->GetOrCreateImageBuffer();
     if (buffer &&
         !buffer->CopyToPlatformTexture(
             FunctionIDToSnapshotReason(function_id), ContextGL(), target,

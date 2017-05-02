@@ -1112,7 +1112,7 @@ PassRefPtr<Image> ImageBitmap::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
-    const FloatSize&) const {
+    const FloatSize&) {
   *status = kNormalSourceImageStatus;
   if (!image_)
     return nullptr;
