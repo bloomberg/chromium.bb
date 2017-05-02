@@ -6,9 +6,7 @@ package org.chromium.chrome.test;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
-import android.text.TextUtils;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
@@ -16,15 +14,10 @@ import org.chromium.base.test.util.parameter.Parameterizable;
 import org.chromium.base.test.util.parameter.parameters.MethodParameter;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.chrome.test.util.parameters.AddFakeAccountToAppParameter;
 import org.chromium.chrome.test.util.parameters.AddFakeAccountToOsParameter;
 import org.chromium.chrome.test.util.parameters.AddGoogleAccountToOsParameter;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,43 +25,44 @@ import java.util.Map;
 /**
  * Base for testing and interacting with multiple Activities (e.g. Document or Webapp Activities).
  */
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE
-        })
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public abstract class MultiActivityTestBase extends InstrumentationTestCase
-        implements Parameterizable {
+        implements Parameterizable, MultiActivityTestCommon.MultiActivityTestCommonCallback {
+    private final MultiActivityTestCommon mTestCommon;
+
     private Parameter.Reader mParameterReader;
+
     private Map<String, BaseParameter> mAvailableParameters;
-    protected MockStorageDelegate mStorageDelegate;
-    protected Context mContext;
+
+    public MultiActivityTestBase() {
+        mTestCommon = new MultiActivityTestCommon(this);
+    }
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        RecordHistogram.setDisabledForTests(true);
-        mContext = getInstrumentation().getTargetContext();
-        CommandLineFlags.setUp(mContext, getClass().getMethod(getName()));
-        ApplicationTestUtils.setUp(mContext, true);
-
-        // Make the DocumentTabModelSelector use a mocked out directory so that test runs don't
-        // interfere with each other.
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
-        DocumentTabModelSelector.setStorageDelegateForTests(mStorageDelegate);
+        mTestCommon.setUp();
     }
 
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        mStorageDelegate.ensureDirectoryDestroyed();
-        ApplicationTestUtils.tearDown(mContext);
-        RecordHistogram.setDisabledForTests(false);
+        mTestCommon.tearDown();
+    }
+
+    public Context getContext() {
+        return mTestCommon.mContext;
+    }
+
+    public MockStorageDelegate getStorageDelegate() {
+        return mTestCommon.mStorageDelegate;
     }
 
     /**
      * See {@link #waitForFullLoad(ChromeActivity,String,boolean)}.
      */
     protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle) {
-        waitForFullLoad(activity, expectedTitle, false);
+        mTestCommon.waitForFullLoad(activity, expectedTitle);
     }
 
     /**
@@ -77,18 +71,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
      */
     protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle,
             boolean waitLongerForLoad) {
-        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f, waitLongerForLoad);
-        final Tab tab = activity.getActivityTab();
-        assert tab != null;
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (!tab.isLoadingAndRenderingDone()) return false;
-                if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
-                return true;
-            }
-        });
+        mTestCommon.waitForFullLoad(activity, expectedTitle, waitLongerForLoad);
     }
 
     /**
