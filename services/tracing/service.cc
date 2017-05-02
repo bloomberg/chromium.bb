@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/wait.h"
-#include "services/service_manager/public/cpp/service_info.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace tracing {
 
@@ -25,9 +25,10 @@ Service::Service() : collector_binding_(this), tracing_active_(false) {
 }
 Service::~Service() {}
 
-void Service::OnBindInterface(const service_manager::ServiceInfo& source_info,
-                              const std::string& interface_name,
-                              mojo::ScopedMessagePipeHandle interface_pipe) {
+void Service::OnBindInterface(
+    const service_manager::BindSourceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,
                           std::move(interface_pipe));
 }

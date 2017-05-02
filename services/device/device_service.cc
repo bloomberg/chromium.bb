@@ -23,7 +23,7 @@
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
-#include "services/service_manager/public/cpp/service_info.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -110,7 +110,7 @@ void DeviceService::OnStart() {
 }
 
 void DeviceService::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,

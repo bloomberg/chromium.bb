@@ -75,7 +75,7 @@ class WindowServerTestBase
   void TearDown() override;
 
   // WindowServerServiceTestBase:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 

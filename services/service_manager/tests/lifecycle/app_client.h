@@ -30,7 +30,7 @@ class AppClient : public Service,
   void set_runner(ServiceRunner* runner) { runner_ = runner; }
 
   // Service:
-  void OnBindInterface(const ServiceInfo& source_info,
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() override;

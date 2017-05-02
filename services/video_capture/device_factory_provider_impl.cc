@@ -10,7 +10,7 @@
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "services/service_manager/public/cpp/service_info.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 
 namespace {

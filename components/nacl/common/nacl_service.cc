@@ -14,10 +14,10 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_info.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
@@ -65,7 +65,7 @@ class NaClService : public service_manager::Service {
   ~NaClService() override;
 
   // Service overrides.
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
@@ -88,7 +88,7 @@ NaClService::NaClService(
 NaClService::~NaClService() = default;
 
 void NaClService::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (source_info.identity.name() == content::mojom::kBrowserServiceName &&

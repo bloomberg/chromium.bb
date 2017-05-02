@@ -48,7 +48,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
       public mojom::Child {
  public:
   using InitializeCallback =
-      base::Callback<void(const service_manager::ServiceInfo&)>;
+      base::Callback<void(const service_manager::BindSourceInfo&)>;
 
   IOThreadContext(
       service_manager::mojom::ServiceRequest service_request,
@@ -66,14 +66,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
   }
 
   // Safe to call from any thread.
-  void Start(const InitializeCallback& local_info_available_callback,
-             const InitializeCallback& browser_info_available_callback,
+  void Start(const InitializeCallback& browser_info_available_callback,
              const base::Closure& stop_callback) {
     DCHECK(!started_);
 
     started_ = true;
     callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    local_info_available_callback_ = local_info_available_callback;
     browser_info_available_callback_ = browser_info_available_callback;
     stop_callback_ = stop_callback;
     io_task_runner_->PostTask(
@@ -248,18 +246,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
   /////////////////////////////////////////////////////////////////////////////
   // service_manager::Service implementation
 
-  void OnStart() override {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    DCHECK(!local_info_available_callback_.is_null());
-    local_info_ = context()->local_info();
-
-    InitializeCallback handler =
-        base::ResetAndReturn(&local_info_available_callback_);
-    callback_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(handler, local_info_));
-  }
-
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -326,13 +313,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   // Callback to run once Service::OnStart is invoked.
-  InitializeCallback local_info_available_callback_;
   InitializeCallback browser_info_available_callback_;
 
   // Callback to run if the service is stopped by the service manager.
   base::Closure stop_callback_;
 
-  service_manager::ServiceInfo local_info_;
+  service_manager::BindSourceInfo local_info_;
 
   std::unique_ptr<service_manager::ServiceContext> service_context_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory> factory_bindings_;
@@ -421,8 +407,6 @@ ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {
 
 void ServiceManagerConnectionImpl::Start() {
   context_->Start(
-      base::Bind(&ServiceManagerConnectionImpl::OnLocalServiceInfoAvailable,
-                 weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
@@ -433,12 +417,7 @@ service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
 }
 
-const service_manager::ServiceInfo& ServiceManagerConnectionImpl::GetLocalInfo()
-    const {
-  return local_info_;
-}
-
-const service_manager::ServiceInfo&
+const service_manager::BindSourceInfo&
 ServiceManagerConnectionImpl::GetBrowserInfo() const {
   return browser_info_;
 }
@@ -481,16 +460,11 @@ void ServiceManagerConnectionImpl::RemoveOnConnectHandler(int id) {
   on_connect_handlers_.erase(it);
 }
 
-void ServiceManagerConnectionImpl::OnLocalServiceInfoAvailable(
-    const service_manager::ServiceInfo& local_info) {
-  local_info_ = local_info;
-}
-
 void ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable(
-    const service_manager::ServiceInfo& browser_info) {
+    const service_manager::BindSourceInfo& browser_info) {
   browser_info_ = browser_info;
   for (auto& handler : on_connect_handlers_)
-    handler.second.Run(local_info_, browser_info_);
+    handler.second.Run(browser_info_);
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {

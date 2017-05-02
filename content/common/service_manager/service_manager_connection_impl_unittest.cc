@@ -41,10 +41,10 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   info.task_runner = io_thread.task_runner();
   connection.AddEmbeddedService(kTestServiceName, info);
   connection.Start();
-  service_manager::ServiceInfo source_info(
+  service_manager::BindSourceInfo source_info(
       {service_manager::mojom::kServiceName,
        service_manager::mojom::kRootUserID},
-      service_manager::InterfaceProviderSpecMap{});
+      service_manager::CapabilitySet());
   service_manager::mojom::ServiceFactoryPtr factory;
   service->OnBindInterface(source_info,
                            service_manager::mojom::ServiceFactory::Name_,

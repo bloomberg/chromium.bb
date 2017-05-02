@@ -16,7 +16,7 @@ AppClient::AppClient() {
 
 AppClient::~AppClient() {}
 
-void AppClient::OnBindInterface(const ServiceInfo& source_info,
+void AppClient::OnBindInterface(const BindSourceInfo& source_info,
                                 const std::string& interface_name,
                                 mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,

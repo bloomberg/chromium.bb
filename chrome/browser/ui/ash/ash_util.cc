@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #include "ui/aura/window_event_dispatcher.h"
 
@@ -37,7 +37,7 @@ class EmbeddedAshService : public service_manager::Service {
     ash::mojo_interface_factory::RegisterInterfaces(&interfaces_, task_runner_);
   }
 
-  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle handle) override {
     interfaces_.BindInterface(remote_info.identity, interface_name,

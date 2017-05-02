@@ -887,9 +887,10 @@ void Browser::OnStart() {
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
-void Browser::OnBindInterface(const service_manager::ServiceInfo& source_info,
-                              const std::string& interface_name,
-                              mojo::ScopedMessagePipeHandle interface_pipe) {
+void Browser::OnBindInterface(
+    const service_manager::BindSourceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,
                           std::move(interface_pipe));
 }

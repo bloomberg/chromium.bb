@@ -678,7 +678,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   }
 
   // WindowServerServiceTestBase:
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(source_info.identity, interface_name,

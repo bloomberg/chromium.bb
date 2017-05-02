@@ -227,7 +227,7 @@ void CatalogViewer::OnStart() {
 }
 
 void CatalogViewer::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(source_info.identity, interface_name,

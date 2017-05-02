@@ -55,8 +55,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
@@ -1312,8 +1312,8 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
-  service_manager::ServiceInfo local_info_;
-  service_manager::ServiceInfo remote_info_;
+  service_manager::BindSourceInfo local_info_;
+  service_manager::BindSourceInfo remote_info_;
 
   // The Connector proxy used to connect to services.
   service_manager::mojom::ConnectorPtr connector_;

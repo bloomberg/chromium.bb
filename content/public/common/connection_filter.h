@@ -10,7 +10,7 @@
 
 namespace service_manager {
 class Connector;
-struct ServiceInfo;
+struct BindSourceInfo;
 }
 
 namespace content {
@@ -25,10 +25,11 @@ class CONTENT_EXPORT ConnectionFilter {
   // request from a remote service. The interface request is in
   // |interface_pipe|, which is taken by the binding action. If the interface
   // request is bound, subsequent ConnectionFilters are not consulted.
-  virtual void OnBindInterface(const service_manager::ServiceInfo& source_info,
-                               const std::string& interface_name,
-                               mojo::ScopedMessagePipeHandle* interface_pipe,
-                               service_manager::Connector* connector) = 0;
+  virtual void OnBindInterface(
+      const service_manager::BindSourceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe,
+      service_manager::Connector* connector) = 0;
 };
 
 }  // namespace content

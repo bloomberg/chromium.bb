@@ -903,8 +903,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
 
-  void OnRendererConnect(const service_manager::ServiceInfo& local_info,
-                         const service_manager::ServiceInfo& remote_info);
+  void OnRendererConnect(const service_manager::BindSourceInfo& local_info,
+                         const service_manager::BindSourceInfo& remote_info);
 
   void SendJavaScriptDialogReply(IPC::Message* reply_msg,
                                  bool success,
@@ -1054,11 +1054,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<service_manager::BinderRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
-
-  service_manager::ServiceInfo browser_info_;
-  service_manager::ServiceInfo renderer_info_;
-
-  int on_connect_handler_id_ = 0;
 
   std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;
 

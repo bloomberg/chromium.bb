@@ -22,7 +22,7 @@ TestService::~TestService() {
 }
 
 void TestService::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   requestor_name_ = source_info.identity.name();

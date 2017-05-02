@@ -4,8 +4,8 @@
 
 #include "content/public/common/simple_connection_filter.h"
 
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_info.h"
 
 namespace content {
 
@@ -16,7 +16,7 @@ SimpleConnectionFilter::SimpleConnectionFilter(
 SimpleConnectionFilter::~SimpleConnectionFilter() {}
 
 void SimpleConnectionFilter::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe,
     service_manager::Connector* connector) {

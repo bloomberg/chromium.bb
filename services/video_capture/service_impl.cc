@@ -31,7 +31,7 @@ void ServiceImpl::OnStart() {
 }
 
 void ServiceImpl::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK(thread_checker_.CalledOnValidThread());

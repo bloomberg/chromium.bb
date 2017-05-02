@@ -45,7 +45,7 @@ Navigation::Navigation()
 Navigation::~Navigation() {}
 
 void Navigation::OnBindInterface(
-    const service_manager::ServiceInfo& source_info,
+    const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   std::string remote_user_id = source_info.identity.user_id();

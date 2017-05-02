@@ -43,7 +43,7 @@ class ServiceTestClient : public Service {
 
  protected:
   void OnStart() override;
-  void OnBindInterface(const ServiceInfo& source_info,
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 

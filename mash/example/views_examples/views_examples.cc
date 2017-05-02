@@ -40,7 +40,7 @@ class ViewsExamples
         "views_mus_resources.pak", std::string(), nullptr,
         views::AuraInit::Mode::AURA_MUS);
   }
-  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     registry_.BindInterface(source_info.identity, interface_name,
