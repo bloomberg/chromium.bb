@@ -1336,21 +1336,10 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-#if CONFIG_GLOBAL_MOTION
-  if (is_nontrans_global_motion(xd)) {
-#if CONFIG_DUAL_FILTER
-    int dir;
-    for (dir = 0; dir < 4; ++dir)
-      mbmi->interp_filter[dir] = cm->interp_filter == SWITCHABLE
-                                     ? EIGHTTAP_REGULAR
-                                     : cm->interp_filter;
-#else
-    mbmi->interp_filter =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
+  if (!av1_is_interp_needed(xd)) {
+    set_default_interp_filters(mbmi, cm->interp_filter);
     return;
   }
-#endif  // CONFIG_GLOBAL_MOTION
 
 #if CONFIG_DUAL_FILTER
   if (cm->interp_filter != SWITCHABLE) {
@@ -2190,9 +2179,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
-      find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
-                      mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
-                      &mbmi->wm_params[0], mi_row, mi_col);
+      if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+                          mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
+                          &mbmi->wm_params[0], mi_row, mi_col)) {
+        assert(0 && "Invalid Warped Model.");
+      }
     }
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_SUPERTX
@@ -2234,26 +2225,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_WARPED_MOTION
-  if (mbmi->motion_mode != WARPED_CAUSAL) {
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
-    read_mb_interp_filter(cm, xd, mbmi, r);
+  read_mb_interp_filter(cm, xd, mbmi, r);
 #endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
-#if CONFIG_WARPED_MOTION
-  } else {
-#if CONFIG_DUAL_FILTER
-    int dir;
-    for (dir = 0; dir < 4; ++dir)
-      mbmi->interp_filter[dir] = cm->interp_filter == SWITCHABLE
-                                     ? EIGHTTAP_REGULAR
-                                     : cm->interp_filter;
-#else
-    mbmi->interp_filter =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
-  }
-#endif  // CONFIG_WARPED_MOTION
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,

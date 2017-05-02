@@ -1388,9 +1388,19 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-#if CONFIG_GLOBAL_MOTION
-  if (is_nontrans_global_motion(xd)) return;
-#endif  // CONFIG_GLOBAL_MOTION
+  if (!av1_is_interp_needed(xd)) {
+#if CONFIG_DUAL_FILTER
+    for (int i = 0; i < 4; ++i)
+      assert(mbmi->interp_filter[i] == (cm->interp_filter == SWITCHABLE
+                                            ? EIGHTTAP_REGULAR
+                                            : cm->interp_filter));
+#else
+    assert(mbmi->interp_filter == (cm->interp_filter == SWITCHABLE
+                                       ? EIGHTTAP_REGULAR
+                                       : cm->interp_filter));
+#endif  // CONFIG_DUAL_FILTER
+    return;
+  }
   if (cm->interp_filter == SWITCHABLE) {
 #if CONFIG_DUAL_FILTER
     int dir;
@@ -2090,11 +2100,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_WARPED_MOTION
-    if (mbmi->motion_mode != WARPED_CAUSAL)
-#endif  // CONFIG_WARPED_MOTION
 #if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
-      write_mb_interp_filter(cpi, xd, w);
+    write_mb_interp_filter(cpi, xd, w);
 #endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 

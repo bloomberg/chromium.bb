@@ -686,7 +686,33 @@ static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
 #endif
 }
 
+static INLINE void set_default_interp_filters(
+    MB_MODE_INFO *const mbmi, InterpFilter frame_interp_filter) {
+#if CONFIG_DUAL_FILTER
+  int dir;
+  for (dir = 0; dir < 4; ++dir)
+    mbmi->interp_filter[dir] = frame_interp_filter == SWITCHABLE
+                                   ? EIGHTTAP_REGULAR
+                                   : frame_interp_filter;
+#else
+  mbmi->interp_filter = frame_interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR
+                                                          : frame_interp_filter;
+#endif  // CONFIG_DUAL_FILTER
+}
+
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
+  (void)xd;
+#if CONFIG_WARPED_MOTION
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  if (mbmi->motion_mode == WARPED_CAUSAL) return 0;
+#endif  // CONFIG_WARPED_MOTION
+#if CONFIG_GLOBAL_MOTION
+  if (is_nontrans_global_motion(xd)) return 0;
+#endif  // CONFIG_GLOBAL_MOTION
+  return 1;
+}
+
+static INLINE int av1_is_interp_search_needed(const MACROBLOCKD *const xd) {
   MODE_INFO *const mi = xd->mi[0];
   const int is_compound = has_second_ref(&mi->mbmi);
   int ref;

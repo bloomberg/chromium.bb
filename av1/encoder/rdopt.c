@@ -7974,26 +7974,17 @@ int64_t interpolation_filter_search(
 
   if (cm->interp_filter == SWITCHABLE) {
 #if !CONFIG_DUAL_FILTER
-    assign_filter =
-        predict_interp_filter(cpi, x, bsize, mi_row, mi_col, single_filter);
+    assign_filter = av1_is_interp_needed(xd)
+                        ? predict_interp_filter(cpi, x, bsize, mi_row, mi_col,
+                                                single_filter)
+                        : cm->interp_filter;
 #endif  // !CONFIG_DUAL_FILTER
   } else {
     assign_filter = cm->interp_filter;
   }
 
-#if CONFIG_DUAL_FILTER
-  mbmi->interp_filter[0] =
-      assign_filter == SWITCHABLE ? EIGHTTAP_REGULAR : assign_filter;
-  mbmi->interp_filter[1] =
-      assign_filter == SWITCHABLE ? EIGHTTAP_REGULAR : assign_filter;
-  mbmi->interp_filter[2] =
-      assign_filter == SWITCHABLE ? EIGHTTAP_REGULAR : assign_filter;
-  mbmi->interp_filter[3] =
-      assign_filter == SWITCHABLE ? EIGHTTAP_REGULAR : assign_filter;
-#else
-  mbmi->interp_filter =
-      assign_filter == SWITCHABLE ? EIGHTTAP_REGULAR : assign_filter;
-#endif  // CONFIG_DUAL_FILTER
+  set_default_interp_filters(mbmi, assign_filter);
+
   *switchable_rate = av1_get_switchable_rate(cpi, xd);
   av1_build_inter_predictors_sb(xd, mi_row, mi_col, orig_dst, bsize);
   model_rd_for_sb(cpi, bsize, x, xd, 0, MAX_MB_PLANE - 1, &tmp_rate, &tmp_dist,
@@ -8002,7 +7993,7 @@ int64_t interpolation_filter_search(
 
   if (assign_filter == SWITCHABLE) {
     // do interp_filter search
-    if (av1_is_interp_needed(xd)) {
+    if (av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd)) {
 #if CONFIG_DUAL_FILTER
       const int filter_set_size = DUAL_FILTER_SET_SIZE;
 #else
@@ -10175,16 +10166,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_FILTER_INTRA
         // Evaluate all sub-pel filters irrespective of whether we can use
         // them for this frame.
-#if CONFIG_DUAL_FILTER
-    for (i = 0; i < 4; ++i) {
-      mbmi->interp_filter[i] = cm->interp_filter == SWITCHABLE
-                                   ? EIGHTTAP_REGULAR
-                                   : cm->interp_filter;
-    }
-#else
-    mbmi->interp_filter =
-        cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR : cm->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
+
+    set_default_interp_filters(mbmi, cm->interp_filter);
+
     mbmi->mv[0].as_int = mbmi->mv[1].as_int = 0;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
 
@@ -11532,9 +11516,13 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   }
 #endif
 
-  if (cm->interp_filter != BILINEAR) {
+  set_default_interp_filters(mbmi, cm->interp_filter);
+
+  if (cm->interp_filter != SWITCHABLE) {
+    best_filter = cm->interp_filter;
+  } else {
     best_filter = EIGHTTAP_REGULAR;
-    if (cm->interp_filter == SWITCHABLE &&
+    if (av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd) &&
         x->source_variance >= cpi->sf.disable_filter_search_var_thresh) {
       int rs;
       int best_rs = INT_MAX;
@@ -11557,21 +11545,13 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
       }
     }
   }
-  // Set the appropriate filter
-  if (cm->interp_filter == SWITCHABLE) {
+// Set the appropriate filter
 #if CONFIG_DUAL_FILTER
-    for (i = 0; i < 4; ++i) mbmi->interp_filter[i] = best_filter;
+  for (i = 0; i < 4; ++i) mbmi->interp_filter[i] = best_filter;
 #else
-    mbmi->interp_filter = best_filter;
+  mbmi->interp_filter = best_filter;
 #endif  // CONFIG_DUAL_FILTER
-    rate2 += av1_get_switchable_rate(cpi, xd);
-  } else {
-#if CONFIG_DUAL_FILTER
-    for (i = 0; i < 4; ++i) mbmi->interp_filter[i] = cm->interp_filter;
-#else
-    mbmi->interp_filter = cm->interp_filter;
-#endif  // CONFIG_DUAL_FILTER
-  }
+  rate2 += av1_get_switchable_rate(cpi, xd);
 
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
     rate2 += av1_cost_bit(comp_mode_p, comp_pred);
