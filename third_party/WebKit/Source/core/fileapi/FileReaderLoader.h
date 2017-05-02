@@ -112,10 +112,13 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   FileReaderLoader(ReadType, FileReaderLoaderClient*);
 
   void Cleanup();
+  void AdjustReportedMemoryUsageToV8(int64_t usage);
+  void UnadjustReportedMemoryUsageToV8();
 
   void Failed(FileError::ErrorCode);
-  void ConvertToText();
-  void ConvertToDataURL();
+  String ConvertToText();
+  String ConvertToDataURL();
+  void SetStringResult(const String&);
 
   static FileError::ErrorCode HttpStatusCodeToErrorCode(int);
 
@@ -128,7 +131,7 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   Persistent<ThreadableLoader> loader_;
 
   std::unique_ptr<ArrayBufferBuilder> raw_data_;
-  bool is_raw_data_converted_;
+  bool is_raw_data_converted_ = false;
 
   Persistent<DOMArrayBuffer> array_buffer_result_;
   String string_result_;
@@ -136,20 +139,20 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   // The decoder used to decode the text data.
   std::unique_ptr<TextResourceDecoder> decoder_;
 
-  bool finished_loading_;
-  long long bytes_loaded_;
+  bool finished_loading_ = false;
+  long long bytes_loaded_ = 0;
   // If the total size of the resource is unknown, m_totalBytes is set to -1
   // until completion of loading, and the buffer for receiving data is set to
   // dynamically grow. Otherwise, m_totalBytes is set to the total size and
   // the buffer for receiving data of m_totalBytes is allocated and never grow
   // even when extra data is appeneded.
-  long long total_bytes_;
+  long long total_bytes_ = -1;
+  int64_t memory_usage_reported_to_v8_ = 0;
+  bool has_range_ = false;
+  unsigned range_start_ = 0;
+  unsigned range_end_ = 0;
 
-  bool has_range_;
-  unsigned range_start_;
-  unsigned range_end_;
-
-  FileError::ErrorCode error_code_;
+  FileError::ErrorCode error_code_ = FileError::kOK;
 };
 
 }  // namespace blink
