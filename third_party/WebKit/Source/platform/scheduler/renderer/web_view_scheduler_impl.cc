@@ -179,6 +179,8 @@ void WebViewSchedulerImpl::EnableVirtualTime() {
       allow_virtual_time_to_advance_);
 
   renderer_scheduler_->EnableVirtualTime();
+  virtual_time_control_task_queue_ = WebTaskRunnerImpl::Create(
+      renderer_scheduler_->VirtualTimeControlTaskQueue());
   ApplyVirtualTimePolicyToTimers();
 }
 
@@ -187,6 +189,7 @@ void WebViewSchedulerImpl::DisableVirtualTimeForTesting() {
     return;
   virtual_time_ = false;
   renderer_scheduler_->DisableVirtualTimeForTesting();
+  virtual_time_control_task_queue_ = nullptr;
   ApplyVirtualTimePolicyToTimers();
 }
 
@@ -258,6 +261,15 @@ void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
       ApplyVirtualTimePolicyForLoading();
       break;
   }
+}
+
+void WebViewSchedulerImpl::GrantVirtualTimeBudget(
+    base::TimeDelta budget,
+    std::unique_ptr<WTF::Closure> budget_exhausted_callback) {
+  virtual_time_budget_expired_task_handle_ =
+      virtual_time_control_task_queue_->PostDelayedCancellableTask(
+          BLINK_FROM_HERE, std::move(budget_exhausted_callback),
+          budget.InMilliseconds());
 }
 
 void WebViewSchedulerImpl::AudioStateChanged(bool is_audio_playing) {

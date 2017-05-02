@@ -169,15 +169,12 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
   web_local_frame_impl_->View()->Scheduler()->EnableVirtualTime();
 
   if (budget.isJust()) {
-    RefPtr<WebTaskRunner> task_runner =
-        Platform::Current()->CurrentThread()->GetWebTaskRunner();
-    long long delay_millis = static_cast<long long>(budget.fromJust());
-    virtual_time_budget_expired_task_handle_ =
-        task_runner->PostDelayedCancellableTask(
-            BLINK_FROM_HERE,
-            WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
-                      WrapWeakPersistent(this)),
-            delay_millis);
+    base::TimeDelta budget_amount =
+        base::TimeDelta::FromMilliseconds(budget.fromJust());
+    web_local_frame_impl_->View()->Scheduler()->GrantVirtualTimeBudget(
+        budget_amount,
+        WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
+                  WrapWeakPersistent(this)));
   }
   return Response::OK();
 }

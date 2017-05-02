@@ -159,6 +159,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Returns a task queue where tasks run at the highest possible priority.
   scoped_refptr<TaskQueue> ControlTaskQueue();
 
+  // A control task queue which also respects virtual time. Only available if
+  // virtual time has been enabled.
+  scoped_refptr<TaskQueue> VirtualTimeControlTaskQueue();
+
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
@@ -402,6 +406,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   const scoped_refptr<TaskQueue> control_task_queue_;
   const scoped_refptr<TaskQueue> compositor_task_queue_;
+  scoped_refptr<TaskQueue> virtual_time_control_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
       compositor_task_queue_enabled_voter_;
 

@@ -309,6 +309,11 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::ControlTaskQueue() {
   return helper_.ControlTaskQueue();
 }
 
+scoped_refptr<TaskQueue> RendererSchedulerImpl::VirtualTimeControlTaskQueue() {
+  helper_.CheckOnValidThread();
+  return virtual_time_control_task_queue_;
+}
+
 scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
     TaskQueue::QueueType queue_type) {
   helper_.CheckOnValidThread();
@@ -1851,6 +1856,13 @@ void RendererSchedulerImpl::EnableVirtualTime() {
   for (const scoped_refptr<TaskQueue>& task_queue : unthrottled_task_runners_)
     task_queue->SetTimeDomain(time_domain);
 
+  DCHECK(!virtual_time_control_task_queue_);
+  virtual_time_control_task_queue_ =
+      helper_.NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL));
+  virtual_time_control_task_queue_->SetQueuePriority(
+      TaskQueue::CONTROL_PRIORITY);
+  virtual_time_control_task_queue_->SetTimeDomain(time_domain);
+
   ForceUpdatePolicy();
 }
 
@@ -1861,6 +1873,8 @@ void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
   // The |unthrottled_task_runners_| are not actively managed by UpdatePolicy().
   for (const scoped_refptr<TaskQueue>& task_queue : unthrottled_task_runners_)
     task_queue->SetTimeDomain(time_domain);
+  virtual_time_control_task_queue_->UnregisterTaskQueue();
+  virtual_time_control_task_queue_ = nullptr;
 
   ForceUpdatePolicy();
 }
