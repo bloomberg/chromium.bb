@@ -130,7 +130,7 @@ public class ChromeBrowserInitializer {
 
     private void handleSynchronousStartupInternal(final boolean startGpuProcess)
             throws ProcessInitException {
-        assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+        ThreadUtils.checkUiThread();
 
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
@@ -149,7 +149,7 @@ public class ChromeBrowserInitializer {
      *              initialization tasks.
      */
     public void handlePreNativeStartup(final BrowserParts parts) {
-        assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+        ThreadUtils.checkUiThread();
 
         ProcessInitializationHandler.getInstance().initializePreNative();
         preInflationStartup();
