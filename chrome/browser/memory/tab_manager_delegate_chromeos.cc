@@ -98,10 +98,10 @@ std::ostream& operator<<(std::ostream& os, const ProcessType& type) {
       return os << "FOCUSED_APP/FOCUSED_TAB";
     case ProcessType::VISIBLE_APP:
       return os << "VISIBLE_APP";
-    case ProcessType::BACKGROUND_APP:
-      return os << "BACKGROUND_APP";
     case ProcessType::BACKGROUND_TAB:
       return os << "BACKGROUND_TAB";
+    case ProcessType::BACKGROUND_APP:
+      return os << "BACKGROUND_APP";
     case ProcessType::UNKNOWN_TYPE:
       return os << "UNKNOWN_TYPE";
     default:
