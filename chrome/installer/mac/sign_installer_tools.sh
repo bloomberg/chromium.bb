@@ -22,16 +22,23 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
-if [[ ${#} -ne 3 ]]; then
-  echo "usage: ${ME} packaging_dir codesign_keychain codesign_id" >& 2
+if [[ ${#} -ne 3 && ${#} -ne 4 ]]; then
+  echo "usage: ${ME} packaging_dir codesign_keychain codesign_id \
+[--development]" >& 2
   exit 1
 fi
 
 packaging_dir="${1}"
 codesign_keychain="${2}"
 codesign_id="${3}"
+is_development=
 
-enforcement_flags="restrict,library-validation,kill"
+if [[ ${#} == 4 && ${4} == "--development" ]]; then
+  is_development=1
+fi
+
+script_dir="$(dirname "${0}")"
+source "${script_dir}/variables.sh"
 
 executables=(goobspatch xzdec)
 libraries=(liblzma_decompress.dylib)
@@ -41,8 +48,18 @@ for executable in "${executables[@]}"; do
   sign_path="${packaging_dir}/${executable}"
   everything+=("${sign_path}")
 
-  codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-      "${sign_path}" --options "${enforcement_flags}"
+  codesign_cmd=(
+    codesign --sign "${codesign_id}" --keychain "${codesign_keychain}"
+    "${sign_path}" --options "${enforcement_flags_installer_tools}"
+  )
+
+  if [[ -z "${is_development}" ]]; then
+    requirement="designated => identifier \"${executable}\" \
+${requirement_suffix}"
+    codesign_cmd+=( -r="${requirement}" )
+  fi
+
+  "${codesign_cmd[@]}"
 done
 
 for library in "${libraries[@]}"; do
