@@ -785,29 +785,6 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
   }
 }
 
-TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
-  Settings* settings = document->GetFrame()->GetSettings();
-  settings->SetLowPriorityIframes(false);
-  FrameFetchContext* child_fetch_context = CreateChildFrame();
-
-  // No low priority iframes, expect default values.
-  EXPECT_EQ(kResourceLoadPriorityVeryHigh,
-            child_fetch_context->ModifyPriorityForExperiments(
-                kResourceLoadPriorityVeryHigh));
-  EXPECT_EQ(kResourceLoadPriorityMedium,
-            child_fetch_context->ModifyPriorityForExperiments(
-                kResourceLoadPriorityMedium));
-
-  // Low priority iframes enabled, everything should be low priority
-  settings->SetLowPriorityIframes(true);
-  EXPECT_EQ(kResourceLoadPriorityVeryLow,
-            child_fetch_context->ModifyPriorityForExperiments(
-                kResourceLoadPriorityVeryHigh));
-  EXPECT_EQ(kResourceLoadPriorityVeryLow,
-            child_fetch_context->ModifyPriorityForExperiments(
-                kResourceLoadPriorityMedium));
-}
-
 // Tests if "Save-Data" header is correctly added on the first load and reload.
 TEST_F(FrameFetchContextTest, EnableDataSaver) {
   Settings* settings = document->GetFrame()->GetSettings();

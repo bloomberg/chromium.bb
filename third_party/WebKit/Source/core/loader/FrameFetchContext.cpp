@@ -686,20 +686,6 @@ MHTMLArchive* FrameFetchContext::Archive() const {
       ->Archive();
 }
 
-ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
-    ResourceLoadPriority priority) {
-  // If Settings is null, we can't verify any experiments are in force.
-  if (!GetFrame()->GetSettings())
-    return priority;
-
-  // If enabled, drop the priority of all resources in a subframe.
-  if (GetFrame()->GetSettings()->GetLowPriorityIframes() &&
-      !GetFrame()->IsMainFrame())
-    return kResourceLoadPriorityVeryLow;
-
-  return priority;
-}
-
 RefPtr<WebTaskRunner> FrameFetchContext::LoadingTaskRunner() const {
   return GetFrame()->FrameScheduler()->LoadingTaskRunner();
 }
