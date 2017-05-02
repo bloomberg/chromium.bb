@@ -104,6 +104,54 @@ class PresentationHistory {
   DISALLOW_COPY_AND_ASSIGN(PresentationHistory);
 };
 
+// This is the raw support info, which shouldn't depend on field trial state.
+bool HardwareSupportsOverlays() {
+  if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
+    return false;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+    return false;
+
+  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes
+  // wouldn't be assigned to non-UWP apps.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_R1)
+    return false;
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  DCHECK(d3d11_device);
+
+  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.QueryInterface(dxgi_device.Receive());
+  base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(dxgi_adapter.Receive());
+
+  unsigned int i = 0;
+  while (true) {
+    base::win::ScopedComPtr<IDXGIOutput> output;
+    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.Receive())))
+      break;
+    base::win::ScopedComPtr<IDXGIOutput3> output3;
+    if (FAILED(output.QueryInterface(output3.Receive())))
+      continue;
+
+    UINT flags = 0;
+    if (FAILED(output3->CheckOverlaySupport(DXGI_FORMAT_YUY2,
+                                            d3d11_device.Get(), &flags)))
+      continue;
+
+    // Direct-only support might be ok in some circumstances, but since the
+    // overlay processor isn't set up to try to distinguish, only try to use
+    // overlays when scaling's enabled.
+    if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
+      return true;
+  }
+  return false;
+}
+
 // Only one DirectComposition surface can be rendered into at a time. Track
 // here which IDCompositionSurface is being rendered into. If another context
 // is made current, then this surface will be suspended.
@@ -798,53 +846,10 @@ DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
 
 // static
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
-  if (!base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays))
+  if (!HardwareSupportsOverlays())
     return false;
 
-  if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
-    return false;
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
-    return true;
-  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
-    return false;
-
-  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes
-  // wouldn't be assigned to non-UWP apps.
-  if (base::win::GetVersion() < base::win::VERSION_WIN10_R1)
-    return false;
-
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
-  DCHECK(d3d11_device);
-
-  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.QueryInterface(dxgi_device.Receive());
-  base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
-  dxgi_device->GetAdapter(dxgi_adapter.Receive());
-
-  unsigned int i = 0;
-  while (true) {
-    base::win::ScopedComPtr<IDXGIOutput> output;
-    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.Receive())))
-      break;
-    base::win::ScopedComPtr<IDXGIOutput3> output3;
-    if (FAILED(output.QueryInterface(output3.Receive())))
-      continue;
-
-    UINT flags = 0;
-    if (FAILED(output3->CheckOverlaySupport(DXGI_FORMAT_YUY2,
-                                            d3d11_device.Get(), &flags)))
-      continue;
-
-    // Direct-only support might be ok in some circumstances, but since the
-    // overlay processor isn't set up to try to distinguish, only try to use
-    // overlays when scaling's enabled.
-    if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
-      return true;
-  }
-  return false;
+  return base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays);
 }
 
 bool DirectCompositionSurfaceWin::InitializeNativeWindow() {
