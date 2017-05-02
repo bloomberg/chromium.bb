@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -139,20 +139,20 @@
 
       // Returns a function the verifies that the result is zero.  The parameters control what is
       // printed in the messages.
-      function resultShouldBeZero(sampleRate, bigLength, smallLength) {
+      function resultShouldBeZero(should, sampleRate, bigLength, smallLength) {
         return function (buffer) {
           var prefix = generatePrefix(sampleRate, bigLength, smallLength);
-          Should(prefix + "are identical", isBufferZero(buffer))
+          should(isBufferZero(buffer), prefix + "are identical")
             .beEqualTo(true);
         }
       }
 
       // Returns a function the verifies that the result is non-zero.  The parameters control what is
       // printed in the messages.
-      function resultShouldBeNonZero(sampleRate, bigLength, smallLength) {
+      function resultShouldBeNonZero(should, sampleRate, bigLength, smallLength) {
         return function (buffer) {
           var prefix = generatePrefix(sampleRate, bigLength, smallLength);
-          Should(prefix + "are different", !isBufferZero(buffer))
+          should(!isBufferZero(buffer), prefix + "are different")
             .beEqualTo(true);
         }
       }
@@ -160,14 +160,14 @@
       // Creates a function that is used to run an Audit test for a given sample rate, periodic wave
       // sizes, and verifier.
       function createAuditTestFunction(sampleRate, bigLength, smallLength, verifier) {
-         return function (done) {
+         return (task, should) => {
            // Create the audio graph, render it, and then verify that the output is the expected
            // result.
            createAudioGraph(sampleRate, bigLength, smallLength);
 
-           context.startRendering()
-             .then(verifier(sampleRate, bigLength, smallLength))
-             .then(done);
+           return context.startRendering()
+             .then(verifier(should, sampleRate, bigLength, smallLength))
+             .then(() => task.done());
         }
       }
 
@@ -234,19 +234,17 @@
       }
 
       // Define the tasks based on the entries in testSet.
-      function defineAuditTests () {
+      function defineAuditTests() {
         for (var k = 0; k < testSet.length; ++k) {
-          var test = testSet[k];
-          var actualName = actualTestName(test.name, k);
-          audit.defineTask(actualName,
-            createAuditTestFunction(test.sampleRate, test.bigWave, test.smallWave, test.verifier));
+          let {name, sampleRate, bigWave, smallWave, verifier} = testSet[k];
+          let  actualName = actualTestName(name, k);
+          audit.define(actualName,
+            createAuditTestFunction(sampleRate, bigWave, smallWave, verifier));
         }
       }
 
       defineAuditTests();
-      audit.runTasks();
-
-      successfullyParsed = true;
+      audit.run();
     </script>
   </body>
 </html>
