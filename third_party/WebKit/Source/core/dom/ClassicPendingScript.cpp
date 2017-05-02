@@ -31,7 +31,9 @@ ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
     ScriptResource* resource,
     const TextPosition& starting_position)
-    : PendingScript(element, starting_position), integrity_failure_(false) {
+    : PendingScript(element, starting_position),
+      ready_state_(resource ? kWaitingForResource : kReady),
+      integrity_failure_(false) {
   CheckState();
   SetResource(resource);
   MemoryCoordinator::Instance().RegisterClient(this);
@@ -67,8 +69,10 @@ void ClassicPendingScript::DisposeInternal() {
 void ClassicPendingScript::StreamingFinished() {
   CheckState();
   DCHECK(GetResource());
-  if (Client())
-    Client()->PendingScriptFinished(this);
+  DCHECK_EQ(ready_state_, kWaitingForStreaming);
+
+  bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;
+  AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
 
 // Returns true if SRI check passed.
@@ -144,12 +148,13 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
     integrity_failure_ = !CheckScriptResourceIntegrity(resource, GetElement());
   }
 
-  // If script streaming is in use, the client will be notified in
-  // streamingFinished.
+  // We are now waiting for script streaming to finish.
+  // If there is no script streamer, this step completes immediately.
+  AdvanceReadyState(kWaitingForStreaming);
   if (streamer_)
     streamer_->NotifyFinished(resource);
-  else if (Client())
-    Client()->PendingScriptFinished(this);
+  else
+    StreamingFinished();
 }
 
 void ClassicPendingScript::NotifyAppendData(ScriptResource* resource) {
@@ -167,8 +172,9 @@ DEFINE_TRACE(ClassicPendingScript) {
 ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
                                                bool& error_occurred) const {
   CheckState();
+  DCHECK(IsReady());
 
-  error_occurred = this->ErrorOccurred();
+  error_occurred = ErrorOccurred();
   if (GetResource()) {
     DCHECK(GetResource()->IsLoaded());
     if (streamer_ && !streamer_->StreamingSuppressed())
@@ -183,25 +189,35 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
   DCHECK(!streamer_);
   DCHECK(!IsWatchingForLoad());
+  DCHECK(!streamer->IsFinished());
+  DCHECK_LT(ready_state_, kWaitingForStreaming);
   streamer_ = streamer;
   CheckState();
 }
 
 bool ClassicPendingScript::IsReady() const {
   CheckState();
-  if (GetResource()) {
-    return GetResource()->IsLoaded() && (!streamer_ || streamer_->IsFinished());
-  }
-
-  return true;
+  return ready_state_ >= kReady;
 }
 
 bool ClassicPendingScript::ErrorOccurred() const {
   CheckState();
-  if (GetResource())
-    return GetResource()->ErrorOccurred() || integrity_failure_;
+  return ready_state_ == kErrorOccurred;
+}
 
-  return false;
+void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {
+  CHECK_GT(new_ready_state, ready_state_)
+      << "The ready state should monotonically advance.";
+
+  if (new_ready_state >= kReady) {
+    CHECK_LT(ready_state_, kReady)
+        << "The state should not advance from one completed state to another.";
+  }
+
+  ready_state_ = new_ready_state;
+
+  if (ready_state_ >= kReady && IsWatchingForLoad())
+    Client()->PendingScriptFinished(this);
 }
 
 void ClassicPendingScript::OnPurgeMemory() {
