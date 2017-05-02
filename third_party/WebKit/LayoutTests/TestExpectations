@@ -3385,5 +3385,10 @@ crbug.com/716569 [ Android ] tables/mozilla_expected_failures/bugs/bug2479-5.htm
 # Sheriff flake 2017-05-01
 crbug.com/716729 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Pass Timeout ]
 
-# Sheriff failure 2017-05-02
+# Sheriff failures 2017-05-02
 crbug.com/693065 [ Mac ] fast/text/variable-fonts/variable-gpos-m2b.html [ Failure ]
+crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
+crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Crash ]
+crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
+crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-path-context-clip.html [ Timeout ]
+
