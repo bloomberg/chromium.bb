@@ -79,6 +79,31 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   EXPECT_EQ(0u, wrapper2_break_token->ChildBreakTokens().size());
 }
 
+TEST_F(NGInlineLayoutAlgorithmTest, VerticalAlignBottomReplaced) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html { font-size: 10px; }
+    img { vertical-align: bottom; }
+    </style>
+    <div id=container><img src="#" width="96" height="96"></div>
+  )HTML");
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
+  NGInlineNode* inline_node =
+      new NGInlineNode(block_flow->FirstChild(), block_flow);
+  RefPtr<NGConstraintSpace> space =
+      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
+  RefPtr<NGLayoutResult> layout_result = inline_node->Layout(space.Get());
+  auto* wrapper =
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+  EXPECT_EQ(1u, wrapper->Children().size());
+  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
+  EXPECT_EQ(LayoutUnit(96), line->Height());
+  auto* img = line->Children()[0].Get();
+  EXPECT_EQ(LayoutUnit(0), img->TopOffset());
+}
+
 // Verifies that text can flow correctly around floats that were positioned
 // before the inline block.
 TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
