@@ -13,21 +13,25 @@ import java.util.concurrent.Executor;
 class TestNetworkQualityThroughputListener extends NetworkQualityThroughputListener {
     // Lock to ensure that observation counts can be updated and read by different threads.
     private final Object mLock = new Object();
-    private final ConditionVariable mWaitForThroughput;
+
+    // Signals when the first throughput observation is received.
+    private final ConditionVariable mWaitForThroughput = new ConditionVariable();
+
     private int mThroughputObservationCount;
     private Thread mExecutorThread;
 
-    TestNetworkQualityThroughputListener(Executor executor, ConditionVariable waitForThroughput) {
+    /*
+     * Constructs a NetworkQualityThroughputListener that can listen to the throughput observations.
+     * @param executor The executor on which the observations are reported.
+     */
+    TestNetworkQualityThroughputListener(Executor executor) {
         super(executor);
-        mWaitForThroughput = waitForThroughput;
     }
 
     @Override
     public void onThroughputObservation(int throughputKbps, long when, int source) {
         synchronized (mLock) {
-            if (mWaitForThroughput != null) {
-                mWaitForThroughput.open();
-            }
+            mWaitForThroughput.open();
             mThroughputObservationCount++;
             if (mExecutorThread == null) {
                 mExecutorThread = Thread.currentThread();
@@ -35,6 +39,13 @@ class TestNetworkQualityThroughputListener extends NetworkQualityThroughputListe
             // Verify that the listener is always notified on the same thread.
             assertEquals(mExecutorThread, Thread.currentThread());
         }
+    }
+
+    /*
+     * Blocks until the first throughput observation is received.
+     */
+    public void waitUntilFirstThroughputObservationReceived() {
+        mWaitForThroughput.block();
     }
 
     public int throughputObservationCount() {

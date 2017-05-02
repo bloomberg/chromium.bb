@@ -4,7 +4,6 @@
 
 package org.chromium.net;
 
-import android.os.ConditionVariable;
 import android.os.StrictMode;
 import android.support.test.filters.SmallTest;
 
@@ -78,7 +77,7 @@ public class NQETest extends CronetTestBase {
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(networkQualityExecutor);
         TestNetworkQualityThroughputListener throughputListener =
-                new TestNetworkQualityThroughputListener(networkQualityExecutor, null);
+                new TestNetworkQualityThroughputListener(networkQualityExecutor);
         try {
             testFramework.mCronetEngine.addRttListener(rttListener);
             fail("Should throw an exception.");
@@ -147,11 +146,10 @@ public class NQETest extends CronetTestBase {
                 new ExperimentalCronetEngine.Builder(getContext());
         assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
         Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
-        ConditionVariable waitForThroughput = new ConditionVariable();
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(listenersExecutor);
         TestNetworkQualityThroughputListener throughputListener =
-                new TestNetworkQualityThroughputListener(listenersExecutor, waitForThroughput);
+                new TestNetworkQualityThroughputListener(listenersExecutor);
         mCronetEngineBuilder.enableNetworkQualityEstimator(true).enableHttp2(true).enableQuic(
                 false);
         mCronetEngineBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
@@ -178,7 +176,11 @@ public class NQETest extends CronetTestBase {
         // Throughput observation is posted to the network quality estimator on the network thread
         // after the UrlRequest is completed. The observations are then eventually posted to
         // throughput listeners on the executor provided to network quality.
-        waitForThroughput.block();
+        throughputListener.waitUntilFirstThroughputObservationReceived();
+
+        // Wait for RTT observation (at the URL request layer) to be posted.
+        rttListener.waitUntilFirstUrlRequestRTTReceived();
+
         assertTrue(throughputListener.throughputObservationCount() > 0);
 
         // Prefs must be read at startup.

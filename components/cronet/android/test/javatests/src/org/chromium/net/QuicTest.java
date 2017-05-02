@@ -4,7 +4,6 @@
 
 package org.chromium.net;
 
-import android.os.ConditionVariable;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
@@ -149,20 +148,21 @@ public class QuicTest extends CronetTestBase {
         return new String(data, "UTF-8").contains(content);
     }
 
+    /**
+     * Tests that the network quality listeners are propoerly notified when QUIC is enabled.
+     */
     @LargeTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     @SuppressWarnings("deprecation")
-    public void testRealTimeNetworkQualityObservationsWithQuic() throws Exception {
+    public void testNQEWithQuic() throws Exception {
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
-        ConditionVariable waitForThroughput = new ConditionVariable();
 
         TestNetworkQualityRttListener rttListener =
                 new TestNetworkQualityRttListener(Executors.newSingleThreadExecutor());
         TestNetworkQualityThroughputListener throughputListener =
-                new TestNetworkQualityThroughputListener(
-                        Executors.newSingleThreadExecutor(), waitForThroughput);
+                new TestNetworkQualityThroughputListener(Executors.newSingleThreadExecutor());
 
         mTestFramework.mCronetEngine.addRttListener(rttListener);
         mTestFramework.mCronetEngine.addThroughputListener(throughputListener);
@@ -187,7 +187,11 @@ public class QuicTest extends CronetTestBase {
         // Throughput observation is posted to the network quality estimator on the network thread
         // after the UrlRequest is completed. The observations are then eventually posted to
         // throughput listeners on the executor provided to network quality.
-        waitForThroughput.block();
+        throughputListener.waitUntilFirstThroughputObservationReceived();
+
+        // Wait for RTT observation (at the URL request layer) to be posted.
+        rttListener.waitUntilFirstUrlRequestRTTReceived();
+
         assertTrue(throughputListener.throughputObservationCount() > 0);
 
         // Check RTT observation count after throughput observation has been received. This ensures
