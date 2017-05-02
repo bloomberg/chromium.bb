@@ -58,12 +58,12 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
     MAX_OUTCOME
   };
 
-  PasswordProtectionRequest(
-      const GURL& main_frame_url,
-      LoginReputationClientRequest::TriggerType type,
-      std::unique_ptr<PasswordProtectionFrameList> pending_password_frames,
-      PasswordProtectionService* pps,
-      int request_timeout_in_ms);
+  PasswordProtectionRequest(const GURL& main_frame_url,
+                            const GURL& password_form_action,
+                            const GURL& password_form_frame_url,
+                            LoginReputationClientRequest::TriggerType type,
+                            PasswordProtectionService* pps,
+                            int request_timeout_in_ms);
 
   base::WeakPtr<PasswordProtectionRequest> GetWeakPtr() {
     return weakptr_factory_.GetWeakPtr();
@@ -119,13 +119,16 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
               std::unique_ptr<LoginReputationClientResponse> response);
 
   // Main frame URL of the login form.
-  GURL main_frame_url_;
+  const GURL main_frame_url_;
+
+  // The action URL of the password form.
+  const GURL password_form_action_;
+
+  // Frame url of the detected password form.
+  const GURL password_form_frame_url_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType request_type_;
-
-  // The list of PasswordProtectionFrame this request is concerning.
-  std::unique_ptr<PasswordProtectionFrameList> password_frames_;
 
   // When request is sent.
   base::TimeTicks request_start_time_;

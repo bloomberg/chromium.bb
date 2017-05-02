@@ -43,6 +43,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, const LogManager*());
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  MOCK_METHOD2(CheckSafeBrowsingReputation, void(const GURL&, const GURL&));
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
@@ -424,6 +427,16 @@ TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
     driver->FillPasswordForm(fill_data);
   }
 }
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+TEST_F(ContentPasswordManagerDriverTest, CheckSafeBrowsingReputationCalled) {
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
+                                       &autofill_client_));
+  EXPECT_CALL(password_manager_client_, CheckSafeBrowsingReputation(_, _));
+  driver->CheckSafeBrowsingReputation(GURL(), GURL());
+}
+#endif
 
 INSTANTIATE_TEST_CASE_P(,
                         ContentPasswordManagerDriverTest,

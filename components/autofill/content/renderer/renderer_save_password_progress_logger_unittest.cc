@@ -73,6 +73,9 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
       const autofill::PasswordForm& password_form,
       const base::string16& generation_field) override {}
 
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override {}
+
   // Records whether RecordSavePasswordProgress() gets called.
   bool called_record_save_;
   // Records data received via RecordSavePasswordProgress() call.

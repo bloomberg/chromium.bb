@@ -627,6 +627,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       was_username_autofilled_(false),
       was_password_autofilled_(false),
       sent_request_to_store_(false),
+      checked_safe_browsing_reputation_(false),
       binding_(this) {
   // PasswordAutofillAgent is guaranteed to outlive |render_frame|.
   render_frame->GetInterfaceRegistry()->AddInterface(
@@ -899,13 +900,15 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
 bool PasswordAutofillAgent::ShouldShowNotSecureWarning(
     const blink::WebInputElement& element) {
   // Do not show a warning if the feature is disabled or the context is secure.
-  if (!security_state::IsHttpWarningInFormEnabled() ||
-      content::IsOriginSecure(
-          url::Origin(render_frame()->GetWebFrame()->Top()->GetSecurityOrigin())
-              .GetURL()))
-    return false;
+  return security_state::IsHttpWarningInFormEnabled() &&
+         !content::IsOriginSecure(
+             url::Origin(
+                 render_frame()->GetWebFrame()->Top()->GetSecurityOrigin())
+                 .GetURL());
+}
 
-  // Show the warning on all Password inputs.
+bool PasswordAutofillAgent::IsUsernameOrPasswordField(
+    const blink::WebInputElement& element) {
   // Note: A site may use a Password field to collect a CVV or a Credit Card
   // number, but showing a slightly misleading warning here is better than
   // showing no warning at all.
@@ -946,9 +949,24 @@ bool PasswordAutofillAgent::ShowSuggestions(
 
   if (!FindPasswordInfoForElement(element, &username_element, &password_element,
                                   &password_info)) {
-    if (ShouldShowNotSecureWarning(element)) {
-      autofill_agent_->ShowNotSecureWarning(element);
-      return true;
+    if (IsUsernameOrPasswordField(element)) {
+#if defined(SAFE_BROWSING_DB_LOCAL)
+      if (!checked_safe_browsing_reputation_) {
+        checked_safe_browsing_reputation_ = true;
+        GURL action_url =
+            element.Form().IsNull()
+                ? GURL()
+                : form_util::GetCanonicalActionForForm(element.Form());
+        blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+        GURL frame_url = GURL(frame->GetDocument().Url());
+        GetPasswordManagerDriver()->CheckSafeBrowsingReputation(action_url,
+                                                                frame_url);
+      }
+#endif
+      if (ShouldShowNotSecureWarning(element)) {
+        autofill_agent_->ShowNotSecureWarning(element);
+        return true;
+      }
     }
     return false;
   }
@@ -1191,6 +1209,8 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_same_document_navigation) {
   if (is_same_document_navigation) {
     OnSameDocumentNavigationCompleted();
+  } else {
+    checked_safe_browsing_reputation_ = false;
   }
 }
 
@@ -1597,6 +1617,7 @@ void PasswordAutofillAgent::FrameClosing() {
   provisionally_saved_form_.Reset();
   field_value_and_properties_map_.clear();
   sent_request_to_store_ = false;
+  checked_safe_browsing_reputation_ = false;
 }
 
 void PasswordAutofillAgent::ClearPreview(

@@ -122,6 +122,10 @@ class FakeContentPasswordManagerDriver
     called_presave_generated_password_ = false;
   }
 
+  int called_check_safe_browsing_reputation_cnt() {
+    return called_check_safe_browsing_reputation_cnt_;
+  }
+
  private:
   // mojom::PasswordManagerDriver:
   void PasswordFormsParsed(
@@ -157,6 +161,9 @@ class FakeContentPasswordManagerDriver
       const autofill::PasswordForm& password_form,
       const base::string16& generation_field) override;
 
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
+
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;
   // Records data received via ShowPasswordSuggestions() call.
@@ -191,6 +198,9 @@ class FakeContentPasswordManagerDriver
   bool called_password_no_longer_generated_ = false;
   // Records whether PresaveGeneratedPassword() gets called.
   bool called_presave_generated_password_ = false;
+
+  // Records number of times CheckSafeBrowsingReputation() gets called.
+  int called_check_safe_browsing_reputation_cnt_ = 0;
 
   mojo::BindingSet<autofill::mojom::PasswordManagerDriver> bindings_;
 };

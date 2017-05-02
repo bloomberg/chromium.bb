@@ -46,6 +46,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
 #endif
 
  private:

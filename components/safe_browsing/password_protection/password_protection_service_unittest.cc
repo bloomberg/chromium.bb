@@ -150,8 +150,9 @@ class PasswordProtectionServiceTest : public testing::Test {
         .WillRepeatedly(testing::Return(match_whitelist));
 
     request_ = new PasswordProtectionRequest(
-        target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-        nullptr, password_protection_service_.get(), timeout_in_ms);
+        target_url, GURL(), GURL(),
+        LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+        password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -402,7 +403,8 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
 TEST_F(PasswordProtectionServiceTest,
        TestNoRequestCreatedIfMainFrameURLIsNotValid) {
   ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
-  password_protection_service_->MaybeStartLowReputationRequest(GURL(), nullptr);
+  password_protection_service_->MaybeStartLowReputationRequest(
+      GURL(), GURL("http://foo.com/submit"), GURL("http://foo.com/frame"));
   EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
 }
 
@@ -411,12 +413,14 @@ TEST_F(PasswordProtectionServiceTest,
   ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
   // If main frame url is data url, don't create request.
   password_protection_service_->MaybeStartLowReputationRequest(
-      GURL("data:text/html, <p>hellow"), nullptr);
+      GURL("data:text/html, <p>hellow"), GURL("http://foo.com/submit"),
+      GURL("http://foo.com/frame"));
   EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
 
   // If main frame url is ftp, don't create request.
   password_protection_service_->MaybeStartLowReputationRequest(
-      GURL("ftp://foo.com:21"), nullptr);
+      GURL("ftp://foo.com:21"), GURL("http://foo.com/submit"),
+      GURL("http://foo.com/frame"));
   EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
 }
 
@@ -424,8 +428,9 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForIncognito) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   password_protection_service_->set_incognito(true);
   password_protection_service_->StartRequest(
-      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      nullptr);
+      GURL(kTargetUrl), GURL("http://foo.com/submit"),
+      GURL("http://foo.com/frame"),
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(histograms_.GetAllSamples(kRequestOutcomeHistogramName),
@@ -437,8 +442,9 @@ TEST_F(PasswordProtectionServiceTest,
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   password_protection_service_->set_extended_reporting(false);
   password_protection_service_->StartRequest(
-      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      nullptr);
+      GURL(kTargetUrl), GURL("http://foo.com/submit"),
+      GURL("http://foo.com/frame"),
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -548,7 +554,8 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
       .WillRepeatedly(testing::Return(false));
   password_protection_service_->StartRequest(
-      target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, nullptr);
+      target_url, GURL("http://foo.com/submit"), GURL("http://foo.com/frame"),
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
