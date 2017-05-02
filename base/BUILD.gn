@@ -2596,6 +2596,7 @@ if (is_android) {
       "//third_party/android_support_test_runner:exposed_instrumentation_api_publish_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_support_chromium_java",
+      "//third_party/android_tools:android_support_compat_java",
       "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
     ]
