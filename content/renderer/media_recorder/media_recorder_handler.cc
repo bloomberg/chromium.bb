@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
@@ -38,6 +39,17 @@ using blink::WebMediaCapabilitiesQueryCallbacks;
 
 namespace {
 
+// Encoding smoothness depends on a number of parameters, namely: frame rate,
+// resolution, hardware support availability, platform and IsLowEndDevice(); to
+// simplify calculations we compare the amount of pixels per second (i.e.
+// resolution times frame rate). Software based encoding on Desktop can run
+// fine up and until HD resolution at 30fps, whereas if IsLowEndDevice() we set
+// the cut at VGA at 30fps (~27Mpps and ~9Mpps respectively).
+// TODO(mcasas): The influence of the frame rate is not exactly linear, so this
+// threshold might be oversimplified, https://crbug.com/709181.
+const float kNumPixelsPerSecondSmoothnessThresholdLow = 640 * 480 * 30.0;
+const float kNumPixelsPerSecondSmoothnessThresholdHigh = 1280 * 720 * 30.0;
+
 media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
   switch (id) {
     case VideoTrackRecorder::CodecId::VP8:
@@ -53,6 +65,23 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
   }
   NOTREACHED() << "Unsupported codec";
   return media::kUnknownVideoCodec;
+}
+
+// Extracts the first recognised CodecId of |codecs| or CodecId::LAST if none
+// of them is known.
+VideoTrackRecorder::CodecId StringToCodecId(const blink::WebString& codecs) {
+  const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
+
+  if (codecs_str.find("vp8") != std::string::npos)
+    return VideoTrackRecorder::CodecId::VP8;
+  else if (codecs_str.find("vp9") != std::string::npos)
+    return VideoTrackRecorder::CodecId::VP9;
+#if BUILDFLAG(RTC_USE_H264)
+  else if (codecs_str.find("h264") != std::string::npos ||
+           codecs_str.find("avc1") != std::string::npos)
+    return VideoTrackRecorder::CodecId::H264;
+#endif
+  return VideoTrackRecorder::CodecId::LAST;
 }
 
 void OnEncodingInfoError(
@@ -137,22 +166,13 @@ bool MediaRecorderHandler::Initialize(
   }
 
   // Once established that we support the codec(s), hunt then individually.
-  const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
-  if (codecs_str.find("vp8") != std::string::npos)
-    codec_id_ = VideoTrackRecorder::CodecId::VP8;
-  else if (codecs_str.find("vp9") != std::string::npos)
-    codec_id_ = VideoTrackRecorder::CodecId::VP9;
-#if BUILDFLAG(RTC_USE_H264)
-  else if (codecs_str.find("h264") != std::string::npos)
-    codec_id_ = VideoTrackRecorder::CodecId::H264;
-  else if (codecs_str.find("avc1") != std::string::npos)
-    codec_id_ = VideoTrackRecorder::CodecId::H264;
-#endif
-  else
-    codec_id_ = VideoTrackRecorder::GetPreferredCodecId();
+  const VideoTrackRecorder::CodecId codec_id = StringToCodecId(codecs);
+  codec_id_ = (codec_id != VideoTrackRecorder::CodecId::LAST)
+                  ? codec_id
+                  : VideoTrackRecorder::GetPreferredCodecId();
 
-  DVLOG_IF(1, codecs_str.empty()) << "Falling back to preferred codec id "
-                                  << static_cast<int>(codec_id_);
+  DVLOG_IF(1, codec_id == VideoTrackRecorder::CodecId::LAST)
+      << "Falling back to preferred codec id " << static_cast<int>(codec_id_);
 
   media_stream_ = media_stream;
   DCHECK(client);
@@ -302,10 +322,32 @@ void MediaRecorderHandler::EncodingInfo(
     codec = configuration.audio_configuration->codec;
   }
 
-  // See RFC 2231. https://tools.ietf.org/html/rfc2231
   info->supported = CanSupportMimeType(mime_type, codec);
-  DVLOG(1) << "type: " << mime_type.Ascii() << ", codec:" << codec.Ascii()
-           << " is" << (info->supported ? " supported" : " NOT supported");
+
+  if (configuration.video_configuration && info->supported) {
+    const bool is_likely_accelerated =
+        VideoTrackRecorder::CanUseAcceleratedEncoder(
+            StringToCodecId(codec), configuration.video_configuration->width,
+            configuration.video_configuration->height);
+
+    const float pixels_per_second =
+        configuration.video_configuration->width *
+        configuration.video_configuration->height *
+        configuration.video_configuration->framerate;
+    // Encoding is considered |smooth| up and until the pixels per second
+    // threshold or if it's likely to be accelerated.
+    const float threshold = base::SysInfo::IsLowEndDevice()
+                                ? kNumPixelsPerSecondSmoothnessThresholdLow
+                                : kNumPixelsPerSecondSmoothnessThresholdHigh;
+    info->smooth = is_likely_accelerated || pixels_per_second <= threshold;
+
+    // TODO(mcasas): revisit what |power_efficient| means
+    // https://crbug.com/709181.
+    info->power_efficient = info->smooth;
+  }
+  DVLOG(1) << "type: " << mime_type.Ascii() << ", params:" << codec.Ascii()
+           << " is" << (info->supported ? " supported" : " NOT supported")
+           << " and" << (info->smooth ? " smooth" : " NOT smooth");
 
   scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
 }

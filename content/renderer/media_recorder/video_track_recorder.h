@@ -154,6 +154,9 @@ class CONTENT_EXPORT VideoTrackRecorder
   };
 
   static CodecId GetPreferredCodecId();
+  static bool CanUseAcceleratedEncoder(CodecId codec,
+                                       size_t width,
+                                       size_t height);
 
   VideoTrackRecorder(CodecId codec,
                      const blink::WebMediaStreamTrack& track,

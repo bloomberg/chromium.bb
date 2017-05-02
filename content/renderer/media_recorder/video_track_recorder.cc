@@ -332,6 +332,16 @@ VideoTrackRecorder::CodecId VideoTrackRecorder::GetPreferredCodecId() {
   return GetCodecEnumerator()->GetPreferredCodecId();
 }
 
+// static
+bool VideoTrackRecorder::CanUseAcceleratedEncoder(CodecId codec,
+                                                  size_t width,
+                                                  size_t height) {
+  return GetCodecEnumerator()->CodecIdToVEAProfile(codec) !=
+             media::VIDEO_CODEC_PROFILE_UNKNOWN &&
+         width >= kVEAEncoderMinResolutionWidth &&
+         height >= kVEAEncoderMinResolutionHeight;
+}
+
 VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
     const blink::WebMediaStreamTrack& track,
@@ -410,17 +420,14 @@ void VideoTrackRecorder::InitializeEncoder(
   MediaStreamVideoSink::DisconnectFromTrack();
 
   const gfx::Size& input_size = frame->visible_rect().size();
-  const auto& vea_supported_profile =
-      GetCodecEnumerator()->CodecIdToVEAProfile(codec);
-  if (allow_vea_encoder &&
-      vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
-      input_size.width() >= kVEAEncoderMinResolutionWidth &&
-      input_size.height() >= kVEAEncoderMinResolutionHeight) {
+  if (allow_vea_encoder && CanUseAcceleratedEncoder(codec, input_size.width(),
+                                                    input_size.height())) {
+    const auto vea_profile = GetCodecEnumerator()->CodecIdToVEAProfile(codec);
     encoder_ = new VEAEncoder(
         on_encoded_video_callback,
         media::BindToCurrentLoop(base::Bind(&VideoTrackRecorder::OnError,
                                             weak_ptr_factory_.GetWeakPtr())),
-        bits_per_second, vea_supported_profile, input_size);
+        bits_per_second, vea_profile, input_size);
   } else {
     switch (codec) {
 #if BUILDFLAG(RTC_USE_H264)
