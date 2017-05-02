@@ -37,7 +37,6 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   // ServiceManagerConnection:
   void Start() override;
   service_manager::Connector* GetConnector() override;
-  const service_manager::BindSourceInfo& GetBrowserInfo() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
   int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;
   void RemoveConnectionFilter(int filter_id) override;
@@ -46,27 +45,16 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
-  int AddOnConnectHandler(const OnConnectHandler& handler) override;
-  void RemoveOnConnectHandler(int id) override;
 
-  void OnLocalServiceInfoAvailable(const service_manager::Identity& identity);
-  void OnBrowserServiceInfoAvailable(
-      const service_manager::BindSourceInfo& browser_info);
   void OnConnectionLost();
   void GetInterface(service_manager::mojom::InterfaceProvider* provider,
                     const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle request_handle);
 
-  service_manager::Identity identity_;
-  service_manager::BindSourceInfo browser_info_;
-
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<IOThreadContext> context_;
 
   base::Closure connection_lost_handler_;
-
-  int next_on_connect_handler_id_ = 0;
-  std::map<int, OnConnectHandler> on_connect_handlers_;
 
   base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_;
 

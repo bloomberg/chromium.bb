@@ -36,8 +36,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
  public:
   using ServiceRequestHandler =
       base::Callback<void(service_manager::mojom::ServiceRequest)>;
-  using OnConnectHandler =
-      base::Callback<void(const service_manager::BindSourceInfo&)>;
   using Factory =
       base::Callback<std::unique_ptr<ServiceManagerConnection>(void)>;
 
@@ -78,10 +76,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // implementation. Use this to initiate connections as this object's Identity.
   virtual service_manager::Connector* GetConnector() = 0;
 
-  // Returns the service_manager::BindSourceInfo for the browser service (if
-  // this is not the browser service).
-  virtual const service_manager::BindSourceInfo& GetBrowserInfo() const = 0;
-
   // Sets a closure that is called when the connection is lost. Note that
   // connection may already have been closed, in which case |closure| will be
   // run immediately before returning from this function.
@@ -121,12 +115,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
   virtual void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) = 0;
-
-  // Registers a callback to be run when the service_manager::Service
-  // implementation on the IO thread receives OnConnect(). Returns an id that
-  // can be passed to RemoveOnConnectHandler(), starting at 1.
-  virtual int AddOnConnectHandler(const OnConnectHandler& handler) = 0;
-  virtual void RemoveOnConnectHandler(int id) = 0;
 };
 
 }  // namespace content

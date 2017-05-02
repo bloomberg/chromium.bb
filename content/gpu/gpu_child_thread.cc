@@ -82,7 +82,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
 
  private:
   struct PendingRequest {
-    service_manager::Identity source_identity;
+    service_manager::BindSourceInfo source_info;
     std::string interface_name;
     mojo::ScopedMessagePipeHandle interface_pipe;
   };
@@ -95,12 +95,12 @@ class QueueingConnectionFilter : public ConnectionFilter {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     if (registry_->CanBindInterface(interface_name)) {
       if (released_) {
-        registry_->BindInterface(source_info.identity, interface_name,
+        registry_->BindInterface(source_info, interface_name,
                                  std::move(*interface_pipe));
       } else {
         std::unique_ptr<PendingRequest> request =
             base::MakeUnique<PendingRequest>();
-        request->source_identity = source_info.identity;
+        request->source_info = source_info;
         request->interface_name = interface_name;
         request->interface_pipe = std::move(*interface_pipe);
         pending_requests_.push_back(std::move(request));
@@ -112,8 +112,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     released_ = true;
     for (auto& request : pending_requests_) {
-      registry_->BindInterface(request->source_identity,
-                               request->interface_name,
+      registry_->BindInterface(request->source_info, request->interface_name,
                                std::move(request->interface_pipe));
     }
   }

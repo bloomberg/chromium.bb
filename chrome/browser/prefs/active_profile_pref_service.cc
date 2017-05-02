@@ -51,7 +51,7 @@ void ActiveProfilePrefService::OnBindInterface(
                  << " from connecting to the active profile's pref service.";
     return;
   }
-  registry_.BindInterface(source_info.identity, interface_name,
+  registry_.BindInterface(source_info, interface_name,
                           std::move(interface_pipe));
 }
 

@@ -601,7 +601,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       return;
 
     if (registry_->CanBindInterface(interface_name)) {
-      registry_->BindInterface(source_info.identity, interface_name,
+      registry_->BindInterface(source_info, interface_name,
                                std::move(*interface_pipe));
     }
   }

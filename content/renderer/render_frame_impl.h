@@ -690,7 +690,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindEngagement(blink::mojom::EngagementClientAssociatedRequest request);
 
   // Binds to the FrameHost in the browser.
-  void BindFrame(mojom::FrameRequest request,
+  void BindFrame(const service_manager::BindSourceInfo& browser_info,
+                 mojom::FrameRequest request,
                  mojom::FrameHostInterfaceBrokerPtr frame_host);
 
   // Virtual so the test render frame can flush the interface.
@@ -1434,6 +1435,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // the browser. This state is allocated in decidePolicyForNavigation() and
   // is used and released in didStartProvisionalLoad().
   std::unique_ptr<PendingNavigationInfo> pending_navigation_info_;
+
+  service_manager::BindSourceInfo browser_info_;
 
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;

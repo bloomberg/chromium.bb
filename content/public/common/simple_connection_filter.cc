@@ -21,7 +21,7 @@ void SimpleConnectionFilter::OnBindInterface(
     mojo::ScopedMessagePipeHandle* interface_pipe,
     service_manager::Connector* connector) {
   if (registry_->CanBindInterface(interface_name)) {
-    registry_->BindInterface(source_info.identity, interface_name,
+    registry_->BindInterface(source_info, interface_name,
                              std::move(*interface_pipe));
   }
 }

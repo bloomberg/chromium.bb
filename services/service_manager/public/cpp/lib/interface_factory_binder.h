@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/interface_binder.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 
@@ -21,10 +22,10 @@ class InterfaceFactoryBinder : public InterfaceBinder {
       : factory_(factory) {}
    ~InterfaceFactoryBinder() override {}
 
-   void BindInterface(const Identity& remote_identity,
+   void BindInterface(const BindSourceInfo& source_info,
                       const std::string& interface_name,
                       mojo::ScopedMessagePipeHandle client_handle) override {
-     factory_->Create(remote_identity,
+     factory_->Create(source_info.identity,
                       mojo::MakeRequest<Interface>(std::move(client_handle)));
   }
 

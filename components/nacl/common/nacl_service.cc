@@ -94,7 +94,7 @@ void NaClService::OnBindInterface(
   if (source_info.identity.name() == content::mojom::kBrowserServiceName &&
       !connected_) {
     connected_ = true;
-    registry_.BindInterface(source_info.identity, interface_name,
+    registry_.BindInterface(source_info, interface_name,
                             std::move(interface_pipe));
   }
 }

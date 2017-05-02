@@ -15,6 +15,7 @@ class Identity;
 // bind them to incoming requests. The implementation of this class is
 // responsible for managing the lifetime of the implementations of the
 // interface.
+// TODO(beng): Eliminate this, just use callbacks.
 template <typename Interface>
 class InterfaceFactory {
  public:

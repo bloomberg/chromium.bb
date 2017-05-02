@@ -47,9 +47,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
       public service_manager::mojom::ServiceFactory,
       public mojom::Child {
  public:
-  using InitializeCallback =
-      base::Callback<void(const service_manager::BindSourceInfo&)>;
-
   IOThreadContext(
       service_manager::mojom::ServiceRequest service_request,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
@@ -66,13 +63,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
   }
 
   // Safe to call from any thread.
-  void Start(const InitializeCallback& browser_info_available_callback,
-             const base::Closure& stop_callback) {
+  void Start(const base::Closure& stop_callback) {
     DCHECK(!started_);
 
     started_ = true;
     callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    browser_info_available_callback_ = browser_info_available_callback;
     stop_callback_ = stop_callback;
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&IOThreadContext::StartOnIOThread, this));
@@ -260,11 +255,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
       DCHECK(!child_binding_.is_bound());
       child_binding_.Bind(
           mojo::MakeRequest<mojom::Child>(std::move(interface_pipe)));
-
-      InitializeCallback handler =
-          base::ResetAndReturn(&browser_info_available_callback_);
-      callback_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(handler, source_info));
     } else {
       base::AutoLock lock(lock_);
       for (auto& entry : connection_filters_) {
@@ -312,13 +302,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
   // Start().
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
-  // Callback to run once Service::OnStart is invoked.
-  InitializeCallback browser_info_available_callback_;
-
   // Callback to run if the service is stopped by the service manager.
   base::Closure stop_callback_;
-
-  service_manager::BindSourceInfo local_info_;
 
   std::unique_ptr<service_manager::ServiceContext> service_context_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory> factory_bindings_;
@@ -407,19 +392,12 @@ ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {
 
 void ServiceManagerConnectionImpl::Start() {
   context_->Start(
-      base::Bind(&ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable,
-                 weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
                  weak_factory_.GetWeakPtr()));
 }
 
 service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
-}
-
-const service_manager::BindSourceInfo&
-ServiceManagerConnectionImpl::GetBrowserInfo() const {
-  return browser_info_;
 }
 
 void ServiceManagerConnectionImpl::SetConnectionLostClosure(
@@ -445,26 +423,6 @@ void ServiceManagerConnectionImpl::AddServiceRequestHandler(
     const std::string& name,
     const ServiceRequestHandler& handler) {
   context_->AddServiceRequestHandler(name, handler);
-}
-
-int ServiceManagerConnectionImpl::AddOnConnectHandler(
-    const OnConnectHandler& handler) {
-  int id = ++next_on_connect_handler_id_;
-  on_connect_handlers_[id] = handler;
-  return id;
-}
-
-void ServiceManagerConnectionImpl::RemoveOnConnectHandler(int id) {
-  auto it = on_connect_handlers_.find(id);
-  DCHECK(it != on_connect_handlers_.end());
-  on_connect_handlers_.erase(it);
-}
-
-void ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable(
-    const service_manager::BindSourceInfo& browser_info) {
-  browser_info_ = browser_info;
-  for (auto& handler : on_connect_handlers_)
-    handler.second.Run(browser_info_);
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {

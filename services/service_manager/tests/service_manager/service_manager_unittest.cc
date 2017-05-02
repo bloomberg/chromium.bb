@@ -60,7 +60,7 @@ class ServiceManagerTestClient
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(source_info.identity, interface_name,
+    registry_.BindInterface(source_info, interface_name,
                             std::move(interface_pipe));
   }
 

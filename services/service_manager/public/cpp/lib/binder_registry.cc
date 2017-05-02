@@ -32,12 +32,12 @@ bool BinderRegistry::CanBindInterface(const std::string& interface_name) const {
 }
 
 void BinderRegistry::BindInterface(
-    const Identity& remote_identity,
+    const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   auto it = binders_.find(interface_name);
   if (it != binders_.end()) {
-    it->second->BindInterface(remote_identity, interface_name,
+    it->second->BindInterface(source_info, interface_name,
                               std::move(interface_pipe));
   } else {
     LOG(ERROR) << "Failed to locate a binder for interface: " << interface_name;
