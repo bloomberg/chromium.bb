@@ -1,15 +1,9 @@
 <html>
+  <script src="../../resources/gc.js"></script>
   <script>
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
-    }
-
-    function gc() {
-        if (window.GCController)
-            return GCController.collectAll();
-        for (var i = 0; i < 10000; ++i)
-            var s = new String("foo");
     }
 
     function resetFormOwner() {

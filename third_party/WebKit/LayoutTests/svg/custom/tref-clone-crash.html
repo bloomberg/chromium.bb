@@ -5,15 +5,8 @@
   </defs>
   <g><use xlink:href="#ref"/></g>
   <g><text><tref id="tref" xlink:href="#ref"/></text></g>
+  <script src="../../resources/gc.js"></script>
   <script>
-    function gc() {
-      if (window.GCController)
-        GCController.collect();
-      else {
-        for (var i = 0; i < 10000; ++i)
-          new Object;
-      }
-    }
     if (window.testRunner) {
       testRunner.dumpAsText();
       testRunner.waitUntilDone();

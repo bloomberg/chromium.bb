@@ -3,6 +3,7 @@
 <head id="h">
 </head>
 <body>
+<script src="../../resources/gc.js"></script>
 <script>
 if (window.testRunner)
 	window.testRunner.dumpAsText();
@@ -16,16 +17,6 @@ link.parentNode.removeChild(link);
 link = null;
 </script>
 <script>
-function gc() {
-    if (window.GCController)
-        GCController.collect();
-    else {
-        // Allocate a sufficient number of objects to force a GC.
-        for (var i = 0; i < 10000; i++)
-            new Object;
-    }
-}
-
 gc();
 </script>
 <p>This test passes if it doesn't crash</p>

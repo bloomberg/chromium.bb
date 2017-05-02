@@ -1,18 +1,10 @@
 <html>
 <head>
+<script src="../../resources/gc.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-}
-
-function gc() {
-    var array = [];
-    for (var i = 0x30000; i--; )
-        if (!(Math.round(Math.random() * 20)))
-            array = [];
-        else
-            array.push(new String(Math.random()))
 }
 
 function test()

@@ -1,17 +1,9 @@
 <head>
+<script src="../../../resources/gc.js"></script>
 <script>
 
 var pageHasLoaded = false;
 var frameHasLoaded = false;
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++)
-        var s = new String("");
-}
 
 function pageLoaded()
 {

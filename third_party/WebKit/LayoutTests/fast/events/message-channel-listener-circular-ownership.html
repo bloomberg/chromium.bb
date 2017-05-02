@@ -2,16 +2,8 @@
 <p>Test that a leak is not created by assigning a MessagePort to a property of its own listener.</p>
 <p>Only works with run-webkit-tests --leaks.</p>
 <pre id=log></pre>
+<script src="../../resources/gc.js"></script>
 <script>
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
-}
 
 if (window.testRunner)
     testRunner.dumpAsText();

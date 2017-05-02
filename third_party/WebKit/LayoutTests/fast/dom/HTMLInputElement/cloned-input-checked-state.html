@@ -2,21 +2,13 @@
 <p>Test for <a href="https://bugs.webkit.org/show_bug.cgi?id=34520">bug 34520</a>:
 Assertion failure in CheckedRadioButtons::removeButton when using jQuery 1.4.1. Also tests actual
 behavior the crashing jQuery was test was checking for.</p>
+<script src="../../../resources/gc.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
-}
 
 try {
     var div = document.createElement("div");

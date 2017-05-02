@@ -3,23 +3,11 @@
 worker context. Should print "SUCCESS".
 <a href="https://bugs.webkit.org/show_bug.cgi?id=62446">Bug 62446</a></p>
 <div id=result></div>
+<script src="../../resources/gc.js"></script>
 <script>
 function log(message)
 {
     document.getElementById("result").innerHTML += message + "<br>";
-}
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    var head;
-    for (var i = 0; i < 10000; i++) {
-        var newHead = new Array(1000);
-        newHead[0] = head;
-        head = newHead;
-    }
 }
 
 if (window.testRunner) {

@@ -3,6 +3,7 @@
 <head>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gc.js"></script>
 </head>
 <body>
   <iframe id="subframe" src="about:blank"></iframe>
@@ -13,16 +14,6 @@ var testNavigatorLater = async_test("Accessing a navigator object that got remov
 
 // Reference to the removed navigator object.
 var oldNav = null;
-
-function gc() {
-  if (window.GCController) {
-    GCController.collect();
-  } else {
-    for (var i = 0; i < 10000; i++) {
-      var s = new String("abc");
-    }
-  }
-}
 
 function test() {
   // Keep a reference of the navigator and remove the frame.

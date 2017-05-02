@@ -1,6 +1,7 @@
 <body>
 <p>Test SharedWorker event listener. Should print a series of PASS messages, followed with DONE.</p>
 <div id=result></div>
+<script src="../../resources/gc.js"></script>
 <script>
 function log(message)
 {
@@ -57,17 +58,6 @@ function createNewListener(func)
 {
   return function(event) { func(event); };
 }
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // force garbage collection (FF requires about 9K allocations before a collect).
-        var s = new String("abc");
-    }
-}
-
 
 </script>
 </body>

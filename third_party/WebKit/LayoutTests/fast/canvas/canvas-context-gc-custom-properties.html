@@ -1,21 +1,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gc.js"></script>
 <script>
-function gc() {
-    if (typeof GCController !== "undefined")
-        GCController.collectAll();
-    else {
-        var gcRec = function (n) {
-            if (n < 1)
-                return {};
-            var temp = {i: "ab" + i + (i / 100000)};
-            temp += "foo";
-            gcRec(n-1);
-        };
-        for (var i = 0; i < 1000; i++)
-            gcRec(10);
-    }
-}
 
 function runTest() {
     canvas = document.createElement("canvas");
