@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -33,7 +34,12 @@ class TranslateCompactInfoBar extends InfoBar
     private long mNativeTranslateInfoBarPtr;
     private TranslateTabLayout mTabLayout;
 
-    private TranslateMenuHelper mMenuHelper;
+    // Need 2 instances of TranslateMenuHelper to prevent a race condition bug which happens when
+    // showing language menu after dismissing overflow menu.
+    private TranslateMenuHelper mOverflowMenuHelper;
+    private TranslateMenuHelper mLanguageMenuHelper;
+
+    private TintedImageButton mMenuButton;
 
     @CalledByNative
     private static InfoBar create(int initialStep, String sourceLanguageCode,
@@ -74,21 +80,35 @@ class TranslateCompactInfoBar extends InfoBar
 
         mTabLayout.addOnTabSelectedListener(this);
 
-        content.findViewById(R.id.translate_infobar_menu_button)
-                .setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        initMenuHelper(v);
-                        mMenuHelper.show(TranslateMenu.MENU_OVERFLOW);
-                    }
-                });
+        mMenuButton = (TintedImageButton) content.findViewById(R.id.translate_infobar_menu_button);
+        mMenuButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initMenuHelper(TranslateMenu.MENU_OVERFLOW);
+                mOverflowMenuHelper.show(TranslateMenu.MENU_OVERFLOW);
+            }
+        });
 
         parent.addContent(content, 1.0f);
     }
 
-    private void initMenuHelper(View anchorView) {
-        if (mMenuHelper == null) {
-            mMenuHelper = new TranslateMenuHelper(getContext(), anchorView, mOptions, this);
+    private void initMenuHelper(int menuType) {
+        switch (menuType) {
+            case TranslateMenu.MENU_OVERFLOW:
+                if (mOverflowMenuHelper == null) {
+                    mOverflowMenuHelper =
+                            new TranslateMenuHelper(getContext(), mMenuButton, mOptions, this);
+                }
+                return;
+            case TranslateMenu.MENU_TARGET_LANGUAGE:
+            case TranslateMenu.MENU_SOURCE_LANGUAGE:
+                if (mLanguageMenuHelper == null) {
+                    mLanguageMenuHelper =
+                            new TranslateMenuHelper(getContext(), mMenuButton, mOptions, this);
+                }
+                return;
+            default:
+                assert false : "Unsupported Menu Item Id";
         }
     }
 
@@ -153,7 +173,8 @@ class TranslateCompactInfoBar extends InfoBar
     public void onOverflowMenuItemClicked(int itemId) {
         switch (itemId) {
             case TranslateMenu.ID_OVERFLOW_MORE_LANGUAGE:
-                mMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
+                initMenuHelper(TranslateMenu.MENU_TARGET_LANGUAGE);
+                mLanguageMenuHelper.show(TranslateMenu.MENU_TARGET_LANGUAGE);
                 return;
             case TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE:
                 nativeApplyBoolTranslateOption(
@@ -171,7 +192,8 @@ class TranslateCompactInfoBar extends InfoBar
                 showSnackbar(TranslateSnackbarType.NEVER_TRANSLATE_SITE);
                 return;
             case TranslateMenu.ID_OVERFLOW_NOT_THIS_LANGUAGE:
-                mMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
+                initMenuHelper(TranslateMenu.MENU_SOURCE_LANGUAGE);
+                mLanguageMenuHelper.show(TranslateMenu.MENU_SOURCE_LANGUAGE);
                 return;
             default:
                 assert false : "Unexpected overflow menu code";

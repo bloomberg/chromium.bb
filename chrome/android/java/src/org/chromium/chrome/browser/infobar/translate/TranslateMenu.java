@@ -40,9 +40,8 @@ public final class TranslateMenu {
     // Menu item type config.
     public static final int ITEM_DIVIDER = 0;
     public static final int ITEM_LANGUAGE = 1;
-    public static final int ITEM_TEXT_OPTION = 2;
-    public static final int ITEM_CHECKBOX_OPTION = 3;
-    public static final int MENU_ITEM_TYPE_COUNT = 4;
+    public static final int ITEM_CHECKBOX_OPTION = 2;
+    public static final int MENU_ITEM_TYPE_COUNT = 3;
 
     // Menu Item ID config for MENU_OVERFLOW .
     public static final int ID_UNDEFINED = 0;
@@ -61,12 +60,13 @@ public final class TranslateMenu {
         // Load overflow menu item if it's empty.
         synchronized (OVERFLOW_MENU) {
             if (OVERFLOW_MENU.isEmpty()) {
-                OVERFLOW_MENU.add(new MenuItem(ITEM_TEXT_OPTION, ID_OVERFLOW_MORE_LANGUAGE));
+                OVERFLOW_MENU.add(new MenuItem(ITEM_CHECKBOX_OPTION, ID_OVERFLOW_MORE_LANGUAGE));
                 OVERFLOW_MENU.add(new MenuItem(ITEM_DIVIDER, ID_UNDEFINED));
                 OVERFLOW_MENU.add(new MenuItem(ITEM_CHECKBOX_OPTION, ID_OVERFLOW_ALWAYS_TRANSLATE));
-                OVERFLOW_MENU.add(new MenuItem(ITEM_TEXT_OPTION, ID_OVERFLOW_NEVER_LANGUAGE));
-                OVERFLOW_MENU.add(new MenuItem(ITEM_TEXT_OPTION, ID_OVERFLOW_NEVER_SITE));
-                OVERFLOW_MENU.add(new MenuItem(ITEM_TEXT_OPTION, ID_OVERFLOW_NOT_THIS_LANGUAGE));
+                OVERFLOW_MENU.add(new MenuItem(ITEM_CHECKBOX_OPTION, ID_OVERFLOW_NEVER_LANGUAGE));
+                OVERFLOW_MENU.add(new MenuItem(ITEM_CHECKBOX_OPTION, ID_OVERFLOW_NEVER_SITE));
+                OVERFLOW_MENU.add(
+                        new MenuItem(ITEM_CHECKBOX_OPTION, ID_OVERFLOW_NOT_THIS_LANGUAGE));
             }
         }
         return OVERFLOW_MENU;

@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.infobar.translate;
 
 import android.content.Context;
+import android.graphics.Rect;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,8 +19,10 @@ import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.TranslateOptions;
+import org.chromium.chrome.browser.widget.TintedImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +37,6 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
     private ContextThemeWrapper mContextWrapper;
     private TranslateMenuAdapter mAdapter;
     private View mAnchorView;
-
     private ListPopupWindow mPopup;
 
     /**
@@ -53,7 +57,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
     }
 
     /**
-     * Build transalte menu by menu type.
+     * Build translate menu by menu type.
      */
     private List<TranslateMenu.MenuItem> getMenuList(int menuType) {
         List<TranslateMenu.MenuItem> menuList = new ArrayList<TranslateMenu.MenuItem>();
@@ -86,15 +90,23 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
 
             // Need to explicitly set the background here.  Relying on it being set in the style
             // caused an incorrectly drawn background.
+            // TODO(martiw): We might need a new menu background here.
             mPopup.setBackgroundDrawable(
                     ContextCompat.getDrawable(mContextWrapper, R.drawable.edge_menu_bg));
 
             mPopup.setOnItemClickListener(this);
 
-            int popupWidth = mContextWrapper.getResources().getDimensionPixelSize(
-                    R.dimen.infobar_translate_menu_width);
-            // TODO (martiw) make the width dynamic to handle longer items.
-            mPopup.setWidth(popupWidth);
+            // The menu must be shifted down by the height of the anchor view in order to be
+            // displayed over and above it.
+            int anchorHeight = mAnchorView.getHeight();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // Setting a positive offset here shifts the menu down.
+                mPopup.setVerticalOffset(anchorHeight);
+            } else {
+                // The framework's PopupWindow positioning changed between N and M.  Setting
+                // a negative offset here shifts the menu down rather than up.
+                mPopup.setVerticalOffset(-anchorHeight);
+            }
 
             mAdapter = new TranslateMenuAdapter(menuType);
             mPopup.setAdapter(mAdapter);
@@ -102,10 +114,51 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
             mAdapter.refreshMenu(menuType);
         }
 
+        if (menuType == TranslateMenu.MENU_OVERFLOW) {
+            // Use measured width when it is a overflow menu.
+            Rect bgPadding = new Rect();
+            mPopup.getBackground().getPadding(bgPadding);
+            mPopup.setWidth(measureMenuWidth(mAdapter) + bgPadding.left + bgPadding.right);
+        } else {
+            // Use fixed width otherwise.
+            int popupWidth = mContextWrapper.getResources().getDimensionPixelSize(
+                    R.dimen.infobar_translate_menu_width);
+            mPopup.setWidth(popupWidth);
+        }
+
+        // When layout is RTL, set the horizontal offset to align the menu with the left side of the
+        // screen.
+        if (ApiCompatibilityUtils.isLayoutRtl(mAnchorView)) {
+            int[] tempLocation = new int[2];
+            mAnchorView.getLocationOnScreen(tempLocation);
+            mPopup.setHorizontalOffset(-tempLocation[0]);
+        }
+
         if (!mPopup.isShowing()) {
             mPopup.show();
             mPopup.getListView().setItemsCanFocus(true);
         }
+    }
+
+    private int measureMenuWidth(TranslateMenuAdapter adapter) {
+        final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+
+        final int count = adapter.getCount();
+        int width = 0;
+        int itemType = 0;
+        View itemView = null;
+        for (int i = 0; i < count; i++) {
+            final int positionType = adapter.getItemViewType(i);
+            if (positionType != itemType) {
+                itemType = positionType;
+                itemView = null;
+            }
+            itemView = adapter.getView(i, itemView, null);
+            itemView.measure(widthMeasureSpec, heightMeasureSpec);
+            width = Math.max(width, itemView.getMeasuredWidth());
+        }
+        return width;
     }
 
     @Override
@@ -151,9 +204,6 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
      * The provides the views of the menu items and dividers.
      */
     private final class TranslateMenuAdapter extends ArrayAdapter<TranslateMenu.MenuItem> {
-        // TODO(martiw) create OVERFLOW_MENU_ITEM_WITH_CHECKBOX_CHECKED and
-        // OVERFLOW_MENU_ITEM_WITH_CHECKBOX_UNCHECKED for "Always Translate Language"
-
         private final LayoutInflater mInflater;
         private int mMenuType;
 
@@ -195,7 +245,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                         assert false : "Unexpected Overflow Item Id";
                 }
             } else {
-                // Get source and tagert language menu items text by language code.
+                // Get source and target language menu items text by language code.
                 return mOptions.getRepresentationFromCode(item.mCode);
             }
             return "";
@@ -216,6 +266,16 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
             return getItem(position).mId != TranslateMenu.ID_UNDEFINED;
         }
 
+        private View getItemView(
+                View menuItemView, int position, ViewGroup parent, int resourceId) {
+            if (menuItemView == null) {
+                menuItemView = mInflater.inflate(resourceId, parent, false);
+            }
+            ((TextView) menuItemView.findViewById(R.id.menu_item_text))
+                    .setText(getItemViewText(getItem(position)));
+            return menuItemView;
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View menuItemView = convertView;
@@ -227,15 +287,20 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                     }
                     break;
                 case TranslateMenu.ITEM_CHECKBOX_OPTION:
-                case TranslateMenu.ITEM_TEXT_OPTION:
-                // TODO(martiw) create the layout for ITEM_TEXT_OPTION and ITEM_CHECKBOX_OPTION
-                case TranslateMenu.ITEM_LANGUAGE:
-                    if (menuItemView == null) {
-                        menuItemView =
-                                mInflater.inflate(R.layout.translate_menu_item, parent, false);
+                    menuItemView = getItemView(
+                            menuItemView, position, parent, R.layout.translate_menu_item_checked);
+                    TintedImageView checkboxIcon =
+                            (TintedImageView) menuItemView.findViewById(R.id.menu_item_icon);
+                    if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE
+                            && mOptions.alwaysTranslateLanguageState()) {
+                        checkboxIcon.setVisibility(View.VISIBLE);
+                    } else {
+                        checkboxIcon.setVisibility(View.INVISIBLE);
                     }
-                    ((TextView) menuItemView.findViewById(R.id.menu_item_text))
-                            .setText(getItemViewText(getItem(position)));
+                    break;
+                case TranslateMenu.ITEM_LANGUAGE:
+                    menuItemView = getItemView(
+                            menuItemView, position, parent, R.layout.translate_menu_item);
                     break;
                 default:
                     assert false : "Unexpected MenuItem type";
