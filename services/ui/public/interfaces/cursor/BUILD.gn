@@ -12,7 +12,6 @@ mojom("cursor") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
-    "//skia/public/interfaces:mojo",
     "//ui/gfx/geometry/mojo",
   ]
 }

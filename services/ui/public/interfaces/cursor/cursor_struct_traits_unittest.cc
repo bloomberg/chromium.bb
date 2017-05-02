@@ -8,7 +8,6 @@
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
-#include "skia/public/interfaces/bitmap_array_struct_traits.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"

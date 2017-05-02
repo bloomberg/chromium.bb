@@ -4,7 +4,7 @@
 
 module ui.ozone.mojom;
 
-import "skia/public/interfaces/bitmap_array.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
 
@@ -15,7 +15,7 @@ interface DeviceCursor {
   // Sets the cursor |bitmaps| on |window| at |point| with
   // |frame_delay_ms|.
   SetCursor(gfx.mojom.AcceleratedWidget window,
-            skia.mojom.BitmapArray bitmaps,
+            array<skia.mojom.Bitmap> bitmaps,
             gfx.mojom.Point point,
             int32 frame_delay_ms);
 
