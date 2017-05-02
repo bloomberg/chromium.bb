@@ -115,6 +115,6 @@ interface VRDisplayClient {
   OnExitPresent();
   OnBlur();
   OnFocus();
-  OnActivate(VRDisplayEventReason reason);
+  OnActivate(VRDisplayEventReason reason) => (bool presentRequested);
   OnDeactivate(VRDisplayEventReason reason);
 };

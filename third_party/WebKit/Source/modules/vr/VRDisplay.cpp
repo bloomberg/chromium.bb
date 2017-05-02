@@ -300,6 +300,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
         submit_frame_client_binding_.CreateInterfacePtrAndBind(),
         ConvertToBaseCallback(
             WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this))));
+    pending_present_request_ = true;
   } else {
     UpdateLayerBounds();
     resolver->Resolve();
@@ -310,6 +311,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 }
 
 void VRDisplay::OnPresentComplete(bool success) {
+  pending_present_request_ = false;
   if (success) {
     this->BeginPresent();
   } else {
@@ -678,10 +680,12 @@ void VRDisplay::StopPresenting() {
   pending_previous_frame_render_ = false;
 }
 
-void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
+void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
+                           const OnActivateCallback& on_handled) {
   AutoReset<bool> activating(&in_display_activate_, true);
   navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));
+  on_handled.Run(pending_present_request_);
 }
 
 void VRDisplay::OnDeactivate(

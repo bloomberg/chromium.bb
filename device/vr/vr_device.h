@@ -54,7 +54,8 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void OnExitPresent();
   virtual void OnBlur();
   virtual void OnFocus();
-  virtual void OnActivate(mojom::VRDisplayEventReason reason);
+  virtual void OnActivate(mojom::VRDisplayEventReason reason,
+                          const base::Callback<void(bool)>& on_handled);
   virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
  protected:

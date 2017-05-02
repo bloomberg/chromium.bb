@@ -130,7 +130,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   void OnExitPresent() override;
   void OnBlur() override;
   void OnFocus() override;
-  void OnActivate(device::mojom::blink::VRDisplayEventReason) override;
+  void OnActivate(device::mojom::blink::VRDisplayEventReason,
+                  const OnActivateCallback& on_handled) override;
   void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   void OnVSync(device::mojom::blink::VRPosePtr,
@@ -188,6 +189,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_previous_frame_render_ = false;
   bool pending_submit_frame_ = false;
   bool v_sync_connection_failed_ = false;
+  bool pending_present_request_ = false;
 
   device::mojom::blink::VRDisplayPtr display_;
 
