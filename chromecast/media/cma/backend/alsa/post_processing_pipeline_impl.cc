@@ -4,6 +4,7 @@
 
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline_impl.h"
 
+#include <cmath>
 #include <string>
 
 #include "base/files/file_path.h"
