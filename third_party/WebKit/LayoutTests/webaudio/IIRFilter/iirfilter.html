@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/biquad-filters.js"></script>
   </head>
 
@@ -17,11 +17,10 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("coefficient-normalization", function (done) {
+      audit.define("coefficient-normalization", (task, should) => {
         // Test that the feedback coefficients are normalized.  Do this be creating two
         // IIRFilterNodes.  One has normalized coefficients, and one doesn't.  Compute the
         // difference and make sure they're the same.
-        var success = true;
         var context = new OfflineAudioContext(2, testFrames, sampleRate);
 
         // Use a simple impulse as the source.
@@ -49,13 +48,16 @@
         var iir1;
         var iir2;
 
-        success = Should("createIIRFilter with normalized coefficients", function () {
-          iir1 = context.createIIRFilter(ff, fb1);
-        }).notThrow() && success;
+        should(function () {
+              iir1 = context.createIIRFilter(ff, fb1);
+            },
+            "createIIRFilter with normalized coefficients")
+          .notThrow();
 
-        success = Should("createIIRFilter with unnormalized coefficients", function () {
-          iir2 = context.createIIRFilter(ff, fb2);
-        }).notThrow() && success;
+        should(function () {
+            iir2 = context.createIIRFilter(ff, fb2);
+          },
+          "createIIRFilter with unnormalized coefficients").notThrow();
 
         // Create the graph.  The output of iir1 (normalized coefficients) is channel 0, and the
         // output of iir2 (unnormalized coefficients), with appropriate scaling, is channel 1.
@@ -84,14 +86,15 @@
 
           // Threshold isn't exactly zero because the arithmetic is done differently between the
           // IIRFilterNode and the BiquadFilterNode.
-          success = Should("Output of IIR filter with unnormalized coefficients", iir2Data)
-            .beCloseToArray(iir1Data, 2.1958e-38) && success;
-          Should("IIRFilter coefficients normalized", success)
-            .summarize("correctly", "incorrectly");
-        }).then(done);
+          should(iir2Data,
+              "Output of IIR filter with unnormalized coefficients")
+            .beCloseToArray(iir1Data, {
+              absoluteThreshold: 2.1958e-38
+            });
+        }).then(() => task.done());
       });
 
-      audit.defineTask("one-zero", function (done) {
+      audit.define("one-zero", (task, should) => {
         // Create a simple 1-zero filter and compare with the expected output.
         var context = new OfflineAudioContext(1, testFrames, sampleRate);
 
@@ -120,11 +123,14 @@
           // are non-zero and the rest are zero.
           expected[0] = 0.5;
           expected[1] = 0.5;
-          Should('IIR 1-zero output', actual).beCloseToArray(expected, 0);
-        }).then(done);
+          should(actual, 'IIR 1-zero output')
+            .beCloseToArray(expected, {
+              absoluteThreshold: 0
+            });
+        }).then(() => task.done());
       });
 
-      audit.defineTask("one-pole", function (done) {
+      audit.define("one-pole", (task, should) => {
         // Create a simple 1-pole filter and compare with the expected output.
 
         // The filter is y(n) + c*y(n-1)= x(n).  The analytical response is (-c)^n, so choose a
@@ -162,16 +168,18 @@
 
           // Threshold isn't exactly zero due to round-off in the single-precision IIRFilterNode
           // computations versus the double-precision Javascript computations.
-          Should('IIR 1-pole output', actual)
-            .beCloseToArray(expected, {relativeThreshold: 5.723e-8});
-        }).then(done);
+          should(actual, 'IIR 1-pole output')
+            .beCloseToArray(expected, {
+              relativeThreshold: 5.723e-8
+            });
+        }).then(() => task.done());
       });
 
       // Return a function suitable for use as a defineTask function.  This function creates an
       // IIRFilterNode equivalent to the specified BiquadFilterNode and compares the outputs.  The
       // outputs from the two filters should be virtually identical.
       function testWithBiquadFilter (filterType, errorThreshold, snrThreshold) {
-        return function (done) {
+        return (task, should) => {
           var context = new OfflineAudioContext(2, testFrames, sampleRate);
 
           // Use a constant (step function) as the source
@@ -219,16 +227,14 @@
             // the implementation used for Linux and Windows.  This will cause the output to differ,
             // even if the threshold passes.  Thus, only print out a very small number of elements
             // of the array where we have tested that they are consistent.
-            Should("IIRFilter for Biquad " + filterType, actual, {
-                precision: 5
-              })
+            should(actual, "IIRFilter for Biquad " + filterType)
               .beCloseToArray(expected, errorThreshold);
 
             var snr = 10*Math.log10(computeSNR(actual, expected));
-            Should("SNR for IIRFIlter for Biquad " + filterType, snr, {
-              brief: true
-            }).beGreaterThanOrEqualTo(snrThreshold);
-          }).then(done);
+            should(snr,
+                "SNR for IIRFIlter for Biquad " + filterType)
+              .beGreaterThanOrEqualTo(snrThreshold);
+          }).then(() => task.done());
         };
       }
 
@@ -294,10 +300,11 @@
       for (k = 0; k < biquadTestConfigs.length; ++k) {
         var config = biquadTestConfigs[k];
         var name = k + ": " + config.filterType;
-        audit.defineTask(name, testWithBiquadFilter(config.filterType, config.errorThreshold, config.snrThreshold));
+        audit.define(name, testWithBiquadFilter(config.filterType, config.errorThreshold,
+          config.snrThreshold));
       }
 
-      audit.defineTask("multi-channel", function (done) {
+      audit.define("multi-channel", (task, should) => {
         // Multi-channel test.  Create a biquad filter and the equivalent IIR filter.  Filter the
         // same multichannel signal and compare the results.
         var nChannels = 3;
@@ -346,7 +353,6 @@
           source[k].start();
 
         context.startRendering().then(function (result) {
-          var success = true;
           var errorThresholds = [3.7671e-5, 3.0071e-5, 2.6241e-5];
 
           // Check the difference signal on each channel
@@ -357,17 +363,12 @@
               return Math.max(reducedValue, Math.abs(currentValue));
             });
 
-            success = Should("Max difference between IIR and Biquad on channel " + channel,
-              maxError, {
-                brief: true
-              }).beLessThanOrEqualTo(errorThresholds[channel]);
+            should(maxError,
+                "Max difference between IIR and Biquad on channel " + channel)
+              .beLessThanOrEqualTo(errorThresholds[channel]);
           }
 
-          Should("IIRFIlter processed " + result.numberOfChannels +
-            "-channel input",
-            success)
-            .summarize("correctly", "incorrectly");
-        }).then(done);
+        }).then(() => task.done());
       });
 
       // Apply an IIRFilter to the given input signal.
@@ -452,7 +453,7 @@
         }
       }
 
-      audit.defineTask("4th-order-iir", function(done) {
+      audit.define("4th-order-iir", (task, should) => {
         // Cascade 2 lowpass biquad filters and compare that with the equivalent 4th order IIR
         // filter.
 
@@ -541,10 +542,7 @@
           var expected = result.getChannelData(0);
           var actual = result.getChannelData(1);
 
-          Should("4-th order IIRFilter (biquad ref)",
-              actual, {
-                precision: 5
-              })
+          should(actual, "4-th order IIRFilter (biquad ref)")
             .beCloseToArray(expected, {
               // Thresholds experimentally determined.
               absoluteThreshold: 1.59e-7,
@@ -552,14 +550,12 @@
             });
 
           var snr = 10*Math.log10(computeSNR(actual, expected));
-          Should("SNR of 4-th order IIRFilter (biquad ref)", snr, {
-              brief: true
-            })
+          should(snr, "SNR of 4-th order IIRFilter (biquad ref)")
             .beGreaterThanOrEqualTo(108.947);
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
