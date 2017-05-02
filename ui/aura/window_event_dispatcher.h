@@ -38,7 +38,6 @@ class TouchEvent;
 namespace aura {
 class MusMouseLocationUpdater;
 class TestScreen;
-class EnvInputStateController;
 class WindowTargeter;
 class WindowTreeHost;
 
@@ -265,8 +264,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   ui::LocatedEvent* dispatching_held_event_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
-
-  std::unique_ptr<EnvInputStateController> env_controller_;
 
   std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
 
