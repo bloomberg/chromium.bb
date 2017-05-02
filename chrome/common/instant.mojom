@@ -35,11 +35,8 @@ interface EmbeddedSearchConnector {
 //
 // Browser interface to support embedded search. Render frames connect to this
 // interface to query browser data, such as the most visited pages.
+// See http://dev.chromium.org/embeddedsearch
 interface Instant {
-  // Tells InstantExtended whether the embedded search API is supported.
-  // See http://dev.chromium.org/embeddedsearch
-  InstantSupportDetermined(int32 page_seq_no, bool result);
-
   // Tells InstantExtended to set the omnibox focus state.
   FocusOmnibox(int32 page_seq_no, OmniboxFocusState state);
 
@@ -103,8 +100,6 @@ struct ThemeBackgroundInfo;
 // example, the browser will tell the frame if the omnibox got focus.
 interface SearchBox {
   SetPageSequenceNumber(int32 page_seq_no);
-
-  DetermineIfPageSupportsInstant();
 
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);

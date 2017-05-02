@@ -107,10 +107,6 @@ void SearchIPCRouter::OnNavigationEntryCommitted() {
   search_box()->SetPageSequenceNumber(commit_counter_);
 }
 
-void SearchIPCRouter::DetermineIfPageSupportsInstant() {
-  search_box()->DetermineIfPageSupportsInstant();
-}
-
 void SearchIPCRouter::SendChromeIdentityCheckResult(
     const base::string16& identity,
     bool identity_match) {
@@ -180,14 +176,6 @@ void SearchIPCRouter::OnTabActivated() {
 
 void SearchIPCRouter::OnTabDeactivated() {
   is_active_tab_ = false;
-}
-
-void SearchIPCRouter::InstantSupportDetermined(int page_seq_no,
-                                               bool instant_support) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  delegate_->OnInstantSupportDetermined(instant_support);
 }
 
 void SearchIPCRouter::FocusOmnibox(int page_seq_no, OmniboxFocusState state) {

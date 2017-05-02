@@ -74,14 +74,6 @@ bool IsNTP(const content::WebContents* contents) {
   return search::IsInstantNTP(contents);
 }
 
-bool IsLocal(const content::WebContents* contents) {
-  if (!contents)
-    return false;
-  const content::NavigationEntry* entry =
-      contents->GetController().GetVisibleEntry();
-  return entry && entry->GetURL() == chrome::kChromeSearchLocalNtpUrl;
-}
-
 // Returns true if |contents| are rendered inside an Instant process.
 bool InInstantProcess(Profile* profile,
                       const content::WebContents* contents) {
@@ -299,7 +291,7 @@ void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
     if (search::IsInstantNTP(web_contents_))
       RecordNewTabLoadTime(web_contents_);
 
-    DetermineIfPageSupportsInstant();
+    InstantSupportChanged(InInstantProcess(profile(), web_contents_));
   }
 }
 
@@ -496,21 +488,6 @@ void SearchTabHelper::UpdateMode(bool update_origin) {
   model_.SetMode(SearchMode(type, origin));
   if (old_mode.is_ntp() != model_.mode().is_ntp()) {
     ipc_router_.SetInputInProgress(IsInputInProgress());
-  }
-}
-
-void SearchTabHelper::DetermineIfPageSupportsInstant() {
-  if (!InInstantProcess(profile(), web_contents_)) {
-    // The page is not in the Instant process. This page does not support
-    // instant. If we send an IPC message to a page that is not in the Instant
-    // process, it will never receive it and will never respond. Therefore,
-    // return immediately.
-    InstantSupportChanged(false);
-  } else if (IsLocal(web_contents_)) {
-    // Local pages always support Instant.
-    InstantSupportChanged(true);
-  } else {
-    ipc_router_.DetermineIfPageSupportsInstant();
   }
 }
 

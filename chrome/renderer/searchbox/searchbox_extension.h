@@ -26,10 +26,6 @@ class SearchBoxExtension {
   // if match-preview is not enabled. Caller takes ownership of returned object.
   static v8::Extension* Get();
 
-  // Returns true if a page supports Instant, that is, if it has bound an
-  // onsubmit() handler.
-  static bool PageSupportsInstant(blink::WebFrame* frame);
-
   // Helpers to dispatch Javascript events.
   static void DispatchChromeIdentityCheckResult(blink::WebFrame* frame,
                                                 const base::string16& identity,

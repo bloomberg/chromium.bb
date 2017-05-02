@@ -19,7 +19,6 @@
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/base/window_open_disposition.h"
 
 class GURL;
 
@@ -40,6 +39,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
    public:
     // Called upon determination of Instant API support in response to the page
     // load event.
+    // TODO(treib): Remove this. crbug.com/627747
     virtual void OnInstantSupportDetermined(bool supports_instant) = 0;
 
     // Called when the page wants the omnibox to be focused. |state| specifies
@@ -136,11 +136,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Tells the SearchIPCRouter that a new page in an Instant process committed.
   void OnNavigationEntryCommitted();
 
-  // Tells the renderer to determine if the page supports the Instant API, which
-  // results in a call to OnInstantSupportDetermined() when the reply is
-  // received.
-  void DetermineIfPageSupportsInstant();
-
   // Tells the renderer about the result of the Chrome identity check.
   void SendChromeIdentityCheckResult(const base::string16& identity,
                                      bool identity_match);
@@ -175,8 +170,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void OnTabDeactivated();
 
   // chrome::mojom::Instant:
-  void InstantSupportDetermined(int page_seq_no,
-                                bool supports_instant) override;
   void FocusOmnibox(int page_id, OmniboxFocusState state) override;
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
@@ -206,10 +199,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
  private:
   friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           DetermineIfPageSupportsInstant_Local);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           DetermineIfPageSupportsInstant_NonLocal);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
