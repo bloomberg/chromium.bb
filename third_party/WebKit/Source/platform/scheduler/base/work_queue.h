@@ -43,7 +43,8 @@ class PLATFORM_EXPORT WorkQueue {
   // Assigns the current set index.
   void AssignSetIndex(size_t work_queue_set_index);
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsValueInto(base::TimeTicks now,
+                   base::trace_event::TracedValue* state) const;
 
   // Returns true if the |work_queue_| is empty. This method ignores any fences.
   bool Empty() const { return work_queue_.empty(); }

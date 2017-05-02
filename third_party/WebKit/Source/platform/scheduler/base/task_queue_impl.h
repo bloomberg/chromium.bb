@@ -167,7 +167,8 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // Must only be called from the thread this task queue was created on.
   void ReloadImmediateWorkQueueIfEmpty();
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsValueInto(base::TimeTicks now,
+                   base::trace_event::TracedValue* state) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
@@ -325,10 +326,13 @@ class PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   void TraceQueueSize() const;
   static void QueueAsValueInto(const WTF::Deque<Task>& queue,
+                               base::TimeTicks now,
                                base::trace_event::TracedValue* state);
   static void QueueAsValueInto(const std::priority_queue<Task>& queue,
+                               base::TimeTicks now,
                                base::trace_event::TracedValue* state);
   static void TaskAsValueInto(const Task& task,
+                              base::TimeTicks now,
                               base::trace_event::TracedValue* state);
 
   void RemoveQueueEnabledVoter(const QueueEnabledVoterImpl* voter);
