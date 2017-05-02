@@ -1060,6 +1060,12 @@ extern const char kBootAnimation[];
 // Description for the flag for wallpaper boot animation (except for OOBE).
 extern const char kBootAnimationDescription[];
 
+// Name for the flag for enabling Instant Tethering.
+extern const char kTetherName[];
+
+// Description for the flag for enabling Instant Tethering.
+extern const char kTetherDescription[];
+
 #endif  // defined(OS_CHROMEOS)
 
 // Name of the flag for accelerated video decode where available.
