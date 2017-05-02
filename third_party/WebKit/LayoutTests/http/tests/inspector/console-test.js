@@ -425,4 +425,31 @@ InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
     }
 }
 
+InspectorTest.selectConsoleMessages = function(fromMessage, fromTextOffset, toMessage, toTextOffset, useTextContainer)
+{
+    var consoleView = Console.ConsoleView.instance();
+    var from = selectionContainerAndOffset(consoleView.itemElement(fromMessage).element(), fromTextOffset);
+    var to = selectionContainerAndOffset(consoleView.itemElement(toMessage).element(), toTextOffset);
+    window.getSelection().setBaseAndExtent(from.container, from.offset, to.container, to.offset);
+
+    function selectionContainerAndOffset(container, offset)
+    {
+        if (offset === 0 && container.nodeType !== Node.TEXT_NODE)
+            container = container.traverseNextTextNode();
+        var charCount = 0;
+        var node = container;
+        while (node = node.traverseNextTextNode(true)) {
+            var length = node.textContent.length;
+            if (charCount + length >= offset) {
+                return {
+                    container: node,
+                    offset: offset - charCount
+                };
+            }
+            charCount += length;
+        }
+        return null;
+    }
+}
+
 }
