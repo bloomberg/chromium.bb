@@ -13,16 +13,13 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
-#include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,16 +99,33 @@ std::string GenerateCellProviderForDevice(
   return "cellProvider" + remote_device.GetTruncatedDeviceIdForLogs();
 }
 
-DeviceStatus CreateFakeDeviceStatus(const std::string& cell_provider_name) {
+const char kDoNotSetStringField[] = "doNotSetField";
+const int kDoNotSetIntField = -100;
+
+// Creates a DeviceStatus object using the parameters provided. If
+// |kDoNotSetStringField| or |kDoNotSetIntField| are passed, these fields will
+// not be set in the output.
+DeviceStatus CreateFakeDeviceStatus(const std::string& cell_provider_name,
+                                    int battery_percentage,
+                                    int connection_strength) {
+  // TODO(khorimoto): Once a ConnectedWifiSsid field is added as a property of
+  // Tether networks, give an option to pass a parameter for that field as well.
   WifiStatus wifi_status;
   wifi_status.set_status_code(
       WifiStatus_StatusCode::WifiStatus_StatusCode_CONNECTED);
   wifi_status.set_ssid("Google A");
 
   DeviceStatus device_status;
-  device_status.set_battery_percentage(75);
-  device_status.set_cell_provider(cell_provider_name);
-  device_status.set_connection_strength(4);
+  if (battery_percentage != kDoNotSetIntField) {
+    device_status.set_battery_percentage(battery_percentage);
+  }
+  if (cell_provider_name != kDoNotSetStringField) {
+    device_status.set_cell_provider(cell_provider_name);
+  }
+  if (connection_strength != kDoNotSetIntField) {
+    device_status.set_connection_strength(connection_strength);
+  }
+
   device_status.mutable_wifi_status()->CopyFrom(wifi_status);
 
   return device_status;
@@ -120,21 +134,68 @@ DeviceStatus CreateFakeDeviceStatus(const std::string& cell_provider_name) {
 std::vector<HostScannerOperation::ScannedDeviceInfo>
 CreateFakeScannedDeviceInfos(
     const std::vector<cryptauth::RemoteDevice>& remote_devices) {
+  // At least 4 ScannedDeviceInfos should be created to ensure that all 4 cases
+  // described below are tested.
+  EXPECT_GT(remote_devices.size(), 3u);
+
   std::vector<HostScannerOperation::ScannedDeviceInfo> scanned_device_infos;
+
   for (size_t i = 0; i < remote_devices.size(); ++i) {
+    // Four field possibilities:
+    // i % 4 == 0: Field is not supplied.
+    // i % 4 == 1: Field is below the minimum value (int fields only).
+    // i % 4 == 2: Field is within the valid range (int fields only).
+    // i % 4 == 3: Field is above the maximium value (int fields only).
+    std::string cell_provider_name;
+    int battery_percentage;
+    int connection_strength;
+    switch (i % 4) {
+      case 0:
+        cell_provider_name = kDoNotSetStringField;
+        battery_percentage = kDoNotSetIntField;
+        connection_strength = kDoNotSetIntField;
+        break;
+      case 1:
+        cell_provider_name = GenerateCellProviderForDevice(remote_devices[i]);
+        battery_percentage = -1 - i;
+        connection_strength = -1 - i;
+        break;
+      case 2:
+        cell_provider_name = GenerateCellProviderForDevice(remote_devices[i]);
+        battery_percentage = (50 + i) % 100;  // Valid range is [0, 100].
+        connection_strength = (1 + i) % 4;    // Valid range is [0, 4].
+        break;
+      case 3:
+        cell_provider_name = GenerateCellProviderForDevice(remote_devices[i]);
+        battery_percentage = 101 + i;
+        connection_strength = 101 + i;
+        break;
+      default:
+        NOTREACHED();
+        // Set values for |battery_percentage| and |connection_strength| here to
+        // prevent a compiler warning which says that they may be unset at this
+        // point.
+        battery_percentage = 0;
+        connection_strength = 0;
+        break;
+    }
+
     DeviceStatus device_status = CreateFakeDeviceStatus(
-        GenerateCellProviderForDevice(remote_devices[i]));
+        cell_provider_name, battery_percentage, connection_strength);
+
     // Require set-up for odd-numbered device indices.
     bool set_up_required = i % 2 == 0;
+
     scanned_device_infos.push_back(HostScannerOperation::ScannedDeviceInfo(
         remote_devices[i], device_status, set_up_required));
   }
+
   return scanned_device_infos;
 }
 
 }  // namespace
 
-class HostScannerTest : public NetworkStateTest {
+class HostScannerTest : public testing::Test {
  protected:
   HostScannerTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(4)),
@@ -142,11 +203,6 @@ class HostScannerTest : public NetworkStateTest {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
-        NetworkStateHandler::TECHNOLOGY_ENABLED);
-
     scanned_device_infos_so_far_.clear();
 
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
@@ -160,6 +216,7 @@ class HostScannerTest : public NetworkStateTest {
         base::MakeUnique<FakeNotificationPresenter>();
     device_id_tether_network_guid_map_ =
         base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
+    fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
 
     fake_host_scanner_operation_factory_ =
         base::WrapUnique(new FakeHostScannerOperationFactory(test_devices_));
@@ -169,16 +226,12 @@ class HostScannerTest : public NetworkStateTest {
     host_scanner_ = base::WrapUnique(new HostScanner(
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
-        mock_tether_host_response_recorder_.get(), network_state_handler(),
+        mock_tether_host_response_recorder_.get(),
         fake_notification_presenter_.get(),
-        device_id_tether_network_guid_map_.get()));
+        device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get()));
   }
 
   void TearDown() override {
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-
     HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
   }
 
@@ -186,28 +239,26 @@ class HostScannerTest : public NetworkStateTest {
   // |test_scanned_device_infos| vector at the index |test_device_index| with
   // the "final result" value of |is_final_scan_result|.
   void ReceiveScanResultAndVerifySuccess(
-      FakeHostScannerOperation* fake_operation,
+      FakeHostScannerOperation& fake_operation,
       size_t test_device_index,
       bool is_final_scan_result) {
-    scanned_device_infos_so_far_.push_back(
-        test_scanned_device_infos[test_device_index]);
-    fake_operation->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
-                                                is_final_scan_result);
-    EXPECT_EQ(scanned_device_infos_so_far_,
-              host_scanner_->most_recent_scan_results());
-
-    NetworkStateHandler::NetworkStateList tether_networks;
-    network_state_handler()->GetVisibleNetworkListByType(
-        NetworkTypePattern::Tether(), &tether_networks);
-    EXPECT_EQ(scanned_device_infos_so_far_.size(), tether_networks.size());
+    bool already_in_list = false;
     for (auto& scanned_device_info : scanned_device_infos_so_far_) {
-      cryptauth::RemoteDevice remote_device = scanned_device_info.remote_device;
-      const NetworkState* tether_network =
-          network_state_handler()->GetNetworkStateFromGuid(
-              remote_device.GetDeviceId());
-      ASSERT_TRUE(tether_network);
-      EXPECT_EQ(remote_device.name, tether_network->name());
+      if (scanned_device_info.remote_device.GetDeviceId() ==
+          test_devices_[test_device_index].GetDeviceId()) {
+        already_in_list = true;
+        break;
+      }
     }
+
+    if (!already_in_list) {
+      scanned_device_infos_so_far_.push_back(
+          test_scanned_device_infos[test_device_index]);
+    }
+
+    fake_operation.SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+                                               is_final_scan_result);
+    VerifyScanResultsMatchCache();
 
     if (scanned_device_infos_so_far_.size() == 1) {
       EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
@@ -220,7 +271,46 @@ class HostScannerTest : public NetworkStateTest {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  void VerifyScanResultsMatchCache() {
+    ASSERT_EQ(scanned_device_infos_so_far_.size(),
+              fake_host_scan_cache_->size());
+    for (auto& scanned_device_info : scanned_device_infos_so_far_) {
+      std::string tether_network_guid =
+          device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+              scanned_device_info.remote_device.GetDeviceId());
+      const FakeHostScanCache::CacheEntry* cache_item =
+          fake_host_scan_cache_->GetCacheEntry(tether_network_guid);
+      ASSERT_TRUE(cache_item);
+      VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(scanned_device_info,
+                                                        *cache_item);
+    }
+  }
+
+  void VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(
+      const HostScannerOperation::ScannedDeviceInfo& scanned_device_info,
+      const FakeHostScanCache::CacheEntry& cache_item) {
+    EXPECT_EQ(scanned_device_info.remote_device.name, cache_item.device_name);
+
+    const DeviceStatus& status = scanned_device_info.device_status;
+    if (!status.has_cell_provider() || status.cell_provider().empty())
+      EXPECT_EQ("unknown-carrier", cache_item.carrier);
+    else
+      EXPECT_EQ(status.cell_provider(), cache_item.carrier);
+
+    if (!status.has_battery_percentage() || status.battery_percentage() > 100)
+      EXPECT_EQ(100, cache_item.battery_percentage);
+    else if (status.battery_percentage() < 0)
+      EXPECT_EQ(0, cache_item.battery_percentage);
+    else
+      EXPECT_EQ(status.battery_percentage(), cache_item.battery_percentage);
+
+    if (!status.has_connection_strength() || status.connection_strength() > 4)
+      EXPECT_EQ(100, cache_item.signal_strength);
+    else if (status.connection_strength() < 0)
+      EXPECT_EQ(0, cache_item.signal_strength);
+    else
+      EXPECT_EQ(status.connection_strength() * 25, cache_item.signal_strength);
+  }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
@@ -235,6 +325,7 @@ class HostScannerTest : public NetworkStateTest {
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
+  std::unique_ptr<FakeHostScanCache> fake_host_scan_cache_;
 
   std::unique_ptr<FakeHostScannerOperationFactory>
       fake_host_scanner_operation_factory_;
@@ -259,19 +350,19 @@ TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */);
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
@@ -290,7 +381,7 @@ TEST_F(HostScannerTest, TestScan_ResultsFromNoDevices) {
       ->SendScannedDeviceListUpdate(
           std::vector<HostScannerOperation::ScannedDeviceInfo>(),
           true /* is_final_scan_result */);
-  EXPECT_TRUE(host_scanner_->most_recent_scan_results().empty());
+  EXPECT_EQ(0u, fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
@@ -306,19 +397,18 @@ TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
 
   // Only receive updates from the 0th and 1st device.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   fake_host_scanner_operation_factory_->created_operations()[0]
       ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_,
-            host_scanner_->most_recent_scan_results());
+  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
@@ -333,8 +423,7 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // No devices should have been received yet.
-  EXPECT_EQ(std::vector<HostScannerOperation::ScannedDeviceInfo>(),
-            host_scanner_->most_recent_scan_results());
+  EXPECT_EQ(0u, fake_host_scan_cache_->size());
 
   fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
@@ -347,12 +436,11 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   // No devices should have been received yet.
-  EXPECT_EQ(std::vector<HostScannerOperation::ScannedDeviceInfo>(),
-            host_scanner_->most_recent_scan_results());
+  EXPECT_EQ(0u, fake_host_scan_cache_->size());
 
   // Receive updates from the 0th device.
   ReceiveScanResultAndVerifySuccess(
-      fake_host_scanner_operation_factory_->created_operations()[0],
+      *fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */);
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
@@ -361,16 +449,92 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  // No devices should have been received yet.
-  EXPECT_EQ(scanned_device_infos_so_far_,
-            host_scanner_->most_recent_scan_results());
+  // The scanned devices so far should be the same (i.e., they should not have
+  // been affected by the extra call to StartScan()).
+  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
 
   // Finally, finish the scan.
   fake_host_scanner_operation_factory_->created_operations()[0]
       ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
                                     true /* is_final_scan_result */);
-  EXPECT_EQ(scanned_device_infos_so_far_,
-            host_scanner_->most_recent_scan_results());
+  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+}
+
+TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
+  // Start the first scan session.
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+  host_scanner_->StartScan();
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  ASSERT_EQ(1u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  // Receive updates from devices 0-3.
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      0u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      1u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      2u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[0],
+      3u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  // Finish the first scan.
+  fake_host_scanner_operation_factory_->created_operations()[0]
+      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+                                    true /* is_final_scan_result */);
+  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+
+  // Simulate device 0 connecting; it is now considered the active host.
+  fake_host_scan_cache_->set_active_host_tether_network_guid(
+      device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+          test_devices_[0].GetDeviceId()));
+
+  // Now, start the second scan session.
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+  host_scanner_->StartScan();
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  fake_tether_host_fetcher_->InvokePendingCallbacks();
+  ASSERT_EQ(2u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  // The cache should have been cleared except for the active host. Since the
+  // active host is device 0, clear |scanned_device_list_so_far_| from device 1
+  // onward and verify that the cache is equivalent.
+  scanned_device_infos_so_far_.erase(scanned_device_infos_so_far_.begin() + 1,
+                                     scanned_device_infos_so_far_.end());
+  VerifyScanResultsMatchCache();
+
+  // Receive results from devices 0 and 2. This simulates devices 1 and 3 being
+  // out of range during the second scan.
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[1],
+      0u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ReceiveScanResultAndVerifySuccess(
+      *fake_host_scanner_operation_factory_->created_operations()[1],
+      2u /* test_device_index */, false /* is_final_scan_result */);
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  // Finish the second scan.
+  fake_host_scanner_operation_factory_->created_operations()[1]
+      ->SendScannedDeviceListUpdate(scanned_device_infos_so_far_,
+                                    true /* is_final_scan_result */);
+  EXPECT_EQ(scanned_device_infos_so_far_.size(), fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 

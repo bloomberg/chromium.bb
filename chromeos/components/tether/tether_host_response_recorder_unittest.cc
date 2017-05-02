@@ -12,6 +12,24 @@ namespace chromeos {
 
 namespace tether {
 
+namespace {
+
+class TestObserver : public TetherHostResponseRecorder::Observer {
+ public:
+  TestObserver() : num_callbacks_(0) {}
+  ~TestObserver() {}
+
+  uint32_t num_callbacks() { return num_callbacks_; }
+
+  // TetherHostResponseRecorder::Observer:
+  void OnPreviouslyConnectedHostIdsChanged() override { num_callbacks_++; }
+
+ private:
+  uint32_t num_callbacks_;
+};
+
+}  // namespace
+
 class TetherHostResponseRecorderTest : public testing::Test {
  protected:
   TetherHostResponseRecorderTest()
@@ -23,11 +41,16 @@ class TetherHostResponseRecorderTest : public testing::Test {
 
     recorder_ =
         base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
+
+    test_observer_ = base::WrapUnique(new TestObserver());
+    recorder_->AddObserver(test_observer_.get());
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestObserver> test_observer_;
+
   std::unique_ptr<TetherHostResponseRecorder> recorder_;
 
  private:
@@ -58,21 +81,33 @@ TEST_F(TetherHostResponseRecorderTest, TestTetherAvailabilityResponses) {
           test_devices_[6].GetDeviceId(), test_devices_[4].GetDeviceId(),
           test_devices_[2].GetDeviceId(), test_devices_[0].GetDeviceId()}),
       recorder_->GetPreviouslyAvailableHostIds());
+
+  EXPECT_EQ(0u, test_observer_->num_callbacks());
 }
 
 TEST_F(TetherHostResponseRecorderTest, TestConnectTetheringResponses) {
   // Receive TetherAvailabilityResponses from devices in the following order:
   // 0, 2, 4, 6, 8, 1, 3, 5, 7, 9
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+  EXPECT_EQ(1u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[2]);
+  EXPECT_EQ(2u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[4]);
+  EXPECT_EQ(3u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[6]);
+  EXPECT_EQ(4u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[8]);
+  EXPECT_EQ(5u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[1]);
+  EXPECT_EQ(6u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[3]);
+  EXPECT_EQ(7u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[5]);
+  EXPECT_EQ(8u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[7]);
+  EXPECT_EQ(9u, test_observer_->num_callbacks());
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[9]);
+  EXPECT_EQ(10u, test_observer_->num_callbacks());
 
   // The order, from most recent to least recent, should be:
   // 9, 7, 5, 3, 1, 8, 6, 4, 2, 0
@@ -84,6 +119,8 @@ TEST_F(TetherHostResponseRecorderTest, TestConnectTetheringResponses) {
           test_devices_[6].GetDeviceId(), test_devices_[4].GetDeviceId(),
           test_devices_[2].GetDeviceId(), test_devices_[0].GetDeviceId()}),
       recorder_->GetPreviouslyConnectedHostIds());
+
+  EXPECT_EQ(10u, test_observer_->num_callbacks());
 }
 
 TEST_F(TetherHostResponseRecorderTest, TestBothResponseTypes) {
@@ -94,6 +131,7 @@ TEST_F(TetherHostResponseRecorderTest, TestBothResponseTypes) {
 
   // Receive a ConnectTetheringResponse from device 2.
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[2]);
+  EXPECT_EQ(1u, test_observer_->num_callbacks());
 
   // Receive TetherAvailabilityResponses from devices 0, 1, and 3.
   recorder_->RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]);
@@ -102,6 +140,12 @@ TEST_F(TetherHostResponseRecorderTest, TestBothResponseTypes) {
 
   // Receive a ConnectTetheringResponse from device 0.
   recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+  EXPECT_EQ(2u, test_observer_->num_callbacks());
+
+  // Receive another ConnectTetheringResponse from device 0. Since it was
+  // already in the front of the list, this should not trigger a callback.
+  recorder_->RecordSuccessfulConnectTetheringResponse(test_devices_[0]);
+  EXPECT_EQ(2u, test_observer_->num_callbacks());
 
   // The order for TetherAvailabilityResponses, from most recent to least
   // recent, should be:
@@ -118,8 +162,10 @@ TEST_F(TetherHostResponseRecorderTest, TestBothResponseTypes) {
   EXPECT_EQ((std::vector<std::string>{test_devices_[0].GetDeviceId(),
                                       test_devices_[2].GetDeviceId()}),
             recorder_->GetPreviouslyConnectedHostIds());
+
+  EXPECT_EQ(2u, test_observer_->num_callbacks());
 }
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos
