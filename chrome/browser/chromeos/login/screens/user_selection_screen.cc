@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -30,10 +31,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -137,6 +140,13 @@ bool AllowFingerprintForUser(user_manager::User* user) {
     return false;
 
   return quick_unlock_storage->IsFingerprintAuthenticationAvailable();
+}
+
+// Returns true if dircrypto migration check should be performed.
+bool ShouldCheckNeedDircryptoMigration() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableEncryptionMigration) &&
+         arc::IsArcAvailable();
 }
 
 }  // namespace
@@ -536,8 +546,9 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
                                weak_factory_.GetWeakPtr()));
   }
 
-  // Run dircrypto migration check only on the login screen.
-  if (display_type_ == OobeUI::kLoginDisplay) {
+  // Run dircrypto migration check only on the login screen when necessary.
+  if (display_type_ == OobeUI::kLoginDisplay &&
+      ShouldCheckNeedDircryptoMigration()) {
     if (!dircrypto_migration_checker_) {
       dircrypto_migration_checker_ =
           base::MakeUnique<DircryptoMigrationChecker>(this);

@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 
@@ -62,6 +64,10 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest,
 
 // Test that a banner shows up for users that need dircrypto migration.
 IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
+  // Enable ARC. Otherwise, the banner would not show.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kArcAvailability, "officially-supported");
+
   // No banner for the first user since default is no migration.
   JSExpect("!$('signin-banner').classList.contains('message-set')");
 
