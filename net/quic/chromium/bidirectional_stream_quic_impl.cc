@@ -38,7 +38,6 @@ BidirectionalStreamQuicImpl::BidirectionalStreamQuicImpl(
       has_sent_headers_(false),
       has_received_headers_(false),
       send_request_headers_automatically_(true),
-      waiting_for_confirmation_(false),
       weak_factory_(this) {
   DCHECK(session_);
   session_->AddObserver(this);
@@ -73,9 +72,13 @@ void BidirectionalStreamQuicImpl::Start(
   delegate_ = delegate;
   request_info_ = request_info;
 
-  stream_request_ = session_->CreateStreamRequest();
+  stream_request_ =
+      session_->CreateStreamRequest(request_info_->method == "POST");
   int rv = stream_request_->StartRequest(base::Bind(
       &BidirectionalStreamQuicImpl::OnStreamReady, weak_factory_.GetWeakPtr()));
+  if (rv == ERR_IO_PENDING)
+    return;
+
   if (rv == OK) {
     OnStreamReady(rv);
   } else if (!was_handshake_confirmed_) {
@@ -286,8 +289,6 @@ bool BidirectionalStreamQuicImpl::HasSendHeadersComplete() {
 
 void BidirectionalStreamQuicImpl::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
-  if (waiting_for_confirmation_)
-    NotifyStreamReady();
 }
 
 void BidirectionalStreamQuicImpl::OnSuccessfulVersionNegotiation(
@@ -308,10 +309,6 @@ void BidirectionalStreamQuicImpl::OnStreamReady(int rv) {
     stream_ = stream_request_->ReleaseStream();
     stream_request_.reset();
     stream_->SetDelegate(this);
-    if (!was_handshake_confirmed_ && request_info_->method == "POST") {
-      waiting_for_confirmation_ = true;
-      return;
-    }
     NotifyStreamReady();
   } else {
     NotifyError(rv);
