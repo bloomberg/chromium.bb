@@ -78,7 +78,7 @@ class HostScanCache : public TetherHostResponseRecorder::Observer {
 
   class TimerFactory {
    public:
-    virtual std::unique_ptr<base::Timer> CreateOneShotTimer();
+    virtual std::unique_ptr<base::Timer> CreateOneShotTimer() = 0;
   };
 
  private:
