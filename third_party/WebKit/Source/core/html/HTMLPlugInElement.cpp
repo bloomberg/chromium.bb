@@ -48,6 +48,7 @@
 #include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
 #include "platform/Histogram.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/mime/MIMETypeFromURL.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
@@ -86,7 +87,7 @@ HTMLPlugInElement::HTMLPlugInElement(
                                          kShouldPreferPlugInsForImages) {}
 
 HTMLPlugInElement::~HTMLPlugInElement() {
-  DCHECK(!plugin_wrapper_);  // cleared in detachLayoutTree()
+  DCHECK(plugin_wrapper_.IsEmpty());  // cleared in detachLayoutTree()
   DCHECK(!is_delaying_load_event_);
 }
 
@@ -365,18 +366,19 @@ void HTMLPlugInElement::FinishParsingChildren() {
 }
 
 void HTMLPlugInElement::ResetInstance() {
-  plugin_wrapper_.Clear();
+  plugin_wrapper_.Reset();
 }
 
-SharedPersistent<v8::Object>* HTMLPlugInElement::PluginWrapper() {
+v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
-    return nullptr;
+    return v8::Local<v8::Object>();
 
   // If the host dynamically turns off JavaScript (or Java) we will still
   // return the cached allocated Bindings::Instance. Not supporting this
   // edge-case is OK.
-  if (!plugin_wrapper_) {
+  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  if (plugin_wrapper_.IsEmpty()) {
     PluginView* plugin;
 
     if (persisted_plugin_)
@@ -384,12 +386,10 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::PluginWrapper() {
     else
       plugin = PluginWidget();
 
-    if (plugin) {
-      plugin_wrapper_ =
-          frame->GetScriptController().CreatePluginWrapper(*plugin);
-    }
+    if (plugin)
+      plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
   }
-  return plugin_wrapper_.Get();
+  return plugin_wrapper_.Get(isolate);
 }
 
 PluginView* HTMLPlugInElement::PluginWidget() const {

@@ -50,7 +50,6 @@ class DOMWrapperWorld;
 class Element;
 class KURL;
 class LocalFrame;
-class PluginView;
 class ScriptSourceCode;
 class SecurityOrigin;
 
@@ -116,8 +115,6 @@ class CORE_EXPORT ScriptController final
   // Security Policy. In this case, the policy of the main world should be
   // ignored when evaluating resources injected into the DOM.
   bool ShouldBypassMainWorldCSP();
-
-  PassRefPtr<SharedPersistent<v8::Object>> CreatePluginWrapper(PluginView&);
 
   void EnableEval();
   void DisableEval(const String& error_message);
