@@ -332,8 +332,6 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
       sheet->ImportRules();
   for (unsigned i = 0; i < import_rules.size(); ++i) {
     StyleRuleImport* import_rule = import_rules[i].Get();
-    // TODO(sof): CHECK() added for crbug.com/699269 diagnosis, remove sooner.
-    CHECK_EQ(import_rules.data(), sheet->ImportRules().data());
     if (import_rule->GetStyleSheet() &&
         (!import_rule->MediaQueries() ||
          medium.Eval(*import_rule->MediaQueries(),
