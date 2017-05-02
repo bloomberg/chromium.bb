@@ -125,6 +125,44 @@ LayoutUnit InlineTextBox::LineHeight() const {
                   kPositionOnContainingLine);
 }
 
+LayoutUnit InlineTextBox::OffsetTo(LineVerticalPositionType position_type,
+                                   FontBaseline baseline_type) const {
+  if (IsText() &&
+      (position_type == LineVerticalPositionType::TopOfEmHeight ||
+       position_type == LineVerticalPositionType::BottomOfEmHeight)) {
+    const Font& font = GetLineLayoutItem().Style(IsFirstLineStyle())->GetFont();
+    if (const SimpleFontData* font_data = font.PrimaryFont()) {
+      const FontMetrics& metrics = font_data->GetFontMetrics();
+      if (position_type == LineVerticalPositionType::TopOfEmHeight) {
+        // Use Ascent, not FixedAscent, to match to how InlineTextBoxPainter
+        // computes the baseline position.
+        return metrics.Ascent(baseline_type) -
+               font_data->EmHeightAscent(baseline_type);
+      }
+      if (position_type == LineVerticalPositionType::BottomOfEmHeight) {
+        return metrics.Ascent(baseline_type) +
+               font_data->EmHeightDescent(baseline_type);
+      }
+    }
+  }
+  switch (position_type) {
+    case LineVerticalPositionType::TextTop:
+    case LineVerticalPositionType::TopOfEmHeight:
+      return LayoutUnit();
+    case LineVerticalPositionType::TextBottom:
+    case LineVerticalPositionType::BottomOfEmHeight:
+      return LogicalHeight();
+  }
+  NOTREACHED();
+  return LayoutUnit();
+}
+
+LayoutUnit InlineTextBox::VerticalPosition(
+    LineVerticalPositionType position_type,
+    FontBaseline baseline_type) const {
+  return LogicalTop() + OffsetTo(position_type, baseline_type);
+}
+
 bool InlineTextBox::IsSelected(int start_pos, int end_pos) const {
   int s_pos = std::max(start_pos - start_, 0);
   // The position after a hard line break is considered to be past its end.

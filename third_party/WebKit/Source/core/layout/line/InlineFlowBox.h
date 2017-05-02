@@ -392,10 +392,10 @@ class InlineFlowBox : public InlineBox {
                                 logical_visual_overflow, line_top, line_bottom);
   }
 
-  LayoutUnit MaxLogicalBottomForUnderline(LineLayoutItem decoration_object,
-                                          LayoutUnit max_logical_bottom) const;
-  LayoutUnit MinLogicalTopForUnderline(LineLayoutItem decoration_object,
-                                       LayoutUnit min_logical_top) const;
+  LayoutUnit FarthestPositionForUnderline(LineLayoutItem decorating_box,
+                                          LineVerticalPositionType,
+                                          FontBaseline,
+                                          LayoutUnit current) const;
 
  private:
   void PlaceBoxRangeInInlineDirection(InlineBox* first_child,

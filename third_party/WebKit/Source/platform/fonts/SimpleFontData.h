@@ -118,6 +118,11 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return GetFontMetrics().FloatHeight() - PlatformData().size();
   }
 
+  // "em height" metrics.
+  // https://drafts.css-houdini.org/font-metrics-api-1/#fontmetrics
+  LayoutUnit EmHeightAscent(FontBaseline = kAlphabeticBaseline) const;
+  LayoutUnit EmHeightDescent(FontBaseline = kAlphabeticBaseline) const;
+
   float MaxCharWidth() const { return max_char_width_; }
   void SetMaxCharWidth(float max_char_width) {
     max_char_width_ = max_char_width;
@@ -187,6 +192,9 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   PassRefPtr<SimpleFontData> CreateScaledFontData(const FontDescription&,
                                                   float scale_factor) const;
 
+  void ComputeEmHeightMetrics() const;
+  bool NormalizeEmHeightMetrics(float, float) const;
+
   FontMetrics font_metrics_;
   float max_char_width_;
   float avg_char_width_;
@@ -230,6 +238,9 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   // overflows, we should add the inflations.
   unsigned visual_overflow_inflation_for_ascent_ : 2;
   unsigned visual_overflow_inflation_for_descent_ : 2;
+
+  mutable LayoutUnit em_height_ascent_;
+  mutable LayoutUnit em_height_descent_;
 
 // See discussion on crbug.com/631032 and Skiaissue
 // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :

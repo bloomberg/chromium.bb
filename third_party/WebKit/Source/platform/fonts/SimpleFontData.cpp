@@ -39,6 +39,7 @@
 #include "platform/fonts/VDMXParser.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/wtf/ByteOrder.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -377,6 +378,90 @@ PassRefPtr<SimpleFontData> SimpleFontData::CreateScaledFontData(
   return SimpleFontData::Create(
       FontPlatformData(platform_data_, scaled_size),
       IsCustomFont() ? CustomFontData::Create() : nullptr);
+}
+
+// Internal leadings can be distributed to ascent and descent.
+// -------------------------------------------
+//           | - Internal Leading (in ascent)
+//           |--------------------------------
+//  Ascent - |              |
+//           |              |
+//           |              | - Em height
+// ----------|--------------|
+//           |              |
+// Descent - |--------------------------------
+//           | - Internal Leading (in descent)
+// -------------------------------------------
+LayoutUnit SimpleFontData::EmHeightAscent(FontBaseline baseline_type) const {
+  if (baseline_type == kAlphabeticBaseline) {
+    if (!em_height_ascent_)
+      ComputeEmHeightMetrics();
+    return em_height_ascent_;
+  }
+  LayoutUnit em_height = LayoutUnit::FromFloatRound(PlatformData().size());
+  return em_height - em_height / 2;
+}
+
+LayoutUnit SimpleFontData::EmHeightDescent(FontBaseline baseline_type) const {
+  if (baseline_type == kAlphabeticBaseline) {
+    if (!em_height_descent_)
+      ComputeEmHeightMetrics();
+    return em_height_descent_;
+  }
+  LayoutUnit em_height = LayoutUnit::FromFloatRound(PlatformData().size());
+  return em_height / 2;
+}
+
+static std::pair<int16_t, int16_t> TypoAscenderAndDescender(
+    SkTypeface* typeface) {
+  // TODO(kojii): This should move to Skia once finalized. We can then move
+  // EmHeightAscender/Descender to FontMetrics.
+  int16_t buffer[2];
+  size_t size = typeface->getTableData(SkSetFourByteTag('O', 'S', '/', '2'), 68,
+                                       sizeof(buffer), buffer);
+  if (size == sizeof(buffer)) {
+    return std::make_pair(static_cast<int16_t>(ntohs(buffer[0])),
+                          -static_cast<int16_t>(ntohs(buffer[1])));
+  }
+  return std::make_pair(0, 0);
+}
+
+void SimpleFontData::ComputeEmHeightMetrics() const {
+  // Compute em height metrics from OS/2 sTypoAscender and sTypoDescender.
+  SkTypeface* typeface = platform_data_.Typeface();
+  int16_t typo_ascender, typo_descender;
+  std::tie(typo_ascender, typo_descender) = TypoAscenderAndDescender(typeface);
+  if (typo_ascender > 0 &&
+      NormalizeEmHeightMetrics(typo_ascender, typo_ascender + typo_descender)) {
+    return;
+  }
+
+  // As the last resort, compute em height metrics from our ascent/descent.
+  const FontMetrics& font_metrics = GetFontMetrics();
+  if (NormalizeEmHeightMetrics(font_metrics.FloatAscent(),
+                               font_metrics.FloatHeight())) {
+    return;
+  }
+  NOTREACHED();
+}
+
+bool SimpleFontData::NormalizeEmHeightMetrics(float ascent,
+                                              float height) const {
+  if (height <= 0 || ascent < 0 || ascent > height)
+    return false;
+  // While the OpenType specification recommends the sum of sTypoAscender and
+  // sTypoDescender to equal 1em, most fonts do not follow. Most Latin fonts
+  // set to smaller than 1em, and many tall scripts set to larger than 1em.
+  // https://www.microsoft.com/typography/otspec/recom.htm#OS2
+  // To ensure the sum of ascent and descent is the "em height", normalize by
+  // keeping the ratio of sTypoAscender:sTypoDescender.
+  // This matches to how Gecko computes "em height":
+  // https://github.com/whatwg/html/issues/2470#issuecomment-291425136
+  float em_height = PlatformData().size();
+  em_height_ascent_ = LayoutUnit::FromFloatRound(ascent * em_height / height);
+  em_height_descent_ =
+      LayoutUnit::FromFloatRound(em_height) - em_height_ascent_;
+  return true;
 }
 
 FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
