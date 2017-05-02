@@ -209,7 +209,7 @@ NGLayoutInputNode* NGBlockNode::NextSibling() {
         // NGLayoutInputNode for one LayoutBlockFlow.
         NOTREACHED();
         next_sibling_ = new NGInlineNode(
-            next_sibling, ToLayoutBlockFlow(layout_box_->Parent()));
+            next_sibling, ToLayoutNGBlockFlow(layout_box_->Parent()));
       } else {
         next_sibling_ = new NGBlockNode(next_sibling);
       }
@@ -248,7 +248,8 @@ NGLayoutInputNode* NGBlockNode::FirstChild() {
     LayoutObject* child = layout_box_->SlowFirstChild();
     if (child) {
       if (ShouldHandleByInlineContext(child)) {
-        first_child_ = new NGInlineNode(child, ToLayoutBlockFlow(layout_box_));
+        first_child_ =
+            new NGInlineNode(child, ToLayoutNGBlockFlow(layout_box_));
       } else {
         first_child_ = new NGBlockNode(child);
       }

@@ -29,12 +29,13 @@
 
 namespace blink {
 
-NGInlineNode::NGInlineNode(LayoutObject* start_inline, LayoutBlockFlow* block)
+NGInlineNode::NGInlineNode(LayoutObject* start_inline, LayoutNGBlockFlow* block)
     : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
       start_inline_(start_inline),
       block_(block) {
   DCHECK(start_inline);
   DCHECK(block);
+  block->ResetNGInlineNodeData();
 }
 
 NGInlineNode::NGInlineNode()
@@ -45,19 +46,19 @@ NGInlineNode::NGInlineNode()
 NGInlineNode::~NGInlineNode() {}
 
 NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
-  return NGInlineItemRange(&items_, start, end);
+  return NGInlineItemRange(&MutableData().items_, start, end);
 }
 
 void NGInlineNode::InvalidatePrepareLayout() {
-  text_content_ = String();
-  items_.clear();
+  MutableData().text_content_ = String();
+  MutableData().items_.clear();
 }
 
 void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
   CollectInlines(start_inline_, block_);
-  if (is_bidi_enabled_)
+  if (Data().is_bidi_enabled_)
     SegmentText();
   ShapeText();
 }
@@ -67,18 +68,19 @@ void NGInlineNode::PrepareLayout() {
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
 void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
-  DCHECK(text_content_.IsNull());
-  DCHECK(items_.IsEmpty());
-  NGInlineItemsBuilder builder(&items_);
+  DCHECK(Data().text_content_.IsNull());
+  DCHECK(Data().items_.IsEmpty());
+  NGInlineItemsBuilder builder(&MutableData().items_);
   builder.EnterBlock(block->Style());
   LayoutObject* next_sibling = CollectInlines(start, block, &builder);
   builder.ExitBlock();
 
-  text_content_ = builder.ToString();
+  MutableData().text_content_ = builder.ToString();
   DCHECK(!next_sibling || !next_sibling->IsInline());
   next_sibling_ = next_sibling ? new NGBlockNode(next_sibling) : nullptr;
-  is_bidi_enabled_ = !text_content_.IsEmpty() &&
-                     !(text_content_.Is8Bit() && !builder.HasBidiControls());
+  MutableData().is_bidi_enabled_ =
+      !Data().text_content_.IsEmpty() &&
+      !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
 }
 
 LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
@@ -148,36 +150,38 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
 void NGInlineNode::SegmentText() {
   // TODO(kojii): Move this to caller, this will be used again after line break.
   NGBidiParagraph bidi;
-  text_content_.Ensure16Bit();
-  if (!bidi.SetParagraph(text_content_, Style())) {
+  MutableData().text_content_.Ensure16Bit();
+  if (!bidi.SetParagraph(Data().text_content_, Style())) {
     // On failure, give up bidi resolving and reordering.
-    is_bidi_enabled_ = false;
+    MutableData().is_bidi_enabled_ = false;
     return;
   }
   if (bidi.Direction() == UBIDI_LTR) {
     // All runs are LTR, no need to reorder.
-    is_bidi_enabled_ = false;
+    MutableData().is_bidi_enabled_ = false;
     return;
   }
 
+  Vector<NGInlineItem>& items = MutableData().items_;
   unsigned item_index = 0;
-  for (unsigned start = 0; start < text_content_.length();) {
+  for (unsigned start = 0; start < Data().text_content_.length();) {
     UBiDiLevel level;
     unsigned end = bidi.GetLogicalRun(start, &level);
-    DCHECK_EQ(items_[item_index].start_offset_, start);
-    item_index = NGInlineItem::SetBidiLevel(items_, item_index, end, level);
+    DCHECK_EQ(items[item_index].start_offset_, start);
+    item_index = NGInlineItem::SetBidiLevel(items, item_index, end, level);
     start = end;
   }
-  DCHECK_EQ(item_index, items_.size());
+  DCHECK_EQ(item_index, items.size());
 }
 
 void NGInlineNode::ShapeText() {
   // TODO(eae): Add support for shaping latin-1 text?
-  text_content_.Ensure16Bit();
+  MutableData().text_content_.Ensure16Bit();
 
   // Shape each item with the full context of the entire node.
-  HarfBuzzShaper shaper(text_content_.Characters16(), text_content_.length());
-  for (auto& item : items_) {
+  HarfBuzzShaper shaper(Data().text_content_.Characters16(),
+                        Data().text_content_.length());
+  for (auto& item : MutableData().items_) {
     if (item.Type() != NGInlineItem::kText)
       continue;
 
@@ -234,7 +238,7 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
   block_flow->DeleteLineBoxTree();
 
-  Vector<NGInlineItem>& items = Items();
+  const Vector<NGInlineItem>& items = Data().items_;
   Vector<unsigned, 32> text_offsets(items.size());
   GetLayoutTextOffsets(&text_offsets);
 
@@ -335,8 +339,10 @@ void NGInlineNode::GetLayoutTextOffsets(
     Vector<unsigned, 32>* text_offsets_out) {
   LayoutText* current_text = nullptr;
   unsigned current_offset = 0;
-  for (unsigned i = 0; i < items_.size(); i++) {
-    const NGInlineItem& item = items_[i];
+  const Vector<NGInlineItem>& items = Data().items_;
+
+  for (unsigned i = 0; i < items.size(); i++) {
+    const NGInlineItem& item = items[i];
     LayoutObject* next_object = item.GetLayoutObject();
     LayoutText* next_text = next_object && next_object->IsText()
                                 ? ToLayoutText(next_object)
@@ -352,10 +358,10 @@ void NGInlineNode::GetLayoutTextOffsets(
     }
     (*text_offsets_out)[i] = current_offset;
   }
-  if (current_text &&
-      current_text->TextLength() != text_content_.length() - current_offset) {
+  if (current_text && current_text->TextLength() !=
+                          Data().text_content_.length() - current_offset) {
     current_text->SetTextInternal(
-        Text(current_offset, text_content_.length()).ToString().Impl());
+        Text(current_offset, Data().text_content_.length()).ToString().Impl());
   }
 }
 
