@@ -22,33 +22,34 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  String& Text() { return text_content_; }
-  Vector<NGInlineItem>& Items() { return items_; }
+  String& Text() { return MutableData().text_content_; }
+  Vector<NGInlineItem>& Items() { return MutableData().items_; }
 
   void Append(const String& text,
               const ComputedStyle* style = nullptr,
               LayoutObject* layout_object = nullptr) {
-    unsigned start = text_content_.length();
-    text_content_.append(text);
-    items_.push_back(NGInlineItem(NGInlineItem::kText, start,
-                                  start + text.length(), style, layout_object));
+    unsigned start = Data().text_content_.length();
+    MutableData().text_content_.append(text);
+    MutableData().items_.push_back(NGInlineItem(NGInlineItem::kText, start,
+                                                start + text.length(), style,
+                                                layout_object));
   }
 
   void Append(UChar character) {
-    text_content_.append(character);
-    unsigned end = text_content_.length();
-    items_.push_back(
+    MutableData().text_content_.append(character);
+    unsigned end = Data().text_content_.length();
+    MutableData().items_.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));
-    is_bidi_enabled_ = true;
+    MutableData().is_bidi_enabled_ = true;
   }
 
   void ClearText() {
-    text_content_ = String();
-    items_.clear();
+    MutableData().text_content_ = String();
+    MutableData().items_.clear();
   }
 
   void SegmentText() {
-    is_bidi_enabled_ = true;
+    MutableData().is_bidi_enabled_ = true;
     NGInlineNode::SegmentText();
   }
 
@@ -60,13 +61,19 @@ class NGInlineNodeTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
+    RuntimeEnabledFeatures::setLayoutNGEnabled(true);
     style_ = ComputedStyle::Create();
     style_->GetFont().Update(nullptr);
   }
 
+  void TearDown() override {
+    RuntimeEnabledFeatures::setLayoutNGEnabled(false);
+    RenderingTest::TearDown();
+  }
+
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
-    layout_block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    layout_block_flow_ = ToLayoutNGBlockFlow(GetLayoutObjectByElementId(id));
     layout_object_ = layout_block_flow_->FirstChild();
     style_ = layout_object_->Style();
   }
@@ -103,7 +110,7 @@ class NGInlineNodeTest : public RenderingTest {
   }
 
   RefPtr<const ComputedStyle> style_;
-  LayoutBlockFlow* layout_block_flow_ = nullptr;
+  LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
 };

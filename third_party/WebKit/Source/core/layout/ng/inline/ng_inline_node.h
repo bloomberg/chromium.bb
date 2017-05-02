@@ -6,8 +6,9 @@
 #define NGInlineNode_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/inline/ng_inline_item.h"
+#include "core/layout/ng/inline/ng_inline_node_data.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -16,6 +17,7 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutBlockFlow;
+class LayoutNGBlockFlow;
 class LayoutObject;
 struct MinMaxContentSize;
 class NGConstraintSpace;
@@ -28,7 +30,7 @@ class NGLayoutResult;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutObject* start_inline, LayoutBlockFlow*);
+  NGInlineNode(LayoutObject* start_inline, LayoutNGBlockFlow*);
   ~NGInlineNode() override;
 
   LayoutBlockFlow* GetLayoutBlockFlow() const { return block_; }
@@ -49,18 +51,18 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();
 
-  const String& Text() const { return text_content_; }
+  const String& Text() const { return Data().text_content_; }
   StringView Text(unsigned start_offset, unsigned end_offset) const {
-    return StringView(text_content_, start_offset, end_offset - start_offset);
+    return StringView(Data().text_content_, start_offset,
+                      end_offset - start_offset);
   }
 
-  Vector<NGInlineItem>& Items() { return items_; }
-  const Vector<NGInlineItem>& Items() const { return items_; }
+  const Vector<NGInlineItem>& Items() const { return Data().items_; }
   NGInlineItemRange Items(unsigned start_index, unsigned end_index);
 
   void GetLayoutTextOffsets(Vector<unsigned, 32>*);
 
-  bool IsBidiEnabled() const { return is_bidi_enabled_; }
+  bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
 
   void AssertOffset(unsigned index, unsigned offset) const;
   void AssertEndOffset(unsigned index, unsigned offset) const;
@@ -73,7 +75,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
-  bool IsPrepareLayoutFinished() const { return !text_content_.IsNull(); }
+  bool IsPrepareLayoutFinished() const { return !Text().IsNull(); }
 
   void CollectInlines(LayoutObject* start, LayoutBlockFlow*);
   LayoutObject* CollectInlines(LayoutObject* start,
@@ -82,27 +84,21 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void SegmentText();
   void ShapeText();
 
+  NGInlineNodeData& MutableData() { return block_->GetNGInlineNodeData(); }
+  const NGInlineNodeData& Data() const { return block_->GetNGInlineNodeData(); }
+
   LayoutObject* start_inline_;
-  LayoutBlockFlow* block_;
+  LayoutNGBlockFlow* block_;
   Member<NGLayoutInputNode> next_sibling_;
-
-  // Text content for all inline items represented by a single NGInlineNode
-  // instance. Encoded either as UTF-16 or latin-1 depending on content.
-  String text_content_;
-  Vector<NGInlineItem> items_;
-
-  // TODO(kojii): This should move to somewhere else when we move PrepareLayout
-  // to the correct place.
-  bool is_bidi_enabled_ = false;
 };
 
 inline void NGInlineNode::AssertOffset(unsigned index, unsigned offset) const {
-  items_[index].AssertOffset(offset);
+  Data().items_[index].AssertOffset(offset);
 }
 
 inline void NGInlineNode::AssertEndOffset(unsigned index,
                                           unsigned offset) const {
-  items_[index].AssertEndOffset(offset);
+  Data().items_[index].AssertEndOffset(offset);
 }
 
 DEFINE_TYPE_CASTS(NGInlineNode,
