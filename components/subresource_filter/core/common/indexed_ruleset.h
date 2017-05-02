@@ -39,6 +39,12 @@ static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 class RulesetIndexer {
  public:
   // The current binary format version of the indexed ruleset.
+  //
+  // Increase this value when introducing an incompatible change in
+  // IndexedRuleset format, or otherwise willing to nudge clients to rebuild
+  // their ruleset (e.g., a change is compatible, but significantly reduces the
+  // size of the buffer). Note: The PRESUBMIT.py script tries to keep
+  // contributors aware of that.
   static const int kIndexedFormatVersion;
 
   RulesetIndexer();
