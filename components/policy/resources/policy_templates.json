@@ -2280,11 +2280,11 @@
           'caption': '''Configure the list of force-installed apps and extensions''',
           'tags': ['full-admin-access'],
           'desc': '''Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled by the
-          user. All permissions requested by the apps/extensions are granted
-          implicitly, without user interaction, including any additional
-          permissions requested by future versions of the app/extension.
-          Furthermore, permissions are granted for the
+          without user interaction, and which cannot be uninstalled nor
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
           enterprise.deviceAttributes and enterprise.platformKeys extension
           APIs. (These two APIs are not available to apps/extensions that are
           not force-installed.)
