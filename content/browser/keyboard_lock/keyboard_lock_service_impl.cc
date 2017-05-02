@@ -24,14 +24,14 @@ void KeyboardLockServiceImpl::CreateMojoService(
         std::move(request));
 }
 
-void KeyboardLockServiceImpl::RequestKeyLock(
+void KeyboardLockServiceImpl::RequestKeyboardLock(
     const std::vector<std::string>& key_codes,
-    const RequestKeyLockCallback& callback) {
+    const RequestKeyboardLockCallback& callback) {
   // TODO(zijiehe): Implementation required.
-  callback.Run(true, std::string());
+  callback.Run(blink::mojom::KeyboardLockRequestResult::SUCCESS);
 }
 
-void KeyboardLockServiceImpl::CancelKeyLock() {
+void KeyboardLockServiceImpl::CancelKeyboardLock() {
   // TODO(zijiehe): Implementation required.
 }
 

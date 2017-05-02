@@ -17,8 +17,8 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-// The supplement of Navigator to process navigator.requestKeyLock() and
-// navigator.cancelKeyLock() web APIs. This class forwards both requests
+// The supplement of Navigator to process navigator.requestKeyboardLock() and
+// navigator.cancelKeyboardLock() web APIs. This class forwards both requests
 // directly to the browser process through mojo.
 class NavigatorKeyboardLock final
     : public GarbageCollectedFinalized<NavigatorKeyboardLock>,
@@ -38,14 +38,14 @@ class NavigatorKeyboardLock final
   // - Making a second request after the Promise of the first one has finished
   //   is allowed; the second request will overwrite the key codes reserved.
   // - Passing in an empty keyCodes array will reserve all keys.
-  static ScriptPromise requestKeyLock(ScriptState*,
+  static ScriptPromise requestKeyboardLock(ScriptState*,
                                       Navigator&,
                                       const Vector<String>&);
 
   // Removes all reserved keys. This function is also asynchronized, the web
   // page may still receive reserved keys after this function has finished. Once
   // the web page is closed, the user agent implicitly executes this API.
-  static void cancelKeyLock(Navigator&);
+  static void cancelKeyboardLock(Navigator&);
 
   DECLARE_TRACE();
 
@@ -55,14 +55,14 @@ class NavigatorKeyboardLock final
 
   static NavigatorKeyboardLock& From(Navigator&);
 
-  ScriptPromise requestKeyLock(ScriptState*, const Vector<String>&);
-  void cancelKeyLock();
+  ScriptPromise requestKeyboardLock(ScriptState*, const Vector<String>&);
+  void cancelKeyboardLock();
 
   // Ensures the |service_| is correctly initialized. In case of the |service_|
   // cannot be initialized, this function returns false.
   bool EnsureServiceConnected();
 
-  void LockRequestFinished(bool, const String&);
+  void LockRequestFinished(mojom::KeyboardLockRequestResult);
 
   mojom::blink::KeyboardLockServicePtr service_;
   Member<ScriptPromiseResolver> request_keylock_resolver_;

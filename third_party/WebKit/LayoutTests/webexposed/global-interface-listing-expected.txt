@@ -4368,7 +4368,7 @@ interface Navigator
     getter vendorSub
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
-    method cancelKeyLock
+    method cancelKeyboardLock
     method constructor
     method getBattery
     method getGamepads
@@ -4378,7 +4378,7 @@ interface Navigator
     method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler
-    method requestKeyLock
+    method requestKeyboardLock
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon

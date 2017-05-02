@@ -29,14 +29,15 @@ NavigatorKeyboardLock& NavigatorKeyboardLock::From(Navigator& navigator) {
 }
 
 // static
-ScriptPromise NavigatorKeyboardLock::requestKeyLock(
+ScriptPromise NavigatorKeyboardLock::requestKeyboardLock(
     ScriptState* state,
     Navigator& navigator,
     const Vector<String>& keycodes) {
-  return NavigatorKeyboardLock::From(navigator).requestKeyLock(state, keycodes);
+  return NavigatorKeyboardLock::From(navigator).requestKeyboardLock(
+      state, keycodes);
 }
 
-ScriptPromise NavigatorKeyboardLock::requestKeyLock(
+ScriptPromise NavigatorKeyboardLock::requestKeyboardLock(
     ScriptState* state,
     const Vector<String>& keycodes) {
   DCHECK(state);
@@ -45,7 +46,7 @@ ScriptPromise NavigatorKeyboardLock::requestKeyLock(
     // spec. See https://github.com/w3c/keyboard-lock/issues/18.
     return ScriptPromise::Reject(
         state, V8String(state->GetIsolate(),
-                        "Last requestKeyLock() has not finished yet."));
+                        "Last requestKeyboardLock() has not finished yet."));
   }
 
   if (!EnsureServiceConnected()) {
@@ -54,25 +55,25 @@ ScriptPromise NavigatorKeyboardLock::requestKeyLock(
   }
 
   request_keylock_resolver_ = ScriptPromiseResolver::Create(state);
-  service_->RequestKeyLock(
+  service_->RequestKeyboardLock(
       keycodes,
       ConvertToBaseCallback(WTF::Bind(
           &NavigatorKeyboardLock::LockRequestFinished, WrapPersistent(this))));
   return request_keylock_resolver_->Promise();
 }
 
-void NavigatorKeyboardLock::cancelKeyLock() {
+void NavigatorKeyboardLock::cancelKeyboardLock() {
   if (!EnsureServiceConnected()) {
     // Current frame is detached.
     return;
   }
 
-  service_->CancelKeyLock();
+  service_->CancelKeyboardLock();
 }
 
 // static
-void NavigatorKeyboardLock::cancelKeyLock(Navigator& navigator) {
-  NavigatorKeyboardLock::From(navigator).cancelKeyLock();
+void NavigatorKeyboardLock::cancelKeyboardLock(Navigator& navigator) {
+  NavigatorKeyboardLock::From(navigator).cancelKeyboardLock();
 }
 
 bool NavigatorKeyboardLock::EnsureServiceConnected() {
@@ -88,15 +89,15 @@ bool NavigatorKeyboardLock::EnsureServiceConnected() {
   return true;
 }
 
-void NavigatorKeyboardLock::LockRequestFinished(bool allowed,
-                                                const String& reason) {
+void NavigatorKeyboardLock::LockRequestFinished(
+    mojom::KeyboardLockRequestResult result) {
   DCHECK(request_keylock_resolver_);
   // TODO(zijiehe): Reject with a DOMException once it has been defined in the
   // spec.
-  if (allowed)
+  if (result == mojom::KeyboardLockRequestResult::SUCCESS)
     request_keylock_resolver_->Resolve();
   else
-    request_keylock_resolver_->Reject(reason);
+    request_keylock_resolver_->Reject();
   request_keylock_resolver_ = nullptr;
 }
 
