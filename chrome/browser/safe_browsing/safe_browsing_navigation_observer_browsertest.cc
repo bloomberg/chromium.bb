@@ -163,7 +163,9 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   SBNavigationObserverBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    // Disable Safe Browsing service since it is irrelevant to this test.
+    // Disable Safe Browsing service so we can directly control when
+    // SafeBrowsingNavigationObserverManager and SafeBrowsingNavigationObserver
+    // are instantiated.
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                  false);
     ASSERT_TRUE(embedded_test_server()->Start());

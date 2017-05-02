@@ -489,8 +489,9 @@ message ClientDownloadRequest {
   // comes last.
   repeated ReferrerChainEntry referrer_chain = 36;
 
-  // Whether DownloadAttribution Finch experiment is enabled for this ping.
-  optional bool download_attribution_finch_enabled = 39;
+  // Deprecated.
+  optional bool DEPRECATED_download_attribution_finch_enabled = 39
+      [deprecated = true];
 }
 
 message ReferrerChainEntry {

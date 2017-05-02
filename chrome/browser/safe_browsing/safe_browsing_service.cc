@@ -324,10 +324,7 @@ void SafeBrowsingService::Initialize() {
     database_manager_ = CreateDatabaseManager();
   }
 
-  if (base::FeatureList::IsEnabled(
-    SafeBrowsingNavigationObserverManager::kDownloadAttribution)) {
-    navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
-  }
+  navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
 
   services_delegate_->Initialize(v4_enabled_);
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());

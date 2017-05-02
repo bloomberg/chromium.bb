@@ -195,9 +195,6 @@ std::size_t NavigationEventList::CleanUpNavigationEvents() {
 
 // -----------------SafeBrowsingNavigationObserverManager-----------
 // static
-const base::Feature SafeBrowsingNavigationObserverManager::kDownloadAttribution{
-    "DownloadAttribution", base::FEATURE_ENABLED_BY_DEFAULT};
-// static
 bool SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
     const base::Time& timestamp) {
   return IsEventExpired(timestamp, kUserGestureTTLInSecond);
@@ -216,11 +213,10 @@ GURL SafeBrowsingNavigationObserverManager::ClearEmptyRef(const GURL& url) {
 // static
 bool SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
     Profile* profile) {
-  return base::FeatureList::IsEnabled(
-      SafeBrowsingNavigationObserverManager::kDownloadAttribution) &&
-      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
-      g_browser_process->safe_browsing_service() &&
-      g_browser_process->safe_browsing_service()->navigation_observer_manager();
+  return profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
+         g_browser_process->safe_browsing_service() &&
+         g_browser_process->safe_browsing_service()
+             ->navigation_observer_manager();
 }
 
 SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager()

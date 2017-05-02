@@ -201,9 +201,6 @@ class DownloadUrlSBClient
     extended_reporting_level_ =
         profile ? GetExtendedReportingLevel(*profile->GetPrefs())
                 : SBER_LEVEL_OFF;
-    download_attribution_enabled_ = service_->navigation_observer_manager() &&
-        base::FeatureList::IsEnabled(
-            SafeBrowsingNavigationObserverManager::kDownloadAttribution);
   }
 
   // Implements DownloadItem::Observer.
@@ -256,14 +253,13 @@ class DownloadUrlSBClient
       UpdateDownloadCheckStats(dangerous_type_);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&DownloadUrlSBClient::ReportMalware, this,
-                         threat_type));
-    } else if (download_attribution_enabled_) {
-        // Identify download referrer chain, which will be used in
-        // ClientDownloadRequest.
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&DownloadUrlSBClient::IdentifyReferrerChain, this));
+          base::Bind(&DownloadUrlSBClient::ReportMalware, this, threat_type));
+    } else {
+      // Identify download referrer chain, which will be used in
+      // ClientDownloadRequest.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&DownloadUrlSBClient::IdentifyReferrerChain, this));
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(callback_, result));
@@ -323,7 +319,6 @@ class DownloadUrlSBClient
   DownloadProtectionService::CheckDownloadCallback callback_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   base::TimeTicks start_time_;
-  bool download_attribution_enabled_;
   const SBStatsType total_type_;
   const SBStatsType dangerous_type_;
   ExtendedReportingLevel extended_reporting_level_;
@@ -1043,12 +1038,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     ReferrerChainData* referrer_chain_data =
       static_cast<ReferrerChainData*>(
           item_->GetUserData(kDownloadReferrerChainDataKey));
-    if (referrer_chain_data) {
-      request.set_download_attribution_finch_enabled(true);
-      if (!referrer_chain_data->GetReferrerChain()->empty()) {
-        request.mutable_referrer_chain()->Swap(
-            referrer_chain_data->GetReferrerChain());
-      }
+    if (referrer_chain_data &&
+        !referrer_chain_data->GetReferrerChain()->empty()) {
+      request.mutable_referrer_chain()->Swap(
+          referrer_chain_data->GetReferrerChain());
     }
 
     if (archive_is_valid_ != ArchiveValid::UNSET)
@@ -1666,7 +1659,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
 DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
-    : request_context_getter_(sb_service ? sb_service->url_request_context()
+    : navigation_observer_manager_(nullptr),
+      request_context_getter_(sb_service ? sb_service->url_request_context()
                                          : nullptr),
       enabled_(false),
       binary_feature_extractor_(new BinaryFeatureExtractor()),
@@ -1949,6 +1943,11 @@ GURL DownloadProtectionService::GetDownloadRequestUrl() {
 std::unique_ptr<ReferrerChain> DownloadProtectionService::IdentifyReferrerChain(
     const GURL& download_url,
     content::WebContents* web_contents) {
+  // If navigation_observer_manager_ is null, return immediately. This could
+  // happen in tests.
+  if (!navigation_observer_manager_)
+    return nullptr;
+
   std::unique_ptr<ReferrerChain> referrer_chain =
       base::MakeUnique<ReferrerChain>();
   int download_tab_id = SessionTabHelper::IdForTab(web_contents);
@@ -1987,11 +1986,8 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
     int tab_id,
     bool has_user_gesture,
     ClientDownloadRequest* out_request) {
-  if (!base::FeatureList::IsEnabled(
-      SafeBrowsingNavigationObserverManager::kDownloadAttribution) ||
-      !navigation_observer_manager_) {
+  if (!navigation_observer_manager_)
     return;
-  }
 
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
@@ -2007,7 +2003,6 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.PPAPIDownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
-  out_request->set_download_attribution_finch_enabled(true);
 }
 
 }  // namespace safe_browsing
