@@ -26,6 +26,10 @@ namespace gfx {
 class LinearAnimation;
 }
 
+namespace ui {
+struct AXActionData;
+}
+
 namespace views {
 class FocusTraversable;
 class Widget;
@@ -93,7 +97,7 @@ class ArcCustomNotificationView
   void OnFocus() override;
   void OnBlur() override;
   views::FocusTraversable* GetFocusTraversable() override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

@@ -9,6 +9,10 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 
+namespace ui {
+struct AXActionData;
+}
+
 namespace views {
 class Painter;
 }
@@ -46,7 +50,7 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ChildPreferredSizeChanged(View* child) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
  private:
   friend class CustomNotificationViewTest;
