@@ -15,7 +15,11 @@ var FLASH_DURATION_MS = 500;
 Polymer({
   is: 'settings-fingerprint-list',
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior],
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /**
@@ -37,8 +41,32 @@ Polymer({
   attached: function() {
     this.addWebUIListener(
         'on-fingerprint-attempt-received', this.onAttemptReceived_.bind(this));
+    this.addWebUIListener('on-screen-locked', this.onScreenLocked_.bind(this));
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
+    this.browserProxy_.startAuthentication();
     this.updateFingerprintsList_();
+  },
+
+  /** @override */
+  detached: function() {
+    this.browserProxy_.endCurrentAuthentication();
+  },
+
+  /**
+   * Overridden from settings.RouteObserverBehavior.
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute != settings.Route.FINGERPRINT) {
+      if (this.browserProxy_)
+        this.browserProxy_.endCurrentAuthentication();
+    } else if (oldRoute == settings.Route.LOCK_SCREEN) {
+      // Start fingerprint authentication when going from LOCK_SCREEN to
+      // FINGERPRINT page.
+      this.browserProxy_.startAuthentication();
+    }
   },
 
   /**
@@ -123,6 +151,19 @@ Polymer({
   /** @private */
   onSetupFingerprintDialogClose_: function() {
     this.$$('#addFingerprint').focus();
+    this.browserProxy_.startAuthentication();
+  },
+
+  /**
+   * Close the setup fingerprint dialog when the screen is unlocked.
+   * @param {boolean} screenIsLocked
+   * @private
+   */
+  onScreenLocked_: function(screenIsLocked) {
+    if (!screenIsLocked &&
+        settings.getCurrentRoute() == settings.Route.FINGERPRINT) {
+      this.$.setupFingerprint.close();
+    }
   },
 });
 })();

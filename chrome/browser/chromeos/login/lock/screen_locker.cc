@@ -264,10 +264,6 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       quick_unlock_storage->pin_storage()->ResetUnlockAttemptCount();
       quick_unlock_storage->fingerprint_storage()->ResetUnlockAttemptCount();
     }
-    if (should_have_fingerprint_auth_session_) {
-      fp_service_->EndCurrentAuthSession(base::Bind(
-          &ScreenLocker::OnEndCurrentAuthSession, weak_factory_.GetWeakPtr()));
-    }
 
     UserSessionManager::GetInstance()->UpdateEasyUnlockKeys(user_context);
   } else {
@@ -293,10 +289,6 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
           user_context.GetAccountId());
   if (quick_unlock_storage)
     quick_unlock_storage->MarkStrongAuth();
-  if (should_have_fingerprint_auth_session_) {
-    fp_service_->EndCurrentAuthSession(base::Bind(
-        &ScreenLocker::OnEndCurrentAuthSession, weak_factory_.GetWeakPtr()));
-  }
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
@@ -587,9 +579,8 @@ void ScreenLocker::ScreenLockReady() {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
       ->EnableLockScreenLayouts();
-  should_have_fingerprint_auth_session_ =
-      IsFingerprintAuthenticationAvailableForUsers(users_);
-  if (should_have_fingerprint_auth_session_)
+
+  if (IsFingerprintAuthenticationAvailableForUsers(users_))
     fp_service_->StartAuthSession();
 }
 
@@ -657,11 +648,6 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
     AuthFailure failure(AuthFailure::UNLOCK_FAILED);
     auth_status_consumer_->OnAuthFailure(failure);
   }
-}
-
-void ScreenLocker::OnEndCurrentAuthSession(bool success) {
-  LOG_IF(ERROR, !success)
-      << "Failed to end current fingerprint authentication session.";
 }
 
 }  // namespace chromeos

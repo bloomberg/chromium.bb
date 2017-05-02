@@ -14,6 +14,8 @@ namespace device {
 
 namespace {
 
+constexpr int64_t kFingerprintSessionTimeoutMs = 150;
+
 // Used to convert mojo Callback to VoidDbusMethodCallback.
 void RunFingerprintCallback(const base::Callback<void(bool)>& callback,
                             chromeos::DBusMethodCallStatus result) {
@@ -32,6 +34,12 @@ FingerprintChromeOS::FingerprintChromeOS() : weak_ptr_factory_(this) {
 
 FingerprintChromeOS::~FingerprintChromeOS() {
   GetBiodClient()->RemoveObserver(this);
+  if (opened_session_ == FingerprintSession::ENROLL) {
+    GetBiodClient()->CancelEnrollSession(
+        chromeos::EmptyVoidDBusMethodCallback());
+  } else if (opened_session_ == FingerprintSession::AUTH) {
+    GetBiodClient()->EndAuthSession(chromeos::EmptyVoidDBusMethodCallback());
+  }
 }
 
 void FingerprintChromeOS::GetRecordsForUser(
@@ -44,6 +52,32 @@ void FingerprintChromeOS::GetRecordsForUser(
 
 void FingerprintChromeOS::StartEnrollSession(const std::string& user_id,
                                              const std::string& label) {
+  if (opened_session_ == FingerprintSession::ENROLL)
+    return;
+
+  GetBiodClient()->EndAuthSession(
+      base::Bind(&FingerprintChromeOS::OnCloseAuthSessionForEnroll,
+                 weak_ptr_factory_.GetWeakPtr(), user_id, label));
+}
+
+void FingerprintChromeOS::OnCloseAuthSessionForEnroll(
+    const std::string& user_id,
+    const std::string& label,
+    chromeos::DBusMethodCallStatus result) {
+  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS)
+    return;
+
+  // TODO(xiaoyinh@): Timeout should be removed after we resolve
+  // crbug.com/715302.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FingerprintChromeOS::ScheduleStartEnroll,
+                 weak_ptr_factory_.GetWeakPtr(), user_id, label),
+      base::TimeDelta::FromMilliseconds(kFingerprintSessionTimeoutMs));
+}
+
+void FingerprintChromeOS::ScheduleStartEnroll(const std::string& user_id,
+                                              const std::string& label) {
   GetBiodClient()->StartEnrollSession(
       user_id, label,
       base::Bind(&FingerprintChromeOS::OnStartEnrollSession,
@@ -52,11 +86,10 @@ void FingerprintChromeOS::StartEnrollSession(const std::string& user_id,
 
 void FingerprintChromeOS::CancelCurrentEnrollSession(
     const CancelCurrentEnrollSessionCallback& callback) {
-  if (current_enroll_session_path_) {
+  if (opened_session_ == FingerprintSession::ENROLL) {
     GetBiodClient()->CancelEnrollSession(
-        *current_enroll_session_path_,
         base::Bind(&RunFingerprintCallback, callback));
-    current_enroll_session_path_.reset();
+    opened_session_ = FingerprintSession::NONE;
   } else {
     callback.Run(true);
   }
@@ -84,6 +117,29 @@ void FingerprintChromeOS::RemoveRecord(const std::string& record_path,
 }
 
 void FingerprintChromeOS::StartAuthSession() {
+  if (opened_session_ == FingerprintSession::AUTH)
+    return;
+
+  GetBiodClient()->CancelEnrollSession(
+      base::Bind(&FingerprintChromeOS::OnCloseEnrollSessionForAuth,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FingerprintChromeOS::OnCloseEnrollSessionForAuth(
+    chromeos::DBusMethodCallStatus result) {
+  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS)
+    return;
+
+  // TODO(xiaoyinh@): Timeout should be removed after we resolve
+  // crbug.com/715302.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FingerprintChromeOS::ScheduleStartAuth,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kFingerprintSessionTimeoutMs));
+}
+
+void FingerprintChromeOS::ScheduleStartAuth() {
   GetBiodClient()->StartAuthSession(
       base::Bind(&FingerprintChromeOS::OnStartAuthSession,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -91,11 +147,10 @@ void FingerprintChromeOS::StartAuthSession() {
 
 void FingerprintChromeOS::EndCurrentAuthSession(
     const EndCurrentAuthSessionCallback& callback) {
-  if (current_auth_session_path_) {
+  if (opened_session_ == FingerprintSession::AUTH) {
     GetBiodClient()->EndAuthSession(
-        *current_auth_session_path_,
         base::Bind(&RunFingerprintCallback, callback));
-    current_auth_session_path_.reset();
+    opened_session_ = FingerprintSession::NONE;
   } else {
     callback.Run(true);
   }
@@ -120,8 +175,7 @@ void FingerprintChromeOS::AddFingerprintObserver(
 }
 
 void FingerprintChromeOS::BiodServiceRestarted() {
-  current_enroll_session_path_.reset();
-  current_auth_session_path_.reset();
+  opened_session_ = FingerprintSession::NONE;
   for (auto& observer : observers_)
     observer->OnRestarted();
 }
@@ -130,7 +184,7 @@ void FingerprintChromeOS::BiodEnrollScanDoneReceived(
     biod::ScanResult scan_result,
     bool enroll_session_complete) {
   if (enroll_session_complete)
-    current_enroll_session_path_.reset();
+    opened_session_ = FingerprintSession::NONE;
 
   for (auto& observer : observers_)
     observer->OnEnrollScanDone(scan_result, enroll_session_complete);
@@ -161,8 +215,6 @@ void FingerprintChromeOS::BiodSessionFailedReceived() {
 
 void FingerprintChromeOS::OnFingerprintObserverDisconnected(
     mojom::FingerprintObserver* observer) {
-  current_enroll_session_path_.reset();
-  current_auth_session_path_.reset();
   for (auto item = observers_.begin(); item != observers_.end(); ++item) {
     if (item->get() == observer) {
       observers_.erase(item);
@@ -173,15 +225,18 @@ void FingerprintChromeOS::OnFingerprintObserverDisconnected(
 
 void FingerprintChromeOS::OnStartEnrollSession(
     const dbus::ObjectPath& enroll_path) {
-  DCHECK(!current_enroll_session_path_);
-  current_enroll_session_path_ =
-      base::MakeUnique<dbus::ObjectPath>(enroll_path);
+  if (enroll_path.IsValid()) {
+    DCHECK_NE(opened_session_, FingerprintSession::ENROLL);
+    opened_session_ = FingerprintSession::ENROLL;
+  }
 }
 
 void FingerprintChromeOS::OnStartAuthSession(
     const dbus::ObjectPath& auth_path) {
-  DCHECK(!current_auth_session_path_);
-  current_auth_session_path_ = base::MakeUnique<dbus::ObjectPath>(auth_path);
+  if (auth_path.IsValid()) {
+    DCHECK_NE(opened_session_, FingerprintSession::AUTH);
+    opened_session_ = FingerprintSession::AUTH;
+  }
 }
 
 void FingerprintChromeOS::OnGetRecordsForUser(

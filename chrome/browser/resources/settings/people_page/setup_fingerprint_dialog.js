@@ -96,6 +96,9 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
+    if (this.$.dialog.open)
+      this.$.dialog.close();
+
     // Note: Reset resets |step_| back to the default, so handle anything that
     // checks |step_| before resetting.
     if(this.step_ == settings.FingerprintSetupStep.READY)

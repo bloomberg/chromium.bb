@@ -144,7 +144,6 @@ class ScreenLocker : public AuthStatusConsumer,
                         bool enroll_session_complete) override{};
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
-  void OnEndCurrentAuthSession(bool success);
 
   // Sets the authenticator.
   void SetAuthenticator(Authenticator* authenticator);
@@ -213,9 +212,6 @@ class ScreenLocker : public AuthStatusConsumer,
 
   device::mojom::FingerprintPtr fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver> binding_;
-
-  // True if lock screen should have a fingerprint auth session.
-  bool should_have_fingerprint_auth_session_ = false;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_;
 

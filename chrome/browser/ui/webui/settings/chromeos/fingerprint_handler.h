@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/fingerprint.mojom.h"
 
@@ -22,7 +23,8 @@ namespace settings {
 
 // Chrome OS fingerprint setup settings page UI handler.
 class FingerprintHandler : public ::settings::SettingsPageUIHandler,
-                           public device::mojom::FingerprintObserver {
+                           public device::mojom::FingerprintObserver,
+                           public session_manager::SessionManagerObserver {
  public:
   explicit FingerprintHandler(Profile* profile);
   ~FingerprintHandler() override;
@@ -43,6 +45,9 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
   void OnAuthScanDone(uint32_t scan_result,
                       const AttemptMatches& matches) override;
   void OnSessionFailed() override;
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
 
   void HandleGetFingerprintsList(const base::ListValue* args);
   void HandleGetNumFingerprints(const base::ListValue* args);

@@ -16,6 +16,8 @@ var TestFingerprintBrowserProxy = function() {
     'getEnrollmentLabel',
     'removeEnrollment',
     'changeEnrollmentLabel',
+    'startAuthentication',
+    'endCurrentAuthentication',
   ]);
 
   /** @private {!Array<string>} */
@@ -87,6 +89,16 @@ TestFingerprintBrowserProxy.prototype = {
     this.methodCalled('changeEnrollmentLabel', index, newLabel);
     return Promise.resolve(true);
   },
+
+  /** @override */
+  startAuthentication: function () {
+    this.methodCalled('startAuthentication');
+  },
+
+  /** @override */
+  endCurrentAuthentication: function() {
+    this.methodCalled('endCurrentAuthentication');
+  },
 };
 
 suite('settings-fingerprint-list', function() {
@@ -125,7 +137,9 @@ suite('settings-fingerprint-list', function() {
     dialog = fingerprintList.$.setupFingerprint;
     addAnotherButton = dialog.$.addAnotherButton;
     Polymer.dom.flush();
-    return browserProxy.whenCalled('getFingerprintsList').then(function() {
+    return Promise.all([
+        browserProxy.whenCalled('startAuthentication'),
+        browserProxy.whenCalled('getFingerprintsList')]).then(function() {
       assertEquals(0, fingerprintList.fingerprints_.length);
       browserProxy.resetResolver('getFingerprintsList');
     });
@@ -161,7 +175,9 @@ suite('settings-fingerprint-list', function() {
       // and the fingerprint list should have one fingerprint registered.
       MockInteractions.tap(dialog.$.closeButton);
       return PolymerTest.flushTasks().then(function() {
-        browserProxy.whenCalled('getFingerprintsList').then(
+        Promise.all([
+             browserProxy.whenCalled('startAuthentication'),
+             browserProxy.whenCalled('getFingerprintsList')]).then(
           function() {
             assertEquals(1, fingerprintList.fingerprints_.length);
           });
@@ -222,7 +238,9 @@ suite('settings-fingerprint-list', function() {
       // Verify that by tapping the exit button we should exit the dialog
       // and the fingerprint list should have zero fingerprints registered.
       MockInteractions.tap(dialog.$.closeButton);
-      return browserProxy.whenCalled('cancelCurrentEnroll');
+      return Promise.all([
+          browserProxy.whenCalled('cancelCurrentEnroll'),
+          browserProxy.whenCalled('startAuthentication')]);
     }).then(function() {
       assertEquals(0, fingerprintList.fingerprints_.length);
     });
