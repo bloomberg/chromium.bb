@@ -229,7 +229,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
-  void NotifyPopupOpeningObservers() const;
+  void NotifyPopupOpeningObservers() const override;
 
   void InstallSupplements(LocalFrame&) override;
 

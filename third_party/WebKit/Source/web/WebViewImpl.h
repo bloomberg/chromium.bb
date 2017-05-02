@@ -494,7 +494,9 @@ class WEB_EXPORT WebViewImpl final
     return last_frame_time_monotonic_;
   }
 
-  ChromeClientImpl& ChromeClient() const { return *chrome_client_impl_.Get(); }
+  class ChromeClient& ChromeClient() const override {
+    return *chrome_client_impl_.Get();
+  }
 
   // Returns the currently active WebInputMethodController which is the one
   // corresponding to the focused frame. It will return nullptr if there is no
