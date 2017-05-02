@@ -95,8 +95,6 @@ struct NavigationEventList {
 class SafeBrowsingNavigationObserverManager
     : public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
-  static const base::Feature kDownloadAttribution;
-
   // For UMA histogram counting. Do NOT change order.
   enum AttributionResult {
     SUCCESS = 1,                   // Identified referrer chain is not empty.
@@ -120,8 +118,8 @@ class SafeBrowsingNavigationObserverManager
   static GURL ClearEmptyRef(const GURL& url);
 
   // Checks if we should enable observing navigations for safe browsing purpose.
-  // Return true if the safe browsing service and the |kDownloadAttribution|
-  // feature are both enabled, and safe browsing service is initialized.
+  // Return true if the safe browsing safe browsing service is enabled and
+  // initialized.
   static bool IsEnabledAndReady(Profile* profile);
 
   SafeBrowsingNavigationObserverManager();
