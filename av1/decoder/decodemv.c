@@ -1049,6 +1049,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       av1_find_ref_dv(&dv_ref, mi_row, mi_col);
       xd->corrupted |=
           !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
+#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+      av1_read_tx_type(cm, xd,
+#if CONFIG_SUPERTX
+                       0,
+#endif
+                       r);
+#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
       return;
     }
   }

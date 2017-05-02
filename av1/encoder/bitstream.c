@@ -2164,6 +2164,13 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
       int_mv dv_ref;
       av1_find_ref_dv(&dv_ref, mi_row, mi_col);
       av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
+#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+      av1_write_tx_type(cm, xd,
+#if CONFIG_SUPERTX
+                        0,
+#endif
+                        w);
+#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
       return;
     }
   }
