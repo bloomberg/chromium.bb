@@ -262,6 +262,8 @@ class GridTrackSizingAlgorithmStrategy {
       LayoutBox&,
       GridTrackSizingDirection) const;
   LayoutUnit ComputeTrackBasedSize() const;
+  Optional<LayoutUnit> ExtentForBaselineAlignment(LayoutBox&) const;
+
   GridTrackSizingDirection Direction() const { return algorithm_.direction_; }
   double FindFrUnitSize(const GridSpan& tracks_span,
                         LayoutUnit left_over_space) const;
