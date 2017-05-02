@@ -672,8 +672,9 @@ ChangesListRequest::ChangesListRequest(
 ChangesListRequest::~ChangesListRequest() {}
 
 GURL ChangesListRequest::GetURLInternal() const {
-  return url_generator_.GetChangesListUrl(
-      include_deleted_, max_results_, page_token_, start_change_id_);
+  return url_generator_.GetChangesListUrl(include_deleted_, max_results_,
+                                          page_token_, start_change_id_,
+                                          team_drive_id_);
 }
 
 //======================== ChangesListNextPageRequest =========================

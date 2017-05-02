@@ -84,7 +84,8 @@ class DriveApiUrlGenerator {
   GURL GetChangesListUrl(bool include_deleted,
                          int max_results,
                          const std::string& page_token,
-                         int64_t start_change_id) const;
+                         int64_t start_change_id,
+                         const std::string& team_dirve_id) const;
 
   // Returns a URL to add a resource to a directory with |folder_id|.
   GURL GetChildrenInsertUrl(const std::string& folder_id) const;

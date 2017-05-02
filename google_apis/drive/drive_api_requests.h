@@ -690,6 +690,11 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
     start_change_id_ = start_change_id;
   }
 
+  const std::string& team_drive_id() const { return team_drive_id_; }
+  void set_team_drive_id(const std::string& team_drive_id) {
+    team_drive_id_ = team_drive_id;
+  }
+
  protected:
   // Overridden from DriveApiDataRequest.
   GURL GetURLInternal() const override;
@@ -700,6 +705,7 @@ class ChangesListRequest : public DriveApiDataRequest<ChangeList> {
   int max_results_;
   std::string page_token_;
   int64_t start_change_id_;
+  std::string team_drive_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangesListRequest);
 };
