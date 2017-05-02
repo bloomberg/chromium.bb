@@ -37,7 +37,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   const ComputedStyle& Style() const override { return block_->StyleRef(); }
   NGLayoutInputNode* NextSibling() override;
 
-  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) override;
+  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*,
+                                NGBreakToken* = nullptr) override;
   LayoutObject* GetLayoutObject() override;
 
   // Computes the value of min-content and max-content for this anonymous block

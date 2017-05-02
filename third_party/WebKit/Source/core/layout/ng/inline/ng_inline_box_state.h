@@ -78,13 +78,16 @@ class NGInlineLayoutStateStack {
   // end of a line.
   void EndBoxState(NGInlineBoxState*, NGLineBoxFragmentBuilder*);
 
+  enum PositionPending { kPositionNotPending, kPositionPending };
+
   // Compute vertical position for the 'vertical-align' property.
   // The timing to apply varies by values; some values apply at the layout of
   // the box was computed. Other values apply when the layout of the parent or
   // the line box was computed.
   // https://www.w3.org/TR/CSS22/visudet.html#propdef-vertical-align
   // https://www.w3.org/TR/css-inline-3/#propdef-vertical-align
-  void ApplyBaselineShift(NGInlineBoxState*, NGLineBoxFragmentBuilder*);
+  PositionPending ApplyBaselineShift(NGInlineBoxState*,
+                                     NGLineBoxFragmentBuilder*);
 
   Vector<NGInlineBoxState, 4> stack_;
 };

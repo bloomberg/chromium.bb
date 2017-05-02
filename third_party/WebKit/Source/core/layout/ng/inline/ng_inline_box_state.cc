@@ -102,21 +102,22 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(
 
 void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
                                            NGLineBoxFragmentBuilder* line_box) {
-  ApplyBaselineShift(box, line_box);
+  PositionPending position_pending = ApplyBaselineShift(box, line_box);
 
   // Unite the metrics to the parent box.
-  if (box != stack_.begin()) {
+  if (position_pending == kPositionNotPending && box != stack_.begin()) {
     box[-1].metrics.Unite(box->metrics);
   }
 }
 
-void NGInlineLayoutStateStack::ApplyBaselineShift(
+NGInlineLayoutStateStack::PositionPending
+NGInlineLayoutStateStack::ApplyBaselineShift(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder* line_box) {
   // Compute descendants that depend on the layout size of this box if any.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
-    for (const auto& child : box->pending_descendants) {
+    for (auto& child : box->pending_descendants) {
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
         case EVerticalAlign::kTop:
@@ -130,6 +131,8 @@ void NGInlineLayoutStateStack::ApplyBaselineShift(
           NOTREACHED();
           continue;
       }
+      child.metrics.Move(baseline_shift);
+      box->metrics.Unite(child.metrics);
       line_box->MoveChildrenInBlockDirection(
           baseline_shift, child.fragment_start, child.fragment_end);
     }
@@ -139,16 +142,16 @@ void NGInlineLayoutStateStack::ApplyBaselineShift(
   const ComputedStyle& style = *box->style;
   EVerticalAlign vertical_align = style.VerticalAlign();
   if (vertical_align == EVerticalAlign::kBaseline)
-    return;
+    return kPositionNotPending;
 
   // 'vertical-align' aplies only to inline-level elements.
   if (box == stack_.begin())
-    return;
+    return kPositionNotPending;
 
   // Check if there are any fragments to move.
   unsigned fragment_end = line_box->Children().size();
   if (box->fragment_start == fragment_end)
-    return;
+    return kPositionNotPending;
 
   switch (vertical_align) {
     case EVerticalAlign::kSub:
@@ -182,17 +185,18 @@ void NGInlineLayoutStateStack::ApplyBaselineShift(
       // 'top' and 'bottom' require the layout size of the line box.
       stack_.front().pending_descendants.push_back(NGPendingPositions{
           box->fragment_start, fragment_end, box->metrics, vertical_align});
-      return;
+      return kPositionPending;
     default:
       // Other values require the layout size of the parent box.
       SECURITY_CHECK(box != stack_.begin());
       box[-1].pending_descendants.push_back(NGPendingPositions{
           box->fragment_start, fragment_end, box->metrics, vertical_align});
-      return;
+      return kPositionPending;
   }
   box->metrics.Move(baseline_shift);
   line_box->MoveChildrenInBlockDirection(baseline_shift, box->fragment_start,
                                          fragment_end);
+  return kPositionNotPending;
 }
 
 }  // namespace blink
