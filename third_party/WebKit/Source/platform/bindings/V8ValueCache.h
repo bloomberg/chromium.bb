@@ -74,6 +74,11 @@ class StringCacheMapTraits
   static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
 };
 
+// String cache helps convert WTF strings (StringImpl*) into v8 strings by
+// only creating a v8::String for a particular StringImpl* once and caching it
+// for future use. It is held by and can be retrieved from V8PerIsolateData, and
+// is cleared when the isolate is destroyed. Entries are removed from the
+// backing global value map when weak references to the values are collected.
 class PLATFORM_EXPORT StringCache {
   USING_FAST_MALLOC(StringCache);
   WTF_MAKE_NONCOPYABLE(StringCache);

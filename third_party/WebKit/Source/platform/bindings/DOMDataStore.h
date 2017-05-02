@@ -46,6 +46,10 @@
 
 namespace blink {
 
+// Holds a DOMWrapperMap specialized to map between ScriptWrappable objects and
+// their wrappers and provides an API to perform common operations with this map
+// and manage wrappers in a single world. Each world (DOMWrapperWorld) holds a
+// single DOMWrapperMap instance to hold wrappers only for that world.
 class DOMDataStore {
   WTF_MAKE_NONCOPYABLE(DOMDataStore);
   USING_FAST_MALLOC(DOMDataStore);

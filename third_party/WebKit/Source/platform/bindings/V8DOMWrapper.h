@@ -44,6 +44,8 @@ namespace blink {
 
 struct WrapperTypeInfo;
 
+// Contains utility methods to create wrappers, associate ScriptWrappable
+// objects with wrappers and set fields in wrappers.
 class V8DOMWrapper {
   STATIC_ONLY(V8DOMWrapper);
 

@@ -58,6 +58,8 @@ enum V8ContextEmbedderDataField {
       gin::kEmbedderBlink),             // NOLINT(readability/enum_casing)
 };
 
+// Used to hold data that is associated with a single v8::Context object, and
+// has a 1:1 relationship with v8::Context.
 class PLATFORM_EXPORT V8PerContextData final {
   USING_FAST_MALLOC(V8PerContextData);
   WTF_MAKE_NONCOPYABLE(V8PerContextData);

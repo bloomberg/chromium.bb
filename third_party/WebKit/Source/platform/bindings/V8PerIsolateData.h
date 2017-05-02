@@ -52,6 +52,8 @@ struct WrapperTypeInfo;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 
+// Used to hold data that is associated with a single v8::Isolate object, and
+// has a 1:1 relationship with v8::Isolate.
 class PLATFORM_EXPORT V8PerIsolateData {
   USING_FAST_MALLOC(V8PerIsolateData);
   WTF_MAKE_NONCOPYABLE(V8PerIsolateData);
