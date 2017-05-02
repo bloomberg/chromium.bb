@@ -609,9 +609,7 @@ class BLINK_EXPORT WebFrameClient {
   // Notifies that a new script context has been created for this frame.
   // This is similar to didClearWindowObject but only called once per
   // frame context.
-  virtual void DidCreateScriptContext(WebLocalFrame*,
-                                      v8::Local<v8::Context>,
-                                      int world_id) {}
+  virtual void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) {}
 
   // WebKit is about to release its reference to a v8 context for a frame.
   virtual void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) {}

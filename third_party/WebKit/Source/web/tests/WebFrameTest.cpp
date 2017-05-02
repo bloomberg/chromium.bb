@@ -4466,12 +4466,10 @@ class ContextLifetimeTestWebFrameClient
   Vector<std::unique_ptr<Notification>>& create_notifications_;
   Vector<std::unique_ptr<Notification>>& release_notifications_;
 
-  void DidCreateScriptContext(WebLocalFrame* frame,
-                              v8::Local<v8::Context> context,
+  void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override {
-    ASSERT_EQ(Frame(), frame);
     create_notifications_.push_back(
-        WTF::MakeUnique<Notification>(frame, context, world_id));
+        WTF::MakeUnique<Notification>(Frame(), context, world_id));
   }
 
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
@@ -4813,10 +4811,9 @@ TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage) {
 class TestExecuteScriptDuringDidCreateScriptContext
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void DidCreateScriptContext(WebLocalFrame* frame,
-                              v8::Local<v8::Context> context,
+  void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override {
-    frame->ExecuteScript(WebScriptSource("window.history = 'replaced';"));
+    Frame()->ExecuteScript(WebScriptSource("window.history = 'replaced';"));
   }
 };
 
