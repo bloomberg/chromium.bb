@@ -57,7 +57,7 @@ GetDefaultTaskSchedulerInitParams() {
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-          base::TimeDelta::FromSeconds(30)));
+          base::TimeDelta::FromSeconds(60)));
 }
 
 }  // namespace

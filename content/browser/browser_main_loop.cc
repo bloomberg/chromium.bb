@@ -406,6 +406,7 @@ GetDefaultTaskSchedulerInitParams() {
   using StandbyThreadPolicy =
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
 #if defined(OS_ANDROID)
+  // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
   return base::MakeUnique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
@@ -422,8 +423,9 @@ GetDefaultTaskSchedulerInitParams() {
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
-          base::TimeDelta::FromSeconds(30)));
+          base::TimeDelta::FromSeconds(60)));
 #else
+  // Desktop config.
   return base::MakeUnique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
@@ -432,7 +434,7 @@ GetDefaultTaskSchedulerInitParams() {
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
-          base::TimeDelta::FromSeconds(30)),
+          base::TimeDelta::FromSeconds(40)),
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
@@ -443,7 +445,7 @@ GetDefaultTaskSchedulerInitParams() {
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::ONE,
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
-          base::TimeDelta::FromSeconds(30),
+          base::TimeDelta::FromSeconds(60),
           base::SchedulerBackwardCompatibility::INIT_COM_STA));
 #endif
 }

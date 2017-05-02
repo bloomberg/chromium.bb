@@ -381,7 +381,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Default",
+                    "//1": "Enable on-by-default redirections with default",
+                    "//2": "client-side init params (ref.",
+                    "//3": "GetDefaultTaskSchedulerInitParams() in",
+                    "//4": "browser_main_loop.cc).",
+                    "name": "RedirectWithDefaultInitParams",
                     "params": {
                         "RedirectSequencedWorkerPools": "true"
                     }
