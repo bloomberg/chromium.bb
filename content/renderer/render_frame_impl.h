@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
@@ -23,8 +24,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_mode.h"
 #include "content/common/associated_interface_registry_impl.h"
@@ -48,6 +51,7 @@
 #include "content/renderer/unique_name_helper.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/base/routing_token_callback.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
@@ -776,6 +780,10 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(RenderAccessibilityImplTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest, ZoomLimit);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
+                           TestOverlayRoutingTokenSendsLater);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
+                           TestOverlayRoutingTokenSendsNow);
 
   // A wrapper class used as the callback for JavaScript executed
   // in an isolated world.
@@ -941,6 +949,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetNearestFindResult(int request_id, float x, float y);
   void OnFindMatchRects(int current_version);
 #endif
+  void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
@@ -1138,6 +1147,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  // Send |callback| our AndroidOverlay routing token when it arrives.  We may
+  // call |callback| before returning.
+  void RequestOverlayRoutingToken(const media::RoutingTokenCallback& callback);
+
+  // Ask the host to send our AndroidOverlay routing token to us.
+  void RequestOverlayRoutingTokenFromHost();
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
@@ -1449,6 +1465,12 @@ class CONTENT_EXPORT RenderFrameImpl
       interface_provider_bindings_;
 
   mojom::URLLoaderFactoryPtr url_loader_factory_;
+
+  // AndroidOverlay routing token from the browser, if we have one yet.
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
+
+  // Callbacks that we should call when we get a routing token.
+  std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

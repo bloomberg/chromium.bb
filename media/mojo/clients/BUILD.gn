@@ -15,6 +15,9 @@ source_set("clients") {
     "//media/mojo/services:*",
 
     "//media/test/*",
+
+    # TODO(liberato): can we avoid this?
+    "//content/test/*",
   ]
 
   sources = [

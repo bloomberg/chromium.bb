@@ -48,6 +48,7 @@ android_library("content_java") {
     "//media/midi:midi_java",
     "//media/mojo/interfaces:interfaces_java",
     "//mojo/android:system_java",
+    "//mojo/common:common_custom_types_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
     "//net/android:net_java",
@@ -168,8 +169,10 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/accessibility/captioning/KitKatCaptioningBridge.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/SystemCaptioningBridge.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/TextTrackSettings.java",
-    "java/src/org/chromium/content/browser/androidoverlay/AndroidOverlayImpl.java",
     "java/src/org/chromium/content/browser/androidoverlay/AndroidOverlayProviderImpl.java",
+    "java/src/org/chromium/content/browser/androidoverlay/DialogOverlayCore.java",
+    "java/src/org/chromium/content/browser/androidoverlay/DialogOverlayImpl.java",
+    "java/src/org/chromium/content/browser/androidoverlay/ThreadHoppingHost.java",
     "java/src/org/chromium/content/browser/crypto/ByteArrayGenerator.java",
     "java/src/org/chromium/content/browser/crypto/CipherFactory.java",
     "java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java",
@@ -353,6 +356,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/SpeechRecognition.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroid.java",
     "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java",
+    "java/src/org/chromium/content/browser/androidoverlay/DialogOverlayImpl.java",
     "java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java",
     "java/src/org/chromium/content/browser/framehost/RenderFrameHostImpl.java",
     "java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java",
@@ -389,7 +393,9 @@ android_library("content_javatests") {
     "//media/base/android:media_java",
     "//media/capture/content/android:screen_capture_java",
     "//media/capture/video/android:capture_java",
+    "//media/mojo/interfaces:interfaces_java",
     "//mojo/android:system_java",
+    "//mojo/common:common_custom_types_java",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
@@ -399,6 +405,7 @@ android_library("content_javatests") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//ui/android:ui_java",
+    "//ui/gfx/geometry/mojo:mojo_java",
   ]
 
   java_files = [
@@ -439,6 +446,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ViewportTest.java",
     "javatests/src/org/chromium/content/browser/WebContentsObserverAndroidTest.java",
     "javatests/src/org/chromium/content/browser/accessibility/captioning/CaptioningChangeDelegateTest.java",
+    "javatests/src/org/chromium/content/browser/androidoverlay/DialogOverlayImplTest.java",
     "javatests/src/org/chromium/content/browser/crypto/CipherFactoryTest.java",
     "javatests/src/org/chromium/content/browser/input/CursorAnchorInfoControllerTest.java",
     "javatests/src/org/chromium/content/browser/input/ImeLollipopTest.java",
@@ -465,6 +473,7 @@ junit_binary("content_junit_tests") {
   java_files = [
     "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
     "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
+    "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionFactoryTest.java",
@@ -477,7 +486,9 @@ junit_binary("content_junit_tests") {
     ":content_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//media/mojo/interfaces:interfaces_java",
     "//mojo/public/java:bindings_java",
     "//third_party/WebKit/public:android_mojo_bindings_java",
+    "//ui/gfx/geometry/mojo:mojo_java",
   ]
 }

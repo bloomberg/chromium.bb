@@ -56,5 +56,9 @@ struct AndroidOverlayConfig {
   // the identifier won't work yet.
   mojo.common.mojom.UnguessableToken routing_token;
 
+  // Initial rectangle.
   gfx.mojom.Rect rect;
+
+  // Is a secure overlay required, such as for displaying protected content?
+  bool secure;
 };

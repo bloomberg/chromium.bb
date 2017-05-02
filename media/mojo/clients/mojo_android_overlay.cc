@@ -25,6 +25,7 @@ MojoAndroidOverlay::MojoAndroidOverlay(
       mojom::AndroidOverlayConfig::New();
   mojo_config->routing_token = routing_token;
   mojo_config->rect = config_.rect;
+  mojo_config->secure = config_.secure;
 
   mojom::AndroidOverlayClientPtr ptr;
   binding_ = base::MakeUnique<mojo::Binding<mojom::AndroidOverlayClient>>(

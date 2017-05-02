@@ -213,4 +213,18 @@ TEST_F(MojoAndroidOverlayTest, LayoutBeforeSurfaceIsIgnored) {
   overlay_client_->ScheduleLayout(new_layout);
 }
 
+// Test |secure| makes it to the mojo config when it is true
+TEST_F(MojoAndroidOverlayTest, SecureFlagIsSentViaMojoWhenTrue) {
+  config_.secure = true;
+  CreateOverlay();
+  ASSERT_TRUE(mock_provider_.config_->secure);
+}
+
+// Test |secure| makes it to the mojo config when it is false
+TEST_F(MojoAndroidOverlayTest, SecureFlagIsSentViaMojoWhenFalse) {
+  config_.secure = false;
+  CreateOverlay();
+  ASSERT_FALSE(mock_provider_.config_->secure);
+}
+
 }  // namespace media

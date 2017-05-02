@@ -165,6 +165,12 @@ typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
 base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
+using TokenFrameMap = base::hash_map<base::UnguessableToken,
+                                     RenderFrameHostImpl*,
+                                     base::UnguessableTokenHash>;
+base::LazyInstance<TokenFrameMap>::Leaky g_token_frame_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Translate a WebKit text direction into a base::i18n one.
 base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
     blink::WebTextDirection dir) {
@@ -360,6 +366,14 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromAXTreeID(
   return RenderFrameHostImpl::FromID(frame_id.first, frame_id.second);
 }
 
+// static
+RenderFrameHostImpl* RenderFrameHostImpl::FromOverlayRoutingToken(
+    const base::UnguessableToken& token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto it = g_token_frame_map.Get().find(token);
+  return it == g_token_frame_map.Get().end() ? nullptr : it->second;
+}
+
 RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
@@ -465,6 +479,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+
+  if (overlay_routing_token_)
+    g_token_frame_map.Get().erase(*overlay_routing_token_);
+
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&NotifyRenderFrameDetachedOnIO,
                                      GetProcess()->GetID(), routing_id_));
@@ -516,6 +534,15 @@ int RenderFrameHostImpl::GetRoutingID() {
 ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ui::AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
       GetProcess()->GetID(), routing_id_);
+}
+
+const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
+  if (!overlay_routing_token_) {
+    overlay_routing_token_ = base::UnguessableToken::Create();
+    g_token_frame_map.Get().emplace(*overlay_routing_token_, this);
+  }
+
+  return *overlay_routing_token_;
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
@@ -822,6 +849,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_NavigationHandledByEmbedder,
                         OnNavigationHandledByEmbedder)
 #endif
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
+                        OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
   IPC_END_MESSAGE_MAP()
 
@@ -2473,6 +2502,14 @@ void RenderFrameHostImpl::OnNavigationHandledByEmbedder() {
   OnDidStopLoading();
 }
 #endif
+
+void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
+  // Make sure that we have a token.
+  GetOverlayRoutingToken();
+
+  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_,
+                                           *overlay_routing_token_));
+}
 
 void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                               WindowOpenDisposition disposition,

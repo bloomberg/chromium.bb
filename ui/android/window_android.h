@@ -86,6 +86,9 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   static WindowAndroid* CreateForTesting();
   void DestroyForTesting();
 
+  // Return the window token for this window, if one exists.
+  base::android::ScopedJavaLocalRef<jobject> GetWindowToken();
+
  private:
   class WindowBeginFrameSource;
   friend class DisplayAndroidManager;

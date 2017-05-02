@@ -16,11 +16,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -723,6 +725,20 @@ public class WindowAndroid {
     public WeakReference<Context> getContext() {
         // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
         return new WeakReference<>(mContextRef.get());
+    }
+
+    /**
+     * Return the current window token, or null.
+     */
+    @CalledByNative
+    private IBinder getWindowToken() {
+        Activity activity = activityFromContext(mContextRef.get());
+        if (activity == null) return null;
+        Window window = activity.getWindow();
+        if (window == null) return null;
+        View decorView = window.peekDecorView();
+        if (decorView == null) return null;
+        return decorView.getWindowToken();
     }
 
     /**

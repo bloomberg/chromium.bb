@@ -18,6 +18,7 @@
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/browser/android/dialog_overlay_impl.h"
 #include "content/browser/android/gpu_process_callback.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
@@ -53,6 +54,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
+    {"DialogOverlayImpl",
+     content::DialogOverlayImpl::RegisterDialogOverlayImpl},
     {"InterstitialPageDelegateAndroid",
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},
