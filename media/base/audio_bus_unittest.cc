@@ -132,6 +132,23 @@ TEST_F(AudioBusTest, CreateUsingAudioParameters) {
   VerifyReadWriteAndAlignment(bus.get());
 }
 
+// Verify an AudioBus created via CreateWrapper(...) works as advertised.
+TEST_F(AudioBusTest, CreateWrapper) {
+  data_.reserve(kChannels);
+  for (int i = 0; i < kChannels; ++i) {
+    data_.push_back(static_cast<float*>(base::AlignedAlloc(
+        sizeof(*data_[i]) * kFrameCount, AudioBus::kChannelAlignment)));
+  }
+
+  std::unique_ptr<AudioBus> bus = AudioBus::CreateWrapper(kChannels);
+  bus->set_frames(kFrameCount);
+  for (int i = 0; i < bus->channels(); ++i)
+    bus->SetChannelData(i, data_[i]);
+
+  VerifyChannelAndFrameCount(bus.get());
+  VerifyReadWriteAndAlignment(bus.get());
+}
+
 // Verify an AudioBus created via wrapping a vector works as advertised.
 TEST_F(AudioBusTest, WrapVector) {
   data_.reserve(kChannels);
