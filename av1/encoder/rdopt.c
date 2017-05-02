@@ -12443,7 +12443,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
       const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
-      const int mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[a_bsize]);
+      const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
       const int neighbor_bw = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(above_mbmi)) {
@@ -12517,7 +12517,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
       const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
-      const int mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[l_bsize]);
+      const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
       const int neighbor_bh = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(left_mbmi)) {
