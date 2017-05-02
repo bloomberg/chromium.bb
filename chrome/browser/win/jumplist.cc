@@ -73,7 +73,7 @@ constexpr base::TimeDelta kDelayForJumplistUpdate =
 constexpr base::TimeDelta kTimeOutForJumplistUpdate =
     base::TimeDelta::FromMilliseconds(500);
 
-// Append the common switches to each shell link.
+// Appends the common switches to each shell link.
 void AppendCommonSwitches(ShellLinkItem* shell_link) {
   const char* kSwitchNames[] = { switches::kUserDataDir };
   const base::CommandLine& command_line =
@@ -83,7 +83,7 @@ void AppendCommonSwitches(ShellLinkItem* shell_link) {
                                                  arraysize(kSwitchNames));
 }
 
-// Create a ShellLinkItem preloaded with common switches.
+// Creates a ShellLinkItem preloaded with common switches.
 scoped_refptr<ShellLinkItem> CreateShellLink() {
   scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
   AppendCommonSwitches(link.get());
@@ -504,8 +504,6 @@ void JumpList::TabRestoreServiceChanged(sessions::TabRestoreService* service) {
   //   The title of the last URL.
   // * icon
   //   An empty string. This value is to be updated in OnFaviconDataAvailable().
-  // This code is copied from
-  // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
   const int kRecentlyClosedCount = 3;
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile_);
