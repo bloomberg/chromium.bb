@@ -575,6 +575,7 @@ class ManifestVersionedSyncStage(SyncStage):
     assert not self._chrome_rev, \
         'chrome_rev is unsupported on release builders.'
 
+    _, db = self._run.GetCIDBHandle()
     self.RegisterManifestManager(manifest_version.BuildSpecsManager(
         source_repo=self.repo,
         manifest_repo=self.manifest_repo,
@@ -586,6 +587,7 @@ class ManifestVersionedSyncStage(SyncStage):
         dry_run=dry_run,
         config=self._run.config,
         metadata=self._run.attrs.metadata,
+        db=db,
         buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):

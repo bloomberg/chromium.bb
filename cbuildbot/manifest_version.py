@@ -350,7 +350,7 @@ class BuildSpecsManager(object):
 
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
-               config=None, metadata=None, buildbucket_client=None):
+               config=None, metadata=None, db=None, buildbucket_client=None):
     """Initializes a build specs manager.
 
     Args:
@@ -367,6 +367,7 @@ class BuildSpecsManager(object):
       config: Instance of config_lib.BuildConfig. Config dict of this builder.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 builder.
+      db: Instance of cidb.CIDBConnection.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     self.cros_source = source_repo
@@ -386,6 +387,7 @@ class BuildSpecsManager(object):
     self.config = config
     self.master = False if config is None else config.master
     self.metadata = metadata
+    self.db = db
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
@@ -396,7 +398,7 @@ class BuildSpecsManager(object):
 
     # Specs.
     self.latest = None
-    self._latest_status = None
+    self._latest_build = None
     self.latest_unprocessed = None
     self.compare_versions_fn = VersionInfo.VersionCompare
 
@@ -476,11 +478,14 @@ class BuildSpecsManager(object):
     if version is None:
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
-        self._latest_status = (
-            builder_status_lib.BuilderStatusManager.GetBuilderStatus(
-                self.build_names[0], self.latest))
-        if self._latest_status.Missing():
+        latest_builds = None
+        if self.db is not None:
+          latest_builds = self.db.GetBuildHistory(
+              self.build_names[0], 1, platform_version=self.latest)
+        if not latest_builds:
           self.latest_unprocessed = self.latest
+        else:
+          self._latest_build = latest_builds[0]
 
     return True
 
@@ -503,7 +508,8 @@ class BuildSpecsManager(object):
 
   def HasCheckoutBeenBuilt(self):
     """Checks to see if we've previously built this checkout."""
-    if self._latest_status and self._latest_status.Passed():
+    if (self._latest_build and
+        self._latest_build['status'] == constants.BUILDER_STATUS_PASSED):
       latest_spec_file = '%s.xml' % os.path.join(
           self.all_specs_dir, self.latest)
       # We've built this checkout before if the manifest isn't different than
@@ -565,7 +571,8 @@ class BuildSpecsManager(object):
 
   def DidLastBuildFail(self):
     """Returns True if the last build failed."""
-    return self._latest_status and self._latest_status.Failed()
+    return (self._latest_build and
+            self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
   def GetBuildersStatus(self, master_build_id, db, builders_array, pool=None,
                         timeout=3 * 60):
