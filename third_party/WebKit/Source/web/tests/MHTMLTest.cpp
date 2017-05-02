@@ -166,10 +166,8 @@ class MHTMLTest : public ::testing::Test {
     // Validate the generated MHTML.
     MHTMLParser parser(
         SharedBuffer::Create(mhtml_data->data(), mhtml_data->length()));
-    if (parser.ParseArchive().IsEmpty()) {
-      ADD_FAILURE() << "Invalid MHTML";
-      return RawData::Create();
-    }
+    EXPECT_FALSE(parser.ParseArchive().IsEmpty())
+        << "Generated MHTML is malformed";
 
     return mhtml_data.Release();
   }
@@ -216,7 +214,6 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
   AddTestResources();
   RefPtr<RawData> data = Serialize("Test Serialization", "text/html",
                                    MHTMLArchive::kUseDefaultEncoding);
-  ASSERT_FALSE(HasFailure());
 
   // Read the MHTML data line per line and do some pseudo-parsing to make sure
   // the right encoding is used for the different sections.
@@ -253,7 +250,6 @@ TEST_F(MHTMLTest, MHTMLFromScheme) {
   AddTestResources();
   RefPtr<RawData> raw_data = Serialize("Test Serialization", "text/html",
                                        MHTMLArchive::kUseDefaultEncoding);
-  ASSERT_FALSE(HasFailure());
 
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(raw_data->data(), raw_data->length());
