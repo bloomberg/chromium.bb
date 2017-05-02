@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,9 +13,10 @@ class MockWebContentsCloseHandlerDelegate
     : public WebContentsCloseHandlerDelegate {
  public:
   explicit MockWebContentsCloseHandlerDelegate()
-      : got_clone_(false),
-        got_destroy_(false) {
-  }
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        got_clone_(false),
+        got_destroy_(false) {}
   ~MockWebContentsCloseHandlerDelegate() override {}
 
   void Clear() {
@@ -33,7 +34,7 @@ class MockWebContentsCloseHandlerDelegate
   void DestroyClonedLayer() override { got_destroy_ = true; }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   bool got_clone_;
   bool got_destroy_;
 
@@ -90,4 +91,3 @@ TEST_F(WebContentsCloseHandlerTest, DontDestroyImmediatleyAfterCancel) {
   EXPECT_FALSE(close_handler_delegate_.got_clone());
   EXPECT_TRUE(IsTimerRunning());
 }
-

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "chrome/browser/ui/omnibox/clipboard_utils.h"
+
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -19,13 +20,17 @@ namespace {
 
 class ClipboardUtilsTest : public PlatformTest {
  public:
+  ClipboardUtilsTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
   void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
  private:
   // Windows requires a message loop for clipboard access.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(ClipboardUtilsTest, GetClipboardText) {

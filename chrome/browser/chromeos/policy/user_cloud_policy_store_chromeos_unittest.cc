@@ -15,9 +15,9 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
@@ -62,7 +62,9 @@ ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
 
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
-  UserCloudPolicyStoreChromeOSTest() {}
+  UserCloudPolicyStoreChromeOSTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     EXPECT_CALL(cryptohome_client_, GetSanitizedUsername(cryptohome_id_, _))
@@ -72,8 +74,9 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(new UserCloudPolicyStoreChromeOS(
-        &cryptohome_client_, &session_manager_client_, loop_.task_runner(),
-        account_id_, user_policy_dir(), false /* is_active_directory */));
+        &cryptohome_client_, &session_manager_client_,
+        base::ThreadTaskRunnerHandle::Get(), account_id_, user_policy_dir(),
+        false /* is_active_directory */));
     store_->AddObserver(&observer_);
 
     // Install the initial public key, so that by default the validation of
@@ -212,7 +215,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                             .AppendASCII("policy.pub");
   }
 
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   chromeos::MockCryptohomeClient cryptohome_client_;
   chromeos::MockSessionManagerClient session_manager_client_;
   UserPolicyBuilder policy_;

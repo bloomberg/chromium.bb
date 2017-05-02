@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
@@ -90,7 +90,9 @@ class StoreFlushWaiter {
 
 class SearchHistoryTest : public testing::Test {
  public:
-  SearchHistoryTest() {}
+  SearchHistoryTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~SearchHistoryTest() override {}
 
   // testing::Test overrides:
@@ -144,7 +146,7 @@ class SearchHistoryTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
 

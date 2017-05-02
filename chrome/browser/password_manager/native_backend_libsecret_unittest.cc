@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/native_backend_libsecret.h"
@@ -273,7 +274,9 @@ class NativeBackendLibsecretTest : public testing::Test {
     SYNCED,
   };
 
-  NativeBackendLibsecretTest() {}
+  NativeBackendLibsecretTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_FALSE(global_mock_libsecret_items);
@@ -598,7 +601,7 @@ class NativeBackendLibsecretTest : public testing::Test {
     EXPECT_TRUE(global_mock_libsecret_items->empty());
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Provide some test forms to avoid having to set them up in each test.
   PasswordForm form_google_;
