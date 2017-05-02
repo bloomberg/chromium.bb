@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -19,202 +19,197 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("initialize", function (done) {
-        context = new OfflineAudioContext(1, testFrames, sampleRate);
-        done();
+      audit.define("initialize", (task, should) => {
+        should(() => {
+            context = new OfflineAudioContext(1, testFrames, sampleRate);
+          }, "Initialize context for testing")
+          .notThrow();
+        task.done();
       });
 
-      audit.defineTask("existence", function (done) {
-        Should("context.createIIRFilter exists",
-          context.createIIRFilter != undefined)
-          .beEqualTo(true);
-        done();
+      audit.define("existence", (task, should) => {
+        should(context.createIIRFilter,
+            "context.createIIRFilter")
+          .exist();
+        task.done();
       });
 
-      audit.defineTask("parameters", function (done) {
+      audit.define("parameters", (task, should) => {
         // Create a really simple IIR filter. Doesn't much matter what.
         var coef = Float32Array.from([1]);
 
         var f = context.createIIRFilter(coef, coef);
 
-        var success = true;
+        should(f.numberOfInputs, "numberOfInputs").beEqualTo(1);
+        should(f.numberOfOutputs, "numberOfOutputs").beEqualTo(1);
+        should(f.channelCountMode, "channelCountMode").beEqualTo("max");
+        should(f.channelInterpretation, "channelInterpretation").beEqualTo("speakers");
 
-        success = Should("numberOfInputs", f.numberOfInputs).beEqualTo(1) && success;
-        success = Should("numberOfOutputs", f.numberOfOutputs).beEqualTo(1) && success;
-        success = Should("channelCountMode", f.channelCountMode).beEqualTo("max") && success;
-        success = Should("channelInterpretation", f.channelInterpretation).beEqualTo("speakers") && success;
-
-        Should("Basic IRRFilter parameters", success)
-          .summarize("were all correct", "were not all correct");
-        done();
+        task.done();
       });
 
-      audit.defineTask("exceptions-createIIRFilter", function (done) {
-        var success = true;
-
-        success = Should("createIIRFilter()", function () {
+      audit.define("exceptions-createIIRFilter", (task, should) => {
+        should(function () {
           // Two args are required.
           context.createIIRFilter();
-        }).throw("TypeError") && success;
+        }, "createIIRFilter()").throw("TypeError");
 
-        success = Should("createIIRFilter(new Float32Array(1))", function () {
+        should(function () {
           // Two args are required.
           context.createIIRFilter(new Float32Array(1));
-        }).throw("TypeError") && success;
+        }, "createIIRFilter(new Float32Array(1))").throw("TypeError");
         
-        success = Should("createIIRFilter(null, null)", function () {
+        should(function () {
           // null is not valid
           context.createIIRFilter(null, null);
-        }).throw("TypeError") && success;
+        }, "createIIRFilter(null, null)").throw("TypeError");
 
-        success = Should("createIIRFilter([], [])", function () {
+        should(function () {
           // There has to be at least one coefficient.
           context.createIIRFilter([], []);
-        }).throw("NotSupportedError") && success;
+        }, "createIIRFilter([], [])").throw("NotSupportedError");
 
-        success = Should("createIIRFilter([1], [])", function () {
+        should(function () {
           // There has to be at least one coefficient.
           context.createIIRFilter([1], []);
-        }).throw("NotSupportedError") && success;
+        }, "createIIRFilter([1], [])").throw("NotSupportedError");
 
-        success = Should("createIIRFilter([], [1])", function () {
+        should(function () {
           // There has to be at least one coefficient.
           context.createIIRFilter([], [1]);
-        }).throw("NotSupportedError") && success;
+        }, "createIIRFilter([], [1])").throw("NotSupportedError");
 
-        success = Should("createIIRFilter(new Float32Array(20), new Float32Array(20))",
-          // Max allowed size for the coefficient arrays.
-          function () {
-            var fb = new Float32Array(20);
-            fb[0] = 1;
-            context.createIIRFilter(fb, fb);
-        }).notThrow() && success;
+        should(function () {
+              // Max allowed size for the coefficient arrays.
+              var fb = new Float32Array(20);
+              fb[0] = 1;
+              context.createIIRFilter(fb, fb);
+            },
+            "createIIRFilter(new Float32Array(20), new Float32Array(20))")
+          .notThrow();
 
-        success = Should("createIIRFilter(new Float32Array(21), [1])",
-          // Max allowed size for the feedforward coefficient array.
-          function () {
-            var coef = new Float32Array(21);
-            coef[0] = 1;
-            context.createIIRFilter(coef, [1]);
-        }).throw("NotSupportedError") && success;
+        should(function () {
+              // Max allowed size for the feedforward coefficient array.
+              var coef = new Float32Array(21);
+              coef[0] = 1;
+              context.createIIRFilter(coef, [1]);
+            },
+            "createIIRFilter(new Float32Array(21), [1])")
+          .throw("NotSupportedError");
 
-        success = Should("createIIRFilter([1], new Float32Array(21))",
-          // Max allowed size for the feedback coefficient array.
-          function () {
-            var coef = new Float32Array(21);
-            coef[0] = 1;
-            context.createIIRFilter([1], coef);
-        }).throw("NotSupportedError") && success;
+        should(function () {
+              // Max allowed size for the feedback coefficient array.
+              var coef = new Float32Array(21);
+              coef[0] = 1;
+              context.createIIRFilter([1], coef);
+            },
+            "createIIRFilter([1], new Float32Array(21))")
+          .throw("NotSupportedError");
 
-        success = Should("createIIRFilter([1], new Float32Array(2))", function () {
-          // First feedback coefficient can't be 0.
-          context.createIIRFilter([1], new Float32Array(2));
-        }).throw("InvalidStateError") && success;
+        should(function () {
+              // First feedback coefficient can't be 0.
+              context.createIIRFilter([1], new Float32Array(2));
+            },
+            "createIIRFilter([1], new Float32Array(2))")
+          .throw("InvalidStateError");
 
-        success = Should("createIIRFilter(new Float32Array(10), [1])", function () {
-          // feedforward coefficients can't all be zero.
-          context.createIIRFilter(new Float32Array(10), [1]);
-        }).throw("InvalidStateError") && success;
+        should(function () {
+              // feedforward coefficients can't all be zero.
+              context.createIIRFilter(new Float32Array(10), [1]);
+            },
+            "createIIRFilter(new Float32Array(10), [1])")
+          .throw("InvalidStateError");
 
-        success = Should("createIIRFilter([1], [1, NaN, Infinity])", function () {
-          // Feedback coefficients must be finite.
-          context.createIIRFilter([1], [1, Infinity, NaN]);
-        }).throw("TypeError") && success;
+        should(function () {
+              // Feedback coefficients must be finite.
+              context.createIIRFilter([1], [1, Infinity, NaN]);
+            },
+            "createIIRFilter([1], [1, NaN, Infinity])")
+          .throw("TypeError");
 
-        success = Should("createIIRFilter([1, NaN, Infinity], [1])", function () {
-          // Feedforward coefficients must be finite.
-          context.createIIRFilter([1, Infinity, NaN], [1]);
-        }).throw("TypeError") && success;
+        should(function () {
+              // Feedforward coefficients must be finite.
+              context.createIIRFilter([1, Infinity, NaN], [1]);
+            },
+            "createIIRFilter([1, NaN, Infinity], [1])")
+          .throw("TypeError");
 
-        success = Should("createIIRFilter([1, 'abc', []], [1])", function () {
-          // Test that random junk in the array is converted to NaN.
-          context.createIIRFilter([1, "abc", []], [1]);
-        }).throw("TypeError") && success;
+        should(function () {
+              // Test that random junk in the array is converted to NaN.
+              context.createIIRFilter([1, "abc", []], [1]);
+            },
+            "createIIRFilter([1, 'abc', []], [1])")
+          .throw("TypeError");
 
-        Should("Exceptions for createIIRFilter", success)
-          .summarize("were all correctly thrown",
-                     "were not all correctly thrown");
-        done();
+        task.done();
       });
 
-      audit.defineTask("exceptions-getFrequencyData", function (done) {
+      audit.define("exceptions-getFrequencyData", (task, should) => {
         // Create a really simple IIR filter. Doesn't much matter what.
         var coef = Float32Array.from([1]);
 
         var f = context.createIIRFilter(coef, coef);
 
-        var success = true;
+        should(function () {
+              // frequencyHz can't be null.
+              f.getFrequencyResponse(null, new Float32Array(1), new Float32Array(
+                1));
+            },
+            "getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))"
+          )
+          .throw("TypeError");
 
-        success = Should("getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))",
-          function () {
-            // frequencyHz can't be null.
-            f.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1));
-          }).throw("TypeError") && success;
+        should(function () {
+              // magResponse can't be null.
+              f.getFrequencyResponse(new Float32Array(1), null, new Float32Array(
+                1));
+            },
+            "getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))"
+          )
+          .throw("TypeError");
 
-        success = Should("getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))",
-          function () {
-            // magResponse can't be null.
-            f.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1));
-          }).throw("TypeError") && success;
+        should(function () {
+              // phaseResponse can't be null.
+              f.getFrequencyResponse(new Float32Array(1), new Float32Array(
+                1), null);
+            },
+            "getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)"
+          )
+          .throw("TypeError");
 
-        success = Should("getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)",
-          function () {
-            // phaseResponse can't be null.
-            f.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null);
-          }).throw("TypeError") && success;
+        should(function () {
+              // magResponse array must be longer than frequencyHz
+              f.getFrequencyResponse(new Float32Array(10), new Float32Array(
+                1), new Float32Array(20));
+            },
+            "getFrequencyResponse(new Float32Array(10), new Float32Array(1), new Float32Array(20))"
+          )
+          .throw("NotSupportedError");
 
-        success = Should(
-          "getFrequencyResponse(new Float32Array(10), new Float32Array(1), new Float32Array(20))",
-          function () {
-            // magResponse array must be longer than frequencyHz
-            f.getFrequencyResponse(new Float32Array(10), new Float32Array(1), new Float32Array(
-              20));
-          }).throw("NotSupportedError") && success;
+        should(function () {
+              // phaseResponse array must be longer than frequencyHz
+              f.getFrequencyResponse(new Float32Array(10), new Float32Array(
+                20), new Float32Array(1));
+            },
+            "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(1))"
+          )
+          .throw("NotSupportedError");
 
-        success = Should(
-          "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(1))",
-          function () {
-            // phaseResponse array must be longer than frequencyHz
-            f.getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(
-              1));
-          }).throw("NotSupportedError") && success;
+        should(function () {
+              // Ok if magResponse and phaseResponse have different lengths as
+              // long as they're longer than frequencyHz.
+              f.getFrequencyResponse(new Float32Array(10), new Float32Array(
+                20), new Float32Array(
+                30));
+            },
+            "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(30))"
+          )
+          .notThrow();
 
-        success = Should(
-          "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(30))",
-          function () {
-            // Ok if magResponse and phaseResponse have different lengths as long as they're longer
-            // than frequencyHz.
-            f.getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(
-              30));
-          }).notThrow() && success;
-
-        if (window.SharedArrayBuffer) {
-          var shared_view = new Float32Array(new SharedArrayBuffer(4));
-          var nonshared_view = new Float32Array(1);
-
-          success = Should(
-              "getFrequencyResponse(shared_view, nonshared_view, nonshared_view)",
-              function () {
-                f.getFrequencyResponse(shared_view, nonshared_view, nonshared_view);
-            }).throw("TypeError") && success;
-          success = Should(
-              "getFrequencyResponse(nonshared_view, shared_view, nonshared_view)",
-              function () {
-                f.getFrequencyResponse(nonshared_view, shared_view, nonshared_view);
-            }).throw("TypeError") && success;
-          success = Should(
-              "getFrequencyResponse(nonshared_view, nonshared_view, shared_view)",
-              function () {
-                f.getFrequencyResponse(nonshared_view, nonshared_view, shared_view);
-            }).throw("TypeError") && success;
-        }
-
-        Should("getFrequencyResponse exceptions handled", success)
-          .summarize("correctly", "incorrectly");
-        done();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>

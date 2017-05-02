@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <script src="../resources/biquad-filters.js"></script>
   </head>
 
@@ -35,7 +35,7 @@
           return frequencies;
       }
 
-      audit.defineTask("1-pole IIR", function (done) {
+      audit.define("1-pole IIR", (task, should) => {
         var context = new OfflineAudioContext(1, testDurationSec * sampleRate, sampleRate);
 
         var iir = context.createIIRFilter([1], [1, -0.9]);
@@ -68,20 +68,20 @@
 
         iir.getFrequencyResponse(frequencies, iirMag, iirPhase);
 
-        var success = true;
-
         // Thresholds were experimentally determined.
-        success = Should("1-pole IIR Magnitude Response", iirMag).beCloseToArray(trueMag, 2.8611e-6);
-        success = Should("1-pole IIR Phase Response", iirPhase).beCloseToArray(truePhase, 1.7882e-7)
-          && success;
+        should(iirMag, "1-pole IIR Magnitude Response")
+          .beCloseToArray(trueMag, {
+            absoluteThreshold: 2.8611e-6
+          });
+        should(iirPhase, "1-pole IIR Phase Response")
+          .beCloseToArray(truePhase, {
+            absoluteThreshold: 1.7882e-7
+          });
 
-        Should('1-pole IIR response', success)
-            .summarize(
-                'matched expected response', 'did not match expected response');
-        done();
+        task.done();
       });
 
-      audit.defineTask("compare IIR and biquad", function(done) {
+      audit.define("compare IIR and biquad", (task, should) => {
         // Create an IIR filter equivalent to the biquad filter. Compute the frequency response for
         // both and verify that they are the same.
         var context = new OfflineAudioContext(1, testDurationSec * sampleRate, sampleRate);
@@ -103,20 +103,20 @@
         biquad.getFrequencyResponse(frequencies, biquadMag, biquadPhase);
         iir.getFrequencyResponse(frequencies, iirMag, iirPhase);
 
-        var success = true;
-
         // Thresholds were experimentally determined.
-        success = Should("IIR Magnitude Response", iirMag).beCloseToArray(biquadMag, 2.7419e-5);
-        success = Should("IIR Phase Response", iirPhase).beCloseToArray(biquadPhase, 2.7657e-5) && success;
+        should(iirMag, "IIR Magnitude Response")
+          .beCloseToArray(biquadMag, {
+            absoluteThreshold: 2.7419e-5
+          });
+        should(iirPhase, "IIR Phase Response")
+          .beCloseToArray(biquadPhase, {
+            absoluteThreshold: 2.7657e-5
+          });
 
-        var suffix = " equivalent " + biquad.type + " Biquad response";
-        Should("IIR response", success)
-          .summarize("matched" + suffix,
-                     "did not match" + suffix);
-        done();
+        task.done();
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
