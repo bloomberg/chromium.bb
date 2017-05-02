@@ -1739,6 +1739,17 @@ extern const char kEnableAppcontainerDescription[];
 
 #endif  // defined(OS_WIN)
 
+#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
+// Name of the flag to add the Certificate Viewer link to the Page Info UI.
+extern const char kShowCertLinkOnPageInfoName[];
+
+// Description of the flag to add the Certificate Viewer link to the Page
+// Info UI.
+extern const char kShowCertLinkOnPageInfoDescription[];
+
+#endif  // defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 // Name of the flag to enable uploading Autofill credit cards.

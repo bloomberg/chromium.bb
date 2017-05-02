@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <vector>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -89,8 +89,8 @@ const int kHeaderLabelSpacing = 4;
 
 // Site Settings Section -------------------------------------------------------
 
-// Spacing above and below the cookies view.
-const int kCookiesViewVerticalPadding = 6;
+// Spacing above and below the cookies and certificate views.
+const int kSubViewsVerticalPadding = 6;
 
 // Spacing between a permission image and the text.
 const int kPermissionImageSpacing = 6;
@@ -107,6 +107,7 @@ const int STYLED_LABEL_SECURITY_DETAILS = 1338;
 const int STYLED_LABEL_RESET_CERTIFICATE_DECISIONS = 1339;
 const int LINK_COOKIE_DIALOG = 1340;
 const int LINK_SITE_SETTINGS = 1341;
+const int LINK_CERTIFICATE_VIEWER = 1342;
 
 // The default, ui::kTitleFontSizeDelta, is too large for the page info
 // bubble (e.g. +3). Use +1 to obtain a smaller font.
@@ -120,6 +121,47 @@ void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, margin);
+}
+
+// Creates a section containing a title, icon, and link. Used to display
+// Cookies and Certificate information.
+views::View* CreateInspectLinkSection(const gfx::ImageSkia& image_icon,
+                                      const int title_id,
+                                      views::Link* link) {
+  views::View* new_view = new views::View();
+
+  views::GridLayout* layout = new views::GridLayout(new_view);
+  new_view->SetLayoutManager(layout);
+
+  const int column = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(column);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                        views::GridLayout::FIXED, kPermissionIconColumnWidth,
+                        0);
+  column_set->AddPaddingColumn(0, kPermissionImageSpacing);
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+
+  layout->AddPaddingRow(0, kSubViewsVerticalPadding);
+
+  layout->StartRow(1, column);
+
+  views::ImageView* icon = new NonAccessibleImageView();
+  icon->SetImage(image_icon);
+  layout->AddView(
+      icon, 1, 2, views::GridLayout::FILL,
+      // TODO(lgarron): The vertical alignment may change to CENTER once
+      // Harmony is implemented. See https://crbug.com/512442#c48
+      views::GridLayout::LEADING);
+
+  views::Label* title_label = new views::Label(
+      l10n_util::GetStringUTF16(title_id), CONTEXT_BODY_TEXT_LARGE);
+  layout->AddView(title_label);
+  layout->StartRow(1, column);
+  layout->SkipColumns(1);
+
+  layout->AddView(link);
+  return new_view;
 }
 
 }  // namespace
@@ -389,7 +431,6 @@ PageInfoBubbleView::PageInfoBubbleView(
       header_(nullptr),
       separator_(nullptr),
       site_settings_view_(nullptr),
-      cookies_view_(nullptr),
       cookie_dialog_link_(nullptr),
       permissions_view_(nullptr),
       weak_factory_(this) {
@@ -541,60 +582,8 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   base::string16 label_text = l10n_util::GetPluralStringFUTF16(
       IDS_PAGE_INFO_NUM_COOKIES, total_allowed);
 
-  if (!cookie_dialog_link_) {
-    cookie_dialog_link_ = new views::Link(label_text);
-    cookie_dialog_link_->set_id(LINK_COOKIE_DIALOG);
-    cookie_dialog_link_->set_listener(this);
-  } else {
-    cookie_dialog_link_->SetText(label_text);
-  }
-
-  views::GridLayout* layout =
-      static_cast<views::GridLayout*>(cookies_view_->GetLayoutManager());
-  if (!layout) {
-    layout = new views::GridLayout(cookies_view_);
-    cookies_view_->SetLayoutManager(layout);
-
-    const int cookies_view_column = 0;
-    views::ColumnSet* column_set = layout->AddColumnSet(cookies_view_column);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                          views::GridLayout::FIXED, kPermissionIconColumnWidth,
-                          0);
-    column_set->AddPaddingColumn(0, kPermissionImageSpacing);
-    column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                          0, views::GridLayout::USE_PREF, 0, 0);
-
-    layout->AddPaddingRow(0, kCookiesViewVerticalPadding);
-
-    layout->StartRow(1, cookies_view_column);
-    PageInfoUI::PermissionInfo info;
-    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
-    info.setting = CONTENT_SETTING_ALLOW;
-    info.is_incognito =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
-            ->IsOffTheRecord();
-    views::ImageView* icon = new NonAccessibleImageView();
-    const gfx::Image& image = PageInfoUI::GetPermissionIcon(info);
-    icon->SetImage(image.ToImageSkia());
-    layout->AddView(
-        icon, 1, 2, views::GridLayout::FILL,
-        // TODO: The vertical alignment may change to CENTER once Harmony is
-        // implemented. See https://crbug.com/512442#c48
-        views::GridLayout::LEADING);
-
-    views::Label* cookies_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_TITLE_SITE_DATA),
-        CONTEXT_BODY_TEXT_LARGE);
-    layout->AddView(cookies_label);
-    layout->StartRow(1, cookies_view_column);
-    layout->SkipColumns(1);
-
-    layout->AddView(cookie_dialog_link_);
-
-    layout->AddPaddingRow(0, kCookiesViewVerticalPadding);
-  }
-
-  layout->Layout(cookies_view_);
+  cookie_dialog_link_->SetText(label_text);
+  Layout();
   SizeToContents();
 }
 
@@ -683,6 +672,32 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
     if (identity_info.show_ssl_decision_revoke_button)
       header_->AddResetDecisionsLabel();
+
+    if (PageInfoUI::ShouldShowCertificateLink()) {
+      // The text of link to the Certificate Viewer varies depending on the
+      // validity of the Certificate.
+      const bool valid_identity = (identity_info.identity_status !=
+                                   PageInfo::SITE_IDENTITY_STATUS_ERROR);
+      const base::string16 link_title = l10n_util::GetStringUTF16(
+          valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
+                         : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
+
+      // Create the link to add to the Certificate Section.
+      views::Link* inspect_link = new views::Link(link_title);
+      inspect_link->set_id(LINK_CERTIFICATE_VIEWER);
+      inspect_link->set_listener(this);
+      if (valid_identity) {
+        inspect_link->SetTooltipText(l10n_util::GetStringFUTF16(
+            IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
+            base::UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
+      }
+
+      // Add the Certificate Section.
+      site_settings_view_->AddChildViewAt(
+          CreateInspectLinkSection(PageInfoUI::GetCertificateIcon(),
+                                   IDS_PAGE_INFO_CERTIFICATE, inspect_link),
+          0);
+    }
   }
 
   header_->SetDetails(security_description->details);
@@ -699,15 +714,29 @@ views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
 
-  // Add cookies view.
-  cookies_view_ = new views::View();
-  site_settings_view->AddChildView(cookies_view_);
+  // Create the link and icon for the Certificate section.
+  cookie_dialog_link_ = new views::Link(
+      l10n_util::GetPluralStringFUTF16(IDS_PAGE_INFO_NUM_COOKIES, 0));
+  cookie_dialog_link_->set_id(LINK_COOKIE_DIALOG);
+  cookie_dialog_link_->set_listener(this);
+
+  PageInfoUI::PermissionInfo info;
+  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  info.setting = CONTENT_SETTING_ALLOW;
+  info.is_incognito =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+          ->IsOffTheRecord();
+
+  const gfx::ImageSkia icon = PageInfoUI::GetPermissionIcon(info).AsImageSkia();
+  // Add the Cookies section.
+  site_settings_view->AddChildView(CreateInspectLinkSection(
+      icon, IDS_PAGE_INFO_TITLE_SITE_DATA, cookie_dialog_link_));
 
   return site_settings_view;
 }
 
 void PageInfoBubbleView::HandleLinkClickedAsync(views::Link* source) {
-  // Both switch cases require accessing web_contents(), so we check it here.
+  // All switch cases require accessing web_contents(), so we check it here.
   if (web_contents() == nullptr || web_contents()->IsBeingDestroyed())
     return;
   switch (source->id()) {
@@ -729,6 +758,15 @@ void PageInfoBubbleView::HandleLinkClickedAsync(views::Link* source) {
           PageInfo::PAGE_INFO_COOKIES_DIALOG_OPENED);
       new CollectedCookiesViews(web_contents());
       break;
+    case LINK_CERTIFICATE_VIEWER: {
+      gfx::NativeWindow top_window = web_contents()->GetTopLevelNativeWindow();
+      if (certificate_ && top_window) {
+        presenter_->RecordPageInfoAction(
+            PageInfo::PAGE_INFO_CERTIFICATE_DIALOG_OPENED);
+        ShowCertificateViewer(web_contents(), top_window, certificate_.get());
+      }
+      break;
+    }
     default:
       NOTREACHED();
   }

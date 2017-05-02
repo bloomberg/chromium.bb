@@ -17,6 +17,7 @@
 
 class LocationBarDecoration;
 class PageInfoUIBridge;
+@class InspectLinkView;
 
 namespace content {
 class WebContents;
@@ -31,7 +32,7 @@ struct SecurityInfo;
 }  // namespace security_state
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
-// are displayed when the user clicks the favicon or security lock icon.
+// are displayed when the user clicks the omnibox security indicator icon.
 @interface PageInfoBubbleController : BaseBubbleController {
  @private
   content::WebContents* webContents_;
@@ -63,7 +64,7 @@ struct SecurityInfo;
   NSTextField* resetDecisionsField_;
 
   // The link button for revoking certificate decisions.
-  // This link only shows when there is an acrive certificate exception.
+  // This link only shows when there is an active certificate exception.
   NSButton* resetDecisionsButton_;
 
   // The server certificate from the identity info. This should always be
@@ -76,8 +77,11 @@ struct SecurityInfo;
   // Container for the site settings section.
   NSView* siteSettingsSectionView_;
 
+  // Container for certificate info in the site settings section.
+  InspectLinkView* certificateView_;
+
   // Container for cookies info in the site settings section.
-  NSView* cookiesView_;
+  InspectLinkView* cookiesView_;
 
   // Container for permission info in the site settings section.
   NSView* permissionsView_;

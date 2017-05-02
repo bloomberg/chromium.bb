@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -142,9 +143,6 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   // be alive to finish handling the mouse or keyboard click.
   void HandleLinkClickedAsync(views::Link* source);
 
-  // Whether DevTools is disabled for the relevant profile.
-  bool is_devtools_disabled_;
-
   // The presenter that controls the Page Info UI.
   std::unique_ptr<PageInfo> presenter_;
 
@@ -159,13 +157,12 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   // The separator between the header and the site settings view.
   views::Separator* separator_;
 
-  // The view that contains the cookie and permissions sections.
+  // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_;
-  // The view that contains the contents of the "Cookies" part of the site
-  // settings view.
-  views::View* cookies_view_;
+
   // The link that opens the "Cookies" dialog.
   views::Link* cookie_dialog_link_;
+
   // The view that contains the "Permissions" table of the site settings view.
   views::View* permissions_view_;
 

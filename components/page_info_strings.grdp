@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+
   <!-- Summary strings -->
   <message name="IDS_PAGEINFO_SECURE_SUMMARY" desc="A short summary phrase at the top of the Page Info bubble (which shows when you click the lock icon) that indicates that the connection to the current website is secure.">
     Secure connection
@@ -111,6 +112,20 @@
       Certificate Information
     </message>
   </if>
+
+  <!-- Certificate Viewer link -->
+  <message name="IDS_PAGE_INFO_CERTIFICATE" desc="Title of the certificate area in the Page Info bubble, shown when a HTTPS site is loaded.">
+    Certificate
+  </message>
+  <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_LINK" desc="This appears in the Page Info bubble when a HTTPS site is loaded with a valid certificate. Text of the link that launches the Certificate Viewer.">
+    Valid
+  </message>
+  <message name="IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK" desc="This appears in the Page Info bubble when a HTTPS site is loaded with an invalid certificate, e.g. https://wrong.host.badssl.com/. Text of the link that launches the Certificate Viewer.">
+    Invalid
+  </message>
+  <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_CERTIFICATE_VALID_LINK">
+    Issued by <ph name="ISSUER">$1<ex>Let's Encrypt X3</ex></ph>
+  </message>
 
   <!-- Content settings strings -->
   <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED_BY_POLICY" desc="The label used underneath a permission listed in the Page Info bubble if the permission was explicitly allowed by the user's enterprise policy.">
