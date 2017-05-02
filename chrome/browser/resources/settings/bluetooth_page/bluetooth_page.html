@@ -39,13 +39,12 @@
                 aria-describedby="bluetoothSecondary">
             </button>
           </template>
-          <div class="secondary-action">
-            <paper-toggle-button id="enableBluetooth"
-                checked="{{bluetoothToggleState_}}"
-                disabled$="[[bluetoothToggleDisabled_]]" on-tap="stopTap_"
-                aria-label="$i18n{bluetoothToggleA11yLabel}">
-            </paper-toggle-button>
-          </div>
+          <div class="separator"></div>
+          <paper-toggle-button id="enableBluetooth"
+              checked="{{bluetoothToggleState_}}"
+              disabled$="[[bluetoothToggleDisabled_]]" on-tap="stopTap_"
+              aria-label="$i18n{bluetoothToggleA11yLabel}">
+          </paper-toggle-button>
         </div>
       </neon-animatable>
 

@@ -320,29 +320,6 @@
         outline: none;
       }
 
-      /* TODO(dschuyler): replace with .separator.
-       * The secondary-action wraps a clickable sub-area of a .settings-box.
-       * Here is an example with and without a secondary action box:
-       *
-       *  +-------------------------------------------------------+
-       *  | Main action area .settings-box    | .secondary-action |
-       *  +-------------------------------------------------------+
-       *  | Another setting-box without a secondary-action        |
-       *  +-------------------------------------------------------+ */
-      :-webkit-any(.settings-box, .list-item) .secondary-action {
-        -webkit-border-start: var(--settings-separator-line);
-        -webkit-margin-start: 20px;
-        -webkit-padding-start: 20px;
-        align-items: center;
-        display: flex;
-        flex-shrink: 0;
-        height: 36px;
-      }
-
-      :-webkit-any(.settings-box, .list-item).two-line .secondary-action {
-        height: 46px;
-      }
-
       /* Helper for a list frame to automatically avoid the separator line. */
       .vertical-list > *:not(:first-of-type) {
         border-top: var(--settings-separator-line);
