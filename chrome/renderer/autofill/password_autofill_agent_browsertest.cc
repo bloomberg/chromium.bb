@@ -2712,4 +2712,32 @@ TEST_F(PasswordAutofillAgentTest, InPageNavigationSubmissionUsernameIsEmpty) {
             fake_driver_.password_form_inpage_navigation()->password_value);
 }
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+// Verify CheckSafeBrowsingReputation() is called when user starts filling
+// username or password field, and that this function is only called once.
+TEST_F(PasswordAutofillAgentTest,
+       CheckSafeBrowsingReputationWhenUserStartsFillingUsernamePassword) {
+  ASSERT_EQ(0, fake_driver_.called_check_safe_browsing_reputation_cnt());
+  // Simulate a click on password field to set its on focus,
+  // CheckSafeBrowsingReputation() should be called.
+  SimulateElementClick(kPasswordName);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
+
+  // Subsequent editing will not trigger CheckSafeBrowsingReputation.
+  SimulatePasswordChange("modify");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
+  SimulateElementClick(kUsernameName);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_driver_.called_check_safe_browsing_reputation_cnt());
+
+  // Navigate to another page and click on username field,
+  // CheckSafeBrowsingReputation() should be triggered again.
+  LoadHTML(kFormHTML);
+  SimulateElementClick(kUsernameName);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, fake_driver_.called_check_safe_browsing_reputation_cnt());
+}
+#endif
 }  // namespace autofill

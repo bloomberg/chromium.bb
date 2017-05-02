@@ -19,13 +19,15 @@ namespace safe_browsing {
 
 PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
+    const GURL& password_form_action,
+    const GURL& password_form_frame_url,
     LoginReputationClientRequest::TriggerType type,
-    std::unique_ptr<PasswordProtectionFrameList> password_frames,
     PasswordProtectionService* pps,
     int request_timeout_in_ms)
     : main_frame_url_(main_frame_url),
+      password_form_action_(password_form_action),
+      password_form_frame_url_(password_form_frame_url),
       request_type_(type),
-      password_frames_(std::move(password_frames)),
       password_protection_service_(pps),
       database_manager_(password_protection_service_->database_manager()),
       request_timeout_in_ms_(request_timeout_in_ms),
@@ -101,13 +103,24 @@ void PasswordProtectionRequest::FillRequestProto() {
       request_proto_->add_frames();
   main_frame->set_url(main_frame_url_.spec());
   main_frame->set_frame_index(0 /* main frame */);
-  main_frame->set_has_password_field(true);
   password_protection_service_->FillReferrerChain(
       main_frame_url_, -1 /* tab id not available */, main_frame);
-
-  // TODO(jialiul): Fill more password form related info based on
-  // |password_frame_map_| when Safe Browsing backend is ready to handle these
-  // pieces of information.
+  LoginReputationClientRequest::Frame::Form* password_form;
+  if (password_form_frame_url_ == main_frame_url_) {
+    main_frame->set_has_password_field(true);
+    password_form = main_frame->add_forms();
+  } else {
+    LoginReputationClientRequest::Frame* password_frame =
+        request_proto_->add_frames();
+    password_frame->set_url(password_form_frame_url_.spec());
+    password_frame->set_has_password_field(true);
+    // TODO(jialiul): Add referrer chain for subframes later.
+    password_form = password_frame->add_forms();
+  }
+  password_form->set_action_url(password_form_action_.spec());
+  password_form->set_has_password_field(true);
+  // TODO(jialiul): Fill more frame specific info when Safe Browsing backend
+  // is ready to handle these pieces of information.
 }
 
 void PasswordProtectionRequest::SendRequest() {

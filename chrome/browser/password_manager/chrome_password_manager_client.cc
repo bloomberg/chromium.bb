@@ -65,7 +65,7 @@
 #include "net/base/url_util.h"
 #include "third_party/re2/src/re2/re2.h"
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
@@ -409,6 +409,17 @@ ChromePasswordManagerClient::GetPasswordProtectionService() const {
         ->GetPasswordProtectionService(profile_);
   }
   return nullptr;
+}
+
+void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
+    const GURL& form_action,
+    const GURL& frame_url) {
+  safe_browsing::PasswordProtectionService* pps =
+      GetPasswordProtectionService();
+  if (pps) {
+    pps->MaybeStartLowReputationRequest(GetMainFrameURL(), form_action,
+                                        frame_url);
+  }
 }
 #endif
 

@@ -69,6 +69,10 @@ safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;
 }
+
+void StubPasswordManagerClient::CheckSafeBrowsingReputation(
+    const GURL& form_action,
+    const GURL& frame_url) {}
 #endif
 
 }  // namespace password_manager

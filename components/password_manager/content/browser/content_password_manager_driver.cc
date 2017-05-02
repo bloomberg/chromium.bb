@@ -283,6 +283,14 @@ void ContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
       password_form, generation_field);
 }
 
+void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
+    const GURL& form_action,
+    const GURL& frame_url) {
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  client_->CheckSafeBrowsingReputation(form_action, frame_url);
+#endif
+}
+
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
     int key,
     base::i18n::TextDirection text_direction,

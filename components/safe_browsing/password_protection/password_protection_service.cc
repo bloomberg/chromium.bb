@@ -63,8 +63,6 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 
 }  // namespace
 
-PasswordProtectionFrame::~PasswordProtectionFrame() = default;
-
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -198,12 +196,13 @@ void PasswordProtectionService::CacheVerdict(
 
 void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
-    LoginReputationClientRequest::TriggerType type,
-    std::unique_ptr<PasswordProtectionFrameList> password_frames) {
+    const GURL& password_form_action,
+    const GURL& password_form_frame_url,
+    LoginReputationClientRequest::TriggerType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<PasswordProtectionRequest> request(
-      new PasswordProtectionRequest(main_frame_url, type,
-                                    std::move(password_frames), this,
+      new PasswordProtectionRequest(main_frame_url, password_form_action,
+                                    password_form_frame_url, type, this,
                                     GetRequestTimeoutInMS()));
   DCHECK(request);
   request->Start();
@@ -212,7 +211,8 @@ void PasswordProtectionService::StartRequest(
 
 void PasswordProtectionService::MaybeStartLowReputationRequest(
     const GURL& main_frame_url,
-    std::unique_ptr<PasswordProtectionFrameList> password_frames) {
+    const GURL& password_form_action,
+    const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsPingingEnabled())
     return;
@@ -222,9 +222,8 @@ void PasswordProtectionService::MaybeStartLowReputationRequest(
     return;
   }
 
-  StartRequest(main_frame_url,
-               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               std::move(password_frames));
+  StartRequest(main_frame_url, password_form_action, password_form_frame_url,
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 }
 
 void PasswordProtectionService::RequestFinished(

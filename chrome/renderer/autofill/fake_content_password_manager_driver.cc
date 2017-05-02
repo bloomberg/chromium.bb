@@ -78,3 +78,9 @@ void FakeContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
   called_save_generation_field_ = true;
   save_generation_field_ = generation_field;
 }
+
+void FakeContentPasswordManagerDriver::CheckSafeBrowsingReputation(
+    const GURL& form_action,
+    const GURL& frame_url) {
+  called_check_safe_browsing_reputation_cnt_++;
+}

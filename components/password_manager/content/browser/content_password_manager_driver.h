@@ -109,6 +109,8 @@ class ContentPasswordManagerDriver
   void SaveGenerationFieldDetectedByClassifier(
       const autofill::PasswordForm& password_form,
       const base::string16& generation_field) override;
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
 
   void OnPasswordFormsParsedNoRenderCheck(
       const std::vector<autofill::PasswordForm>& forms);

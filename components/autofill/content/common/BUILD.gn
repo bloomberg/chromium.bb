@@ -28,6 +28,7 @@ mojom("mojo_interfaces") {
     ":mojo_types",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
+    "//url/mojo:url_mojom_gurl",
   ]
 }
 

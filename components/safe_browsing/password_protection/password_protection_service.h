@@ -32,25 +32,6 @@ namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
 
-using PasswordFormList = google::protobuf::RepeatedPtrField<
-    LoginReputationClientRequest::Frame::Form>;
-
-// The PasswordProtectionFrame struct encapsulates information about a render
-// frame that has password form(s).
-struct PasswordProtectionFrame {
-  int render_frame_routing_id;
-  int parent_frame_routing_id;
-  GURL last_committed_url;
-  std::unique_ptr<PasswordFormList> password_forms;
-
-  PasswordProtectionFrame() = delete;
-
-  ~PasswordProtectionFrame();
-};
-
-using PasswordProtectionFrameList =
-    std::vector<std::unique_ptr<PasswordProtectionFrame>>;
-
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
 // associated with a unique HistoryService instance and a unique
@@ -89,14 +70,15 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
-  void StartRequest(
-      const GURL& main_frame_url,
-      LoginReputationClientRequest::TriggerType type,
-      std::unique_ptr<PasswordProtectionFrameList> password_frames);
+  void StartRequest(const GURL& main_frame_url,
+                    const GURL& password_form_action,
+                    const GURL& password_form_frame_url,
+                    LoginReputationClientRequest::TriggerType type);
 
-  void MaybeStartLowReputationRequest(
+  virtual void MaybeStartLowReputationRequest(
       const GURL& main_frame_url,
-      std::unique_ptr<PasswordProtectionFrameList> password_frames);
+      const GURL& password_form_action,
+      const GURL& password_form_frame_url);
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 

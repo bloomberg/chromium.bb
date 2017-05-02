@@ -88,9 +88,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool DidClearAutofillSelection(
       const blink::WebFormControlElement& control_element);
 
-  // If the form is non-secure, show the "Not Secure" warning on username and
-  // password input fields.
+  // Returns whether a "Login not secure" warning should be shown on the input
+  // field. This is true if the feature is enabled and if the form is
+  // non-secure.
   bool ShouldShowNotSecureWarning(const blink::WebInputElement& element);
+
+  // Returns whether the element is a username or password textfield.
+  bool IsUsernameOrPasswordField(const blink::WebInputElement& element);
 
   // Shows an Autofill popup with username suggestions for |element|. If
   // |show_all| is |true|, will show all possible suggestions for that element,
@@ -285,6 +289,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // True indicates that a request for credentials has been sent to the store.
   bool sent_request_to_store_;
+
+  // True indicates that a safe browsing reputation check has been triggered.
+  bool checked_safe_browsing_reputation_;
 
   // Records the username typed before suggestions preview.
   base::string16 username_query_prefix_;
