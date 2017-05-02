@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
@@ -19,6 +21,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -88,6 +92,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** A handle to the bottom sheet. */
     private BottomSheet mBottomSheet;
 
+    /** A handle to the expand button that Chrome Home may or may not use. */
+    private TintedImageButton mExpandButton;
+
     /**
      * Whether the end toolbar buttons should be hidden regardless of whether the URL bar is
      * focused.
@@ -101,6 +108,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     /** The toolbar handle view that indicates the toolbar can be pulled upward. */
     private ImageView mToolbarHandleView;
+
+    /** Whether or not the toolbar handle should be used. */
+    private boolean mUseToolbarHandle;
 
     /**
      * Constructs a BottomToolbarPhone object.
@@ -116,6 +126,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 context.getResources(), R.drawable.toolbar_handle_light);
         mLocationBarVerticalMargin =
                 getResources().getDimensionPixelOffset(R.dimen.bottom_location_bar_vertical_margin);
+        mUseToolbarHandle = true;
     }
 
     /**
@@ -123,6 +134,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
      * @param useLightDrawable If the handle color should be light.
      */
     public void updateHandleTint(boolean useLightDrawable) {
+        if (!mUseToolbarHandle) return;
         mToolbarHandleView.setImageDrawable(useLightDrawable ? mHandleLight : mHandleDark);
     }
 
@@ -207,12 +219,42 @@ public class BottomToolbarPhone extends ToolbarPhone {
      *         correctly offset them from the handle that sits above them.
      */
     private int getExtraTopMargin() {
+        if (!mUseToolbarHandle) return 0;
         return getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_top_margin);
+    }
+
+    @Override
+    protected int getBoundsAfterAccountingForLeftButton() {
+        int padding = super.getBoundsAfterAccountingForLeftButton();
+        if (!mUseToolbarHandle && mExpandButton.getVisibility() != GONE) {
+            padding = mExpandButton.getMeasuredWidth();
+        }
+        return padding;
+    }
+
+    @Override
+    public void updateButtonVisibility() {
+        super.updateButtonVisibility();
+        if (!mUseToolbarHandle) {
+            mExpandButton.setVisibility(
+                    urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
+        }
+    }
+
+    @Override
+    protected void updateUrlExpansionAnimation() {
+        super.updateUrlExpansionAnimation();
+
+        if (!mUseToolbarHandle) {
+            mExpandButton.setVisibility(mShouldHideEndToolbarButtons ? View.GONE : View.VISIBLE);
+        }
     }
 
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
+
+        mExpandButton = (TintedImageButton) findViewById(R.id.expand_sheet_button);
 
         // Add extra top margin to the URL bar to compensate for the change to location bar's
         // vertical margin in the constructor.
@@ -223,6 +265,14 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // visibility from changing during transitions.
         mBrowsingModeViews.remove(mLocationBar);
 
+        updateToolbarTopMargin();
+    }
+
+    /**
+     * Update the top margin of all the components inside the toolbar. If the toolbar handle is
+     * being used, extra margin is added.
+     */
+    private void updateToolbarTopMargin() {
         // Programmatically apply a top margin to all the children of the toolbar container. This
         // is done so the view hierarchy does not need to be changed.
         int topMarginForControls = getExtraTopMargin();
@@ -244,10 +294,42 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        // The toolbar handle is part of the control container so it can draw on top of the other
-        // toolbar views. Get the root view and search for the handle.
+        // The toolbar handle is part of the control container so it can draw on top of the
+        // other toolbar views, this way there is only a single handle instead of each having its
+        // own. Get the root view and search for the handle.
         mToolbarHandleView = (ImageView) getRootView().findViewById(R.id.toolbar_handle);
         mToolbarHandleView.setImageDrawable(mHandleDark);
+    }
+
+    @Override
+    public void onNativeLibraryReady() {
+        super.onNativeLibraryReady();
+
+        mUseToolbarHandle = !FeatureUtilities.isChromeHomeExpandButtonEnabled();
+
+        if (!mUseToolbarHandle) initExpandButton();
+    }
+
+    /**
+     * Initialize the "expand" button if it is being used.
+     */
+    private void initExpandButton() {
+        mLocationBarVerticalMargin =
+                getResources().getDimensionPixelOffset(R.dimen.location_bar_vertical_margin);
+
+        mToolbarHandleView.setVisibility(View.GONE);
+
+        mExpandButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mBottomSheet != null) mBottomSheet.onExpandButtonPressed();
+            }
+        });
+
+        mExpandButton.setVisibility(View.VISIBLE);
+        mBrowsingModeViews.add(mExpandButton);
+
+        updateToolbarTopMargin();
     }
 
     @Override
@@ -256,12 +338,17 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         // TODO(mdjones): Creating a new tab from the tab switcher skips the
         // drawTabSwitcherFadeAnimation which would otherwise make this line unnecessary.
-        if (mTabSwitcherState == STATIC_TAB) mToolbarHandleView.setAlpha(1f);
+        if (mTabSwitcherState == STATIC_TAB && mUseToolbarHandle) mToolbarHandleView.setAlpha(1f);
 
         // The tab switcher's background color should not affect the toolbar handle; it should only
         // switch color based on the static tab's theme color. This is done so fade in/out looks
         // correct.
-        mToolbarHandleView.setImageDrawable(isLightTheme() ? mHandleDark : mHandleLight);
+        if (mUseToolbarHandle) {
+            mToolbarHandleView.setImageDrawable(isLightTheme() ? mHandleDark : mHandleLight);
+        } else {
+            ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+            mExpandButton.setTint(tint);
+        }
     }
 
     @Override
@@ -282,7 +369,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mNewTabButton.setAlpha(progress);
 
         mLocationBar.setAlpha(1f - progress);
-        mToolbarHandleView.setAlpha(1f - progress);
+        if (mUseToolbarHandle) mToolbarHandleView.setAlpha(1f - progress);
 
         int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
 
@@ -307,7 +394,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
         // Intentionally overridden to block everything but the compositor screen shot. Otherwise
         // the toolbar in Chrome Home does not have an animation overlay component.
-        if (mTextureCaptureMode) super.drawTabSwitcherAnimationOverlay(canvas, 0f);
+        if (mTextureCaptureMode) {
+            super.drawTabSwitcherAnimationOverlay(canvas, 0f);
+            if (!mUseToolbarHandle && mExpandButton.getVisibility() != View.GONE) {
+                drawChild(canvas, mExpandButton, SystemClock.uptimeMillis());
+            }
+        }
     }
 
     @Override

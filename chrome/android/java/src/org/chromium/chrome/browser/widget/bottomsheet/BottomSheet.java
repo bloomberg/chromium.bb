@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
@@ -380,6 +381,14 @@ public class BottomSheet
      */
     public void setTouchEnabled(boolean enabled) {
         mIsTouchEnabled = enabled;
+    }
+
+    /**
+     * A notification that the "expand" button for the bottom sheet has been pressed.
+     */
+    public void onExpandButtonPressed() {
+        mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_EXPAND_BUTTON);
+        setSheetState(BottomSheet.SHEET_STATE_HALF, true);
     }
 
     @Override
@@ -1146,10 +1155,16 @@ public class BottomSheet
                 && (mTabModelSelector.getCurrentTab() == null
                            || mTabModelSelector.getCurrentTab().getActivity().isInOverviewMode());
 
+        // If the expand button is enabled, do not allow swiping when the sheet is in the peeking
+        // position.
+        boolean blockPeekingSwipes = FeatureUtilities.isChromeHomeExpandButtonEnabled()
+                && getSheetState() == SHEET_STATE_PEEK;
+
         if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
-        return !isToolbarAndroidViewHidden() && !isInOverviewMode && !isFindInPageVisible;
+        return !isToolbarAndroidViewHidden() && !isInOverviewMode && !isFindInPageVisible
+                && !blockPeekingSwipes;
     }
 
     private void showHelpBubbleIfNecessary() {

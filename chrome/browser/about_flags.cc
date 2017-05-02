@@ -1640,6 +1640,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-home", flag_descriptions::kChromeHomeName,
      flag_descriptions::kChromeHomeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeFeature)},
+    {"enable-chrome-home-expand-button",
+     flag_descriptions::kChromeHomeExpandButtonName,
+     flag_descriptions::kChromeHomeExpandButtonDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeHomeExpandButton)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-iph-demo-mode", flag_descriptions::kEnableIphDemoMode,

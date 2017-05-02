@@ -265,6 +265,13 @@ public class FeatureUtilities {
         return sChromeHomeEnabled;
     }
 
+    /**
+     * @return Whether or not the expand button for Chrome Home is enabled.
+     */
+    public static boolean isChromeHomeExpandButtonEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
