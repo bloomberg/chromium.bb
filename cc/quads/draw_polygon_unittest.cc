@@ -169,7 +169,7 @@ TEST(DrawPolygonConstructionTest, ManyVertexNormal) {
   EXPECT_NORMAL(polygon_c, 0.0f, 0.0f, 1.0f);
 
   CREATE_TEST_DRAW_FORWARD_POLYGON(polygon_d, vertices_d, 4);
-  EXPECT_NORMAL(polygon_c, 0.0f, 0.0f, 1.0f);
+  EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
 }
 
 // A simple rect being transformed.
