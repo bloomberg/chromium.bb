@@ -353,12 +353,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kGenericSensor))
     WebRuntimeFeatures::EnableGenericSensor(true);
 
-  // Enable features which VrShell depends on.
-  if (base::FeatureList::IsEnabled(features::kVrShell)) {
-    WebRuntimeFeatures::EnableGamepadExtensions(true);
-    WebRuntimeFeatures::EnableWebVR(true);
-  }
-
   if (base::FeatureList::IsEnabled(features::kLoadingWithMojo))
     WebRuntimeFeatures::EnableLoadingWithMojo(true);
 
