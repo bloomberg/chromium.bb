@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/modules/module_registry_observer.h"
@@ -139,7 +140,7 @@ ModuleRegistry* ModuleRegistry::From(v8::Local<Context> context) {
     // PerContextData takes ownership of ModuleRegistryData.
     registry_data = new ModuleRegistryData;
     registry_data->registry.reset(new ModuleRegistry(context->GetIsolate()));
-    data->SetUserData(kModuleRegistryKey, registry_data);
+    data->SetUserData(kModuleRegistryKey, base::WrapUnique(registry_data));
   }
   return registry_data->registry.get();
 }

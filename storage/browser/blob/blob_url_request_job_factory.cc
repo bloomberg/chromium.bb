@@ -39,7 +39,7 @@ std::unique_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
 void BlobProtocolHandler::SetRequestedBlobDataHandle(
     net::URLRequest* request,
     std::unique_ptr<BlobDataHandle> blob_data_handle) {
-  request->SetUserData(&kUserDataKey, blob_data_handle.release());
+  request->SetUserData(&kUserDataKey, std::move(blob_data_handle));
 }
 
 // static
