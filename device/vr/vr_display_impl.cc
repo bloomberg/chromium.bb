@@ -45,11 +45,12 @@ void VRDisplayImpl::OnFocus() {
   client_->OnFocus();
 }
 
-void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason) {
+void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason,
+                               const base::Callback<void(bool)>& on_handled) {
   VRDeviceManager* manager = VRDeviceManager::GetInstance();
   if (!manager->IsMostRecentlyListeningForActivate(service_))
     return;
-  client_->OnActivate(reason);
+  client_->OnActivate(reason, on_handled);
 }
 
 void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {

@@ -69,9 +69,10 @@ void VRDevice::OnFocus() {
     display->OnFocus();
 }
 
-void VRDevice::OnActivate(mojom::VRDisplayEventReason reason) {
+void VRDevice::OnActivate(mojom::VRDisplayEventReason reason,
+                          const base::Callback<void(bool)>& on_handled) {
   for (auto* display : displays_)
-    display->OnActivate(reason);
+    display->OnActivate(reason, on_handled);
 }
 
 void VRDevice::OnDeactivate(mojom::VRDisplayEventReason reason) {

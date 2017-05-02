@@ -68,6 +68,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   void CreateNonPresentingDelegate();
 
+  void OnActivateDisplayHandled(bool present_requested);
+
   std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   device::GvrDeviceProvider* device_provider_ = nullptr;
@@ -77,6 +79,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   double interval_seconds_ = 0;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
   bool pending_successful_present_request_ = false;
+
+  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

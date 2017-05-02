@@ -438,11 +438,15 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             nativeDisplayActivate(mNativeVrShellDelegate);
         }
 
-        enterVr();
+        // If the page is listening for vrdisplayactivate we assume it wants to request
+        // presentation. Go into WebVR mode tentatively. If the page doesn't request presentation
+        // in the vrdisplayactivate handler we will exit presentation later.
+        enterVr(mListeningForWebVrActivateBeforePause && !mRequestedWebVr);
+
         return true;
     }
 
-    private void enterVr() {
+    private void enterVr(final boolean tentativeWebVrMode) {
         // We can't enter VR before the application resumes, or we encounter bizarre crashes
         // related to gpu surfaces.
         assert !mPaused;
@@ -453,7 +457,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    enterVr();
+                    enterVr(tentativeWebVrMode);
                 }
             });
             return;
@@ -469,8 +473,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         addVrViews();
-        mVrShell.initializeNative(mActivity.getActivityTab(), mRequestedWebVr);
-        mVrShell.setWebVrModeEnabled(mRequestedWebVr);
+        mVrShell.initializeNative(
+                mActivity.getActivityTab(), mRequestedWebVr || tentativeWebVrMode);
+        mVrShell.setWebVrModeEnabled(mRequestedWebVr || tentativeWebVrMode);
 
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
         // properly.
@@ -564,7 +569,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mVrSupportLevel == VR_CARDBOARD || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
             // Avoid using launchInVr which would trigger DON flow regardless current viewer type
             // due to the lack of support for unexported activities.
-            enterVr();
+            enterVr(false);
         } else {
             // LANDSCAPE orientation is needed before we can safely enter VR. DON can make sure that
             // the device is at LANDSCAPE orientation once it is finished. So here we use SENSOR to
