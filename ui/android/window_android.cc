@@ -278,6 +278,11 @@ WindowAndroid* WindowAndroid::GetWindowAndroid() const {
   return const_cast<WindowAndroid*>(this);
 }
 
+ScopedJavaLocalRef<jobject> WindowAndroid::GetWindowToken() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_WindowAndroid_getWindowToken(env, GetJavaObject());
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

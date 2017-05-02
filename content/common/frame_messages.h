@@ -999,6 +999,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SaveImageAt,
                     int /* x */,
                     int /* y */)
 
+// Notify the renderer of our overlay routing token.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetOverlayRoutingToken,
+                    base::UnguessableToken /* routing_token */)
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -1623,6 +1627,10 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
 
 // Sends hittesting data needed to perform hittesting on the browser process.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
+
+// Request that the host send its overlay routing token for this render frame
+// via SetOverlayRoutingToken.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // FrameMsg_RunFileChooserResponse message.

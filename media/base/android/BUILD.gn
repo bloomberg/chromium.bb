@@ -59,6 +59,7 @@ if (is_android) {
       "media_service_throttler.cc",
       "media_service_throttler.h",
       "media_url_interceptor.h",
+      "routing_token_callback.h",
       "stream_texture_wrapper.h",
     ]
     configs += [

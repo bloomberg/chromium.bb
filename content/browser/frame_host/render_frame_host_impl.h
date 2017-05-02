@@ -19,9 +19,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
@@ -134,6 +136,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
   static RenderFrameHostImpl* FromAXTreeID(
       ui::AXTreeIDRegistry::AXTreeID ax_tree_id);
+  static RenderFrameHostImpl* FromOverlayRoutingToken(
+      const base::UnguessableToken& token);
 
   ~RenderFrameHostImpl() override;
 
@@ -624,6 +628,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
 
+  // Returns an unguessable token for this RFHI.  This provides a temporary way
+  // to identify a RenderFrameHost that's compatible with IPC.  Else, one needs
+  // to send pid + RoutingID, but one cannot send pid.  One can get it from the
+  // channel, but this makes it much harder to get wrong.
+  // Once media switches to mojo, we should be able to remove this in favor of
+  // sending a mojo overlay factory.
+  const base::UnguessableToken& GetOverlayRoutingToken();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -783,6 +795,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ForwardGetInterfaceToRenderFrame(const std::string& interface_name,
                                         mojo::ScopedMessagePipeHandle pipe);
 #endif
+
+  // Called when the frame would like an overlay routing token.  This will
+  // create one if needed.  Either way, it will send it to the frame.
+  void OnRequestOverlayRoutingToken();
+
   void OnShowCreatedWindow(int pending_widget_routing_id,
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
@@ -1184,6 +1201,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
+
+  // IPC-friendly token that represents this host for AndroidOverlays, if we
+  // have created one yet.
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

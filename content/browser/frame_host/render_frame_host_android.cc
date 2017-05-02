@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_host_android.h"
 
 #include "base/android/jni_string.h"
+#include "base/android/unguessable_token_android.h"
 #include "base/logging.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -62,6 +63,14 @@ ScopedJavaLocalRef<jstring> RenderFrameHostAndroid::GetLastCommittedURL(
     const JavaParamRef<jobject>& obj) const {
   return ConvertUTF8ToJavaString(
       env, render_frame_host_->GetLastCommittedURL().spec());
+}
+
+ScopedJavaLocalRef<jobject>
+RenderFrameHostAndroid::GetAndroidOverlayRoutingToken(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
+  return base::android::UnguessableTokenAndroid::Create(
+      env, render_frame_host_->GetOverlayRoutingToken());
 }
 
 }  // namespace content

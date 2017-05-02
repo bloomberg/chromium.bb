@@ -104,6 +104,14 @@ class RenderFrameImplTest : public RenderViewTest {
     return frame_->render_widget_.get();
   }
 
+#if defined(OS_ANDROID)
+  void ReceiveOverlayRoutingToken(const base::UnguessableToken& token) {
+    overlay_routing_token_ = token;
+  }
+
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
+#endif
+
  private:
   RenderFrameImpl* frame_;
   FakeCompositorDependencies compositor_deps_;
@@ -369,5 +377,53 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
   FrameMsg_Delete delete_message(0);
   frame()->OnMessageReceived(delete_message);
 }
+
+#if defined(OS_ANDROID)
+// Verify that RFI defers token requests if the token hasn't arrived yet.
+TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsLater) {
+  ASSERT_FALSE(overlay_routing_token_.has_value());
+
+  frame()->RequestOverlayRoutingToken(
+      base::Bind(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                 base::Unretained(this)));
+  ASSERT_FALSE(overlay_routing_token_.has_value());
+
+  // The host should receive a request for it sent to the frame.
+  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_RequestOverlayRoutingToken::ID);
+  EXPECT_TRUE(msg);
+
+  // Send a token.
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  FrameMsg_SetOverlayRoutingToken token_message(0, token);
+  frame()->OnMessageReceived(token_message);
+
+  ProcessPendingMessages();
+  ASSERT_TRUE(overlay_routing_token_.has_value());
+  ASSERT_EQ(overlay_routing_token_.value(), token);
+}
+
+// Verify that RFI sends tokens if they're already available.
+TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
+  ASSERT_FALSE(overlay_routing_token_.has_value());
+  base::UnguessableToken token = base::UnguessableToken::Create();
+  FrameMsg_SetOverlayRoutingToken token_message(0, token);
+  frame()->OnMessageReceived(token_message);
+
+  // The frame now has a token.  We don't care if it sends the token before
+  // returning or posts a message.
+  ProcessPendingMessages();
+  frame()->RequestOverlayRoutingToken(
+      base::Bind(&RenderFrameImplTest::ReceiveOverlayRoutingToken,
+                 base::Unretained(this)));
+  ASSERT_TRUE(overlay_routing_token_.has_value());
+  ASSERT_EQ(overlay_routing_token_.value(), token);
+
+  // Since the token already arrived, a request for it shouldn't be sent.
+  const IPC::Message* msg = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_RequestOverlayRoutingToken::ID);
+  EXPECT_FALSE(msg);
+}
+#endif
 
 }  // namespace

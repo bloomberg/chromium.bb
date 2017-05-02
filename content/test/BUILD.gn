@@ -226,6 +226,8 @@ static_library("test_support") {
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
+    "//media/mojo/clients",
+    "//media/mojo/interfaces",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
   ]

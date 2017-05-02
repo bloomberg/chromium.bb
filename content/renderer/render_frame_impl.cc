@@ -1629,6 +1629,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
                         OnBlinkFeatureUsageReport)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
+                        OnSetOverlayRoutingToken)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -5922,6 +5924,28 @@ void RenderFrameImpl::OnFindMatchRects(int current_version) {
                                              match_rects, active_rect));
 }
 #endif
+
+void RenderFrameImpl::OnSetOverlayRoutingToken(
+    const base::UnguessableToken& token) {
+  overlay_routing_token_ = token;
+  for (const auto& cb : pending_routing_token_callbacks_)
+    cb.Run(overlay_routing_token_.value());
+  pending_routing_token_callbacks_.clear();
+}
+
+void RenderFrameImpl::RequestOverlayRoutingToken(
+    const media::RoutingTokenCallback& callback) {
+  if (overlay_routing_token_.has_value()) {
+    callback.Run(overlay_routing_token_.value());
+    return;
+  }
+
+  // Send a request to the host for the token.  We'll notify |callback| when it
+  // arrives later.
+  Send(new FrameHostMsg_RequestOverlayRoutingToken(routing_id_));
+
+  pending_routing_token_callbacks_.push_back(callback);
+}
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)

@@ -56,6 +56,9 @@ class MEDIA_EXPORT AndroidOverlay {
 
     gfx::Rect rect;
 
+    // Require a secure overlay?
+    bool secure = false;
+
     ReadyCB ready_cb;
     FailedCB failed_cb;
     DestroyedCB destroyed_cb;

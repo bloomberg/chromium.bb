@@ -41,6 +41,11 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
+  // Returns UnguessableToken.
+  base::android::ScopedJavaLocalRef<jobject> GetAndroidOverlayRoutingToken(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&) const;
+
  private:
   RenderFrameHostImpl* const render_frame_host_;
   service_manager::mojom::InterfaceProviderPtr interface_provider_ptr_;
