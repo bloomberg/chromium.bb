@@ -671,8 +671,10 @@ ProfileIOData::~ProfileIOData() {
     transport_security_state_->SetRequireCTDelegate(nullptr);
 
   // And the same for the ReportingService.
-  main_request_context_storage()->set_reporting_service(
-      std::unique_ptr<net::ReportingService>());
+  if (main_request_context_storage()) {
+    main_request_context_storage()->set_reporting_service(
+        std::unique_ptr<net::ReportingService>());
+  }
 
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
