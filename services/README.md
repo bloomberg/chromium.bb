@@ -46,6 +46,8 @@ differently, e.g. by combining them into a single package.
 
 [Servicification Homepage](https://sites.google.com/a/chromium.org/dev/servicification)
 
+[Servicification Strategies](docs/servicification.md)
+
 ## Relationship To Other Top-Level Directories
 
 Services can be thought of as integrators of library code from across the
@@ -67,3 +69,7 @@ and from other services.
 
 Please start a thread on [services-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/services-dev)
 if you want to introduce a new service.
+
+If you are servicifying existing Chromium code: Please first read the
+[servicification strategies documentation](docs/servicification.md), which
+contains information that will hopefully make your task easier.
