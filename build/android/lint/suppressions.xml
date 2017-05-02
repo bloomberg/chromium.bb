@@ -217,7 +217,7 @@ Still reading?
     <ignore regexp="org/chromium/memconsumer/ResidentService.class"/>
     <ignore regexp="org/chromium/mojo/bindings/ValidationTest.class"/>
     <!-- TODO(crbug.com/635567): Fix this properly. -->
-    <ignore regexp="third_party/android_tools/sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
+    <ignore regexp="sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
   </issue>
   <issue id="OldTargetApi">
     <ignore path="AndroidManifest.xml"/>
