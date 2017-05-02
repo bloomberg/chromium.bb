@@ -101,8 +101,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             @Override
             public void onLayoutChange(View view, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
-                addProgressBarToHierarchy();
+                if (isNativeLibraryReady() && mProgressBar.getParent() != null) {
+                    mProgressBar.initializeAnimation();
+                }
                 mProgressBar.setTopMargin(getProgressBarTopMargin());
 
                 // Since this only needs to happen once, remove this listener from the view.
@@ -217,7 +218,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     public void onNativeLibraryReady() {
         mNativeLibraryReady = true;
-        if (mProgressBar != null) mProgressBar.initializeAnimation();
+        if (mProgressBar.getParent() != null) mProgressBar.initializeAnimation();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        addProgressBarToHierarchy();
     }
 
     /**
@@ -264,8 +271,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Add the toolbar's progress bar to the view hierarchy.
      */
     protected void addProgressBarToHierarchy() {
-        if (mProgressBar == null) return;
-
         ViewGroup controlContainer =
                 (ViewGroup) getRootView().findViewById(R.id.control_container);
         int progressBarPosition = UiUtils.insertAfter(
@@ -596,9 +601,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Starts load progress.
      */
     protected void startLoadProgress() {
-        if (mProgressBar != null) {
-            mProgressBar.start();
-        }
+        mProgressBar.start();
     }
 
     /**
@@ -606,9 +609,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param progress The load progress between 0 and 1.
      */
     protected void setLoadProgress(float progress) {
-        if (mProgressBar != null) {
-            mProgressBar.setProgress(progress);
-        }
+        mProgressBar.setProgress(progress);
     }
 
     /**
@@ -617,16 +618,14 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      *                        recognize the last state.
      */
     protected void finishLoadProgress(boolean delayed) {
-        if (mProgressBar != null) {
-            mProgressBar.finish(delayed);
-        }
+        mProgressBar.finish(delayed);
     }
 
     /**
      * @return True if the progress bar is started.
      */
     protected boolean isProgressStarted() {
-        return mProgressBar != null ? mProgressBar.isStarted() : false;
+        return mProgressBar.isStarted();
     }
 
     /**
