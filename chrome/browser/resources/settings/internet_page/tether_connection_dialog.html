@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="tether-connection-dialog">
@@ -19,10 +21,6 @@
         display: flex;
       }
 
-      iron-icon {
-        --iron-icon-fill-color: var(--google-blue-500);
-      }
-
       #tether-explanation,
       #tether-carrier-warning,
       #tether-description-title {
@@ -34,34 +32,30 @@
       <div class="title">$i18n{tetherConnectionDialogTitle}</div>
       <div class="body">
         <div id="host-device-container">
-          <iron-icon icon="[[getReceptionIcon_(tetherData_)]]"></iron-icon>
+          <cr-network-icon network-state="[[networkProperties]]">
+          </cr-network-icon>
           <div id="host-device-text-container">
             <span id="host-device-text-name">
-              [[tetherData_.tetherNostDeviceName]]
+              [[getDeviceName_(networkProperties)]]
             </span>
             <span id="host-device-text-battery" class="secondary">
-              [[i18n('tetherConnectionBatteryPercentage',
-                     tetherData_.batteryPercentage)]]
+              [[getBatteryPercentageString_(networkProperties)]]
             </span>
           </div>
         </div>
         <div id="tether-explanation">
-          [[i18n('tetherConnectionExplanation', tetherData_.batteryPercentage)]]
+          [[getExplanation_(networkProperties)]]
         </div>
         <div id="tether-carrier-warning">
           $i18n{tetherConnectionCarrierWarning}
         </div>
         <div id="tether-description-title">
-          [[i18n('tetherConnectionDescriptionTitle',
-                 tetherData_.tetherNostDeviceName)]]
+          [[getDescriptionTitle_(networkProperties)]]
         </div>
         <ul>
           <li>$i18n{tetherConnectionDescriptionCellData}</li>
-          <li>
-            [[i18n('tetherConnectionDescriptionBattery',
-                   tetherData_.batteryPercentage)]]
-          </li>
-          <li hidden$="[[!tetherData_.isTetherHostCurrentlyOnWifi]]">
+          <li>[[getBatteryDescription_(networkProperties)]]</li>
+          <li hidden$="[[!shouldShowDisconnectFromWifi_(networkProperties)]]">
             $i18n{tetherConnectionDescriptionWiFi}
           </li>
         </ul>
@@ -70,7 +64,8 @@
         <paper-button class="cancel-button" on-tap="onNotNowTap_">
           $i18n{tetherConnectionNotNowButton}
         </paper-button>
-        <paper-button class="action-button" on-tap="close">
+        <paper-button id="connectButton"
+            class="action-button" on-tap="onConnectTap_">
           $i18n{tetherConnectionConnectButton}
         </paper-button>
       </div>

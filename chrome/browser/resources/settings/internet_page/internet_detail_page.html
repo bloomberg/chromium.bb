@@ -22,6 +22,7 @@
 <link rel="import" href="network_property_list.html">
 <link rel="import" href="network_proxy.html">
 <link rel="import" href="network_siminfo.html">
+<link rel="import" href="tether_connection_dialog.html">
 
 <dom-module id="settings-internet-detail-page">
   <template>
@@ -300,6 +301,12 @@
         </iron-collapse>
       </template>
     </template>
+
+    <tether-connection-dialog id="tetherDialog"
+        network-properties="[[networkProperties]]"
+        on-tether-connect="onTetherConnect_"
+        on-close="onTetherDialogClose_">
+    </tether-connection-dialog>
   </template>
   <script src="internet_detail_page.js"></script>
 </dom-module>

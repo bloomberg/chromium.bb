@@ -19,18 +19,11 @@ Polymer({
 
   properties: {
     /**
-     * The data used to display the tether connection dialog.
-     * @private {!TetherConnectionData|undefined}
+     * The current properties for the network matching |guid|.
+     * @type {!CrOnc.NetworkProperties|undefined}
      */
-    tetherData_: {
+    networkProperties: {
       type: Object,
-      // TODO(khorimoto): Remove this and use real data when available.
-      value: {
-        tetherNostDeviceName: 'Pixel XL',
-        batteryPercentage: 100,
-        connectionStrength: 4,
-        isTetherHostCurrentlyOnWifi: false
-      },
     },
   },
 
@@ -38,6 +31,8 @@ Polymer({
     var dialog = this.getDialog_();
     if (!dialog.open)
       this.getDialog_().showModal();
+
+    this.$.connectButton.focus();
   },
 
   close: function() {
@@ -60,22 +55,85 @@ Polymer({
   },
 
   /**
-   * @param {!TetherConnectionData|undefined} tetherData
+   * Fires the 'connect-tap' event.
+   * @private
+   */
+  onConnectTap_: function() {
+    this.fire('tether-connect');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network
+   *     properties.
+   * @return {boolean}
+   * @private
+   */
+  shouldShowDisconnectFromWifi_: function(networkProperties) {
+    // TODO(khorimoto): Pipe through a new network property which describes
+    // whether the tether host is currently connected to a Wi-Fi network. Return
+    // whether it is here.
+    return true;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @return {string} The battery percentage integer value converted to a
+   *     string. Note that this will not return a string with a "%" suffix.
+   * @private
+   */
+  getBatteryPercentageAsString_: function(networkProperties) {
+    var percentage = this.get('Tether.BatteryPercentage', networkProperties);
+    if (percentage === undefined)
+      return '';
+    return percentage.toString();
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
    * @return {string}
    * @private
    */
-  getReceptionIcon_: function(tetherData) {
-    var connectionStrength;
+  getDeviceName_: function(networkProperties) {
+    return CrOnc.getNetworkName(networkProperties);
+  },
 
-    if (!tetherData || !tetherData.connectionStrength) {
-      connectionStrength = 0;
-    } else {
-      // Ensure that 0 <= connectionStrength <= 4, since these values are the
-      // limits of the cellular strength icons.
-      connectionStrength =
-          Math.min(Math.max(tetherData.connectionStrength, 0), 4);
-    }
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @return {string}
+   * @private
+   */
+  getBatteryPercentageString_: function(networkProperties) {
+    return this.i18n('tetherConnectionBatteryPercentage',
+                     this.getBatteryPercentageAsString_(networkProperties));
+  },
 
-    return 'settings:signal-cellular-' + connectionStrength + '-bar';
-  }
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @return {string}
+   * @private
+   */
+  getExplanation_: function(networkProperties) {
+    return this.i18n('tetherConnectionExplanation',
+                     CrOnc.getNetworkName(networkProperties));
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @return {string}
+   * @private
+   */
+  getDescriptionTitle_: function(networkProperties) {
+    return this.i18n('tetherConnectionDescriptionTitle',
+                     CrOnc.getNetworkName(networkProperties));
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @return {string}
+   * @private
+   */
+  getBatteryDescription_: function(networkProperties) {
+    return this.i18n('tetherConnectionDescriptionBattery',
+                     this.getBatteryPercentageAsString_(networkProperties));
+  },
 });

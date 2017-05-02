@@ -149,11 +149,28 @@ Polymer({
   didSetFocus_: false,
 
   /**
+   * Set in currentRouteChanged() if the showTetherDialog URL query parameter is
+   * set to true. The dialog cannot be shown until the network properties have
+   * been fetched in networkPropertiesChanged_().
+   * @type {boolean}
+   * @private
+   */
+  shouldShowTetherDialogWhenNetworkLoaded_: false,
+
+  /**
+   * Whether the previous route was also the network detail page.
+   * @type {boolean}
+   * @private
+   */
+  wasPreviousRouteNetworkDetailPage_: false,
+
+  /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged: function(route, oldRoute) {
     if (route != settings.Route.NETWORK_DETAIL) {
       if (this.networksChangedListener_) {
         this.networkingPrivate.onNetworksChanged.removeListener(
@@ -173,6 +190,10 @@ Polymer({
       console.error('No guid specified for page:' + route);
       this.close_();
     }
+    this.shouldShowTetherDialogWhenNetworkLoaded_ =
+        queryParams.get('showTetherDialog') == 'true';
+    this.wasPreviousRouteNetworkDetailPage_ =
+        oldRoute == settings.Route.NETWORK_DETAIL;
     // Set basic networkProperties until they are loaded.
     var type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
                    queryParams.get('type')) ||
@@ -230,6 +251,11 @@ Polymer({
         button = this.$$('#buttonDiv .secondary-button:not([hidden])');
       assert(button);  // At least one button will always be visible.
       button.focus();
+    }
+
+    if (this.shouldShowTetherDialogWhenNetworkLoaded_
+        && this.networkProperties.Tether) {
+      this.showTetherDialog_();
     }
   },
 
@@ -531,9 +557,36 @@ Polymer({
     return true;
   },
 
+  /**
+   * @return {!TetherConnectionDialogElement}
+   * @private
+   */
+  getTetherDialog_: function() {
+    return /** @type {!TetherConnectionDialogElement} */ (this.$.tetherDialog);
+  },
+
   /** @private */
   onConnectTap_: function() {
-    this.networkingPrivate.startConnect(this.guid);
+    this.fire('network-connect', {networkProperties: this.networkProperties});
+  },
+
+  /** @private */
+  onTetherConnect_: function() {
+    this.getTetherDialog_().close();
+    this.fire('network-connect',
+        {networkProperties: this.networkProperties,
+         bypassConnectionDialog: true});
+  },
+
+  /** @private */
+  onTetherDialogClose_: function() {
+    // The tether dialog is opened by specifying "showTetherDialog=true" in the
+    // query params. This may lead to the previous route also being the detail
+    // page, in which case we should navigate back to the previous route here so
+    // that when the user navigates back they will navigate to the previous
+    // non-detail page.
+    if (this.wasPreviousRouteNetworkDetailPage_)
+      settings.navigateToPreviousRoute();
   },
 
   /** @private */
@@ -566,6 +619,11 @@ Polymer({
 
   /** @const {string} */
   CR_EXPAND_BUTTON_TAG: 'CR-EXPAND-BUTTON',
+
+  /** @private */
+  showTetherDialog_: function() {
+    this.getTetherDialog_().open();
+  },
 
   /**
    * @param {Event} event
