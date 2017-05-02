@@ -35,11 +35,6 @@
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [300, 300, 80, 162],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [147, 85, 1, 1],
-          "reason": "subtree"
         }
       ]
     }

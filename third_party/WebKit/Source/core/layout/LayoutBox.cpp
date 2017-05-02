@@ -1177,11 +1177,11 @@ bool LayoutBox::MapVisualRectToContainer(
     const LayoutObject* ancestor,
     VisualRectFlags visual_rect_flags,
     TransformState& transform_state) const {
-  bool preserve3D = container_object->Style()->Preserves3D();
+  bool container_preserve_3d = container_object->Style()->Preserves3D();
 
   TransformState::TransformAccumulation accumulation =
-      preserve3D ? TransformState::kAccumulateTransform
-                 : TransformState::kFlattenTransform;
+      container_preserve_3d ? TransformState::kAccumulateTransform
+                            : TransformState::kFlattenTransform;
 
   // If there is no transform on this box, adjust for container offset and
   // container scrolling, then apply container clip.
@@ -1195,32 +1195,48 @@ bool LayoutBox::MapVisualRectToContainer(
     return true;
   }
 
-  // Otherwise, apply the following:
-  // 1. Transform.
-  // 2. Container offset.
-  // 3. Container scroll offset.
-  // 4. Perspective applied by container.
-  // 5. Transform flattening.
-  // 6. Expansion for pixel snapping.
-  // 7. Container clip.
+  // Otherwise, do the following:
+  // 1. Expand for pixel snapping.
+  // 2. Generate transformation matrix combining, in this order
+  //    a) transform,
+  //    b) container offset,
+  //    c) container scroll offset,
+  //    d) perspective applied by container.
+  // 3. Apply transform Transform+flattening.
+  // 4. Apply container clip.
 
-  // 1. Transform.
+  // 1. Expand for pixel snapping.
+  // Use EnclosingBoundingBox because we cannot properly compute pixel
+  // snapping for painted elements within the transform since we don't know
+  // the desired subpixel accumulation at this point, and the transform may
+  // include a scale. This only makes sense for non-preserve3D, and it's
+  // applicable only for SPv1 paint invalidation use cases when the slow-path
+  // is used to map visual rect/location.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      !StyleRef().Preserves3D()) {
+    transform_state.Flatten();
+    transform_state.SetQuad(
+        FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
+  }
+
+  // 2. Generate transformation matrix.
+  // a) Transform.
   TransformationMatrix transform;
   if (Layer() && Layer()->Transform())
     transform.Multiply(Layer()->CurrentTransform());
 
-  // 2. Container offset.
+  // b) Container offset.
   transform.PostTranslate(container_offset.X().ToFloat(),
                           container_offset.Y().ToFloat());
 
-  // 3. Container scroll offset.
+  // c) Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
       container_object->HasOverflowClip()) {
     IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
     transform.PostTranslate(offset.Width(), offset.Height());
   }
 
-  // 4. Perspective applied by container.
+  // d) Perspective applied by container.
   if (container_object && container_object->HasLayer() &&
       container_object->Style()->HasPerspective()) {
     // Perspective on the container affects us, so we have to factor it in here.
@@ -1237,21 +1253,12 @@ bool LayoutBox::MapVisualRectToContainer(
     transform = perspective_matrix * transform;
   }
 
-  // 5. Transform flattening.
+  // 3. Apply transform and flatten.
   transform_state.ApplyTransform(transform, accumulation);
-
-  // 6. Expansion for pixel snapping.
-  // Use enclosingBoundingBox because we cannot properly compute pixel
-  // snapping for painted elements within the transform since we don't know
-  // the desired subpixel accumulation at this point, and the transform may
-  // include a scale.
-  if (!preserve3D) {
+  if (!container_preserve_3d)
     transform_state.Flatten();
-    transform_state.SetQuad(
-        FloatQuad(transform_state.LastPlanarQuad().EnclosingBoundingBox()));
-  }
 
-  // 7. Container clip.
+  // 4. Apply container clip.
   if (container_object->IsBox() && container_object != ancestor &&
       container_object->HasClipRelatedProperty()) {
     return ToLayoutBox(container_object)
