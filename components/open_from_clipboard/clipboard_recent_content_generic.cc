@@ -7,6 +7,19 @@
 #include "base/strings/string_util.h"
 #include "ui/base/clipboard/clipboard.h"
 
+namespace {
+// Schemes appropriate for suggestion by ClipboardRecentContent.
+const char* kAuthorizedSchemes[] = {
+    url::kAboutScheme, url::kDataScheme, url::kHttpScheme, url::kHttpsScheme,
+    // TODO(mpearson): add support for chrome:// URLs.  Right now the scheme
+    // for that lives in content and is accessible via
+    // GetEmbedderRepresentationOfAboutScheme() or content::kChromeUIScheme
+    // TODO(mpearson): when adding desktop support, add kFileScheme, kFtpScheme,
+    // and kGopherScheme.
+};
+
+}  // namespace
+
 ClipboardRecentContentGeneric::ClipboardRecentContentGeneric() {}
 
 bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
@@ -62,4 +75,16 @@ void ClipboardRecentContentGeneric::SuppressClipboardContent() {
   // omnibox list.  Do this by pretending the current clipboard is ancient,
   // not recent.
   ui::Clipboard::GetForCurrentThread()->ClearLastModifiedTime();
+}
+
+// static
+bool ClipboardRecentContentGeneric::IsAppropriateSuggestion(const GURL& url) {
+  // Check to make sure it's a scheme we're willing to suggest.
+  for (const auto* authorized_scheme : kAuthorizedSchemes) {
+    if (url.SchemeIs(authorized_scheme))
+      return true;
+  }
+
+  // Not a scheme we're allowed to return.
+  return false;
 }
