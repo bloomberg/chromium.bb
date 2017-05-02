@@ -70,8 +70,7 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
     BluetoothRemoteGattServiceMac* gatt_service,
     CBCharacteristic* cb_characteristic)
     : gatt_service_(gatt_service),
-      cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN),
-      characteristic_value_read_or_write_in_progress_(false) {
+      cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
       [cb_characteristic_.get() UUID]);
   identifier_ = base::SysNSStringToUTF8(
@@ -80,12 +79,12 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
 }
 
 BluetoothRemoteGattCharacteristicMac::~BluetoothRemoteGattCharacteristicMac() {
-  if (!read_characteristic_value_callbacks_.first.is_null()) {
+  if (HasPendingRead()) {
     std::pair<ValueCallback, ErrorCallback> callbacks;
     callbacks.swap(read_characteristic_value_callbacks_);
     callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
   }
-  if (!write_characteristic_value_callbacks_.first.is_null()) {
+  if (HasPendingWrite()) {
     std::pair<base::Closure, ErrorCallback> callbacks;
     callbacks.swap(write_characteristic_value_callbacks_);
     callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
@@ -159,7 +158,7 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
                    BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
-  if (characteristic_value_read_or_write_in_progress_) {
+  if (HasPendingRead() || HasPendingWrite()) {
     VLOG(1) << *this << ": Characteristic read already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -168,7 +167,6 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
     return;
   }
   VLOG(1) << *this << ": Read characteristic.";
-  characteristic_value_read_or_write_in_progress_ = true;
   read_characteristic_value_callbacks_ =
       std::make_pair(callback, error_callback);
   [GetCBPeripheral() readValueForCharacteristic:cb_characteristic_];
@@ -186,7 +184,7 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
                    BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
     return;
   }
-  if (characteristic_value_read_or_write_in_progress_) {
+  if (HasPendingRead() || HasPendingWrite()) {
     VLOG(1) << *this << ": Characteristic write already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -195,7 +193,6 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
     return;
   }
   VLOG(1) << *this << ": Write characteristic.";
-  characteristic_value_read_or_write_in_progress_ = true;
   write_characteristic_value_callbacks_ =
       std::make_pair(callback, error_callback);
   base::scoped_nsobject<NSData> nsdata_value(
@@ -253,10 +250,9 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
   // This method is called when the characteristic is read and when a
   // notification is received.
-  if (characteristic_value_read_or_write_in_progress_) {
+  if (HasPendingRead()) {
     std::pair<ValueCallback, ErrorCallback> callbacks;
     callbacks.swap(read_characteristic_value_callbacks_);
-    characteristic_value_read_or_write_in_progress_ = false;
     if (error) {
       BluetoothGattService::GattErrorCode error_code =
           BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
@@ -293,7 +289,7 @@ void BluetoothRemoteGattCharacteristicMac::UpdateValue() {
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
   CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
-  if (!characteristic_value_read_or_write_in_progress_) {
+  if (!HasPendingWrite()) {
     // In case of buggy device, nothing should be done if receiving extra
     // write confirmation.
     VLOG(1) << *this
@@ -302,7 +298,6 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
   }
   std::pair<base::Closure, ErrorCallback> callbacks;
   callbacks.swap(write_characteristic_value_callbacks_);
-  characteristic_value_read_or_write_in_progress_ = false;
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
