@@ -360,8 +360,9 @@
                                            NSRightMouseDownMask
       handler:^NSEvent* (NSEvent* event) {
           NSWindow* eventWindow = [event window];
-          if (eventWindow == window || [eventWindow isSheet])
+          if ([eventWindow isSheet])
             return event;
+
           // Do not close the bubble if the event happened on a window with a
           // higher level.  For example, the content of a browser action bubble
           // opens a calendar picker window with NSPopUpMenuWindowLevel, and a
@@ -369,6 +370,15 @@
           // the bubble.
           if ([eventWindow level] > [window level])
             return event;
+
+          // If the event is in |window|'s hierarchy, do not close the bubble.
+          NSWindow* tempWindow = eventWindow;
+          while (tempWindow) {
+            if (tempWindow == window)
+              return event;
+            tempWindow = [tempWindow parentWindow];
+          }
+
           // Do it right now, because if this event is right mouse event,
           // it may pop up a menu. windowDidResignKey: will not run until
           // the menu is closed.
