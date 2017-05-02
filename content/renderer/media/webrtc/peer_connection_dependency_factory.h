@@ -54,7 +54,8 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.
-  blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
+  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+  CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
   // Create a proxy object for a VideoTrackSource that makes sure it's called on

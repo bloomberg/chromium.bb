@@ -18,6 +18,7 @@
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_client.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
+#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 
 using namespace blink;
 
@@ -64,25 +65,27 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
   return interfaces_.get();
 }
 
-WebMediaStreamCenter* WebTestInterfaces::CreateMediaStreamCenter(
-    WebMediaStreamCenterClient* client) {
-  return new MockWebMediaStreamCenter();
+std::unique_ptr<WebMediaStreamCenter>
+WebTestInterfaces::CreateMediaStreamCenter(WebMediaStreamCenterClient* client) {
+  return base::MakeUnique<MockWebMediaStreamCenter>();
 }
 
-WebRTCPeerConnectionHandler*
+std::unique_ptr<WebRTCPeerConnectionHandler>
 WebTestInterfaces::CreateWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
-  return new MockWebRTCPeerConnectionHandler(client, interfaces_.get());
+  return base::MakeUnique<MockWebRTCPeerConnectionHandler>(client,
+                                                           interfaces_.get());
 }
 
-WebMIDIAccessor* WebTestInterfaces::CreateMIDIAccessor(
+std::unique_ptr<WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
-  return new MockWebMIDIAccessor(client, interfaces_.get());
+  return base::MakeUnique<MockWebMIDIAccessor>(client, interfaces_.get());
 }
 
-WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate,
-                                                     int frames_per_buffer) {
-  return new MockWebAudioDevice(sample_rate, frames_per_buffer);
+std::unique_ptr<WebAudioDevice> WebTestInterfaces::CreateAudioDevice(
+    double sample_rate,
+    int frames_per_buffer) {
+  return base::MakeUnique<MockWebAudioDevice>(sample_rate, frames_per_buffer);
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(

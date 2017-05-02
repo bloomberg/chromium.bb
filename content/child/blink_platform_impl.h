@@ -79,7 +79,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   uint32_t GetUniqueIdForProcess() override;
   blink::WebString UserAgent() override;
   blink::WebURLError CancelledError(const blink::WebURL& url) const override;
-  blink::WebThread* CreateThread(const char* name) override;
+  std::unique_ptr<blink::WebThread> CreateThread(const char* name) override;
   blink::WebThread* CurrentThread() override;
   void RecordAction(const blink::UserMetricsAction&) override;
 
@@ -97,7 +97,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
   blink::WebThread* CompositorThread() const override;
-  blink::WebGestureCurve* CreateFlingAnimationCurve(
+  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
@@ -120,12 +120,12 @@ class CONTENT_EXPORT BlinkPlatformImpl
   // destructed.
   void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
 
-  blink::WebFeaturePolicy* CreateFeaturePolicy(
+  std::unique_ptr<blink::WebFeaturePolicy> CreateFeaturePolicy(
       const blink::WebFeaturePolicy* parentPolicy,
       const blink::WebParsedFeaturePolicy& containerPolicy,
       const blink::WebParsedFeaturePolicy& policyHeader,
       const blink::WebSecurityOrigin& origin) override;
-  blink::WebFeaturePolicy* DuplicateFeaturePolicyWithOrigin(
+  std::unique_ptr<blink::WebFeaturePolicy> DuplicateFeaturePolicyWithOrigin(
       const blink::WebFeaturePolicy& policy,
       const blink::WebSecurityOrigin& new_origin) override;
 
