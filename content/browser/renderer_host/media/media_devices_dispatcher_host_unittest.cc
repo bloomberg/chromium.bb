@@ -134,6 +134,12 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     }
   }
 
+  void VideoInputCapabilitiesUniqueOriginCallback(
+      std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
+    MockVideoInputCapabilitiesCallback();
+    EXPECT_EQ(0U, capabilities.size());
+  }
+
  protected:
   void DevicesEnumerated(
       const base::Closure& closure,
@@ -250,7 +256,9 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     host_->SetPermissionChecker(
         base::MakeUnique<MediaDevicesPermissionChecker>(has_permission));
     uint32_t subscription_id = 0u;
+    uint32_t unique_origin_subscription_id = 1u;
     url::Origin origin(GURL("http://localhost"));
+    url::Origin unique_origin;
     for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
       MediaDeviceType type = static_cast<MediaDeviceType>(i);
       host_->SubscribeDeviceChangeNotifications(type, subscription_id, origin);
@@ -261,6 +269,12 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
       EXPECT_CALL(device_change_listener,
                   OnDevicesChanged(type, subscription_id, testing::_))
           .WillRepeatedly(SaveArg<2>(&changed_devices));
+      // The subscription with unique origin is ignored, so it should not get
+      // notifications.
+      EXPECT_CALL(
+          device_change_listener,
+          OnDevicesChanged(type, unique_origin_subscription_id, testing::_))
+          .Times(0);
 
       // Simulate device-change notification
       MediaDeviceInfoArray updated_devices = {
@@ -370,6 +384,17 @@ TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilities) {
       base::Bind(
           &MediaDevicesDispatcherHostTest::VideoInputCapabilitiesCallback,
           base::Unretained(this)));
+  run_loop.Run();
+}
+
+TEST_F(MediaDevicesDispatcherHostTest, GetVideoInputCapabilitiesUniqueOrigin) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MockVideoInputCapabilitiesCallback())
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  host_->GetVideoInputCapabilities(
+      url::Origin(), base::Bind(&MediaDevicesDispatcherHostTest::
+                                    VideoInputCapabilitiesUniqueOriginCallback,
+                                base::Unretained(this)));
   run_loop.Run();
 }
 
