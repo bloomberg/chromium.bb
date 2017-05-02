@@ -17,6 +17,7 @@ source_set("ios") {
     "//ios/web",
     "//net",
     "//third_party/libwebp:libwebp_dec",
+    "//third_party/libwebp:libwebp_webp",
     "//ui/gfx",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

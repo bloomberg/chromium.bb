@@ -145,6 +145,7 @@ check_targets = [
   "//third_party/hunspell/*",
   "//third_party/libaddressinput/*",
   "//third_party/libphonenumber/*",
+  "//third_party/libwebp/*",
   "//third_party/WebKit/Source/*",
   "//tools/*",
 
