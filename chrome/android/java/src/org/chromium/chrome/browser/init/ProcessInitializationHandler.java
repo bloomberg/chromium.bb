@@ -81,7 +81,7 @@ public class ProcessInitializationHandler {
      * @return The ProcessInitializationHandler for use during the lifetime of the browser process.
      */
     public static ProcessInitializationHandler getInstance() {
-        ThreadUtils.assertOnUiThread();
+        ThreadUtils.checkUiThread();
         if (sInstance == null) {
             sInstance = AppHooks.get().createProcessInitializationHandler();
         }
@@ -97,10 +97,10 @@ public class ProcessInitializationHandler {
      * startup.
      */
     public final void initializePreNative() {
-        ThreadUtils.assertOnUiThread();
+        ThreadUtils.checkUiThread();
         if (mInitializedPreNative) return;
-        mInitializedPreNative = true;
         handlePreNativeInitialization();
+        mInitializedPreNative = true;
     }
 
     /**
@@ -155,10 +155,10 @@ public class ProcessInitializationHandler {
      * Initializes any dependencies that must occur after the native library has been loaded.
      */
     public final void initializePostNative() {
-        ThreadUtils.assertOnUiThread();
+        ThreadUtils.checkUiThread();
         if (mInitializedPostNative) return;
-        mInitializedPostNative = true;
         handlePostNativeInitialization();
+        mInitializedPostNative = true;
     }
 
     /**
@@ -203,10 +203,10 @@ public class ProcessInitializationHandler {
      * lifetime.
      */
     public final void initializeDeferredStartupTasks() {
-        ThreadUtils.assertOnUiThread();
+        ThreadUtils.checkUiThread();
         if (mInitializedDeferredStartupTasks) return;
-        mInitializedDeferredStartupTasks = true;
         handleDeferredStartupTasksInitialization();
+        mInitializedDeferredStartupTasks = true;
     }
 
     /**
