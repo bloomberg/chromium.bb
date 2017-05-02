@@ -2162,7 +2162,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Cal tenir <ph name="PLUGIN_NAME" /> per mostrar alguns elements d'aquesta pàgina.</translation>
 <translation id="4090535558450035482">(Aquesta extensió és responsabilitat d'un gestor i no es pot eliminar.)</translation>
 <translation id="4091434297613116013">fulls de paper</translation>
-<translation id="4092878864607680421">La versió més recent de l'aplicació "<ph name="APP_NAME" />" requereix més permisos i, per tant, s'ha desactivat.</translation>
 <translation id="4093955363990068916">Fitxer local:</translation>
 <translation id="4095507791297118304">Pantalla principal</translation>
 <translation id="409579654357498729">Afegeix a Cloud Print</translation>
@@ -3081,7 +3080,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5499313591153584299">Aquest fitxer pot malmetre l'ordinador.</translation>
 <translation id="5500122897333236901">Islandès</translation>
 <translation id="5502500733115278303">Importat de Firefox</translation>
-<translation id="5506868365569362143">Canvi al mode HUD tàctil</translation>
 <translation id="5507756662695126555">No repudiació</translation>
 <translation id="5509693895992845810">Desa &amp;com a...</translation>
 <translation id="5509914365760201064">Emissor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3660,7 +3658,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6404519443262761446">Sol·licita el bloqueig de pantalla per sortir del mode de repòs.</translation>
 <translation id="6406303162637086258">Simula el reinici del navegador</translation>
 <translation id="6406506848690869874">Sincronització</translation>
-<translation id="6407080938771313237">HUD tàctil de la projecció</translation>
 <translation id="6408118934673775994">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Finestres emergents</translation>
 <translation id="6410063390789552572">No es pot accedir a la biblioteca de xarxa</translation>
@@ -4273,7 +4270,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="7348749398828259943">Teclat Workman nord-americà internacional</translation>
 <translation id="7352651011704765696">S'ha produït un error</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> necessita permisos nous</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="7360183604634508679">Menú d'adreces d'interès</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4591,7 +4587,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7839192898639727867">Identificador de clau del subjecte del certificat</translation>
 <translation id="7839804798877833423">Per obtenir aquests fitxers s'utilitzaran aproximadament <ph name="FILE_SIZE" /> de dades mòbils.</translation>
 <translation id="7839963980801867006">Seleccioneu quins IME de l'extensió estaran disponibles al menú d'idioma.</translation>
-<translation id="7842346819602959665">La versió més recent de l'extensió "<ph name="EXTENSION_NAME" />" requereix més permisos i, per tant, s'ha desactivat.</translation>
 <translation id="7844992432319478437">S'està actualitzant la diferència.</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
 <translation id="7846634333498149051">Teclat</translation>

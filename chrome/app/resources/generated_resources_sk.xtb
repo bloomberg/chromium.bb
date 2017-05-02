@@ -2167,7 +2167,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Na zobrazenie niektorých prvkov na tejto stránke je potrebný doplnok <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(Toto rozšírenie je spravované a nedá sa odstrániť.)</translation>
 <translation id="4091434297613116013">listy/listov papiera</translation>
-<translation id="4092878864607680421">Najnovšia verzia aplikácie „<ph name="APP_NAME" />“ požaduje viac povolení, a preto bola zakázaná.</translation>
 <translation id="4093955363990068916">Miestny súbor:</translation>
 <translation id="4095507791297118304">Primárna obrazovka</translation>
 <translation id="409579654357498729">Pridať do služby Cloud Print</translation>
@@ -3089,7 +3088,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5499313591153584299">Tento súbor môže poškodiť váš počítať.</translation>
 <translation id="5500122897333236901">Islandčina</translation>
 <translation id="5502500733115278303">Importované z prehliadača Firefox</translation>
-<translation id="5506868365569362143">Zmena režimu HUD zobrazenia dotyku</translation>
 <translation id="5507756662695126555">Zrušenie zamietnutia</translation>
 <translation id="5509693895992845810">Uložiť &amp;ako...</translation>
 <translation id="5509914365760201064">Vydavateľ: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3667,7 +3665,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6404519443262761446">Vyžadovať zámku obrazovky na prebudenie z režimu spánku</translation>
 <translation id="6406303162637086258">Simulovať reštartovanie prehliadača</translation>
 <translation id="6406506848690869874">Synchronizácia</translation>
-<translation id="6407080938771313237">Zobrazenie HUD projekcie dotyku</translation>
 <translation id="6408118934673775994">Čítať a meniť údaje na weboch <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Kontextové okná</translation>
 <translation id="6410063390789552572">Nepodarilo sa získať prístup k sieťovej knižnici</translation>
@@ -3678,7 +3675,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6412931879992742813">Nové okno inkognito</translation>
 <translation id="6418160186546245112">Prebieha vrátenie späť na predchádzajúcu nainštalovanú verziu produktu <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Natrvalo odstrániť prístup pre všetky aplikácie</translation>
-<translation id="6418511932144861495">Inštalácia závažnej aktualizácie</translation>
+<translation id="6418511932144861495">Inštalácia kritickej aktualizácie</translation>
 <translation id="6419288379019356534">Toto zariadenie je spravované doménou <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
     <ph name="LINE_BREAK" />
     Ak sa chcete prihlásiť do účtu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, kliknite na tlačidlo Ďalej.</translation>
@@ -4023,7 +4020,7 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6949306908218145636">Pridať otvorené stránky medzi záložky...</translation>
 <translation id="6955446738988643816">Preskúmať kontextové okná</translation>
-<translation id="6957519909849772545">Je k dispozícii nová závažná aktualizácia. Prihláste sa a začnite.</translation>
+<translation id="6957519909849772545">Je k dispozícii nová kritická aktualizácia. Prihláste sa a začnite.</translation>
 <translation id="695755122858488207">Nevybratý prepínač</translation>
 <translation id="696203921837389374">Povoliť synchronizáciu prostredníctvom mobilných dát</translation>
 <translation id="6964390816189577014">Hrdina</translation>
@@ -4280,7 +4277,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
 <translation id="7348749398828259943">Medzinárodná klávesnica US Workman</translation>
 <translation id="7352651011704765696">Vyskytla sa chyba</translation>
-<translation id="7353651168734309780">Rozšírenie <ph name="EXTENSION_NAME" /> vyžaduje nové povolenia</translation>
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7360183604634508679">Ponuka záložiek</translation>
 <translation id="7361039089383199231">$1 bajtov</translation>
@@ -4606,7 +4602,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7839192898639727867">ID kľúča subjektu certifikátu</translation>
 <translation id="7839804798877833423">Načítanie týchto súborov spotrebuje približne <ph name="FILE_SIZE" /> mobilných dát.</translation>
 <translation id="7839963980801867006">Vyberte, ktoré editory IME rozšírenia budú k dispozícii v ponuke jazykov.</translation>
-<translation id="7842346819602959665">Najnovšia verzia rozšírenia „<ph name="EXTENSION_NAME" />“ požaduje viac povolení, a preto bola zakázaná.</translation>
 <translation id="7844992432319478437">Súbor diff sa aktualizuje</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
 <translation id="7846634333498149051">Klávesnica</translation>

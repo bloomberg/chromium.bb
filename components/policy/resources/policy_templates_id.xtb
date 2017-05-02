@@ -667,13 +667,13 @@
 <translation id="3297010562646015826">Memungkinkan proses diakhiri di Pengelola Tugas</translation>
 <translation id="3307746730474515290">Mengontrol jenis ekstensi/aplikasi mana yang diizinkan untuk diinstal dan membatasi akses waktu proses.
 
-          Setelan ini mengizinkan jenis aplikasi/ekstensi yang diizinkan yang dapat diinstal di <ph name="PRODUCT_NAME" /> dan host mana yang dapat berinteraksi. Nilai tersebut adalah daftar string, setiap nilai harus salah satu dari nilai berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya terkait jenis ini.
+          Setelan ini mengizinkan jenis aplikasi/ekstensi yang diizinkan yang dapat diinstal di <ph name="PRODUCT_NAME" /> dan host mana yang dapat berinteraksi. Nilai tersebut adalah daftar string, setiap nilai harus merupakan salah satu dari nilai berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi lebih lanjut mengenai jenis-jenis ini.
 
           Perlu diperhatikan bahwa kebijakan ini juga memengaruhi ekstensi dan aplikasi yang diinstal paksa melalui ExtensionInstallForcelist.
 
           Jika setelan ini dikonfigurasi, ekstensi/aplikasi yang jenisnya tidak dalam daftar tidak akan diinstal.
 
-          Jika setelah ini tidak dikonfigurasi, tidak ada batasan yang diterapkan dalam daftar pada jenis ekstensi/aplikasi yang dapat diterima.</translation>
+          Jika setelan ini tidak dikonfigurasi, tidak ada batasan yang diterapkan dalam daftar pada jenis ekstensi/aplikasi yang dapat diterima.</translation>
 <translation id="3322771899429619102">Memungkinkan Anda menyetel daftar pola URL guna menentukan situs yang diizinkan untuk menggunakan pembuatan kunci. Jika pola URL ada di dalam 'KeygenBlockedForUrls', maka pola tersebut akan mengganti pengecualian ini.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
@@ -1204,13 +1204,6 @@
       Jika kebijakan ini tidak disetel, atau disetel ke false, sertifikat server yang tidak menyertakan ekstensi subjectAlternativeName yang berisi nama DNS atau alamat IP tidak akan dipercaya.</translation>
 <translation id="557658534286111200">Mengaktifkan atau menonaktifkan pengeditan bookmark</translation>
 <translation id="5586942249556966598">Tidak melakukan apa-apa</translation>
-<translation id="5613179474872285001">Mengonfigurasi nama domain klien yang diperlukan, yang akan diterapkan pada klien akses jarak jauh dan mencegah pengguna untuk mengubahnya.
-
-          Jika setelan ini diaktifkan, hanya klien dari domain yang telah ditentukan yang dapat tersambung ke host.
-
-          Jika setelan ini dinonaktifkan atau tidak disetel, kebijakan default untuk jenis sambungan akan diterapkan. Untuk bantuan jarak jauh, kebijakan ini memungkinkan klien dari domain mana pun dapat tersambung ke host; untuk akses jarak jauh kapan saja, hanya pemilih host yang dapat tersambung.
-
-          Lihat juga RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Mengembalikan sesi terakhir</translation>
 <translation id="5645779841392247734">Izinkan cookie di situs ini</translation>
 <translation id="5694594914843889579">Jika kebijakan ini disetel ke true, penyimpanan eksternal tidak akan tersedia di browser file.
@@ -1508,13 +1501,6 @@
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
 <translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
-<translation id="695891079107014261">Mengonfigurasi nama domain host yang diperlukan, yang akan diterapkan pada host akses jarak jauh dan mencegah pengguna untuk mengubahnya.
-
-          Jika setelan ini diaktifkan, host hanya dapat dibagikan menggunakan akun yang terdaftar di nama domain yang telah ditentukan.
-
-          Jika setelan ini dinonaktifkan atau tidak disetel, host dapat dibagikan menggunakan akun apa pun.
-
-          Lihat juga RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Meskipun OCSP/CRL sedang online dibutuhkan tautan lokal yang dipercaya ataupun tidak</translation>
 <translation id="7003334574344702284">Kebijakan ini memaksa sandi tersimpan untuk diimpor dari browser default sebelumnya, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, sandi yang disimpan tidak diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7003746348783715221">Preferensi <ph name="PRODUCT_NAME" /></translation>

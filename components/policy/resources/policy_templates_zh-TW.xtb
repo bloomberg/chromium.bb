@@ -1202,13 +1202,6 @@
       如果未設定這項政策，或是將這項政策設為 false，含有 DNS 名稱或 IP 位址但缺少 subjectAlternativeName 延伸的伺服器憑證將不會受到信任。</translation>
 <translation id="557658534286111200">啟用或停用書籤編輯功能</translation>
 <translation id="5586942249556966598">不要處理</translation>
-<translation id="5613179474872285001">設定必要的用戶端網域名稱，強制遠端存取用戶端使用，並禁止使用者自行變更。
-
-          啟用這項設定後，只有指定的網域中的用戶端可以連上主機。
-
-          如果停用或未設定這項政策，則會套用預設的連線類型政策。如果是遠端協助，任何網域中的用戶端都可以連上主機。如果是沒有時限的遠端存取，則只有主機擁有者可以連線。
-
-          另請參閱 RemoteAccessHostDomain。</translation>
 <translation id="5630352020869108293">還原上次工作階段</translation>
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>
 <translation id="5694594914843889579">將這項政策設為 true 時，無法在檔案瀏覽器中存取外部儲存裝置。
@@ -1503,13 +1496,6 @@
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
-<translation id="695891079107014261">設定必要的主機網域名稱，強制遠端存取主機使用，並禁止使用者自行變更。
-
-          啟用這項設定後，必須使用在指定的網域名稱中註冊的帳戶才能分享主機。
-
-          如果停用或未設定這項政策，則可使用任何帳戶分享主機。
-
-          另請參閱 RemoteAccessHostClientDomain。</translation>
 <translation id="6997592395211691850">是否需要為本機信任錨點執行線上 OCSP/CRL 檢查。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>

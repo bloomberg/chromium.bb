@@ -236,6 +236,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3549657413697417275">Sök i historik</translation>
 <translation id="3557336313807607643">Lägg till i kontakter</translation>
 <translation id="3583454905526475291">Det gick inte att starta appen</translation>
+<translation id="3587482841069643663">Alla</translation>
 <translation id="3590487821116122040">Webbplatslagring som Chrome bedömer som oviktig (t.ex. webbplatser utan sparade inställningar eller som du inte besöker ofta)</translation>
 <translation id="360480449234699036">Läs om olika ämnen på webbplatser utan att lämna sidan. När du trycker på Sök skickas ett ord och dess sammanhang till Google Sök och definitioner, bilder, sökresultat och annan information visas.
 
@@ -730,7 +731,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det nedladdade innehållet.</translation>
 <translation id="8636825310635137004">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter.</translation>
-<translation id="8639651215196239211">Alla nedladdningar</translation>
 <translation id="8641930654639604085">Försök blockera webbplatser med innehåll för vuxna</translation>
 <translation id="8660471606262461360">Från Google Payments</translation>
 <translation id="8662811608048051533">Du loggas ut från de flesta webbplatser.</translation>

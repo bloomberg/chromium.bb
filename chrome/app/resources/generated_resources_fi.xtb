@@ -2163,7 +2163,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Joidenkin tämän sivun osien näyttämiseen tarvitaan laajennus <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(Tämä laajennus on hallinnoitu eikä sitä voi poistaa.)</translation>
 <translation id="4091434297613116013">paperiarkkia</translation>
-<translation id="4092878864607680421">Sovelluksen <ph name="APP_NAME" /> uusin versio vaatii enemmän käyttölupia, joten se on poistettu käytöstä.</translation>
 <translation id="4093955363990068916">Paikallinen tiedosto:</translation>
 <translation id="4095507791297118304">Ensisijainen näyttö</translation>
 <translation id="409579654357498729">Lisää Cloud Printiin</translation>
@@ -3078,7 +3077,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5499313591153584299">Tämä tiedosto voi olla haitallinen tietokoneellesi.</translation>
 <translation id="5500122897333236901">islanti</translation>
 <translation id="5502500733115278303">Tuotu Firefoxista</translation>
-<translation id="5506868365569362143">Kosketusheijastusnäytön tilan muutos</translation>
 <translation id="5507756662695126555">Kiistämättömyys</translation>
 <translation id="5509693895992845810">T&amp;allenna nimellä...</translation>
 <translation id="5509914365760201064">Myöntäjä: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3658,7 +3656,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6404519443262761446">Virransäästötilasta herääminen vaatii näytön lukituksen avaamisen.</translation>
 <translation id="6406303162637086258">Simuloi selaimen uudelleenkäynnistys</translation>
 <translation id="6406506848690869874">Synkronointi</translation>
-<translation id="6407080938771313237">Projektiokosketusheijastusnäyttö</translation>
 <translation id="6408118934673775994">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Ponnahdusikkunat</translation>
 <translation id="6410063390789552572">Verkkokirjastoa ei voi käyttää</translation>
@@ -4271,7 +4268,6 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="7348749398828259943">Näppäimistö: Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="7352651011704765696">Tapahtui jokin virhe</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> vaatii uusia käyttölupia</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7360183604634508679">Kirjanmerkkivalikko</translation>
 <translation id="7361039089383199231">$1 tavua</translation>
@@ -4595,7 +4591,6 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7839192898639727867">Varmenteen kohteen avaimen tunnus</translation>
 <translation id="7839804798877833423">Mobiiliyhteyden kautta noudettavien tiedostojen koko on noin <ph name="FILE_SIZE" />.</translation>
 <translation id="7839963980801867006">Valitse, mitkä IME-laajennustiedostot ovat saatavilla kielivalikossa.</translation>
-<translation id="7842346819602959665">Laajennuksen <ph name="EXTENSION_NAME" /> uusin versio vaatii enemmän käyttölupia, joten se on poistettu käytöstä.</translation>
 <translation id="7844992432319478437">Päivitetään muutostiedostoa</translation>
 <translation id="7846076177841592234">Peruuta valinta</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>

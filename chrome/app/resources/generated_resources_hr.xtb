@@ -930,7 +930,7 @@ Nakon izrade novog nadziranog korisnika možete upravljati njegovim postavkama u
 <translation id="2327492829706409234">Omogući aplikaciju</translation>
 <translation id="2328054044222305089">Time će se izbrisati svi podaci koje je web-lokacija <ph name="SITE" /> pohranila na vašem uređaju i poništit će se sva dopuštenja koja ste odobrili. Želite li nastaviti?</translation>
 <translation id="2329597144923131178">Prijavite se da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima.</translation>
-<translation id="2332131598580221120">Prikaži u Web-trgovini</translation>
+<translation id="2332131598580221120">Pogledaj u web-trgovini</translation>
 <translation id="2332742915001411729">Vrati na zadano</translation>
 <translation id="2335122562899522968">Ova stranica postavila je kolačiće.</translation>
 <translation id="2336228925368920074">Označi sve kartice...</translation>
@@ -2139,7 +2139,7 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4052120076834320548">Jako mali</translation>
 <translation id="4055023634561256217">Potrebno je ponovno pokretanje prije nego što vaš uređaj može biti ponovo vraćen s funkcijom Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
-<translation id="4057896668975954729">Prikaži u Web-trgovini</translation>
+<translation id="4057896668975954729">Pogledaj u web-trgovini</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Odmah provjeri dokument</translation>
 <translation id="406070391919917862">Aplikacije u pozadini</translation>
@@ -2165,7 +2165,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Za prikaz nekih elemenata na ovoj stranici potreban je dodatak <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(To je upravljano proširenje i ne može se ukloniti.)</translation>
 <translation id="4091434297613116013">listova papira</translation>
-<translation id="4092878864607680421">Najnovija verzija aplikacije "<ph name="APP_NAME" />" zahtijeva više dopuštenja i stoga je onemogućena.</translation>
 <translation id="4093955363990068916">Lokalna datoteka:</translation>
 <translation id="4095507791297118304">Primarni zaslon</translation>
 <translation id="409579654357498729">Dodaj na Cloud Print</translation>
@@ -3087,7 +3086,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5499313591153584299">Ta datoteka može biti štetna za vaše računalo.</translation>
 <translation id="5500122897333236901">Islandski</translation>
 <translation id="5502500733115278303">Uvezeno iz Firefoxa</translation>
-<translation id="5506868365569362143">Promjena načina dodirnog HUD zaslona</translation>
 <translation id="5507756662695126555">Neosporavanje</translation>
 <translation id="5509693895992845810">Spremi &amp;kao...</translation>
 <translation id="5509914365760201064">Izdavač: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6404519443262761446">Za povratak iz stanja mirovanja potrebno je zaključavanje zaslona.</translation>
 <translation id="6406303162637086258">Simulacija ponovnog pokretanja preglednika</translation>
 <translation id="6406506848690869874">Sinkronizacija</translation>
-<translation id="6407080938771313237">HUD projekcije osjetljiv na dodir</translation>
 <translation id="6408118934673775994">pročitati i promijeniti vaše podatke na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Skočni prozori</translation>
 <translation id="6410063390789552572">Pristup mrežnoj biblioteci nije moguć</translation>
@@ -3694,7 +3691,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="6433870913154270462">Informacije o slici</translation>
 <translation id="6434309073475700221">Odbaci</translation>
 <translation id="6435285122322546452">Upravljanje aplikacijama kioska...</translation>
-<translation id="6436164536244065364">Prikaži u Web-trgovini</translation>
+<translation id="6436164536244065364">Pogledaj u web-trgovini</translation>
 <translation id="6437213622978068772">Ponovno učitavanje (Ctrl + R)</translation>
 <translation id="6438234780621650381">Vraćanje postavki na zadano</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – reprodukcija zvuka</translation>
@@ -4278,7 +4275,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
 <translation id="7348749398828259943">Američka međunarodna Workman tipkovnica</translation>
 <translation id="7352651011704765696">Nešto nije u redu</translation>
-<translation id="7353651168734309780">Proširenje <ph name="EXTENSION_NAME" /> zahtijeva nove dozvole</translation>
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7360183604634508679">Izbornik oznaka</translation>
 <translation id="7361039089383199231">Bajtova: $1</translation>
@@ -4603,7 +4599,6 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7839192898639727867">ID ključa tijela predmeta certifikata</translation>
 <translation id="7839804798877833423">Dohvaćanje tih datoteka potrošit će približno <ph name="FILE_SIZE" /> mobilnih podataka.</translation>
 <translation id="7839963980801867006">Odaberite koji će uređivači načina unosa za proširenje biti dostupni na izborniku jezika.</translation>
-<translation id="7842346819602959665">Najnovija verzija proširenja "<ph name="EXTENSION_NAME" />" zahtijeva više dopuštenja i stoga je onemogućena.</translation>
 <translation id="7844992432319478437">Ažuriranje razlika</translation>
 <translation id="7846076177841592234">Poništi odabir</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>

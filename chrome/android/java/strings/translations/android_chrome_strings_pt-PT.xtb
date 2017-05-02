@@ -114,7 +114,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2126426811489709554">Com tecnologia do Chrome</translation>
-<translation id="2131665479022868825"><ph name="DATA" /> guardados</translation>
+<translation id="2131665479022868825"><ph name="DATA" /> guardado(s)</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> fechado</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
 <translation id="2146738493024040262">Abrir aplicação instantânea</translation>
@@ -236,6 +236,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3549657413697417275">Pesquisar no histórico</translation>
 <translation id="3557336313807607643">Adicionar aos contactos</translation>
 <translation id="3583454905526475291">Impossív. iniciar aplicação</translation>
+<translation id="3587482841069643663">Tudo</translation>
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
 <translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
@@ -730,7 +731,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
 <translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
-<translation id="8639651215196239211">Todas as transferências</translation>
 <translation id="8641930654639604085">Tentar bloquear sites para adultos</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
 <translation id="8662811608048051533">A sua sessão é terminada na maioria dos sites.</translation>

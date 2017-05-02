@@ -1286,13 +1286,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
 <translation id="557658534286111200">Enables or disables bookmark editing</translation>
 <translation id="5586942249556966598">Do nothing</translation>
-<translation id="5613179474872285001">Configures the required client domain name that will be imposed on remote access clients and prevents users from changing it.
-
-          If this setting is enabled, then only clients from the specified domain can connect to the host.
-
-          If this setting is disabled or not set, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain can connect to the host; for anytime remote access, only the host owner can connect.
-
-          See also RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="5694594914843889579">When this policy is set to true, external storage will not be available in the file browser.
@@ -1610,13 +1603,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
-<translation id="695891079107014261">Configures the required host domain name that will be imposed on remote access hosts and prevents users from changing it.
-
-          If this setting is enabled, then hosts can be shared only using accounts registered on the specified domain name.
-
-          If this setting is disabled or not set, then hosts can be shared using any account.
-
-          See also RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 

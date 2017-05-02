@@ -2164,7 +2164,6 @@
 <translation id="4090404313667273475">በዚህ ገጽ ላይ አንዳንድ ክፍሎችን ለማሳየት <ph name="PLUGIN_NAME" /> ያስፈልጋል።</translation>
 <translation id="4090535558450035482">(ይህ ቅጥያ የሚተዳደር ነው እና ሊወገድ አይችልም።)</translation>
 <translation id="4091434297613116013">የወረቀት ሉሆች</translation>
-<translation id="4092878864607680421">አዲሱ የ«<ph name="APP_NAME" />» መተግበሪያ ተጨማሪ ፍቃዶች ይፈልጋል፣ ስለዚህ ተሰናክሏል።</translation>
 <translation id="4093955363990068916">አካባቢያዊ ፋይል፦</translation>
 <translation id="4095507791297118304">ዋና ማሳያ</translation>
 <translation id="409579654357498729">ወደ የደመና ህትመት ያክሉ</translation>
@@ -3086,7 +3085,6 @@
 <translation id="5499313591153584299">ይህ ፋይል ለኮምፒዩተርዎ ጎጂ ሊሆን ይችላል።</translation>
 <translation id="5500122897333236901">አይስላንድኛ</translation>
 <translation id="5502500733115278303">ከFirefox የመጣ</translation>
-<translation id="5506868365569362143">የንክኪ ኤችዩዲ ሁነታ ለውጥ</translation>
 <translation id="5507756662695126555">ክህደት የሌለበት</translation>
 <translation id="5509693895992845810">አስቀምጥ &amp;እንደ…</translation>
 <translation id="5509914365760201064">ሰጪ፦ <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3663,7 +3661,6 @@
 <translation id="6404519443262761446">ከእንቅልፍ ለማስነሳት የማያ ገጽ መቆለፊያን ጠይቅ።</translation>
 <translation id="6406303162637086258">የአሳሽ ዳግም መጀመር አስመስለህ ስራ</translation>
 <translation id="6406506848690869874">አመሳስል</translation>
-<translation id="6407080938771313237">የፕሮጀክሽን ንክኪ ኤችዩዲ</translation>
 <translation id="6408118934673775994">ውሂብዎን በ<ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" /> እና <ph name="WEBSITE_3" /> ላይ ያነብባል እና ይቀይራል</translation>
 <translation id="6409731863280057959">ብቅ-ባዮች</translation>
 <translation id="6410063390789552572">የአውታረ መረብ ላይብረሪን መዳረስ አልተቻለም</translation>
@@ -4277,7 +4274,6 @@
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
 <translation id="7348749398828259943">የአሜሪካ ዎርክማን አለምአቀፍ ቁልፍ ሰሌዳ</translation>
 <translation id="7352651011704765696">የሆነ ችግር ተፈጥሯል</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> አዲስ ፍቃዶችን ይፈልጋል</translation>
 <translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
 <translation id="7360183604634508679">የዕልባቶች ምናሌ</translation>
 <translation id="7361039089383199231">$1 ባይት</translation>
@@ -4603,7 +4599,6 @@
 <translation id="7839192898639727867">የሰርቲፊኬት ርዕስ ቁልፍ አይዲ</translation>
 <translation id="7839804798877833423">እነዚህን ፋይሎች ማምጣት <ph name="FILE_SIZE" /> ገደማ የተንቀሳቃሽ ስልክ ውሂብ ይጠቀማል።</translation>
 <translation id="7839963980801867006">የትኛዎቹ የቅጥያ IMEዎች በቋንቋ ምናሌው ውስጥ እንደሚገኙ ይምረጡ።</translation>
-<translation id="7842346819602959665">የቅጥያው '<ph name="EXTENSION_NAME" />' አዲሱ ስሪት ተጨማሪ ፍቃዶችን ይፈልጋል፣ ስለዚህም ተሰናክሏል።</translation>
 <translation id="7844992432319478437">የማዘመን ችግር</translation>
 <translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
 <translation id="7846634333498149051">የቁልፍ ሰሌዳ</translation>

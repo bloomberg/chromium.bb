@@ -1874,7 +1874,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
-<translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Al activar la copia de seguridad automática, los datos del dispositivo y de las aplicaciones se guardan de forma periódica en una carpeta privada de Google Drive. Los datos de aplicaciones pueden ser cualquier tipo de información que guarden las aplicaciones (en función de la configuración de los desarrolladores), como datos que pueden ser confidenciales (por ejemplo, contactos, mensajes y fotos).<ph name="END_PARAGRAPH1" />
+<translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Al activar la copia de seguridad automática, los datos del dispositivo y de las aplicaciones se guardan de forma periódica en una carpeta privada de Google Drive. Los datos de aplicaciones pueden ser cualquier tipo de información que guarden las aplicaciones (en función de los ajustes de los desarrolladores), como datos que pueden ser confidenciales (por ejemplo, contactos, mensajes y fotos).<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Los datos de la copia de seguridad no se tienen en cuenta para calcular tu espacio de almacenamiento de Google Drive. Los archivos grandes, o aquellos que los desarrolladores hayan excluido del servicio, no se incluirán en la copia de seguridad.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="3660234220361471169">No es de confianza</translation>
 <translation id="3665589677786828986">Chrome ha detectado que otro programa ha dañado algunas opciones de configuración y ha restablecido la configuración predeterminada original.</translation>
@@ -2165,7 +2165,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4090404313667273475">Se necesita el elemento <ph name="PLUGIN_NAME" /> para mostrar algunos elementos de esta página.</translation>
 <translation id="4090535558450035482">(Esta extensión está administrada y no se puede eliminar.)</translation>
 <translation id="4091434297613116013">hojas de papel</translation>
-<translation id="4092878864607680421">La versión más reciente de la aplicación "<ph name="APP_NAME" />" necesita más permisos, por lo que se ha inhabilitado.</translation>
 <translation id="4093955363990068916">Archivo local:</translation>
 <translation id="4095507791297118304">Pantalla principal</translation>
 <translation id="409579654357498729">Añadir a Cloud Print</translation>
@@ -3084,7 +3083,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5499313591153584299">Este archivo puede ser dañino para tu ordenador.</translation>
 <translation id="5500122897333236901">Islandés</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
-<translation id="5506868365569362143">Toca el cambio del modo HUD</translation>
 <translation id="5507756662695126555">Sin rechazo</translation>
 <translation id="5509693895992845810">Guardar &amp;como...</translation>
 <translation id="5509914365760201064">Emisor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3662,7 +3660,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6404519443262761446">Solicitar bloqueo de pantalla para activar el dispositivo.</translation>
 <translation id="6406303162637086258">Simular reinicio del navegador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
-<translation id="6407080938771313237">HUD táctil con proyección</translation>
 <translation id="6408118934673775994">Leer y modificar tus datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Ventanas emergentes</translation>
 <translation id="6410063390789552572">No es posible acceder a la biblioteca de red.</translation>
@@ -4274,7 +4271,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="7348749398828259943">Teclado internacional estilo Workman (EE. UU.)</translation>
 <translation id="7352651011704765696">Se ha producido un problema</translation>
-<translation id="7353651168734309780">Se necesitan nuevos permisos para <ph name="EXTENSION_NAME" /></translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7360183604634508679">Menú de marcadores</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4599,7 +4595,6 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7839192898639727867">ID de clave de la entidad receptora del certificado</translation>
 <translation id="7839804798877833423">Para recuperar estos archivos se utilizarán aproximadamente <ph name="FILE_SIZE" /> de datos móviles.</translation>
 <translation id="7839963980801867006">Selecciona los editores de métodos de entrada de extensión que estarán disponibles en el menú de idiomas.</translation>
-<translation id="7842346819602959665">La versión más reciente de la extensión "<ph name="EXTENSION_NAME" />" necesita más permisos, por lo que se ha inhabilitado.</translation>
 <translation id="7844992432319478437">Actualizando archivo diff</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="7846634333498149051">Teclado</translation>

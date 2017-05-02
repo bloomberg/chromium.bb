@@ -1205,13 +1205,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne postavi ili se postavi na False, certifikati poslužitelja kojima nedostaje proširenje subjectAlternativeName s nazivom DNS-a ili IP adresom neće se smatrati pouzdanima.</translation>
 <translation id="557658534286111200">Omogućuje ili onemogućuje uređivanje knjižnih oznaka</translation>
 <translation id="5586942249556966598">Ne radi ništa</translation>
-<translation id="5613179474872285001">Konfigurira traženi naziv domene klijenta koji će se nametnuti klijentima s daljinskim pristupom i sprječava korisnike da to promijene.
-
-          Ako se ta postavka omogući, s hostom se mogu povezati samo klijenti s navedene domene.
-
-          Ako se ta postavka onemogući ili ne postavi, primjenjuje se zadano pravilo za vrstu veze. U slučaju pružanja pomoći na daljinu to omogućuje klijentima iz bilo koje domene da se povežu s hostom; daljinski pristup u bilo kojem trenutku dostupan je samo vlasniku hosta.
-
-          Pogledajte i RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Vrati posljednju sesiju</translation>
 <translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
 <translation id="5694594914843889579">Kada se to pravilo postavi na True, vanjska pohrana neće biti dostupna u pregledniku datoteka.
@@ -1507,13 +1500,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
-<translation id="695891079107014261">Konfigurira traženi naziv domene hosta koji će se nametnuti hostovima s daljinskim pristupom i sprječava korisnike da to promijene.
-
-          Ako se ta postavka omogući, hostovi se mogu dijeliti samo putem računa registriranih na navedenom nazivu domene.
-
-          Ako se ta postavka onemogući ili ne postavi, hostovi se mogu dijeliti putem bilo kojeg računa.
-
-          Pogledajte i RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>

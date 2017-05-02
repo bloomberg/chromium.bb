@@ -2165,7 +2165,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4090404313667273475">Le plug-in <ph name="PLUGIN_NAME" /> est nécessaire pour afficher certains éléments sur cette page.</translation>
 <translation id="4090535558450035482">(Cette extension est gérée et ne peut pas être supprimée.)</translation>
 <translation id="4091434297613116013">feuilles de papier</translation>
-<translation id="4092878864607680421">La dernière version de l'application "<ph name="APP_NAME" />" requiert d'autres autorisations. Elle a donc été désactivée.</translation>
 <translation id="4093955363990068916">Fichier local :</translation>
 <translation id="4095507791297118304">Affichage principal</translation>
 <translation id="409579654357498729">Ajouter à Google Cloud Print</translation>
@@ -3086,7 +3085,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5499313591153584299">Ce fichier peut être néfaste pour votre ordinateur.</translation>
 <translation id="5500122897333236901">Islandais</translation>
 <translation id="5502500733115278303">Importés depuis Firefox</translation>
-<translation id="5506868365569362143">Changement de mode pour l'affichage tête haute tactile</translation>
 <translation id="5507756662695126555">Non-répudiation</translation>
 <translation id="5509693895992845810">Enregistrer &amp;sous...</translation>
 <translation id="5509914365760201064">Émetteur : <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6404519443262761446">Demander le déverrouillage de l'écran pour sortir du mode veille.</translation>
 <translation id="6406303162637086258">Simuler le redémarrage du navigateur</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
-<translation id="6407080938771313237">Affichage à tête haute tactile pour la projection</translation>
 <translation id="6408118934673775994">Accéder aux données des sites <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, et les modifier</translation>
 <translation id="6409731863280057959">Fenêtres pop-up</translation>
 <translation id="6410063390789552572">Impossible d'accéder à la bibliothèque réseau.</translation>
@@ -4279,7 +4276,6 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="7348749398828259943">Clavier Workman international américain</translation>
 <translation id="7352651011704765696">Un problème est survenu</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> requiert de nouvelles autorisations</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7360183604634508679">Menu "Favoris"</translation>
 <translation id="7361039089383199231">$1 octets</translation>
@@ -4605,7 +4601,6 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7839192898639727867">ID de clé de l'objet du certificat</translation>
 <translation id="7839804798877833423">L'opération de récupération de ces fichiers consommera environ <ph name="FILE_SIZE" /> de données mobiles.</translation>
 <translation id="7839963980801867006">Sélectionnez l'éditeur IME d'extension qui va être disponible dans le menu des langues.</translation>
-<translation id="7842346819602959665">La dernière version de l'extension "<ph name="EXTENSION_NAME" />" requiert d'autres permissions. Elle a donc été désactivée.</translation>
 <translation id="7844992432319478437">Différence de mise à jour</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7846634333498149051">Clavier</translation>

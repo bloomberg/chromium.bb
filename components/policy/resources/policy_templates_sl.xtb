@@ -1284,13 +1284,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če ta pravilnik ni nastavljen ali je onemogočen, potrdila strežnika, ki jim manjka razširitev subjectAlternativeName, ki vsebuje ime DNS-ja ali naslov IP, ne bodo zaupanja vredna.</translation>
 <translation id="557658534286111200">Omogoči ali onemogoči urejanje zaznamkov</translation>
 <translation id="5586942249556966598">Ne naredi nič</translation>
-<translation id="5613179474872285001">Konfigurira potrebno ime domene, ki bo vsiljeno odjemalcem za oddaljeni dostop, in uporabnikom prepreči, da bi ga spremenili.
-
-          Če je ta nastavitev omogočena, se lahko z gostiteljem povežejo samo odjemalci iz navedene domene.
-
-          Če je ta nastavitev onemogočena ali ni nastavljena, se uporabi privzeti pravilnik za vrsto povezave. Za oddaljeno pomoč to omogoča povezovanje z gostiteljem odjemalcem iz poljubne domene. Za oddaljen dostop kadar koli se lahko poveže samo lastnik gostitelja.
-
-          Glejte tudi pravilnik RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Obnovi zadnjo sejo</translation>
 <translation id="5645779841392247734">Dovoli piškotke na teh mestih</translation>
 <translation id="5694594914843889579">Ko je ta pravilnik omogočen, zunanji pomnilnik ne bo na voljo za datotečni brskalnik.
@@ -1612,13 +1605,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
-<translation id="695891079107014261">Konfigurira potrebno ime domene gostitelja, ki bo vsiljeno gostiteljem za oddaljeni dostop, in uporabnikom prepreči, da bi ga spremenili.
-
-          Če je ta nastavitev omogočena, je gostitelje mogoče dati v skupno rabo samo z uporabo računov, registriranih v navedenem imenu domene.
-
-          Če je ta nastavitev onemogočena ali ni nastavljena, je gostitelje mogoče dati v skupno rabo z uporabo poljubnega računa.
-
-          Glejte tudi pravilnik RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Ali so potrebna spletna preverjanja OCSP/CRL za lokalna sidra zaupanja?</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 

@@ -702,7 +702,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
 <translation id="3297010562646015826">Membolehkan tindakan menamatkan proses dalam Pengurus Tugas</translation>
 <translation id="3307746730474515290">Mengawal jenis apl/sambungan yang dibenarkan untuk dipasang dan mengehadkan akses waktu jalan.
 
-          Tetapan ini menyenarai putih jenis sambungan/apl yang boleh dipasang dalam <ph name="PRODUCT_NAME" /> dan hos yang sambungan/apl ini dibenarkan berinteraksi. Nilainya merupakan senarai rentetan, yang setiap satunya haruslah satu daripada berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis ini.
+          Tetapan ini menyenarai putih jenis sambungan/apl yang boleh dipasang pada <ph name="PRODUCT_NAME" /> dan hos yang sambungan/apl ini dibenarkan berinteraksi. Nilainya merupakan senarai rentetan, yang setiap satunya haruslah satu daripada berikut: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis ini.
 
           Ambil perhatian bahawa dasar ini turut mempengaruhi sambungan dan apl yang dipasang paksa melalui ExtensionInstallForcelist.
 
@@ -1279,13 +1279,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, sijil pelayan yang ketiadaan sambungan subjectAlternativeName yang mengandungi sama ada nama DNS atau alamat IP tidak akan dipercayai.</translation>
 <translation id="557658534286111200">Mendayakan atau melumpuhkan pengeditan penanda halaman</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
-<translation id="5613179474872285001">Mengkonfigurasikan nama domain pelanggan yang diperlukan, yang akan dikenakan pada pelanggan akses jauh dan menghalang pengguna daripada menukarnya.
-
-          Jika tetapan ini didayakan, maka hanya pelanggan daripada domain yang dinyatakan boleh membuat sambungan ke hos.
-
-          Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka dasar lalai untuk jenis sambungan itu akan digunakan. Untuk bantuan jauh, ini membolehkan pelanggan daripada mana-mana domain membuat sambungan ke hos; untuk akses jauh bila-bila masa, hanya pemilik hos boleh membuat sambungan.
-
-          Lihat juga RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
 <translation id="5645779841392247734">Benarkan kuki pada tapak ini</translation>
 <translation id="5694594914843889579">Apabila dasar ini ditetapkan kepada benar, storan luaran tidak akan tersedia dalam penyemak imbas fail.
@@ -1605,13 +1598,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
-<translation id="695891079107014261">Mengkonfigurasikan nama domain hos yang diperlukan, yang akan dikenakan pada hos akses jauh dan menghalang pengguna daripada menukarnya.
-
-          Jika tetapan ini didayakan, maka hos boleh dikongsi hanya dengan menggunakan akaun yang didaftarkan pada nama domain yang dinyatakan.
-
-          Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka hos boleh dikongsi dengan menggunakan mana-mana akaun.
-
-          Lihat juga RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Sama ada semakan OCSP/CRL dalam talian diperlukan untuk pengukuhan kepercayaan setempat</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 

@@ -921,7 +921,7 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2317031807364506312">BATALKAN</translation>
 <translation id="2318143611928805047">Ukuran kertas</translation>
-<translation id="2318817390901984578">Untuk menggunakan aplikasi Android, isi daya &amp; update <ph name="DEVICE_TYPE" /> Anda.</translation>
+<translation id="2318817390901984578">Untuk menggunakan aplikasi Android, isi daya baterai &amp; update <ph name="DEVICE_TYPE" /> Anda.</translation>
 <translation id="2318923050469484167">(<ph name="EMBEDDING" />) sesi penyamaran saat ini</translation>
 <translation id="2322193970951063277">Header dan footer</translation>
 <translation id="2325650632570794183">Jenis file ini tidak didukung. Kunjungi Toko Web Chrome untuk menemukan aplikasi yang dapat membuka jenis file ini.</translation>
@@ -2165,7 +2165,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> diperlukan untuk menampilkan beberapa elemen pada laman ini.</translation>
 <translation id="4090535558450035482">(Ekstensi ini dikelola dan tidak dapat dibuang.)</translation>
 <translation id="4091434297613116013">lembaran kertas</translation>
-<translation id="4092878864607680421">Versi terbaru dari apl "<ph name="APP_NAME" />" memerlukan izin lebih lanjut, jadi aplikasi ini belum diaktifkan.</translation>
 <translation id="4093955363990068916">File lokal:</translation>
 <translation id="4095507791297118304">Tampilan utama</translation>
 <translation id="409579654357498729">Tambahkan ke Cloud Print</translation>
@@ -3087,7 +3086,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5499313591153584299">File ini mungkin berbahaya untuk komputer Anda.</translation>
 <translation id="5500122897333236901">Islandia</translation>
 <translation id="5502500733115278303">Diimpor dari Firefox</translation>
-<translation id="5506868365569362143">Perubahan mode HUD sentuhan</translation>
 <translation id="5507756662695126555">Non-repudiasi</translation>
 <translation id="5509693895992845810">Simp&amp;an Sebagai...</translation>
 <translation id="5509914365760201064">Penerbit: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="6404519443262761446">Minta kunci layar untuk menonaktifkan mode tidur.</translation>
 <translation id="6406303162637086258">Simulasikan mulai ulang browser</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
-<translation id="6407080938771313237">HUD sentuhan proyeksi</translation>
 <translation id="6408118934673775994">Membaca dan mengubah data Anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pop-up</translation>
 <translation id="6410063390789552572">Tidak dapat mengakses pustaka jaringan</translation>
@@ -4278,7 +4275,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
 <translation id="7348749398828259943">Keyboard internasional Workman AS</translation>
 <translation id="7352651011704765696">Ada yang tidak beres</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> memerlukan izin baru</translation>
 <translation id="735745346212279324">VPN terputus</translation>
 <translation id="7360183604634508679">Menu bookmark</translation>
 <translation id="7361039089383199231">$1 bita</translation>
@@ -4604,7 +4600,6 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7839192898639727867">ID Kunci Subjek Sertifikat</translation>
 <translation id="7839804798877833423">Mengambil file ini akan menggunakan sekitar <ph name="FILE_SIZE" /> data seluler.</translation>
 <translation id="7839963980801867006">Pilih IME ekstensi mana yang akan tersedia di menu bahasa.</translation>
-<translation id="7842346819602959665">Versi ekstensi "<ph name="EXTENSION_NAME" />" terbaru memerlukan izin lebih lanjut, jadi ekstensi belum diaktifkan.</translation>
 <translation id="7844992432319478437">Memperbarui diff</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7846634333498149051">Keyboard</translation>

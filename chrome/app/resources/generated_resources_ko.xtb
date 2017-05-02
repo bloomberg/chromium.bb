@@ -2166,7 +2166,6 @@
 <translation id="4090404313667273475">이 페이지에 일부 요소를 표시하려면 <ph name="PLUGIN_NAME" />이(가) 필요합니다.</translation>
 <translation id="4090535558450035482">(관리되는 확장 프로그램으로 삭제할 수 없습니다.)</translation>
 <translation id="4091434297613116013">장</translation>
-<translation id="4092878864607680421">애플리케이션 '<ph name="APP_NAME" />'의 최신 버전이 더 많은 권한을 필요로 하므로 사용 중지되었습니다.</translation>
 <translation id="4093955363990068916">로컬 파일:</translation>
 <translation id="4095507791297118304">기본 디스플레이</translation>
 <translation id="409579654357498729">클라우드 프린트에 추가</translation>
@@ -3088,7 +3087,6 @@
 <translation id="5499313591153584299">이 파일은 컴퓨터에 해로울 수 있습니다.</translation>
 <translation id="5500122897333236901">아이슬란드어</translation>
 <translation id="5502500733115278303">Firefox에서 가져온 북마크</translation>
-<translation id="5506868365569362143">터치 HUD 모드 변경</translation>
 <translation id="5507756662695126555">부인 방지</translation>
 <translation id="5509693895992845810">다른 이름으로 저장(&amp;A)...</translation>
 <translation id="5509914365760201064">발행기관: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3666,7 +3664,6 @@
 <translation id="6404519443262761446">절전 모드 해제 시 화면 잠금</translation>
 <translation id="6406303162637086258">브라우저 다시 시작 시뮬레이션</translation>
 <translation id="6406506848690869874">동기화</translation>
-<translation id="6407080938771313237">프로젝션 터치 HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />의 데이터를 읽고 변경</translation>
 <translation id="6409731863280057959">팝업</translation>
 <translation id="6410063390789552572">네트워크 라이브러리에 액세스할 수 없음</translation>
@@ -4279,7 +4276,6 @@
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="7348749398828259943">미국 워크맨(국제) 키보드</translation>
 <translation id="7352651011704765696">문제가 발생한 경우</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" />은(는) 새로운 권한이 필요합니다.</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7360183604634508679">북마크 메뉴</translation>
 <translation id="7361039089383199231">$1바이트</translation>
@@ -4605,7 +4601,6 @@
 <translation id="7839192898639727867">인증서 대상 키 ID</translation>
 <translation id="7839804798877833423">이 파일을 가져오는 데 약 <ph name="FILE_SIZE" />의 모바일 데이터가 사용됩니다.</translation>
 <translation id="7839963980801867006">언어 메뉴에서 사용할 확장 프로그램 IME를 선택합니다.</translation>
-<translation id="7842346819602959665">확장 프로그램 '<ph name="EXTENSION_NAME" />'의 최신 버전이 더 많은 권한을 필요로 하므로 사용 중지되었습니다.</translation>
 <translation id="7844992432319478437">diff 업데이트 중</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7846634333498149051">키보드</translation>
@@ -5416,7 +5411,7 @@
 <translation id="9046895021617826162">연결 실패</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" /> 계정을 사용하여 프린터를 <ph name="CLOUD_PRINT_NAME" />에 등록했습니다.</translation>
-<translation id="9053893665344928494">내 선택사항 저장</translation>
+<translation id="9053893665344928494">내 선택 기억하기</translation>
 <translation id="9056034633062863292">Chromebox 업데이트 중</translation>
 <translation id="9056810968620647706">일치하는 항목이 없습니다.</translation>
 <translation id="9057119625587205566">주변에 프린터 없음</translation>

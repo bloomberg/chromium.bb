@@ -1269,13 +1269,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này chưa được đặt hoặc được đặt thành false, chứng chỉ máy chủ thiếu tiện ích subjectAlternativeName chứa tên DNS hoặc địa chỉ IP sẽ không được tin tưởng.</translation>
 <translation id="557658534286111200">Cho phép hoặc vô hiệu hóa chỉnh sửa dấu trang</translation>
 <translation id="5586942249556966598">Không làm gì</translation>
-<translation id="5613179474872285001">Định cấu hình tên miền ứng dụng được yêu cầu sẽ được áp dụng cho ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền đó.
-
-          Nếu cài đặt này được bật thì chỉ những ứng dụng từ miền đã chỉ định mới có thể kết nối với máy chủ.
-
-          Nếu cài đặt này bị tắt hoặc không được đặt thì chính sách mặc định cho loại kết nối sẽ được áp dụng. Đối với trợ giúp từ xa, cài đặt này sẽ cho phép các ứng dụng từ miền bất kỳ có thể kết nối với máy chủ; đối với quyền truy cập từ xa mọi lúc, chỉ chủ sở hữu máy chủ mới có thể kết nối.
-
-          Đồng thời, hãy xem RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Khôi phục phiên trước đó</translation>
 <translation id="5645779841392247734">Cho phép cookie trên các trang web này</translation>
 <translation id="5694594914843889579">Khi chính sách này được đặt thành true, bộ nhớ ngoài sẽ không khả dụng trong trình duyệt tệp.
@@ -1590,13 +1583,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
-<translation id="695891079107014261">Định cấu hình tên miền ứng dụng được yêu cầu sẽ được áp dụng cho máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền đó.
-
-          Nếu cài đặt này được bật thì máy chủ chỉ có thể được chia sẻ bằng cách sử dụng tài khoản được đăng ký trên tên miền đã chỉ định.
-
-          Nếu cài đặt này bị tắt hoặc không được đặt thì máy chủ có thể được chia sẻ bằng cách sử dụng bất kỳ tài khoản nào.
-
-          Đồng thời, hãy xem RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Có bắt buộc kiểm tra OCSP/CRL trực tuyến cho mẩu neo tin cậy nội bộ hay không</translation>
 <translation id="7003334574344702284">Chính sách này nếu được bật sẽ buộc mật khẩu đã lưu phải được nhập từ trình duyệt mặc định trước đó. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 

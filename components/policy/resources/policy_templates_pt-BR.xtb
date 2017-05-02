@@ -1190,13 +1190,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for definida ou for definida como false, os certificados de servidor sem a extensão subjectAlternativeName que contém um nome DNS ou endereço IP não serão confiáveis.</translation>
 <translation id="557658534286111200">Ativa ou desativa a edição de favoritos</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
-<translation id="5613179474872285001">Configura o nome de domínio de cliente obrigatório que será imposto aos clientes de acesso remoto e impede os usuários de alterá-lo.
-
-          Se esta configuração for ativada, apenas clientes de domínios especificados poderão se conectar ao host.
-
-          Se esta configuração for desativada ou não for definida, a política padrão para o tipo de conexão será aplicada. Para assistência remota, essa configuração permite que os clientes de qualquer domínio possam se conectar ao host; para assistência remota a qualquer momento, apenas o proprietário do host pode se conectar.
-
-          Consulte também RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5694594914843889579">Quando esta política é definida como "true", o armazenamento externo não fica disponível no navegador de arquivos.
@@ -1492,13 +1485,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
-<translation id="695891079107014261">Configura o nome de domínio de host obrigatório que será imposto aos hosts de acesso remoto e impede os usuários de alterá-lo.
-
-          Se esta configuração for ativada, os hosts só poderão ser compartilhados usando contas registradas no nome de domínio especificado.
-
-          Se esta configuração for desativada ou não for definida, os hosts poderão ser compartilhados usando qualquer conta.
-
-          Consulte também RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Define se as verificações de OCSP/CRL on-line são obrigatórias para âncoras de confiança local</translation>
 <translation id="7003334574344702284">Se ativada, esta política força a importação de senhas a partir do navegador padrão anterior. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, as senhas salvas não são importadas. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>

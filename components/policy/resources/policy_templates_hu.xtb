@@ -1197,13 +1197,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a DNS-nevet vagy IP-címet tartalmazó subjectAlternativeName bővítménnyel nem rendelkező szervertanúsítványokat a böngésző nem fogja megbízhatónak tekinteni.</translation>
 <translation id="557658534286111200">Engedélyezi vagy letiltja a könyvjelzők szerkesztését</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
-<translation id="5613179474872285001">Beállítja a távoli hozzáférésű ügyfelek számára kötelező domainnevet, és megakadályozza, hogy a felhasználók megváltoztassák azt.
-
-          Ha a beállítás engedélyezve van, akkor csak a megadott domainhez tartozó ügyfelek csatlakozhatnak a gazdagéphez.
-
-          Ha a beállítás le van tiltva vagy nincs megadva, akkor a rendszer a kapcsolódási típusnak megfelelő alapértelmezett házirendet alkalmazza. A házirend távoli segítség esetén az összes domainhez tartozó ügyfél számára engedélyezi a gazdagéphez való csatlakozást; a bármikor történő távoli hozzáférés esetén azonban csak a gazdagép tulajdonosa csatlakozhat.
-
-          Lásd még a RemoteAccessHostDomain házirendet.</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
 <translation id="5645779841392247734">Cookie-k engedélyezése ezeken a webhelyeken</translation>
 <translation id="5694594914843889579">Ha a házirend értéke Igaz, a külső tárhely nem lesz hozzáférhető a fájlböngészőben.
@@ -1502,13 +1495,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
-<translation id="695891079107014261">Beállítja a távoli hozzáférésű gazdagépek számára kötelező domainnevet, és megakadályozza, hogy a felhasználók megváltoztassák azt.
-
-          Ha a beállítás engedélyezve van, a gazdagépeket csak a megadott domainnévvel regisztrált fiókokkal lehet megosztani.
-
-          Ha a beállítás le van tiltva vagy nincs megadva, a gazdagépeket bármely fiókkal meg lehet osztani.
-
-          Lásd még a RemoteAccessHostClientDomain házirendet.</translation>
 <translation id="6997592395211691850">Szükség van-e online OCSP- vagy CRL-ellenőrzésekre a helyi megbízhatósági kapcsolatok alapjainál</translation>
 <translation id="7003334574344702284">Ez a házirend engedélyezése esetén kikényszeríti a mentett jelszavak importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a mentett jelszavak importálása nem történik meg. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="7003746348783715221">A <ph name="PRODUCT_NAME" /> beállításai</translation>

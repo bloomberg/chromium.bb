@@ -1271,13 +1271,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi naitakda ang patakarang ito, o kung naitakda ito sa false, hindi pagkakatiwalaan ang mga certificate ng server na walang subjectAlternativeName na extension na naglalaman ng DNS name o IP address.</translation>
 <translation id="557658534286111200">Pinapagana o hindi pinapagana ang pag-edit ng bookmark</translation>
 <translation id="5586942249556966598">Walang gawin</translation>
-<translation id="5613179474872285001">Kino-configure ang kinakailangang domain name ng client na ilalapat sa mga client ng malayuang pag-access at pinipigilan ang mga user na mabago ito.
-
-          Kung ie-enable ang setting na ito, tanging ang mga client mula sa itinakdang domain lang ang makakakonekta sa host.
-
-          Kund idi-disable o hindi itatakda ang setting na ito, ilalapat ang default na patakaran para sa uri ng koneksyon. Para sa malayuang pagtulong, nagbibigay-daan ito sa mga client mula sa anumang domain na makakonekta sa host, para sa malayuang pag-access anumang oras, tanging ang may-ari ng host lang ang makakakonekta.
-
-          Tingnan din ang RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
 <translation id="5645779841392247734">Payagan ang cookies sa mga site na ito</translation>
 <translation id="5694594914843889579">Kapag nakatakda sa true ang patakarang ito, hindi magiging available ang external storage sa browser ng file.
@@ -1599,13 +1592,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
-<translation id="695891079107014261">Kino-configure ang kinakailangang domain name ng host na ilalapat sa mga host ng malayuang pag-access at pinipigilan ang mga user na mabago ito.
-
-          Kung ie-enable ang setting na ito, maibabahagi lang ang mga host gamit ang mga account na nakarehistro sa itinakdang domain name.
-
-          Kung idi-disable o hindi itatakda ang setting na ito, maibabahagi ang mga host gamit ang anumang account.
-
-          Tingnan din ang RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Kung kinakailangan ang mga online na pagsusuri sa OCSP/CRL para sa mga lokal na pinagkakatiwalaang anchor</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
 

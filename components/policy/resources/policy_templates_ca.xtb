@@ -1194,13 +1194,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si aquesta política no s'estableix o s'estableix en "false", no es confiarà en els certificats del servidor que no tinguin l'extensió subjectAlternativeName i que continguin el nom de DNS o l'adreça IP.</translation>
 <translation id="557658534286111200">Activa o desactiva l'edició d'adreces d'interès.</translation>
 <translation id="5586942249556966598">No facis res</translation>
-<translation id="5613179474872285001">Configura el nom requerit per al domini de client que s'imposarà als clients d'accés remot. A més, impedeix que els usuaris el canviïn.
-
-          Si aquesta opció de configuració està activada, només els clients del domini especificat poden connectar-se a l'amfitrió.
-
-          Si està desactivada o es deixa sense establir, s'aplica la política predeterminada segons el tipus de connexió. En el cas de l'assistència remota, això permet que els clients de qualsevol domini es connectin a l'amfitrió; en el cas de l'accés remot en qualsevol moment, només s'hi pot connectar el propietari de l'amfitrió.
-
-          Consulteu també la política RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaura l'última sessió</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
 <translation id="5694594914843889579">Quan aquesta política s'estableixi en "true", l'emmagatzematge extern no estarà disponible al navegador de fitxers.
@@ -1497,13 +1490,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
-<translation id="695891079107014261">Configura el nom requerit per al domini d'amfitrió que s'imposarà als amfitrions d'accés remot. A més, impedeix que els usuaris el canviïn.
-
-          Si aquesta opció de configuració està activada, els amfitrions només es poden compartir fent servir comptes registrats al nom de domini especificat.
-
-          Si està desactivada o es deixa sense establir, els amfitrions es poden compartir fent servir qualsevol compte.
-
-          Consulteu també la política RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Si es requereixen comprovacions d'OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>

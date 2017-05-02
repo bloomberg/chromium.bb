@@ -236,6 +236,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3549657413697417275">Căutați în istoricul dvs.</translation>
 <translation id="3557336313807607643">Adaugă în Agendă</translation>
 <translation id="3583454905526475291">Aplicația nu poate fi lansată</translation>
+<translation id="3587482841069643663">Toate</translation>
 <translation id="3590487821116122040">Stocare a site-urilor pe care Chrome nu o consideră importantă (de ex., site-uri care nu au setări salvate sau pe care nu le accesezi frecvent)</translation>
 <translation id="360480449234699036">Află despre subiectele de pe site-uri fără să părăsești pagina. Funcția „Atinge pentru a căuta” trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării și alte detalii.
 
@@ -719,7 +720,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="854522910157234410">Deschide această pagină</translation>
 <translation id="8562452229998620586">Parolele salvate vor fi afișate aici.</translation>
 <translation id="856481929701340285">Versiune site desktop</translation>
-<translation id="8569404424186215731">față de <ph name="DATE" /></translation>
+<translation id="8569404424186215731">începând cu <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ultimele 4 săptămâni</translation>
 <translation id="857509777403223202">În curând vor apărea mai multe articole. O seară plăcută!</translation>
 <translation id="857943718398505171">Acordată (recomandat)</translation>
@@ -730,7 +731,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 
 Pentru licențe noi, conectează-te la internet și redă conținutul descărcat.</translation>
 <translation id="8636825310635137004">Pentru a accesa filele de pe alte dispozitive, activează sincronizarea.</translation>
-<translation id="8639651215196239211">Toate descărcările</translation>
 <translation id="8641930654639604085">Încearcă să blochezi site-urile destinate adulților</translation>
 <translation id="8660471606262461360">Din Google Payments</translation>
 <translation id="8662811608048051533">Te deconectează de pe majoritatea site-urilor.</translation>

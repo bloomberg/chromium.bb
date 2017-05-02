@@ -192,7 +192,7 @@
 <translation id="2999559350546931576">调低音高</translation>
 <translation id="2999945368667127852">不存在下一个媒体小部件。</translation>
 <translation id="3012414509011670858">不存在上一章节。</translation>
-<translation id="3014130421870723208">@ed 8dot</translation>
+<translation id="3014130421870723208">@编辑 8 点式盲文</translation>
 <translation id="3030432017085518523">菜单项单选按钮</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{1个单引号}other{#个单引号}}</translation>
 <translation id="3040901448410802366">进度指示器</translation>
@@ -420,7 +420,7 @@
 <translation id="4827410568042294688">已取消选中</translation>
 <translation id="4842108708071771135">不存在下一个块引用。</translation>
 <translation id="4844625982113518938">按任意键可听到相应键名的读音。按 Ctrl+W 组合键可关闭学习模式。</translation>
-<translation id="4848993367330139335">计时器</translation>
+<translation id="4848993367330139335">定时器</translation>
 <translation id="4850023505158945298">上一个类似元素。</translation>
 <translation id="485011152882364255">在 ChromeVox Next 中，搜索键可以用作辅助键。大多数 ChromeVox 快捷键是使用搜索键搭配其他按键。此外，进行导航时还将用到箭头键。</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -751,7 +751,7 @@
 <translation id="8033827949643255796">已选中</translation>
 <translation id="8035962149453661158">最大值为<ph name="X" /></translation>
 <translation id="8042761080832772327">编辑文本，搜索条目</translation>
-<translation id="8049189770492311300">计时器</translation>
+<translation id="8049189770492311300">定时器</translation>
 <translation id="8065607967589909823">当前选择为</translation>
 <translation id="8066678206530322333">横幅</translation>
 <translation id="8076492880354921740">标签页</translation>
@@ -822,7 +822,7 @@
 <translation id="8856538297388979332">按上下箭头键可查看命令，按回车键可激活</translation>
 <translation id="8864099967139188018">不存在下一个6级标题。</translation>
 <translation id="8882002077197914455">行标题</translation>
-<translation id="8883850400338911892">urled 8dot</translation>
+<translation id="8883850400338911892">网址编辑 8 点式盲文</translation>
 <translation id="8896347895970027998">在启用或停用ChromeVox之间切换。</translation>
 <translation id="8898516272131543774">循环标点符号回显</translation>
 <translation id="8900148057318340779">前缀键</translation>

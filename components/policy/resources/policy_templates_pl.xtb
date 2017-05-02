@@ -1194,13 +1194,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie jest skonfigurowana lub jest wyłączona, certyfikaty serwera, które nie mają rozszerzenia subjectAlternativeName zawierającego nazwę DNS lub adres IP, nie będą uważane za zaufane.</translation>
 <translation id="557658534286111200">Włącz lub wyłącz edytowanie zakładek</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
-<translation id="5613179474872285001">Konfiguruje wymaganą nazwę domeny klienta, która będzie stosowana do klientów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
-
-          Jeśli to ustawienie jest włączone, z hostem mogą się łączyć tylko klienty z określonej domeny.
-
-          Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, do danego rodzaju połączenia stosowane są zasady domyślne. Dzięki temu na potrzeby pomocy zdalnej z hostem mogą łączyć się klienty z dowolnej domeny, a na potrzeby uzyskania dostępu zdalnego w dowolnym momencie łączyć się może tylko właściciel hosta.
-
-          Zobacz też RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Przywróć ostatnią sesję</translation>
 <translation id="5645779841392247734">Zezwalaj na pliki cookie w tych witrynach</translation>
 <translation id="5694594914843889579">Po włączeniu tej zasady pamięci zewnętrzne będą niedostępne w przeglądarce plików.
@@ -1488,13 +1481,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
-<translation id="695891079107014261">Konfiguruje wymaganą nazwę domeny hosta, która będzie stosowana do hostów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
-
-          Jeśli to ustawienie jest włączone, udostępnianie hostów jest możliwe tylko z użyciem kont zarejestrowanych w określonej domenie.
-
-          Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, udostępnianie hostów jest możliwe z użyciem dowolnego konta.
-
-          Zobacz też RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Określa, czy dla lokalnych kotwic zaufania są wymagane sprawdzenia online OCSP/CRL</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>

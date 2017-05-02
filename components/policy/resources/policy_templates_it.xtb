@@ -648,7 +648,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se l'impostazione è disattivata, gli utenti non possono attivare il proxy e il computer non può condividere le stampanti con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Consente di terminare i processi in Task Manager</translation>
-<translation id="3307746730474515290">Controlla quali tipi di app/estensioni possono essere installati e limita l'accesso durante il tempo di esecuzione.
+<translation id="3307746730474515290">Controlla quali tipi di app/estensioni possono essere installati e limita l'accesso in fase di esecuzione.
 
           Questa impostazione autorizza i tipi consentiti di estensioni/app che possono essere installate in <ph name="PRODUCT_NAME" /> e gli host con cui possono interagire. Il valore è un elenco di stringhe, ognuna delle quali deve corrispondere a una delle seguenti: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Per ulteriori informazioni su questi tipi, consulta la documentazione sulle estensioni di <ph name="PRODUCT_NAME" />.
 
@@ -1172,13 +1172,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma non viene impostata, o viene impostata su false, i certificati server privi di estensione subjectAlternativeName e contenenti un nome DNS o un indirizzo IP non verranno considerati attendibili.</translation>
 <translation id="557658534286111200">Abilita o disabilita la modifica dei Preferiti</translation>
 <translation id="5586942249556966598">Non fare niente</translation>
-<translation id="5613179474872285001">Consente di configurare il nome di dominio client richiesto che verrà imposto ai client di accesso remoto e che gli utenti non potranno modificare.
-
-Se attivi questa impostazione, solo i client del dominio specificato potranno connettersi all'host.
-
-Se disattivi o non definisci questa impostazione, viene applicato il criterio predefinito per il tipo di connessione. Per l'assistenza remota, l'impostazione consente ai client di qualsiasi dominio di connettersi all'host; per l'accesso remoto in qualsiasi momento, solo il proprietario dell'host può connettersi.
-
-Vedi anche RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Ripristina l'ultima sessione</translation>
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="5694594914843889579">Quando questa norma è impostata su true, la memoria esterna non sarà disponibile nei file che è possibile sfogliare.
@@ -1470,13 +1463,6 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
-<translation id="695891079107014261">Consente di configurare il nome di dominio host richiesto che verrà imposto agli host di accesso remoto e che gli utenti non potranno modificare.
-
-Se attivi questa impostazione, gli host potranno essere condivisi solo utilizzando gli account registrati sul nome di dominio specificato.
-
-Se disattivi o non definisci questa impostazione, gli host potranno essere condivisi da qualsiasi account.
-
-Vedi anche RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Se i controlli OCSP/CRL online sono obbligatori o meno per i trust anchor locali</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>

@@ -2165,7 +2165,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4090404313667273475">Az oldal egyes elemeinek megjelenítéséhez a következő plug-in szükséges: <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(A bővítmény felügyelt, nem távolítható el.)</translation>
 <translation id="4091434297613116013">papírlap</translation>
-<translation id="4092878864607680421">A(z) „<ph name="APP_NAME" />” alkalmazás legújabb verziójához több jogosultság kell, ezért le lett tiltva.</translation>
 <translation id="4093955363990068916">Helyi fájl:</translation>
 <translation id="4095507791297118304">Elsődleges kijelző</translation>
 <translation id="409579654357498729">Hozzáadás a Cloud Printhez</translation>
@@ -3087,7 +3086,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5499313591153584299">Ez a fájl káros lehet a számítógépre.</translation>
 <translation id="5500122897333236901">izlandi</translation>
 <translation id="5502500733115278303">A Firefox alkalmazásból importálva</translation>
-<translation id="5506868365569362143">Érintő HUD mód váltása</translation>
 <translation id="5507756662695126555">Letagadhatatlanság</translation>
 <translation id="5509693895992845810">Mentés &amp;másként...</translation>
 <translation id="5509914365760201064">Kiállító: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3666,7 +3664,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6404519443262761446">Az alvás üzemmódból való kilépéshez képernyőzár szükséges.</translation>
 <translation id="6406303162637086258">Böngésző újraindításának szimulálása</translation>
 <translation id="6406506848690869874">Szinkronizálás</translation>
-<translation id="6407080938771313237">Érintésvetítő HUD</translation>
 <translation id="6408118934673775994">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> és <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Előugró ablakok</translation>
 <translation id="6410063390789552572">A hálózati könyvtár nem érhető el</translation>
@@ -4279,7 +4276,6 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
 <translation id="7348749398828259943">USA „Workman” nemzetközi billentyűzet</translation>
 <translation id="7352651011704765696">Valami nem működik</translation>
-<translation id="7353651168734309780">A(z) <ph name="EXTENSION_NAME" /> bővítményhez új engedélyek szükségesek</translation>
 <translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="7360183604634508679">Könyvjelzők menü</translation>
 <translation id="7361039089383199231">$1 bájt</translation>
@@ -4605,7 +4601,6 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7839192898639727867">Tanúsítványtulajdonos kulcsazonosítója</translation>
 <translation id="7839804798877833423">E fájlok lekérése mintegy <ph name="FILE_SIZE" />-nyi mobiladat-forgalmat fog generálni.</translation>
 <translation id="7839963980801867006">Válassza ki, melyik bővítmény IME-k legyenek elérhetők a nyelvi menüben.</translation>
-<translation id="7842346819602959665">A(z) "<ph name="EXTENSION_NAME" />" bővítmény legújabb verziójához több jogosultság kell, ezért le lett tiltva.</translation>
 <translation id="7844992432319478437">Diff frissítése</translation>
 <translation id="7846076177841592234">Kijelölés törlése</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>

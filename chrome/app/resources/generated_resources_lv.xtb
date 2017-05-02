@@ -2167,7 +2167,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4090404313667273475">Dažu šīs lapas elementu attēlošanai ir nepieciešams spraudnis <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(Šis paplašinājums tiek pārvaldīts, un to nevar noņemt.)</translation>
 <translation id="4091434297613116013">papīra lapas</translation>
-<translation id="4092878864607680421">Lietojumprogrammas <ph name="APP_NAME" /> jaunākajai versijai nepieciešamas papildu atļaujas, tādēļ tā tika atspējota.</translation>
 <translation id="4093955363990068916">Lokālais fails:</translation>
 <translation id="4095507791297118304">Galvenais displejs</translation>
 <translation id="409579654357498729">Pievienot mākoņdrukai</translation>
@@ -3089,7 +3088,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5499313591153584299">Šis fails var kaitēt jūsu datoram.</translation>
 <translation id="5500122897333236901">Īslandiešu valoda</translation>
 <translation id="5502500733115278303">Importēts no Firefox</translation>
-<translation id="5506868365569362143">Pieskāriena HUD režīma maiņa</translation>
 <translation id="5507756662695126555">Neatteikšanās</translation>
 <translation id="5509693895992845810">S&amp;aglabāt kā...</translation>
 <translation id="5509914365760201064">Izdevējs: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3667,7 +3665,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="6404519443262761446">Pieprasīt ekrāna bloķēšanu, lai izietu no miega režīma.</translation>
 <translation id="6406303162637086258">Imitēt pārlūkprogrammas restartēšanu</translation>
 <translation id="6406506848690869874">Sinhronizācija</translation>
-<translation id="6407080938771313237">Projekcijas skārienjutīgais HUD displejs</translation>
 <translation id="6408118934673775994">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> un <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Uznirstošie logi</translation>
 <translation id="6410063390789552572">Nevar piekļūt tīkla bibliotēkai</translation>
@@ -4281,7 +4278,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
 <translation id="7348749398828259943">Workman (ASV) starptautiskā tastatūra</translation>
 <translation id="7352651011704765696">Radās problēma</translation>
-<translation id="7353651168734309780">Paplašinājumam <ph name="EXTENSION_NAME" /> nepieciešamas jaunas atļaujas</translation>
 <translation id="735745346212279324">VPN ir atvienots</translation>
 <translation id="7360183604634508679">Grāmatzīmju izvēlne</translation>
 <translation id="7361039089383199231">$1 baiti</translation>
@@ -4606,7 +4602,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7839192898639727867">Sertifikāta subjekta atslēgas ID</translation>
 <translation id="7839804798877833423">Izgūstot šos failus, tiks izmantoti aptuveni <ph name="FILE_SIZE" /> mobilo datu.</translation>
 <translation id="7839963980801867006">Valodas izvēlnē atlasiet, kuri paplašinājumu IME būs pieejami.</translation>
-<translation id="7842346819602959665">Paplašinājuma "<ph name="EXTENSION_NAME" />" jaunākajai versijai nepieciešamas papildu atļaujas, tādēļ tas tika atspējots.</translation>
 <translation id="7844992432319478437">Tiek augšupielādētas atšķirības</translation>
 <translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="7846634333498149051">Tastatūra</translation>

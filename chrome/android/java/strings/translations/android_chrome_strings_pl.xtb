@@ -236,6 +236,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3549657413697417275">Przeszukaj historię</translation>
 <translation id="3557336313807607643">Dodaj do kontaktów</translation>
 <translation id="3583454905526475291">Nie można uruchomić aplikacji</translation>
+<translation id="3587482841069643663">Wszystkie</translation>
 <translation id="3590487821116122040">Dane witryn, które Chrome uznaje za nieistotne (np. witryny, które rzadko odwiedzasz lub które nie mają zapisanych ustawień)</translation>
 <translation id="360480449234699036">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Dotknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google, dzięki czemu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
 
@@ -730,7 +731,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 
 Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
-<translation id="8639651215196239211">Wszystkie pobrane pliki</translation>
 <translation id="8641930654639604085">Próbuj blokować strony dla dorosłych</translation>
 <translation id="8660471606262461360">Z Google Payments</translation>
 <translation id="8662811608048051533">Wylogowuje z większości stron internetowych.</translation>

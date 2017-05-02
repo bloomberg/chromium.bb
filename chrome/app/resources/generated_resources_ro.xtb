@@ -2165,7 +2165,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Pentru a afișa unele elemente din această pagină este necesar pluginul <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(Această extensie este gestionată și nu poate fi eliminată.)</translation>
 <translation id="4091434297613116013">foi de hârtie</translation>
-<translation id="4092878864607680421">Cea mai recentă versiune a aplicației „<ph name="APP_NAME" />” necesită permisiuni suplimentare, astfel că a fost dezactivată.</translation>
 <translation id="4093955363990068916">Fișier local:</translation>
 <translation id="4095507791297118304">Afișare principală</translation>
 <translation id="409579654357498729">Adăugați la Cloud Print</translation>
@@ -3087,7 +3086,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5499313591153584299">Este posibil ca acest fișier să fie dăunător pentru computer.</translation>
 <translation id="5500122897333236901">Islandeză</translation>
 <translation id="5502500733115278303">Importate din Firefox</translation>
-<translation id="5506868365569362143">Modificare a modului HUD tactil</translation>
 <translation id="5507756662695126555">Non-repudiere</translation>
 <translation id="5509693895992845810">Salvează c&amp;a...</translation>
 <translation id="5509914365760201064">Emitent: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6404519443262761446">Se solicită blocarea ecranului pentru ieșirea din inactivitate.</translation>
 <translation id="6406303162637086258">Simulați repornirea browserului</translation>
 <translation id="6406506848690869874">Sincronizare</translation>
-<translation id="6407080938771313237">Funcția HUD pentru proiecție tactilă</translation>
 <translation id="6408118934673775994">Citește și modifică datele de pe <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Ferestre pop-up</translation>
 <translation id="6410063390789552572">Biblioteca din rețea nu poate fi accesată</translation>
@@ -4277,7 +4274,6 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
 <translation id="7348749398828259943">Tastatură S.U.A. Workman internațională</translation>
 <translation id="7352651011704765696">A apărut o eroare</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> necesită permisiuni noi</translation>
 <translation id="735745346212279324">Rețea VPN deconectată</translation>
 <translation id="7360183604634508679">Meniul Marcaje</translation>
 <translation id="7361039089383199231">$1 byți</translation>
@@ -4603,7 +4599,6 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="7839192898639727867">ID cheie pentru subiectul certificatului</translation>
 <translation id="7839804798877833423">Preluarea acestor fișiere va utiliza aproximativ <ph name="FILE_SIZE" /> din datele mobile.</translation>
 <translation id="7839963980801867006">Selectați editoarele IME pentru extensie care vor fi disponibile în meniul de limbă.</translation>
-<translation id="7842346819602959665">Cea mai recentă versiune a extensiei „<ph name="EXTENSION_NAME" />” necesită permisiuni suplimentare, astfel că a fost dezactivată.</translation>
 <translation id="7844992432319478437">Se actualizează diferențele</translation>
 <translation id="7846076177841592234">Anulează selecția</translation>
 <translation id="7846634333498149051">Tastatură</translation>

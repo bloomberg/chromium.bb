@@ -2165,7 +2165,6 @@
 <translation id="4090404313667273475">இந்தப் பக்கத்தில் சில கூறுகளைக் காண்பிக்க <ph name="PLUGIN_NAME" /> தேவைப்படுகிறது.</translation>
 <translation id="4090535558450035482">(இந்த நீட்டிப்பு நிர்வகிக்கப்படுகிறது மற்றும் அகற்ற முடியாது.)</translation>
 <translation id="4091434297613116013">தாள்கள்</translation>
-<translation id="4092878864607680421">"<ph name="APP_NAME" />" பயன்பாட்டின் புதிய பதிப்புக்கு கூடுதல் அனுமதிகள் தேவை, எனவே அது முடக்கப்பட்டது.</translation>
 <translation id="4093955363990068916">அகக் கோப்பு:</translation>
 <translation id="4095507791297118304">முதன்மைத் திரை</translation>
 <translation id="409579654357498729">மேகக்கணி அச்சில் சேர்</translation>
@@ -3082,7 +3081,6 @@
 <translation id="5499313591153584299">இந்தக் கோப்பு உங்கள் கணினிக்குத் தீங்கு விளைவிக்கலாம்.</translation>
 <translation id="5500122897333236901">ஐஸ்லாண்டிக்</translation>
 <translation id="5502500733115278303">Firefox இலிருந்து இறக்குமதி செய்யப்பட்டது</translation>
-<translation id="5506868365569362143">தொடுதல் HUD பயன்முறையை மாற்றும்</translation>
 <translation id="5507756662695126555">மறுக்கப்படாதவை</translation>
 <translation id="5509693895992845810">&amp;இவ்வாறு சேமி...</translation>
 <translation id="5509914365760201064">வழங்குபவர்: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3661,7 +3659,6 @@
 <translation id="6404519443262761446">உறக்க நிலையிலிருந்து விழிப்பூட்ட கடவுச்சொல் தேவை.</translation>
 <translation id="6406303162637086258">உலாவி மறுதொடக்கத்தை உருவகப்படுத்து</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6407080938771313237">புரோஜக்சன் தொடுதல் HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> மற்றும் <ph name="WEBSITE_3" /> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="6409731863280057959">பாப்-அப்கள்</translation>
 <translation id="6410063390789552572">நெட்வொர்க் நூலகத்தை அணுக முடியவில்லை</translation>
@@ -4274,7 +4271,6 @@
 <translation id="7348093485538360975">ஆன்-ஸ்கிரீன் விசைப்பலகை</translation>
 <translation id="7348749398828259943">யுஎஸ் ஒர்க்மேன் இன்டர்நேஷனல் விசைப்பலகை</translation>
 <translation id="7352651011704765696">ஏதோ தவறு ஏற்பட்டது</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> க்குப் புதிய அனுமதிகள் தேவைப்படுகிறது</translation>
 <translation id="735745346212279324">VPN துண்டிக்கப்பட்டது</translation>
 <translation id="7360183604634508679">புத்தகக்குறிகள் மெனு</translation>
 <translation id="7361039089383199231">$1 பைட்கள்</translation>
@@ -4592,7 +4588,6 @@
 <translation id="7839192898639727867">சான்றிதழ் பொருள் விசை ID</translation>
 <translation id="7839804798877833423">இந்த கோப்புகளைப் பெற்றால், மொபைல் தரவில் தோராயமாக <ph name="FILE_SIZE" /> ஐப் பயன்படுத்தும்.</translation>
 <translation id="7839963980801867006">மொழி மெனுவில் இருக்கக்கூடிய நீட்டிப்பு IMEகளைத் தேர்ந்தெடுக்கவும்.</translation>
-<translation id="7842346819602959665">"<ph name="EXTENSION_NAME" />" நீட்டிப்பின் புதிய பதிப்புக்கு கூடுதல் அனுமதிகள் தேவை, எனவே அது முடக்கப்பட்டது.</translation>
 <translation id="7844992432319478437">வேறுபாட்டைப் புதுப்பிக்கிறது</translation>
 <translation id="7846076177841592234">தேர்வை ரத்துசெய்</translation>
 <translation id="7846634333498149051">விசைப்பலகை</translation>

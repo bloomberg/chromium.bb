@@ -711,7 +711,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3297010562646015826">Permet de mettre fin aux processus dans le gestionnaire des tâches</translation>
 <translation id="3307746730474515290">Définit quels types d'extensions ou d'applications sont autorisés à être installés et limite l'accès pendant l'exécution.
 
-          Ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui sont autorisés à être installés dans <ph name="PRODUCT_NAME" /> et les hôtes avec lesquels ils peuvent interagir. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" et "platform_app". Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions du produit <ph name="PRODUCT_NAME" />.
+          Ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui sont autorisés à être installés dans <ph name="PRODUCT_NAME" /> et les hôtes avec lesquels elles peuvent interagir. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" et "platform_app". Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions du produit <ph name="PRODUCT_NAME" />.
 
           Sachez que cette règle force également l'installation des extensions et des applications via ExtensionInstallForcelist.
 
@@ -1295,13 +1295,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les certificats de serveur qui ne comportent pas d'extension subjectAlternativeName contenant soit un nom DNS, soit une adresse IP, ne seront pas approuvés.</translation>
 <translation id="557658534286111200">Active ou désactive la modification des favoris</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
-<translation id="5613179474872285001">Configure le nom de domaine obligatoire du client qui sera imposé aux clients d'accès à distance et ne pourra pas être modifié par les utilisateurs.
-
-          Si ce paramètre est activé, seuls les clients du domaine indiqué peuvent se connecter à l'hôte.
-
-          Si ce paramètre est désactivé ou s'il n'est pas défini, la règle par défaut pour le type de connexion concerné est appliquée. Dans le cadre d'une assistance à distance, cela permet aux clients de n'importe quel domaine de se connecter à l'hôte. Concernant l'accès à distance à tout moment, seul le propriétaire de l'hôte peut se connecter.
-
-          Voir aussi la règle "RemoteAccessHostDomain".</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5694594914843889579">Lorsque cette règle est définie sur "True", le navigateur de fichiers n'offre pas la possibilité de procéder à un stockage externe.
@@ -1624,13 +1617,6 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
-<translation id="695891079107014261">Configure le nom de domaine obligatoire de l'hôte qui sera imposé aux hôtes d'accès à distance et ne pourra pas être modifié par les utilisateurs.
-
-          Si ce paramètre est activé, les hôtes ne peuvent être partagés qu'à l'aide des comptes enregistrés sur le nom de domaine spécifié.
-
-          Si ce paramètre est désactivé ou s'il n'est pas défini, les hôtes peuvent être partagés à l'aide de n'importe quel compte.
-
-          Voir aussi la règle "RemoteAccessHostClientDomain".</translation>
 <translation id="6997592395211691850">Définit si les vérifications en ligne OCSP/CRL sont requises pour les ancres d'approbation locales.</translation>
 <translation id="7003334574344702284">Lorsqu'elle est activée, cette règle force l'importation des mots de passe enregistrés à partir du navigateur par défaut précédent. Si elle est activée, cette politique affecte également la boîte de dialogue d'importation. 
 

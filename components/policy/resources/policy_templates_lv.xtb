@@ -1285,13 +1285,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta vai ir iestatīta vērtība “false”, servera sertifikāti, kam trūks paplašinājuma subjectAlternativeName, kurā ietverts DNS nosaukums vai IP adrese, nebūs uzticami.</translation>
 <translation id="557658534286111200">Iespējo vai atspējo grāmatzīmju rediģēšanu</translation>
 <translation id="5586942249556966598">Nedarīt neko</translation>
-<translation id="5613179474872285001">Konfigurē nepieciešamo klienta domēna nosaukumu, kas tiks izmantots attālās piekļuves klientiem, un lietotāji to nevarēs mainīt.
-
-          Ja šis iestatījums ir iespējots, savienojumu ar saimniekdatoru var izveidot tikai klienti no norādītā domēna.
-
-          Ja šis iestatījums ir atspējots vai nav iestatīts, tiek lietota savienojuma veida noklusējuma politika. Lai sniegtu attālu palīdzību, klienti no jebkura domēna var izveidot savienojumu ar saimniekdatoru. Attālai piekļuvei jebkurā laikā savienojumu var izveidot tikai saimniekdatora īpašnieks.
-
-          Skatiet arī politiku RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Atjaunot pēdējo sesiju</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
 <translation id="5694594914843889579">Ja politika ir iestatīta kā patiesa, ārējā krātuve nav pieejama failu pārlūkā.
@@ -1609,13 +1602,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
-<translation id="695891079107014261">Konfigurē nepieciešamo klienta domēna nosaukumu, kas tiks izmantots attālās piekļuves klientiem, un lietotāji to nevarēs mainīt.
-
-          Ja šis iestatījums ir iespējots, saimniekdatorus var koplietot, tikai izmantojot kontus, kas reģistrēti norādītajā domēna nosaukumā.
-
-          Ja šī politika ir atspējota vai nav iestatīta, saimniekdatorus var koplietot, izmantojot jebkuru kontu.
-
-          Skatiet arī politiku RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 

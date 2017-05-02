@@ -1248,13 +1248,6 @@
       Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
 <translation id="557658534286111200">Aktiverer eller deaktiverer bokmerkeredigering</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
-<translation id="5613179474872285001">Konfigurerer det påkrevde klientdomenenavnet som skal være obligatorisk for klienter med ekstern tilgang, og hindrer brukerne i å endre det.
-
-          Hvis denne innstillingen er slått på, kan bare klienter fra det spesifiserte domenet koble til verten.
-
-          Hvis denne innstillingen er slått av eller ikke spesifisert, brukes standardregelen for tilkoblingstypen. For fjernhjelp gjør dette at klienter fra alle domener kan koble til verten. For ekstern tilgang uavhengig av tidspunkt kan bare vertseieren koble til.
-
-          Se også RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
 <translation id="5694594914843889579">Når denne regelen er angitt som «true» (sann), er ikke eksterne lagringsmedier tilgjengelige i filbehandleren.
@@ -1573,13 +1566,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
-<translation id="695891079107014261">Konfigurerer det påkrevde vertsdomenenavnet som skal være obligatorisk for verter for ekstern tilgang, og hindrer brukerne i å endre det.
-
-          Hvis denne innstillingen er slått på, kan verter bare deles ved hjelp av kontoer som er registrert på det spesifiserte domenenavnet.
-
-          Hvis denne innstillingen er slått av eller ikke spesifisert, kan verter deles med en hvilken som helst konto.
-
-          Se også RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
