@@ -87,7 +87,8 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
       new password_manager::PasswordStoreDefault(
           main_thread_runner, db_thread_runner, std::move(login_db));
   if (!store->Init(ios::sync_start_util::GetFlareForSyncableService(
-          context->GetStatePath()))) {
+                       context->GetStatePath()),
+                   nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

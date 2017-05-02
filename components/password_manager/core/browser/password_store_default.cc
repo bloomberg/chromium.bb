@@ -27,9 +27,10 @@ PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
 bool PasswordStoreDefault::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    PrefService* prefs) {
   ScheduleTask(base::Bind(&PasswordStoreDefault::InitOnDBThread, this));
-  return PasswordStore::Init(flare);
+  return PasswordStore::Init(flare, prefs);
 }
 
 void PasswordStoreDefault::ShutdownOnUIThread() {

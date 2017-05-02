@@ -10,6 +10,8 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/origin.h"
@@ -41,7 +43,8 @@ bool ReverseStringLess::operator()(const base::string16& lhs,
                                       rhs.rend());
 }
 
-PasswordReuseDetector::PasswordReuseDetector() {}
+PasswordReuseDetector::PasswordReuseDetector(PrefService* prefs)
+    : prefs_(prefs) {}
 
 PasswordReuseDetector::~PasswordReuseDetector() {}
 
@@ -127,8 +130,11 @@ void PasswordReuseDetector::SaveSyncPasswordHash(
     const base::string16& password) {
   sync_password_hash_ =
       password_manager_util::Calculate37BitsOfSHA256Hash(password);
-  // TODO(crbug.com/657041) Implement saving of sync password hash into
-  // preferences.
+  if (prefs_) {
+    // TODO(crbug.com/657041) Implement encrypting and saving of
+    // |sync_password_hash_| into preference kSyncPasswordHash.
+    prefs_->SetString(prefs::kSyncPasswordHash, std::string());
+  }
 }
 
 void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {

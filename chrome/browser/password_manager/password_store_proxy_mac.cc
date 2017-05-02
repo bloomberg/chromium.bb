@@ -36,7 +36,8 @@ PasswordStoreProxyMac::~PasswordStoreProxyMac() {
 }
 
 bool PasswordStoreProxyMac::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    PrefService* prefs) {
   // Set up a background thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
@@ -51,7 +52,7 @@ bool PasswordStoreProxyMac::Init(
           static_cast<MigrationStatus>(migration_status_.GetValue()))))
     return false;
 
-  return password_manager::PasswordStore::Init(flare);
+  return password_manager::PasswordStore::Init(flare, prefs);
 }
 
 void PasswordStoreProxyMac::ShutdownOnUIThread() {

@@ -262,8 +262,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   NOTIMPLEMENTED();
 #endif
   DCHECK(ps);
-  if (!ps->Init(
-          sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
+  if (!ps->Init(sync_start_util::GetFlareForSyncableService(profile->GetPath()),
+                profile->GetPrefs())) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

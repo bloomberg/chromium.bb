@@ -23,6 +23,8 @@ namespace password_manager {
 class LoginDatabase;
 }
 
+class PrefService;
+
 // TODO(vasilii): Deprecate this class. The class should be used by
 // PasswordStoreProxyMac wrapper.
 // Implements PasswordStore on top of the OS X Keychain, with an internal
@@ -77,7 +79,8 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   ~PasswordStoreMac() override;
 
  private:
-  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare,
+            PrefService* prefs) override;
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
   password_manager::PasswordStoreChangeList AddLoginImpl(

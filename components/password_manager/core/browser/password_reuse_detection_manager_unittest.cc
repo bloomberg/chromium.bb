@@ -39,7 +39,7 @@ class PasswordReuseDetectionManagerTest : public ::testing::Test {
   PasswordReuseDetectionManagerTest() {}
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
+    CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
   }
   void TearDown() override {
     store_->ShutdownOnUIThread();
