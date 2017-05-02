@@ -128,27 +128,43 @@ bool ReadFieldString(const uint8_t** cursor,
   return current == L'\0';
 }
 
-std::string DecodePRegStringValue(const std::vector<uint8_t>& data) {
+// Converts the UTF16 |data| to an UTF8 string |value|. Returns false if the
+// resulting UTF8 string contains invalid characters.
+bool DecodePRegStringValue(const std::vector<uint8_t>& data,
+                           std::string* value) {
   size_t len = data.size() / sizeof(base::char16);
-  if (len <= 0)
-    return std::string();
+  if (len <= 0) {
+    value->clear();
+    return true;
+  }
 
   const base::char16* chars =
       reinterpret_cast<const base::char16*>(data.data());
-  base::string16 result;
-  std::transform(chars, chars + len - 1, std::back_inserter(result),
+  base::string16 utf16_str;
+  std::transform(chars, chars + len - 1, std::back_inserter(utf16_str),
                  std::ptr_fun(base::ByteSwapToLE16));
-  return base::UTF16ToUTF8(result);
+  // Note: UTF16ToUTF8() only checks whether all chars are valid code points,
+  // but not whether they're valid characters. IsStringUTF8(), however, does.
+  *value = base::UTF16ToUTF8(utf16_str);
+  if (!base::IsStringUTF8(*value)) {
+    LOG(ERROR) << "String '" << *value << "' is not a valid UTF8 string";
+    value->clear();
+    return false;
+  }
+  return true;
 }
 
 // Decodes a value from a PReg file given as a uint8_t vector.
 bool DecodePRegValue(uint32_t type,
                      const std::vector<uint8_t>& data,
                      std::unique_ptr<base::Value>* value) {
+  std::string data_utf8;
   switch (type) {
     case REG_SZ:
     case REG_EXPAND_SZ:
-      value->reset(new base::Value(DecodePRegStringValue(data)));
+      if (!DecodePRegStringValue(data, &data_utf8))
+        return false;
+      value->reset(new base::Value(data_utf8));
       return true;
     case REG_DWORD_LITTLE_ENDIAN:
     case REG_DWORD_BIG_ENDIAN:
@@ -231,19 +247,24 @@ void HandleRecord(const base::string16& key_name,
     return;
   }
 
+  std::string data_utf8;
   std::string action_trigger(base::ToLowerASCII(
       value_name.substr(arraysize(kActionTriggerPrefix) - 1)));
   if (action_trigger == kActionTriggerDeleteValues) {
-    for (const std::string& value :
-         base::SplitString(DecodePRegStringValue(data), ";",
-                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
-      dict->RemoveValue(value);
+    if (DecodePRegStringValue(data, &data_utf8)) {
+      for (const std::string& value :
+           base::SplitString(data_utf8, ";", base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY))
+        dict->RemoveValue(value);
+    }
   } else if (base::StartsWith(action_trigger, kActionTriggerDeleteKeys,
                               base::CompareCase::SENSITIVE)) {
-    for (const std::string& key :
-         base::SplitString(DecodePRegStringValue(data), ";",
-                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
-      dict->RemoveKey(key);
+    if (DecodePRegStringValue(data, &data_utf8)) {
+      for (const std::string& key :
+           base::SplitString(data_utf8, ";", base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY))
+        dict->RemoveKey(key);
+    }
   } else if (base::StartsWith(action_trigger, kActionTriggerDel,
                               base::CompareCase::SENSITIVE)) {
     dict->RemoveValue(value_name.substr(arraysize(kActionTriggerPrefix) - 1 +

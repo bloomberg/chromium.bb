@@ -22,7 +22,11 @@ namespace policy {
 namespace preg_parser {
 namespace {
 
-const char kRegistryPolFile[] = "chrome/test/data/policy/registry.pol";
+// Preg files are relative to |kRegistryPolBaseDir|.
+const char kRegistryPolBaseDir[] = "chrome/test/data/policy/gpo";
+const char kRegistryPolFile[] = "parser_test/registry.pol";
+const char kInvalidEncodingRegistryPolFile[] = "invalid_encoding/registry.pol";
+
 const char kRegistryKey[] = "SOFTWARE\\Policies\\Chromium";
 
 // Check whether two RegistryDicts equal each other.
@@ -83,10 +87,17 @@ void SetString(RegistryDict* dict,
   dict->SetValue(name, base::WrapUnique<base::Value>(new base::Value(value)));
 }
 
-TEST(PRegParserTest, TestParseFile) {
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+class PRegParserTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
+    test_data_dir_ = test_data_dir_.AppendASCII(kRegistryPolBaseDir);
+  }
 
+  base::FilePath test_data_dir_;
+};
+
+TEST_F(PRegParserTest, TestParseFile) {
   // Prepare the test dictionary with some data so the test can check that the
   // PReg action triggers work, i.e. remove these items.
   RegistryDict dict;
@@ -104,7 +115,7 @@ TEST(PRegParserTest, TestParseFile) {
   dict.SetKey("DelValsTest", std::move(subdict));
 
   // Run the parser.
-  base::FilePath test_file(test_data_dir.AppendASCII(kRegistryPolFile));
+  base::FilePath test_file(test_data_dir_.AppendASCII(kRegistryPolFile));
   PolicyLoadStatusSample status;
   ASSERT_TRUE(preg_parser::ReadFile(test_file, base::ASCIIToUTF16(kRegistryKey),
                                     &dict, &status));
@@ -128,13 +139,10 @@ TEST(PRegParserTest, TestParseFile) {
   EXPECT_TRUE(RegistryDictEquals(dict, expected));
 }
 
-TEST(PRegParserTest, SubstringRootInvalid) {
+TEST_F(PRegParserTest, SubstringRootInvalid) {
   // A root of "Aa/Bb/Cc" should not be considered a valid root for a
   // key like "Aa/Bb/C".
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-
-  base::FilePath test_file(test_data_dir.AppendASCII(kRegistryPolFile));
+  base::FilePath test_file(test_data_dir_.AppendASCII(kRegistryPolFile));
   RegistryDict empty;
   PolicyLoadStatusSample status;
 
@@ -150,6 +158,19 @@ TEST(PRegParserTest, SubstringRootInvalid) {
   ASSERT_TRUE(preg_parser::ReadFile(test_file, base::ASCIIToUTF16(kRegistryKey),
                                     &dict2, &status));
   EXPECT_FALSE(RegistryDictEquals(dict2, empty));
+}
+
+TEST_F(PRegParserTest, RejectInvalidStrings) {
+  // Tests whether strings with invalid characters are rejected.
+  base::FilePath test_file(
+      test_data_dir_.AppendASCII(kInvalidEncodingRegistryPolFile));
+  PolicyLoadStatusSample status;
+  RegistryDict dict;
+  ASSERT_TRUE(preg_parser::ReadFile(test_file, base::ASCIIToUTF16(kRegistryKey),
+                                    &dict, &status));
+
+  RegistryDict empty;
+  EXPECT_TRUE(RegistryDictEquals(dict, empty));
 }
 
 }  // namespace
