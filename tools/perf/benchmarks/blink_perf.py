@@ -329,6 +329,10 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
       page.skipped_gpus = []
     return story_set
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-color-correct-rendering',
+    ])
 
 @benchmark.Owner(emails=['yukishiino@chromium.org',
                          'bashi@chromium.org',
