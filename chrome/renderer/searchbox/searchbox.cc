@@ -357,13 +357,6 @@ void SearchBox::ChromeIdentityCheckResult(const base::string16& identity,
       render_frame()->GetWebFrame(), identity, identity_match);
 }
 
-void SearchBox::DetermineIfPageSupportsInstant() {
-  bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
-      render_frame()->GetWebFrame());
-  DVLOG(1) << render_frame() << " PageSupportsInstant: " << result;
-  instant_service_->InstantSupportDetermined(page_seq_no_, result);
-}
-
 void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
                              OmniboxFocusChangeReason reason) {
   bool key_capture_enabled = new_focus_state == OMNIBOX_FOCUS_INVISIBLE;

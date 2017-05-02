@@ -144,7 +144,6 @@ class SearchBox : public content::RenderFrameObserver,
   void SetPageSequenceNumber(int page_seq_no) override;
   void ChromeIdentityCheckResult(const base::string16& identity,
                                  bool identity_match) override;
-  void DetermineIfPageSupportsInstant() override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
   void HistorySyncCheckResult(bool sync_history) override;

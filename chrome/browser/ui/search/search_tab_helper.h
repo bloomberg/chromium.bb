@@ -163,11 +163,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // otherwise keeps the current origin.
   void UpdateMode(bool update_origin);
 
-  // Tells the renderer to determine if the page supports the Instant API, which
-  // results in a call to OnInstantSupportDetermined() when the reply is
-  // received.
-  void DetermineIfPageSupportsInstant();
-
   OmniboxView* GetOmniboxView();
   const OmniboxView* GetOmniboxView() const;
 

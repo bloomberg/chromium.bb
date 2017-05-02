@@ -229,19 +229,6 @@ namespace extensions_v8 {
 
 static const char kSearchBoxExtensionName[] = "v8/EmbeddedSearch";
 
-// We first send this script down to determine if the page supports instant.
-static const char kSupportsInstantScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.onsubmit &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.onsubmit =="
-    "        'function') {"
-    "  true;"
-    "} else {"
-    "  false;"
-    "}";
-
 static const char kDispatchChromeIdentityCheckResult[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -457,15 +444,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 v8::Extension* SearchBoxExtension::Get() {
   return new SearchBoxExtensionWrapper(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_SEARCHBOX_API));
-}
-
-// static
-bool SearchBoxExtension::PageSupportsInstant(blink::WebFrame* frame) {
-  if (!frame) return false;
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> v = frame->ExecuteScriptAndReturnValue(
-      blink::WebScriptSource(kSupportsInstantScript));
-  return !v.IsEmpty() && v->BooleanValue();
 }
 
 // static
