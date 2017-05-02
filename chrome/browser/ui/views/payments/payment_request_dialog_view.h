@@ -81,6 +81,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   // views::DialogDelegate:
   bool Cancel() override;

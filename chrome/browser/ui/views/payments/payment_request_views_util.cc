@@ -188,6 +188,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     views::SetImageFromVectorIcon(back_arrow, ui::kBackArrowIcon);
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
+    back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     back_arrow->set_tag(static_cast<int>(
         PaymentRequestCommonTags::BACK_BUTTON_TAG));
     back_arrow->set_id(static_cast<int>(DialogViewID::BACK_BUTTON));
