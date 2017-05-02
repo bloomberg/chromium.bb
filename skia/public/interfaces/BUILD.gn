@@ -11,15 +11,6 @@ mojom("interfaces") {
   ]
 }
 
-mojom("mojo") {
-  sources = [
-    "bitmap_array.mojom",
-  ]
-  public_deps = [
-    ":interfaces",
-  ]
-}
-
 mojom("test_interfaces") {
   testonly = true
   sources = [
@@ -28,7 +19,6 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":interfaces",
-    ":mojo",
   ]
 }
 
