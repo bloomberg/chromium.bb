@@ -66,15 +66,8 @@ void MainThreadWorkletGlobalScope::FetchAndInvokeScript(
   script_loader->FetchScript(module_url_record);
 }
 
-void MainThreadWorkletGlobalScope::EvaluateScript(
-    const ScriptSourceCode& script_source_code) {
-  // This should be called only for threaded worklets that still use classic
-  // script loading.
-  NOTREACHED();
-}
-
 // TODO(nhiroki): Add tests for termination.
-void MainThreadWorkletGlobalScope::TerminateWorkletGlobalScope() {
+void MainThreadWorkletGlobalScope::Terminate() {
   for (auto it = loader_map_.begin(); it != loader_map_.end();) {
     WorkletScriptLoader* script_loader = it->key;
     // Cancel() eventually calls NotifyWorkletScriptLoadingFinished() and

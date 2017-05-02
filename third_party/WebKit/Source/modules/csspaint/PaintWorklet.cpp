@@ -18,30 +18,25 @@ PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
     : MainThreadWorklet(frame),
-      paint_worklet_global_scope_(PaintWorkletGlobalScope::Create(
-          frame,
-          frame->GetDocument()->Url(),
-          frame->GetDocument()->UserAgent(),
-          frame->GetDocument()->GetSecurityOrigin(),
-          ToIsolate(frame->GetDocument()))) {}
+      global_scope_proxy_(
+          WTF::MakeUnique<PaintWorkletGlobalScopeProxy>(frame)) {}
 
-PaintWorklet::~PaintWorklet() {}
+PaintWorklet::~PaintWorklet() = default;
 
-PaintWorkletGlobalScope* PaintWorklet::GetWorkletGlobalScopeProxy() const {
-  return paint_worklet_global_scope_.Get();
+WorkletGlobalScopeProxy* PaintWorklet::GetWorkletGlobalScopeProxy() const {
+  return global_scope_proxy_.get();
 }
 
 CSSPaintDefinition* PaintWorklet::FindDefinition(const String& name) {
-  return paint_worklet_global_scope_->FindDefinition(name);
+  return global_scope_proxy_->FindDefinition(name);
 }
 
 void PaintWorklet::AddPendingGenerator(const String& name,
                                        CSSPaintImageGeneratorImpl* generator) {
-  return paint_worklet_global_scope_->AddPendingGenerator(name, generator);
+  return global_scope_proxy_->AddPendingGenerator(name, generator);
 }
 
 DEFINE_TRACE(PaintWorklet) {
-  visitor->Trace(paint_worklet_global_scope_);
   MainThreadWorklet::Trace(visitor);
 }
 
