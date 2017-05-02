@@ -191,7 +191,7 @@ cr.define('cr.ui', function() {
     hasVisibleItems: function() {
       var menuItems = this.menuItems;  // Cache.
       for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
-        if (!menuItem.hidden)
+        if (!menuItem.isSeparator() && !menuItem.hidden)
           return true;
       }
       return false;
