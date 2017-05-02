@@ -194,6 +194,12 @@ class DriveApiRequestsTest : public testing::Test {
     testing_properties_.push_back(public_property);
   }
 
+  void EnableTeamDrivesIntegration() {
+    GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
+    url_generator_.reset(new DriveApiUrlGenerator(
+        test_base_url, test_base_url, TEAM_DRIVES_INTEGRATION_ENABLED));
+  }
+
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<RequestSender> request_sender_;
@@ -764,6 +770,7 @@ TEST_F(DriveApiRequestsTest, AppsListRequest) {
 }
 
 TEST_F(DriveApiRequestsTest, ChangesListRequest) {
+  EnableTeamDrivesIntegration();
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(
       "drive/changelist.json");
@@ -782,14 +789,18 @@ TEST_F(DriveApiRequestsTest, ChangesListRequest) {
     request->set_include_deleted(true);
     request->set_start_change_id(100);
     request->set_max_results(500);
+    request->set_team_drive_id("TEAM_DRIVE_ID");
     request_sender_->StartRequestWithAuthRetry(std::move(request));
     run_loop.Run();
   }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/drive/v2/changes?maxResults=500&startChangeId=100",
-            http_request_.relative_url);
+  EXPECT_EQ(
+      "/drive/v2/changes?supportsTeamDrives=true&"
+      "includeTeamDriveItems=true&teamDriveId=TEAM_DRIVE_ID&"
+      "maxResults=500&startChangeId=100",
+      http_request_.relative_url);
   EXPECT_TRUE(result);
 }
 

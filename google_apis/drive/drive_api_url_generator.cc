@@ -223,10 +223,12 @@ GURL DriveApiUrlGenerator::GetFilesTrashUrl(const std::string& file_id) const {
   return url;
 }
 
-GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
-                                             int max_results,
-                                             const std::string& page_token,
-                                             int64_t start_change_id) const {
+GURL DriveApiUrlGenerator::GetChangesListUrl(
+    bool include_deleted,
+    int max_results,
+    const std::string& page_token,
+    int64_t start_change_id,
+    const std::string& team_drive_id) const {
   DCHECK_GE(start_change_id, 0);
 
   GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);
@@ -234,6 +236,10 @@ GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
     url = net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems,
                                              "true");
+    if (!team_drive_id.empty()) {
+      url =
+          net::AppendOrReplaceQueryParameter(url, "teamDriveId", team_drive_id);
+    }
   }
   // includeDeleted is "true" by default.
   if (!include_deleted)
