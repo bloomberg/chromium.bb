@@ -4,11 +4,11 @@
 
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
-#include "base/mac/objc_property_releaser.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-@implementation VoiceSearchLanguage {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_VoiceSearchLanguage;
-}
+@implementation VoiceSearchLanguage
 
 @synthesize identifier = _identifier;
 @synthesize displayName = _displayName;
@@ -21,9 +21,6 @@
     _identifier = [identifier copy];
     _displayName = [displayName copy];
     _localizationPreference = [localizationPreference copy];
-
-    _propertyReleaser_VoiceSearchLanguage.Init(self,
-                                               [VoiceSearchLanguage class]);
   }
   return self;
 }
