@@ -174,6 +174,8 @@ void ApplyCssToContext(GtkStyleContext* context, const std::string& css);
 // GetStyleContextFromCss(|css_selector|).
 SkColor GetFgColor(const std::string& css_selector);
 
+ScopedCssProvider GetCssProvider(const std::string& css);
+
 // Renders the backgrounds of all ancestors of |context|, then renders
 // the background for |context| itself.
 void RenderBackground(const gfx::Size& size,

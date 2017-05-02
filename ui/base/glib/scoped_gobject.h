@@ -30,6 +30,8 @@ class ScopedGObject {
     return *this;
   }
 
+  T* get() { return obj_; }
+
   operator T*() { return obj_; }
 
   void reset(T* obj = nullptr) {
