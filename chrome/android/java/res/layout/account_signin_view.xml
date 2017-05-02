@@ -33,7 +33,7 @@
 
                 <!-- The layout_width/layout_height is set to 16/9 dynamically in Java -->
                 <TextView
-                    android:id="@+id/signin_title"
+                    android:id="@+id/chooser_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="bottom"
