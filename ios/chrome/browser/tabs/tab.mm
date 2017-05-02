@@ -62,6 +62,7 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -70,6 +71,8 @@
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
+#include "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_capability.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
@@ -104,6 +107,9 @@
 #include "ios/chrome/browser/web/print_observer.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
+#import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -277,6 +283,10 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   // Handles autofill.
   base::scoped_nsobject<AutofillController> autofillController_;
 
+  // Handles GAL infobar on web pages.
+  base::scoped_nsobject<NativeAppNavigationController>
+      nativeAppNavigationController_;
+
   // Handles caching and retrieving of snapshots.
   base::scoped_nsobject<SnapshotManager> snapshotManager_;
 
@@ -340,6 +350,9 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 // Returns the OpenInController for this tab.
 - (OpenInController*)openInController;
+
+// Initialize the Native App Launcher controller.
+- (void)initNativeAppNavigationController;
 
 // Handles exportable files if possible.
 - (void)handleExportableFile:(net::HttpResponseHeaders*)headers;
@@ -492,6 +505,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     webControllerSnapshotHelper_.reset([[WebControllerSnapshotHelper alloc]
         initWithSnapshotManager:snapshotManager_
                             tab:self]);
+
+    [self initNativeAppNavigationController];
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -1616,8 +1631,29 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
                          sourceURL:(const GURL&)sourceURL
                        linkClicked:(BOOL)linkClicked {
-  // TODO(crbug/711511): Returning NO bypasses all Link Navigation logic
-  // for Native App Launcher. This call should eventually be eliminated.
+  // Don't open any native app directly when prerendering or from Incognito.
+  if (isPrerenderTab_ || self.browserState->IsOffTheRecord())
+    return NO;
+
+  base::scoped_nsprotocol<id<NativeAppMetadata>> metadata(
+      [[ios::GetChromeBrowserProvider()->GetNativeAppWhitelistManager()
+          nativeAppForURL:url] retain]);
+  if (![metadata shouldAutoOpenLinks])
+    return NO;
+
+  AuthenticationService* authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  ChromeIdentity* identity = authenticationService->GetAuthenticatedIdentity();
+
+  // Attempts to open external app without x-callback.
+  if ([self openExternalURL:[metadata launchURLWithURL:url identity:identity]
+                  sourceURL:sourceURL
+                linkClicked:linkClicked]) {
+    return YES;
+  }
+
+  // Auto-open didn't work. Reset the auto-open flag.
+  [metadata unsetShouldAutoOpenLinks];
   return NO;
 }
 
@@ -1883,8 +1919,16 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NativeAppNavigationController*)nativeAppNavigationController {
-  // TODO(crbug.com/711511): This call should eventually be eliminated.
-  return nil;
+  return nativeAppNavigationController_;
+}
+
+- (void)initNativeAppNavigationController {
+  if (browserState_->IsOffTheRecord())
+    return;
+  DCHECK(!nativeAppNavigationController_);
+  nativeAppNavigationController_.reset(
+      [[NativeAppNavigationController alloc] initWithWebState:self.webState]);
+  DCHECK(nativeAppNavigationController_);
 }
 
 - (id<PassKitDialogProvider>)passKitDialogProvider {

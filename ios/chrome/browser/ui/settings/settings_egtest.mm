@@ -131,6 +131,10 @@ id<GREYMatcher> SearchEngineButton() {
 id<GREYMatcher> AutofillButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_AUTOFILL);
 }
+// Matcher for the Google Apps cell on the main Settings screen.
+id<GREYMatcher> GoogleAppsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_GOOGLE_APPS_SM_SETTINGS);
+}
 // Matcher for the Google Chrome cell on the main Settings screen.
 id<GREYMatcher> GoogleChromeButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_PRODUCT_NAME);
@@ -901,6 +905,17 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:SettingsButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:AutofillButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
+// Verifies the UI elements are accessible on the Google Apps page.
+- (void)testAccessibilityOnGoogleApps {
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey selectElementWithMatcher:SettingsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:GoogleAppsButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
