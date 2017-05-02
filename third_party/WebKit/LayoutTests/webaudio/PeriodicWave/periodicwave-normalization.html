@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -176,24 +176,24 @@
 
       // Define a test function from the given test parameter.  This is used as the Audit.defineTask
       // task function.
-      function defineTest(test) {
-        return function (done) {
-          var imagCoef = new Float32Array(test.realCoef.length);
-          createAndRunAudioGraph(test.option, test.realCoef, imagCoef, function (result) {
+      function defineTest(testInfo) {
+        return (task, should) => {
+          var imagCoef = new Float32Array(testInfo.realCoef.length);
+          createAndRunAudioGraph(testInfo.option, testInfo.realCoef, imagCoef, function (result) {
             var prefix;
 
             // Try to print out the test.option in a reasonably nice but explicit way.
-            if (test.option === "NONE") {
+            if (testInfo.option === "NONE") {
               prefix = "";
-            } else if (Array.isArray(test.option)) {
-              prefix = "[" + test.option + "]: ";
+            } else if (Array.isArray(testInfo.option)) {
+              prefix = "[" + testInfo.option + "]: ";
             } else {
-              prefix = JSON.stringify(test.option) + ": ";
+              prefix = JSON.stringify(testInfo.option) + ": ";
             }
       
-            Should(prefix + "amplitude", arrayMax(result.getChannelData(0)))
-              .beCloseTo(test.expectedMax, test.threshold);
-          }).then(done);
+            should(arrayMax(result.getChannelData(0)), prefix + "amplitude")
+              .beCloseTo(testInfo.expectedMax, {threshold: testInfo.threshold});
+          }).then(() => task.done());
         };
       }
 
@@ -205,13 +205,13 @@
 
       function defineTasks() {
         for (var k = 0; k < testSet.length; ++k) {
-          var test = testSet[k];
-          audit.defineTask(actualTestName(test.name, k), defineTest(test));
+          var testInfo = testSet[k];
+          audit.define(actualTestName(test.name, k), defineTest(testInfo));
         }
       }
 
       defineTasks();
-      audit.runTasks();
+      audit.run();
 
       successfullyParsed = true;
     </script>
