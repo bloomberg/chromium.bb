@@ -2447,10 +2447,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
 #endif  // OS_CHROMEOS
-    {"saveas-menu-text-experiment",
-     flag_descriptions::kSaveasMenuLabelExperimentName,
-     flag_descriptions::kSaveasMenuLabelExperimentDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableSaveAsMenuLabelExperiment)},
     {"enable-generic-sensor", flag_descriptions::kEnableGenericSensorName,
      flag_descriptions::kEnableGenericSensorDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGenericSensor)},
