@@ -25,14 +25,13 @@
 </if>
         </div>
       </div>
-      <div class="secondary-action">
-        <controlled-button class="secondary-button" id="changeDownloadsPath"
-            label="$i18n{changeDownloadLocation}"
-            on-tap="selectDownloadLocation_"
-            pref="[[prefs.download.default_directory]]"
-            end-justified>
-        </controlled-button>
-      </div>
+      <div class="separator"></div>
+      <controlled-button class="secondary-button" id="changeDownloadsPath"
+          label="$i18n{changeDownloadLocation}"
+          on-tap="selectDownloadLocation_"
+          pref="[[prefs.download.default_directory]]"
+          end-justified>
+      </controlled-button>
     </div>
     <div class="settings-box block">
       <settings-toggle-button
@@ -52,12 +51,11 @@
         <div class="start">
           $i18n{openFileTypesAutomatically}
         </div>
-        <div class="secondary-action">
-          <paper-button id="resetAutoOpenFileTypes" class="secondary-button"
-              on-tap="onClearAutoOpenFileTypesTap_">
-            $i18n{clear}
-          </paper-button>
-        </div>
+        <div class="separator"></div>
+        <paper-button id="resetAutoOpenFileTypes" class="secondary-button"
+            on-tap="onClearAutoOpenFileTypesTap_">
+          $i18n{clear}
+        </paper-button>
       </div>
     </template>
   </template>

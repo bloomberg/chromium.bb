@@ -70,14 +70,13 @@
       </template>
 
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
-        <div class="secondary-action">
-          <paper-toggle-button  id="deviceEnabledButton"
-              aria-label$="[[getToggleA11yString_(deviceState)]]"
-              checked="[[deviceIsEnabled_(deviceState)]]"
-              enabled="[[enableToggleIsEnabled_(deviceState)]]"
-              on-tap="onDeviceEnabledTap_">
-          </paper-toggle-button>
-        </div>
+        <div class="separator"></div>
+        <paper-toggle-button  id="deviceEnabledButton"
+            aria-label$="[[getToggleA11yString_(deviceState)]]"
+            checked="[[deviceIsEnabled_(deviceState)]]"
+            enabled="[[enableToggleIsEnabled_(deviceState)]]"
+            on-tap="onDeviceEnabledTap_">
+        </paper-toggle-button>
       </template>
     </div>
   </template>

@@ -57,13 +57,12 @@
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label$="[[item.site]]"
               aria-describedby="siteSecondary"></button>
-          <div class="secondary-action" id="removeSecondary">
-            <button is="paper-icon-button-light" class="remove-site"
-                title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
-                on-tap="onRemoveSiteTap_">
-              <iron-icon icon="cr:delete"></iron-icon>
-            </button>
-          </div>
+          <div class="separator" id="removeSecondary"></div>
+          <button is="paper-icon-button-light" class="remove-site"
+              title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
+              on-tap="onRemoveSiteTap_">
+            <iron-icon icon="cr:delete"></iron-icon>
+          </button>
         </div>
       </template>
     </div>

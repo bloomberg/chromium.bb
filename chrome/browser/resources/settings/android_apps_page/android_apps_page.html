@@ -37,14 +37,13 @@
             </button>
           </template>
           <template is="dom-if" if="[[!androidAppsInfo_.appReady]]">
-            <div class="secondary-action">
-              <paper-button id="enable" class="secondary-button"
-                  on-tap="onEnableTap_"
-                  aria-label="$i18n{androidAppsPageTitle}"
-                  aria-describedby="secondaryText">
-                $i18n{androidAppsEnable}
-              </paper-button>
-            </div>
+            <div class="separator"></div>
+            <paper-button id="enable" class="secondary-button"
+                on-tap="onEnableTap_"
+                aria-label="$i18n{androidAppsPageTitle}"
+                aria-describedby="secondaryText">
+              $i18n{androidAppsEnable}
+            </paper-button>
           </template>
         </div>
       </neon-animatable>

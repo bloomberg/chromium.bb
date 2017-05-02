@@ -39,20 +39,19 @@
         <div>$i18n{aboutChannelLabel}</div>
         <div class="secondary">[[currentlyOnChannelText_]]</div>
       </div>
-      <div class="secondary-action">
-        <paper-button on-tap="onChangeChannelTap_"
-            disabled="[[!canChangeChannel_]]">
-          $i18n{aboutChangeChannel}
-        </paper-button>
-        <template is="dom-if" if="[[!canChangeChannel_]]">
-          <cr-policy-indicator
-              indicator-source-name="[[getChangeChannelIndicatorSourceName_(
-                  canChangeChannel_)]]"
-              indicator-type="[[getChangeChannelIndicatorType_(
-                  canChangeChannel_)]]">
-          </cr-policy-indicator>
-        </template>
-      </div>
+      <div class="separator"></div>
+      <paper-button on-tap="onChangeChannelTap_"
+          disabled="[[!canChangeChannel_]]">
+        $i18n{aboutChangeChannel}
+      </paper-button>
+      <template is="dom-if" if="[[!canChangeChannel_]]">
+        <cr-policy-indicator
+            indicator-source-name="[[getChangeChannelIndicatorSourceName_(
+                canChangeChannel_)]]"
+            indicator-type="[[getChangeChannelIndicatorType_(
+                canChangeChannel_)]]">
+        </cr-policy-indicator>
+      </template>
       <template is="dom-if" if="[[showChannelSwitcherDialog_]]" restamp>
         <settings-channel-switcher-dialog
             on-close="onChannelSwitcherDialogClosed_">

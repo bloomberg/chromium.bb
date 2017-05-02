@@ -121,20 +121,19 @@
               </template>
             </div>
           </div>
-          <div class="secondary-action">
-            <template is="dom-if" if="[[!easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockSetup" class="secondary-button"
-                  on-tap="onEasyUnlockSetupTap_">
-                $i18n{easyUnlockSetupButton}
-              </paper-button>
-            </template>
-            <template is="dom-if" if="[[easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockTurnOff" class="secondary-button"
-                  on-tap="onEasyUnlockTurnOffTap_">
-                $i18n{easyUnlockTurnOffButton}
-              </paper-button>
-            </template>
-          </div>
+          <div class="separator"></div>
+          <template is="dom-if" if="[[!easyUnlockEnabled_]]">
+            <paper-button id="easyUnlockSetup" class="secondary-button"
+                on-tap="onEasyUnlockSetupTap_">
+              $i18n{easyUnlockSetupButton}
+            </paper-button>
+          </template>
+          <template is="dom-if" if="[[easyUnlockEnabled_]]">
+            <paper-button id="easyUnlockTurnOff" class="secondary-button"
+                on-tap="onEasyUnlockTurnOffTap_">
+              $i18n{easyUnlockTurnOffButton}
+            </paper-button>
+          </template>
         </div>
       </template>
 

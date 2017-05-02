@@ -226,7 +226,7 @@ Polymer({
 
   /**
    * Hide the button container if all buttons are hidden, otherwise the
-   * container displayes an unwanted border (see secondary-action class).
+   * container displays an unwanted border (see separator class).
    * @private
    */
   updateShowButtonContainer_: function() {
