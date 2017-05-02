@@ -172,6 +172,15 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   void CompleteLoading() {
+    // Reset snapshot controller.
+    std::unique_ptr<SnapshotController> snapshot_controller(
+        new SnapshotController(base::ThreadTaskRunnerHandle::Get(),
+                               offliner_.get(),
+                               0L /* DelayAfterDocumentAvailable */,
+                               0L /* DelayAfterDocumentOnLoad */,
+                               false /* DocumentAvailableTriggersSnapshot */));
+    offliner_->SetSnapshotControllerForTest(std::move(snapshot_controller));
+    // Call complete loading.
     offliner()->DocumentOnLoadCompletedInMainFrame();
     PumpLoop();
   }
@@ -209,7 +218,6 @@ void BackgroundLoaderOfflinerTest::SetUp() {
   policy_.reset(new OfflinerPolicy());
   offliner_.reset(
       new TestBackgroundLoaderOffliner(profile(), policy_.get(), model_));
-  offliner_->SetPageDelayForTest(0L);
 }
 
 void BackgroundLoaderOfflinerTest::OnCompletion(

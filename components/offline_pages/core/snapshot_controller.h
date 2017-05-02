@@ -60,14 +60,23 @@ class SnapshotController {
     virtual ~Client() {}
   };
 
-  SnapshotController(
+  // Creates a SnapshotController with document available delay = 7s,
+  // document on load delay = 1s and triggers snapshot on document available.
+  static std::unique_ptr<SnapshotController> CreateForForegroundOfflining(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       SnapshotController::Client* client);
+  // Creates a SnapshotController with document on load delay = 2s
+  // and ignores document available signal.
+  static std::unique_ptr<SnapshotController> CreateForBackgroundOfflining(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      SnapshotController::Client* client);
+
   SnapshotController(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       SnapshotController::Client* client,
       int64_t delay_after_document_available_ms,
-      int64_t delay_after_document_on_load_completed_ms);
+      int64_t delay_after_document_on_load_completed_ms,
+      bool document_available_triggers_snapshot);
   virtual ~SnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -103,6 +112,7 @@ class SnapshotController {
   SnapshotController::State state_;
   int64_t delay_after_document_available_ms_;
   int64_t delay_after_document_on_load_completed_ms_;
+  bool document_available_triggers_snapshot_;
 
   // The expected quality of a snapshot taken at the moment this value is
   // queried.
