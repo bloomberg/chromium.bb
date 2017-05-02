@@ -392,7 +392,8 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     }
   }
 
-  if (context_->GetContextType() ==
+  if (context_ &&
+      context_->GetContextType() ==
           CanvasRenderingContext::kContextImageBitmap &&
       context_->PlatformLayer()) {
     context_->PlatformLayer()->Invalidate();
