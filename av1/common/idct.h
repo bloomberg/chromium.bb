@@ -46,7 +46,9 @@ typedef struct {
 } transform_2d;
 
 #if CONFIG_HIGHBITDEPTH
-typedef void (*highbd_transform_1d)(const tran_low_t *, tran_low_t *, int bd);
+typedef void (*highbd_transform_1d)(const tran_low_t *, tran_low_t *,
+                                    const int8_t *cos_bit,
+                                    const int8_t *stage_range, int bd);
 
 typedef struct {
   highbd_transform_1d cols, rows;  // vertical and horizontal
