@@ -233,20 +233,15 @@ void ModuleTreeLinker::FetchDescendants() {
 
   // Step 2. If record.[[RequestedModules]] is empty, asynchronously complete
   // this algorithm with module script.
-  Vector<String> module_requests =
-      modulator_->ModuleRequestsFromScriptModule(record);
-  if (module_requests.IsEmpty()) {
-    // Continue to Instantiate() to process "internal module script graph
-    // fetching procedure" Step 5-.
-    descendants_module_script_ = module_script_;
-    Instantiate();
-    return;
-  }
+  // Note: We defer this bail-out until Step 5. Step 4 will be no-op anyway if
+  //       record.[[RequestedModules]] is empty.
 
   // Step 3. Let urls be a new empty list.
   Vector<KURL> urls;
 
   // Step 4. For each string requested of record.[[RequestedModules]],
+  Vector<String> module_requests =
+      modulator_->ModuleRequestsFromScriptModule(record);
   for (const auto& module_request : module_requests) {
     // Step 4.1. Let url be the result of resolving a module specifier given
     // module script and requested.
@@ -288,8 +283,22 @@ void ModuleTreeLinker::FetchDescendants() {
   // unset. If the caller of this algorithm specified custom perform the fetch
   // steps, pass those along while performing the internal module script graph
   // fetching procedure.
-  // TODO(kouhei): handle "destination".
-  DCHECK(!urls.IsEmpty());
+
+  if (urls.IsEmpty()) {
+    // Step 2. If record.[[RequestedModules]] is empty, asynchronously
+    // complete this algorithm with module script. [spec text]
+    // Also, if record.[[RequestedModules]] is not empty but |urls| is
+    // empty here, we can immediately complete this algorithm, as
+    // we don't have to process or wait for anything in Step 5. [non-spec text]
+
+    // Proceed to Instantiate() to continue
+    // "internal module script graph fetching procedure".
+    descendants_module_script_ = module_script_;
+    Instantiate();
+    return;
+  }
+
+  // Step 5, when "urls" is non-empty.
   CHECK_EQ(num_incomplete_descendants_, 0u);
   num_incomplete_descendants_ = urls.size();
   for (const KURL& url : urls) {
