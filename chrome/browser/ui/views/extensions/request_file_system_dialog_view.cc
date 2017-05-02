@@ -94,7 +94,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     const std::string& volume_label,
     bool writable,
     const base::Callback<void(ui::DialogButton)>& callback)
-    : callback_(callback), contents_view_(new views::View) {
+    : callback_(callback) {
   DCHECK(!callback_.is_null());
 
   const base::string16 app_name = base::UTF8ToUTF16(extension_name);
