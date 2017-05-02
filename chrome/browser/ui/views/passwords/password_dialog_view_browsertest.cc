@@ -115,7 +115,7 @@ TestManagePasswordsUIController::TestManagePasswordsUIController(
   // Do not silently replace an existing ManagePasswordsUIController because it
   // unregisters itself in WebContentsDestroyed().
   EXPECT_FALSE(web_contents->GetUserData(UserDataKey()));
-  web_contents->SetUserData(UserDataKey(), this);
+  web_contents->SetUserData(UserDataKey(), base::WrapUnique(this));
 }
 
 void TestManagePasswordsUIController::OnDialogHidden() {

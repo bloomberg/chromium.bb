@@ -25,6 +25,8 @@ class SaveCardBubbleControllerImpl
       public content::WebContentsObserver,
       public content::WebContentsUserData<SaveCardBubbleControllerImpl> {
  public:
+  ~SaveCardBubbleControllerImpl() override;
+
   // Sets up the controller for local save and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed.
@@ -72,7 +74,6 @@ class SaveCardBubbleControllerImpl
 
  protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
-  ~SaveCardBubbleControllerImpl() override;
 
   // Returns the time elapsed since |timer_| was initialized.
   // Exists for testing.

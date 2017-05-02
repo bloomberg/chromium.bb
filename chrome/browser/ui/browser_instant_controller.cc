@@ -39,6 +39,8 @@ namespace {
 // makes sure to only execute the reload if the WebContents still exists.
 class TabReloader : public content::WebContentsUserData<TabReloader> {
  public:
+  ~TabReloader() override {}
+
   static void Reload(content::WebContents* web_contents) {
     TabReloader::CreateForWebContents(web_contents);
   }
@@ -53,7 +55,6 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
         base::BindOnce(&TabReloader::ReloadImpl,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-  ~TabReloader() override {}
 
   void ReloadImpl() {
     web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);

@@ -20,11 +20,11 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
 
   if (!FromWebContents(contents)) {
-    TabDialogs* tab_dialogs =
+    std::unique_ptr<TabDialogs> tab_dialogs =
         ui::MaterialDesignController::IsSecondaryUiMaterial()
-            ? new TabDialogsViewsMac(contents)
-            : new TabDialogsCocoa(contents);
-    contents->SetUserData(UserDataKey(), tab_dialogs);
+            ? base::MakeUnique<TabDialogsViewsMac>(contents)
+            : base::MakeUnique<TabDialogsCocoa>(contents);
+    contents->SetUserData(UserDataKey(), std::move(tab_dialogs));
   }
 }
 

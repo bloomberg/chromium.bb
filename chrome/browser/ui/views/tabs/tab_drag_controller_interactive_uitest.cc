@@ -125,8 +125,9 @@ class QuitDraggingObserver : public content::NotificationObserver {
 };
 
 void SetID(WebContents* web_contents, int id) {
-  web_contents->SetUserData(&kTabDragControllerInteractiveUITestUserDataKey,
-                            new TabDragControllerInteractiveUITestUserData(id));
+  web_contents->SetUserData(
+      &kTabDragControllerInteractiveUITestUserDataKey,
+      base::MakeUnique<TabDragControllerInteractiveUITestUserData>(id));
 }
 
 void ResetIDs(TabStripModel* model, int start) {

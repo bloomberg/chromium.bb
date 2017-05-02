@@ -19,8 +19,10 @@
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
-  if (!FromWebContents(contents))
-    contents->SetUserData(UserDataKey(), new TabDialogsViews(contents));
+  if (!FromWebContents(contents)) {
+    contents->SetUserData(UserDataKey(),
+                          base::MakeUnique<TabDialogsViews>(contents));
+  }
 }
 
 TabDialogsViews::TabDialogsViews(content::WebContents* contents)

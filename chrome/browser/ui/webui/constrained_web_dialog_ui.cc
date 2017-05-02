@@ -104,8 +104,9 @@ void ConstrainedWebDialogUI::OnDialogCloseMessage(const base::ListValue* args) {
 void ConstrainedWebDialogUI::SetConstrainedDelegate(
     content::WebContents* web_contents,
     ConstrainedWebDialogDelegate* delegate) {
-  web_contents->SetUserData(&kConstrainedWebDialogDelegateUserDataKey,
-                            new ConstrainedWebDialogDelegateUserData(delegate));
+  web_contents->SetUserData(
+      &kConstrainedWebDialogDelegateUserDataKey,
+      base::MakeUnique<ConstrainedWebDialogDelegateUserData>(delegate));
 }
 
 // static

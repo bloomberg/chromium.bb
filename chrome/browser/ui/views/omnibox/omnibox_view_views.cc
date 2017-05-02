@@ -173,8 +173,9 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   // NOTE: GetStateForTabSwitch() may affect GetSelectedRange(), so order is
   // important.
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
-  tab->SetUserData(OmniboxState::kKey, new OmniboxState(
-      state, GetSelectedRange(), saved_selection_for_focus_change_));
+  tab->SetUserData(OmniboxState::kKey, base::MakeUnique<OmniboxState>(
+                                           state, GetSelectedRange(),
+                                           saved_selection_for_focus_change_));
 }
 
 void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {

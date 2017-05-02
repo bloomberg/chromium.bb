@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/supports_user_data.h"
@@ -76,7 +77,8 @@ BrowserTabRestorer::BrowserTabRestorer(Browser* browser)
   DCHECK(!tab_restore_service_->IsLoaded());
   tab_restore_service_->AddObserver(this);
   BrowserList::GetInstance()->AddObserver(this);
-  browser_->profile()->SetUserData(kBrowserTabRestorerKey, this);
+  browser_->profile()->SetUserData(kBrowserTabRestorerKey,
+                                   base::WrapUnique(this));
   tab_restore_service_->LoadTabsFromLastSession();
 }
 

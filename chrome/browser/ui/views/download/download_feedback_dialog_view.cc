@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/platform_util.h"
@@ -59,7 +60,7 @@ void DownloadFeedbackDialogView::Show(
       static_cast<DialogStatusData*>(profile->GetUserData(kDialogStatusKey));
   if (data == NULL) {
     data = new DialogStatusData();
-    profile->SetUserData(kDialogStatusKey, data);
+    profile->SetUserData(kDialogStatusKey, base::WrapUnique(data));
   }
   if (data->currently_shown() == false) {
     data->set_currently_shown(true);
