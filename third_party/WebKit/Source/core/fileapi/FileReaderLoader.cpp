@@ -50,25 +50,17 @@
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebURLRequest.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
 FileReaderLoader::FileReaderLoader(ReadType read_type,
                                    FileReaderLoaderClient* client)
-    : read_type_(read_type),
-      client_(client),
-      is_raw_data_converted_(false),
-      string_result_(""),
-      finished_loading_(false),
-      bytes_loaded_(0),
-      total_bytes_(-1),
-      has_range_(false),
-      range_start_(0),
-      range_end_(0),
-      error_code_(FileError::kOK) {}
+    : read_type_(read_type), client_(client) {}
 
 FileReaderLoader::~FileReaderLoader() {
   Cleanup();
+  UnadjustReportedMemoryUsageToV8();
   if (!url_for_reading_.IsEmpty()) {
     BlobRegistry::RevokePublicBlobURL(url_for_reading_);
   }
@@ -143,7 +135,25 @@ void FileReaderLoader::Cleanup() {
     string_result_ = "";
     is_raw_data_converted_ = true;
     decoder_.reset();
+    array_buffer_result_ = nullptr;
+    UnadjustReportedMemoryUsageToV8();
   }
+}
+
+void FileReaderLoader::AdjustReportedMemoryUsageToV8(int64_t usage) {
+  if (!usage)
+    return;
+  memory_usage_reported_to_v8_ += usage;
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(usage);
+  DCHECK_GE(memory_usage_reported_to_v8_, 0);
+}
+
+void FileReaderLoader::UnadjustReportedMemoryUsageToV8() {
+  if (!memory_usage_reported_to_v8_)
+    return;
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      -memory_usage_reported_to_v8_);
+  memory_usage_reported_to_v8_ = 0;
 }
 
 void FileReaderLoader::DidReceiveResponse(
@@ -230,6 +240,7 @@ void FileReaderLoader::DidReceiveData(const char* data, unsigned data_length) {
   }
   bytes_loaded_ += bytes_appended;
   is_raw_data_converted_ = false;
+  AdjustReportedMemoryUsageToV8(bytes_appended);
 
   if (client_)
     client_->DidReceiveData();
@@ -285,17 +296,18 @@ FileError::ErrorCode FileReaderLoader::HttpStatusCodeToErrorCode(
 
 DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
   DCHECK_EQ(read_type_, kReadAsArrayBuffer);
+  if (array_buffer_result_)
+    return array_buffer_result_;
 
   // If the loading is not started or an error occurs, return an empty result.
   if (!raw_data_ || error_code_)
     return nullptr;
 
-  if (array_buffer_result_)
-    return array_buffer_result_;
-
   DOMArrayBuffer* result = DOMArrayBuffer::Create(raw_data_->ToArrayBuffer());
   if (finished_loading_) {
     array_buffer_result_ = result;
+    AdjustReportedMemoryUsageToV8(-1 * raw_data_->ByteLength());
+    raw_data_.reset();
   }
   return result;
 }
@@ -304,44 +316,46 @@ String FileReaderLoader::StringResult() {
   DCHECK_NE(read_type_, kReadAsArrayBuffer);
   DCHECK_NE(read_type_, kReadByClient);
 
-  // If the loading is not started or an error occurs, return an empty result.
-  if (!raw_data_ || error_code_)
-    return string_result_;
-
-  // If already converted from the raw data, return the result now.
-  if (is_raw_data_converted_)
+  if (!raw_data_ || error_code_ || is_raw_data_converted_)
     return string_result_;
 
   switch (read_type_) {
     case kReadAsArrayBuffer:
       // No conversion is needed.
-      break;
+      return string_result_;
     case kReadAsBinaryString:
-      string_result_ = raw_data_->ToString();
-      is_raw_data_converted_ = true;
+      SetStringResult(raw_data_->ToString());
       break;
     case kReadAsText:
-      ConvertToText();
+      SetStringResult(ConvertToText());
       break;
     case kReadAsDataURL:
       // Partial data is not supported when reading as data URL.
       if (finished_loading_)
-        ConvertToDataURL();
+        SetStringResult(ConvertToDataURL());
       break;
     default:
       NOTREACHED();
   }
 
+  if (finished_loading_) {
+    DCHECK(is_raw_data_converted_);
+    AdjustReportedMemoryUsageToV8(-1 * raw_data_->ByteLength());
+    raw_data_.reset();
+  }
   return string_result_;
 }
 
-void FileReaderLoader::ConvertToText() {
+void FileReaderLoader::SetStringResult(const String& result) {
+  AdjustReportedMemoryUsageToV8(-1 * string_result_.CharactersSizeInBytes());
   is_raw_data_converted_ = true;
+  string_result_ = result;
+  AdjustReportedMemoryUsageToV8(string_result_.CharactersSizeInBytes());
+}
 
-  if (!bytes_loaded_) {
-    string_result_ = "";
-    return;
-  }
+String FileReaderLoader::ConvertToText() {
+  if (!bytes_loaded_)
+    return "";
 
   // Decode the data.
   // The File API spec says that we should use the supplied encoding if it is
@@ -359,19 +373,15 @@ void FileReaderLoader::ConvertToText() {
   if (finished_loading_)
     builder.Append(decoder_->Flush());
 
-  string_result_ = builder.ToString();
+  return builder.ToString();
 }
 
-void FileReaderLoader::ConvertToDataURL() {
-  is_raw_data_converted_ = true;
-
+String FileReaderLoader::ConvertToDataURL() {
   StringBuilder builder;
   builder.Append("data:");
 
-  if (!bytes_loaded_) {
-    string_result_ = builder.ToString();
-    return;
-  }
+  if (!bytes_loaded_)
+    return builder.ToString();
 
   builder.Append(data_type_);
   builder.Append(";base64,");
@@ -382,7 +392,7 @@ void FileReaderLoader::ConvertToDataURL() {
   out.push_back('\0');
   builder.Append(out.data());
 
-  string_result_ = builder.ToString();
+  return builder.ToString();
 }
 
 void FileReaderLoader::SetEncoding(const String& encoding) {
