@@ -60,10 +60,23 @@ class CORE_EXPORT ClassicPendingScript final
   void Prefinalize();
 
  private:
+  enum ReadyState {
+    // These states are considered "not ready".
+    kWaitingForResource,
+    kWaitingForStreaming,
+    // These states are considered "ready".
+    kReady,
+    kErrorOccurred,
+  };
+
   ClassicPendingScript(ScriptElementBase*,
                        ScriptResource*,
                        const TextPosition&);
   ClassicPendingScript() = delete;
+
+  // Advances the current state of the script, reporting to the client if
+  // appropriate.
+  void AdvanceReadyState(ReadyState);
 
   void CheckState() const override;
 
@@ -75,8 +88,8 @@ class CORE_EXPORT ClassicPendingScript final
   // MemoryCoordinatorClient
   void OnPurgeMemory() override;
 
+  ReadyState ready_state_;
   bool integrity_failure_;
-
   Member<ScriptStreamer> streamer_;
 
   // This is a temporary flag to confirm that ClassicPendingScript is not
