@@ -361,6 +361,13 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 
   const std::string& script_data = script->data();
   if (!script_data.empty()) {
+    if (net::NetworkChangeNotifier::IsOffline()) {
+      translate_client_->ShowTranslateUI(
+          translate::TRANSLATE_STEP_TRANSLATE_ERROR, source_lang, target_lang,
+          TranslateErrors::NETWORK, false);
+      return;
+    }
+
     DoTranslatePage(script_data, source_lang, target_lang);
     return;
   }

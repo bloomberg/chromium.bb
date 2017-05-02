@@ -13,7 +13,14 @@ const std::string kHtmlMimeType = "text/html";
 MockTranslateDriver::MockTranslateDriver()
     : on_is_page_translated_changed_called_(false),
       on_translate_enabled_changed_called_(false),
-      language_state_(this) {
+      translate_page_is_called_(false),
+      language_state_(this) {}
+
+void MockTranslateDriver::TranslatePage(int page_seq_no,
+                                        const std::string& translate_script,
+                                        const std::string& source_lang,
+                                        const std::string& target_lang) {
+  translate_page_is_called_ = true;
 }
 
 void MockTranslateDriver::Reset() {
