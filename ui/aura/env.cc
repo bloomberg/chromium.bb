@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/mus/mus_types.h"
@@ -139,6 +140,7 @@ void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
 
 Env::Env(Mode mode)
     : mode_(mode),
+      env_controller_(new EnvInputStateController),
       mouse_button_flags_(0),
       is_touch_down_(false),
       get_last_mouse_location_from_mus_(mode_ == Mode::MUS),

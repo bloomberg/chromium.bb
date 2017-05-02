@@ -91,7 +91,6 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
       move_hold_count_(0),
       dispatching_held_event_(nullptr),
       observer_manager_(this),
-      env_controller_(new EnvInputStateController),
       event_targeter_(new WindowTargeter),
       repost_event_factory_(this),
       held_event_factory_(this) {
@@ -230,7 +229,8 @@ void WindowEventDispatcher::OnHostLostMouseGrab() {
 
 void WindowEventDispatcher::OnCursorMovedToRootLocation(
     const gfx::Point& root_location) {
-  env_controller_->SetLastMouseLocation(window(), root_location);
+  Env::GetInstance()->env_controller()->SetLastMouseLocation(window(),
+                                                             root_location);
 
   // Synthesize a mouse move in case the cursor's location in root coordinates
   // changed but its position in WindowTreeHost coordinates did not.
@@ -277,7 +277,8 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
     Window* target,
     const ui::MouseEvent& event,
     ui::EventType type) {
-  env_controller_->UpdateStateForMouseEvent(window(), event);
+  Env::GetInstance()->env_controller()->UpdateStateForMouseEvent(window(),
+                                                                 event);
   if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate() ||
       !window()->Contains(mouse_moved_handler_))
     return DispatchDetails();
@@ -813,7 +814,8 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
     return DispatchDetails();
   }
 
-  env_controller_->UpdateStateForMouseEvent(window(), *event);
+  Env::GetInstance()->env_controller()->UpdateStateForMouseEvent(window(),
+                                                                 *event);
 
   if (IsEventCandidateForHold(*event) && !dispatching_held_event_) {
     if (move_hold_count_) {
@@ -909,7 +911,7 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
     return DispatchDetails();
   }
 
-  env_controller_->UpdateStateForTouchEvent(*event);
+  Env::GetInstance()->env_controller()->UpdateStateForTouchEvent(*event);
 
   ui::TouchEvent orig_event(*event, target, window());
   if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(&orig_event,

@@ -34,6 +34,7 @@ namespace test {
 class EnvTestHelper;
 }
 
+class EnvInputStateController;
 class EnvObserver;
 class InputStateLookup;
 class MusMouseLocationUpdater;
@@ -70,6 +71,10 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
+
+  EnvInputStateController* env_controller() const {
+    return env_controller_.get();
+  }
 
   int mouse_button_flags() const { return mouse_button_flags_; }
   void set_mouse_button_flags(int mouse_button_flags) {
@@ -150,6 +155,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   base::ObserverList<EnvObserver> observers_;
 
+  std::unique_ptr<EnvInputStateController> env_controller_;
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
   mutable gfx::Point last_mouse_location_;
