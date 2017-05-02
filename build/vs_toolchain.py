@@ -402,7 +402,7 @@ def NormalizePath(path):
 def SetEnvironmentAndGetSDKDir():
   """Gets location information about the current sdk (must have been
   previously updated by 'update'). This is used for the GN build."""
-  runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
+  SetEnvironmentAndGetRuntimeDllDirs()
 
   # If WINDOWSSDKDIR is not set, search the default SDK path and set it.
   if not 'WINDOWSSDKDIR' in os.environ:
