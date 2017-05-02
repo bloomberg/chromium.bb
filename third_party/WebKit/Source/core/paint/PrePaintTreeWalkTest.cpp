@@ -290,22 +290,26 @@ TEST_P(PrePaintTreeWalkTest, ClipRects) {
       "  </div>"
       "</div>");
 
-  auto* parent = GetPaintLayerByElementId("parent");
-  auto* child = GetPaintLayerByElementId("child");
-  auto* grandchild = GetPaintLayerByElementId("grandchild");
+  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* child = GetLayoutObjectByElementId("child");
+  auto* grandchild = GetLayoutObjectByElementId("grandchild");
 
-  EXPECT_TRUE(parent->PreviousPaintingClipRects());
-  EXPECT_FALSE(child->PreviousPaintingClipRects());
-  EXPECT_TRUE(grandchild->PreviousPaintingClipRects());
+  EXPECT_TRUE(
+      parent->GetMutableForPainting().FirstFragment()->PreviousClipRects());
+  EXPECT_FALSE(child->PaintProperties());
+  EXPECT_TRUE(
+      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
 
-  grandchild->ClearPreviousPaintingClipRects();
+  PrePaintTreeWalk::ClearPreviousClipRectsForTesting(*grandchild);
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Still no rects, because the walk early-outed at the LayoutView.
-  EXPECT_FALSE(grandchild->PreviousPaintingClipRects());
+  EXPECT_FALSE(
+      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
 
-  grandchild->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  grandchild->SetNeedsPaintPropertyUpdate();
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_TRUE(grandchild->PreviousPaintingClipRects());
+  EXPECT_TRUE(
+      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
 }
 
 TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {

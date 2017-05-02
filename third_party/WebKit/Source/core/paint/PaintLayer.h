@@ -925,15 +925,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     previous_scroll_offset_accumulation_for_painting_ = s;
   }
 
-  ClipRects* PreviousPaintingClipRects() const {
-    return previous_painting_clip_rects_.Get();
+  ClipRects* PreviousClipRects() const {
+    DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    return previous_clip_rects_.Get();
   }
-  void SetPreviousPaintingClipRects(ClipRects& clip_rects) {
-    previous_painting_clip_rects_ = &clip_rects;
+  void SetPreviousClipRects(ClipRects& clip_rects) {
+    previous_clip_rects_ = &clip_rects;
   }
-  void ClearPreviousPaintingClipRects() {
-    previous_painting_clip_rects_.Clear();
-  }
+  void ClearPreviousClipRects() { previous_clip_rects_.Clear(); }
 
   LayoutRect PreviousPaintDirtyRect() const {
     return previous_paint_dirty_rect_;
@@ -1265,7 +1264,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
   IntSize previous_scroll_offset_accumulation_for_painting_;
-  RefPtr<ClipRects> previous_painting_clip_rects_;
+  RefPtr<ClipRects> previous_clip_rects_;
   LayoutRect previous_paint_dirty_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;
