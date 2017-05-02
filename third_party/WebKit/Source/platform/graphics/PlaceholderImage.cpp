@@ -6,10 +6,9 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "platform/graphics/paint/PaintRecorder.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -31,15 +30,12 @@ sk_sp<SkImage> PlaceholderImage::ImageForCurrentFrame() {
 
   const FloatRect dest_rect(0.0f, 0.0f, static_cast<float>(size_.Width()),
                             static_cast<float>(size_.Height()));
-  PaintRecordBuilder builder(dest_rect);
-  GraphicsContext& context = builder.Context();
-  context.BeginRecording(dest_rect);
-
-  context.SetFillColor(kFillColor);
-  context.FillRect(dest_rect);
+  PaintRecorder paint_recorder;
+  Draw(paint_recorder.beginRecording(dest_rect), PaintFlags(), dest_rect,
+       dest_rect, kDoNotRespectImageOrientation, kClampImageToSourceRect);
 
   image_for_current_frame_ = SkImage::MakeFromPicture(
-      ToSkPicture(builder.EndRecording()),
+      ToSkPicture(paint_recorder.finishRecordingAsPicture()),
       SkISize::Make(size_.Width(), size_.Height()), nullptr, nullptr,
       SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 
