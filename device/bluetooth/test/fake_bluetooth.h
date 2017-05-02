@@ -5,6 +5,7 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_BLUETOOTH_H_
 
 #include "base/compiler_specific.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -22,6 +23,10 @@ class FakeBluetooth : NON_EXPORTED_BASE(public mojom::FakeBluetooth) {
 
   void SetLESupported(bool available,
                       const SetLESupportedCallback& callback) override;
+
+ private:
+  std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
+      global_factory_values_;
 };
 
 }  // namespace bluetooth

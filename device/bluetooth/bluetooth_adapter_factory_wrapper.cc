@@ -40,7 +40,7 @@ bool BluetoothAdapterFactoryWrapper::IsLowEnergySupported() {
   if (adapter_ != nullptr) {
     return true;
   }
-  return BluetoothAdapterFactory::IsLowEnergySupported();
+  return BluetoothAdapterFactory::Get().IsLowEnergySupported();
 }
 
 void BluetoothAdapterFactoryWrapper::AcquireAdapter(
@@ -56,7 +56,7 @@ void BluetoothAdapterFactoryWrapper::AcquireAdapter(
     return;
   }
 
-  DCHECK(BluetoothAdapterFactory::IsLowEnergySupported());
+  DCHECK(BluetoothAdapterFactory::Get().IsLowEnergySupported());
   BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterFactoryWrapper::OnGetAdapter,
                  weak_ptr_factory_.GetWeakPtr(), callback));

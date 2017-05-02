@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -26,6 +27,9 @@
 namespace device {
 
 namespace {
+
+static base::LazyInstance<BluetoothAdapterFactory>::Leaky g_singleton =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Shared default adapter instance.  We don't want to keep this class around
 // if nobody is using it, so use a WeakPtr and create the object when needed.
@@ -59,6 +63,13 @@ void RunAdapterCallbacks() {
 
 }  // namespace
 
+BluetoothAdapterFactory::~BluetoothAdapterFactory() {}
+
+// static
+BluetoothAdapterFactory& BluetoothAdapterFactory::Get() {
+  return g_singleton.Get();
+}
+
 // static
 bool BluetoothAdapterFactory::IsBluetoothSupported() {
   // SetAdapterForTesting() may be used to provide a test or mock adapter
@@ -73,12 +84,10 @@ bool BluetoothAdapterFactory::IsBluetoothSupported() {
 #endif
 }
 
-// static
 bool BluetoothAdapterFactory::IsLowEnergySupported() {
-  // SetAdapterForTesting() may be used to provide a test or mock adapter
-  // instance even on platforms that would otherwise not support it.
-  if (default_adapter.Get())
-    return true;
+  if (values_for_testing_) {
+    return values_for_testing_->GetLESupported();
+  }
 
 #if defined(OS_ANDROID)
   return base::android::BuildInfo::GetInstance()->sdk_int() >=
@@ -141,5 +150,24 @@ void BluetoothAdapterFactory::SetAdapterForTesting(
 bool BluetoothAdapterFactory::HasSharedInstanceForTesting() {
   return default_adapter.Get() != nullptr;
 }
+
+BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting()
+    : weak_ptr_factory_(this) {}
+
+BluetoothAdapterFactory::GlobalValuesForTesting::~GlobalValuesForTesting() {}
+
+base::WeakPtr<BluetoothAdapterFactory::GlobalValuesForTesting>
+BluetoothAdapterFactory::GlobalValuesForTesting::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+std::unique_ptr<BluetoothAdapterFactory::GlobalValuesForTesting>
+BluetoothAdapterFactory::InitGlobalValuesForTesting() {
+  auto v = base::MakeUnique<BluetoothAdapterFactory::GlobalValuesForTesting>();
+  values_for_testing_ = v->GetWeakPtr();
+  return v;
+}
+
+BluetoothAdapterFactory::BluetoothAdapterFactory() {}
 
 }  // namespace device
