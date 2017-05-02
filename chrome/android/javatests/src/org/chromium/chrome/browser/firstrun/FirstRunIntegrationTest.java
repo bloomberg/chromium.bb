@@ -12,49 +12,62 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.widget.Button;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
-import org.chromium.chrome.test.MultiActivityTestBase;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Integration test suite for the first run experience.
  */
-@CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-public class FirstRunIntegrationTest extends MultiActivityTestBase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class FirstRunIntegrationTest {
+
+    @Rule
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
+
     private FirstRunActivityTestObserver mTestObserver = new FirstRunActivityTestObserver();
     private Activity mActivity;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
         FirstRunActivity.setObserverForTest(mTestObserver);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         if (mActivity != null) mActivity.finish();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     public void testGenericViewIntentGoesToFirstRun() {
         final String asyncClassName = ChromeLauncherActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context = getInstrumentation().getTargetContext();
+                final Context context =
+                        InstrumentationRegistry.getInstrumentation().getTargetContext();
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://test.com"));
                 intent.setPackage(context.getPackageName());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -63,13 +76,14 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     public void testRedirectCustomTabActivityToFirstRun() {
         final String asyncClassName = ChromeLauncherActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                Context context = getInstrumentation().getTargetContext();
+                Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
                 CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder().build();
                 customTabIntent.intent.setPackage(context.getPackageName());
                 customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -78,13 +92,15 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     public void testRedirectChromeTabbedActivityToFirstRun() {
         final String asyncClassName = ChromeTabbedActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context = getInstrumentation().getTargetContext();
+                final Context context =
+                        InstrumentationRegistry.getInstrumentation().getTargetContext();
                 Intent intent = new Intent();
                 intent.setClassName(context, asyncClassName);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -93,13 +109,15 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     public void testRedirectSearchActivityToFirstRun() {
         final String asyncClassName = SearchActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context = getInstrumentation().getTargetContext();
+                final Context context =
+                        InstrumentationRegistry.getInstrumentation().getTargetContext();
                 Intent intent = new Intent();
                 intent.setClassName(context, asyncClassName);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -119,7 +137,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
 
-        Instrumentation instrumentation = getInstrumentation();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(activityMonitor);
         instrumentation.addMonitor(freMonitor);
         runnable.run();
@@ -127,7 +145,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         // The original activity should be started because it was directly specified.
         final Activity original = instrumentation.waitForMonitorWithTimeout(
                 activityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        assertNotNull(original);
+        Assert.assertNotNull(original);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -146,6 +164,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         });
     }
 
+    @Test
     @SmallTest
     public void testHelpPageSkipsFirstRun() {
         final ActivityMonitor customTabActivityMonitor =
@@ -153,7 +172,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
 
-        Instrumentation instrumentation = getInstrumentation();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(customTabActivityMonitor);
         instrumentation.addMonitor(freMonitor);
 
@@ -164,18 +183,19 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         // The original activity should be started because it's a "help page".
         final Activity original = instrumentation.waitForMonitorWithTimeout(
                 customTabActivityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        assertNotNull(original);
-        assertFalse(original.isFinishing());
+        Assert.assertNotNull(original);
+        Assert.assertFalse(original.isFinishing());
 
         // First run should be skipped for this Activity.
-        assertEquals(0, freMonitor.getHits());
+        Assert.assertEquals(0, freMonitor.getHits());
     }
 
+    @Test
     @SmallTest
     public void testAbortFirstRun() throws Exception {
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
-        Instrumentation instrumentation = getInstrumentation();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(freMonitor);
 
         final Context context = instrumentation.getTargetContext();
@@ -194,7 +214,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
                 new ActivityMonitor(ChromeLauncherActivity.class.getName(), null, false);
         instrumentation.addMonitor(activityMonitor);
 
-        assertEquals(0, mTestObserver.abortFirstRunExperienceCallback.getCallCount());
+        Assert.assertEquals(0, mTestObserver.abortFirstRunExperienceCallback.getCallCount());
         mActivity.onBackPressed();
         mTestObserver.abortFirstRunExperienceCallback.waitForCallback(
                 "FirstRunActivity didn't abort", 0);
@@ -209,11 +229,12 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
         });
     }
 
+    @Test
     @MediumTest
     public void testClickThroughFirstRun() throws Exception {
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
-        Instrumentation instrumentation = getInstrumentation();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(freMonitor);
 
         final Context context = instrumentation.getTargetContext();
@@ -234,7 +255,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
 
         mTestObserver.flowIsKnownCallback.waitForCallback("Failed to finalize the flow", 0);
         Bundle freProperties = mTestObserver.freProperties;
-        assertEquals(0, mTestObserver.updateCachedEngineCallback.getCallCount());
+        Assert.assertEquals(0, mTestObserver.updateCachedEngineCallback.getCallCount());
 
         // Accept the ToS.
         if (freProperties.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE)) {
@@ -268,7 +289,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
                 "Failed to alert search widgets that an update is necessary", 0);
         mActivity = instrumentation.waitForMonitorWithTimeout(
                 activityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        assertNotNull(mActivity);
+        Assert.assertNotNull(mActivity);
     }
 
     private void clickButton(final Activity activity, final int id, final String message) {
@@ -283,7 +304,7 @@ public class FirstRunIntegrationTest extends MultiActivityTestBase {
             @Override
             public void run() {
                 Button button = (Button) activity.findViewById(id);
-                assertNotNull(message, button);
+                Assert.assertNotNull(message, button);
                 button.performClick();
             }
         });
