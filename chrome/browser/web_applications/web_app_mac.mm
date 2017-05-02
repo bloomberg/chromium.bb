@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
+#include <map>
 #include <utility>
 
 #include "base/command_line.h"
@@ -19,6 +20,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -373,12 +375,69 @@ NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
 
 // Helper function to extract the single NSImageRep held in a resource bundle
 // image.
-NSImageRep* ImageRepForResource(int resource_id) {
-  gfx::Image& image =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+NSImageRep* ImageRepForGFXImage(const gfx::Image& image) {
   NSArray* image_reps = [image.AsNSImage() representations];
   DCHECK_EQ(1u, [image_reps count]);
   return [image_reps objectAtIndex:0];
+}
+
+using ResourceIDToImage = std::map<int, gfx::Image>;
+
+// Returns a map of gfx::Image used by SetWorkspaceIconOnFILEThread.
+// Since ui::ResourceBundle can be call only on UI thread, this function also
+// needs to run on UI thread.
+std::unique_ptr<ResourceIDToImage> GetImageResourcesOnUIThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  std::unique_ptr<ResourceIDToImage> result =
+      base::MakeUnique<ResourceIDToImage>();
+
+  // These resource ID should match to the ones used by
+  // SetWorkspaceIconOnFILEThread below.
+  for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32,
+                 IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512})
+    (*result)[id] = resource_bundle.GetNativeImageNamed(id);
+  return result;
+}
+
+void SetWorkspaceIconOnFILEThread(const base::FilePath& apps_directory,
+                                  std::unique_ptr<ResourceIDToImage> images) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
+  // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
+  // bug when dealing with named NSImages where it incorrectly handles alpha
+  // premultiplication. This is most noticable with small assets since the 1px
+  // border is a much larger component of the small icons.
+  // See http://crbug.com/305373 for details.
+  for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32}) {
+    auto found = images->find(id);
+    DCHECK(found != images->end());
+    [folder_icon_image addRepresentation:ImageRepForGFXImage(found->second)];
+  }
+
+  // Brand larger folder assets with an embossed app launcher logo to
+  // conserve distro size and for better consistency with changing hue
+  // across OSX versions. The folder is textured, so compresses poorly
+  // without this.
+  NSImage* base_image = [NSImage imageNamed:NSImageNameFolder];
+  for (int id : {IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512}) {
+    auto found = images->find(id);
+    DCHECK(found != images->end());
+    NSImageRep* with_overlay =
+        OverlayImageRep(base_image, ImageRepForGFXImage(found->second));
+    DCHECK(with_overlay);
+    if (with_overlay)
+      [folder_icon_image addRepresentation:with_overlay];
+  }
+  [[NSWorkspace sharedWorkspace]
+      setIcon:folder_icon_image
+      forFile:base::mac::FilePathToNSString(apps_directory)
+      options:0];
+
+  content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                     images.release());
 }
 
 // Adds a localized strings file for the Chrome Apps directory using the current
@@ -409,35 +468,10 @@ void UpdateAppShortcutsSubdirLocalizedName(
   [strings_dict writeToFile:strings_path
                  atomically:YES];
 
-  base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
-
-  // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
-  // bug when dealing with named NSImages where it incorrectly handles alpha
-  // premultiplication. This is most noticable with small assets since the 1px
-  // border is a much larger component of the small icons.
-  // See http://crbug.com/305373 for details.
-  [folder_icon_image addRepresentation:ImageRepForResource(IDR_APPS_FOLDER_16)];
-  [folder_icon_image addRepresentation:ImageRepForResource(IDR_APPS_FOLDER_32)];
-
-  // Brand larger folder assets with an embossed app launcher logo to conserve
-  // distro size and for better consistency with changing hue across OSX
-  // versions. The folder is textured, so compresses poorly without this.
-  const int kBrandResourceIds[] = {
-    IDR_APPS_FOLDER_OVERLAY_128,
-    IDR_APPS_FOLDER_OVERLAY_512,
-  };
-  NSImage* base_image = [NSImage imageNamed:NSImageNameFolder];
-  for (size_t i = 0; i < arraysize(kBrandResourceIds); ++i) {
-    NSImageRep* with_overlay =
-        OverlayImageRep(base_image, ImageRepForResource(kBrandResourceIds[i]));
-    DCHECK(with_overlay);
-    if (with_overlay)
-      [folder_icon_image addRepresentation:with_overlay];
-  }
-  [[NSWorkspace sharedWorkspace]
-      setIcon:folder_icon_image
-      forFile:base::mac::FilePathToNSString(apps_directory)
-      options:0];
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GetImageResourcesOnUIThread),
+      base::BindOnce(&SetWorkspaceIconOnFILEThread, apps_directory));
 }
 
 void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
