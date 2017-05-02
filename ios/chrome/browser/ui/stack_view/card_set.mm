@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -16,19 +17,15 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 const CGFloat kMaxCardStaggerPercentage = 0.35;
 }
 
 @interface CardSet ()<StackCardViewProvider, TabModelObserver> {
-  TabModel* tabModel_;
-  UIView* view_;
-  CardStackLayoutManager* stackModel_;
-  UIImageView* stackShadow_;
+  base::scoped_nsobject<TabModel> tabModel_;
+  base::scoped_nsobject<UIView> view_;
+  base::scoped_nsobject<CardStackLayoutManager> stackModel_;
+  base::scoped_nsobject<UIImageView> stackShadow_;
 }
 
 // Set to |YES| when the card set should draw a shadow around the entire stack.
@@ -64,14 +61,14 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 @synthesize closingCard = closingCard_;
 
 - (CardStackLayoutManager*)stackModel {
-  return stackModel_;
+  return stackModel_.get();
 }
 
 - (id)initWithModel:(TabModel*)model {
   if ((self = [super init])) {
-    tabModel_ = model;
+    tabModel_.reset([model retain]);
     [tabModel_ addObserver:self];
-    stackModel_ = [[CardStackLayoutManager alloc] init];
+    stackModel_.reset([[CardStackLayoutManager alloc] init]);
     [self rebuildCards];
     self.shouldShowShadow = YES;
   }
@@ -80,6 +77,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 
 - (void)dealloc {
   [tabModel_ removeObserver:self];
+  [super dealloc];
 }
 
 #pragma mark Properties
@@ -92,7 +90,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   DCHECK([tabModel count] == 0);
   DCHECK([tabModel_ count] == 0);
   [tabModel_ removeObserver:self];
-  tabModel_ = tabModel;
+  tabModel_.reset([tabModel retain]);
   if (!ignoresTabModelChanges_)
     [tabModel_ addObserver:self];
 }
@@ -124,11 +122,11 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 }
 
 - (UIView*)displayView {
-  return view_;
+  return view_.get();
 }
 
 - (void)setDisplayView:(UIView*)view {
-  if (view == view_)
+  if (view == view_.get())
     return;
   for (StackCard* card in self.cards) {
     if (card.viewIsLive) {
@@ -137,7 +135,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
     }
   }
   [stackShadow_ removeFromSuperview];
-  view_ = view;
+  view_.reset([view retain]);
   // Add the stack shadow view to the new display view.
   if (!stackShadow_) {
     UIImage* shadowImage = [UIImage imageNamed:kCardShadowImageName];
@@ -147,7 +145,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
                                         shadowImage.size.width / 2.0,
                                         shadowImage.size.height / 2.0,
                                         shadowImage.size.width / 2.0)];
-    stackShadow_ = [[UIImageView alloc] initWithImage:shadowImage];
+    stackShadow_.reset([[UIImageView alloc] initWithImage:shadowImage]);
     [stackShadow_ setHidden:!self.cards.count];
   }
   [view_ addSubview:stackShadow_];
@@ -156,7 +154,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   // if/when the view is restored (e.g., if the view was purged due to a memory
   // warning while in a modal view and then restored when exiting the modal
   // view).
-  if (view_)
+  if (view_.get())
     [self displayViewSizeWasChanged];
 }
 
@@ -406,6 +404,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 - (void)removeCardAtIndex:(NSUInteger)index {
   DCHECK(index < [self.cards count]);
   StackCard* card = [self.cards objectAtIndex:index];
+  [[card retain] autorelease];
   [self.observer cardSet:self willRemoveCard:card atIndex:index];
   [stackModel_ removeCard:card];
 
@@ -416,7 +415,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 
 - (StackCard*)buildCardFromTab:(Tab*)tab {
   DCHECK(tab);
-  StackCard* card = [[StackCard alloc] initWithViewProvider:self];
+  StackCard* card = [[[StackCard alloc] initWithViewProvider:self] autorelease];
   card.size = [stackModel_ cardSize];
   card.tabID = reinterpret_cast<NSUInteger>(tab);
 
@@ -426,7 +425,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 - (void)rebuildCards {
   [stackModel_ removeAllCards];
 
-  for (Tab* tab in tabModel_) {
+  for (Tab* tab in tabModel_.get()) {
     StackCard* card = [self buildCardFromTab:tab];
     [stackModel_ addCard:card];
   }
@@ -486,8 +485,9 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   NSString* title = tab.title;
   if (![title length])
     title = tab.urlDisplayString;
-  CardView* view = [[CardView alloc] initWithFrame:frame
-                                       isIncognito:[tabModel_ isOffTheRecord]];
+  CardView* view =
+      [[[CardView alloc] initWithFrame:frame
+                           isIncognito:[tabModel_ isOffTheRecord]] autorelease];
   [view setTitle:title];
   [view setFavicon:[tab favicon]];
   [tab retrieveSnapshot:^(UIImage* image) {
@@ -592,7 +592,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
 }
 
 - (void)setStackModelForTesting:(CardStackLayoutManager*)stackModel {
-  stackModel_ = stackModel;
+  stackModel_.reset([stackModel retain]);
 }
 
 @end

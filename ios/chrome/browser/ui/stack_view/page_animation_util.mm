@@ -7,14 +7,11 @@
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/card_view.h"
 #import "ios/chrome/common/material_timing.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using ios::material::TimingFunction;
 
@@ -59,8 +56,8 @@ const CGFloat kAnimateOutAnchorY = 0;
     const UIEdgeInsets kShadowStretchInsets = {28.0, 28.0, 28.0, 28.0};
     const UIEdgeInsets kShadowLayoutOutset = {-10.0, -11.0, -12.0, -11.0};
     CGRect shadowFrame = UIEdgeInsetsInsetRect(frame, kShadowLayoutOutset);
-    UIImageView* frameShadowImageView =
-        [[UIImageView alloc] initWithFrame:shadowFrame];
+    base::scoped_nsobject<UIImageView> frameShadowImageView(
+        [[UIImageView alloc] initWithFrame:shadowFrame]);
     [frameShadowImageView
         setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                              UIViewAutoresizingFlexibleHeight)];
@@ -106,7 +103,8 @@ void AnimateInPaperWithAnimationAndCompletion(UIView* view,
   // Create paper background.
   CGRect paperFrame = CGRectOffset(endFrame, 0, paperOffset);
   paperFrame.size.height -= paperOffset;
-  PaperView* paper = [[PaperView alloc] initWithFrame:paperFrame];
+  base::scoped_nsobject<PaperView> paper(
+      [[PaperView alloc] initWithFrame:paperFrame]);
   [parent insertSubview:paper belowSubview:view];
   [paper addSubview:view];
   [paper setBackgroundColor:isOffTheRecord
@@ -211,7 +209,8 @@ void AnimateNewBackgroundPageWithCompletion(CardView* currentPageCard,
                                             BOOL isPortrait,
                                             void (^completion)(void)) {
   // Create paper background.
-  PaperView* paper = [[PaperView alloc] initWithFrame:CGRectZero];
+  base::scoped_nsobject<PaperView> paper(
+      [[PaperView alloc] initWithFrame:CGRectZero]);
   UIView* parent = [currentPageCard superview];
   [parent insertSubview:paper aboveSubview:currentPageCard];
   CGRect pageBounds = currentPageCard.bounds;
