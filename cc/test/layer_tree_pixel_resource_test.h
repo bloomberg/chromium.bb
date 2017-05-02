@@ -31,7 +31,8 @@ enum PixelResourceTestCase {
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  public:
-  explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
+  explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case,
+                                          Layer::LayerMaskType mask_type);
   LayerTreeHostPixelResourceTest();
 
   void CreateResourceAndRasterBufferProvider(
@@ -53,6 +54,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   unsigned draw_texture_target_;
   RasterBufferProviderType raster_buffer_provider_type_;
   ResourceProvider::TextureHint texture_hint_;
+  Layer::LayerMaskType mask_type_;
   bool initialized_;
 
   void InitializeFromTestCase(PixelResourceTestCase test_case);
@@ -61,18 +63,22 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   PixelResourceTestCase test_case_;
 };
 
-#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name)             \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      PixelResourceTest, framework_name,                                   \
-      ::testing::Values(                                                   \
-          SOFTWARE, GL_GPU_RASTER_2D_DRAW, GL_ONE_COPY_2D_STAGING_2D_DRAW, \
-          GL_ONE_COPY_RECT_STAGING_2D_DRAW,                                \
-          GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW, GL_ZERO_COPY_2D_DRAW,      \
-          GL_ZERO_COPY_RECT_DRAW, GL_ZERO_COPY_EXTERNAL_DRAW))
+#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name)                 \
+  INSTANTIATE_TEST_CASE_P(                                                     \
+      PixelResourceTest, framework_name,                                       \
+      ::testing::Combine(                                                      \
+          ::testing::Values(                                                   \
+              SOFTWARE, GL_GPU_RASTER_2D_DRAW, GL_ONE_COPY_2D_STAGING_2D_DRAW, \
+              GL_ONE_COPY_RECT_STAGING_2D_DRAW,                                \
+              GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW, GL_ZERO_COPY_2D_DRAW,      \
+              GL_ZERO_COPY_RECT_DRAW, GL_ZERO_COPY_EXTERNAL_DRAW),             \
+          ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,         \
+                            Layer::LayerMaskType::MULTI_TEXTURE_MASK)))
 
 class ParameterizedPixelResourceTest
     : public LayerTreeHostPixelResourceTest,
-      public ::testing::WithParamInterface<PixelResourceTestCase> {
+      public ::testing::WithParamInterface<
+          ::testing::tuple<PixelResourceTestCase, Layer::LayerMaskType>> {
  public:
   ParameterizedPixelResourceTest();
 };
