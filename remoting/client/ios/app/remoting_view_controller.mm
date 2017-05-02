@@ -106,6 +106,20 @@ static CGFloat kHostInset = 5.f;
   }
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  // Adjust the collection view's position and size so that it doesn't get
+  // overlayed by the navigation bar.
+  CGFloat collectionOffsetY =
+      _appBar.headerViewController.headerView.frame.size.height;
+  CGFloat collectionHeight = self.view.bounds.size.height - collectionOffsetY;
+  CGRect oldFrame = _collectionViewController.collectionView.frame;
+  _collectionViewController.collectionView.frame =
+      CGRectMake(oldFrame.origin.x, collectionOffsetY, oldFrame.size.width,
+                 collectionHeight);
+}
+
 #pragma mark - RemotingAuthenticationDelegate
 
 - (void)nowAuthenticated:(BOOL)authenticated {
