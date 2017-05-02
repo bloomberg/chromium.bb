@@ -20,6 +20,7 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
                               const ExtendableEventInit&);
   static InstallEvent* Create(const AtomicString& type,
                               const ExtendableEventInit&,
+                              int event_id,
                               WaitUntilObserver*);
 
   ~InstallEvent() override;
@@ -34,7 +35,9 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
   InstallEvent(const AtomicString& type, const ExtendableEventInit&);
   InstallEvent(const AtomicString& type,
                const ExtendableEventInit&,
+               int event_id,
                WaitUntilObserver*);
+  const int event_id_;
 };
 
 }  // namespace blink

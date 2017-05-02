@@ -19,8 +19,9 @@ InstallEvent* InstallEvent::Create(const AtomicString& type,
 
 InstallEvent* InstallEvent::Create(const AtomicString& type,
                                    const ExtendableEventInit& event_init,
+                                   int event_id,
                                    WaitUntilObserver* observer) {
-  return new InstallEvent(type, event_init, observer);
+  return new InstallEvent(type, event_init, event_id, observer);
 }
 
 InstallEvent::~InstallEvent() {}
@@ -89,7 +90,7 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
       return;
     }
   }
-  client->RegisterForeignFetchScopes(sub_scope_urls, parsed_origins);
+  client->RegisterForeignFetchScopes(event_id_, sub_scope_urls, parsed_origins);
 }
 
 const AtomicString& InstallEvent::InterfaceName() const {
@@ -98,11 +99,12 @@ const AtomicString& InstallEvent::InterfaceName() const {
 
 InstallEvent::InstallEvent(const AtomicString& type,
                            const ExtendableEventInit& initializer)
-    : ExtendableEvent(type, initializer) {}
+    : ExtendableEvent(type, initializer), event_id_(0) {}
 
 InstallEvent::InstallEvent(const AtomicString& type,
                            const ExtendableEventInit& initializer,
+                           int event_id,
                            WaitUntilObserver* observer)
-    : ExtendableEvent(type, initializer, observer) {}
+    : ExtendableEvent(type, initializer, observer), event_id_(event_id) {}
 
 }  // namespace blink

@@ -62,7 +62,7 @@ struct ServiceWorkerFetchRequest;
 class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  public IPC::Listener {
  public:
-  enum class Event { Activate };
+  enum class Event { Install, Activate };
   using FetchCallback =
       base::OnceCallback<void(ServiceWorkerStatusCode,
                               base::Time /* dispatch_event_time */)>;
@@ -123,8 +123,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // IPC sink for EmbeddedWorker messages.
   IPC::TestSink* ipc_sink() { return &sink_; }
-  // Inner IPC sink for script context messages sent via EmbeddedWorker.
-  IPC::TestSink* inner_ipc_sink() { return &inner_sink_; }
 
   std::vector<Event>* dispatched_events() { return &events_; }
 
@@ -176,15 +174,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
   // This calls SimulateWorkerStopped() by default.
   virtual void OnStopWorker(int embedded_worker_id);
-  // The legacy IPC message handler. This passes the messages to their
-  // respective On*Event handler by default.
-  virtual bool OnMessageToWorker(int thread_id,
-                                 int embedded_worker_id,
-                                 const IPC::Message& message);
 
-  // On*Event handlers. Called by the default implementation of
-  // OnMessageToWorker when events are sent to the embedded
-  // worker. By default they just return success via
+  // On*Event handlers. By default they just return success via
   // SimulateSendReplyToBrowser.
   virtual void OnActivateEvent(
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
@@ -212,7 +203,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ExtendableMessageEventPtr event,
       mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback callback);
-  virtual void OnInstallEvent(int embedded_worker_id, int request_id);
+  virtual void OnInstallEvent(
+      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+      mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
+          callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
       int fetch_event_id,
@@ -294,7 +288,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ExtendableMessageEventPtr event,
       mojom::ServiceWorkerEventDispatcher::
           DispatchExtendableMessageEventCallback callback);
-  void OnInstallEventStub(int request_id);
+  void OnInstallEventStub(
+      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+      mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
+          callback);
   void OnFetchEventStub(
       int thread_id,
       int fetch_event_id,
@@ -330,7 +327,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 
   IPC::TestSink sink_;
-  IPC::TestSink inner_sink_;
 
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
       mock_instance_clients_;
@@ -352,9 +348,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       int /* embedded_worker_id */,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       embedded_worker_id_instance_host_ptr_map_;
-
-  // Updated each time MessageToWorker message is received.
-  int current_embedded_worker_id_;
 
   std::vector<Event> events_;
 
