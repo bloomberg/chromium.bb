@@ -481,8 +481,8 @@ void ChromeContentClient::AddPepperPlugins(
 
   // If flash is disabled, do not try to add any flash plugin.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableBundledPpapiFlash))
-    return;
+  bool disable_bundled_flash =
+      command_line->HasSwitch(switches::kDisableBundledPpapiFlash);
 
   std::vector<std::unique_ptr<content::PepperPluginInfo>> flash_versions;
 
@@ -496,7 +496,8 @@ void ChromeContentClient::AddPepperPlugins(
     return;
 
   auto component_flash = base::MakeUnique<content::PepperPluginInfo>();
-  if (GetComponentUpdatedPepperFlash(component_flash.get()))
+  if (!disable_bundled_flash &&
+      GetComponentUpdatedPepperFlash(component_flash.get()))
     flash_versions.push_back(std::move(component_flash));
 #endif  // defined(OS_LINUX)
 
@@ -512,7 +513,7 @@ void ChromeContentClient::AddPepperPlugins(
   content::PepperPluginInfo* max_flash = FindMostRecentPlugin(flash_versions);
   if (max_flash) {
     plugins->push_back(*max_flash);
-  } else {
+  } else if (!disable_bundled_flash) {
 #if defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
     // Add a fake Flash plugin even though it doesn't actually exist - if a
     // web page requests it, it will be component-updated on-demand. There is
