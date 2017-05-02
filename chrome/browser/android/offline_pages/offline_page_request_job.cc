@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
@@ -560,9 +560,12 @@ OfflinePageRequestJob::OfflinePageRequestJob(
           request,
           network_delegate,
           base::FilePath(),
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+          base::CreateTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::USER_VISIBLE)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
       delegate_(new DefaultDelegate()),
       previews_decider_(previews_decider),
       weak_ptr_factory_(this) {}
