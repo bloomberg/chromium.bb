@@ -52,11 +52,13 @@ suiteSetup(function() {
           bookmarks.Store.prototype.reduce_.call(this, action);
       },
 
+      /**
+       * Notifies UI elements that the store data has changed. When reducers are
+       * disabled, tests are responsible for manually changing the data to make
+       * UI elements update correctly (eg, tests must replace the whole list
+       * when changing a single element).
+       */
       notifyObservers: function() {
-        // TODO(tsergeant): Revisit how state modifications work in UI tests.
-        // We don't want tests to worry about modifying the whole state tree.
-        // Instead, we could perform a deep clone in here to ensure that every
-        // StoreClient is updated.
         this.notifyObservers_(this.data);
       },
 

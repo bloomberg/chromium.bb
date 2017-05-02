@@ -49,7 +49,10 @@ cr.define('bookmarks', function() {
      * @param {function(!BookmarksPageState)} valueGetter
      */
     watch: function(localProperty, valueGetter) {
-      // TODO(tsergeant): Warn if localProperty is not a defined property.
+      if (!this.getPropertyInfo(localProperty).defined) {
+        console.error(
+            'No property ' + localProperty + ' defined on ' + this.is);
+      }
       this.watches_.push({
         localProperty: localProperty,
         valueGetter: valueGetter,
