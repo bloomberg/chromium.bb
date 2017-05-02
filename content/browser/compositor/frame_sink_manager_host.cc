@@ -28,6 +28,14 @@ void FrameSinkManagerHost::ConnectToFrameSinkManager() {
                               binding_.CreateInterfacePtrAndBind());
 }
 
+void FrameSinkManagerHost::AddObserver(FrameSinkObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FrameSinkManagerHost::RemoveObserver(FrameSinkObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void FrameSinkManagerHost::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::MojoCompositorFrameSinkRequest request,
@@ -57,7 +65,8 @@ void FrameSinkManagerHost::UnregisterFrameSinkHierarchy(
 
 void FrameSinkManagerHost::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
-  // TODO(kylechar): Implement.
+  for (auto& observer : observers_)
+    observer.OnSurfaceCreated(surface_info);
 }
 
 }  // namespace content

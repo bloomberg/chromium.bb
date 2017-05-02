@@ -473,6 +473,7 @@ source_set("browser") {
     # needed on all platforms.
     "compositor/frame_sink_manager_host.cc",
     "compositor/frame_sink_manager_host.h",
+    "compositor/frame_sink_observer.h",
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
     "devtools/browser_devtools_agent_host.cc",
