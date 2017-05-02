@@ -76,6 +76,7 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
         break;
       case ui::ET_GESTURE_END:
       case ui::ET_GESTURE_SCROLL_BEGIN:
+      case ui::ET_GESTURE_TAP_CANCEL:
         if (current_ink_drop_state == InkDropState::ACTIVATED)
           return;
         ink_drop_state = InkDropState::HIDDEN;
@@ -87,7 +88,8 @@ class InkDropHostView::InkDropGestureHandler : public ui::EventHandler {
     if (ink_drop_state == InkDropState::HIDDEN &&
         (current_ink_drop_state == InkDropState::ACTION_TRIGGERED ||
          current_ink_drop_state == InkDropState::ALTERNATE_ACTION_TRIGGERED ||
-         current_ink_drop_state == InkDropState::DEACTIVATED)) {
+         current_ink_drop_state == InkDropState::DEACTIVATED ||
+         current_ink_drop_state == InkDropState::HIDDEN)) {
       // These InkDropStates automatically transition to the HIDDEN state so we
       // don't make an explicit call. Explicitly animating to HIDDEN in this
       // case would prematurely pre-empt these animations.

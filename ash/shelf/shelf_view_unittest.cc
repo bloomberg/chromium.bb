@@ -2926,8 +2926,7 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
   EXPECT_EQ(views::InkDropState::HIDDEN,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::DEACTIVATED,
-                          views::InkDropState::HIDDEN));
+              ElementsAre(views::InkDropState::DEACTIVATED));
 
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
