@@ -693,41 +693,6 @@ void ServiceWorkerStorage::GetUserData(int64_t registration_id,
                             weak_factory_.GetWeakPtr(), callback)));
 }
 
-void ServiceWorkerStorage::GetUserDataByKeyPrefix(
-    int64_t registration_id,
-    const std::string& key_prefix,
-    const GetUserDataCallback& callback) {
-  if (!LazyInitialize(base::Bind(&ServiceWorkerStorage::GetUserDataByKeyPrefix,
-                                 weak_factory_.GetWeakPtr(), registration_id,
-                                 key_prefix, callback))) {
-    if (state_ != INITIALIZING) {
-      RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
-                                    SERVICE_WORKER_ERROR_ABORT));
-    }
-    return;
-  }
-  DCHECK_EQ(INITIALIZED, state_);
-
-  if (registration_id == kInvalidServiceWorkerRegistrationId) {
-    RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
-                                  SERVICE_WORKER_ERROR_FAILED));
-    return;
-  }
-  if (key_prefix.empty()) {
-    RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
-                                  SERVICE_WORKER_ERROR_FAILED));
-    return;
-  }
-
-  database_task_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ServiceWorkerStorage::GetUserDataByKeyPrefixInDB,
-                 database_.get(), base::ThreadTaskRunnerHandle::Get(),
-                 registration_id, key_prefix,
-                 base::Bind(&ServiceWorkerStorage::DidGetUserData,
-                            weak_factory_.GetWeakPtr(), callback)));
-}
-
 void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                                          const std::vector<std::string>& keys,
                                          const StatusCallback& callback) {
@@ -1802,19 +1767,6 @@ void ServiceWorkerStorage::GetUserDataInDB(
   std::vector<std::string> values;
   ServiceWorkerDatabase::Status status =
       database->ReadUserData(registration_id, keys, &values);
-  original_task_runner->PostTask(FROM_HERE,
-                                 base::Bind(callback, values, status));
-}
-
-void ServiceWorkerStorage::GetUserDataByKeyPrefixInDB(
-    ServiceWorkerDatabase* database,
-    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
-    int64_t registration_id,
-    const std::string& key_prefix,
-    const GetUserDataInDBCallback& callback) {
-  std::vector<std::string> values;
-  ServiceWorkerDatabase::Status status =
-      database->ReadUserDataByKeyPrefix(registration_id, key_prefix, &values);
   original_task_runner->PostTask(FROM_HERE,
                                  base::Bind(callback, values, status));
 }

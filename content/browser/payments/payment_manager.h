@@ -39,18 +39,16 @@ class CONTENT_EXPORT PaymentManager
   void DeletePaymentInstrument(
       const std::string& instrument_key,
       const DeletePaymentInstrumentCallback& callback) override;
-  void GetPaymentInstrument(
-      const std::string& instrument_key,
-      const GetPaymentInstrumentCallback& callback) override;
-  void KeysOfPaymentInstruments(
-      const KeysOfPaymentInstrumentsCallback& callback) override;
-  void HasPaymentInstrument(
-      const std::string& instrument_key,
-      const HasPaymentInstrumentCallback& callback) override;
   void SetPaymentInstrument(
       const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr details,
       const SetPaymentInstrumentCallback& callback) override;
+  void HasPaymentInstrument(
+      const std::string& instrument_key,
+      const HasPaymentInstrumentCallback& callback) override;
+  void GetPaymentInstrument(
+      const std::string& instrument_key,
+      const GetPaymentInstrumentCallback& callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();
