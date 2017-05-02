@@ -1767,6 +1767,67 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
+       NonTranslationTransformShouldResetSubpixelPaintOffset) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; }"
+      "  div { position: relative; }"
+      "  #a {"
+      "    width: 70px;"
+      "    height: 70px;"
+      "    left: 0.8px;"
+      "    top: 0.8px;"
+      "  }"
+      "  #b {"
+      "    width: 40px;"
+      "    height: 40px;"
+      "    transform: scale(10);"
+      "    transform-origin: 0 0;"
+      "  }"
+      "  #c {"
+      "    width: 40px;"
+      "    height: 40px;"
+      "    left: 0.6px;"
+      "    top: 0.6px;"
+      "  }"
+      "</style>"
+      "<div id='a'>"
+      "  <div id='b'>"
+      "    <div id='c'></div>"
+      "  </div>"
+      "</div>");
+  FrameView* frame_view = GetDocument().View();
+
+  LayoutUnit a_offset = LayoutUnit(0.8);
+  LayoutUnit c_offset = LayoutUnit(0.6);
+
+  LayoutObject* b = GetDocument().getElementById("b")->GetLayoutObject();
+  const ObjectPaintProperties* b_properties = b->PaintProperties();
+  EXPECT_EQ(TransformationMatrix().Scale(10),
+            b_properties->Transform()->Matrix());
+  // The paint offset transform should not be snapped.
+  EXPECT_EQ(TransformationMatrix().Translate(a_offset.ToDouble(),
+                                             a_offset.ToDouble()),
+            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(LayoutPoint(), b->PaintOffset());
+  CHECK_EXACT_VISUAL_RECT(
+      LayoutRect(a_offset, a_offset, LayoutUnit(400), LayoutUnit(400)), b,
+      frame_view->GetLayoutView());
+
+  // c's painting should start at c_offset.
+  LayoutObject* c = GetDocument().getElementById("c")->GetLayoutObject();
+  EXPECT_EQ(LayoutPoint(c_offset, c_offset), c->PaintOffset());
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of
+  // c_offset * 10 + 1px.
+  CHECK_VISUAL_RECT(
+      LayoutRect(c_offset * 10 + a_offset, c_offset * 10 + a_offset,
+                 LayoutUnit(400), LayoutUnit(400)),
+      c, frame_view->GetLayoutView(), c_offset * 10 + 1);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetWithPixelSnappingThroughMultipleTransforms) {
   SetBodyInnerHTML(
       "<style>"
