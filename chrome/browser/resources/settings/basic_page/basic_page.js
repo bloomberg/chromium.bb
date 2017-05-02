@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-basic-page',
 
-  behaviors: [SettingsPageVisibility, MainPageBehavior],
+  behaviors: [MainPageBehavior],
 
   properties: {
     /** Preferences state. */
@@ -18,11 +18,9 @@ Polymer({
       notify: true,
     },
 
-    showAndroidApps: Boolean,
-
     /**
-     * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * Dictionary defining page visibility. Controlled by settings-ui.
+     * @type {!PageVisibility|undefined}
      */
     pageVisibility: Object,
 
@@ -134,6 +132,23 @@ Polymer({
     });
   },
 
+  /**
+   * @param {boolean|undefined} visibility
+   * @return {boolean}
+   * @private
+   */
+  showPage_: function(visibility) {
+    return visibility !== false;
+  },
+
+  /**
+   * @param {string} subpage
+   * @return {!Object}
+   */
+  getPageVisibility_: function(subpage) {
+    return /** @type {Object} */ (this.get(subpage, this.pageVisibility)) || {};
+  },
+
 // <if expr="chromeos">
   /**
    * @return {boolean}
@@ -148,16 +163,6 @@ Polymer({
   /** @private */
   onResetProfileBannerClosed_: function() {
     this.showResetProfileBanner_ = false;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowAndroidApps_: function() {
-    var visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.androidApps'));
-    return this.showAndroidApps && this.showPage(visibility);
   },
 
   /**
@@ -216,15 +221,6 @@ Polymer({
     return hasExpandedSection ?
         settings.Route.ADVANCED.contains(currentRoute) :
         advancedToggleExpanded || inSearchMode;
-  },
-
-  /**
-   * @param {(boolean|undefined)} visibility
-   * @return {boolean} True unless visibility is false.
-   * @private
-   */
-  showAdvancedSettings_: function(visibility) {
-    return visibility !== false;
   },
 
   /**

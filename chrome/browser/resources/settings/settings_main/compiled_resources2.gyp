@@ -14,7 +14,6 @@
         '../about_page/compiled_resources2.gyp:about_page',
         '../basic_page/compiled_resources2.gyp:basic_page',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
-        '../settings_page/compiled_resources2.gyp:settings_page_visibility',
         '../settings_ui/compiled_resources2.gyp:settings_ui_types',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

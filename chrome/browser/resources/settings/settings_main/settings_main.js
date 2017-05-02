@@ -71,17 +71,10 @@ Polymer({
     },
 
     /**
-     * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * Dictionary defining page visibility. Controlled by settings-ui.
+     * @type {!PageVisibility|undefined}
      */
-    pageVisibility: {
-      type: Object,
-      value: function() {
-        return {};
-      },
-    },
-
-    showAndroidApps: Boolean,
+    pageVisibility: Object,
   },
 
   /** @override */

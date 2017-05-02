@@ -71,6 +71,8 @@ cr.define('settings_main_page', function() {
         settingsMain = document.createElement('settings-main');
         settingsMain.prefs = settingsPrefs.prefs;
         settingsMain.toolbarSpinnerActive = false;
+        // Set default page visibility.
+        settingsMain.pageVisibility = {};
         document.body.appendChild(settingsMain);
       });
 

@@ -91,11 +91,12 @@
         $i18n{bluetoothPageTitle}
       </a>
 </if>
-      <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
+      <a id="people" href="/people"
+          hidden="[[!showPage_(pageVisibility.people)]]">
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{peoplePageTitle}
       </a>
-      <a href="/appearance" hidden="[[!pageVisibility.appearance]]">
+      <a href="/appearance" hidden="[[!showPage_(pageVisibility.appearance)]]">
         <iron-icon icon="settings:palette"></iron-icon>
         $i18n{appearancePageTitle}
       </a>
@@ -110,29 +111,31 @@
         $i18n{searchPageTitle}
       </a>
 <if expr="chromeos">
-      <a href="/androidApps" hidden="[[!showAndroidApps]]">
+      <a href="/androidApps"
+          hidden="[[!showPage_(pageVisibility.androidApps)]]">
         <iron-icon icon="settings:android"></iron-icon>
         $i18n{androidAppsPageTitle}
       </a>
 </if>
 <if expr="not chromeos">
-      <a href="/defaultBrowser" hidden="[[!pageVisibility.defaultBrowser]]">
+      <a href="/defaultBrowser"
+          hidden="[[!showPage_(pageVisibility.defaultBrowser)]]">
         <iron-icon icon="settings:web"></iron-icon>
         $i18n{defaultBrowser}
       </a>
 </if>
-      <a href="/onStartup" hidden="[[!pageVisibility.onStartup]]">
+      <a href="/onStartup" hidden="[[!showPage_(pageVisibility.onStartup)]]">
         <iron-icon icon="settings:power-settings-new"></iron-icon>
         $i18n{onStartup}
       </a>
       <paper-button toggles id="advancedButton"
           aria-active-attribute="aria-expanded" active="{{advancedOpened}}"
-          hidden="[[!pageVisibility.advancedSettings]]">
+          hidden="[[!showPage_(pageVisibility.advancedSettings)]]">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
         </iron-icon></paper-button>
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
-          hidden="[[!pageVisibility.advancedSettings]]">
+          hidden="[[!showPage_(pageVisibility.advancedSettings)]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href">
 <if expr="chromeos">
           <a href="/dateTime">
@@ -145,7 +148,7 @@
             $i18n{privacyPageTitle}
           </a>
           <a href="/passwordsAndForms"
-              hidden="[[!pageVisibility.passwordsAndForms]]">
+              hidden="[[!showPage_(pageVisibility.passwordsAndForms)]]">
             <iron-icon icon="settings:assignment"></iron-icon>
             $i18n{passwordsAndAutofillPageTitle}
           </a>
@@ -171,7 +174,7 @@
             $i18n{systemPageTitle}
           </a>
 </if>
-          <a href="/reset" hidden="[[!pageVisibility.reset]]">
+          <a href="/reset" hidden="[[!showPage_(pageVisibility.reset)]]">
             <iron-icon icon="settings:restore"></iron-icon>
             $i18n{resetPageTitle}
           </a>

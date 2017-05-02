@@ -96,7 +96,6 @@
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
           <settings-menu page-visibility="[[pageVisibility_]]"
-              show-android-apps="[[showAndroidApps_]]"
               on-iron-activate="onIronActivate_"
               advanced-opened="{{advancedOpened_}}">
           </settings-menu>
@@ -110,7 +109,6 @@
       <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
-          show-android-apps="[[showAndroidApps_]]"
           advanced-toggle-expanded="{{advancedOpened_}}">
       </settings-main>
     </div>

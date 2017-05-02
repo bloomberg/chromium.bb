@@ -27,10 +27,6 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'settings_page_visibility',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'settings_section',
       'dependencies': [
         '../animation/compiled_resources2.gyp:animation',
