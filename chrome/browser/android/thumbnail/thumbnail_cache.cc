@@ -511,18 +511,16 @@ bool WriteToFile(base::File& file,
 
   // Write ETC1 header.
   unsigned char etc1_buffer[ETC_PKM_HEADER_SIZE];
-  etc1_pkm_format_header(etc1_buffer,
-                         compressed_data->info().width(),
-                         compressed_data->info().height());
+  etc1_pkm_format_header(etc1_buffer, compressed_data->width(),
+                         compressed_data->height());
 
   int header_bytes_written = file.WriteAtCurrentPos(
       reinterpret_cast<char*>(etc1_buffer), ETC_PKM_HEADER_SIZE);
   if (header_bytes_written != ETC_PKM_HEADER_SIZE)
     return false;
 
-  int data_size = etc1_get_encoded_data_size(
-      compressed_data->info().width(),
-      compressed_data->info().height());
+  int data_size = etc1_get_encoded_data_size(compressed_data->width(),
+                                             compressed_data->height());
   int pixel_bytes_written = file.WriteAtCurrentPos(
       reinterpret_cast<char*>(compressed_data->pixels()),
       data_size);
@@ -853,8 +851,8 @@ void ThumbnailCache::DecompressionTask(
   bool success = false;
 
   if (compressed_data.get()) {
-    gfx::Size buffer_size = gfx::Size(compressed_data->info().width(),
-                                      compressed_data->info().height());
+    gfx::Size buffer_size =
+        gfx::Size(compressed_data->width(), compressed_data->height());
 
     SkBitmap raw_data;
     raw_data.allocPixels(SkImageInfo::Make(buffer_size.width(),
