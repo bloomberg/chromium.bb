@@ -1420,20 +1420,21 @@ void LayoutGrid::PopulateGridPositionsForDirection(
   size_t number_of_tracks = tracks.size();
   size_t number_of_lines = number_of_tracks + 1;
   size_t last_line = number_of_lines - 1;
+  bool has_collapsed_tracks = grid_.HasAutoRepeatEmptyTracks(direction);
+  size_t number_of_collapsed_tracks =
+      has_collapsed_tracks ? grid_.AutoRepeatEmptyTracks(direction)->size() : 0;
   ContentAlignmentData offset = ComputeContentPositionAndDistributionOffset(
       direction, track_sizing_algorithm_.FreeSpace(direction).value(),
-      number_of_tracks);
+      number_of_tracks - number_of_collapsed_tracks);
   auto& positions = is_row_axis ? column_positions_ : row_positions_;
   positions.resize(number_of_lines);
   auto border_and_padding =
       is_row_axis ? BorderAndPaddingLogicalLeft() : BorderAndPaddingBefore();
   positions[0] = border_and_padding + offset.position_offset;
-  const Grid& grid = track_sizing_algorithm_.GetGrid();
   if (number_of_lines > 1) {
     // If we have collapsed tracks we just ignore gaps here and add them later
     // as we might not compute the gap between two consecutive tracks without
     // examining the surrounding ones.
-    bool has_collapsed_tracks = grid.HasAutoRepeatEmptyTracks(direction);
     LayoutUnit gap = !has_collapsed_tracks ? GridGap(direction) : LayoutUnit();
     size_t next_to_last_line = number_of_lines - 2;
     for (size_t i = 0; i < next_to_last_line; ++i)
@@ -1447,24 +1448,25 @@ void LayoutGrid::PopulateGridPositionsForDirection(
     // they become 0.
     if (has_collapsed_tracks) {
       gap = GridGap(direction);
-      size_t remaining_empty_tracks =
-          grid.AutoRepeatEmptyTracks(direction)->size();
+      size_t remaining_empty_tracks = number_of_collapsed_tracks;
+      LayoutUnit offset_accumulator;
       LayoutUnit gap_accumulator;
       for (size_t i = 1; i < last_line; ++i) {
-        if (grid.IsEmptyAutoRepeatTrack(direction, i - 1)) {
+        if (grid_.IsEmptyAutoRepeatTrack(direction, i - 1)) {
           --remaining_empty_tracks;
+          offset_accumulator += offset.distribution_offset;
         } else {
           // Add gap between consecutive non empty tracks. Add it also just once
           // for an arbitrary number of empty tracks between two non empty ones.
           bool all_remaining_tracks_are_empty =
               remaining_empty_tracks == (last_line - i);
           if (!all_remaining_tracks_are_empty ||
-              !grid.IsEmptyAutoRepeatTrack(direction, i))
+              !grid_.IsEmptyAutoRepeatTrack(direction, i))
             gap_accumulator += gap;
         }
-        positions[i] += gap_accumulator;
+        positions[i] += gap_accumulator - offset_accumulator;
       }
-      positions[last_line] += gap_accumulator;
+      positions[last_line] += gap_accumulator - offset_accumulator;
     }
   }
   auto& offset_between_tracks =
