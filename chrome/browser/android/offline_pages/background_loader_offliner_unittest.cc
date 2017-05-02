@@ -43,7 +43,7 @@ const bool kUserRequested = true;
 // Mock OfflinePageModel for testing the SavePage calls
 class MockOfflinePageModel : public StubOfflinePageModel {
  public:
-  MockOfflinePageModel() : mock_saving_(false) {}
+  MockOfflinePageModel() : mock_saving_(false), mock_deleting_(false) {}
   ~MockOfflinePageModel() override {}
 
   void SavePage(const SavePageParams& save_page_params,
@@ -77,10 +77,18 @@ class MockOfflinePageModel : public StubOfflinePageModel {
                               SavePageResult::ALREADY_EXISTS, 123456));
   }
 
+  void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
+                              const DeletePageCallback& callback) override {
+    mock_deleting_ = true;
+    callback.Run(DeletePageResult::SUCCESS);
+  }
+
   bool mock_saving() const { return mock_saving_; }
+  bool mock_deleting() const { return mock_deleting_; }
 
  private:
   bool mock_saving_;
+  bool mock_deleting_;
   SavePageCallback save_page_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOfflinePageModel);
@@ -155,6 +163,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   Offliner::RequestStatus request_status() { return request_status_; }
   bool cancel_callback_called() { return cancel_callback_called_; }
   bool SaveInProgress() const { return model_->mock_saving(); }
+  bool DeleteCalled() const { return model_->mock_deleting(); }
   MockOfflinePageModel* model() const { return model_; }
   const base::HistogramTester& histograms() const { return histogram_tester_; }
   int64_t progress() { return progress_; }
@@ -330,6 +339,7 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {
   model()->CompleteSavingAsArchiveCreationFailed();
   PumpLoop();
   EXPECT_TRUE(cancel_callback_called());
+  EXPECT_TRUE(DeleteCalled());
   EXPECT_FALSE(completion_callback_called());
   EXPECT_FALSE(SaveInProgress());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.

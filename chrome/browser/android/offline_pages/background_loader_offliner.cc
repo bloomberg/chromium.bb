@@ -81,6 +81,7 @@ void HandleApplicationStateChangeCancel(
   completion_callback.Run(canceled_request,
                           Offliner::RequestStatus::FOREGROUND_CANCELED);
 }
+
 }  // namespace
 
 BackgroundLoaderOffliner::BackgroundLoaderOffliner(
@@ -414,8 +415,14 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   ResetState();
 
   if (save_state_ == DELETE_AFTER_SAVE) {
+    // Delete the saved page off disk and from the OPM.
+    std::vector<int64_t> offline_ids;
+    offline_ids.push_back(offline_id);
+    offline_page_model_->DeletePagesByOfflineId(
+        offline_ids,
+        base::Bind(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
+                   weak_ptr_factory_.GetWeakPtr(), request));
     save_state_ = NONE;
-    cancel_callback_.Run(request);
     return;
   }
 
@@ -434,6 +441,12 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   }
 
   completion_callback_.Run(request, save_status);
+}
+
+void BackgroundLoaderOffliner::DeleteOfflinePageCallback(
+    const SavePageRequest& request,
+    DeletePageResult result) {
+  cancel_callback_.Run(request);
 }
 
 void BackgroundLoaderOffliner::ResetState() {

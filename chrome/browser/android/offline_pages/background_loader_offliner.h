@@ -84,6 +84,9 @@ class BackgroundLoaderOffliner : public Offliner,
   // Called to add a loading signal as we observe it.
   void AddLoadingSignal(const char* signal_name);
 
+  void DeleteOfflinePageCallback(const SavePageRequest& request,
+                                 DeletePageResult result);
+
   std::unique_ptr<background_loader::BackgroundLoaderContents> loader_;
   // Not owned.
   content::BrowserContext* browser_context_;
