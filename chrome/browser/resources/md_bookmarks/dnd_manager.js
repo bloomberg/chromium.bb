@@ -287,7 +287,7 @@ cr.define('bookmarks', function() {
      * Used to instantly clearDragData in tests.
      * @private {function((Function|null|string), number)}
      */
-    this.setTimeout = window.setTimeout.bind(window);
+    this.setTimeout_ = window.setTimeout.bind(window);
   }
 
   DNDManager.prototype = {
