@@ -27,6 +27,7 @@ static_library("arc") {
     "//components/signin/core/account_id",
     "//mojo/common:common_base",
     "//skia",
+    "//ui/accessibility",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
