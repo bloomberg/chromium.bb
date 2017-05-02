@@ -508,18 +508,22 @@ void HandleLock() {
 
 void HandleShowStylusTools() {
   base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
-
-  RootWindowController* root_window_controller =
-      Shell::GetWmRootWindowForNewWindows()->GetRootWindowController();
-  StatusAreaWidget* status_area_widget =
-      root_window_controller->GetShelf()->GetStatusAreaWidget();
-  // Tests (clusterfuzz) can trigger this before the status area is ready.
-  if (status_area_widget)
-    status_area_widget->palette_tray()->ShowPalette();
+  Shell::GetWmRootWindowForNewWindows()
+      ->GetRootWindowController()
+      ->GetShelf()
+      ->GetStatusAreaWidget()
+      ->palette_tray()
+      ->ShowPalette();
 }
 
 bool CanHandleShowStylusTools() {
-  return Shell::Get()->palette_delegate() &&
+  StatusAreaWidget* status_area_widget = Shell::GetWmRootWindowForNewWindows()
+                                             ->GetRootWindowController()
+                                             ->GetShelf()
+                                             ->GetStatusAreaWidget();
+  // Tests (clusterfuzz) can trigger this before the status area is ready.
+  return status_area_widget && status_area_widget->palette_tray() &&
+         Shell::Get()->palette_delegate() &&
          Shell::Get()->palette_delegate()->ShouldShowPalette();
 }
 
