@@ -42,7 +42,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   ~CanvasCaptureHandler() override;
 
   // Creates a CanvasCaptureHandler instance and updates UMA histogram.
-  static CanvasCaptureHandler* CreateCanvasCaptureHandler(
+  static std::unique_ptr<CanvasCaptureHandler> CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,

@@ -44,7 +44,7 @@ StorageNamespace::~StorageNamespace() {}
 
 StorageArea* StorageNamespace::LocalStorageArea(SecurityOrigin* origin) {
   DCHECK(IsMainThread());
-  static WebStorageNamespace* local_storage_namespace = nullptr;
+  static std::unique_ptr<WebStorageNamespace> local_storage_namespace = nullptr;
   if (!local_storage_namespace)
     local_storage_namespace =
         Platform::Current()->CreateLocalStorageNamespace();

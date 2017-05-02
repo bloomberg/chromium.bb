@@ -67,8 +67,8 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    PassRefPtr<SecurityOrigin> security_origin)
     : number_of_output_channels_(number_of_output_channels),
       is_playing_(false),
-      rendering_thread_(WTF::WrapUnique(
-          Platform::Current()->CreateThread("WebAudio Rendering Thread"))),
+      rendering_thread_(
+          Platform::Current()->CreateThread("WebAudio Rendering Thread")),
       fifo_(WTF::WrapUnique(
           new PushPullFIFO(number_of_output_channels, kFIFOSize))),
       output_bus_(AudioBus::Create(number_of_output_channels,
@@ -82,9 +82,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // local input (e.g. loopback from OS audio system), but Chromium's media
   // renderer does not support it currently. Thus, we use zero for the number
   // of input channels.
-  web_audio_device_ = WTF::WrapUnique(Platform::Current()->CreateAudioDevice(
+  web_audio_device_ = Platform::Current()->CreateAudioDevice(
       0, number_of_output_channels, latency_hint, this, String(),
-      std::move(security_origin)));
+      std::move(security_origin));
   DCHECK(web_audio_device_);
 
   callback_buffer_size_ = web_audio_device_->FramesPerBuffer();

@@ -52,6 +52,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -402,13 +403,14 @@ WebURLError BlinkPlatformImpl::CancelledError(
   return CreateWebURLError(unreachableURL, false, net::ERR_ABORTED);
 }
 
-blink::WebThread* BlinkPlatformImpl::CreateThread(const char* name) {
+std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateThread(
+    const char* name) {
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =
       blink::scheduler::WebThreadBase::CreateWorkerThread(
           name, base::Thread::Options());
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
-  return thread.release();
+  return std::move(thread);
 }
 
 void BlinkPlatformImpl::SetCompositorThread(
@@ -681,14 +683,15 @@ blink::WebThread* BlinkPlatformImpl::CompositorThread() const {
   return compositor_thread_;
 }
 
-blink::WebGestureCurve* BlinkPlatformImpl::CreateFlingAnimationCurve(
+std::unique_ptr<blink::WebGestureCurve>
+BlinkPlatformImpl::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
   return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
-             gfx::Vector2dF(velocity.x, velocity.y),
-             gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
-             IsMainThread()).release();
+      gfx::Vector2dF(velocity.x, velocity.y),
+      gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
+      IsMainThread());
 }
 
 void BlinkPlatformImpl::DidStartWorkerThread() {
@@ -829,7 +832,7 @@ int BlinkPlatformImpl::DomKeyEnumFromString(const WebString& key_string) {
       ui::KeycodeConverter::KeyStringToDomKey(key_string.Utf8()));
 }
 
-blink::WebFeaturePolicy* BlinkPlatformImpl::CreateFeaturePolicy(
+std::unique_ptr<blink::WebFeaturePolicy> BlinkPlatformImpl::CreateFeaturePolicy(
     const blink::WebFeaturePolicy* parent_policy,
     const blink::WebParsedFeaturePolicy& container_policy,
     const blink::WebParsedFeaturePolicy& policy_header,
@@ -838,16 +841,15 @@ blink::WebFeaturePolicy* BlinkPlatformImpl::CreateFeaturePolicy(
       static_cast<const FeaturePolicy*>(parent_policy),
       FeaturePolicyHeaderFromWeb(container_policy), url::Origin(origin));
   policy->SetHeaderPolicy(FeaturePolicyHeaderFromWeb(policy_header));
-  return policy.release();
+  return std::move(policy);
 }
 
-blink::WebFeaturePolicy* BlinkPlatformImpl::DuplicateFeaturePolicyWithOrigin(
+std::unique_ptr<blink::WebFeaturePolicy>
+BlinkPlatformImpl::DuplicateFeaturePolicyWithOrigin(
     const blink::WebFeaturePolicy& policy,
     const blink::WebSecurityOrigin& new_origin) {
-  std::unique_ptr<FeaturePolicy> new_policy =
-      FeaturePolicy::CreateFromPolicyWithOrigin(
-          static_cast<const FeaturePolicy&>(policy), url::Origin(new_origin));
-  return new_policy.release();
+  return FeaturePolicy::CreateFromPolicyWithOrigin(
+      static_cast<const FeaturePolicy&>(policy), url::Origin(new_origin));
 }
 
 }  // namespace content

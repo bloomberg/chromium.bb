@@ -137,7 +137,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
     return promise;
   }
 
-  WebMediaRecorderHandler* handler =
+  std::unique_ptr<WebMediaRecorderHandler> handler =
       Platform::Current()->CreateMediaRecorderHandler();
   if (!handler) {
     resolver->Reject(DOMException::Create(
