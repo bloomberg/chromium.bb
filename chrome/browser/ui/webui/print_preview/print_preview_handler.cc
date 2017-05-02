@@ -1278,15 +1278,17 @@ void PrintPreviewHandler::SendAccessToken(const std::string& type,
 void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& printer_name,
     std::unique_ptr<base::DictionaryValue> settings_info) {
-  if (!settings_info) {
-    VLOG(1) << "Get printer capabilities failed";
-    web_ui()->CallJavascriptFunctionUnsafe("failedToGetPrinterCapabilities",
-                                           base::Value(printer_name));
+  // Check that |settings_info| is valid.
+  if (settings_info && settings_info->Get("capabilities", nullptr)) {
+    VLOG(1) << "Get printer capabilities finished";
+    web_ui()->CallJavascriptFunctionUnsafe("updateWithPrinterCapabilities",
+                                           *settings_info);
     return;
   }
-  VLOG(1) << "Get printer capabilities finished";
-  web_ui()->CallJavascriptFunctionUnsafe("updateWithPrinterCapabilities",
-                                         *settings_info);
+
+  VLOG(1) << "Get printer capabilities failed";
+  web_ui()->CallJavascriptFunctionUnsafe("failedToGetPrinterCapabilities",
+                                         base::Value(printer_name));
 }
 
 void PrintPreviewHandler::SendPrinterSetup(

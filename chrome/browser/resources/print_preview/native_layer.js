@@ -550,6 +550,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onUpdateWithPrinterCapabilities_: function(settingsInfo) {
+      assert(settingsInfo.capabilities,
+          'Capabilities update without capabilites');
       var capsSetEvent = new Event(NativeLayer.EventType.CAPABILITIES_SET);
       capsSetEvent.settingsInfo = settingsInfo;
       this.dispatchEvent(capsSetEvent);
