@@ -163,8 +163,8 @@ bool RecentTabHelper::EnsureInitialized() {
   if (snapshot_controller_)  // Initialized already.
     return snapshots_enabled_;
 
-  snapshot_controller_.reset(
-      new SnapshotController(base::ThreadTaskRunnerHandle::Get(), this));
+  snapshot_controller_ = SnapshotController::CreateForForegroundOfflining(
+      base::ThreadTaskRunnerHandle::Get(), this);
   snapshot_controller_->Stop();  // It is reset when navigation commits.
 
   int tab_id_number = 0;

@@ -53,7 +53,8 @@ SnapshotControllerTest::SnapshotControllerTest()
 SnapshotControllerTest::~SnapshotControllerTest() {}
 
 void SnapshotControllerTest::SetUp() {
-  controller_.reset(new SnapshotController(task_runner_, this));
+  controller_ =
+      SnapshotController::CreateForForegroundOfflining(task_runner_, this);
   snapshot_started_ = true;
 }
 
