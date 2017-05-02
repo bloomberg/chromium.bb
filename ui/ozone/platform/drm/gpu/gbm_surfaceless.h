@@ -82,8 +82,6 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   void SwapCompleted(const SwapCompletionCallback& callback,
                      gfx::SwapResult result);
 
-  bool IsUniversalDisplayLinkDevice();
-
   GbmSurfaceFactory* surface_factory_;
   std::unique_ptr<DrmWindowProxy> window_;
   std::vector<OverlayPlane> planes_;
@@ -93,7 +91,6 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
   bool has_implicit_external_sync_;
-  bool has_image_flush_external_;
   bool last_swap_buffers_result_ = true;
   bool swap_buffers_pending_ = false;
 
