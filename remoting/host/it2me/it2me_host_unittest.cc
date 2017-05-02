@@ -150,6 +150,9 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   void StartHost();
   void ShutdownHost();
 
+  static base::ListValue MakeList(
+      std::initializer_list<base::StringPiece> values);
+
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
   base::Closure state_change_callback_;
@@ -311,43 +314,43 @@ void It2MeHostTest::ShutdownHost() {
   }
 }
 
-TEST_F(It2MeHostTest, HostValidation_NoHostDomainPolicy) {
+base::ListValue It2MeHostTest::MakeList(
+    std::initializer_list<base::StringPiece> values) {
+  base::ListValue result;
+  for (const auto& value : values) {
+    result.AppendString(value);
+  }
+  return result;
+}
+
+TEST_F(It2MeHostTest, HostValidation_NoHostDomainListPolicy) {
   StartHost();
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, HostValidation_HostDomainPolicy_MatchingDomain) {
-  SetPolicies(
-      {{policy::key::kRemoteAccessHostDomain, base::Value(kMatchingDomain)}});
+TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchingDomain) {
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMatchingDomain})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, HostValidation_HostDomainPolicy_NoMatch) {
-  SetPolicies({{policy::key::kRemoteAccessHostDomain,
-                base::Value(kMismatchedDomain3)}});
+TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchStart) {
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMismatchedDomain2})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kInvalidDomainError, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, HostValidation_HostDomainPolicy_MatchStart) {
-  SetPolicies({{policy::key::kRemoteAccessHostDomain,
-                base::Value(kMismatchedDomain2)}});
-  StartHost();
-  ASSERT_EQ(It2MeHostState::kInvalidDomainError, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, HostValidation_HostDomainPolicy_MatchEnd) {
-  SetPolicies({{policy::key::kRemoteAccessHostDomain,
-                base::Value(kMismatchedDomain1)}});
+TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchEnd) {
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMismatchedDomain1})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kInvalidDomainError, last_host_state_);
   ShutdownHost();
@@ -355,10 +358,8 @@ TEST_F(It2MeHostTest, HostValidation_HostDomainPolicy_MatchEnd) {
 }
 
 TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchFirst) {
-  base::ListValue domains;
-  domains.AppendString(kMatchingDomain);
-  domains.AppendString(kMismatchedDomain1);
-  SetPolicies({{policy::key::kRemoteAccessHostDomainList, domains}});
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMatchingDomain, kMismatchedDomain1})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
   ShutdownHost();
@@ -366,10 +367,8 @@ TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchFirst) {
 }
 
 TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchSecond) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMatchingDomain);
-  SetPolicies({{policy::key::kRemoteAccessHostDomainList, domains}});
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMismatchedDomain1, kMatchingDomain})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
   ShutdownHost();
@@ -377,58 +376,16 @@ TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_MatchSecond) {
 }
 
 TEST_F(It2MeHostTest, HostValidation_HostDomainListPolicy_NoMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMismatchedDomain2);
-  SetPolicies({{policy::key::kRemoteAccessHostDomainList, domains}});
+  SetPolicies({{policy::key::kRemoteAccessHostDomainList,
+                MakeList({kMismatchedDomain1, kMismatchedDomain2,
+                          kMismatchedDomain3})}});
   StartHost();
   ASSERT_EQ(It2MeHostState::kInvalidDomainError, last_host_state_);
   ShutdownHost();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, HostValidation_HostDomainBothPolicies_BothMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMatchingDomain);
-  domains.AppendString(kMismatchedDomain1);
-  SetPolicies(
-      {{policy::key::kRemoteAccessHostDomain, base::Value(kMatchingDomain)},
-       {policy::key::kRemoteAccessHostDomainList, domains}});
-  StartHost();
-  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, HostValidation_HostDomainBothPolicies_ListMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMatchingDomain);
-  SetPolicies(
-      {{policy::key::kRemoteAccessHostDomain, base::Value(kMismatchedDomain1)},
-       {policy::key::kRemoteAccessHostDomainList, domains}});
-  // Should succeed even though the legacy policy would deny.
-  StartHost();
-  ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, HostValidation_HostDomainBothPolicies_LegacyMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMismatchedDomain2);
-  SetPolicies(
-      {{policy::key::kRemoteAccessHostDomain, base::Value(kMatchingDomain)},
-       {policy::key::kRemoteAccessHostDomainList, domains}});
-  // Should fail even though the legacy policy would allow.
-  StartHost();
-  ASSERT_EQ(It2MeHostState::kInvalidDomainError, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_ValidJid) {
+TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainListPolicy_ValidJid) {
   StartHost();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
@@ -437,7 +394,8 @@ TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_ValidJid) {
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_InvalidJid) {
+TEST_F(It2MeHostTest,
+       ConnectionValidation_NoClientDomainListPolicy_InvalidJid) {
   StartHost();
   RunValidationCallback(kTestClientUsernameNoJid);
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
@@ -446,7 +404,7 @@ TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_InvalidJid) {
 }
 
 TEST_F(It2MeHostTest,
-       ConnectionValidation_NoClientDomainPolicy_InvalidUsername) {
+       ConnectionValidation_NoClientDomainListPolicy_InvalidUsername) {
   StartHost();
   dialog_factory_->set_remote_user_email("fake");
   RunValidationCallback(kTestClientJidWithSlash);
@@ -456,7 +414,8 @@ TEST_F(It2MeHostTest,
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_ResourceOnly) {
+TEST_F(It2MeHostTest,
+       ConnectionValidation_NoClientDomainListPolicy_ResourceOnly) {
   StartHost();
   RunValidationCallback(kResourceOnly);
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
@@ -464,128 +423,10 @@ TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_ResourceOnly) {
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainPolicy_MatchingDomain) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMatchingDomain)}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainPolicy_InvalidUserName) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMatchingDomain)}});
-  StartHost();
-  RunValidationCallback(kTestClientJidWithSlash);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainPolicy_NoJid) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMatchingDomain)}});
-  StartHost();
-  RunValidationCallback(kTestClientUsernameNoJid);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_NoMatch) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMismatchedDomain3)}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_MatchStart) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMismatchedDomain2)}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_MatchEnd) {
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMismatchedDomain1)}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_MatchFirst) {
-  base::ListValue domains;
-  domains.AppendString(kMatchingDomain);
-  domains.AppendString(kMismatchedDomain1);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList, domains}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_MatchSecond) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMatchingDomain);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList, domains}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_NoMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMismatchedDomain2);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList, domains}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
-  RunUntilStateChanged(It2MeHostState::kDisconnected);
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainBothPolicies_BothMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMatchingDomain);
-  domains.AppendString(kMismatchedDomain1);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMatchingDomain)},
-               {policy::key::kRemoteAccessHostClientDomainList, domains}});
-  StartHost();
-  RunValidationCallback(kTestClientJid);
-  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
-  ShutdownHost();
-  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-}
-
-TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainBothPolicies_ListMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMatchingDomain);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMismatchedDomain1)},
-               {policy::key::kRemoteAccessHostClientDomainList, domains}});
-  // Should succeed even though the legacy policy would deny.
+TEST_F(It2MeHostTest,
+       ConnectionValidation_ClientDomainListPolicy_MatchingDomain) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMatchingDomain})}});
   StartHost();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
@@ -595,14 +436,72 @@ TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainBothPolicies_ListMatch) {
 }
 
 TEST_F(It2MeHostTest,
-       ConnectionValidation_ClientDomainBothPolicies_LegacyMatch) {
-  base::ListValue domains;
-  domains.AppendString(kMismatchedDomain1);
-  domains.AppendString(kMismatchedDomain2);
-  SetPolicies({{policy::key::kRemoteAccessHostClientDomain,
-                base::Value(kMatchingDomain)},
-               {policy::key::kRemoteAccessHostClientDomainList, domains}});
-  // Should fail even though the legacy policy would allow.
+       ConnectionValidation_ClientDomainListPolicy_InvalidUserName) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMatchingDomain})}});
+  StartHost();
+  RunValidationCallback(kTestClientJidWithSlash);
+  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_NoJid) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMatchingDomain})}});
+  StartHost();
+  RunValidationCallback(kTestClientUsernameNoJid);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_MatchStart) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMismatchedDomain2})}});
+  StartHost();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_WrongClientDomain_MatchEnd) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMismatchedDomain1})}});
+  StartHost();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_MatchFirst) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMatchingDomain, kMismatchedDomain1})}});
+  StartHost();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
+  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_MatchSecond) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMismatchedDomain1, kMatchingDomain})}});
+  StartHost();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
+  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
+  ShutdownHost();
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
+}
+
+TEST_F(It2MeHostTest, ConnectionValidation_ClientDomainListPolicy_NoMatch) {
+  SetPolicies({{policy::key::kRemoteAccessHostClientDomainList,
+                MakeList({kMismatchedDomain1, kMismatchedDomain2,
+                          kMismatchedDomain3})}});
   StartHost();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::ERROR_INVALID_ACCOUNT, validation_result_);
