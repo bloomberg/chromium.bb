@@ -27,8 +27,6 @@
 #ifndef PopStateEvent_h
 #define PopStateEvent_h
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/events/Event.h"
 #include "core/events/PopStateEventInit.h"
 #include "platform/heap/Handle.h"
@@ -45,11 +43,9 @@ class PopStateEvent final : public Event {
   ~PopStateEvent() override;
   static PopStateEvent* Create();
   static PopStateEvent* Create(PassRefPtr<SerializedScriptValue>, History*);
-  static PopStateEvent* Create(ScriptState*,
-                               const AtomicString&,
-                               const PopStateEventInit&);
+  static PopStateEvent* Create(const AtomicString&, const PopStateEventInit&);
 
-  ScriptValue state(ScriptState*) const;
+  ScriptValue state() const { return state_; }
   SerializedScriptValue* SerializedState() const {
     return serialized_state_.Get();
   }
@@ -63,16 +59,13 @@ class PopStateEvent final : public Event {
 
   DECLARE_VIRTUAL_TRACE();
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
-
  private:
   PopStateEvent();
-  PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit&);
+  PopStateEvent(const AtomicString&, const PopStateEventInit&);
   PopStateEvent(PassRefPtr<SerializedScriptValue>, History*);
 
   RefPtr<SerializedScriptValue> serialized_state_;
-  RefPtr<DOMWrapperWorld> world_;
-  TraceWrapperV8Reference<v8::Value> state_;
+  ScriptValue state_;
   Member<History> history_;
 };
 
