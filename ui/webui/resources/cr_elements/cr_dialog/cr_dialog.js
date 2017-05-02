@@ -37,12 +37,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    showScrollBorders: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
   },
 
   /** @private {?IntersectionObserver} */
@@ -66,21 +60,22 @@ Polymer({
 
   /** @override */
   attached: function() {
-    if (!this.showScrollBorders)
-      return;
-
-    this.mutationObserver_ = new MutationObserver(function() {
-      if (this.open) {
+    var mutationObserverCallback = function() {
+      if (this.open)
         this.addIntersectionObserver_();
-      } else {
+      else
         this.removeIntersectionObserver_();
-      }
-    }.bind(this));
+    }.bind(this);
+
+    this.mutationObserver_ = new MutationObserver(mutationObserverCallback);
 
     this.mutationObserver_.observe(this, {
       attributes: true,
       attributeFilter: ['open'],
     });
+
+    // In some cases dialog already has the 'open' attribute by this point.
+    mutationObserverCallback();
   },
 
   /** @override */

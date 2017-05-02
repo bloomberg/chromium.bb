@@ -43,20 +43,6 @@
         top: 0;
       }
 
-      :host([show-scroll-borders]) .body-container {
-        /* Prevent layout moving when border does appear. */
-        border-bottom: 1px solid transparent;
-        border-top: 1px solid transparent;
-      }
-
-      :host([show-scroll-borders]) .body-container.bottom-scrollable {
-        border-bottom: var(--scroll-border);
-      }
-
-      :host([show-scroll-borders]) .body-container.top-scrollable {
-        border-top: var(--scroll-border);
-      }
-
       :host ::content .body {
         padding: 12px 16px;
       }
@@ -95,7 +81,20 @@
         flex-direction: column;
         min-height: 60px; /* Minimum reasonably usable height. */
         overflow: auto;
+
+        /* Prevent layout moving when border does appear. */
+        border-bottom: 1px solid transparent;
+        border-top: 1px solid transparent;
+
         @apply(--cr-dialog-body-container);
+      }
+
+      .body-container.bottom-scrollable {
+        border-bottom: var(--scroll-border);
+      }
+
+      .body-container.top-scrollable {
+        border-top: var(--scroll-border);
       }
 
       .top-container {
