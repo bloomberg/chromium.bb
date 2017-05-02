@@ -15,6 +15,7 @@
 namespace blink {
 
 class AnimationWorkletProxyClient;
+class ChromeClient;
 class CompositorAnimationHost;
 class CompositorWorkerProxyClient;
 class CompositorAnimationTimeline;
@@ -173,6 +174,8 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual void SetRootLayer(WebLayer*) = 0;
   virtual CompositorAnimationHost* AnimationHost() const = 0;
   virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
+
+  virtual class ChromeClient& ChromeClient() const = 0;
 };
 }
 

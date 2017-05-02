@@ -327,6 +327,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
+  virtual void NotifyPopupOpeningObservers() const = 0;
 
   virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
       LocalFrame*) = 0;
