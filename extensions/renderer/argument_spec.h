@@ -126,6 +126,9 @@ class ArgumentSpec {
   // Whether or not the argument is required.
   bool optional_;
 
+  // Whether to preserve null properties found in objects.
+  bool preserve_null_;
+
   // The reference the argument points to, if any. Note that if this is set,
   // none of the following fields describing the argument will be.
   base::Optional<std::string> ref_;
