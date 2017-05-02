@@ -5,6 +5,13 @@
 
 body {
   font-size: 80%;
+  margin: 1em;
+}
+
+#main-container {
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 button {
@@ -16,10 +23,11 @@ button {
   width: 200px;
 }
 
-button:disabled > .export-view-logging-enabled,
-button:enabled > .export-view-logging-disabled
-{
-  display: none;
+h2 {
+  color: #546E7A;
+  font-weight: normal;
+  font-size: 170%;
+  margin-bottom: 1.5em;
 }
 
 .radio-button-div {
@@ -29,14 +37,20 @@ button:enabled > .export-view-logging-disabled
 .warning {
   color: red;
   font-size: 90%;
-  font-weight: normal;
 }
 
-#net-export-main {
-  margin: 8px;
+.section-container {
+  margin-top: 2em;
 }
 
-#export-view-file-path-text {
-  white-space: pre-wrap;
-  word-wrap: break-word;
+#file-path-logging,
+#file-path-stopped {
+  font-family: monospace;
+}
+
+.outline-box {
+  margin-top: 2em;
+  border: 1px solid #ababab;
+  padding: 0.5em;
+  line-height: 1.5em;
 }

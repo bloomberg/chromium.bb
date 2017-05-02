@@ -244,9 +244,7 @@ std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
 
   auto dict = base::MakeUnique<base::DictionaryValue>();
 
-#ifndef NDEBUG
   dict->SetString("file", log_path_.LossyDisplayName());
-#endif  // NDEBUG
 
   base::StringPiece state_string;
   switch (state_) {
