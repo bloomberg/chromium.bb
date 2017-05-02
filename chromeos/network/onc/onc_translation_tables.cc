@@ -31,6 +31,7 @@ const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kPassword, shill::kEapPasswordProperty},
     {::onc::eap::kSaveCredentials, shill::kSaveCredentialsProperty},
     {::onc::eap::kServerCAPEMs, shill::kEapCaCertPemProperty},
+    {::onc::eap::kSubjectMatch, shill::kEapSubjectMatchProperty},
     {::onc::eap::kUseSystemCAs, shill::kEapUseSystemCasProperty},
     {::onc::eap::kUseProactiveKeyCaching,
      shill::kEapUseProactiveKeyCachingProperty},
@@ -320,17 +321,18 @@ const StringTranslationEntry kEAPOuterTable[] = {
 
 // Translation of the EAP.Inner field in case of EAP.Outer == PEAP
 const StringTranslationEntry kEAP_PEAP_InnerTable[] = {
+    {::onc::eap::kGTC, shill::kEapPhase2AuthPEAPGTC},
     {::onc::eap::kMD5, shill::kEapPhase2AuthPEAPMD5},
     {::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthPEAPMSCHAPV2},
-    {::onc::eap::kGTC, shill::kEapPhase2AuthPEAPGTC},
     {NULL}};
 
 // Translation of the EAP.Inner field in case of EAP.Outer == TTLS
 const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
+    {::onc::eap::kGTC, shill::kEapPhase2AuthTTLSGTC},
     {::onc::eap::kMD5, shill::kEapPhase2AuthTTLSMD5},
+    {::onc::eap::kMSCHAP, shill::kEapPhase2AuthTTLSMSCHAP},
     {::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthTTLSMSCHAPV2},
     {::onc::eap::kPAP, shill::kEapPhase2AuthTTLSPAP},
-    {::onc::eap::kGTC, shill::kEapPhase2AuthTTLSGTC},
     {NULL}};
 
 const StringTranslationEntry kActivationStateTable[] = {

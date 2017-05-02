@@ -304,6 +304,7 @@ chrome.networkingPrivate.ManagedCertificatePattern;
  *   SaveCredentials: (boolean|undefined),
  *   ServerCAPEMs: (!Array<string>|undefined),
  *   ServerCARefs: (!Array<string>|undefined),
+ *   SubjectMatch: (string|undefined),
  *   UseProactiveKeyCaching: (boolean|undefined),
  *   UseSystemCAs: (boolean|undefined)
  * }}
@@ -324,6 +325,7 @@ chrome.networkingPrivate.EAPProperties;
  *   SaveCredentials: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   ServerCAPEMs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCARefs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
+ *   SubjectMatch: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   UseProactiveKeyCaching: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   UseSystemCAs: (!chrome.networkingPrivate.ManagedBoolean|undefined)
  * }}

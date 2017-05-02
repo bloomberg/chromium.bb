@@ -90,6 +90,7 @@ class ShillToONCTranslator {
   void TranslateSavedOrStaticIPConfig();
   void TranslateSavedIPConfig();
   void TranslateStaticIPConfig();
+  void TranslateEap();
 
   // Creates an ONC object from |dictionary| according to the signature
   // associated to |onc_field_name| and adds it to |onc_object_| at
@@ -180,6 +181,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateSavedIPConfig();
   } else if (onc_signature_ == &kStaticIPConfigSignature) {
     TranslateStaticIPConfig();
+  } else if (onc_signature_ == &kEAPSignature) {
+    TranslateEap();
   } else {
     CopyPropertiesAccordingToSignature();
   }
@@ -628,6 +631,16 @@ void ShillToONCTranslator::TranslateSavedIPConfig() {
 
 void ShillToONCTranslator::TranslateStaticIPConfig() {
   TranslateSavedOrStaticIPConfig();
+}
+
+void ShillToONCTranslator::TranslateEap() {
+  CopyPropertiesAccordingToSignature();
+
+  // Translate EAP Outer and Inner values.
+  TranslateWithTableAndSet(shill::kEapMethodProperty, kEAPOuterTable,
+                           ::onc::eap::kOuter);
+  TranslateWithTableAndSet(shill::kEapPhase2AuthProperty, kEAP_TTLS_InnerTable,
+                           ::onc::eap::kInner);
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(

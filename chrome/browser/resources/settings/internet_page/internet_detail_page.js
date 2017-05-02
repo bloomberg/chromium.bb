@@ -839,8 +839,9 @@ Polymer({
           'Cellular.ServingOperator.Code');
     } else if (type == CrOnc.Type.WI_FI) {
       fields.push(
-          'WiFi.SSID', 'WiFi.BSSID', 'WiFi.Security', 'WiFi.SignalStrength',
-          'WiFi.Frequency');
+          'WiFi.SSID', 'WiFi.BSSID', 'WiFi.SignalStrength', 'WiFi.Security',
+          'WiFi.EAP.Outer', 'WiFi.EAP.Inner', 'WiFi.EAP.SubjectMatch',
+          'WiFi.EAP.Identity', 'WiFi.EAP.AnonymousIdentity', 'WiFi.Frequency');
     } else if (type == CrOnc.Type.WI_MAX) {
       fields.push('WiFi.SignalStrength');
     }

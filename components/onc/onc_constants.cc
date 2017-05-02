@@ -299,6 +299,7 @@ const char kIdentity[] = "Identity";
 const char kInner[] = "Inner";
 const char kLEAP[] = "LEAP";
 const char kMD5[] = "MD5";
+const char kMSCHAP[] = "MSCHAP";
 const char kMSCHAPv2[] = "MSCHAPv2";
 const char kOuter[] = "Outer";
 const char kPAP[] = "PAP";
@@ -308,6 +309,7 @@ const char kSaveCredentials[] = "SaveCredentials";
 const char kServerCAPEMs[] = "ServerCAPEMs";
 const char kServerCARef[] = "ServerCARef";
 const char kServerCARefs[] = "ServerCARefs";
+const char kSubjectMatch[] = "SubjectMatch";
 const char kUseSystemCAs[] = "UseSystemCAs";
 const char kUseProactiveKeyCaching[] = "UseProactiveKeyCaching";
 }  // namespace eap

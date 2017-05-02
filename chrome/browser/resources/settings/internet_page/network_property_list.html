@@ -29,7 +29,7 @@
       }
     </style>
     <template is="dom-repeat" items="[[fields]]"
-        filter="[[computeFilter_(propertyDict, editFieldTypes)]]">
+        filter="[[computeFilter_(prefix, propertyDict, editFieldTypes)]]">
       <div class="settings-box single-column two-line">
         <!-- Propety label -->
         <div>[[getPropertyLabel_(item, prefix)]]</div>
