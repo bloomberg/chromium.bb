@@ -83,4 +83,5 @@ EXTRA_DIST =					\
 	ta-ta-g1_harness.yaml			\
 	vi-g1_backward.yaml			\
 	vi-g1_harness.yaml			\
-	zh-chn.yaml
+	zh-chn.yaml					\
+	issue-238.yaml
