@@ -284,13 +284,8 @@ bool SharedMemory::Share(SharedMemoryHandle* new_handle) {
 }
 
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle* new_handle,
-                                        bool close_self) {
+                                        SharedMemoryHandle* new_handle) {
   bool success = Share(new_handle);
-  if (close_self) {
-    Unmap();
-    Close();
-  }
   return success;
 }
 

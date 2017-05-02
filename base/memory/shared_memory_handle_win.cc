@@ -40,6 +40,20 @@ bool SharedMemoryHandle::IsValid() const {
   return handle_ != nullptr;
 }
 
+SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
+  DCHECK(BelongsToCurrentProcess());
+  HANDLE duped_handle;
+  ProcessHandle process = GetCurrentProcess();
+  BOOL success = ::DuplicateHandle(process, handle_, process, &duped_handle, 0,
+                                   FALSE, DUPLICATE_SAME_ACCESS);
+  if (!success)
+    return SharedMemoryHandle();
+
+  base::SharedMemoryHandle handle(duped_handle, GetCurrentProcId());
+  handle.SetOwnershipPassesToIPC(true);
+  return handle;
+}
+
 bool SharedMemoryHandle::BelongsToCurrentProcess() const {
   return pid_ == base::GetCurrentProcId();
 }

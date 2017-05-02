@@ -147,8 +147,10 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
 
   // The TransportDIB is always backed by shared memory, so give the shared
   // memory handle to it.
-  base::SharedMemoryHandle handle;
-  if (!shared_memory->GiveToProcess(base::GetCurrentProcessHandle(), &handle))
+  base::SharedMemoryHandle handle = shared_memory->handle().Duplicate();
+  shared_memory->Unmap();
+  shared_memory->Close();
+  if (!handle.IsValid())
     return false;
 
   dib_.reset(TransportDIB::CreateWithHandle(handle));

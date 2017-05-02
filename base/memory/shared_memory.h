@@ -223,18 +223,7 @@ class BASE_EXPORT SharedMemory {
   // Returns true on success, false otherwise.
   bool ShareToProcess(ProcessHandle process,
                       SharedMemoryHandle* new_handle) {
-    return ShareToProcessCommon(process, new_handle, false);
-  }
-
-  // Logically equivalent to:
-  //   bool ok = ShareToProcess(process, new_handle);
-  //   Close();
-  //   return ok;
-  // Note that the memory is unmapped by calling this method, regardless of the
-  // return value.
-  bool GiveToProcess(ProcessHandle process,
-                     SharedMemoryHandle* new_handle) {
-    return ShareToProcessCommon(process, new_handle, true);
+    return ShareToProcessCommon(process, new_handle);
   }
 
 #if defined(OS_POSIX) && (!defined(OS_MACOSX) || defined(OS_IOS)) && \
@@ -263,8 +252,7 @@ class BASE_EXPORT SharedMemory {
 #endif
 
   bool ShareToProcessCommon(ProcessHandle process,
-                            SharedMemoryHandle* new_handle,
-                            bool close_self);
+                            SharedMemoryHandle* new_handle);
 
 #if defined(OS_WIN)
   // If true indicates this came from an external source so needs extra checks

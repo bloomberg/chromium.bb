@@ -361,13 +361,8 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
 }
 
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle* new_handle,
-                                        bool close_self) {
+                                        SharedMemoryHandle* new_handle) {
   *new_handle = shm_.Duplicate();
-  if (close_self) {
-    Unmap();
-    Close();
-  }
   return new_handle->IsValid();
 }
 
