@@ -276,7 +276,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
           GetDocument().GetFrame()->GetEditor().TypingStyle()) {
     typing_style->PrepareToApplyAt(end_position,
                                    EditingStyle::kPreserveWritingDirection);
-    if (!typing_style->IsEmpty()) {
+    if (!typing_style->IsEmpty() && !EndingSelection().IsNone()) {
       ApplyStyle(typing_style, editing_state);
       if (editing_state->IsAborted())
         return;
