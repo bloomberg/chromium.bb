@@ -5,26 +5,24 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/util/text_region_mapper.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 class TextRegionMapperTest : public PlatformTest {
  protected:
-  void SetUp() override {
-    _string.reset();
-    _textMapper.reset();
-  }
-
   void InitMapper(NSAttributedString* string, CGRect bounds) {
-    _string.reset([string copy]);
-    _textMapper.reset([[CoreTextRegionMapper alloc]
-        initWithAttributedString:_string
-                          bounds:bounds]);
+    _string = [string copy];
+    _textMapper =
+        [[CoreTextRegionMapper alloc] initWithAttributedString:_string
+                                                        bounds:bounds];
   }
 
   CGRect RectAtIndex(NSArray* array, NSUInteger index) {
@@ -33,20 +31,20 @@ class TextRegionMapperTest : public PlatformTest {
   }
 
   NSDictionary* AttributesForTextAlignment(NSTextAlignment alignment) {
-    base::scoped_nsobject<NSMutableParagraphStyle> style;
-    style.reset([[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy]);
+    NSMutableParagraphStyle* style =
+        [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
     [style setAlignment:alignment];
     return @{NSParagraphStyleAttributeName : style};
   }
 
-  base::scoped_nsobject<NSAttributedString> _string;
-  base::scoped_nsobject<CoreTextRegionMapper> _textMapper;
+  NSAttributedString* _string;
+  CoreTextRegionMapper* _textMapper;
 };
 }
 
 TEST_F(TextRegionMapperTest, SimpleTextTest) {
   CGRect bounds = CGRectMake(0, 0, 500, 100);
-  base::scoped_nsobject<NSString> string(@"Simple Test");
+  NSString* string = @"Simple Test";
   InitMapper([[NSAttributedString alloc] initWithString:string], bounds);
 
   // Simple case: a single word in a string in a large bounding rect.
@@ -82,10 +80,10 @@ TEST_F(TextRegionMapperTest, SimpleTextTest) {
 
 TEST_F(TextRegionMapperTest, TextAlignmentTest) {
   CGRect bounds = CGRectMake(0, 0, 500, 100);
-  base::scoped_nsobject<NSAttributedString> string;
-  string.reset([[NSAttributedString alloc]
+  NSAttributedString* string;
+  string = [[NSAttributedString alloc]
       initWithString:@"Simple Test"
-          attributes:AttributesForTextAlignment(NSTextAlignmentLeft)]);
+          attributes:AttributesForTextAlignment(NSTextAlignmentLeft)];
   InitMapper(string, bounds);
 
   // First word of left-aligned string should at the left edge of the bounds.
@@ -97,9 +95,9 @@ TEST_F(TextRegionMapperTest, TextAlignmentTest) {
   EXPECT_GT(CGRectGetWidth(rect), CGRectGetHeight(rect));
   EXPECT_EQ(CGRectGetMinX(rect), CGRectGetMinX(bounds));
 
-  string.reset([[NSAttributedString alloc]
+  string = [[NSAttributedString alloc]
       initWithString:@"Simple Test"
-          attributes:AttributesForTextAlignment(NSTextAlignmentRight)]);
+          attributes:AttributesForTextAlignment(NSTextAlignmentRight)];
   InitMapper(string, bounds);
 
   // Last word of right-aligned string should at the right edge of the bounds.
@@ -115,18 +113,17 @@ TEST_F(TextRegionMapperTest, TextAlignmentTest) {
 TEST_F(TextRegionMapperTest, CJKTest) {
   CGRect bounds = CGRectMake(0, 0, 345, 65);
   // clang-format off
-  base::scoped_nsobject<NSString> CJKString(
+  NSString* CJKString =
       @"“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。"
-      @"您可以在设置中停用此功能。");
+      @"您可以在设置中停用此功能。";
   // clang-format on
-  base::scoped_nsobject<NSMutableDictionary> attributes([[NSMutableDictionary
-      dictionaryWithDictionary:AttributesForTextAlignment(NSTextAlignmentLeft)]
-      retain]);
-  attributes.get()[NSFontAttributeName] =
+  NSMutableDictionary* attributes = [NSMutableDictionary
+      dictionaryWithDictionary:AttributesForTextAlignment(NSTextAlignmentLeft)];
+  attributes[NSFontAttributeName] =
       [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16];
-  base::scoped_nsobject<NSAttributedString> string([[NSAttributedString alloc]
-      initWithString:CJKString
-          attributes:attributes]);
+  NSAttributedString* string =
+      [[NSAttributedString alloc] initWithString:CJKString
+                                      attributes:attributes];
   InitMapper(string, bounds);
 
   NSRange range = NSMakeRange(0, 6);  // "“触摸搜索”".
