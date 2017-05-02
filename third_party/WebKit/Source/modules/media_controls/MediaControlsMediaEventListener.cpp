@@ -68,7 +68,7 @@ void MediaControlsMediaEventListener::Attach() {
           remote->WatchAvailabilityInternal(new AvailabilityCallbackWrapper(
               WTF::Bind(&MediaControlsMediaEventListener::
                             OnRemotePlaybackAvailabilityChanged,
-                        WrapPersistent(this))));
+                        WrapWeakPersistent(this))));
     }
   }
 }
