@@ -74,8 +74,7 @@ void Thumbnail::SetCompressedBitmap(sk_sp<SkPixelRef> compressed_bitmap,
   DCHECK(!content_size.IsEmpty());
   retrieved_ = false;
   ClearUIResourceId();
-  gfx::Size data_size(compressed_bitmap->info().width(),
-                      compressed_bitmap->info().height());
+  gfx::Size data_size(compressed_bitmap->width(), compressed_bitmap->height());
   scaled_content_size_ = gfx::ScaleSize(gfx::SizeF(content_size), 1.f / scale_);
   scaled_data_size_ = gfx::ScaleSize(gfx::SizeF(data_size), 1.f / scale_);
   bitmap_ = cc::UIResourceBitmap(std::move(compressed_bitmap), data_size);
