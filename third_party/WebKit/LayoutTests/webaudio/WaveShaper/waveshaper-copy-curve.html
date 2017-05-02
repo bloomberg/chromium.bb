@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -17,7 +17,7 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("test copying", function (taskDone) {
+      audit.define("test copying", (task, should) => {
         // Two-channel context; channel 0 contains the test data and channel 1
         // contains the expected result.  Channel 1 has the normal WaveShaper
         // output and channel 0 has the WaveShaper output with a modified curve.
@@ -73,16 +73,13 @@
 
           // Modifying the wave shaper curve should not modify the output so the
           // outputs from the two wave shaper nodes should be exactly identical.
-          var success = Should("WaveShaper with modified curve", actual)
+          should(actual, "WaveShaper with modified curve")
             .beEqualToArray(expected);
 
-          Should("Summary: ", success).summarize(
-            "Output correctly did not change with modified WaveShaper curve.",
-            "Output incorrectly changed due to modified WaveShaper curve.");
-        }).then(taskDone);
+        }).then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
     </script>
   </body>
 </html>
