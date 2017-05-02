@@ -39,6 +39,11 @@ class ActivityLogApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
   }
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     std::unique_ptr<BasicHttpResponse> response(new BasicHttpResponse);
     response->set_code(net::HTTP_OK);
@@ -63,7 +68,6 @@ class ActivityLogApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
   ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
 
-  host_resolver()->AddRule("*", "127.0.0.1");
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ActivityLogApiTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(StartEmbeddedTestServer());
