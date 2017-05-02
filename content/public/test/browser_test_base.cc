@@ -381,9 +381,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
   // the host rules (when not using the network service).
   if (network_service ||
       std::string(test_info->name()) != "ProcessTransferAfterError") {
-    // TODO(jam): enable this once all access to host_resolver() is in
-    // SetUpOnMainThread or before. http://crbug.com/713847
-    // host_resolver()->DisableModifications();
+    host_resolver()->DisableModifications();
   }
 
   if (!network_service)
