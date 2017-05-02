@@ -5,6 +5,7 @@
 #include "modules/credentialmanager/CredentialsContainer.h"
 
 #include <memory>
+#include <utility>
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -167,17 +168,10 @@ ScriptPromise CredentialsContainer::get(
 
   Vector<KURL> providers;
   if (options.hasFederated() && options.federated().hasProviders()) {
-    // TODO(mkwst): CredentialRequestOptions::federated() needs to return a
-    // reference, not a value.  Because it returns a temporary value now, a for
-    // loop that directly references the value generates code that holds a
-    // reference to a value that no longer exists by the time the loop starts
-    // looping. In order to avoid this crazyness for the moment, we're making a
-    // copy of the vector. https://crbug.com/587088
-    const Vector<String> provider_strings = options.federated().providers();
-    for (const auto& string : provider_strings) {
+    for (const auto& string : options.federated().providers()) {
       KURL url = KURL(KURL(), string);
       if (url.IsValid())
-        providers.push_back(url);
+        providers.push_back(std::move(url));
     }
   }
 
