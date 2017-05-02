@@ -179,7 +179,7 @@ class OilpanGCTimesForBlinkPerf(_OilpanGCTimesBase):
 
   def __init__(self):
     super(OilpanGCTimesForBlinkPerf, self).__init__()
-    with open(os.path.join(os.path.dirname(__file__), '..', 'benchmarks',
+    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'benchmarks',
                            'blink_perf.js'), 'r') as f:
       self._blink_perf_js = f.read()
 

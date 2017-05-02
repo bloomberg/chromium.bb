@@ -8,10 +8,12 @@ from core import perf_benchmark
 
 from benchmarks import blink_perf
 from benchmarks import silk_flags
-from measurements import oilpan_gc_times
-import page_sets
+
 from telemetry import benchmark
 
+import page_sets
+
+from contrib.oilpan import oilpan_gc_times
 
 @benchmark.Enabled('content-shell')
 class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
@@ -27,7 +29,6 @@ class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
     return blink_perf.CreateStorySetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
-@benchmark.Disabled('android')  # crbug.com/589567
 @benchmark.Owner(emails=['peria@chromium.org'])
 class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
@@ -60,8 +61,3 @@ class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'oilpan_gc_times.sync_scroll.key_mobile_sites_smooth'
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
-      return (possible_browser.browser_type == 'reference' and
-              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')

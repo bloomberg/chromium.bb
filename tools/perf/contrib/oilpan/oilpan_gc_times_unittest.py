@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from measurements import oilpan_gc_times
+from contrib.oilpan import oilpan_gc_times
 
 from telemetry.internal.results import page_test_results
 from telemetry.page import page as page_module
@@ -100,7 +100,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
     tab = mock.MagicMock()
     with mock.patch(
-        'measurements.oilpan_gc_times.TimelineModel') as MockTimelineModel:
+        'contrib.oilpan.oilpan_gc_times.TimelineModel') as MockTimelineModel:
       MockTimelineModel.return_value = data._model
       measurement.ValidateAndMeasurePage(None, tab, data.results)
 
@@ -134,7 +134,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     measurement._timeline_model = data._model
     tab = mock.MagicMock()
     with mock.patch(
-        'measurements.oilpan_gc_times.TimelineModel') as MockTimelineModel:
+        'contrib.oilpan.oilpan_gc_times.TimelineModel') as MockTimelineModel:
       MockTimelineModel.return_value = data._model
       measurement.ValidateAndMeasurePage(None, tab, data.results)
 
