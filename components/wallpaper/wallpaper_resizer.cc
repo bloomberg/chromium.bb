@@ -24,14 +24,19 @@ int RoundPositive(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
 
-// Resizes |orig_bitmap| to |target_size| using |layout| and stores the
+// Resizes |image| to |target_size| using |layout| and stores the
 // resulting bitmap at |resized_bitmap_out|.
-void Resize(SkBitmap orig_bitmap,
+//
+// NOTE: |image| is intentionally a copy to ensure it exists for the duration of
+// the function.
+void Resize(const gfx::ImageSkia image,
             const gfx::Size& target_size,
             WallpaperLayout layout,
             SkBitmap* resized_bitmap_out,
             base::TaskRunner* task_runner) {
   DCHECK(task_runner->RunsTasksOnCurrentThread());
+
+  SkBitmap orig_bitmap = *image.bitmap();
   SkBitmap new_bitmap = orig_bitmap;
 
   const int orig_width = orig_bitmap.width();
@@ -127,8 +132,8 @@ void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
   if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&Resize, *image_.bitmap(), target_size_, layout_,
-                     resized_bitmap, base::RetainedRef(task_runner_)),
+          base::Bind(&Resize, image_, target_size_, layout_, resized_bitmap,
+                     base::RetainedRef(task_runner_)),
           base::Bind(&WallpaperResizer::OnResizeFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(resized_bitmap)))) {
