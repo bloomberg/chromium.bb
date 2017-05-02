@@ -1190,7 +1190,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
     GetLayoutObject()->UpdateFromElement();
 }
 
-void HTMLMediaElement::StartPlayerLoad(const KURL& player_provided_url) {
+void HTMLMediaElement::StartPlayerLoad() {
   DCHECK(!web_media_player_);
 
   WebMediaPlayerSource source;
@@ -1210,8 +1210,7 @@ void HTMLMediaElement::StartPlayerLoad(const KURL& player_provided_url) {
     // 'authentication flag' to control how user:pass embedded in a
     // media resource URL should be treated, then update the handling
     // here to match.
-    KURL request_url =
-        player_provided_url.IsNull() ? KURL(current_src_) : player_provided_url;
+    KURL request_url = current_src_;
     if (!request_url.User().IsEmpty())
       request_url.SetUser(String());
     if (!request_url.Pass().IsEmpty())
@@ -3198,15 +3197,6 @@ WebMediaPlayer::TrackId HTMLMediaElement::GetSelectedVideoTrackId() {
   VideoTrack* track =
       video_tracks_->AnonymousIndexedGetter(selected_track_index);
   return track->id();
-}
-
-void HTMLMediaElement::RequestReload(const WebURL& new_url) {
-  DCHECK(GetWebMediaPlayer());
-  DCHECK(!src_object_);
-  DCHECK(new_url.IsValid());
-  DCHECK(IsSafeToLoadURL(new_url, kComplain));
-  ResetMediaPlayerAndMediaSource();
-  StartPlayerLoad(new_url);
 }
 
 bool HTMLMediaElement::IsAutoplayingMuted() {
