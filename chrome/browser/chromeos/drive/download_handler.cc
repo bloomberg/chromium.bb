@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/task_scheduler/post_task.h"
@@ -211,7 +212,8 @@ void DownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
     return;
 
   if (util::IsUnderDriveMountPoint(drive_path)) {
-    download->SetUserData(&kDrivePathKey, new DriveUserData(drive_path));
+    download->SetUserData(&kDrivePathKey,
+                          base::MakeUnique<DriveUserData>(drive_path));
     download->SetDisplayName(drive_path.BaseName());
   } else if (IsDriveDownload(download)) {
     // This may have been previously set if the default download folder is
