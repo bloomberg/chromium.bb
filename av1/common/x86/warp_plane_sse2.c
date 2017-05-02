@@ -98,10 +98,14 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
               _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 - 7));
 
           // Filter even-index pixels
-          __m128i tmp_0 = filter[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_2 = filter[(sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_4 = filter[(sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_6 = filter[(sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS];
+          __m128i tmp_0 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_2 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 2 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_4 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 4 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_6 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 6 * alpha) >> WARPEDDIFF_PREC_BITS)));
 
           // coeffs 0 1 0 1 2 3 2 3 for pixels 0, 2
           __m128i tmp_8 = _mm_unpacklo_epi32(tmp_0, tmp_2);
@@ -140,10 +144,14 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
                                     HORSHEAR_REDUCE_PREC_BITS);
 
           // Filter odd-index pixels
-          __m128i tmp_1 = filter[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_3 = filter[(sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_5 = filter[(sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS];
-          __m128i tmp_7 = filter[(sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS];
+          __m128i tmp_1 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_3 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 3 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_5 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 5 * alpha) >> WARPEDDIFF_PREC_BITS)));
+          __m128i tmp_7 = _mm_loadu_si128(
+              (__m128i *)(filter + ((sx + 7 * alpha) >> WARPEDDIFF_PREC_BITS)));
 
           __m128i tmp_9 = _mm_unpacklo_epi32(tmp_1, tmp_3);
           __m128i tmp_11 = _mm_unpacklo_epi32(tmp_5, tmp_7);
@@ -191,10 +199,14 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
         __m128i src_6 = _mm_unpacklo_epi16(src[6], src[7]);
 
         // Filter even-index pixels
-        __m128i tmp_0 = filter[(sy + 0 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_2 = filter[(sy + 2 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_4 = filter[(sy + 4 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_6 = filter[(sy + 6 * gamma) >> WARPEDDIFF_PREC_BITS];
+        __m128i tmp_0 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 0 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_2 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 2 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_4 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 4 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_6 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 6 * gamma) >> WARPEDDIFF_PREC_BITS)));
 
         __m128i tmp_8 = _mm_unpacklo_epi32(tmp_0, tmp_2);
         __m128i tmp_10 = _mm_unpacklo_epi32(tmp_4, tmp_6);
@@ -220,10 +232,14 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
         __m128i src_5 = _mm_unpackhi_epi16(src[4], src[5]);
         __m128i src_7 = _mm_unpackhi_epi16(src[6], src[7]);
 
-        __m128i tmp_1 = filter[(sy + 1 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_3 = filter[(sy + 3 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_5 = filter[(sy + 5 * gamma) >> WARPEDDIFF_PREC_BITS];
-        __m128i tmp_7 = filter[(sy + 7 * gamma) >> WARPEDDIFF_PREC_BITS];
+        __m128i tmp_1 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 1 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_3 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 3 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_5 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 5 * gamma) >> WARPEDDIFF_PREC_BITS)));
+        __m128i tmp_7 = _mm_loadu_si128(
+            (__m128i *)(filter + ((sy + 7 * gamma) >> WARPEDDIFF_PREC_BITS)));
 
         __m128i tmp_9 = _mm_unpacklo_epi32(tmp_1, tmp_3);
         __m128i tmp_11 = _mm_unpacklo_epi32(tmp_5, tmp_7);
