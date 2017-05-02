@@ -12,7 +12,6 @@ DEPS = [
 ]
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.types import freeze
 
 PROPERTIES = {
   # Gerrit patches will have all properties about them prefixed with patch_.
@@ -34,7 +33,7 @@ PROPERTIES = {
   'repository': Property(default=None),
 
   # Common fields for both systems.
-  'deps_revision_overrides': Property(default=freeze({})),
+  'deps_revision_overrides': Property(default={}),
   'fail_patch': Property(default=None, kind=str),
   'parent_got_revision': Property(default=None),
   'revision': Property(default=None),
