@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/web/error_page_generator.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/test/web_test.h"
 #include "ios/web/web_state/error_translation_util.h"
@@ -14,6 +13,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // From static_html_view_controller.mm: callback for the HtmlGenerator protocol.
 typedef void (^HtmlCallback)(NSString*);
@@ -49,10 +52,10 @@ class ErrorPageGeneratorTest : public web::WebTest {
   }
 
   // ErrorPageContent object to be tested.
-  base::scoped_nsobject<ErrorPageGenerator> errorPageGenerator_;
+  ErrorPageGenerator* errorPageGenerator_;
 
   // Mock for the URLLoader that would otherwise handle the HTML produced.
-  base::scoped_nsobject<OCMockObject> mockLoader_;
+  OCMockObject* mockLoader_;
 };
 
 // Test with a timed out error.
@@ -60,10 +63,9 @@ TEST_F(ErrorPageGeneratorTest, TimedOut) {
   GURL errorURL("http://www.google.com");
   NSError* error =
       GenerateError(errorURL, NSURLErrorDomain, kCFURLErrorTimedOut);
-  errorPageGenerator_.reset([[ErrorPageGenerator alloc] initWithError:error
-                                                               isPost:NO
-                                                          isIncognito:NO]);
-  [errorPageGenerator_.get() generateHtml:^(NSString* html) {
+  errorPageGenerator_ =
+      [[ErrorPageGenerator alloc] initWithError:error isPost:NO isIncognito:NO];
+  [errorPageGenerator_ generateHtml:^(NSString* html) {
     TestHTMLForError(html, @"ERR_CONNECTION_TIMED_OUT");
   }];
 }
@@ -74,10 +76,9 @@ TEST_F(ErrorPageGeneratorTest, BadURLScheme) {
       "itms-appss://itunes.apple.com/gb/app/google-search/id284815942?mt=8");
   NSError* error =
       GenerateError(errorURL, NSURLErrorDomain, kCFURLErrorTimedOut);
-  errorPageGenerator_.reset([[ErrorPageGenerator alloc] initWithError:error
-                                                               isPost:NO
-                                                          isIncognito:NO]);
-  [errorPageGenerator_.get() generateHtml:^(NSString* html) {
+  errorPageGenerator_ =
+      [[ErrorPageGenerator alloc] initWithError:error isPost:NO isIncognito:NO];
+  [errorPageGenerator_ generateHtml:^(NSString* html) {
     TestHTMLForError(html, @"ERR_CONNECTION_TIMED_OUT");
   }];
 }
@@ -88,10 +89,9 @@ TEST_F(ErrorPageGeneratorTest, EmptyURLObject) {
   GURL errorURL;
   NSError* error =
       GenerateError(errorURL, NSURLErrorDomain, kCFURLErrorTimedOut);
-  errorPageGenerator_.reset([[ErrorPageGenerator alloc] initWithError:error
-                                                               isPost:NO
-                                                          isIncognito:NO]);
-  [errorPageGenerator_.get() generateHtml:^(NSString* html) {
+  errorPageGenerator_ =
+      [[ErrorPageGenerator alloc] initWithError:error isPost:NO isIncognito:NO];
+  [errorPageGenerator_ generateHtml:^(NSString* html) {
     TestHTMLForError(html, @"ERR_CONNECTION_TIMED_OUT");
   }];
 }

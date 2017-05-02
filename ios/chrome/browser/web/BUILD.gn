@@ -242,6 +242,7 @@ source_set("test_support") {
 }
 
 source_set("unit_tests_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "auto_reload_controller_unittest.mm",
