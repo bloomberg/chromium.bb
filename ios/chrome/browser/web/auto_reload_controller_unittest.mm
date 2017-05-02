@@ -6,11 +6,14 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface AutoReloadController (Testing)
 
@@ -42,10 +45,9 @@ class AutoReloadControllerTest : public testing::Test {
  protected:
   void SetUp() override {
     testing::Test::SetUp();
-    delegate_.reset([[TestAutoReloadDelegate alloc] init]);
-    controller_.reset([[AutoReloadController alloc]
-        initWithDelegate:delegate_.get()
-            onlineStatus:YES]);
+    delegate_ = [[TestAutoReloadDelegate alloc] init];
+    controller_ = [[AutoReloadController alloc] initWithDelegate:delegate_
+                                                    onlineStatus:YES];
     // Note: even though setTimerForTesting theoretically passes ownership of
     // the timer to the controller, this class retains a weak pointer to the
     // timer so it can query or fire it for testing. The only reason this is
@@ -66,8 +68,8 @@ class AutoReloadControllerTest : public testing::Test {
     [controller_ loadFinishedForURL:url wasPost:NO];
   }
 
-  base::scoped_nsobject<TestAutoReloadDelegate> delegate_;
-  base::scoped_nsobject<AutoReloadController> controller_;
+  TestAutoReloadDelegate* delegate_;
+  AutoReloadController* controller_;
   base::MockTimer* timer_;  // weak
 };
 
