@@ -1088,11 +1088,24 @@ bool IsInternalURL(const GURL& url) {
   base::string16 reason = PageInfoUI::PermissionDecisionReasonToUIString(
       [self profile], permissionInfo, url_);
   if (!reason.empty()) {
+    // Do this even in RTL to make sure -addText sets the right width for the
+    // permission decision reason label.
+    point.x = kSectionHorizontalPadding + kPermissionImageSize +
+              kPermissionImageSpacing;
+
     label = [self addText:reason
                  withSize:[NSFont smallSystemFontSize]
                      bold:NO
                    toView:view
                   atPoint:point];
+    if (isRTL) {
+      [label setAlignment:NSRightTextAlignment];
+      // Shift the reason left to align the permission label and the permission
+      // decision reason's right edges.
+      point.x -= (kPermissionImageSize + kPermissionImageSpacing);
+      [label setFrameOrigin:point];
+    }
+
     label.textColor = skia::SkColorToSRGBNSColor(
         PageInfoUI::GetPermissionDecisionTextColor());
     point.y += NSHeight(label.frame);
