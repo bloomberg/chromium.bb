@@ -55,8 +55,9 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
             final Runnable onMenuShown, final Runnable onMenuClosed) {
         mCallback = onItemClicked;
         mDialog = createDialog(activity, params, items);
+
         mDialog.getWindow().setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
-                activity.getResources(), R.drawable.bg_find_toolbar_popup));
+                activity.getResources(), R.drawable.white_with_rounded_corners));
 
         mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
@@ -117,6 +118,13 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
                     createContextMenuPageUi(
                             activity, params, itemGroup.second, isImageTab, maxCount)));
         }
+        if (itemGroups.size() == 1) {
+            viewGroups.get(0)
+                    .second.getChildAt(0)
+                    .findViewById(R.id.context_header_layout)
+                    .setBackgroundResource(R.color.google_grey_100);
+        }
+
         TabularContextMenuViewPager pager =
                 (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager);
         pager.setAdapter(new TabularContextMenuPagerAdapter(viewGroups));
