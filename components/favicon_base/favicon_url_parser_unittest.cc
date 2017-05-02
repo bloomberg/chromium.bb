@@ -95,20 +95,6 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
   EXPECT_EQ(1.0f, parsed.device_scale_factor);
 }
 
-// Test parsing path with the 'largest' parameter.
-TEST_F(FaviconUrlParserTest, ParsingLargestParam) {
-  const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
-  chrome::ParsedFaviconPath parsed;
-
-  const std::string path9 = "largest/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path9, icon_types, &parsed));
-  EXPECT_FALSE(parsed.is_icon_url);
-  EXPECT_EQ(url, parsed.url);
-  EXPECT_EQ(0, parsed.size_in_dip);
-  // The scale factor is meaningless when requesting the largest favicon.
-}
-
 // Test parsing path with 'iconurl' parameter.
 TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
@@ -123,27 +109,6 @@ TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
   EXPECT_EQ(1.0f, parsed.device_scale_factor);
 }
 
-// Test parsing path with 'origin' parameter.
-TEST_F(FaviconUrlParserTest, ParsingOriginParam) {
-  const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
-  int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
-  chrome::ParsedFaviconPath parsed;
-
-  const std::string path11 = "origin/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path11, icon_types, &parsed));
-  EXPECT_FALSE(parsed.is_icon_url);
-  EXPECT_EQ("https://www.google.ca/", parsed.url);
-  EXPECT_EQ(16, parsed.size_in_dip);
-  EXPECT_EQ(1.0f, parsed.device_scale_factor);
-
-  const std::string path12 = "origin/google.com";
-  EXPECT_TRUE(chrome::ParseFaviconPath(path12, icon_types, &parsed));
-  EXPECT_FALSE(parsed.is_icon_url);
-  EXPECT_EQ("http://google.com/", parsed.url);
-  EXPECT_EQ(16, parsed.size_in_dip);
-  EXPECT_EQ(1.0f, parsed.device_scale_factor);
-}
-
 // Test parsing paths with both a 'size' parameter and a 'url modifier'
 // parameter.
 TEST_F(FaviconUrlParserTest, ParsingSizeParamAndUrlModifier) {
@@ -151,17 +116,10 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParamAndUrlModifier) {
   int icon_types = favicon_base::TOUCH_PRECOMPOSED_ICON;
   chrome::ParsedFaviconPath parsed;
 
-  const std::string path13 = "size/32@1.4x/origin/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path13, icon_types, &parsed));
-  EXPECT_FALSE(parsed.is_icon_url);
-  EXPECT_EQ("https://www.google.ca/", parsed.url);
-  EXPECT_EQ(32, parsed.size_in_dip);
-  EXPECT_EQ(1.4f, parsed.device_scale_factor);
-
   const std::string path14 =
-      "largest/iconurl/http://www.google.com/favicon.ico";
+      "size/32/iconurl/http://www.google.com/favicon.ico";
   EXPECT_TRUE(chrome::ParseFaviconPath(path14, icon_types, &parsed));
   EXPECT_TRUE(parsed.is_icon_url);
   EXPECT_EQ("http://www.google.com/favicon.ico", parsed.url);
-  EXPECT_EQ(0, parsed.size_in_dip);
+  EXPECT_EQ(32, parsed.size_in_dip);
 }

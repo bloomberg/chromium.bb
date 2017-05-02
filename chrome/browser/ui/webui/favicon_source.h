@@ -21,40 +21,29 @@ class Profile;
 // requests for favicons and the history backend that serves these.
 //
 // Format:
-//   chrome://favicon/size&scalefactor/urlmodifier/url
+//   chrome://favicon/size&scalefactor/iconurl/url
 // Some parameters are optional as described below. However, the order of the
 // parameters is not interchangeable.
 //
 // Parameter:
 //  'url'               Required
-//    Specifies the page URL of the requested favicon. If the 'urlmodifier'
-//    parameter is 'iconurl', the URL refers to the URL of the favicon image
+//    Specifies the page URL of the requested favicon. If the 'iconurl'
+//    parameter is specified, the URL refers to the URL of the favicon image
 //    instead.
 //  'size&scalefactor'  Optional
-//    Values: ['largest', size/aa@bx/]
-//    'largest': Specifies that the largest available favicon is requested.
-//      Example: chrome://favicon/largest/http://www.google.com/
-//    'size/aa@bx/':
+//    Values: ['size/aa@bx/']
 //      Specifies the requested favicon's size in DIP (aa) and the requested
 //      favicon's scale factor. (b).
 //      The supported requested DIP sizes are: 16x16, 32x32 and 64x64.
 //      If the parameter is unspecified, the requested favicon's size defaults
 //      to 16 and the requested scale factor defaults to 1x.
-//      Example: chrome://favicon/size/16@2x/http://www.google.com/
-//  'urlmodifier'       Optional
-//    Values: ['iconurl', 'origin']
+//      Example: chrome://favicon/size/16@2x/https://www.google.com/
+//  'iconurl'           Optional
+//    Values: ['iconurl']
 //    'iconurl': Specifies that the url parameter refers to the URL of
 //    the favicon image as opposed to the URL of the page that the favicon is
 //    on.
-//    Example: chrome://favicon/iconurl/http://www.google.com/favicon.ico
-//    'origin': Specifies that the URL should be converted to a form with
-//    an empty path and a valid scheme. The converted URL will be used to
-//    request the favicon from the favicon service.
-//    Examples:
-//      chrome://favicon/origin/http://example.com/a
-//      chrome://favicon/origin/example.com
-//        Both URLs request the favicon for http://example.com from the
-//        favicon service.
+//    Example: chrome://favicon/iconurl/https://www.google.com/favicon.ico
 class FaviconSource : public content::URLDataSource {
  public:
   // Defines the type of icon the FaviconSource will provide.
