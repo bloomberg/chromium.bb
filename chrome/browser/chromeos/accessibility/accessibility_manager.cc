@@ -598,6 +598,9 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
 }
 
 void AccessibilityManager::OnTwoFingerTouchStart() {
+  if (!profile())
+    return;
+
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
   CHECK(event_router);
@@ -611,6 +614,9 @@ void AccessibilityManager::OnTwoFingerTouchStart() {
 }
 
 void AccessibilityManager::OnTwoFingerTouchStop() {
+  if (!profile())
+    return;
+
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
   CHECK(event_router);
