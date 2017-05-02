@@ -4,11 +4,7 @@
 
 // https://fetch.spec.whatwg.org/#typedefdef-headersinit
 
-// The actual typedef in the spec is
-//    (sequence<sequence<ByteString>> or record<ByteString,ByteString>)
-// which also implicitly includes Headers since it is iterable.
-// See http://crbug.com/690428.
-typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString> or Headers) HeadersInit;
+typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) HeadersInit;
 
 // https://fetch.spec.whatwg.org/#headers-class
 

@@ -5,7 +5,7 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
-#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
+#include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecord.h"
 #include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
