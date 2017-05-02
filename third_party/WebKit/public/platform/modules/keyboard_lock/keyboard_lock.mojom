@@ -4,18 +4,20 @@
 
 module blink.mojom;
 
-// The browser side service to process navigator.requestKeyLock() and
-// navigator.cancelKeyLock() web APIs. See http://crbug.com/680809.
+enum KeyboardLockRequestResult {
+  SUCCESS = 0,
+};
+
+// The browser side service to process navigator.requestKeyboardLock() and
+// navigator.cancelKeyboardLock() web APIs. See http://crbug.com/680809.
 interface KeyboardLockService {
   // Registers a set of string-formatted key codes
   // (https://www.w3.org/TR/uievents/#interface-keyboardevent) to the platform
   // dependent native API, so the web page can receive these key codes
   // thereafter.
-  // The reason will only be provided if the request is rejected.
-  // TODO(zijiehe): Update the return type once it's defined in the spec.
-  RequestKeyLock(array<string> key_codes)
-    => (bool allowed_by_user_or_browser, string reason);
+  RequestKeyboardLock(array<string> key_codes)
+    => (KeyboardLockRequestResult result);
 
   // Removes all reserved keys. This function is expected to never fail.
-  CancelKeyLock();
+  CancelKeyboardLock();
 };
