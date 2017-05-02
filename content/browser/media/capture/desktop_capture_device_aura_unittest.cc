@@ -111,8 +111,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     ui::ContextFactoryPrivate* context_factory_private = nullptr;
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
-    helper_.reset(
-        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
+    helper_.reset(new aura::test::AuraTestHelper());
     helper_->SetUp(context_factory, context_factory_private);
     new wm::DefaultActivationClient(helper_->root_window());
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura

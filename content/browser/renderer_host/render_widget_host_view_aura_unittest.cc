@@ -600,8 +600,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     ImageTransportFactory::InitializeForUnitTests(
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
-    aura_test_helper_.reset(
-        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
+    aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory(),
         ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());

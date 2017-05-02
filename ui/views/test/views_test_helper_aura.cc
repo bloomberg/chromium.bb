@@ -15,20 +15,17 @@ namespace views {
 
 // static
 ViewsTestHelper* ViewsTestHelper::Create(
-    base::MessageLoopForUI* message_loop,
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private) {
-  return new ViewsTestHelperAura(message_loop, context_factory,
-                                 context_factory_private);
+  return new ViewsTestHelperAura(context_factory, context_factory_private);
 }
 
 ViewsTestHelperAura::ViewsTestHelperAura(
-    base::MessageLoopForUI* message_loop,
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private) {
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(message_loop));
+  aura_test_helper_.reset(new aura::test::AuraTestHelper());
 }
 
 ViewsTestHelperAura::~ViewsTestHelperAura() {

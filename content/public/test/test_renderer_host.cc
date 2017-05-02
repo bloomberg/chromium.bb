@@ -269,8 +269,7 @@ void RenderViewHostTestHarness::SetUp() {
   ui::ContextFactoryPrivate* context_factory_private =
       ImageTransportFactory::GetInstance()->GetContextFactoryPrivate();
 
-  aura_test_helper_.reset(
-      new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
+  aura_test_helper_.reset(new aura::test::AuraTestHelper());
   aura_test_helper_->SetUp(context_factory, context_factory_private);
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif

@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/layout_manager.h"
@@ -212,7 +212,11 @@ class KeyboardControllerTest : public testing::Test,
                                public KeyboardControllerObserver {
  public:
   KeyboardControllerTest()
-      : number_of_calls_(0), ui_(nullptr), keyboard_closed_(false) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        number_of_calls_(0),
+        ui_(nullptr),
+        keyboard_closed_(false) {}
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {
@@ -225,7 +229,7 @@ class KeyboardControllerTest : public testing::Test,
                                          &context_factory_private);
 
     ui::SetUpInputMethodFactoryForTesting();
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(context_factory, context_factory_private);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
@@ -302,7 +306,7 @@ class KeyboardControllerTest : public testing::Test,
 
   void ResetController() { controller_.reset(); }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<TestFocusController> focus_controller_;
 

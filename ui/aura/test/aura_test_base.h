@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -140,6 +140,8 @@ class AuraTestBase : public testing::Test,
   PropertyConverter* GetPropertyConverter() override;
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   // Only used for mus. Both are are initialized to this, but may be reset.
   WindowManagerDelegate* window_manager_delegate_;
   WindowTreeClientDelegate* window_tree_client_delegate_;
@@ -147,7 +149,6 @@ class AuraTestBase : public testing::Test,
   bool use_mus_ = false;
   bool setup_called_ = false;
   bool teardown_called_ = false;
-  base::MessageLoopForUI message_loop_;
   PropertyConverter property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::vector<std::unique_ptr<WindowTreeHostMus>> window_tree_hosts_;

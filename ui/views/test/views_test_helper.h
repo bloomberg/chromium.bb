@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class MessageLoopForUI;
-}
-
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -28,7 +24,6 @@ class ViewsTestHelper {
 
   // Create a platform specific instance.
   static ViewsTestHelper* Create(
-      base::MessageLoopForUI* message_loop,
       ui::ContextFactory* context_factory,
       ui::ContextFactoryPrivate* context_factory_private);
 

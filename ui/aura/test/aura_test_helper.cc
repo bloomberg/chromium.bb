@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -48,9 +47,8 @@ AuraTestHelper* g_instance = nullptr;
 
 }  // namespace
 
-AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
+AuraTestHelper::AuraTestHelper()
     : setup_called_(false), teardown_called_(false) {
-  DCHECK(message_loop);
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
