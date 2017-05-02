@@ -459,7 +459,6 @@ class WebMediaPlayerMSTest
   void RemotePlaybackStarted() override {}
   void OnBecamePersistentVideo(bool) override {}
   bool IsAutoplayingMuted() override { return false; }
-  void RequestReload(const blink::WebURL& newUrl) override {}
   bool HasSelectedVideoTrack() override { return false; }
   blink::WebMediaPlayer::TrackId GetSelectedVideoTrackId() override {
     return blink::WebMediaPlayer::TrackId();
