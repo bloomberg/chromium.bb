@@ -104,18 +104,17 @@ media::AudioParameters GetOutputDeviceParameters(
 
 }  // namespace
 
-std::unique_ptr<RendererWebAudioDeviceImpl> RendererWebAudioDeviceImpl::Create(
+RendererWebAudioDeviceImpl* RendererWebAudioDeviceImpl::Create(
     media::ChannelLayout layout,
     int channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
     int session_id,
     const url::Origin& security_origin) {
-  return std::unique_ptr<RendererWebAudioDeviceImpl>(
-      new RendererWebAudioDeviceImpl(layout, channels, latency_hint, callback,
-                                     session_id, security_origin,
-                                     base::Bind(&GetOutputDeviceParameters),
-                                     base::Bind(&FrameIdFromCurrentContext)));
+  return new RendererWebAudioDeviceImpl(layout, channels, latency_hint,
+                                        callback, session_id, security_origin,
+                                        base::Bind(&GetOutputDeviceParameters),
+                                        base::Bind(&FrameIdFromCurrentContext));
 }
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(

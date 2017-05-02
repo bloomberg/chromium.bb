@@ -37,7 +37,7 @@ class InputHandlerProxyClient {
 
   // Creates a new fling animation curve instance for device |device_source|
   // with |velocity| and already scrolled |cumulative_scroll| pixels.
-  virtual std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
+  virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) = 0;

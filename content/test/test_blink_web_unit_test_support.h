@@ -55,7 +55,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebCompositorSupport* CompositorSupport() override;
 
-  std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
+  blink::WebGestureCurve* CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
@@ -71,8 +71,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
 
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
+  blink::WebRTCCertificateGenerator* CreateRTCCertificateGenerator() override;
 
  private:
   MockWebBlobRegistryImpl blob_registry_;

@@ -152,23 +152,23 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to override creating a WebMediaStreamCenter. If it
   // returns NULL the content layer will create the stream center.
-  virtual std::unique_ptr<blink::WebMediaStreamCenter>
-  OverrideCreateWebMediaStreamCenter(blink::WebMediaStreamCenterClient* client);
+  virtual blink::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
+      blink::WebMediaStreamCenterClient* client);
 
   // Allows the embedder to override creating a WebRTCPeerConnectionHandler. If
   // it returns NULL the content layer will create the connection handler.
-  virtual std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+  virtual blink::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.
-  virtual std::unique_ptr<blink::WebMIDIAccessor> OverrideCreateMIDIAccessor(
+  virtual blink::WebMIDIAccessor* OverrideCreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client);
 
   // Allows the embedder to override creating a WebAudioDevice.  If it
   // returns NULL the content layer will create the audio device.
-  virtual std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(
+  virtual blink::WebAudioDevice* OverrideCreateAudioDevice(
       const blink::WebAudioLatencyHint& latency_hint);
 
   // Allows the embedder to override the blink::WebClipboard used. If it
@@ -181,8 +181,8 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to override the WebSpeechSynthesizer used.
   // If it returns NULL the content layer will provide an engine.
-  virtual std::unique_ptr<blink::WebSpeechSynthesizer>
-  OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
+  virtual blink::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
+      blink::WebSpeechSynthesizerClient* client);
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

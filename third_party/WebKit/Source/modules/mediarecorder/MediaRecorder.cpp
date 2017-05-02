@@ -173,7 +173,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
           &MediaRecorder::DispatchScheduledEvent)) {
   DCHECK(stream_->getTracks().size());
 
-  recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler();
+  recorder_handler_ =
+      WTF::WrapUnique(Platform::Current()->CreateMediaRecorderHandler());
   DCHECK(recorder_handler_);
 
   if (!recorder_handler_) {
@@ -283,7 +284,7 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
 }
 
 bool MediaRecorder::isTypeSupported(const String& type) {
-  std::unique_ptr<WebMediaRecorderHandler> handler =
+  WebMediaRecorderHandler* handler =
       Platform::Current()->CreateMediaRecorderHandler();
   if (!handler)
     return false;

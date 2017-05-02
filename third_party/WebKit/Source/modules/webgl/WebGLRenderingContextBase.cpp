@@ -592,10 +592,10 @@ static void CreateContextProviderOnMainThread(
     ContextProviderCreationInfo* creation_info,
     WaitableEvent* waitable_event) {
   ASSERT(IsMainThread());
-  creation_info->created_context_provider =
+  creation_info->created_context_provider = WTF::WrapUnique(
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
           creation_info->context_attributes, creation_info->url, 0,
-          creation_info->gl_info);
+          creation_info->gl_info));
   waitable_event->Signal();
 }
 
@@ -659,9 +659,9 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   const auto& url = canvas ? canvas->GetDocument().TopDocument().Url()
                            : ExecutionContext::From(script_state)->Url();
   if (IsMainThread()) {
-    context_provider =
+    context_provider = WTF::WrapUnique(
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            context_attributes, url, 0, &gl_info);
+            context_attributes, url, 0, &gl_info));
   } else {
     context_provider =
         CreateContextProviderOnWorkerThread(context_attributes, &gl_info, url);
@@ -7500,9 +7500,9 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   const auto& url = host()->GetExecutionContextUrl();
 
   if (IsMainThread()) {
-    context_provider =
+    context_provider = WTF::WrapUnique(
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
-            attributes, url, 0, &gl_info);
+            attributes, url, 0, &gl_info));
   } else {
     context_provider =
         CreateContextProviderOnWorkerThread(attributes, &gl_info, url);

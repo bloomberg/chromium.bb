@@ -151,7 +151,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
-  std::unique_ptr<blink::WebSpeechSynthesizer> OverrideSpeechSynthesizer(
+  blink::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
   bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const override;

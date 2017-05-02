@@ -53,18 +53,16 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   WebTestRunner* TestRunner();
   blink::WebThemeEngine* ThemeEngine();
 
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
+  blink::WebMediaStreamCenter* CreateMediaStreamCenter(
       blink::WebMediaStreamCenterClient* client);
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  CreateWebRTCPeerConnectionHandler(
+  blink::WebRTCPeerConnectionHandler* CreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
-  std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
+  blink::WebMIDIAccessor* CreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client);
 
-  std::unique_ptr<blink::WebAudioDevice> CreateAudioDevice(
-      double sample_rate,
-      int frames_per_buffer);
+  blink::WebAudioDevice* CreateAudioDevice(double sample_rate,
+                                           int frames_per_buffer);
 
   TestInterfaces* GetTestInterfaces();
 
