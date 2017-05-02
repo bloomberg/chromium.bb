@@ -813,6 +813,11 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result != NavigationThrottle::DEFER);
 
+  // If the NavigationThrottles allowed the navigation to continue, have the
+  // processing of the response resume in the network stack.
+  if (result == NavigationThrottle::PROCEED)
+    loader_->ProceedWithResponse();
+
   // Abort the request if needed. This includes requests that were blocked by
   // NavigationThrottles and requests that should not commit (e.g. downloads,
   // 204/205s). This will destroy the NavigationRequest.
@@ -832,9 +837,6 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     // destroyed the NavigationRequest.
     return;
   }
-
-  // Have the processing of the response resume in the network stack.
-  loader_->ProceedWithResponse();
 
   CommitNavigation();
 

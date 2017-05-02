@@ -33,6 +33,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -597,6 +598,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Wraps |handler| in the standard resource handlers for normal resource
   // loading and navigation requests. This adds MimeTypeResourceHandler and
   // ResourceThrottles.
+  // PlzNavigate: |navigation_loader_core| and |stream_handle| are used to
+  // properly initialized the NavigationResourceHandler placed in navigation
+  // requests. They should be non-null in that case.
   std::unique_ptr<ResourceHandler> AddStandardHandlers(
       net::URLRequest* request,
       ResourceType resource_type,
@@ -606,7 +610,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       AppCacheService* appcache_service,
       int child_id,
       int route_id,
-      std::unique_ptr<ResourceHandler> handler);
+      std::unique_ptr<ResourceHandler> handler,
+      NavigationURLLoaderImplCore* navigation_loader_core,
+      std::unique_ptr<StreamHandle> stream_handle);
 
   void OnCancelRequest(ResourceRequesterInfo* requester_info, int request_id);
   void OnReleaseDownloadedFile(ResourceRequesterInfo* requester_info,

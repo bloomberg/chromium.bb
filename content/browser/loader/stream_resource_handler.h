@@ -29,7 +29,8 @@ class StreamResourceHandler : public ResourceHandler {
   // how origin check is done on resource loading.
   StreamResourceHandler(net::URLRequest* request,
                         StreamRegistry* registry,
-                        const GURL& origin);
+                        const GURL& origin,
+                        bool immediate_mode);
   ~StreamResourceHandler() override;
 
   // Not needed, as this event handler ought to be the final resource.

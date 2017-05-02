@@ -35,13 +35,15 @@ void NavigationResourceHandler::GetSSLStatusForRequest(
 
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
+    std::unique_ptr<ResourceHandler> next_handler,
     NavigationURLLoaderImplCore* core,
-    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
-    : ResourceHandler(request),
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
+    std::unique_ptr<StreamHandle> stream_handle)
+    : LayeredResourceHandler(request, std::move(next_handler)),
       core_(core),
+      stream_handle_(std::move(stream_handle)),
       resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate) {
   core_->set_resource_handler(this);
-  writer_.set_immediate_mode(true);
 }
 
 NavigationResourceHandler::~NavigationResourceHandler() {
@@ -53,20 +55,33 @@ NavigationResourceHandler::~NavigationResourceHandler() {
 
 void NavigationResourceHandler::Cancel() {
   if (core_) {
-    core_ = nullptr;
-    OutOfBandCancel(net::ERR_ABORTED, true /* tell_renderer */);
+    DetachFromCore();
+    if (has_controller()) {
+      CancelAndIgnore();
+    } else {
+      OutOfBandCancel(net::ERR_ABORTED, true /* tell_renderer */);
+    }
   }
 }
 
 void NavigationResourceHandler::FollowRedirect() {
-  Resume();
+  DCHECK(response_);
+  DCHECK(redirect_info_);
+  DCHECK(has_controller());
+  next_handler_->OnRequestRedirected(*redirect_info_, response_.get(),
+                                     ReleaseController());
+  response_ = nullptr;
+  redirect_info_ = nullptr;
 }
 
 void NavigationResourceHandler::ProceedWithResponse() {
+  DCHECK(response_);
+  DCHECK(has_controller());
   // Detach from the loader; at this point, the request is now owned by the
   // StreamHandle sent in OnResponseStarted.
   DetachFromCore();
-  Resume();
+  next_handler_->OnResponseStarted(response_.get(), ReleaseController());
+  response_ = nullptr;
 }
 
 void NavigationResourceHandler::OnRequestRedirected(
@@ -86,6 +101,8 @@ void NavigationResourceHandler::OnRequestRedirected(
   core_->NotifyRequestRedirected(redirect_info, response);
 
   HoldController(std::move(controller));
+  response_ = response;
+  redirect_info_ = base::MakeUnique<net::RedirectInfo>(redirect_info);
 }
 
 void NavigationResourceHandler::OnResponseStarted(
@@ -100,14 +117,6 @@ void NavigationResourceHandler::OnResponseStarted(
   }
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  StreamContext* stream_context =
-      GetStreamContextForResourceContext(info->GetContext());
-  writer_.InitializeStream(
-      stream_context->registry(), request()->url().GetOrigin(),
-      base::Bind(&NavigationResourceHandler::OutOfBandCancel,
-                 base::Unretained(this), net::ERR_ABORTED,
-                 true /* tell_renderer */));
 
   NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->raw_header_size();
@@ -127,76 +136,23 @@ void NavigationResourceHandler::OnResponseStarted(
   if (request()->ssl_info().cert.get())
     GetSSLStatusForRequest(request()->ssl_info(), &ssl_status);
 
-  core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
-                               ssl_status, std::move(cloned_data),
-                               info->GetGlobalRequestID(), info->IsDownload(),
-                               info->is_stream());
-  // Don't defer stream based requests. This includes requests initiated via
-  // mime type sniffing, etc.
-  // TODO(ananta)
-  // Make sure that the requests go through the throttle checks. Currently this
-  // does not work as the InterceptingResourceHandler is above us and hence it
-  // does not expect the old handler to defer the request.
-  // TODO(clamy): We should also make the downloads wait on the
-  // NavigationThrottle checks be performed. Similarly to streams, it doesn't
-  // work because of the InterceptingResourceHandler.
-  // TODO(clamy): This NavigationResourceHandler should be split in two, with
-  // one part that wait on the NavigationThrottle to execute located between the
-  // MIME sniffing and the ResourceThrotlle, and one part that write the
-  // response to the stream being the leaf ResourceHandler.
-  if (info->is_stream() || info->IsDownload()) {
-    controller->Resume();
-  } else {
-    HoldController(std::move(controller));
-  }
-}
-
-void NavigationResourceHandler::OnWillStart(
-    const GURL& url,
-    std::unique_ptr<ResourceController> controller) {
-  DCHECK(!has_controller());
-  controller->Resume();
-}
-
-void NavigationResourceHandler::OnWillRead(
-    scoped_refptr<net::IOBuffer>* buf,
-    int* buf_size,
-    std::unique_ptr<ResourceController> controller) {
-  DCHECK(!has_controller());
-  writer_.OnWillRead(buf, buf_size, -1);
-  controller->Resume();
-}
-
-void NavigationResourceHandler::OnReadCompleted(
-    int bytes_read,
-    std::unique_ptr<ResourceController> controller) {
-  DCHECK(!has_controller());
-  writer_.OnReadCompleted(bytes_read,
-                          base::Bind(&ResourceController::Resume,
-                                     base::Passed(std::move(controller))));
+  core_->NotifyResponseStarted(
+      response, std::move(stream_handle_), ssl_status, std::move(cloned_data),
+      info->GetGlobalRequestID(), info->IsDownload(), info->is_stream());
+  HoldController(std::move(controller));
+  response_ = response;
 }
 
 void NavigationResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     std::unique_ptr<ResourceController> controller) {
-  // If the request has already committed, close the stream and leave it as-is.
-  if (writer_.stream()) {
-    writer_.Finalize(status.error());
-    controller->Resume();
-    return;
-  }
-
   if (core_) {
     DCHECK_NE(net::OK, status.error());
     core_->NotifyRequestFailed(request()->response_info().was_cached,
                                status.error());
     DetachFromCore();
   }
-  controller->Resume();
-}
-
-void NavigationResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  NOTREACHED();
+  next_handler_->OnResponseCompleted(status, std::move(controller));
 }
 
 void NavigationResourceHandler::DetachFromCore() {
