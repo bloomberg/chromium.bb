@@ -25,10 +25,10 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,13 +101,14 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
       : profile_(profile),
         filter_(filter),
         persisted_(false) {
-    DownloadServiceFactory::GetForBrowserContext(profile_)->
-      GetDownloadHistory()->AddObserver(this);
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+        ->GetDownloadHistory()
+        ->AddObserver(this);
   }
 
   ~DownloadPersistedObserver() override {
-    DownloadService* service = DownloadServiceFactory::GetForBrowserContext(
-        profile_);
+    DownloadCoreService* service =
+        DownloadCoreServiceFactory::GetForBrowserContext(profile_);
     if (service && service->GetDownloadHistory())
       service->GetDownloadHistory()->RemoveObserver(this);
   }
@@ -508,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
       new DelayingDownloadManagerDelegate(browser()->profile()));
   delaying_delegate->GetDownloadIdReceiverCallback().Run(
       content::DownloadItem::kInvalidId + 1);
-  DownloadServiceFactory::GetForBrowserContext(browser()->profile())
+  DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
       ->SetDownloadManagerDelegateForTesting(std::move(delaying_delegate));
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;

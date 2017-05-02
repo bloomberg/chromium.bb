@@ -18,9 +18,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
@@ -996,7 +996,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
-  EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+  EXPECT_EQ(1, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
 
   // Attempting to close again should not crash.
   TestBrowserCloseManager::AttemptClose(
@@ -1013,7 +1013,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   // Set up the fake delegate that forces the download to be malicious.
   std::unique_ptr<TestDownloadManagerDelegate> test_delegate(
       new TestDownloadManagerDelegate(browser()->profile()));
-  DownloadServiceFactory::GetForBrowserContext(browser()->profile())
+  DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
       ->SetDownloadManagerDelegateForTesting(std::move(test_delegate));
 
   // Run a dangerous download, but the user doesn't make a decision.
@@ -1070,9 +1070,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   if (browser_defaults::kBrowserAliveWithNoWindows)
-    EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(1, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
   else
-    EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(0, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with a download in progress in an off-the-record profile.
@@ -1106,7 +1106,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
-  EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
+  EXPECT_EQ(0, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with a download in progress in a regular profile an inconito
@@ -1154,9 +1154,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   if (browser_defaults::kBrowserAliveWithNoWindows)
-    EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(1, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
   else
-    EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(0, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with a download in progress from one profile, where the only
@@ -1211,9 +1211,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   if (browser_defaults::kBrowserAliveWithNoWindows)
-    EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(1, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
   else
-    EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
+    EXPECT_EQ(0, DownloadCoreService::NonMaliciousDownloadCountAllProfiles());
 }
 
 // Test shutdown with downloads in progress and beforeunload handlers.

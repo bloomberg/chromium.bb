@@ -47,8 +47,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -502,7 +502,7 @@ Browser::~Browser() {
   if (!browser_defaults::kBrowserAliveWithNoWindows &&
       OkToCloseWithInProgressDownloads(&num_downloads) ==
           DOWNLOAD_CLOSE_BROWSER_SHUTDOWN) {
-    DownloadService::CancelAllDownloads();
+    DownloadCoreService::CancelAllDownloads();
   }
 
   SessionService* session_service =
@@ -798,7 +798,7 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
     return DOWNLOAD_CLOSE_OK;
 
   int total_download_count =
-      DownloadService::NonMaliciousDownloadCountAllProfiles();
+      DownloadCoreService::NonMaliciousDownloadCountAllProfiles();
   if (total_download_count == 0)
     return DOWNLOAD_CLOSE_OK;   // No downloads; can definitely close.
 
@@ -828,12 +828,13 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   // If there aren't any other windows on our profile, and we're an incognito
   // profile, and there are downloads associated with that profile,
   // those downloads would be cancelled by our window (-> profile) close.
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profile());
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile());
   if ((profile_window_count == 0) &&
-      (download_service->NonMaliciousDownloadCount() > 0) &&
+      (download_core_service->NonMaliciousDownloadCount() > 0) &&
       profile()->IsOffTheRecord()) {
-    *num_downloads_blocking = download_service->NonMaliciousDownloadCount();
+    *num_downloads_blocking =
+        download_core_service->NonMaliciousDownloadCount();
     return DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE;
   }
 

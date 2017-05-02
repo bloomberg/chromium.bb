@@ -14,10 +14,10 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
@@ -615,10 +615,11 @@ void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
 bool DownloadItemModel::ShouldNotifyUI() const {
   Profile* profile =
       Profile::FromBrowserContext(download_->GetBrowserContext());
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profile);
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile);
   DownloadHistory* download_history =
-      (download_service ? download_service->GetDownloadHistory() : NULL);
+      (download_core_service ? download_core_service->GetDownloadHistory()
+                             : nullptr);
 
   // The browser is only interested in new downloads. Ones that were restored
   // from history are not displayed on the shelf. The downloads page
@@ -754,14 +755,14 @@ base::string16 DownloadItemModel::GetInProgressStatusString() const {
 }
 
 void DownloadItemModel::OpenUsingPlatformHandler() {
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(
           download_->GetBrowserContext());
-  if (!download_service)
+  if (!download_core_service)
     return;
 
   ChromeDownloadManagerDelegate* delegate =
-      download_service->GetDownloadManagerDelegate();
+      download_core_service->GetDownloadManagerDelegate();
   if (!delegate)
     return;
   delegate->OpenDownloadUsingPlatformHandler(download_);

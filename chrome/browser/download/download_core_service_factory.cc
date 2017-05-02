@@ -2,40 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 
-#include "chrome/browser/download/download_service_impl.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-DownloadService* DownloadServiceFactory::GetForBrowserContext(
+DownloadCoreService* DownloadCoreServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<DownloadService*>(
+  return static_cast<DownloadCoreService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
-  return base::Singleton<DownloadServiceFactory>::get();
+DownloadCoreServiceFactory* DownloadCoreServiceFactory::GetInstance() {
+  return base::Singleton<DownloadCoreServiceFactory>::get();
 }
 
-DownloadServiceFactory::DownloadServiceFactory()
+DownloadCoreServiceFactory::DownloadCoreServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "DownloadService",
-        BrowserContextDependencyManager::GetInstance()) {
+          "DownloadCoreService",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
 }
 
-DownloadServiceFactory::~DownloadServiceFactory() {
-}
+DownloadCoreServiceFactory::~DownloadCoreServiceFactory() {}
 
-KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
+KeyedService* DownloadCoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  DownloadService* service =
-      new DownloadServiceImpl(static_cast<Profile*>(profile));
+  DownloadCoreService* service =
+      new DownloadCoreServiceImpl(static_cast<Profile*>(profile));
 
   // No need for initialization; initialization can be done on first
   // use of service.
@@ -43,7 +42,7 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-content::BrowserContext* DownloadServiceFactory::GetBrowserContextToUse(
+content::BrowserContext* DownloadCoreServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

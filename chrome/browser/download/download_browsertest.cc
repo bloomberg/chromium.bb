@@ -38,13 +38,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
@@ -350,13 +350,14 @@ class HistoryObserver : public DownloadHistory::Observer {
       : profile_(profile),
         waiting_(false),
         seen_stored_(false) {
-    DownloadServiceFactory::GetForBrowserContext(profile_)->
-      GetDownloadHistory()->AddObserver(this);
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+        ->GetDownloadHistory()
+        ->AddObserver(this);
   }
 
   ~HistoryObserver() override {
-    DownloadService* service = DownloadServiceFactory::GetForBrowserContext(
-        profile_);
+    DownloadCoreService* service =
+        DownloadCoreServiceFactory::GetForBrowserContext(profile_);
     if (service && service->GetDownloadHistory())
       service->GetDownloadHistory()->RemoveObserver(this);
   }
@@ -376,8 +377,9 @@ class HistoryObserver : public DownloadHistory::Observer {
   }
 
   void OnDownloadHistoryDestroyed() override {
-    DownloadServiceFactory::GetForBrowserContext(profile_)->
-      GetDownloadHistory()->RemoveObserver(this);
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+        ->GetDownloadHistory()
+        ->RemoveObserver(this);
   }
 
   void WaitForStored() {

@@ -21,9 +21,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -4145,11 +4145,13 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_SetShelfEnabled) {
   LoadExtension("downloads_split");
   EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[false]"));
-  EXPECT_FALSE(DownloadServiceFactory::GetForBrowserContext(
-      browser()->profile())->IsShelfEnabled());
+  EXPECT_FALSE(
+      DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
+          ->IsShelfEnabled());
   EXPECT_TRUE(RunFunction(new DownloadsSetShelfEnabledFunction(), "[true]"));
-  EXPECT_TRUE(DownloadServiceFactory::GetForBrowserContext(
-      browser()->profile())->IsShelfEnabled());
+  EXPECT_TRUE(
+      DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
+          ->IsShelfEnabled());
   // TODO(benjhayden) Test that existing shelves are hidden.
   // TODO(benjhayden) Test multiple extensions.
   // TODO(benjhayden) Test disabling extensions.

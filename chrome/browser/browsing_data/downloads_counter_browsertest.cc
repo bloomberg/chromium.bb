@@ -10,9 +10,9 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -38,8 +38,8 @@ class DownloadsCounterTest : public InProcessBrowserTest,
     manager_ =
         content::BrowserContext::GetDownloadManager(browser()->profile());
     history_ =
-        DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
-            GetDownloadHistory();
+        DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
+            ->GetDownloadHistory();
     history_->AddObserver(this);
 
     otr_manager_ =

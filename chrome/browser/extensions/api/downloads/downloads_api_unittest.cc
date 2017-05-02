@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_service_impl.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/mock_download_manager.h"
@@ -22,15 +22,15 @@ namespace extensions {
 
 namespace {
 
-// A DownloadService that returns a custom DownloadHistory.
-class TestDownloadService : public DownloadServiceImpl {
+// A DownloadCoreService that returns a custom DownloadHistory.
+class TestDownloadCoreService : public DownloadCoreServiceImpl {
  public:
-  explicit TestDownloadService(Profile* profile)
-      : DownloadServiceImpl(profile), profile_(profile) {}
-  ~TestDownloadService() override {}
+  explicit TestDownloadCoreService(Profile* profile)
+      : DownloadCoreServiceImpl(profile), profile_(profile) {}
+  ~TestDownloadCoreService() override {}
 
   void Shutdown() override {
-    DownloadServiceImpl::Shutdown();
+    DownloadCoreServiceImpl::Shutdown();
     download_history_.reset();
     router_.reset();
   }
@@ -56,7 +56,7 @@ class TestDownloadService : public DownloadServiceImpl {
   std::unique_ptr<ExtensionDownloadsEventRouter> router_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadService);
+  DISALLOW_COPY_AND_ASSIGN(TestDownloadCoreService);
 };
 
 }  // namespace
@@ -82,11 +82,12 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
     std::unique_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
     std::unique_ptr<DownloadHistory> download_history(
         new DownloadHistory(manager_.get(), std::move(history_adapter)));
-    TestDownloadService* download_service = static_cast<TestDownloadService*>(
-        DownloadServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), &TestingDownloadServiceFactory));
-    ASSERT_TRUE(download_service);
-    download_service->set_download_history(std::move(download_history));
+    TestDownloadCoreService* download_core_service =
+        static_cast<TestDownloadCoreService*>(
+            DownloadCoreServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+                profile(), &TestingDownloadCoreServiceFactory));
+    ASSERT_TRUE(download_core_service);
+    download_core_service->set_download_history(std::move(download_history));
   }
   void TearDown() override { ExtensionApiUnittest::TearDown(); }
 
@@ -101,8 +102,8 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
         const HistoryService::DownloadQueryCallback& callback) override {}
   };
 
-  // Constructs and returns a TestDownloadService.
-  static std::unique_ptr<KeyedService> TestingDownloadServiceFactory(
+  // Constructs and returns a TestDownloadCoreService.
+  static std::unique_ptr<KeyedService> TestingDownloadCoreServiceFactory(
       content::BrowserContext* browser_context);
 
   std::unique_ptr<MockDownloadManager> manager_;
@@ -113,9 +114,9 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
 
 // static
 std::unique_ptr<KeyedService>
-DownloadsApiUnitTest::TestingDownloadServiceFactory(
+DownloadsApiUnitTest::TestingDownloadCoreServiceFactory(
     content::BrowserContext* browser_context) {
-  return base::MakeUnique<TestDownloadService>(
+  return base::MakeUnique<TestDownloadCoreService>(
       Profile::FromBrowserContext(browser_context));
 }
 

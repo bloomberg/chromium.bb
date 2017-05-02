@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
@@ -130,9 +130,9 @@ static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DownloadManagerService* service = DownloadManagerService::GetInstance();
   service->Init(env, jobj);
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* history = download_service->GetDownloadHistory();
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile);
+  DownloadHistory* history = download_core_service->GetDownloadHistory();
   if (history)
     history->AddObserver(service);
   return reinterpret_cast<intptr_t>(service);

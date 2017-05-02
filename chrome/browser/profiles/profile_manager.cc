@@ -30,8 +30,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -816,8 +816,8 @@ void ProfileManager::ScheduleProfileForDeletion(
     // Cancel all in-progress downloads before deleting the profile to prevent a
     // "Do you want to exit Google Chrome and cancel the downloads?" prompt
     // (crbug.com/336725).
-    DownloadService* service =
-        DownloadServiceFactory::GetForBrowserContext(profile);
+    DownloadCoreService* service =
+        DownloadCoreServiceFactory::GetForBrowserContext(profile);
     service->CancelDownloads();
     DCHECK_EQ(0, service->NonMaliciousDownloadCount());
 
