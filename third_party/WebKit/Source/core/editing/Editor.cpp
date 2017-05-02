@@ -570,8 +570,9 @@ static PassRefPtr<Image> ImageFromNode(const Node& node) {
     return nullptr;
 
   if (layout_object->IsCanvas()) {
-    return toHTMLCanvasElement(node).CopiedImage(
-        kFrontBuffer, kPreferNoAcceleration, kSnapshotReasonCopyToClipboard);
+    return toHTMLCanvasElement(const_cast<Node&>(node))
+        .CopiedImage(kFrontBuffer, kPreferNoAcceleration,
+                     kSnapshotReasonCopyToClipboard);
   }
 
   if (layout_object->IsImage()) {

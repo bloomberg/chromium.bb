@@ -140,17 +140,16 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Paint(GraphicsContext&, const LayoutRect&);
 
-  PaintCanvas* DrawingCanvas() const;
-  void DisableDeferral(DisableDeferralReason) const;
+  PaintCanvas* DrawingCanvas();
+  void DisableDeferral(DisableDeferralReason);
   PaintCanvas* ExistingDrawingCanvas() const;
 
   CanvasRenderingContext* RenderingContext() const { return context_.Get(); }
 
   void EnsureUnacceleratedImageBuffer();
-  ImageBuffer* Buffer() const;
   PassRefPtr<Image> CopiedImage(SourceDrawingBuffer,
                                 AccelerationHint,
-                                SnapshotReason) const;
+                                SnapshotReason);
   void ClearCopiedImage();
 
   bool OriginClean() const;
@@ -162,12 +161,13 @@ class CORE_EXPORT HTMLCanvasElement final
   bool Is2d() const;
   bool IsAnimated2d() const;
 
-  bool HasImageBuffer() const { return image_buffer_.get(); }
-  void DiscardImageBuffer();
+  void DiscardImageBuffer() override;
+  ImageBuffer* GetImageBuffer() const override { return image_buffer_.get(); }
+  ImageBuffer* GetOrCreateImageBuffer() override;
 
   bool ShouldBeDirectComposited() const;
 
-  void PrepareSurfaceForPaintingIfNeeded() const;
+  void PrepareSurfaceForPaintingIfNeeded();
 
   const AtomicString ImageSourceURL() const override;
 
@@ -189,7 +189,7 @@ class CORE_EXPORT HTMLCanvasElement final
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const override;
+                                            const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsCanvasElement() const override { return true; }

@@ -167,9 +167,9 @@ void CanvasRenderingContext2D::ValidateStateStack() const {
 }
 
 bool CanvasRenderingContext2D::IsAccelerated() const {
-  if (!canvas()->HasImageBuffer())
+  if (!host()->GetImageBuffer())
     return false;
-  return canvas()->Buffer()->IsAccelerated();
+  return host()->GetImageBuffer()->IsAccelerated();
 }
 
 bool CanvasRenderingContext2D::IsComposited() const {
@@ -192,7 +192,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
     return;
   context_lost_mode_ = lost_mode;
   if (context_lost_mode_ == kSyntheticLostContext && canvas()) {
-    canvas()->DiscardImageBuffer();
+    host()->DiscardImageBuffer();
   }
   dispatch_context_lost_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
@@ -202,9 +202,9 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
     return;
   // This code path is for restoring from an eviction
   // Restoring from surface failure is handled internally
-  DCHECK(context_lost_mode_ != kNotLostContext && !canvas()->HasImageBuffer());
+  DCHECK(context_lost_mode_ != kNotLostContext && !host()->GetImageBuffer());
 
-  if (canvas()->Buffer()) {
+  if (host()->GetOrCreateImageBuffer()) {
     if (ContextLostRestoredEventsEnabled()) {
       dispatch_context_restored_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
     } else {
@@ -250,16 +250,16 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
   }
 
   DCHECK(context_lost_mode_ == kRealLostContext);
-  if (canvas()->HasImageBuffer() && canvas()->Buffer()->RestoreSurface()) {
+  if (host()->GetImageBuffer() && host()->GetImageBuffer()->RestoreSurface()) {
     try_restore_context_event_timer_.Stop();
     DispatchContextRestoredEvent(nullptr);
   }
 
   if (++try_restore_context_attempt_count_ > kMaxTryRestoreContextAttempts) {
     // final attempt: allocate a brand new image buffer instead of restoring
-    canvas()->DiscardImageBuffer();
+    host()->DiscardImageBuffer();
     try_restore_context_event_timer_.Stop();
-    if (canvas()->Buffer())
+    if (host()->GetOrCreateImageBuffer())
       DispatchContextRestoredEvent(nullptr);
   }
 }
@@ -368,7 +368,7 @@ void CanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
 
   if (ExpensiveCanvasHeuristicParameters::kBlurredShadowsAreExpensive &&
       GetState().ShouldDrawShadows() && GetState().ShadowBlur() > 0) {
-    ImageBuffer* buffer = canvas()->Buffer();
+    ImageBuffer* buffer = host()->GetOrCreateImageBuffer();
     if (buffer)
       buffer->SetHasExpensiveOp();
   }
@@ -602,11 +602,12 @@ int CanvasRenderingContext2D::Height() const {
 }
 
 bool CanvasRenderingContext2D::HasImageBuffer() const {
-  return canvas()->HasImageBuffer();
+  return host()->GetImageBuffer();
 }
 
 ImageBuffer* CanvasRenderingContext2D::GetImageBuffer() const {
-  return canvas()->Buffer();
+  return const_cast<CanvasRenderingContextHost*>(host())
+      ->GetOrCreateImageBuffer();
 }
 
 PassRefPtr<Image> blink::CanvasRenderingContext2D::GetImage(
@@ -614,7 +615,7 @@ PassRefPtr<Image> blink::CanvasRenderingContext2D::GetImage(
     SnapshotReason reason) const {
   if (!HasImageBuffer())
     return nullptr;
-  return canvas()->Buffer()->NewImageSnapshot(hint, reason);
+  return host()->GetOrCreateImageBuffer()->NewImageSnapshot(hint, reason);
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
@@ -979,8 +980,8 @@ float CanvasRenderingContext2D::GetFontBaseline(
 }
 
 void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
-  if (canvas()->HasImageBuffer())
-    canvas()->Buffer()->SetIsHidden(hidden);
+  if (host()->GetImageBuffer())
+    host()->GetImageBuffer()->SetIsHidden(hidden);
   if (hidden) {
     PruneLocalFontCache(0);
   }
@@ -991,7 +992,9 @@ bool CanvasRenderingContext2D::IsTransformInvertible() const {
 }
 
 WebLayer* CanvasRenderingContext2D::PlatformLayer() const {
-  return canvas()->Buffer() ? canvas()->Buffer()->PlatformLayer() : 0;
+  return host()->GetOrCreateImageBuffer()
+             ? host()->GetImageBuffer()->PlatformLayer()
+             : 0;
 }
 
 void CanvasRenderingContext2D::getContextAttributes(

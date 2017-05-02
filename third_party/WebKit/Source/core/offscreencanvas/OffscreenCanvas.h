@@ -13,6 +13,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/html/canvas/CanvasRenderingContextHost.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "core/offscreencanvas/ImageEncodeOptions.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
@@ -83,6 +84,10 @@ class CORE_EXPORT OffscreenCanvas final
     disable_reading_from_canvas_ = true;
   }
 
+  void DiscardImageBuffer() override;
+  ImageBuffer* GetImageBuffer() const { return image_buffer_.get(); }
+  ImageBuffer* GetOrCreateImageBuffer() override;
+
   void SetFrameSinkId(uint32_t client_id, uint32_t sink_id) {
     client_id_ = client_id;
     sink_id_ = sink_id;
@@ -133,7 +138,7 @@ class CORE_EXPORT OffscreenCanvas final
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const final;
+                                            const FloatSize&) final;
   bool WouldTaintOrigin(SecurityOrigin*) const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size) const final {
     return FloatSize(width(), height());
@@ -180,6 +185,9 @@ class CORE_EXPORT OffscreenCanvas final
   Member<ScriptPromiseResolver> commit_promise_resolver_;
   RefPtr<StaticBitmapImage> current_frame_;
   bool current_frame_is_web_gl_software_rendering_ = false;
+
+  std::unique_ptr<ImageBuffer> image_buffer_;
+  bool needs_matrix_clip_restore_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads

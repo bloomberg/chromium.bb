@@ -53,7 +53,7 @@ class CORE_EXPORT CanvasImageSource {
   virtual PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                     AccelerationHint,
                                                     SnapshotReason,
-                                                    const FloatSize&) const = 0;
+                                                    const FloatSize&) = 0;
 
   // IMPORTANT: Result must be independent of whether destinationContext is
   // already tainted because this function may be used to determine whether

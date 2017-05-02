@@ -418,7 +418,7 @@ PassRefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
-    const FloatSize&) const {
+    const FloatSize&) {
   if (!HasAvailableVideoFrame()) {
     *status = kInvalidSourceImageStatus;
     return nullptr;

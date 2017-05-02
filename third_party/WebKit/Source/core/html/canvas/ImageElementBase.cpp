@@ -28,7 +28,7 @@ PassRefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
-    const FloatSize& default_object_size) const {
+    const FloatSize& default_object_size) {
   if (!GetImageLoader().ImageComplete() || !CachedImage()) {
     *status = kIncompleteSourceImageStatus;
     return nullptr;

@@ -41,7 +41,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const final {
+                                            const FloatSize&) final {
     return GetImage();
   }
   bool IsAccelerated() const override;

@@ -12,8 +12,6 @@
 #include "core/workers/WorkerSettings.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
@@ -90,11 +88,11 @@ int OffscreenCanvasRenderingContext2D::Height() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::HasImageBuffer() const {
-  return !!image_buffer_;
+  return host()->GetImageBuffer();
 }
 
 void OffscreenCanvasRenderingContext2D::Reset() {
-  image_buffer_ = nullptr;
+  host()->DiscardImageBuffer();
   BaseRenderingContext2D::Reset();
 }
 
@@ -104,38 +102,15 @@ ColorBehavior OffscreenCanvasRenderingContext2D::DrawImageColorBehavior()
 }
 
 ImageBuffer* OffscreenCanvasRenderingContext2D::GetImageBuffer() const {
-  if (!image_buffer_) {
-    IntSize surface_size(Width(), Height());
-    OpacityMode opacity_mode = HasAlpha() ? kNonOpaque : kOpaque;
-    std::unique_ptr<ImageBufferSurface> surface;
-    if (RuntimeEnabledFeatures::accelerated2dCanvasEnabled()) {
-      surface.reset(
-          new AcceleratedImageBufferSurface(surface_size, opacity_mode));
-    }
-
-    if (!surface || !surface->IsValid()) {
-      surface.reset(new UnacceleratedImageBufferSurface(
-          surface_size, opacity_mode, kInitializeImagePixels));
-    }
-
-    OffscreenCanvasRenderingContext2D* non_const_this =
-        const_cast<OffscreenCanvasRenderingContext2D*>(this);
-    non_const_this->image_buffer_ = ImageBuffer::Create(std::move(surface));
-
-    if (needs_matrix_clip_restore_) {
-      RestoreMatrixClipStack(image_buffer_->Canvas());
-      non_const_this->needs_matrix_clip_restore_ = false;
-    }
-  }
-
-  return image_buffer_.get();
+  return const_cast<CanvasRenderingContextHost*>(host())
+      ->GetOrCreateImageBuffer();
 }
 
 RefPtr<StaticBitmapImage>
 OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image = image_buffer_->NewSkImageSnapshot(
+  sk_sp<SkImage> sk_image = host()->GetImageBuffer()->NewSkImageSnapshot(
       kPreferAcceleration, kSnapshotReasonTransferToImageBitmap);
   RefPtr<StaticBitmapImage> image =
       StaticBitmapImage::Create(std::move(sk_image));
@@ -151,8 +126,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   RefPtr<StaticBitmapImage> image = TransferToStaticBitmapImage();
   if (!image)
     return nullptr;
-  image_buffer_.reset();  // "Transfer" means no retained buffer
-  needs_matrix_clip_restore_ = true;
+  host()->DiscardImageBuffer();  // "Transfer" means no retained buffer
   return ImageBitmap::Create(std::move(image));
 }
 
@@ -161,7 +135,8 @@ PassRefPtr<Image> OffscreenCanvasRenderingContext2D::GetImage(
     SnapshotReason reason) const {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> sk_image = image_buffer_->NewSkImageSnapshot(hint, reason);
+  sk_sp<SkImage> sk_image =
+      host()->GetImageBuffer()->NewSkImageSnapshot(hint, reason);
   RefPtr<StaticBitmapImage> image =
       StaticBitmapImage::Create(std::move(sk_image));
   return image;
@@ -171,8 +146,8 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SnapshotReason reason) {
   if (!GetImageBuffer())
     return nullptr;
-  sk_sp<SkImage> snapshot =
-      image_buffer_->NewSkImageSnapshot(kPreferNoAcceleration, reason);
+  sk_sp<SkImage> snapshot = host()->GetImageBuffer()->NewSkImageSnapshot(
+      kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
     image_data = ImageData::Create(host()->Size());
@@ -204,18 +179,18 @@ PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
 }
 
 PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
-  if (!image_buffer_)
+  if (!host()->GetImageBuffer())
     return nullptr;
-  return image_buffer_->Canvas();
+  return host()->GetImageBuffer()->Canvas();
 }
 
 void OffscreenCanvasRenderingContext2D::DisableDeferral(DisableDeferralReason) {
 }
 
 AffineTransform OffscreenCanvasRenderingContext2D::BaseTransform() const {
-  if (!image_buffer_)
+  if (!host()->GetImageBuffer())
     return AffineTransform();  // identity
-  return image_buffer_->BaseTransform();
+  return host()->GetImageBuffer()->BaseTransform();
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {}
@@ -242,7 +217,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return this->GetImageBuffer();
+  return GetImageBuffer();
 }
 
 CanvasColorSpace OffscreenCanvasRenderingContext2D::ColorSpace() const {
@@ -258,6 +233,6 @@ CanvasPixelFormat OffscreenCanvasRenderingContext2D::PixelFormat() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
-  return image_buffer_ && image_buffer_->IsAccelerated();
+  return host()->GetImageBuffer() && host()->GetImageBuffer()->IsAccelerated();
 }
 }

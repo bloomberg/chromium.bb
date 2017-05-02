@@ -61,7 +61,7 @@ class FakeImageSource : public CanvasImageSource {
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const override;
+                                            const FloatSize&) override;
 
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const override {
@@ -96,7 +96,7 @@ PassRefPtr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
-    const FloatSize&) const {
+    const FloatSize&) {
   if (status)
     *status = kNormalSourceImageStatus;
   return image_;
@@ -125,7 +125,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     return ImageBuffer::GetGlobalAcceleratedImageBufferCount();
   }
   intptr_t GetCurrentGPUMemoryUsage() const {
-    return CanvasElement().Buffer()->GetGPUMemoryUsage();
+    return CanvasElement().GetImageBuffer()->GetGPUMemoryUsage();
   }
 
   void CreateContext(OpacityMode,
@@ -890,14 +890,14 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
 
   // Switching accelerated mode to non-accelerated mode
   fake_accelerate_surface_ptr->SetIsAccelerated(false);
-  CanvasElement().Buffer()->UpdateGPUMemoryUsage();
+  CanvasElement().GetImageBuffer()->UpdateGPUMemoryUsage();
   EXPECT_EQ(0, GetCurrentGPUMemoryUsage());
   EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
   EXPECT_EQ(0u, GetGlobalAcceleratedImageBufferCount());
 
   // Switching non-accelerated mode to accelerated mode
   fake_accelerate_surface_ptr->SetIsAccelerated(true);
-  CanvasElement().Buffer()->UpdateGPUMemoryUsage();
+  CanvasElement().GetImageBuffer()->UpdateGPUMemoryUsage();
   EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
   EXPECT_EQ(800, GetGlobalGPUMemoryUsage());
   EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
@@ -961,7 +961,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
       new Canvas2DImageBufferSurface(bridge, size));
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
 
-  EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
   EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
   EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
 
@@ -974,7 +974,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
     CanvasElement().FinalizeFrame();
 
     EXPECT_FALSE(exception_state.HadException());
-    EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -984,11 +984,11 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
 
   EXPECT_FALSE(exception_state.HadException());
   if (ExpensiveCanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
-    EXPECT_FALSE(CanvasElement().Buffer()->IsAccelerated());
+    EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
   } else {
-    EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
     EXPECT_EQ(720000, GetGlobalGPUMemoryUsage());
   }
@@ -1035,7 +1035,7 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
         new Canvas2DImageBufferSurface(bridge, size));
     CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
 
-    EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+    EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
     // 4 bytes per pixel * 2 buffers = 8
     EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
@@ -1051,11 +1051,11 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     EXPECT_FALSE(exception_state.HadException());
 
     if (test_variant == kLargeTextureDisablesAcceleration) {
-      EXPECT_FALSE(CanvasElement().Buffer()->IsAccelerated());
+      EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
       EXPECT_EQ(0u, GetGlobalAcceleratedImageBufferCount());
       EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
     } else {
-      EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+      EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
       EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
       EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
     }
@@ -1117,10 +1117,10 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
   EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
 
   context->fillRect(10, 10, 100, 100);
-  EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
 
-  CanvasElement().Buffer()->DisableAcceleration();
-  EXPECT_FALSE(CanvasElement().Buffer()->IsAccelerated());
+  CanvasElement().GetImageBuffer()->DisableAcceleration();
+  EXPECT_FALSE(CanvasElement().GetImageBuffer()->IsAccelerated());
 
   context->fillRect(10, 10, 100, 100);
 
@@ -1678,7 +1678,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
       new Canvas2DImageBufferSurface(bridge, size));
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
 
-  EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
 
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();

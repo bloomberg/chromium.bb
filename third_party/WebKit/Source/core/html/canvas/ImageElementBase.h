@@ -31,7 +31,7 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
-                                            const FloatSize&) const override;
+                                            const FloatSize&) override;
 
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const override;
