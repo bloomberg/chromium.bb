@@ -2986,7 +2986,7 @@ static void build_wedge_inter_predictor_from_buf(
 
   if (is_compound && is_masked_compound_type(mbmi->interinter_compound_type)) {
 #if CONFIG_COMPOUND_SEGMENT
-    if (!plane && comp_data->type == COMPOUND_SEG)
+    if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
         build_compound_seg_mask_highbd(
@@ -2996,9 +2996,10 @@ static void build_wedge_inter_predictor_from_buf(
             xd->bd);
       else
 #endif  // CONFIG_HIGHBITDEPTH
-        build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type,
+        build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type,
                                 ext_dst0, ext_dst_stride0, ext_dst1,
                                 ext_dst_stride1, mbmi->sb_type, h, w);
+    }
 #endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_SUPERTX
