@@ -22,6 +22,12 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
     : public NON_EXPORTED_BASE(mojom::Fingerprint),
       public chromeos::BiodClient::Observer {
  public:
+  enum class FingerprintSession {
+    NONE,
+    AUTH,
+    ENROLL,
+  };
+
   explicit FingerprintChromeOS();
   ~FingerprintChromeOS() override;
 
@@ -68,10 +74,19 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
                                 const dbus::ObjectPath& record_path,
                                 const std::string& label);
 
+  void OnCloseEnrollSessionForAuth(chromeos::DBusMethodCallStatus result);
+  void OnCloseAuthSessionForEnroll(const std::string& user_id,
+                                   const std::string& label,
+                                   chromeos::DBusMethodCallStatus result);
+  void ScheduleStartEnroll(const std::string& user_id,
+                           const std::string& label);
+  void ScheduleStartAuth();
+
   std::vector<mojom::FingerprintObserverPtr> observers_;
-  std::unique_ptr<dbus::ObjectPath> current_enroll_session_path_;
-  std::unique_ptr<dbus::ObjectPath> current_auth_session_path_;
   std::unordered_map<std::string, std::string> records_path_to_label_;
+
+  // Session opened by current service.
+  FingerprintSession opened_session_ = FingerprintSession::NONE;
 
   base::WeakPtrFactory<FingerprintChromeOS> weak_ptr_factory_;
 

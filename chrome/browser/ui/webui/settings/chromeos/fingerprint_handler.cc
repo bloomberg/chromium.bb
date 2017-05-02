@@ -16,10 +16,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using session_manager::SessionManager;
+using session_manager::SessionState;
 
 namespace chromeos {
 namespace settings {
@@ -56,9 +60,15 @@ FingerprintHandler::FingerprintHandler(Profile* profile)
   connector->BindInterface(device::mojom::kServiceName, &fp_service_);
   fp_service_->AddFingerprintObserver(binding_.CreateInterfacePtrAndBind());
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
+  // SessionManager may not exist in some tests.
+  if (SessionManager::Get())
+    SessionManager::Get()->AddObserver(this);
 }
 
-FingerprintHandler::~FingerprintHandler() {}
+FingerprintHandler::~FingerprintHandler() {
+  if (SessionManager::Get())
+    SessionManager::Get()->RemoveObserver(this);
+}
 
 void FingerprintHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -120,6 +130,9 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
 void FingerprintHandler::OnAuthScanDone(
     uint32_t scan_result,
     const std::unordered_map<std::string, std::vector<std::string>>& matches) {
+  if (SessionManager::Get()->session_state() == SessionState::LOCKED)
+    return;
+
   // When the user touches the sensor, highlight the label(s) that finger is
   // associated with, if it is registered with this user.
   auto it = matches.find(user_id_);
@@ -147,6 +160,15 @@ void FingerprintHandler::OnAuthScanDone(
 }
 
 void FingerprintHandler::OnSessionFailed() {}
+
+void FingerprintHandler::OnSessionStateChanged() {
+  SessionState state = SessionManager::Get()->session_state();
+
+  AllowJavascript();
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("on-screen-locked"),
+                         base::Value(state == SessionState::LOCKED));
+}
 
 void FingerprintHandler::HandleGetFingerprintsList(
     const base::ListValue* args) {

@@ -204,26 +204,11 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
   const dbus::ObjectPath kFakeObjectPath(std::string("/fake/object/path"));
   const dbus::ObjectPath kFakeObjectPath2(std::string("/fake/object/path2"));
 
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  writer.AppendObjectPath(kFakeObjectPath);
-
-  // Create a fake response with a fake object path. The start enroll
-  // call should return this object path.
-  AddMethodExpectation(biod::kBiometricsManagerStartEnrollSessionMethod,
-                       std::move(response));
-  dbus::ObjectPath returned_path(kInvalidTestPath);
-  client_->StartEnrollSession(
-      kFakeId, kFakeLabel,
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kFakeObjectPath, returned_path);
-
   // Verify that by sending a empty reponse or a improperly formatted one, the
   // response is an empty object path.
   AddMethodExpectation(biod::kBiometricsManagerStartEnrollSessionMethod,
                        nullptr);
-  returned_path = dbus::ObjectPath(kInvalidTestPath);
+  dbus::ObjectPath returned_path(kInvalidTestPath);
   client_->StartEnrollSession(
       kFakeId, kFakeLabel,
       base::Bind(&test_utils::CopyObjectPath, &returned_path));
@@ -241,6 +226,21 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
       base::Bind(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
+
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendObjectPath(kFakeObjectPath);
+
+  // Create a fake response with a fake object path. The start enroll
+  // call should return this object path.
+  AddMethodExpectation(biod::kBiometricsManagerStartEnrollSessionMethod,
+                       std::move(response));
+  returned_path = dbus::ObjectPath(kInvalidTestPath);
+  client_->StartEnrollSession(
+      kFakeId, kFakeLabel,
+      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kFakeObjectPath, returned_path);
 }
 
 TEST_F(BiodClientTest, TestGetRecordsForUser) {
@@ -304,24 +304,10 @@ TEST_F(BiodClientTest, TestDestroyAllRecords) {
 TEST_F(BiodClientTest, TestStartAuthentication) {
   const dbus::ObjectPath kFakeObjectPath(std::string("/fake/object/path"));
 
-  // Create a fake response with a fake object path. The start authentication
-  // call should return this object path.
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(response.get());
-  writer.AppendObjectPath(kFakeObjectPath);
-
-  AddMethodExpectation(biod::kBiometricsManagerStartAuthSessionMethod,
-                       std::move(response));
-  dbus::ObjectPath returned_path(kInvalidTestPath);
-  client_->StartAuthSession(
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kFakeObjectPath, returned_path);
-
   // Verify that by sending a empty reponse or a improperly formatted one, the
   // response is an empty object path.
   AddMethodExpectation(biod::kBiometricsManagerStartAuthSessionMethod, nullptr);
-  returned_path = dbus::ObjectPath(kInvalidTestPath);
+  dbus::ObjectPath returned_path(kInvalidTestPath);
   client_->StartAuthSession(
       base::Bind(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
@@ -337,6 +323,20 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
       base::Bind(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
+
+  // Create a fake response with a fake object path. The start authentication
+  // call should return this object path.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendObjectPath(kFakeObjectPath);
+
+  AddMethodExpectation(biod::kBiometricsManagerStartAuthSessionMethod,
+                       std::move(response));
+  returned_path = dbus::ObjectPath(kInvalidTestPath);
+  client_->StartAuthSession(
+      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kFakeObjectPath, returned_path);
 }
 
 TEST_F(BiodClientTest, TestRequestBiometricType) {

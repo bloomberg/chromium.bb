@@ -107,15 +107,13 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
   // type after the method succeeds.
   virtual void RequestType(const BiometricTypeCallback& callback) = 0;
 
-  // Cancels the enroll session at |enroll_session_path|. |callback| is called
-  // asynchronously with the result.
-  virtual void CancelEnrollSession(const dbus::ObjectPath& enroll_session_path,
-                                   const VoidDBusMethodCallback& callback) = 0;
+  // Cancels the enroll session.
+  // |callback| is called asynchronously with the result.
+  virtual void CancelEnrollSession(const VoidDBusMethodCallback& callback) = 0;
 
-  // Ends the auth session at |auth_session_path|. |callback| is called
-  // asynchronously with the result.
-  virtual void EndAuthSession(const dbus::ObjectPath& auth_session_path,
-                              const VoidDBusMethodCallback& callback) = 0;
+  // Ends the auth session.
+  // |callback| is called asynchronously with the result.
+  virtual void EndAuthSession(const VoidDBusMethodCallback& callback) = 0;
 
   // Changes the label of the record at |record_path| to |label|. |callback| is
   // called asynchronously with the result.
