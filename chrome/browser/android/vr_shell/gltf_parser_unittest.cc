@@ -17,17 +17,22 @@
 
 namespace vr_shell {
 
-class GltfParserTest : public testing::Test {
+class DataDrivenTest : public testing::Test {
  protected:
   static void SetUpTestCase() { test::RegisterPathProvider(); }
 
   void SetUp() override { PathService::Get(test::DIR_TEST_DATA, &data_dir_); }
 
   base::FilePath data_dir_;
+};
 
+class GltfParserTest : public DataDrivenTest {
+ protected:
   std::unique_ptr<base::DictionaryValue> Deserialize(
       const base::FilePath& gltf_path);
 };
+
+class BinaryGltfParserTest : public DataDrivenTest {};
 
 std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
     const base::FilePath& gltf_path) {
@@ -47,7 +52,7 @@ TEST_F(GltfParserTest, Parse) {
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
-  auto gltf_model = parser.Parse(*asset, &buffers);
+  std::unique_ptr<gltf::Asset> gltf_model = parser.Parse(*asset, &buffers);
   EXPECT_TRUE(gltf_model);
   EXPECT_EQ(1u, buffers.size());
 
@@ -139,7 +144,7 @@ TEST_F(GltfParserTest, ParseExternal) {
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
-  auto gltf_model = parser.Parse(gltf_path, &buffers);
+  std::unique_ptr<gltf::Asset> gltf_model = parser.Parse(gltf_path, &buffers);
   EXPECT_NE(nullptr, gltf_model);
   EXPECT_EQ(1u, buffers.size());
   const gltf::Buffer* buffer = buffers[0].get();
@@ -155,6 +160,20 @@ TEST_F(GltfParserTest, ParseExternalNoPath) {
 
   // Parsing fails when no path is provided.
   EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
+}
+
+TEST_F(BinaryGltfParserTest, ParseBinary) {
+  std::string data;
+  EXPECT_TRUE(base::ReadFileToString(data_dir_.Append("sample.glb"), &data));
+  base::StringPiece glb_data(data);
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
+  std::unique_ptr<gltf::Asset> asset =
+      BinaryGltfParser::Parse(glb_data, &buffers);
+  EXPECT_TRUE(asset);
+  EXPECT_EQ(1u, buffers.size());
+  const gltf::BufferView* buffer_view = asset->GetBufferView(0);
+  EXPECT_TRUE(buffer_view);
+  EXPECT_EQ(0, buffer_view->buffer);
 }
 
 }  // namespace vr_shell

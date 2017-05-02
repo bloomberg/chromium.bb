@@ -67,6 +67,16 @@ class GltfParser {
   DISALLOW_COPY_AND_ASSIGN(GltfParser);
 };
 
+class BinaryGltfParser {
+ public:
+  // Note: If your glTF references external files, this function will perform
+  // IO, and a base path must be specified.
+  static std::unique_ptr<gltf::Asset> Parse(
+      base::StringPiece glb_content,
+      std::vector<std::unique_ptr<gltf::Buffer>>* buffers,
+      const base::FilePath& path = base::FilePath());
+};
+
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_GLTF_PARSER_H_

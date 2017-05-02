@@ -9,13 +9,34 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
+#include "base/sys_byteorder.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
 
 namespace vr_shell {
+
+namespace {
+constexpr const char kFailedtoReadBinaryGltfMsg[] =
+    "Failed to read binary glTF: ";
+constexpr const char kGltfMagic[] = "glTF";
+constexpr const char kBinaryGltfBufferName[] = "binary_glTF";
+constexpr uint32_t kJsonGltfFormat = 0;
+constexpr size_t kVersionStart = 4;
+constexpr size_t kLengthStart = 8;
+constexpr size_t kContentLengthStart = 12;
+constexpr size_t kContentFormatStart = 16;
+constexpr size_t kContentStart = 20;
+
+inline uint32_t GetLE32(const char* data) {
+  return base::ByteSwapToLE32(*reinterpret_cast<const uint32_t*>(data));
+}
+
+}  // namespace
 
 GltfParser::GltfParser() {}
 
@@ -25,6 +46,7 @@ std::unique_ptr<gltf::Asset> GltfParser::Parse(
     const base::DictionaryValue& dict,
     std::vector<std::unique_ptr<gltf::Buffer>>* buffers,
     const base::FilePath& path) {
+  DCHECK(buffers && buffers->size() <= 1);
   path_ = path;
   asset_ = base::MakeUnique<gltf::Asset>();
 
@@ -40,6 +62,7 @@ std::unique_ptr<gltf::Asset> GltfParser::Parse(
 std::unique_ptr<gltf::Asset> GltfParser::Parse(
     const base::FilePath& gltf_path,
     std::vector<std::unique_ptr<gltf::Buffer>>* buffers) {
+  DCHECK(buffers && buffers->size() <= 1);
   JSONFileValueDeserializer json_deserializer(gltf_path);
   int error_code;
   std::string error_msg;
@@ -89,11 +112,18 @@ bool GltfParser::ParseInternal(
 bool GltfParser::SetBuffers(
     const base::DictionaryValue& dict,
     std::vector<std::unique_ptr<gltf::Buffer>>* buffers) {
-  buffers->clear();
+  size_t buffer_count = 0;
   for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* buffer_dict;
     if (!it.value().GetAsDictionary(&buffer_dict))
       return false;
+
+    if (it.key() == kBinaryGltfBufferName) {
+      if (buffers->size() == buffer_count)
+        return false;
+      buffer_ids_[it.key()] = 0;
+      continue;
+    }
 
     std::string uri_str;
     if (!buffer_dict->GetString("uri", &uri_str))
@@ -109,6 +139,7 @@ bool GltfParser::SetBuffers(
 
     buffer_ids_[it.key()] = buffers->size();
     buffers->push_back(std::move(buffer));
+    ++buffer_count;
   }
   return true;
 }
@@ -331,6 +362,70 @@ void GltfParser::Clear() {
   node_ids_.clear();
   mesh_ids_.clear();
   scene_ids_.clear();
+}
+
+std::unique_ptr<gltf::Asset> BinaryGltfParser::Parse(
+    base::StringPiece glb_content,
+    std::vector<std::unique_ptr<gltf::Buffer>>* buffers,
+    const base::FilePath& path) {
+  DCHECK(buffers && buffers->empty());
+  if (glb_content.length() < kContentStart) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Incomplete data";
+    return nullptr;
+  }
+  if (!glb_content.starts_with(kGltfMagic)) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Unknown magic number";
+    return nullptr;
+  }
+  if (GetLE32(glb_content.data() + kVersionStart) != 1) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Unsupported version";
+    return nullptr;
+  }
+  if (GetLE32(glb_content.data() + kLengthStart) != glb_content.length()) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Incorrect file size";
+    return nullptr;
+  }
+  uint32_t content_length = GetLE32(glb_content.data() + kContentLengthStart);
+  if (kContentStart + content_length > glb_content.length()) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Invalid content length";
+    return nullptr;
+  }
+  if (GetLE32(glb_content.data() + kContentFormatStart) != kJsonGltfFormat) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Unsupported glTF format";
+    return nullptr;
+  }
+
+  base::StringPiece gltf_content =
+      glb_content.substr(kContentStart, content_length);
+  int error_code;
+  std::string error_msg;
+  JSONStringValueDeserializer json_deserializer(gltf_content);
+  std::unique_ptr<base::Value> gltf_value =
+      json_deserializer.Deserialize(&error_code, &error_msg);
+  if (!gltf_value) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg
+                << "Content not a valid JSON - Error " << error_code << " - "
+                << error_msg;
+    return nullptr;
+  }
+  base::DictionaryValue* gltf_dict;
+  if (!gltf_value->GetAsDictionary(&gltf_dict)) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Content is not a JSON object";
+    return nullptr;
+  }
+
+  auto glb_buffer = base::MakeUnique<gltf::Buffer>(
+      glb_content.substr(kContentStart + content_length));
+  buffers->push_back(std::move(glb_buffer));
+  GltfParser gltf_parser;
+  std::unique_ptr<gltf::Asset> gltf_asset =
+      gltf_parser.Parse(*gltf_dict, buffers);
+  if (!gltf_asset) {
+    DLOG(ERROR) << kFailedtoReadBinaryGltfMsg << "Content is not a valid glTF";
+    buffers->clear();
+    return nullptr;
+  }
+  return gltf_asset;
 }
 
 }  // namespace vr_shell
