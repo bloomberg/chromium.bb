@@ -46,3 +46,10 @@ EntryLocation.prototype.isDriveBased;
  * @type {boolean}
  */
 EntryLocation.prototype.isReadOnly;
+
+/**
+ * Whether the entry should be displayed with a fixed name instead of individual
+ * entry's name. (e.g. "Downloads" is a fixed name)
+ * @type {boolean}
+ */
+EntryLocation.prototype.hasFixedLabel;

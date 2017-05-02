@@ -15,6 +15,7 @@ loadTimeData.data = {
 };
 
 function setUp() {
+  new MockCommandLinePrivate();
   // Override VolumeInfo.prototype.resolveDisplayRoot.
   VolumeInfoImpl.prototype.resolveDisplayRoot = function() {};
 

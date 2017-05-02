@@ -59,7 +59,7 @@ function setUp() {
       setEntryTag: function() {}
     }
   };
-
+  new MockCommandLinePrivate();
   importer.setupTestLogger();
 
   progressCenter = new MockProgressCenter();

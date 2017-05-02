@@ -240,6 +240,7 @@
         '../../../externs/compiled_resources2.gyp:platform',
         '../../../externs/compiled_resources2.gyp:volume_info',
         '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(EXTERNS_GYP):command_line_private',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },

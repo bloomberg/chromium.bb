@@ -296,8 +296,7 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
-        volumeInfo,
-        entry.rootType,
+        volumeInfo, entry.rootType,
         true /* the entry points a root directory. */,
         true /* fake entries are read only. */);
   }
@@ -306,12 +305,31 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   var isReadOnly;
   var isRootEntry;
   if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
-    // For Drive, the roots are /root and /other, instead of /. Root URLs
-    // contain trailing slashes.
+    // For Drive, the roots are /root, /team_drives and /other, instead of /.
+    // Root URLs contain trailing slashes.
     if (entry.fullPath == '/root' || entry.fullPath.indexOf('/root/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
       isRootEntry = entry.fullPath === '/root';
+    } else if (
+        entry.fullPath == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH ||
+        entry.fullPath.indexOf(
+            VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH + '/') === 0) {
+      if (entry.fullPath == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH) {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        isReadOnly = true;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        if (util.isTeamDriveRoot(entry)) {
+          isReadOnly = false;
+          isRootEntry = true;
+        } else {
+          // Regular files/directories under Team Drives.
+          isRootEntry = false;
+          isReadOnly = volumeInfo.isReadOnly;
+        }
+      }
     } else if (entry.fullPath == '/other' ||
                entry.fullPath.indexOf('/other/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;

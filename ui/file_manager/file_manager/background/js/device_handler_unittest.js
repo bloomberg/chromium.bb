@@ -47,6 +47,7 @@ loadTimeData.data = {
 
 // Set up the test components.
 function setUp() {
+  new MockCommandLinePrivate();
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
 

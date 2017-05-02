@@ -47,6 +47,7 @@ loadTimeData.data = MESSAGES;
 
 function setUp() {
   new MockChromeStorageAPI();
+  new MockCommandLinePrivate();
 
   widget = new importer.TestCommandWidget();
 

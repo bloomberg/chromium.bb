@@ -38,6 +38,7 @@ loadTimeData.data = {
 };
 
 function setUp() {
+  new MockCommandLinePrivate();
   // importer.setupTestLogger();
   fileSystem = new MockFileSystem('fake-filesystem');
 
