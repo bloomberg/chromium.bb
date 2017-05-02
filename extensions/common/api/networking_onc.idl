@@ -270,6 +270,7 @@ namespace networking.onc {
     boolean? SaveCredentials;
     DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
+    ManagedDOMString? SubjectMatch;
     boolean? UseProactiveKeyCaching;
     boolean? UseSystemCAs;
   };

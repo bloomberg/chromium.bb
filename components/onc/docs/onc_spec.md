@@ -1057,20 +1057,15 @@ type exists to configure the authentication.
       expansions.
 
 * **Inner**
-    * (optional if **Outer** is
-        *EAP-FAST*, *EAP-TTLS*
-        or *PEAP*, otherwise ignored, defaults to *Automatic*) - **string**
-    * `Allowed values are` *Automatic*,
-        *MD5*, *MSCHAPv2*,
-        *EAP-MSCHAPv2*,
-        *PAP*, and *GTC*.
+    * (optional if **Outer** is *EAP-FAST*, *EAP-TTLS* or *PEAP*, otherwise
+        ignored, defaults to *Automatic*) - **string**
+    * `Allowed values are` *Automatic*, *MD5*, *MSCHAP*, *MSCHAPv2*, *PAP*,
+        *CHAP* and *GTC*.
     * For tunneling outer protocols.
 
 * **Outer**
     * (required) - **string**
-    * `Allowed values are` *LEAP*,
-        *EAP-AKA*, *EAP-FAST*,
-        *EAP-TLS*, *EAP-TTLS*,
+    * `Allowed values are` *LEAP*, *EAP-AKA*, *EAP-FAST*, *EAP-TLS*, *EAP-TTLS*,
         *EAP-SIM* and *PEAP*.
 
 * **Password**
@@ -1109,6 +1104,11 @@ type exists to configure the authentication.
       not check that the server certificate is signed by a specific CA.
       A verification using the system's CA certificates may still apply.
       See **UseSystemCAs** for this.
+
+* **SubjectMatch**
+    * (optional) - **string**
+    * WiFi only. A substring which a remote RADIUS service certificate subject
+      name must contain in order to connect.
 
 * **UseSystemCAs**
     * (optional, defaults to *true*) - **boolean**

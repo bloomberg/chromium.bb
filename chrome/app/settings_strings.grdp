@@ -1525,6 +1525,42 @@
     <message name="IDS_ONC_VPN_TYPE" desc="ONC Property label for VPN.Type">
       Provider type
     </message>
+    <message name="IDS_ONC_WIFI_EAP_ANONYMOUS_IDENTITY" desc="ONC Property label for WiFi.EAP.AnonymousIdentity">
+      Anonymous Identity
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_IDENTITY" desc="ONC Property label for WiFI.EAP.Identity">
+      Identity
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER" desc="ONC Property label for WiFi.EAP.Inner (Phase 2 authentication)">
+      EAP Phase 2 authentication
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_AUTOMATIC" desc="ONC Property value for WiFi.EAP.Inner = Automatic">
+      Automatic
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_MD5" desc="ONC Property value for WiFi.EAP.Inner = MD5">
+      EAP-MD5
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_MSCHAP" desc="ONC Property value for WiFi.EAP.Inner = MSCHAP">
+      MSCHAP
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_MSCHAPV2" desc="ONC Property value for WiFi.EAP.Inner = MSCHAPv2">
+      MSCHAPv2
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_PAP" desc="ONC Property value for WiFi.EAP.Inner = PAP">
+      PAP
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_CHAP" desc="ONC Property value for WiFi.EAP.Inner = CHAP">
+      CHAP
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_INNER_GTC" desc="ONC Property value for WiFi.EAP.Inner = GTC">
+      GTC
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_OUTER" desc="ONC Property label for WiFi.EAP.Outer (Method)">
+      EAP method
+    </message>
+    <message name="IDS_ONC_WIFI_EAP_SUBJECT_MATCH" desc="ONC Property label for WiFi.EAP.SubjectMatch">
+      Subject match
+    </message>
     <message name="IDS_ONC_WIFI_FREQUENCY" desc="ONC Property label for WiFi.Frequency">
       Frequency
     </message>

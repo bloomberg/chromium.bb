@@ -240,6 +240,7 @@ namespace networkingPrivate {
     boolean? SaveCredentials;
     DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
+    DOMString? SubjectMatch;
     boolean? UseProactiveKeyCaching;
     boolean? UseSystemCAs;
   };
@@ -258,6 +259,7 @@ namespace networkingPrivate {
     ManagedBoolean? SaveCredentials;
     ManagedDOMStringList? ServerCAPEMs;
     ManagedDOMStringList? ServerCARefs;
+    ManagedDOMString? SubjectMatch;
     ManagedBoolean? UseProactiveKeyCaching;
     ManagedBoolean? UseSystemCAs;
   };

@@ -103,13 +103,16 @@ Polymer({
 
   /**
    * Generates a filter function dependent on propertyDict and editFieldTypes.
+   * @param {string} prefix
+   * @param {!Object} propertyDict
+   * @param {!Object} editFieldTypes
    * @private
    */
-  computeFilter_: function() {
+  computeFilter_: function(prefix, propertyDict, editFieldTypes) {
     return function(key) {
-      if (this.editFieldTypes.hasOwnProperty(key))
+      if (editFieldTypes.hasOwnProperty(key))
         return true;
-      var value = this.get(key, this.propertyDict);
+      var value = this.getPropertyValue_(key, prefix, propertyDict);
       return value !== undefined && value !== '';
     }.bind(this);
   },
