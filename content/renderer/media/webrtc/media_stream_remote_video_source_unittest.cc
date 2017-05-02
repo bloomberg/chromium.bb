@@ -19,6 +19,7 @@
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/webrtc/api/video/i420_buffer.h"
 
 namespace content {
 
@@ -127,7 +128,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   rtc::scoped_refptr<webrtc::I420Buffer> buffer(
       new rtc::RefCountedObject<webrtc::I420Buffer>(320, 240));
 
-  buffer->SetToBlack();
+  webrtc::I420Buffer::SetBlack(buffer);
 
   source()->SinkInterfaceForTest()->OnFrame(
       webrtc::VideoFrame(buffer, webrtc::kVideoRotation_0, 1000));

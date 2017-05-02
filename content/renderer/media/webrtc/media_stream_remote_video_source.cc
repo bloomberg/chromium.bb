@@ -16,6 +16,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/media/base/videosinkinterface.h"
 
 namespace content {
@@ -123,7 +124,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
           WebRTCToMediaVideoRotation(incoming_frame.rotation()));
     }
   } else {
-    buffer = webrtc::I420Buffer::Rotate(incoming_frame.video_frame_buffer(),
+    buffer = webrtc::I420Buffer::Rotate(*incoming_frame.video_frame_buffer(),
                                         incoming_frame.rotation());
 
     gfx::Size size(buffer->width(), buffer->height());
