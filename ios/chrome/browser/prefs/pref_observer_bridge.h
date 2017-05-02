@@ -26,7 +26,7 @@ class PrefObserverBridge {
  private:
   virtual void OnPreferenceChanged(const std::string& pref_name);
 
-  id<PrefObserverDelegate> delegate_;
+  __unsafe_unretained id<PrefObserverDelegate> delegate_;
 };
 
 #endif  // IOS_CHROME_BROWSER_PREFS_PREF_OBSERVER_BRIDGE_H_
