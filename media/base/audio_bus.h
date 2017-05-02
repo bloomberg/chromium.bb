@@ -24,8 +24,6 @@ class AudioParameters;
 // methods. AudioBus guarantees that it allocates memory such that float array
 // for each channel is aligned by AudioBus::kChannelAlignment bytes and it
 // requires the same for memory passed to its Wrap...() factory methods.
-// TODO(chfremer): There are currently no unit tests involving CreateWrapper and
-// SetChannelData, so we need to add them.
 class MEDIA_EXPORT AudioBus {
  public:
   // Guaranteed alignment of each channel's data; use 16-byte alignment for easy
