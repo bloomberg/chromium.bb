@@ -1089,6 +1089,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (finalURL.SchemeIs("u2f-x-callback"))
     return NO;
 
+  // Block attempts to open this application's settings in the native system
+  // settings application.
+  if (finalURL.SchemeIs("app-settings"))
+    return NO;
+
   // Check if it's a FIDO U2F call.
   if (finalURL.SchemeIs("u2f")) {
     // Create U2FController object lazily.
