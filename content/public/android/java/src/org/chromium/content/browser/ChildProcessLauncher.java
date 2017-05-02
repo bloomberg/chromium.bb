@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -190,6 +191,7 @@ public class ChildProcessLauncher {
     // This is used for a child process allocation to determine if StartCallback should be chained.
     // |sSpareConnectionStartCallback| is the chained StartCallback. This is also used to determine
     // if there is already a child process launch that's used this this connection.
+    @SuppressLint("StaticFieldLeak")
     private static BaseChildProcessConnection sSpareSandboxedConnection;
     private static boolean sSpareConnectionStarting;
     private static BaseChildProcessConnection.StartCallback sSpareConnectionStartCallback;

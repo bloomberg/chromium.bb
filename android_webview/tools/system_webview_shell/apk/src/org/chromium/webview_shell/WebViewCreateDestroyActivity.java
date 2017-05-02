@@ -4,6 +4,7 @@
 
 package org.chromium.webview_shell;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.widget.RelativeLayout;
  * will yield two webview instances in total.
  */
 public class WebViewCreateDestroyActivity extends Activity {
+    @SuppressLint("StaticFieldLeak")
     private static WebView sWebView;
 
     @Override

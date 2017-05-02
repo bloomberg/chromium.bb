@@ -4,6 +4,7 @@
 
 package org.chromium.device.battery;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -58,6 +59,7 @@ class BatteryStatusManager {
             mBatteryManager = batteryManager;
         }
 
+        @SuppressLint("NewApi")
         public int getIntProperty(int id) {
             return mBatteryManager.getIntProperty(id);
         }

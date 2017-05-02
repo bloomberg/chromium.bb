@@ -73,7 +73,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
 
     private boolean mIsNativeInitialized;
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ensureActivityNotExported();

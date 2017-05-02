@@ -127,7 +127,9 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     /** The default search engine's root URL. */
     private static String sDefaultSearchEngineUrl;
 
+    @SuppressLint("StaticFieldLeak")
     private static SearchWidgetTemplateUrlServiceObserver sObserver;
+    @SuppressLint("StaticFieldLeak")
     private static SearchWidgetProviderDelegate sDelegate;
 
     /**
@@ -321,7 +323,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     }
 
     /** Updates the number of consecutive crashes this widget has absorbed. */
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
     static void updateNumConsecutiveCrashes(int newValue) {
         SharedPreferences prefs = getDelegate().getSharedPreferences();
         if (getNumConsecutiveCrashes(prefs) == newValue) return;

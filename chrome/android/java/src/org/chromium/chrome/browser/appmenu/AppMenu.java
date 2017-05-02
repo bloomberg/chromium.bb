@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.appmenu;
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorSet;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -150,6 +151,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      *                            {@code 0} is dedicated to custom menu items and can be declared by
      *                            external apps.
      */
+    @SuppressLint("ResourceType")
     void show(Context context, View anchorView, boolean isByPermanentButton, int screenRotation,
             Rect visibleDisplayFrame, int screenHeight, @IdRes int footerResourceId,
             Integer highlightedItemId) {
@@ -161,6 +163,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int footerHeight = 0;
         if (footerResourceId != 0) {
             mPopup.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
+            // TODO(crbug.com/635567): Fix lint error properly.
             mPromptView = LayoutInflater.from(context).inflate(footerResourceId, null);
             mPopup.setPromptView(mPromptView);
             int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);

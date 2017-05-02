@@ -5,6 +5,7 @@
 package org.chromium.ui.base;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
@@ -84,6 +85,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
     /**
      * If set, overrides the WindowAndroid passed in {@link selectFile()}.
      */
+    @SuppressLint("StaticFieldLeak")
     private static WindowAndroid sOverrideWindowAndroid;
 
     private final long mNativeSelectFileDialog;

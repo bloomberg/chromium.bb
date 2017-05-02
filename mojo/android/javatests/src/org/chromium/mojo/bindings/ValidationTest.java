@@ -4,6 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
+import android.annotation.SuppressLint;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.UrlUtils;
@@ -65,7 +66,9 @@ public class ValidationTest extends MojoTestCase {
         }
     }
 
+    @SuppressLint("NewApi")
     private static String getStringContent(File f) throws FileNotFoundException {
+        // TODO(crbug.com/635567): Fix this properly.
         try (Scanner scanner = new Scanner(f)) {
             scanner.useDelimiter("\\Z");
             StringBuilder result = new StringBuilder();

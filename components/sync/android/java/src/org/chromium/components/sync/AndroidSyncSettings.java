@@ -5,6 +5,7 @@
 package org.chromium.components.sync;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncStatusObserver;
@@ -40,6 +41,7 @@ public class AndroidSyncSettings {
      */
     private static final Object CLASS_LOCK = new Object();
 
+    @SuppressLint("StaticFieldLeak")
     private static AndroidSyncSettings sInstance;
 
     private final Object mLock = new Object();

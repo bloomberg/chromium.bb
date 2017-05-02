@@ -4,6 +4,7 @@
 
 package org.chromium.device.sensors;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -67,6 +68,7 @@ class DeviceSensors implements SensorEventListener {
     private SensorManagerProxy mSensorManagerProxy;
 
     // The only instance of that class and its associated lock.
+    @SuppressLint("StaticFieldLeak")
     private static DeviceSensors sSingleton;
     private static Object sSingletonLock = new Object();
 

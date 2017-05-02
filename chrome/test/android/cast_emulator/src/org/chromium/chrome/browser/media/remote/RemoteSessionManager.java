@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
@@ -45,6 +46,7 @@ public class RemoteSessionManager implements DummyPlayer.Callback {
     private boolean mSessionValid;
     private DummyPlayer mPlayer;
     private MediaItem mCurrentItem;
+    @SuppressLint("StaticFieldLeak")
     private static RemoteSessionManager sInstance;
 
     private LocalSessionManager mLocalSessionManager;

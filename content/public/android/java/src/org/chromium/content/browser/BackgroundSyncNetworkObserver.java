@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Process;
 
@@ -40,6 +41,7 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     private NetworkChangeNotifierAutoDetect mNotifier;
 
     // The singleton instance.
+    @SuppressLint("StaticFieldLeak")
     private static BackgroundSyncNetworkObserver sInstance;
 
     // List of native observers. These are each called when the network state changes.

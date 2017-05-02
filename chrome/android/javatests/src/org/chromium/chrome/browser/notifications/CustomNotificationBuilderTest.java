@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -55,6 +56,7 @@ public class CustomNotificationBuilderTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
+    @SuppressLint("NewApi")
     public void testSetAll() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
