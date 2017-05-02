@@ -138,6 +138,7 @@ if (use_system_harfbuzz) {
       "src/hb-ot-var-avar-table.hh",
       "src/hb-ot-var-fvar-table.hh",
       "src/hb-ot-var-hvar-table.hh",
+      "src/hb-ot-var-mvar-table.hh",
       "src/hb-ot-var.cc",
       "src/hb-ot-var.h",
       "src/hb-ot.h",
