@@ -287,7 +287,7 @@ void SVGElement::ClearAnimatedAttribute(const QualifiedName& attribute) {
   });
 }
 
-AffineTransform SVGElement::LocalCoordinateSpaceTransform() const {
+AffineTransform SVGElement::LocalCoordinateSpaceTransform(CTMScope) const {
   // To be overriden by SVGGraphicsElement (or as special case SVGTextElement
   // and SVGPatternElement)
   return AffineTransform();
