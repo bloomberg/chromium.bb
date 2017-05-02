@@ -389,8 +389,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectSuccess(spec, "[1, 2, 3]", "[1,2,3]");
     ExpectSuccess(spec, "[1, 'a']", "[1,'a']");
     ExpectSuccess(spec, "null", base::Value());
-    ExpectSuccess(spec, "({prop1: 'alpha', prop2: null})",
-                  "{'prop1':'alpha','prop2':null}");
+    ExpectSuccess(spec, "({prop1: 'alpha', prop2: null})", "{'prop1':'alpha'}");
     ExpectSuccess(spec,
                   "x = {alpha: 'alpha'};\n"
                   "y = {beta: 'beta', x: x};\n"
@@ -709,6 +708,56 @@ TEST_F(ArgumentSpecUnitTest, MinAndMaxLengths) {
     ExpectSuccess(spec, "[1, 2]", "[1,2]");
     ExpectSuccess(spec, "[]", "[]");
     ExpectFailure(spec, "[1, 2, 3, 4]", TooManyArrayItems(3, 4));
+  }
+}
+
+TEST_F(ArgumentSpecUnitTest, PreserveNull) {
+  using namespace api_errors;
+  {
+    const char kObjectSpec[] =
+        "{"
+        "  'type': 'object',"
+        "  'additionalProperties': {'type': 'any'},"
+        "  'preserveNull': true"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kObjectSpec));
+    ExpectSuccess(spec, "({foo: 1, bar: null})", "{'bar':null,'foo':1}");
+    // Subproperties shouldn't preserve null (if not specified).
+    ExpectSuccess(spec, "({prop: {subprop1: 'foo', subprop2: null}})",
+                  "{'prop':{'subprop1':'foo'}}");
+  }
+
+  {
+    const char kObjectSpec[] =
+        "{"
+        "  'type': 'object',"
+        "  'additionalProperties': {'type': 'any', 'preserveNull': true},"
+        "  'preserveNull': true"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kObjectSpec));
+    ExpectSuccess(spec, "({foo: 1, bar: null})", "{'bar':null,'foo':1}");
+    // Here, subproperties should preserve null.
+    ExpectSuccess(spec, "({prop: {subprop1: 'foo', subprop2: null}})",
+                  "{'prop':{'subprop1':'foo','subprop2':null}}");
+  }
+
+  {
+    const char kObjectSpec[] =
+        "{"
+        "  'type': 'object',"
+        "  'properties': {'prop1': {'type': 'string', 'optional': true}},"
+        "  'preserveNull': true"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kObjectSpec));
+    ExpectSuccess(spec, "({})", "{}");
+    ExpectSuccess(spec, "({prop1: null})", "{'prop1':null}");
+    ExpectSuccess(spec, "({prop1: 'foo'})", "{'prop1':'foo'}");
+    // Undefined should not be preserved.
+    ExpectSuccess(spec, "({prop1: undefined})", "{}");
+    // preserveNull shouldn't affect normal parsing restrictions.
+    ExpectFailure(
+        spec, "({prop1: 1})",
+        PropertyError("prop1", InvalidType(kTypeString, kTypeInteger)));
   }
 }
 

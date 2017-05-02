@@ -73,7 +73,7 @@ bool CheckFundamentalBounds(T value,
 }  // namespace
 
 ArgumentSpec::ArgumentSpec(const base::Value& value)
-    : type_(ArgumentType::INTEGER), optional_(false) {
+    : type_(ArgumentType::INTEGER), optional_(false), preserve_null_(false) {
   const base::DictionaryValue* dict = nullptr;
   CHECK(value.GetAsDictionary(&dict));
   dict->GetBoolean("optional", &optional_);
@@ -194,6 +194,12 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       }
     }
   }
+
+  // Check if we should preserve null in objects. Right now, this is only used
+  // on arguments of type object and any (in fact, it's only used in the storage
+  // API), but it could potentially make sense for lists or functions as well.
+  if (type_ == ArgumentType::OBJECT || type_ == ArgumentType::ANY)
+    dict->GetBoolean("preserveNull", &preserve_null_);
 }
 
 ArgumentSpec::~ArgumentSpec() {}
@@ -425,12 +431,18 @@ bool ArgumentSpec::ParseArgumentToObject(
       return false;
     }
 
-    // Note: We don't serialize undefined or null values.
-    // TODO(devlin): This matches current behavior, but it is correct?
+    // Note: We don't serialize undefined, and only serialize null if it's part
+    // of the spec.
+    // TODO(devlin): This matches current behavior, but it is correct? And
+    // we treat undefined and null the same?
     if (prop_value->IsUndefined() || prop_value->IsNull()) {
       if (!property_spec->optional_) {
         *error = api_errors::MissingRequiredProperty(*utf8_key);
         return false;
+      }
+      if (preserve_null_ && prop_value->IsNull() && result) {
+        result->SetWithoutPathExpansion(*utf8_key,
+                                        base::MakeUnique<base::Value>());
       }
       continue;
     }
@@ -550,6 +562,7 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
   if (out_value) {
     std::unique_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
+    converter->SetStripNullFromObjects(!preserve_null_);
     std::unique_ptr<base::Value> converted(
         converter->FromV8Value(value, context));
     if (!converted) {

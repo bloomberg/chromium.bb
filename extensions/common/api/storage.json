@@ -42,7 +42,11 @@
                   {
                     "type": "object",
                     "description": "Storage items to return in the callback, where the values are replaced with those from storage if they exist.",
-                    "additionalProperties": { "type": "any" }
+                    "additionalProperties": {
+                      "type": "any" ,
+                      "preserveNull": true
+                    },
+                    "preserveNull": true
                   }
                 ],
                 "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in <code>null</code> to get the entire contents of storage.",
@@ -99,7 +103,8 @@
               {
                 "name": "items",
                 "type": "object",
-                "additionalProperties": { "type": "any" },
+                "additionalProperties": { "type": "any", "preserveNull": true },
+                "preserveNull": true,
                 "description": "<p>An object which gives each key/value pair to update storage with. Any other key/value pairs in storage will not be affected.</p><p>Primitive values such as numbers will serialize as expected. Values with a <code>typeof</code> <code>\"object\"</code> and <code>\"function\"</code> will typically serialize to <code>{}</code>, with the exception of <code>Array</code> (serializes as expected), <code>Date</code>, and <code>Regex</code> (serialize using their <code>String</code> representation).</p>"
               },
               {

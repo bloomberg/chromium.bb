@@ -143,11 +143,13 @@ var tests = [
     chrome.test.assertTrue(!!chrome.storage.managed, 'managed');
     chrome.test.assertFalse(!!chrome.storage.managed.QUOTA_BYTES,
                             'managed quota bytes');
-    chrome.storage.local.set({foo: 'bar'}, () => {
-      chrome.storage.local.get('foo', (results) => {
+    chrome.storage.local.set({foo: 'bar', nullkey: null}, () => {
+      chrome.storage.local.get(['foo', 'nullkey'], (results) => {
         chrome.test.assertTrue(!!results, 'no results');
         chrome.test.assertTrue(!!results.foo, 'no foo');
         chrome.test.assertEq('bar', results.foo);
+        chrome.test.assertTrue('nullkey' in results);
+        chrome.test.assertEq(null, results.nullkey);
         chrome.test.succeed();
       });
     });
