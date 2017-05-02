@@ -939,6 +939,10 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
       if (index > -1 && i != index)
         continue;
 
+      if (!web_contents) {
+        continue;
+      }
+      
       if (!MatchesBool(params->query_info.highlighted.get(),
                        tab_strip->IsTabSelected(i))) {
         continue;
