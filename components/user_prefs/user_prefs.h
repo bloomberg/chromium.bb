@@ -20,6 +20,8 @@ namespace user_prefs {
 // base::SupportsUserData using the UserPrefs::Set() function.
 class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
  public:
+  ~UserPrefs() override;
+
   // Retrieves the PrefService for a given context, or null if none is attached.
   static PrefService* Get(base::SupportsUserData* context);
 
@@ -29,7 +31,6 @@ class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
 
  private:
   explicit UserPrefs(PrefService* prefs);
-  ~UserPrefs() override;
 
   // Non-owning; owned by embedder.
   PrefService* prefs_;

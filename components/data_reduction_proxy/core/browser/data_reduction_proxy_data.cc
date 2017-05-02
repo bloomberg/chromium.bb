@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/url_request/url_request.h"
 
 namespace data_reduction_proxy {
@@ -49,7 +50,7 @@ DataReductionProxyData* DataReductionProxyData::GetDataAndCreateIfNecessary(
   if (data)
     return data;
   data = new DataReductionProxyData();
-  request->SetUserData(kDataReductionProxyUserDataKey, data);
+  request->SetUserData(kDataReductionProxyUserDataKey, base::WrapUnique(data));
   return data;
 }
 

@@ -55,8 +55,9 @@ base::android::ScopedJavaLocalRef<jobject>
 OfflineContentAggregatorBridge::GetBridgeForOfflineContentAggregator(
     OfflineContentAggregator* aggregator) {
   if (!aggregator->GetUserData(kOfflineContentAggregatorBridgeUserDataKey)) {
-    aggregator->SetUserData(kOfflineContentAggregatorBridgeUserDataKey,
-                            new OfflineContentAggregatorBridge(aggregator));
+    aggregator->SetUserData(
+        kOfflineContentAggregatorBridgeUserDataKey,
+        base::WrapUnique(new OfflineContentAggregatorBridge(aggregator)));
   }
   OfflineContentAggregatorBridge* bridge =
       static_cast<OfflineContentAggregatorBridge*>(

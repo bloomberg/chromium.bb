@@ -32,7 +32,8 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
   }
 
   static void MarkAsUserRequest(net::URLRequest* request) {
-    request->SetUserData(kUserDataKey, new TestURLRequestClassifier());
+    request->SetUserData(kUserDataKey,
+                         base::MakeUnique<TestURLRequestClassifier>());
   }
 
   DataUseUserData::DataUseContentType GetContentType(
@@ -111,7 +112,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
   } else {
     request->SetUserData(
         data_use_measurement::DataUseUserData::kUserDataKey,
-        new data_use_measurement::DataUseUserData(
+        base::MakeUnique<data_use_measurement::DataUseUserData>(
             data_use_measurement::DataUseUserData::SUGGESTIONS,
             data_use_measurement::DataUseUserData::FOREGROUND));
   }

@@ -29,6 +29,8 @@ class PDFWebContentsHelper
       public content::WebContentsUserData<PDFWebContentsHelper>,
       public mojom::PdfService {
  public:
+  ~PDFWebContentsHelper() override;
+
   static void CreateForWebContentsWithClient(
       content::WebContents* contents,
       std::unique_ptr<PDFWebContentsHelperClient> client);
@@ -36,7 +38,6 @@ class PDFWebContentsHelper
  private:
   PDFWebContentsHelper(content::WebContents* web_contents,
                        std::unique_ptr<PDFWebContentsHelperClient> client);
-  ~PDFWebContentsHelper() override;
 
   // mojom::PdfService:
   void HasUnsupportedFeature() override;

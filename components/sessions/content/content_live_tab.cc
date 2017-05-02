@@ -18,7 +18,7 @@ ContentLiveTab* ContentLiveTab::GetForWebContents(
     content::WebContents* contents) {
   if (!contents->GetUserData(kContentLiveTabWebContentsUserDataKey)) {
     contents->SetUserData(kContentLiveTabWebContentsUserDataKey,
-                          new ContentLiveTab(contents));
+                          base::WrapUnique(new ContentLiveTab(contents)));
   }
 
   return static_cast<ContentLiveTab*>(contents->GetUserData(

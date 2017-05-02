@@ -51,7 +51,7 @@ void ContentPasswordManagerDriverFactory::CreateForWebContents(
 
   web_contents->SetUserData(
       kContentPasswordManagerDriverFactoryWebContentsUserDataKey,
-      new_factory.release());
+      std::move(new_factory));
 }
 
 ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(

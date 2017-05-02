@@ -4,6 +4,7 @@
 
 #include "components/data_use_measurement/core/data_use_measurement.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
@@ -132,7 +133,8 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
     }
 
     data_use_user_data = new DataUseUserData(service_name, CurrentAppState());
-    request->SetUserData(DataUseUserData::kUserDataKey, data_use_user_data);
+    request->SetUserData(DataUseUserData::kUserDataKey,
+                         base::WrapUnique(data_use_user_data));
   } else {
     data_use_user_data->set_app_state(CurrentAppState());
   }
