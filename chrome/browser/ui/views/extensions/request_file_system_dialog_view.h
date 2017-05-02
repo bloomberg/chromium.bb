@@ -51,7 +51,6 @@ class RequestFileSystemDialogView : public views::DialogDelegateView {
       const base::Callback<void(ui::DialogButton)>& callback);
 
   const base::Callback<void(ui::DialogButton)> callback_;
-  views::View* const contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestFileSystemDialogView);
 };
