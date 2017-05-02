@@ -158,7 +158,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
 
     if (opener_frame.GetSettings() &&
         !opener_frame.GetSettings()->GetSupportsMultipleWindows())
-      window = opener_frame.Tree().Top();
+      window = &opener_frame.Tree().Top();
   }
 
   if (window) {

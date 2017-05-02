@@ -248,7 +248,7 @@ Document* DOMImplementation::createDocument(const String& type,
           init.GetFrame()->GetPage()->GetPluginData(init.GetFrame()
                                                         ->Tree()
                                                         .Top()
-                                                        ->GetSecurityContext()
+                                                        .GetSecurityContext()
                                                         ->GetSecurityOrigin());
     }
   }

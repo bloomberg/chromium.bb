@@ -58,7 +58,7 @@ LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
 
 LayoutView* LocalRootView(Element& element) {
   LocalFrame* frame = element.GetDocument().GetFrame();
-  LocalFrame* frame_root = frame ? frame->LocalFrameRoot() : nullptr;
+  LocalFrame* frame_root = frame ? &frame->LocalFrameRoot() : nullptr;
   return frame_root ? frame_root->ContentLayoutObject() : nullptr;
 }
 
@@ -175,10 +175,10 @@ void IntersectionGeometry::MapIntersectionRectToTargetFrameCoordinates() {
   Document& target_document = target_->GetDocument();
   if (RootIsImplicit()) {
     LocalFrame* target_frame = target_document.GetFrame();
-    Frame* root_frame = target_frame->Tree().Top();
+    Frame& root_frame = target_frame->Tree().Top();
     LayoutSize scroll_position =
         LayoutSize(target_document.View()->GetScrollOffset());
-    if (target_frame != root_frame)
+    if (target_frame != &root_frame)
       MapRectDownToDocument(intersection_rect_, nullptr, target_document);
     intersection_rect_.Move(-scroll_position);
   } else {

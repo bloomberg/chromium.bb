@@ -607,8 +607,8 @@ CompositorAnimationHost* FrameView::GetCompositorAnimationHost() const {
   if (animation_host_)
     return animation_host_.get();
 
-  if (frame_->LocalFrameRoot() != frame_)
-    return frame_->LocalFrameRoot()->View()->GetCompositorAnimationHost();
+  if (&frame_->LocalFrameRoot() != frame_)
+    return frame_->LocalFrameRoot().View()->GetCompositorAnimationHost();
 
   if (!frame_->IsMainFrame())
     return nullptr;
@@ -621,8 +621,8 @@ CompositorAnimationTimeline* FrameView::GetCompositorAnimationTimeline() const {
   if (animation_timeline_)
     return animation_timeline_.get();
 
-  if (frame_->LocalFrameRoot() != frame_)
-    return frame_->LocalFrameRoot()->View()->GetCompositorAnimationTimeline();
+  if (&frame_->LocalFrameRoot() != frame_)
+    return frame_->LocalFrameRoot().View()->GetCompositorAnimationTimeline();
 
   if (!frame_->IsMainFrame())
     return nullptr;
@@ -2130,7 +2130,7 @@ void FrameView::UpdateCompositedSelectionIfNeeded() {
       // first check that the composited selection has been cleared even
       // though no frame has focus yet. If this is not desired, then the
       // expectation needs to be removed from the test.
-      local_frame = frame_->LocalFrameRoot();
+      local_frame = &frame_->LocalFrameRoot();
     }
 
     if (local_frame)
@@ -2569,7 +2569,7 @@ void FrameView::PerformPostLayoutTasks() {
   // if there are no RemoteFrame ancestors in the frame tree. Use of
   // localFrameRoot() is discouraged but will change when cursor update
   // scheduling is moved from EventHandler to PageEventHandler.
-  GetFrame().LocalFrameRoot()->GetEventHandler().ScheduleCursorUpdate();
+  GetFrame().LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
 
   UpdateGeometries();
 
@@ -2952,7 +2952,7 @@ void FrameView::UpdateGeometriesIfNeeded() {
 }
 
 void FrameView::UpdateAllLifecyclePhases() {
-  GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kPaintClean);
 }
 
@@ -2961,7 +2961,7 @@ void FrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     UpdateAllLifecyclePhasesExceptPaint();
   } else {
-    GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+    GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
         DocumentLifecycle::kCompositingClean);
   }
 }
@@ -2970,28 +2970,28 @@ void FrameView::UpdateLifecycleToCompositingInputsClean() {
   // When SPv2 is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-  GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kCompositingInputsClean);
 }
 
 void FrameView::UpdateAllLifecyclePhasesExceptPaint() {
-  GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kPrePaintClean);
 }
 
 void FrameView::UpdateLifecycleToLayoutClean() {
-  GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+  GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kLayoutClean);
 }
 
 void FrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
-  LocalFrame* local_frame_root = GetFrame().LocalFrameRoot();
-  if (local_frame_root->View()->current_update_lifecycle_phases_target_state_ <
+  LocalFrame& local_frame_root = GetFrame().LocalFrameRoot();
+  if (local_frame_root.View()->current_update_lifecycle_phases_target_state_ <
           DocumentLifecycle::kPaintInvalidationClean ||
       Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean) {
     // Schedule visual update to process the paint invalidation in the next
     // cycle.
-    local_frame_root->ScheduleVisualUpdateUnlessThrottled();
+    local_frame_root.ScheduleVisualUpdateUnlessThrottled();
   }
   // Otherwise the paint invalidation will be handled in paint invalidation
   // phase of this cycle.
@@ -3157,16 +3157,14 @@ void FrameView::UpdateLifecyclePhasesInternal(
             GetScrollingCoordinator()->UpdateAfterCompositingChangeIfNeeded();
         }
 
-        if (LocalFrame* local_frame = frame_->LocalFrameRoot()) {
-          // This is needed since, at present, the ScrollingCoordinator doesn't
-          // send rects for oopif sub-frames.
-          // TODO(wjmaclean): Remove this pathway when ScrollingCoordinator
-          // operates on a per-frame basis. https://crbug.com/680606
-          GetFrame()
-              .GetPage()
-              ->GetChromeClient()
-              .UpdateEventRectsForSubframeIfNecessary(local_frame);
-        }
+        // This is needed since, at present, the ScrollingCoordinator doesn't
+        // send rects for oopif sub-frames.
+        // TODO(wjmaclean): Remove this pathway when ScrollingCoordinator
+        // operates on a per-frame basis. https://crbug.com/680606
+        GetFrame()
+            .GetPage()
+            ->GetChromeClient()
+            .UpdateEventRectsForSubframeIfNecessary(&frame_->LocalFrameRoot());
         UpdateCompositedSelectionIfNeeded();
       }
 
@@ -3360,7 +3358,7 @@ std::unique_ptr<JSONObject> FrameView::CompositedLayersAsJSON(
     LayerTreeFlags flags) {
   return GetFrame()
       .LocalFrameRoot()
-      ->View()
+      .View()
       ->paint_artifact_compositor_->LayersAsJSON(flags);
 }
 
@@ -3739,7 +3737,7 @@ void FrameView::SetTracksPaintInvalidations(bool track_paint_invalidations) {
   if (track_paint_invalidations == IsTrackingPaintInvalidations())
     return;
 
-  for (Frame* frame = frame_->Tree().Top(); frame;
+  for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
@@ -3781,7 +3779,7 @@ std::unique_ptr<JSONArray> FrameView::TrackedObjectPaintInvalidationsAsJSON()
     return nullptr;
 
   std::unique_ptr<JSONArray> result = JSONArray::Create();
-  for (Frame* frame = frame_->Tree().Top(); frame;
+  for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
@@ -5281,7 +5279,7 @@ MainThreadScrollingReasons FrameView::GetMainThreadScrollingReasons() const {
   // the main frame can't be used in the calculation, since they use
   // different compositors with unrelated state, which breaks some of the
   // calculations below.
-  if (frame_->LocalFrameRoot() != GetPage()->MainFrame())
+  if (&frame_->LocalFrameRoot() != GetPage()->MainFrame())
     return reasons;
 
   // Walk the tree to the root. Use the gathered reasons to determine
@@ -5358,7 +5356,7 @@ void FrameView::MapQuadToAncestorFrameIncludingScrollOffset(
        ancestor->GetFrame()->LocalFrameRoot() == GetFrame().LocalFrameRoot())) {
     FrameView* ancestor_view =
         (ancestor ? ancestor->GetFrameView()
-                  : ToLocalFrame(GetFrame().Tree().Top())->View());
+                  : ToLocalFrame(GetFrame().Tree().Top()).View());
     LayoutSize scroll_position = LayoutSize(ancestor_view->GetScrollOffset());
     rect.Move(-scroll_position);
   }

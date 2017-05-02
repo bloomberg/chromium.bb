@@ -140,23 +140,23 @@ const char* RequestContextName(WebURLRequest::RequestContext context) {
 
 }  // namespace
 
-static void MeasureStricterVersionOfIsMixedContent(Frame* frame,
+static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
                                                    const KURL& url) {
   // We're currently only checking for mixed content in `https://*` contexts.
   // What about other "secure" contexts the SchemeRegistry knows about? We'll
   // use this method to measure the occurrence of non-webby mixed content to
   // make sure we're not breaking the world without realizing it.
-  SecurityOrigin* origin = frame->GetSecurityContext()->GetSecurityOrigin();
+  SecurityOrigin* origin = frame.GetSecurityContext()->GetSecurityOrigin();
   if (MixedContentChecker::IsMixedContent(origin, url)) {
     if (origin->Protocol() != "https") {
       UseCounter::Count(
-          frame,
+          &frame,
           UseCounter::kMixedContentInNonHTTPSFrameThatRestrictsMixedContent);
     }
   } else if (!SecurityOrigin::IsSecure(url) &&
              SchemeRegistry::ShouldTreatURLSchemeAsSecure(origin->Protocol())) {
     UseCounter::Count(
-        frame,
+        &frame,
         UseCounter::kMixedContentInSecureFrameThatDoesNotRestrictMixedContent);
   }
 }
@@ -202,13 +202,12 @@ Frame* MixedContentChecker::InWhichFrameIsContentMixed(
     return nullptr;
 
   // Check the top frame first.
-  if (Frame* top = frame->Tree().Top()) {
-    MeasureStricterVersionOfIsMixedContent(top, url);
-    if (IsMixedContent(top->GetSecurityContext()->GetSecurityOrigin(), url))
-      return top;
-  }
+  Frame& top = frame->Tree().Top();
+  MeasureStricterVersionOfIsMixedContent(top, url);
+  if (IsMixedContent(top.GetSecurityContext()->GetSecurityOrigin(), url))
+    return &top;
 
-  MeasureStricterVersionOfIsMixedContent(frame, url);
+  MeasureStricterVersionOfIsMixedContent(*frame, url);
   if (IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(), url))
     return frame;
 

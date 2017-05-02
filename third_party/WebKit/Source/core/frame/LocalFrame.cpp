@@ -567,21 +567,20 @@ void LocalFrame::DidChangeVisibilityState() {
   Frame::DidChangeVisibilityState();
 }
 
-LocalFrame* LocalFrame::LocalFrameRoot() {
-  LocalFrame* cur_frame = this;
+LocalFrame& LocalFrame::LocalFrameRoot() const {
+  const LocalFrame* cur_frame = this;
   while (cur_frame && cur_frame->Tree().Parent() &&
          cur_frame->Tree().Parent()->IsLocalFrame())
     cur_frame = ToLocalFrame(cur_frame->Tree().Parent());
 
-  return cur_frame;
+  return const_cast<LocalFrame&>(*cur_frame);
 }
 
 bool LocalFrame::IsCrossOriginSubframe() const {
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();
-  Frame* top = Tree().Top();
-  return top && !security_origin->CanAccess(
-                    top->GetSecurityContext()->GetSecurityOrigin());
+  return !security_origin->CanAccess(
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin());
 }
 
 void LocalFrame::SetPrinting(bool printing,
@@ -901,8 +900,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     instrumenting_agents_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);
   } else {
-    instrumenting_agents_ = LocalFrameRoot()->instrumenting_agents_;
-    performance_monitor_ = LocalFrameRoot()->performance_monitor_;
+    instrumenting_agents_ = LocalFrameRoot().instrumenting_agents_;
+    performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
 }
 
@@ -928,7 +927,7 @@ PluginData* LocalFrame::GetPluginData() const {
   if (!Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return nullptr;
   return GetPage()->GetPluginData(
-      Tree().Top()->GetSecurityContext()->GetSecurityOrigin());
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin());
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

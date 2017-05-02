@@ -47,7 +47,7 @@ void RemoteFrameView::UpdateRemoteViewportIntersection() {
     return;
 
   FrameView* local_root_view =
-      ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot()->View();
+      ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
   if (!local_root_view)
     return;
 

@@ -456,7 +456,7 @@ bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
     LocalFrame& local_frame,
     const String& url) {
   WebLocalFrameImpl* webframe =
-      WebLocalFrameImpl::FromFrame(local_frame.LocalFrameRoot());
+      WebLocalFrameImpl::FromFrame(&local_frame.LocalFrameRoot());
   return webframe && webframe->Client() &&
          webframe->Client()->ShouldReportDetailedMessageForSource(url);
 }
@@ -557,7 +557,7 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
 }
 
 void ChromeClientImpl::ScheduleAnimation(LocalFrame* frame) {
-  frame = frame->LocalFrameRoot();
+  frame = &frame->LocalFrameRoot();
   // If the frame is still being created, it might not yet have a WebWidget.
   // FIXME: Is this the right thing to do? Is there a way to avoid having
   // a local frame root that doesn't have a WebWidget? During initialization
@@ -574,10 +574,10 @@ IntRect ChromeClientImpl::ViewportToScreen(
 
   DCHECK(frame_view_base->IsFrameView());
   const FrameView* view = ToFrameView(frame_view_base);
-  LocalFrame* frame = view->GetFrame().LocalFrameRoot();
+  LocalFrame& frame = view->GetFrame().LocalFrameRoot();
 
   WebWidgetClient* client =
-      WebLocalFrameImpl::FromFrame(frame)->FrameWidget()->Client();
+      WebLocalFrameImpl::FromFrame(&frame)->FrameWidget()->Client();
 
   if (client) {
     client->ConvertViewportToWindow(&screen_rect);
@@ -783,9 +783,9 @@ void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor,
     return;
 #endif
 
-  LocalFrame* local_root = local_frame->LocalFrameRoot();
+  LocalFrame& local_root = local_frame->LocalFrameRoot();
   if (WebFrameWidgetBase* widget =
-          WebLocalFrameImpl::FromFrame(local_root)->FrameWidget())
+          WebLocalFrameImpl::FromFrame(&local_root)->FrameWidget())
     widget->Client()->DidChangeCursor(cursor);
 }
 
@@ -880,9 +880,9 @@ void ChromeClientImpl::FullscreenElementChanged(Element* from_element,
 }
 
 void ChromeClientImpl::ClearCompositedSelection(LocalFrame* frame) {
-  LocalFrame* local_root = frame->LocalFrameRoot();
+  LocalFrame& local_root = frame->LocalFrameRoot();
   WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(local_root)->FrameWidget();
+      WebLocalFrameImpl::FromFrame(&local_root)->FrameWidget();
   WebWidgetClient* client = widget->Client();
   if (!client)
     return;
@@ -894,9 +894,9 @@ void ChromeClientImpl::ClearCompositedSelection(LocalFrame* frame) {
 void ChromeClientImpl::UpdateCompositedSelection(
     LocalFrame* frame,
     const CompositedSelection& selection) {
-  LocalFrame* local_root = frame->LocalFrameRoot();
+  LocalFrame& local_root = frame->LocalFrameRoot();
   WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(local_root)->FrameWidget();
+      WebLocalFrameImpl::FromFrame(&local_root)->FrameWidget();
   WebWidgetClient* client = widget->Client();
   if (!client)
     return;
@@ -1057,16 +1057,16 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
 }
 
 bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
-  LocalFrame* local_root = frame->LocalFrameRoot();
-  return WebLocalFrameImpl::FromFrame(local_root)
+  LocalFrame& local_root = frame->LocalFrameRoot();
+  return WebLocalFrameImpl::FromFrame(&local_root)
       ->FrameWidget()
       ->Client()
       ->RequestPointerLock();
 }
 
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
-  LocalFrame* local_root = frame->LocalFrameRoot();
-  return WebLocalFrameImpl::FromFrame(local_root)
+  LocalFrame& local_root = frame->LocalFrameRoot();
+  return WebLocalFrameImpl::FromFrame(&local_root)
       ->FrameWidget()
       ->Client()
       ->RequestPointerUnlock();

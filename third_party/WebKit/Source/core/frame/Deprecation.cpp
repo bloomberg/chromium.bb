@@ -161,9 +161,9 @@ void Deprecation::CountDeprecationCrossOriginIframe(
   // Check to see if the frame can script into the top level document.
   SecurityOrigin* security_origin =
       frame->GetSecurityContext()->GetSecurityOrigin();
-  Frame* top = frame->Tree().Top();
-  if (top && !security_origin->CanAccess(
-                 top->GetSecurityContext()->GetSecurityOrigin()))
+  Frame& top = frame->Tree().Top();
+  if (!security_origin->CanAccess(
+          top.GetSecurityContext()->GetSecurityOrigin()))
     CountDeprecation(frame, feature);
 }
 

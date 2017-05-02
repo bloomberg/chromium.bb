@@ -1637,7 +1637,7 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
   // In those cases, we schedule a location change right now and return early.
   Frame* target_frame = nullptr;
   if (EqualIgnoringASCIICase(frame_name, "_top")) {
-    target_frame = GetFrame()->Tree().Top();
+    target_frame = &GetFrame()->Tree().Top();
   } else if (EqualIgnoringASCIICase(frame_name, "_parent")) {
     if (Frame* parent = GetFrame()->Tree().Parent())
       target_frame = parent;

@@ -4912,12 +4912,12 @@ const KURL Document::FirstPartyForCookies() const {
 
   // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
   // look at their URL, but we can't because we don't know what it is.
-  Frame* top = GetFrame()->Tree().Top();
+  Frame& top = GetFrame()->Tree().Top();
   KURL top_document_url =
-      top->IsLocalFrame()
-          ? ToLocalFrame(top)->GetDocument()->Url()
+      top.IsLocalFrame()
+          ? ToLocalFrame(top).GetDocument()->Url()
           : KURL(KURL(),
-                 top->GetSecurityContext()->GetSecurityOrigin()->ToString());
+                 top.GetSecurityContext()->GetSecurityOrigin()->ToString());
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
           top_document_url.Protocol()))
     return top_document_url;
@@ -4926,8 +4926,8 @@ const KURL Document::FirstPartyForCookies() const {
   // document's SecurityOrigin.  Sandboxing a document into a unique origin
   // shouldn't effect first-/third-party status for cookies and site data.
   const OriginAccessEntry& access_entry =
-      top->IsLocalFrame()
-          ? ToLocalFrame(top)->GetDocument()->AccessEntryFromURL()
+      top.IsLocalFrame()
+          ? ToLocalFrame(top).GetDocument()->AccessEntryFromURL()
           : OriginAccessEntry(top_document_url.Protocol(),
                               top_document_url.Host(),
                               OriginAccessEntry::kAllowRegisterableDomains);

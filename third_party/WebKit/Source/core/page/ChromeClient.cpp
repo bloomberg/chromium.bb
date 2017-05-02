@@ -67,10 +67,11 @@ void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
 }
 
 bool ChromeClient::CanOpenModalIfDuringPageDismissal(
-    Frame* main_frame,
+    Frame& main_frame,
     ChromeClient::DialogType dialog,
     const String& message) {
-  for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
+  for (Frame* frame = &main_frame; frame;
+       frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
     LocalFrame& local_frame = ToLocalFrame(*frame);

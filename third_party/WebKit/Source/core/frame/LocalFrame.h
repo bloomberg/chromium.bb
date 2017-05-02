@@ -154,7 +154,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // frame's in-process subtree.
   // FIXME: This is a temporary hack to support RemoteFrames, and callers
   // should be updated to avoid storing things on the main frame.
-  LocalFrame* LocalFrameRoot();
+  LocalFrame& LocalFrameRoot() const;
 
   // Note that the result of this function should not be cached: a frame is
   // not necessarily detached when it is navigated, so the return value can

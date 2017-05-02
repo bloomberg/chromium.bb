@@ -43,7 +43,7 @@ class CORE_EXPORT FrameTree final {
   void ExperimentalSetNulledName();
 
   Frame* Parent() const;
-  Frame* Top() const;
+  Frame& Top() const;
   Frame* NextSibling() const;
   Frame* FirstChild() const;
 

@@ -370,7 +370,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void PrintDelegate(LocalFrame*) = 0;
 
  private:
-  bool CanOpenModalIfDuringPageDismissal(Frame* main_frame,
+  bool CanOpenModalIfDuringPageDismissal(Frame& main_frame,
                                          DialogType,
                                          const String& message);
   void SetToolTip(LocalFrame&, const HitTestResult&);
