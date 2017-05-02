@@ -521,23 +521,15 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
 
   // Draw text using selection style from the start to the end position of the
   // selection.
-  if (style != selection_style) {
-    StyleDifference diff;
-    diff.SetNeedsPaintInvalidationObject();
-    SVGResourcesCache::ClientStyleChanged(&ParentInlineLayoutObject(), diff,
-                                          selection_style);
-  }
+  {
+    SVGResourcesCache::TemporaryStyleScope scope(ParentInlineLayoutObject(),
+                                                 style, selection_style);
 
-  PaintFlags flags;
-  if (SetupTextPaint(paint_info, selection_style, resource_mode, flags))
-    PaintText(paint_info, text_run, fragment, start_position, end_position,
-              flags);
-
-  if (style != selection_style) {
-    StyleDifference diff;
-    diff.SetNeedsPaintInvalidationObject();
-    SVGResourcesCache::ClientStyleChanged(&ParentInlineLayoutObject(), diff,
-                                          style);
+    PaintFlags flags;
+    if (SetupTextPaint(paint_info, selection_style, resource_mode, flags)) {
+      PaintText(paint_info, text_run, fragment, start_position, end_position,
+                flags);
+    }
   }
 
   // Eventually draw text using regular style from the end position of the

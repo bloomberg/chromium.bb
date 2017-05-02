@@ -62,6 +62,24 @@ class SVGResourcesCache {
                                  StyleDifference,
                                  const ComputedStyle& new_style);
 
+  class TemporaryStyleScope {
+    WTF_MAKE_NONCOPYABLE(TemporaryStyleScope);
+    STACK_ALLOCATED();
+
+   public:
+    TemporaryStyleScope(LayoutObject&,
+                        const ComputedStyle& original_style,
+                        const ComputedStyle& temporary_style);
+    ~TemporaryStyleScope() { SwitchTo(original_style_); }
+
+   private:
+    void SwitchTo(const ComputedStyle&);
+
+    LayoutObject& layout_object_;
+    const ComputedStyle& original_style_;
+    const bool styles_are_equal_;
+  };
+
  private:
   void AddResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
   void RemoveResourcesFromLayoutObject(LayoutObject*);

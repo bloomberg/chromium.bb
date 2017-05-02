@@ -186,4 +186,24 @@ void SVGResourcesCache::ClientDestroyed(LayoutObject* layout_object) {
   cache.RemoveResourcesFromLayoutObject(layout_object);
 }
 
+SVGResourcesCache::TemporaryStyleScope::TemporaryStyleScope(
+    LayoutObject& layout_object,
+    const ComputedStyle& style,
+    const ComputedStyle& temporary_style)
+    : layout_object_(layout_object),
+      original_style_(style),
+      styles_are_equal_(style == temporary_style) {
+  SwitchTo(temporary_style);
+}
+
+void SVGResourcesCache::TemporaryStyleScope::SwitchTo(
+    const ComputedStyle& style) {
+  DCHECK(LayoutObjectCanHaveResources(&layout_object_));
+  if (styles_are_equal_)
+    return;
+  SVGResourcesCache& cache = ResourcesCache(layout_object_.GetDocument());
+  cache.RemoveResourcesFromLayoutObject(&layout_object_);
+  cache.AddResourcesFromLayoutObject(&layout_object_, style);
+}
+
 }  // namespace blink
