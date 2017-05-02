@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -18,11 +19,10 @@
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_dialog_extensions_client.h"
-#include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -87,107 +87,6 @@ testing::AssertionResult CheckStyleInjection(Browser* browser,
   }
 
   return testing::AssertionSuccess();
-}
-
-class DialogClient;
-
-// A helper class to hijack the dialog manager's ExtensionsClient, so that we
-// know when dialogs are being opened.
-// NOTE: The default implementation of the JavaScriptDialogExtensionsClient
-// doesn't do anything, so it's safe to override it. If, at some stage, this
-// has behavior (like if we move this into app shell), we'll need to update
-// this (by, e.g., making DialogClient a wrapper around the implementation).
-class DialogHelper {
- public:
-  explicit DialogHelper(content::WebContents* web_contents);
-  ~DialogHelper();
-
-  // Notifies the DialogHelper that a dialog was opened. Runs |quit_closure_|,
-  // if it is non-null.
-  void DialogOpened();
-
-  // Closes any active dialogs.
-  void CloseDialogs();
-
-  void set_quit_closure(const base::Closure& quit_closure) {
-    quit_closure_ = quit_closure;
-  }
-  size_t dialog_count() const { return dialog_count_; }
-
- private:
-  // The number of dialogs to appear.
-  size_t dialog_count_;
-
-  // The WebContents this helper is associated with.
-  content::WebContents* web_contents_;
-
-  // The dialog manager for |web_contents_|.
-  content::JavaScriptDialogManager* dialog_manager_;
-
-  // The dialog client override.
-  DialogClient* client_;
-
-  // The quit closure to run when a dialog appears.
-  base::Closure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogHelper);
-};
-
-// The client override for the DialogHelper.
-class DialogClient : public app_modal::JavaScriptDialogExtensionsClient {
- public:
-  explicit DialogClient(DialogHelper* helper) : helper_(helper) {}
-  ~DialogClient() override {}
-
-  void set_helper(DialogHelper* helper) { helper_ = helper; }
-
- private:
-  // app_modal::JavaScriptDialogExtensionsClient:
-  void OnDialogOpened(content::WebContents* web_contents) override {
-    if (helper_)
-      helper_->DialogOpened();
-  }
-  void OnDialogClosed(content::WebContents* web_contents) override {}
-  bool GetExtensionName(content::WebContents* web_contents,
-                        const GURL& origin_url,
-                        std::string* name_out) override {
-    return false;
-  }
-
-  // The dialog helper to notify of any open dialogs.
-  DialogHelper* helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogClient);
-};
-
-DialogHelper::DialogHelper(content::WebContents* web_contents)
-    : dialog_count_(0),
-      web_contents_(web_contents),
-      dialog_manager_(nullptr),
-      client_(nullptr) {
-  app_modal::JavaScriptDialogManager* dialog_manager_impl =
-      app_modal::JavaScriptDialogManager::GetInstance();
-  client_ = new DialogClient(this);
-  dialog_manager_impl->SetExtensionsClient(base::WrapUnique(client_));
-
-  dialog_manager_ =
-      web_contents_->GetDelegate()->GetJavaScriptDialogManager(web_contents_);
-}
-
-DialogHelper::~DialogHelper() {
-  client_->set_helper(nullptr);
-}
-
-void DialogHelper::CloseDialogs() {
-  dialog_manager_->CancelDialogs(web_contents_, false);
-}
-
-void DialogHelper::DialogOpened() {
-  ++dialog_count_;
-  if (!quit_closure_.is_null()) {
-    quit_closure_.Run();
-    quit_closure_ = base::Closure();
-  }
 }
 
 // Runs all pending tasks in the renderer associated with |web_contents|, and
@@ -546,9 +445,10 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBlockingScript) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  DialogHelper dialog_helper(web_contents);
-  base::RunLoop run_loop;
-  dialog_helper.set_quit_closure(run_loop.QuitClosure());
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
 
   ExtensionTestMessageListener listener("done", false);
   listener.set_extension_id(ext2->id());
@@ -558,12 +458,11 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBlockingScript) {
       browser(), embedded_test_server()->GetURL("/empty.html"),
       WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
-  run_loop.Run();
+  dialog_wait.Run();
   // Right now, the alert dialog is showing and blocking injection of anything
   // after it, so the listener shouldn't be satisfied.
   EXPECT_FALSE(listener.was_satisfied());
-  EXPECT_EQ(1u, dialog_helper.dialog_count());
-  dialog_helper.CloseDialogs();
+  js_helper->HandleJavaScriptDialog(web_contents, true, nullptr);
 
   // After closing the dialog, the rest of the scripts should be able to
   // inject.
@@ -599,21 +498,22 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  DialogHelper dialog_helper(web_contents);
-  base::RunLoop run_loop;
-  dialog_helper.set_quit_closure(run_loop.QuitClosure());
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
 
   ExtensionTestMessageListener listener("done", false);
   listener.set_extension_id(ext2->id());
 
-  // Navitate!
+  // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
       WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
   // Now, instead of closing the dialog, just close the tab. Later scripts
   // should never get a chance to run (and we shouldn't crash).
-  run_loop.Run();
+  dialog_wait.Run();
   EXPECT_FALSE(listener.was_satisfied());
   EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
       browser()->tab_strip_model()->active_index(), 0));
@@ -637,22 +537,22 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  DialogHelper dialog_helper(web_contents);
-  base::RunLoop run_loop;
-  dialog_helper.set_quit_closure(run_loop.QuitClosure());
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(web_contents);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
 
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
       WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
-  run_loop.Run();
+  dialog_wait.Run();
 
   // The extension will have injected at idle, but it should only inject once.
-  EXPECT_EQ(1u, dialog_helper.dialog_count());
-  dialog_helper.CloseDialogs();
+  js_helper->HandleJavaScriptDialog(web_contents, true, nullptr);
   EXPECT_TRUE(RunAllPending(web_contents));
-  EXPECT_EQ(1u, dialog_helper.dialog_count());
+  EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 }
 
 // Bug fix for crbug.com/507461.
