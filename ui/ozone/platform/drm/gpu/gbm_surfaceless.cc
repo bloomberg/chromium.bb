@@ -37,8 +37,6 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
-      has_image_flush_external_(
-          HasEGLExtension("EGL_EXT_image_flush_external")),
       weak_factory_(this) {
   surface_factory_->RegisterSurface(window_->widget(), this);
   unsubmitted_frames_.push_back(base::MakeUnique<PendingFrame>());
@@ -105,7 +103,6 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
     return;
   }
 
-  glFlush();
   unsubmitted_frames_.back()->Flush();
 
   SwapCompletionCallback surface_swap_callback = base::Bind(
@@ -117,31 +114,25 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
 
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
-  if (has_implicit_external_sync_ || has_image_flush_external_) {
-    EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
-    if (!fence) {
-      callback.Run(gfx::SwapResult::SWAP_FAILED);
-      return;
-    }
-
-    base::Closure fence_wait_task =
-        base::Bind(&WaitForFence, GetDisplay(), fence);
-
-    base::Closure fence_retired_callback =
-        base::Bind(&GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(),
-                   fence, frame);
-
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits()
-                       .WithShutdownBehavior(
-                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                       .MayBlock(),
-        fence_wait_task, fence_retired_callback);
-    return;  // Defer frame submission until fence signals.
+  EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
+  if (!fence) {
+    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    return;
   }
 
-  frame->ready = true;
-  SubmitFrame();
+  base::Closure fence_wait_task =
+      base::Bind(&WaitForFence, GetDisplay(), fence);
+
+  base::Closure fence_retired_callback = base::Bind(
+      &GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(), fence, frame);
+
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+          .MayBlock(),
+      fence_wait_task, fence_retired_callback);
 }
 
 void GbmSurfaceless::PostSubBufferAsync(
@@ -213,9 +204,6 @@ void GbmSurfaceless::SubmitFrame() {
       return;
     }
 
-    if (IsUniversalDisplayLinkDevice())
-      glFinish();
-
     window_->SchedulePageFlip(planes_, frame->callback);
     planes_.clear();
   }
@@ -245,10 +233,6 @@ void GbmSurfaceless::SwapCompleted(const SwapCompletionCallback& callback,
   }
 
   SubmitFrame();
-}
-
-bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
-  return planes_.empty() ? false : planes_[0].buffer->RequiresGlFinish();
 }
 
 }  // namespace ui
