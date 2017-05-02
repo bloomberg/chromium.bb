@@ -215,7 +215,8 @@ class OmniboxPerfTest : public PerfTest {
 
 // Measures the amount of time it takes the Omnibox text field to activate
 // the on-screen keyboard.
-TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
+// TODO(crbug.com/717300): Test disabled because of a DCHECK in Reading List.
+TEST_F(OmniboxPerfTest, DISABLED_TestTextFieldDidBeginEditing) {
   LogPerfTiming("Keyboard preload", PreLoadKeyboard());
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       [toolbar_ view], [OmniboxTextFieldIOS class]);
@@ -232,7 +233,8 @@ TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
 
 // Measures the amount of time it takes to type in the first character
 // into the Omnibox.
-TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
+// TODO(crbug.com/717309): Test disabled because of nullptr dereferencing.
+TEST_F(OmniboxPerfTest, DISABLED_TestTypeOneCharInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       [toolbar_ view], [OmniboxTextFieldIOS class]);
   RepeatTimedRuns("Type first character",
@@ -248,7 +250,8 @@ TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
 
 // Measures the amount of time it takes to type in the word "google" one
 // letter at a time.
-TEST_F(OmniboxPerfTest, TestTypingInTextField) {
+// TODO(crbug.com/717309): Test disabled because of nullptr dereferencing.
+TEST_F(OmniboxPerfTest, DISABLED_TestTypingInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       [toolbar_ view], [OmniboxTextFieldIOS class]);
   // The characters to type into the omnibox text field.
