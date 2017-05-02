@@ -1014,6 +1014,99 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// TODO(crbug.com/713991): Enable on windows once it better matches
+// how other platforms set global variables.
+// Tests that a notification arriving during a pending read doesn't
+// cause a crash.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       Notification_During_ReadRemoteCharacteristic) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
+          BluetoothRemoteGattCharacteristic::PROPERTY_READ,
+      NotifyValueState::NOTIFY));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  std::vector<uint8_t> notification_value = {111};
+  SimulateGattCharacteristicChanged(characteristic1_, notification_value);
+  base::RunLoop().RunUntilIdle();
+
+#if defined(OS_MACOSX)
+  // Because macOS uses the same event for notifications and read value
+  // responses, we can't know what the event was for. Because there is a pending
+  // read request we assume is a read request on macOS.
+  EXPECT_EQ(notification_value, last_read_value_);
+  EXPECT_EQ(notification_value, characteristic1_->GetValue());
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+#else   // !defined(OS_MACOSX)
+  EXPECT_EQ(std::vector<uint8_t>(), last_read_value_);
+  EXPECT_EQ(notification_value, characteristic1_->GetValue());
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
+#endif  // defined(OS_MACOSX)
+
+  observer.Reset();
+  std::vector<uint8_t> read_value = {222};
+  SimulateGattCharacteristicRead(characteristic1_, read_value);
+  base::RunLoop().RunUntilIdle();
+#if defined(OS_MACOSX)
+  // There are no pending read requests anymore so we assume the event
+  // was a notification.
+  EXPECT_EQ(notification_value, last_read_value_);
+  EXPECT_EQ(read_value, characteristic1_->GetValue());
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
+#else   // !defined(OS_MACOSX)
+  EXPECT_EQ(read_value, last_read_value_);
+  EXPECT_EQ(read_value, characteristic1_->GetValue());
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+#endif  // defined(OS_MACOSX)
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+// Tests that a notification arriving during a pending write doesn't
+// cause a crash.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       Notification_During_WriteRemoteCharacteristic) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
+          BluetoothRemoteGattCharacteristic::PROPERTY_WRITE,
+      NotifyValueState::NOTIFY));
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  std::vector<uint8_t> write_value = {111};
+  characteristic1_->WriteRemoteCharacteristic(
+      write_value, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  std::vector<uint8_t> notification_value = {222};
+  SimulateGattCharacteristicChanged(characteristic1_, notification_value);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(notification_value, characteristic1_->GetValue());
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
+
+  observer.Reset();
+  SimulateGattCharacteristicWrite(characteristic1_);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(write_value, last_write_value_);
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 // StartNotifySession fails if characteristic doesn't have Notify or Indicate
 // property.
