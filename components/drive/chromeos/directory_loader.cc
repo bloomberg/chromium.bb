@@ -20,6 +20,7 @@
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
@@ -142,8 +143,7 @@ class DirectoryLoader::FeedFetcher {
 
     ResourceEntryVector* entries = new ResourceEntryVector;
     loader_->loader_controller_->ScheduleRun(base::Bind(
-        base::IgnoreResult(
-            &base::PostTaskAndReplyWithResult<FileError, FileError>),
+        &drive::util::RunAsyncTask,
         base::RetainedRef(loader_->blocking_task_runner_), FROM_HERE,
         base::Bind(&ChangeListProcessor::RefreshDirectory,
                    loader_->resource_metadata_, directory_fetch_info_,

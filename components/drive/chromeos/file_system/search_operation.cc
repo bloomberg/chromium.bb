@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/task_runner_util.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
@@ -150,8 +149,7 @@ void SearchOperation::SearchAfterGetFileList(
   // This may race with sync tasks so we should ask LoaderController here.
   std::vector<SearchResultInfo>* result_ptr = result.get();
   loader_controller_->ScheduleRun(
-      base::Bind(base::IgnoreResult(
-                     &base::PostTaskAndReplyWithResult<FileError, FileError>),
+      base::Bind(&drive::util::RunAsyncTask,
                  base::RetainedRef(blocking_task_runner_), FROM_HERE,
                  base::Bind(&ResolveSearchResultOnBlockingPool, metadata_,
                             base::Passed(&file_list), result_ptr),
