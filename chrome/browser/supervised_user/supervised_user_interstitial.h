@@ -51,7 +51,7 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
       const base::Callback<void(bool)>& callback);
   ~SupervisedUserInterstitial() override;
 
-  bool Init();
+  void Init();
 
   // InterstitialPageDelegate implementation.
   std::string GetHTMLContents() override;

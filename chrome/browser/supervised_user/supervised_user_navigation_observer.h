@@ -54,7 +54,10 @@ class SupervisedUserNavigationObserver
 
   explicit SupervisedUserNavigationObserver(content::WebContents* web_contents);
 
-  void OnRequestBlockedInternal(const GURL& url);
+  void OnRequestBlockedInternal(
+      const GURL& url,
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      const base::Callback<void(bool)>& callback);
 
   void URLFilterCheckCallback(
       const GURL& url,
@@ -62,11 +65,22 @@ class SupervisedUserNavigationObserver
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool uncertain);
 
+  void MaybeShowInterstitial(
+      const GURL& url,
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      bool initial_page_load,
+      const base::Callback<void(bool)>& callback);
+
+  void OnInterstitialResult(const base::Callback<void(bool)>& callback,
+                            bool result);
+
   // Owned by SupervisedUserService.
   const SupervisedUserURLFilter* url_filter_;
 
   // Owned by SupervisedUserServiceFactory (lifetime of Profile).
   SupervisedUserService* supervised_user_service_;
+
+  bool is_showing_interstitial_ = false;
 
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;

@@ -73,8 +73,8 @@ void SupervisedUserNavigationThrottleTest::SetUpCommandLine(
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }
 
-// Tests that showing the blocking interstitial for a WebContents without a
-// SupervisedUserNavigationObserver doesn't crash.
+// Tests that navigating to a blocked page simply fails if there is no
+// SupervisedUserNavigationObserver.
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
@@ -94,7 +94,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   observer.Wait();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   ASSERT_TRUE(entry);
-  EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry->GetPageType());
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+  EXPECT_FALSE(observer.last_navigation_succeeded());
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,

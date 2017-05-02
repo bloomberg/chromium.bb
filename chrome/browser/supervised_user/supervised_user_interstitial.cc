@@ -118,10 +118,8 @@ void SupervisedUserInterstitial::Show(
   SupervisedUserInterstitial* interstitial = new SupervisedUserInterstitial(
       web_contents, url, reason, initial_page_load, callback);
 
-  // If Init() does not complete fully, immediately delete the interstitial.
-  if (!interstitial->Init())
-    delete interstitial;
-  // Otherwise |interstitial_page_| is responsible for deleting it.
+  // |interstitial_page_| is responsible for deleting the interstitial.
+  interstitial->Init();
 }
 
 SupervisedUserInterstitial::SupervisedUserInterstitial(
@@ -143,14 +141,8 @@ SupervisedUserInterstitial::~SupervisedUserInterstitial() {
   DCHECK(!web_contents_);
 }
 
-bool SupervisedUserInterstitial::Init() {
-  if (ShouldProceed()) {
-    // It can happen that the site was only allowed very recently and the URL
-    // filter on the IO thread had not been updated yet. Proceed with the
-    // request without showing the interstitial.
-    DispatchContinueRequest(true);
-    return false;
-  }
+void SupervisedUserInterstitial::Init() {
+  DCHECK(!ShouldProceed());
 
   InfoBarService* service = InfoBarService::FromWebContents(web_contents_);
   if (service) {
@@ -185,8 +177,6 @@ bool SupervisedUserInterstitial::Init() {
   interstitial_page_ = content::InterstitialPage::Create(
       web_contents_, initial_page_load_, url_, this);
   interstitial_page_->Show();
-
-  return true;
 }
 
 // static
@@ -237,7 +227,6 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
                               BACK,
                               HISTOGRAM_BOUNDING_VALUE);
 
-    DCHECK(web_contents_->GetController().GetTransientEntry());
     interstitial_page_->DontProceed();
     return;
   }
@@ -348,8 +337,7 @@ void SupervisedUserInterstitial::DispatchContinueRequest(
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->RemoveObserver(this);
 
-  if (!callback_.is_null())
-    callback_.Run(continue_request);
+  callback_.Run(continue_request);
 
   // After this, the WebContents may be destroyed. Make sure we don't try to use
   // it again.
