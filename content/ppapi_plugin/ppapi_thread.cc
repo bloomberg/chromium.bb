@@ -390,6 +390,20 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   if (is_broker_ || !IsCdm(path))
     cdm_host_files.reset();  // Close all opened files.
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+  // On Windows, initialize CDM host verification unsandboxed. On other
+  // platforms, this is called sandboxed below.
+  if (cdm_host_files) {
+    DCHECK(IsCdm(path));
+    if (!cdm_host_files->InitVerification(library.get(), path)) {
+      LOG(WARNING) << "CDM host verification failed.";
+      // TODO(xhwang): Add a new load result if needed.
+      ReportLoadResult(path, INIT_FAILED);
+      return;
+    }
+  }
+#endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
 #if defined(OS_WIN)
@@ -470,26 +484,26 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     CHECK(InitializeSandbox());
 #endif
 
-    int32_t init_error = plugin_entry_points_.initialize_module(
-        local_pp_module_,
-        &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
-    if (init_error != PP_OK) {
-      LOG(WARNING) << "InitModule failed with error " << init_error;
-      ReportLoadResult(path, INIT_FAILED);
-      return;
-    }
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-    // Now the process is sandboxed. Verify CDM host.
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) && !defined(OS_WIN)
+    // Now we are sandboxed, initialize CDM host verification.
     if (cdm_host_files) {
       DCHECK(IsCdm(path));
-      if (!cdm_host_files->VerifyFiles(library.get(), path)) {
+      if (!cdm_host_files->InitVerification(library.get(), path)) {
         LOG(WARNING) << "CDM host verification failed.";
         // TODO(xhwang): Add a new load result if needed.
         ReportLoadResult(path, INIT_FAILED);
         return;
       }
     }
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) && !defined(OS_WIN)
+
+    int32_t init_error = plugin_entry_points_.initialize_module(
+        local_pp_module_, &ppapi::proxy::PluginDispatcher::GetBrowserInterface);
+    if (init_error != PP_OK) {
+      LOG(WARNING) << "InitModule failed with error " << init_error;
+      ReportLoadResult(path, INIT_FAILED);
+      return;
+    }
   }
 
   // Initialization succeeded, so keep the plugin DLL loaded.

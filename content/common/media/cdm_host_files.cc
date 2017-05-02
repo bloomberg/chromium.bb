@@ -134,16 +134,16 @@ std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
   return cdm_host_files;
 }
 
-bool CdmHostFiles::VerifyFiles(base::NativeLibrary cdm_adapter_library,
-                               const base::FilePath& cdm_adapter_path) {
+bool CdmHostFiles::InitVerification(base::NativeLibrary cdm_adapter_library,
+                                    const base::FilePath& cdm_adapter_path) {
   DVLOG(1) << __func__;
   DCHECK(cdm_adapter_library);
 
   // Get function pointer exported by the CDM.
   // See media/cdm/api/content_decryption_module_ext.h.
-  using VerifyCdmHostFunc =
+  using InitVerificationFunc =
       bool (*)(const cdm::HostFile* cdm_host_files, uint32_t num_files);
-  static const char kVerifyCdmHostFuncName[] = "VerifyCdmHost_0";
+  static const char kInitVerificationFuncName[] = "VerifyCdmHost_0";
 
   base::NativeLibrary cdm_library;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -166,11 +166,12 @@ bool CdmHostFiles::VerifyFiles(base::NativeLibrary cdm_adapter_library,
   cdm_library = scoped_cdm_library.get();
 #endif
 
-  VerifyCdmHostFunc verify_cdm_host_func = reinterpret_cast<VerifyCdmHostFunc>(
-      base::GetFunctionPointerFromNativeLibrary(cdm_library,
-                                                kVerifyCdmHostFuncName));
-  if (!verify_cdm_host_func) {
-    LOG(ERROR) << "Function " << kVerifyCdmHostFuncName << " not found.";
+  InitVerificationFunc init_verification_func =
+      reinterpret_cast<InitVerificationFunc>(
+          base::GetFunctionPointerFromNativeLibrary(cdm_library,
+                                                    kInitVerificationFuncName));
+  if (!init_verification_func) {
+    LOG(ERROR) << "Function " << kInitVerificationFuncName << " not found.";
     CloseAllFiles();
     return true;
   }
@@ -184,18 +185,18 @@ bool CdmHostFiles::VerifyFiles(base::NativeLibrary cdm_adapter_library,
   const cdm::HostFile* cdm_host_files_ptr =
       cdm_host_files.empty() ? nullptr : cdm_host_files.data();
 
-  // Call |verify_cdm_host_func| on the CDM with |cdm_host_files|. Note that
+  // Call |init_verification_func| on the CDM with |cdm_host_files|. Note that
   // the ownership of these files are transferred to the CDM, which will close
   // the files immediately after use.
-  DVLOG(1) << __func__ << ": Calling " << kVerifyCdmHostFuncName << "() with "
-           << cdm_host_files.size() << " files.";
+  DVLOG(1) << __func__ << ": Calling " << kInitVerificationFuncName
+           << "() with " << cdm_host_files.size() << " files.";
   for (const auto& host_file : cdm_host_files) {
     DVLOG(1) << " - File Path: " << host_file.file_path;
     DVLOG(1) << " - File: " << host_file.file;
     DVLOG(1) << " - Sig File: " << host_file.sig_file;
   }
 
-  if (!verify_cdm_host_func(cdm_host_files_ptr, cdm_host_files.size())) {
+  if (!init_verification_func(cdm_host_files_ptr, cdm_host_files.size())) {
     DVLOG(1) << "Failed to verify CDM host.";
     CloseAllFiles();
     return false;
