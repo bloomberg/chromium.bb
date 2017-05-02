@@ -89,7 +89,7 @@ template("write_build_config") {
            type == "android_resources" || type == "deps_dex" ||
            type == "dist_jar" || type == "android_assets" ||
            type == "resource_rewriter" || type == "java_binary" ||
-           type == "group" || type == "java_prebuilt")
+           type == "group" || type == "java_prebuilt" || type == "junit_binary")
 
     forward_variables_from(invoker,
                            [
@@ -567,11 +567,40 @@ template("test_runner_script") {
       }
     } else if (_test_type == "junit") {
       assert(defined(invoker.test_suite))
+      _device_test = false
       test_runner_args += [
         "--test-suite",
         invoker.test_suite,
       ]
-      _device_test = false
+      if (defined(invoker.android_manifest_path)) {
+        test_runner_args += [
+          "--android-manifest-path",
+          rebase_path(invoker.android_manifest_path, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.package_name)) {
+        test_runner_args += [
+          "--package-name",
+          invoker.package_name,
+        ]
+
+        deps += [ ":${invoker.test_suite}__build_config" ]
+        _junit_binary_build_config =
+            "${target_gen_dir}/${invoker.test_suite}.build_config"
+        _rebased_build_config =
+            rebase_path("$_junit_binary_build_config", root_build_dir)
+        test_runner_args += [
+          "--resource-zips",
+          "@FileArg($_rebased_build_config:resources:dependency_zips)",
+        ]
+      }
+
+      test_runner_args += [
+        "--robolectric-runtime-deps-dir",
+        rebase_path("$root_build_dir/lib.java/third_party/robolectric",
+                    root_build_dir),
+      ]
     } else if (_test_type == "linker") {
       test_runner_args += [
         "--test-apk",
