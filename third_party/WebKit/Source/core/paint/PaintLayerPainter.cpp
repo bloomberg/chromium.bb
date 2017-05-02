@@ -237,13 +237,13 @@ static bool ShouldRepaintSubsequence(
         paint_layer.Clipper(PaintLayer::kDoNotUseGeometryMapper)
             .PaintingClipRects(painting_info.root_layer, respect_overflow_clip,
                                subpixel_accumulation);
-    ClipRects* previous_clip_rects = paint_layer.PreviousPaintingClipRects();
+    ClipRects* previous_clip_rects = paint_layer.PreviousClipRects();
     if (&clip_rects != previous_clip_rects &&
         (!previous_clip_rects || clip_rects != *previous_clip_rects)) {
       needs_repaint = true;
       should_clear_empty_paint_phase_flags = true;
     }
-    paint_layer.SetPreviousPaintingClipRects(clip_rects);
+    paint_layer.SetPreviousClipRects(clip_rects);
   }
 
   // Repaint if previously the layer might be clipped by paintDirtyRect and

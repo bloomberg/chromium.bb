@@ -5,7 +5,9 @@
 #ifndef FragmentData_h
 #define FragmentData_h
 
+#include "core/paint/ClipRects.h"
 #include "core/paint/ObjectPaintProperties.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -27,11 +29,24 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties();
   void ClearPaintProperties();
 
+  ClipRects* PreviousClipRects() const {
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    return previous_clip_rects_.Get();
+  }
+  void SetPreviousClipRects(ClipRects& clip_rects) {
+    previous_clip_rects_ = &clip_rects;
+  }
+  void ClearPreviousClipRects() { previous_clip_rects_.Clear(); }
+
   FragmentData* NextFragment() { return next_fragment_.get(); }
 
  private:
   // Holds references to the paint property nodes created by this object.
   std::unique_ptr<ObjectPaintProperties> paint_properties_;
+
+  // These are used to detect changes to clipping that might invalidate
+  // subsequence caching or paint phase optimizations.
+  RefPtr<ClipRects> previous_clip_rects_;
 
   std::unique_ptr<FragmentData> next_fragment_;
 };

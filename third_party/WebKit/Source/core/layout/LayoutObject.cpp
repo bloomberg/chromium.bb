@@ -3582,6 +3582,16 @@ LayoutRect LayoutObject::DebugRect() const {
   return rect;
 }
 
+FragmentData* LayoutObject::MutableForPainting::FirstFragment() {
+  if (auto* paint_data = layout_object_.GetRarePaintData())
+    return paint_data->Fragment();
+  return nullptr;
+}
+
+FragmentData& LayoutObject::MutableForPainting::EnsureFirstFragment() {
+  return layout_object_.EnsureRarePaintData().EnsureFragment();
+}
+
 void LayoutObject::InvalidatePaintForSelection() {
   // setSelectionState() propagates the state up the containing block chain to
   // tell if a block contains selected nodes or not. If this layout object is

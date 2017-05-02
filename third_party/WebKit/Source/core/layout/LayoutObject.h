@@ -1732,7 +1732,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Painters can use const methods only, except for these explicitly declared
   // methods.
-  class MutableForPainting {
+  class CORE_EXPORT MutableForPainting {
    public:
     // Convenience mutator that clears paint invalidation flags and this object
     // and its descendants' needs-paint-property-update flags.
@@ -1802,10 +1802,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     friend class PaintPropertyTreeBuilder;
+    friend class PrePaintTreeWalk;
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                              canStartAnimationOnCompositorTransformSPv2);
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                              canStartAnimationOnCompositorEffectSPv2);
+    FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
 
     // The following non-const functions for ObjectPaintProperties should only
     // be called from PaintPropertyTreeBuilder.
@@ -1825,6 +1827,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           fragment->ClearPaintProperties();
       }
     }
+    // Each LayoutObject has one or more painting fragments (exactly one
+    // in the absence of multicol/pagination).
+    // See ../paint/README.md for more on fragments.
+    FragmentData* FirstFragment();
+    FragmentData& EnsureFirstFragment();
 
     // The following non-const functions for local border box properties should
     // only be called from PaintPropertyTreeBuilder.

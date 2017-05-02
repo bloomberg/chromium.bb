@@ -275,6 +275,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
     // No scroll properties should be present.
     EXPECT_EQ(nullptr, frame_view->GetLayoutView()->PaintProperties());
   }
+
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000),
                           GetDocument().body()->GetLayoutObject(),
                           frame_view->GetLayoutView());
