@@ -1973,6 +1973,11 @@ const char kChromeHomeName[] = "Chrome Home";
 
 const char kChromeHomeDescription[] = "Enables Chrome Home on Android.";
 
+const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
+
+const char kChromeHomeExpandButtonDescription[] =
+    "Enables the expand button for Chrome Home.";
+
 #endif  // defined(OS_ANDROID)
 
 //  In-Product Help flags

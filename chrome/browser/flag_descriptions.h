@@ -2189,6 +2189,12 @@ extern const char kChromeHomeName[];
 // Description of the Chrome Home experiment in about:flags.
 extern const char kChromeHomeDescription[];
 
+// The name of the Chrome Home expand button experiment in about:flags.
+extern const char kChromeHomeExpandButtonName[];
+
+// Description of the Chrome Home expand button experiment in about:flags.
+extern const char kChromeHomeExpandButtonDescription[];
+
 #endif  // defined(OS_ANDROID)
 
 //  In-Product Help flags

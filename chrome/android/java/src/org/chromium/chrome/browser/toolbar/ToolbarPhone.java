@@ -222,7 +222,7 @@ public class ToolbarPhone extends ToolbarLayout
     private float mLocationBarNtpOffsetRight;
 
     private final Rect mNtpSearchBoxBounds = new Rect();
-    private final Point mNtpSearchBoxTranslation = new Point();
+    protected final Point mNtpSearchBoxTranslation = new Point();
 
     private final int mToolbarSidePadding;
     private final int mLocationBarBackgroundCornerRadius;
@@ -636,7 +636,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private int getBoundsAfterAccountingForLeftButton() {
+    protected int getBoundsAfterAccountingForLeftButton() {
         int padding = mToolbarSidePadding;
         if (mHomeButton.getVisibility() != GONE) padding = mHomeButton.getMeasuredWidth();
         return padding;
@@ -1455,7 +1455,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     // TODO(dtrainor): This is always true when in the tab switcher (crbug.com/710750).
-    private boolean isTabSwitcherAnimationRunning() {
+    protected boolean isTabSwitcherAnimationRunning() {
         return mTabSwitcherState == ENTERING_TAB_SWITCHER
                 || mTabSwitcherState == EXITING_TAB_SWITCHER;
     }

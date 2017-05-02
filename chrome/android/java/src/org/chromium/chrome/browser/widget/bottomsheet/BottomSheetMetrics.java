@@ -22,13 +22,15 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
      * The different ways that the bottom sheet can be opened. This is used to back a UMA
      * histogram and should therefore be treated as append-only.
      */
-    @IntDef({OPENED_BY_SWIPE, OPENED_BY_OMNIBOX_FOCUS, OPENED_BY_NEW_TAB_CREATION})
+    @IntDef({OPENED_BY_SWIPE, OPENED_BY_OMNIBOX_FOCUS, OPENED_BY_NEW_TAB_CREATION,
+            OPENED_BY_EXPAND_BUTTON})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SheetOpenReason {}
     public static final int OPENED_BY_SWIPE = 0;
     public static final int OPENED_BY_OMNIBOX_FOCUS = 1;
     public static final int OPENED_BY_NEW_TAB_CREATION = 2;
-    private static final int OPENED_BY_BOUNDARY = 3;
+    public static final int OPENED_BY_EXPAND_BUTTON = 3;
+    private static final int OPENED_BY_BOUNDARY = 4;
 
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
