@@ -93,7 +93,8 @@ public class DeviceClassManager {
      * @return Whether or not should use the accessibility tab switcher.
      */
     public static boolean enableAccessibilityLayout() {
-        return getInstance().mEnableAccessibilityLayout;
+        return getInstance().mEnableAccessibilityLayout
+                || AccessibilityUtil.isAccessibilityEnabled();
     }
 
     /**
