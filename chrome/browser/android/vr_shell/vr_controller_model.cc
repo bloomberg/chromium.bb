@@ -4,13 +4,15 @@
 
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "chrome/browser/android/vr_shell/gltf_parser.h"
-#include "chrome/grit/browser_resources.h"
+#include "components/component_updater/component_updater_paths.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace vr_shell {
@@ -18,28 +20,38 @@ namespace vr_shell {
 namespace {
 
 enum {
-  ELEMENTS_BUFFER_ID = 0,
-  INDICES_BUFFER_ID = 1,
+  ELEMENTS_BUFFER_ID = 2,
+  INDICES_BUFFER_ID = 3,
 };
 
 constexpr char kPosition[] = "POSITION";
 constexpr char kTexCoord[] = "TEXCOORD_0";
 
-const int kTexturePatchesResources[] = {
-    -1, IDR_VR_SHELL_DDCONTROLLER_TOUCHPAD_PATCH,
-    IDR_VR_SHELL_DDCONTROLLER_APP_PATCH, IDR_VR_SHELL_DDCONTROLLER_SYSTEM_PATCH,
+// TODO(acondor): Remove these hardcoded paths once VrShell resources
+// are delivered through component updater.
+constexpr char const kComponentName[] = "VrShell";
+constexpr char const kDefaultVersion[] = "0";
+
+constexpr char const kModelsDirectory[] = "models";
+constexpr char const kModelFilename[] = "ddcontroller.glb";
+constexpr char const kTexturesDirectory[] = "tex";
+constexpr char const kBaseTextureFilename[] = "ddcontroller_idle.png";
+constexpr char const* kTexturePatchesFilenames[] = {
+    "", "ddcontroller_touchpad.png", "ddcontroller_app.png",
+    "ddcontroller_system.png",
 };
 const gfx::Point kPatchesLocations[] = {{}, {5, 5}, {47, 165}, {47, 234}};
 
-sk_sp<SkImage> LoadPng(int resource_id) {
-  base::StringPiece data =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+sk_sp<SkImage> LoadPng(const base::FilePath& path) {
+  std::string data;
   SkBitmap bitmap;
-  bool decoded =
-      gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(data.data()),
-                            data.size(), &bitmap);
-  DCHECK(decoded);
-  DCHECK(bitmap.colorType() == kRGBA_8888_SkColorType);
+  if (!base::ReadFileToString(path, &data) ||
+      !gfx::PNGCodec::Decode(
+          reinterpret_cast<const unsigned char*>(data.data()), data.size(),
+          &bitmap) ||
+      bitmap.colorType() != kRGBA_8888_SkColorType) {
+    return nullptr;
+  }
   return SkImage::MakeFromBitmap(bitmap);
 }
 
@@ -142,22 +154,50 @@ const gltf::Accessor* VrControllerModel::Accessor(
 }
 
 std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromComponent() {
+  base::FilePath models_path;
+  PathService::Get(component_updater::DIR_COMPONENT_USER, &models_path);
+  models_path = models_path.Append(kComponentName)
+                    .Append(kDefaultVersion)
+                    .Append(kModelsDirectory);
+  auto model_path = models_path.Append(kModelFilename);
+
+  // No further action if model file is not present
+  if (!base::PathExists(model_path)) {
+    LOG(WARNING) << "Controller model files not found";
+    return nullptr;
+  }
+
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
-  auto model_data = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_VR_SHELL_DDCONTROLLER_MODEL);
-  std::unique_ptr<gltf::Asset> asset =
-      BinaryGltfParser::Parse(model_data, &buffers);
-  DCHECK(asset);
+
+  std::string model_data;
+  base::ReadFileToString(model_path, &model_data);
+  auto asset = BinaryGltfParser::Parse(base::StringPiece(model_data), &buffers);
+  if (!asset) {
+    LOG(ERROR) << "Failed to read controller model";
+    return nullptr;
+  }
 
   auto controller_model =
       base::MakeUnique<VrControllerModel>(std::move(asset), std::move(buffers));
-  sk_sp<SkImage> base_texture = LoadPng(IDR_VR_SHELL_DDCONTROLLER_IDLE_TEXTURE);
+
+  auto textures_path = models_path.Append(kTexturesDirectory);
+
+  auto base_texture = LoadPng(textures_path.Append(kBaseTextureFilename));
+  if (!base_texture) {
+    LOG(ERROR) << "Failed to read controller base texture";
+    return nullptr;
+  }
   controller_model->SetBaseTexture(std::move(base_texture));
 
   for (int i = 0; i < VrControllerModel::STATE_COUNT; i++) {
-    if (kTexturePatchesResources[i] == -1)
+    if (!kTexturePatchesFilenames[i][0])
       continue;
-    auto patch_image = LoadPng(kTexturePatchesResources[i]);
+    auto patch_image =
+        LoadPng(textures_path.Append(kTexturePatchesFilenames[i]));
+    if (!patch_image) {
+      LOG(ERROR) << "Failed to read controller texture patch";
+      continue;
+    }
     controller_model->SetTexturePatch(i, patch_image);
   }
 
