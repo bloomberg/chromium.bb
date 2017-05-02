@@ -703,6 +703,7 @@ function injectOneGoogleBar(barHtml, endOfBodyHtml) {
     inHeadScript.onload = function() {
       var ogElem = $('one-google');
       ogElem.innerHTML = barHtml;
+      ogElem.classList.remove('hidden');
 
       var afterBarScript = document.createElement('script');
       afterBarScript.src =

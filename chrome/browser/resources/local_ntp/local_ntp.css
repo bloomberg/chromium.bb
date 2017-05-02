@@ -286,5 +286,10 @@ html[dir=rtl] #attribution,
 
 #one-google {
   position: fixed;
+  transition: opacity 130ms;
   z-index: 1;
+}
+
+#one-google.hidden {
+  opacity: 0;
 }
