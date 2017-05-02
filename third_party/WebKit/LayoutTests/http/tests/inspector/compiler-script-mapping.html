@@ -62,9 +62,9 @@ function test()
                 InspectorTest.checkUILocation(uiSourceCode2, 7, 4, uiLocation(script, 1, 151));
                 InspectorTest.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
-                InspectorTest.checkRawLocation(script, 0, 42, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode1, 3, 10));
-                InspectorTest.checkRawLocation(script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode2, 1, 0));
-                InspectorTest.checkRawLocation(script, 1, 110, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode2, 5, 2));
+                InspectorTest.checkRawLocation(script, 0, 42, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode1, 3, 10)[0]);
+                InspectorTest.checkRawLocation(script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 1, 0)[0]);
+                InspectorTest.checkRawLocation(script, 1, 110, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 5, 2)[0]);
 
                 InspectorTest.addResult("Location checks passed. Requesting content");
                 uiSourceCode1.requestContent().then(didRequestContent1);
@@ -120,7 +120,7 @@ function test()
             {
                 InspectorTest.addResult("source3.js UISourceCode arrived");
                 InspectorTest.checkUILocation(uiSourceCode, 2, 4, uiLocation(script, 0, 18));
-                InspectorTest.checkRawLocation(script, 0, 18, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode, 2, 4));
+                InspectorTest.checkRawLocation(script, 0, 18, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 2, 4)[0]);
 
                 InspectorTest.addResult("Location checks passed. Requesting content");
                 uiSourceCode.requestContent().then(didRequestContent);
