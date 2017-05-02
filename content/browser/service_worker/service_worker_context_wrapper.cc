@@ -673,6 +673,20 @@ void ServiceWorkerContextWrapper::GetRegistrationUserData(
   context_core_->storage()->GetUserData(registration_id, keys, callback);
 }
 
+void ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix(
+    int64_t registration_id,
+    const std::string& key_prefix,
+    const GetUserDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, std::vector<std::string>(),
+                       SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->GetUserDataByKeyPrefix(registration_id, key_prefix,
+                                                   callback);
+}
+
 void ServiceWorkerContextWrapper::StoreRegistrationUserData(
     int64_t registration_id,
     const GURL& origin,
