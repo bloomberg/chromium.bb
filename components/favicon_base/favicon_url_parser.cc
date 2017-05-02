@@ -16,8 +16,6 @@ namespace {
 // "chrome/browser/ui/webui/favicon_source.h" for a description of
 // what each does.
 const char kIconURLParameter[] = "iconurl/";
-const char kLargestParameter[] = "largest/";
-const char kOriginParameter[] = "origin/";
 const char kSizeParameter[] = "size/";
 
 // Returns true if |search| is a substring of |path| which starts at
@@ -45,10 +43,7 @@ bool ParseFaviconPath(const std::string& path,
     return false;
 
   size_t parsed_index = 0;
-  if (HasSubstringAt(path, parsed_index, kLargestParameter)) {
-    parsed_index += strlen(kLargestParameter);
-    parsed->size_in_dip = 0;
-  } else if (HasSubstringAt(path, parsed_index, kSizeParameter)) {
+  if (HasSubstringAt(path, parsed_index, kSizeParameter)) {
     parsed_index += strlen(kSizeParameter);
 
     size_t slash = path.find("/", parsed_index);
@@ -96,20 +91,6 @@ bool ParseFaviconPath(const std::string& path,
     parsed_index += strlen(kIconURLParameter);
     parsed->is_icon_url = true;
     parsed->url = path.substr(parsed_index);
-  } else if (HasSubstringAt(path, parsed_index, kOriginParameter)) {
-    // URL requests prefixed with "origin/" are converted to a form with an
-    // empty path and a valid scheme. (e.g., example.com -->
-    // http://example.com/ or http://example.com/a --> http://example.com/)
-    parsed_index += strlen(kOriginParameter);
-    std::string possibly_invalid_url = path.substr(parsed_index);
-
-    // If the URL does not specify a scheme (e.g., example.com instead of
-    // http://example.com), add "http://" as a default.
-    if (!GURL(possibly_invalid_url).has_scheme())
-      possibly_invalid_url = "http://" + possibly_invalid_url;
-
-    // Strip the path beyond the top-level domain.
-    parsed->url = GURL(possibly_invalid_url).GetOrigin().spec();
   } else {
     parsed->url = path.substr(parsed_index);
   }

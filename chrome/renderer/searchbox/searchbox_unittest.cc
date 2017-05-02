@@ -154,8 +154,6 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFaviconSuccess) {
   } test_cases[] = {
     {FAVICON, "chrome-search://favicon/1/2", "", 1, 2},
     {FAVICON, "chrome-search://favicon/size/16@2x/3/4", "size/16@2x/", 3, 4},
-    {FAVICON, "chrome-search://favicon/largest/5/6", "largest/", 5, 6},
-    {FAVICON, "chrome-search://favicon/origin/7/8", "origin/", 7, 8},
     {FAVICON, "chrome-search://favicon/iconurl/9/10", "iconurl/", 9, 10},
     {LARGE_ICON, "chrome-search://large-icon/96/1/2", "96/", 1, 2},
     {LARGE_ICON, "chrome-search://large-icon/1/3/4", "1/", 3, 4},
