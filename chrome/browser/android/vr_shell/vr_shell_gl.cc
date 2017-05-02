@@ -156,12 +156,6 @@ enum class ViewerType {
   VIEWER_TYPE_MAX,
 };
 
-void RunVRDisplayInfoCallback(
-    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-    device::mojom::VRDisplayInfoPtr info) {
-  callback.Run(std::move(info));
-}
-
 void MatfToGvrMat(const vr::Mat4f& in, gvr::Mat4f* out) {
   // If our std::array implementation doesn't have any non-data members, we can
   // just cast the gvr matrix to an std::array.
@@ -1359,9 +1353,8 @@ void VrShellGl::CreateVRDisplayInfo(
   device::mojom::VRDisplayInfoPtr info =
       device::GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(),
                                                webvr_surface_size_, device_id);
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RunVRDisplayInfoCallback, callback, base::Passed(&info)));
+  main_thread_task_runner_->PostTask(FROM_HERE,
+                                     base::Bind(callback, base::Passed(&info)));
 }
 
 }  // namespace vr_shell
