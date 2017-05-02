@@ -146,6 +146,7 @@ if (enable_vr) {
       "test/data/sample_inline.gltf",
       "test/data/sample_external.gltf",
       "test/data/sample.bin",
+      "test/data/sample.glb",
     ]
   }
 }
