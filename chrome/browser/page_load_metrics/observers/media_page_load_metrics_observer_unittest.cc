@@ -56,22 +56,26 @@ class MediaPageLoadMetricsObserverTest
     // Prepare 4 resources of varying size and configurations.
     page_load_metrics::ExtraRequestCompleteInfo resources[] = {
         // Cached request.
-        {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+        {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
+         1024 * 40 /* raw_body_bytes */,
          0 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached non-proxied request.
-        {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+         1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached proxied request with .1 compression ratio.
-        {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+         1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
         // Uncached proxied request with .5 compression ratio.
-        {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+        {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+         1024 * 40 /* raw_body_bytes */,
          1024 * 40 /* original_network_content_length */,
          nullptr /* data_reduction_proxy_data */,
          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},

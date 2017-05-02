@@ -45,10 +45,14 @@ TEST_F(ResourceTrackingPageLoadMetricsObserverTest, StartAndFinish) {
       content::ResourceType::RESOURCE_TYPE_IMAGE};
 
   page_load_metrics::ExtraRequestCompleteInfo done_info{
-      false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      GURL(),
+      -1 /*frame_tree_node_id*/,
+      false /*was_cached*/,
+      1024 * 40 /* raw_body_bytes */,
       1024 * 40 /* original_network_content_length */,
       nullptr /* data reduction_proxy */,
-      content::ResourceType::RESOURCE_TYPE_IMAGE};
+      content::ResourceType::RESOURCE_TYPE_IMAGE,
+  };
 
   // Start the navigation. This will create the page load tracker and register
   // the observers.

@@ -106,6 +106,8 @@ class MetricsWebContentsObserver
   // A resource request completed on the IO thread. This method is invoked on
   // the UI thread.
   void OnRequestComplete(
+      const GURL& url,
+      int frame_tree_node_id,
       const content::GlobalRequestID& request_id,
       content::ResourceType resource_type,
       bool was_cached,

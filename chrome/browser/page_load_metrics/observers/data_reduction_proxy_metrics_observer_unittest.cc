@@ -418,9 +418,14 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   data->set_lofi_received(true);
 
   // Verify LoFi is tracked when a LoFi response is received.
+
   page_load_metrics::ExtraRequestCompleteInfo resource = {
-      true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-      0 /* original_network_content_length */, std::move(data),
+      GURL(),
+      -1 /* frame_tree_node_id */,
+      true /*was_cached*/,
+      1024 * 40 /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      std::move(data),
       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME};
 
   RunTest(true, false);
@@ -456,21 +461,24 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
-      {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
+      {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
-      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .1 compression ratio.
-      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 10 /* original_network_content_length */, data->DeepCopy(),
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .5 compression ratio.
-      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */,
        1024 * 40 * 5 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
@@ -512,21 +520,24 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   // Prepare 4 resources of varying size and configurations.
   page_load_metrics::ExtraRequestCompleteInfo resources[] = {
       // Cached request.
-      {true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
+      {GURL(), -1 /* frame_tree_node_id */, true /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached non-proxied request.
-      {false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */,
        nullptr /* data_reduction_proxy_data */,
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .1 compression ratio.
-      {false /*was_cached*/, 1024 * 40 * 10 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 * 10 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */, data->DeepCopy(),
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
       // Uncached proxied request with .5 compression ratio.
-      {false /*was_cached*/, 1024 * 40 * 5 /* raw_body_bytes */,
+      {GURL(), -1 /* frame_tree_node_id */, false /*was_cached*/,
+       1024 * 40 * 5 /* raw_body_bytes */,
        1024 * 40 /* original_network_content_length */, std::move(data),
        content::ResourceType::RESOURCE_TYPE_MAIN_FRAME},
   };
