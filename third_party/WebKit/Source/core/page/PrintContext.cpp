@@ -32,7 +32,7 @@ namespace blink {
 // dimensions in paged media (i.e. cm, pt,). The shrinkage used
 // to be 80% (1.25f) to match other browsers - they have since moved on.
 // Wide pages will be scaled down more than this.
-const float kPrintingMinimumShrinkFactor = 1.333f;
+const float kPrintingMinimumShrinkFactor = 1.33333333f;
 
 // This number determines how small we are willing to reduce the page content
 // in order to accommodate the widest line. If the page would have to be
