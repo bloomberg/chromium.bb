@@ -995,6 +995,7 @@ source_set("browser") {
     "memory/swap_metrics_observer_linux.cc",
     "memory/swap_metrics_observer_linux.h",
     "memory/swap_metrics_observer_mac.cc",
+    "memory/swap_metrics_observer_mac.h",
     "memory/swap_metrics_observer_win.cc",
     "message_port_provider.cc",
     "mime_registry_impl.cc",
