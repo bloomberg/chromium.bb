@@ -115,6 +115,7 @@ public abstract class AppHooks {
     }
 
     /** Returns the singleton instance of ChromeShortcutManager */
+    // TODO(martiw): remove this function after ChromeShortcutManagerInternal is removed
     public ChromeShortcutManager createChromeShortcutManager() {
         return new ChromeShortcutManager();
     }
