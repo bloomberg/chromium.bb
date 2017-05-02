@@ -8,9 +8,7 @@
         xmlns:chrome="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="@dimen/downloads_item_margin"
-        android:paddingEnd="14dp"
-        android:paddingTop="26dp"
+        android:paddingTop="16dp"
         android:paddingBottom="6dp"
         android:orientation="vertical" >
 

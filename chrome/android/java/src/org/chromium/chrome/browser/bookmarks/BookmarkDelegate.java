@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -39,9 +40,14 @@ interface BookmarkDelegate {
     void openFolder(BookmarkId folder);
 
     /**
-     * @return The SelectionDelegate responsible for tracking selected bookmarks.
+     * @return The {@link SelectionDelegate} responsible for tracking selected bookmarks.
      */
     SelectionDelegate<BookmarkId> getSelectionDelegate();
+
+    /**
+     * @return The {@link SelectableListLayout} displaying the list of bookmarks.
+     */
+    SelectableListLayout<BookmarkId> getSelectableListLayout();
 
     /**
      * Notifies the current mode set event to the given observer. For example, if the current mode

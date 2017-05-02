@@ -94,8 +94,7 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         mSelectableListLayout.initializeToolbar(R.layout.photo_picker_toolbar, mSelectionDelegate,
                 R.string.photo_picker_select_images, null, R.id.photo_picker_normal_menu_group,
-                R.id.photo_picker_selection_mode_menu_group, R.color.default_primary_color, false,
-                this);
+                R.id.photo_picker_selection_mode_menu_group, R.color.default_primary_color, this);
 
         Rect appRect = new Rect();
         ((Activity) context).getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);

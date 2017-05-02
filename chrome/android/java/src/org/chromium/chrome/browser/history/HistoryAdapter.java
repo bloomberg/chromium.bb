@@ -214,6 +214,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         SelectableItemViewHolder<HistoryItem> viewHolder =
                 new SelectableItemViewHolder<>(v, mSelectionDelegate);
         HistoryItemView itemView = (HistoryItemView) viewHolder.itemView;
+        itemView.configureWideDisplayStyle(mHistoryManager.getSelectableListLayout().getUiConfig());
         itemView.setRemoveButtonVisible(!mSelectionDelegate.isSelectionEnabled());
         mItemViews.add(itemView);
         return viewHolder;
@@ -231,7 +232,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     @Override
     protected int getTimedItemViewResId() {
-        return R.layout.history_date_view;
+        return R.layout.date_view;
     }
 
     @SuppressWarnings("unchecked")
@@ -320,14 +321,16 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 R.string.android_history_no_synced_results, LEARN_MORE_LINK);
         MarginResizer.createWithViewAdapter(mSignedInNotSyncedTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources), mHistoryManager.getListItemLateralShadowSizePx());
+                getDefaultTextMargin(resources),
+                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         mSignedInSyncedTextView = (TextView) v.findViewById(R.id.signed_in_synced);
         setPrivacyDisclaimerText(mSignedInSyncedTextView,
                 R.string.android_history_has_synced_results, LEARN_MORE_LINK);
         MarginResizer.createWithViewAdapter(mSignedInSyncedTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources), mHistoryManager.getListItemLateralShadowSizePx());
+                getDefaultTextMargin(resources),
+                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         mOtherFormsOfBrowsingHistoryTextView = (TextView) v.findViewById(
                 R.id.other_forms_of_browsing_history);
@@ -335,7 +338,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 R.string.android_history_other_forms_of_history, GOOGLE_HISTORY_LINK);
         MarginResizer.createWithViewAdapter(mOtherFormsOfBrowsingHistoryTextView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
-                getDefaultTextMargin(resources), mHistoryManager.getListItemLateralShadowSizePx());
+                getDefaultTextMargin(resources),
+                SelectableListLayout.getDefaultListItemLateralShadowSizePx(resources));
 
         setPrivacyDisclaimerVisibility();
 
@@ -354,7 +358,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         MarginResizer.createWithViewAdapter(viewHolder.itemView,
                 mHistoryManager.getSelectableListLayout().getUiConfig(),
                 getDefaultTextMargin(parent.getResources()),
-                mHistoryManager.getListItemLateralShadowSizePx());
+                SelectableListLayout.getDefaultListItemLateralShadowSizePx(parent.getResources()));
         return viewHolder;
     }
 
@@ -399,8 +403,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     private int getDefaultTextMargin(Resources resources) {
         if (mDefaultTextMargin == 0) {
-            mDefaultTextMargin = resources.getDimensionPixelSize(
-                    R.dimen.history_default_text_margin);
+            mDefaultTextMargin = resources.getDimensionPixelSize(R.dimen.list_item_default_margin);
         }
         return mDefaultTextMargin;
     }

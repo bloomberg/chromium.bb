@@ -18,6 +18,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoHeaderShowingChangeListener;
+import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
+import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -199,17 +201,26 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         switch (viewType) {
             case PROMO_HEADER_VIEW:
-                return mPromoHeaderManager.createHolder(parent);
+                ViewHolder promoView = mPromoHeaderManager.createHolder(parent);
+                MarginResizer.createWithViewAdapter(promoView.itemView,
+                        mDelegate.getSelectableListLayout().getUiConfig(),
+                        parent.getResources().getDimensionPixelSize(
+                                R.dimen.signin_and_sync_view_padding),
+                        SelectableListLayout.getDefaultListItemLateralShadowSizePx(
+                                parent.getResources()));
+                return promoView;
             case FOLDER_VIEW:
                 BookmarkFolderRow folder = (BookmarkFolderRow) LayoutInflater.from(
                         parent.getContext()).inflate(R.layout.bookmark_folder_row, parent, false);
                 folder.onBookmarkDelegateInitialized(mDelegate);
+                folder.configureWideDisplayStyle(mDelegate.getSelectableListLayout().getUiConfig());
                 mFolderRows.add(folder);
                 return new ItemViewHolder(folder);
             case BOOKMARK_VIEW:
                 BookmarkItemRow item = (BookmarkItemRow) LayoutInflater.from(
                         parent.getContext()).inflate(R.layout.bookmark_item_row, parent, false);
                 item.onBookmarkDelegateInitialized(mDelegate);
+                item.configureWideDisplayStyle(mDelegate.getSelectableListLayout().getUiConfig());
                 mBookmarkRows.add(item);
                 return new ItemViewHolder(item);
             default:

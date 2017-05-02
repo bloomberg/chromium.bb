@@ -149,9 +149,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
 
         mToolbar = (BookmarkActionBar) mSelectableListLayout.initializeToolbar(
                 R.layout.bookmark_action_bar, mSelectionDelegate, 0, null, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, R.color.default_primary_color, false, null);
+                R.id.selection_mode_menu_group, R.color.default_primary_color, null);
         mToolbar.initializeSearchView(
                 this, R.string.bookmark_action_bar_search, R.id.search_menu_id);
+
+        mSelectableListLayout.configureWideDisplayStyle();
 
         mUndoController = new BookmarkUndoController(activity, mBookmarkModel, snackbarManager);
         mBookmarkModel.addObserver(mBookmarkModelObserver);
@@ -230,7 +232,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     /**
      * See {@link SelectableListLayout#detachToolbarView()}.
      */
-    public SelectableListToolbar detachToolbarView() {
+    public SelectableListToolbar<BookmarkId> detachToolbarView() {
         return mSelectableListLayout.detachToolbarView();
     }
 
@@ -349,6 +351,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     @Override
     public SelectionDelegate<BookmarkId> getSelectionDelegate() {
         return mSelectionDelegate;
+    }
+
+    @Override
+    public SelectableListLayout<BookmarkId> getSelectableListLayout() {
+        return mSelectableListLayout;
     }
 
     @Override
