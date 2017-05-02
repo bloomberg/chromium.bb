@@ -62,7 +62,9 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
 
   virtual Page* GetPage() const = 0;
   virtual Frame* FocusedCoreFrame() const = 0;
+
   static WebViewBase* FromPage(Page*);
+  static HashSet<WebViewBase*>& AllInstances();
 
   // Returns the main frame associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -120,6 +122,7 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
 
   virtual WebSettingsImpl* SettingsImpl() = 0;
 
+  using WebWidget::GetPagePopup;
   virtual PagePopup* OpenPagePopup(PagePopupClient*) = 0;
   virtual void ClosePagePopup(PagePopup*) = 0;
   virtual void CleanupPagePopup() = 0;

@@ -27,25 +27,26 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
+#include "core/page/ChromeClient.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebTextDirection.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebViewImpl.h"
 
 namespace blink {
 
-ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& web_view)
+ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewBase& web_view)
     : web_view_(web_view),
       current_anchor_(nullptr),
       last_page_scale_factor_(1),
       finish_time_(0) {}
 
 ValidationMessageClientImpl* ValidationMessageClientImpl::Create(
-    WebViewImpl& web_view) {
+    WebViewBase& web_view) {
   return new ValidationMessageClientImpl(web_view);
 }
 

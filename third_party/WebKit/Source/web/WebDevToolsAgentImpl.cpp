@@ -166,7 +166,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
     // 1. Disable input events.
     WebFrameWidgetBase::SetIgnoreInputEvents(true);
-    for (const auto view : WebViewImpl::AllInstances())
+    for (const auto view : WebViewBase::AllInstances())
       view->ChromeClient().NotifyPopupOpeningObservers();
 
     // 2. Notify embedder about pausing.

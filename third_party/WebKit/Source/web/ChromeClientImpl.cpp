@@ -384,10 +384,12 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   DCHECK(frame->GetDocument());
   Fullscreen::FullyExitFullscreen(*frame->GetDocument());
 
-  WebViewImpl* new_view = ToWebViewImpl(web_view_->Client()->CreateView(
-      WebLocalFrameImpl::FromFrame(frame),
-      WrappedResourceRequest(r.GetResourceRequest()), features, r.FrameName(),
-      policy, r.GetShouldSetOpener() == kNeverSetOpener || features.noopener));
+  WebViewBase* new_view =
+      static_cast<WebViewBase*>(web_view_->Client()->CreateView(
+          WebLocalFrameImpl::FromFrame(frame),
+          WrappedResourceRequest(r.GetResourceRequest()), features,
+          r.FrameName(), policy,
+          r.GetShouldSetOpener() == kNeverSetOpener || features.noopener));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();

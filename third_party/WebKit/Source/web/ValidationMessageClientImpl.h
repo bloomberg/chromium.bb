@@ -36,7 +36,7 @@
 namespace blink {
 
 class FrameView;
-class WebViewImpl;
+class WebViewBase;
 
 class ValidationMessageClientImpl final
     : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
@@ -45,13 +45,13 @@ class ValidationMessageClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* Create(WebViewImpl&);
+  static ValidationMessageClientImpl* Create(WebViewBase&);
   ~ValidationMessageClientImpl() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  ValidationMessageClientImpl(WebViewImpl&);
+  ValidationMessageClientImpl(WebViewBase&);
   void CheckAnchorStatus(TimerBase*);
   FrameView* CurrentView();
 
@@ -69,7 +69,7 @@ class ValidationMessageClientImpl final
   // PopupOpeningObserver function
   void WillOpenPopup() override;
 
-  WebViewImpl& web_view_;
+  WebViewBase& web_view_;
   Member<const Element> current_anchor_;
   String message_;
   IntRect last_anchor_rect_in_screen_;

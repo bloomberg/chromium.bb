@@ -331,8 +331,8 @@ void WebViewImpl::SetSpellCheckClient(WebSpellCheckClient* spell_check_client) {
 }
 
 // static
-HashSet<WebViewImpl*>& WebViewImpl::AllInstances() {
-  DEFINE_STATIC_LOCAL(HashSet<WebViewImpl*>, all_instances, ());
+HashSet<WebViewBase*>& WebViewBase::AllInstances() {
+  DEFINE_STATIC_LOCAL(HashSet<WebViewBase*>, all_instances, ());
   return all_instances;
 }
 

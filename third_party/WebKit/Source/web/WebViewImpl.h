@@ -103,7 +103,6 @@ class WEB_EXPORT WebViewImpl final
       public WebViewScheduler::WebViewSchedulerSettings {
  public:
   static WebViewImpl* Create(WebViewClient*, WebPageVisibilityState);
-  static HashSet<WebViewImpl*>& AllInstances();
 
   // WebWidget methods:
   void Close() override;
