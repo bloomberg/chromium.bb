@@ -39,6 +39,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
@@ -93,7 +94,7 @@ WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
                                        WebView* web_view,
                                        WebLocalFrame* main_frame) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
-  return new WebViewFrameWidget(*client, ToWebViewImpl(*web_view),
+  return new WebViewFrameWidget(*client, static_cast<WebViewBase&>(*web_view),
                                 ToWebLocalFrameImpl(*main_frame));
 }
 
@@ -787,15 +788,13 @@ void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
 
 void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
                                          const WebMouseEvent& event) {
-  // TODO(slangley): Remove this downcast to WebViewImpl once we lift this
-  // code into core.
-  WebViewImpl* view_impl = ToWebViewImpl(View());
+  WebViewBase* view_impl = View();
   // If there is a popup open, close it as the user is clicking on the page
   // (outside of the popup). We also save it so we can prevent a click on an
   // element from immediately reopening the same popup.
   RefPtr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
-    page_popup = view_impl->GetPagePopup();
+    page_popup = ToWebPagePopupImpl(view_impl->GetPagePopup());
     view_impl->HidePopups();
   }
 
@@ -824,7 +823,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
 
   if (view_impl->GetPagePopup() && page_popup &&
-      view_impl->GetPagePopup()->HasSamePopupClient(page_popup.Get())) {
+      ToWebPagePopupImpl(view_impl->GetPagePopup())
+          ->HasSamePopupClient(page_popup.Get())) {
     // That click triggered a page popup that is the same as the one we just
     // closed.  It needs to be closed.
     view_impl->HidePopups();
@@ -902,9 +902,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
   DCHECK(client_);
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   bool event_cancelled = false;
-  // TODO(slangley): Remove this downcast to WebViewImpl once we lift this
-  // code into core.
-  WebViewImpl* view_impl = ToWebViewImpl(View());
+
+  WebViewBase* view_impl = View();
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollEnd:
@@ -918,7 +917,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       // When we close a popup because of a GestureTapDown, we also save it so
       // we can prevent the following GestureTap from immediately reopening the
       // same popup.
-      view_impl->SetLastHiddenPagePopup(view_impl->GetPagePopup());
+      view_impl->SetLastHiddenPagePopup(
+          ToWebPagePopupImpl(view_impl->GetPagePopup()));
       View()->HidePopups();
     case WebInputEvent::kGestureTapCancel:
       View()->SetLastHiddenPagePopup(nullptr);

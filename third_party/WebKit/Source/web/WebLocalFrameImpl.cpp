@@ -1788,7 +1788,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
 WebViewBase* WebLocalFrameImpl::ViewImpl() const {
   if (!GetFrame())
     return nullptr;
-  return WebViewImpl::FromPage(GetFrame()->GetPage());
+  return WebViewBase::FromPage(GetFrame()->GetPage());
 }
 
 WebDataSourceImpl* WebLocalFrameImpl::DataSourceImpl() const {
