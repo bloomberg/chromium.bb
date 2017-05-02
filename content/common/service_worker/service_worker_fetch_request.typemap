@@ -5,6 +5,7 @@
 mojom =
     "//third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom"
 public_headers = [
+  "//content/common/service_worker/service_worker_client_info.h",
   "//content/common/service_worker/service_worker_types.h",
   "//content/public/common/request_context_frame_type.h",
   "//content/public/common/request_context_type.h",
