@@ -2146,10 +2146,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
       </message>
       <message name="IDS_SIGNIN_SIGNED_IN_SETTINGS_DESCRIPTION_CHILD_ACCOUNT" desc="Label of the section containing the link to go to the settings page, when signing in to a child account.">
-        You and your parents can control how this works in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
+        You and your parents can manage Chrome Sync and personalization in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
       </message>
       <message name="IDS_SIGNIN_SIGNED_IN_SETTINGS_DESCRIPTION" desc="Label of the section containing the link to go to the settings page.">
-        Control how this works in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
+        Manage Chrome Sync and personalization in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
       </message>
       <message name="IDS_SIGNIN_GMS_UPDATING" desc="Message notifying user that Google Play Services is still updating.">
         Waiting for Google Play Services to finish updating
