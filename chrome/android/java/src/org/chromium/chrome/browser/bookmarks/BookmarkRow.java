@@ -175,10 +175,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
                 showMenu(view);
             }
         });
-
-        // TODO(twellington): Replace this with a MarginResizer after the bookmarks layout is width
-        //                    constrained to 600dp.
-        setLateralMarginsForDefaultDisplay(findViewById(R.id.bookmark_row));
     }
 
     @Override

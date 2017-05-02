@@ -363,6 +363,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
             setNavigationIcon(iconResId);
         }
         setNavigationContentDescription(contentDescriptionId);
+
+        updateDisplayStyleIfNecessary();
     }
 
     /**
@@ -387,8 +389,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     public void hideSearchView() {
         assert mHasSearchView;
 
-        mIsSearching = false;
+        if (!mIsSearching) return;
 
+        mIsSearching = false;
         mSearchEditText.setText("");
         UiUtils.hideKeyboard(mSearchEditText);
         showNormalView();
@@ -434,8 +437,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
      *
      * @param wideDisplayLateralOffsetPx The offset to use for the lateral padding when in
      *                                   {@link HorizontalDisplayStyle#WIDE}.
+     * @param uiConfig The UiConfig used to observe display style changes.
      */
-    public void setHasWideDisplayStyle(int wideDisplayLateralOffsetPx, UiConfig uiConfig) {
+    public void configureWideDisplayStyle(int wideDisplayLateralOffsetPx, UiConfig uiConfig) {
         mWideDisplayLateralOffsetPx = wideDisplayLateralOffsetPx;
         mDefaultTitleMarginStartPx = getTitleMarginStart();
         mWideDisplayNavButtonOffsetPx =
@@ -464,7 +468,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
             // The title and nav buttons are inset in the normal display style. In the wide display
             // style they should be aligned with the starting edge of the list elements.
-            if (mIsSearching || mIsSelectionEnabled) {
+            if (mIsSearching || mIsSelectionEnabled
+                    || mNavigationButton != NAVIGATION_BUTTON_NONE) {
                 paddingStartOffset += mWideDisplayNavButtonOffsetPx;
             } else {
                 paddingStartOffset -= mDefaultTitleMarginStartPx;

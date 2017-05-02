@@ -205,19 +205,20 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         // Prevent every progress update from causing a transition animation.
         mRecyclerView.getItemAnimator().setChangeDuration(0);
 
-        mHistoryAdapter.initialize(mBackendProvider);
-        addObserver(mHistoryAdapter);
-
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
         addObserver(mFilterAdapter);
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
-                R.id.normal_menu_group, R.id.selection_mode_menu_group, null, true, this);
+                R.id.normal_menu_group, R.id.selection_mode_menu_group, null, this);
         mToolbar.initializeFilterSpinner(mFilterAdapter);
         mToolbar.initializeSearchView(this, R.string.download_manager_search, R.id.search_menu_id);
         addObserver(mToolbar);
+
+        mSelectableListLayout.configureWideDisplayStyle();
+        mHistoryAdapter.initialize(mBackendProvider, mSelectableListLayout.getUiConfig());
+        addObserver(mHistoryAdapter);
 
         mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
 
@@ -271,7 +272,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     /**
      * See {@link SelectableListLayout#detachToolbarView()}.
      */
-    public SelectableListToolbar detachToolbarView() {
+    public SelectableListToolbar<DownloadHistoryItemWrapper> detachToolbarView() {
         return mSelectableListLayout.detachToolbarView();
     }
 
@@ -302,6 +303,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             shareSelectedItems();
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
+            // The header should be removed as soon as a search is started. It will be added back in
+            // DownloadHistoryAdatper#filter() when the search is ended.
+            mHistoryAdapter.removeHeader();
             mSelectableListLayout.onStartSearch();
             mToolbar.showSearchView();
             RecordUserAction.record("Android.DownloadManager.Search");

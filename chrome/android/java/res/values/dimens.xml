@@ -431,7 +431,6 @@
 
     <!-- Downloads dimensions. -->
     <dimen name="downloads_item_icon_size">48dp</dimen>
-    <dimen name="downloads_item_margin">16dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_layout_end_icon">24dp</dimen>
@@ -465,7 +464,8 @@
     <dimen name="card_corner_radius">2dp</dimen>
     <dimen name="list_item_corner_radius">3dp</dimen>
     <dimen name="list_item_lateral_padding">1dp</dimen>
-    <dimen name="history_default_text_margin">16dp</dimen>
+    <dimen name="list_item_default_margin">16dp</dimen>
+    <dimen name="signin_and_sync_view_padding">16dp</dimen>
 
     <!-- Context Menu Dimensions -->
     <dimen name="context_menu_header_image_min_size">56dp</dimen>

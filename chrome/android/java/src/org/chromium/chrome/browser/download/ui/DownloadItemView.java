@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The view for a downloaded item displayed in the Downloads list.
@@ -62,7 +61,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
      */
     public DownloadItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mMargin = context.getResources().getDimensionPixelSize(R.dimen.downloads_item_margin);
+        mMargin = context.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin);
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
         mIconBackgroundColorSelected =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
@@ -106,10 +105,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 mItem.cancel();
             }
         });
-
-        if (!DeviceFormFactor.isLargeTablet(getContext())) {
-            setLateralMarginsForDefaultDisplay(mLayoutContainer);
-        }
     }
 
     @Override
@@ -230,13 +225,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public void setChecked(boolean checked) {
         super.setChecked(checked);
         updateIconView();
-    }
-
-    @Override
-    public void setBackgroundResourceForGroupPosition(
-            boolean isFirstInGroup, boolean isLastInGroup) {
-        if (DeviceFormFactor.isLargeTablet(getContext())) return;
-        super.setBackgroundResourceForGroupPosition(isFirstInGroup, isLastInGroup);
     }
 
     private void updateIconView() {
