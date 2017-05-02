@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 
 /**
  * Generic builder for promo dialogs.
@@ -59,12 +60,9 @@ public abstract class PromoDialog
         mDialogLayout.initialize(getDialogParams());
     }
 
-    /**
-     * Adds a View to the layout within the scrollable area.
-     * See {@link PromoDialogLayout#addControl}.
-     */
-    protected void addControl(View control) {
-        mDialogLayout.addControl(control);
+    /** Add a standardized set of dialog controls. */
+    protected InfoBarControlLayout addControlLayout() {
+        return mDialogLayout.addControlLayout();
     }
 
     @Override
