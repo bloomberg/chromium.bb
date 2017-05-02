@@ -31,7 +31,7 @@ void av1_entropy_mv_init(void) {
 }
 
 static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
-                                int usehp) {
+                                MvSubpelPrecision precision) {
   int offset;
   const int sign = comp < 0;
   const int mag = sign ? -comp : comp;
@@ -57,13 +57,18 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
     for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
   }
 
-  // Fractional bits
-  aom_write_symbol(
-      w, fr, mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
-      MV_FP_SIZE);
+// Fractional bits
+#if CONFIG_INTRABC
+  if (precision > MV_SUBPEL_NONE)
+#endif  // CONFIG_INTRABC
+  {
+    aom_write_symbol(w, fr, mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d]
+                                                   : mvcomp->fp_cdf,
+                     MV_FP_SIZE);
+  }
 
   // High precision bit
-  if (usehp)
+  if (precision > MV_SUBPEL_LOW_PRECISION)
     aom_write(w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp : mvcomp->hp);
 }
 
@@ -230,10 +235,10 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
 
   aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
   if (mv_joint_vertical(j))
-    encode_mv_component(w, diff.row, &mvctx->comps[0], 0);
+    encode_mv_component(w, diff.row, &mvctx->comps[0], MV_SUBPEL_NONE);
 
   if (mv_joint_horizontal(j))
-    encode_mv_component(w, diff.col, &mvctx->comps[1], 0);
+    encode_mv_component(w, diff.col, &mvctx->comps[1], MV_SUBPEL_NONE);
 }
 #endif  // CONFIG_INTRABC
 

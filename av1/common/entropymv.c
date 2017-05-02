@@ -180,7 +180,7 @@ MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
 }
 
 static void inc_mv_component(int v, nmv_component_counts *comp_counts, int incr,
-                             int usehp) {
+                             MvSubpelPrecision precision) {
   int s, z, c, o, d, e, f;
   assert(v != 0); /* should not be zero */
   s = v < 0;
@@ -196,27 +196,34 @@ static void inc_mv_component(int v, nmv_component_counts *comp_counts, int incr,
 
   if (c == MV_CLASS_0) {
     comp_counts->class0[d] += incr;
-    comp_counts->class0_fp[d][f] += incr;
-    if (usehp) comp_counts->class0_hp[e] += incr;
+#if CONFIG_INTRABC
+    if (precision > MV_SUBPEL_NONE)
+#endif
+      comp_counts->class0_fp[d][f] += incr;
+    if (precision > MV_SUBPEL_LOW_PRECISION) comp_counts->class0_hp[e] += incr;
   } else {
     int i;
     int b = c + CLASS0_BITS - 1;  // number of bits
     for (i = 0; i < b; ++i) comp_counts->bits[i][((d >> i) & 1)] += incr;
-    comp_counts->fp[f] += incr;
-    if (usehp) comp_counts->hp[e] += incr;
+#if CONFIG_INTRABC
+    if (precision > MV_SUBPEL_NONE)
+#endif
+      comp_counts->fp[f] += incr;
+    if (precision > MV_SUBPEL_LOW_PRECISION) comp_counts->hp[e] += incr;
   }
 }
 
-void av1_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
+void av1_inc_mv(const MV *mv, nmv_context_counts *counts,
+                MvSubpelPrecision precision) {
   if (counts != NULL) {
     const MV_JOINT_TYPE j = av1_get_mv_joint(mv);
     ++counts->joints[j];
 
     if (mv_joint_vertical(j))
-      inc_mv_component(mv->row, &counts->comps[0], 1, usehp);
+      inc_mv_component(mv->row, &counts->comps[0], 1, precision);
 
     if (mv_joint_horizontal(j))
-      inc_mv_component(mv->col, &counts->comps[1], 1, usehp);
+      inc_mv_component(mv->col, &counts->comps[1], 1, precision);
   }
 }
 

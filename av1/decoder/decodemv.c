@@ -944,7 +944,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_INTRABC
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                            nmv_context *ctx, nmv_context_counts *counts,
-                           int allow_hp);
+                           MvSubpelPrecision precision);
 
 static INLINE int is_mv_valid(const MV *mv);
 
@@ -959,7 +959,8 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
 #endif
   FRAME_COUNTS *counts = xd->counts;
   nmv_context_counts *const dv_counts = counts ? &counts->dv : NULL;
-  read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts, 0);
+  read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts,
+          MV_SUBPEL_NONE);
   int valid = is_mv_valid(&mv->as_mv) &&
               is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize);
   return valid;
@@ -1141,7 +1142,11 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif  // !CONFIG_TXK_SEL
 }
 
-static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
+static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
+#if CONFIG_INTRABC
+                             int use_subpel,
+#endif  // CONFIG_INTRABC
+                             int usehp) {
   int mag, d, fr, hp;
   const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
   const int mv_class =
@@ -1161,13 +1166,22 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
-  // Fractional part
-  fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
-                       MV_FP_SIZE, ACCT_STR);
+#if CONFIG_INTRABC
+  if (use_subpel) {
+#endif  // CONFIG_INTRABC
+        // Fractional part
+    fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
+                         MV_FP_SIZE, ACCT_STR);
 
-  // High precision part (if hp is not used, the default value of the hp is 1)
-  hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
-             : 1;
+    // High precision part (if hp is not used, the default value of the hp is 1)
+    hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
+               : 1;
+#if CONFIG_INTRABC
+  } else {
+    fr = 3;
+    hp = 1;
+  }
+#endif  // CONFIG_INTRABC
 
   // Result
   mag += ((d << 3) | (fr << 1) | hp) + 1;
@@ -1176,19 +1190,27 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
 
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                            nmv_context *ctx, nmv_context_counts *counts,
-                           int allow_hp) {
+                           MvSubpelPrecision precision) {
   MV_JOINT_TYPE joint_type;
   MV diff = { 0, 0 };
   joint_type =
       (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joint_cdf, MV_JOINTS, ACCT_STR);
 
   if (mv_joint_vertical(joint_type))
-    diff.row = read_mv_component(r, &ctx->comps[0], allow_hp);
+    diff.row = read_mv_component(r, &ctx->comps[0],
+#if CONFIG_INTRABC
+                                 precision > MV_SUBPEL_NONE,
+#endif  // CONFIG_INTRABC
+                                 precision > MV_SUBPEL_LOW_PRECISION);
 
   if (mv_joint_horizontal(joint_type))
-    diff.col = read_mv_component(r, &ctx->comps[1], allow_hp);
+    diff.col = read_mv_component(r, &ctx->comps[1],
+#if CONFIG_INTRABC
+                                 precision > MV_SUBPEL_NONE,
+#endif  // CONFIG_INTRABC
+                                 precision > MV_SUBPEL_LOW_PRECISION);
 
-  av1_inc_mv(&diff, counts, allow_hp);
+  av1_inc_mv(&diff, counts, precision);
 
   mv->row = ref->row + diff.row;
   mv->col = ref->col + diff.col;
