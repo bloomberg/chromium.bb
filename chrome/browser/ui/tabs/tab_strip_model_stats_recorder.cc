@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -36,7 +37,7 @@ class TabStripModelStatsRecorder::TabInfo
         contents->GetUserData(kKey));
     if (!info) {
       info = new TabInfo();
-      contents->SetUserData(kKey, info);
+      contents->SetUserData(kKey, base::WrapUnique(info));
     }
     return info;
   }

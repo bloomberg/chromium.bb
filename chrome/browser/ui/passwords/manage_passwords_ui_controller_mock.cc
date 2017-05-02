@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/web_contents.h"
@@ -16,7 +17,7 @@ ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
   // Do not silently replace an existing ManagePasswordsUIController because it
   // unregisters itself in WebContentsDestroyed().
   EXPECT_FALSE(contents->GetUserData(UserDataKey()));
-  contents->SetUserData(UserDataKey(), this);
+  contents->SetUserData(UserDataKey(), base::WrapUnique(this));
 }
 
 ManagePasswordsUIControllerMock::~ManagePasswordsUIControllerMock() {}

@@ -121,8 +121,8 @@ struct OmniboxViewMacState : public base::SupportsUserData::Data {
 
 // Accessors for storing and getting the state from the tab.
 void StoreStateToTab(WebContents* tab,
-                     OmniboxViewMacState* state) {
-  tab->SetUserData(kOmniboxViewMacStateKey, state);
+                     std::unique_ptr<OmniboxViewMacState> state) {
+  tab->SetUserData(kOmniboxViewMacStateKey, std::move(state));
 }
 
 const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
@@ -222,9 +222,8 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
     range = NSMakeRange(0, GetTextLength());
   }
 
-  OmniboxViewMacState* state =
-      new OmniboxViewMacState(model()->GetStateForTabSwitch(), hasFocus, range);
-  StoreStateToTab(tab, state);
+  StoreStateToTab(tab, base::MakeUnique<OmniboxViewMacState>(
+                           model()->GetStateForTabSwitch(), hasFocus, range));
 }
 
 void OmniboxViewMac::OnTabChanged(const WebContents* web_contents) {

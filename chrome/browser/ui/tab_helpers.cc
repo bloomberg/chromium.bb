@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -138,7 +139,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // Mark as adopted.
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
-                            new base::SupportsUserData::Data());
+                            base::MakeUnique<base::SupportsUserData::Data>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Set the view type.
