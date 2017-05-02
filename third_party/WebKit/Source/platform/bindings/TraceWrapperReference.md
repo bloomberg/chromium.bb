@@ -26,9 +26,9 @@ object should keep alive.
 The following example illustrates these steps:
 
 ```c++
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 
 class SomeDOMObject : public ScriptWrappable {          // (1)
  public:
@@ -81,10 +81,9 @@ The annotations that are required can be found in the following header files.
 Pick the header file depending on what types are needed.
 
 ```c++
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/TraceWrapperBase.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 ```
 
 The following example will guide through the modifications that are needed to

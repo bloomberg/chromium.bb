@@ -56,7 +56,7 @@ class PLATFORM_EXPORT TraceWrapperBase {
 // JavaScript object (platform object).  ToV8() converts a ScriptWrappable to
 // a v8::Object and toScriptWrappable() converts a v8::Object back to
 // a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
-// The wrapepr object for the main world is stored in ScriptWrappable.  Wrapper
+// The wrapper object for the main world is stored in ScriptWrappable.  Wrapper
 // objects for other worlds are stored in DOMWrapperMap.
 class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ScriptWrappable);

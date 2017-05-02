@@ -42,6 +42,8 @@
 
 namespace blink {
 
+// Maps from C++ objects to their corresponding JavaScript wrappers. See also
+// DOMDataStore.
 template <class KeyType>
 class DOMWrapperMap {
   USING_FAST_MALLOC(DOMWrapperMap);

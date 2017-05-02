@@ -40,6 +40,10 @@
 
 namespace blink {
 
+// Holds a persistent handle to a V8 object; use ScopedPersistent instead of
+// directly using v8::Persistent. Introducing a (non-weak) ScopedPersistent
+// has a risk of producing memory leaks, ask blink-reviews-bindings@ for a
+// review.
 template <typename T>
 class ScopedPersistent {
   USING_FAST_MALLOC(ScopedPersistent);

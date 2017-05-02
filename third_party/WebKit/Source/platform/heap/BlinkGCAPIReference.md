@@ -4,7 +4,7 @@ This is a through document for Oilpan API usage.
 If you want to learn the API usage quickly, look at
 [this tutorial](https://docs.google.com/presentation/d/1XPu03ymz8W295mCftEC9KshH9Icxfq81YwIJQzQrvxo/edit#slide=id.p).
 If you're just interested in wrapper tracing,
-see [Wrapper Tracing Reference](../../bindings/core/v8/TraceWrapperReference.md).
+see [Wrapper Tracing Reference](../bindings/TraceWrapperReference.md).
 
 [TOC]
 

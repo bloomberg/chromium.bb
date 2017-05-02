@@ -38,6 +38,9 @@
 
 namespace blink {
 
+// A ref counted version of ScopedPersistent. This class is intended for use by
+// ScriptValue and not for normal use. Consider using ScopedPersistent directly
+// instead.
 template <typename T>
 class SharedPersistent : public RefCounted<SharedPersistent<T>> {
   WTF_MAKE_NONCOPYABLE(SharedPersistent);
