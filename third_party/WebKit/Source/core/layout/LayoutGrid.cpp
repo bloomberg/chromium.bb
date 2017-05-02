@@ -174,7 +174,7 @@ void LayoutGrid::ComputeTrackSizesForDefiniteSize(
                                     grid_.NumTracks(direction),
                                     available_space);
   track_sizing_algorithm_.Setup(direction, NumTracks(direction, grid_),
-                                kTrackSizing, available_space, free_space);
+                                available_space, free_space);
   track_sizing_algorithm_.Run();
 
 #if DCHECK_IS_ON()
@@ -474,8 +474,8 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     Grid& grid,
     LayoutUnit& min_intrinsic_size,
     LayoutUnit& max_intrinsic_size) const {
-  algo.Setup(direction, NumTracks(direction, grid), kIntrinsicSizeComputation,
-             WTF::kNullopt, WTF::kNullopt);
+  algo.Setup(direction, NumTracks(direction, grid), WTF::kNullopt,
+             WTF::kNullopt);
   algo.Run();
 
   min_intrinsic_size = algo.MinContentSize();

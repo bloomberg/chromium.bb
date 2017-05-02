@@ -324,8 +324,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
     return child.MinPreferredLogicalWidth() + margin_logical_width;
   }
 
-  if (Direction() == kForColumns &&
-      algorithm_.sizing_operation_ == kIntrinsicSizeComputation) {
+  if (Direction() == kForColumns && !AvailableSpace()) {
     DCHECK(GetLayoutGrid()->IsOrthogonalChild(child));
     if (GetLayoutGrid()->IsBaselineAlignmentForChild(child, kGridRowAxis) &&
         GetLayoutGrid()->IsBaselineContextComputed(kGridRowAxis)) {
@@ -1405,7 +1404,6 @@ bool GridTrackSizingAlgorithm::IsValidTransition() const {
 
 void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
                                      size_t num_tracks,
-                                     SizingOperation sizing_operation,
                                      Optional<LayoutUnit> available_space,
                                      Optional<LayoutUnit> free_space) {
   DCHECK(needs_setup_);
@@ -1414,8 +1412,6 @@ void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
   SetAvailableSpace(
       direction, available_space ? available_space.value().ClampNegativeToZero()
                                  : available_space);
-
-  sizing_operation_ = sizing_operation;
 
   if (available_space)
     strategy_ = WTF::MakeUnique<DefiniteSizeStrategy>(*this);
