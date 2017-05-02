@@ -47,11 +47,7 @@ void GetScriptableObjectProperty(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
-  RefPtr<SharedPersistent<v8::Object>> wrapper = impl->PluginWrapper();
-  if (!wrapper)
-    return;
-
-  v8::Local<v8::Object> instance = wrapper->NewLocal(info.GetIsolate());
+  v8::Local<v8::Object> instance = impl->PluginWrapper();
   if (instance.IsEmpty())
     return;
 
@@ -76,12 +72,7 @@ void SetScriptableObjectProperty(
   DCHECK(!value.IsEmpty());
 
   HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
-  RefPtr<SharedPersistent<v8::Object>> wrapper = impl->PluginWrapper();
-  if (!wrapper)
-    return;
-
-  v8::Local<v8::Object> instance = wrapper->NewLocal(info.GetIsolate());
-
+  v8::Local<v8::Object> instance = impl->PluginWrapper();
   if (instance.IsEmpty())
     return;
 

@@ -182,18 +182,6 @@ void ScriptController::DisableEval(const String& error_message) {
       V8String(GetIsolate(), error_message));
 }
 
-PassRefPtr<SharedPersistent<v8::Object>> ScriptController::CreatePluginWrapper(
-    PluginView& plugin) {
-  v8::HandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Object> scriptable_object =
-      plugin.ScriptableObject(GetIsolate());
-
-  if (scriptable_object.IsEmpty())
-    return nullptr;
-
-  return SharedPersistent<v8::Object>::Create(scriptable_object, GetIsolate());
-}
-
 V8Extensions& ScriptController::RegisteredExtensions() {
   DEFINE_STATIC_LOCAL(V8Extensions, extensions, ());
   return extensions;

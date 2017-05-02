@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   void ResetInstance();
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
-  SharedPersistent<v8::Object>* PluginWrapper();
+  v8::Local<v8::Object> PluginWrapper();
   // TODO(joelhockey): Clean up pluginWidget and plugin (maybe also
   // pluginWrapper).  It would be good to remove and/or rename some of these.
   // pluginWidget and plugin both return the plugin that is stored on this
@@ -174,7 +174,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
                              const Vector<String>& param_names,
                              const Vector<String>& param_values);
 
-  mutable RefPtr<SharedPersistent<v8::Object>> plugin_wrapper_;
+  v8::Global<v8::Object> plugin_wrapper_;
   bool needs_plugin_update_;
   bool should_prefer_plug_ins_for_images_;
   // Represents |layoutObject() && layoutObject()->isEmbeddedObject() &&
