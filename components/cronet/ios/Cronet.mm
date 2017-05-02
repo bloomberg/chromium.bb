@@ -260,7 +260,7 @@ class CronetHttpProtocolHandlerDelegate
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
   // Register the chrome http protocol handler to replace the default one.
   BOOL success =
-      [NSURLProtocol registerClass:[CRNPauseableHTTPProtocolHandler class]];
+      [NSURLProtocol registerClass:[CRNHTTPProtocolHandler class]];
   DCHECK(success);
 }
 
@@ -270,11 +270,11 @@ class CronetHttpProtocolHandlerDelegate
     [NSURLCache setSharedURLCache:gPreservedSharedURLCache];
     gPreservedSharedURLCache = nil;
   }
-  [NSURLProtocol unregisterClass:[CRNPauseableHTTPProtocolHandler class]];
+  [NSURLProtocol unregisterClass:[CRNHTTPProtocolHandler class]];
 }
 
 + (void)installIntoSessionConfiguration:(NSURLSessionConfiguration*)config {
-  config.protocolClasses = @[ [CRNPauseableHTTPProtocolHandler class] ];
+  config.protocolClasses = @[ [CRNHTTPProtocolHandler class] ];
 }
 
 + (NSString*)getNetLogPathForFile:(NSString*)fileName {
