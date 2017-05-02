@@ -7,7 +7,6 @@
 
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
-#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
@@ -65,7 +64,6 @@ class InspectorEmulationAgent final
 
   Member<WebLocalFrameImpl> web_local_frame_impl_;
   Client* client_;
-  TaskHandle virtual_time_budget_expired_task_handle_;
 };
 
 }  // namespace blink

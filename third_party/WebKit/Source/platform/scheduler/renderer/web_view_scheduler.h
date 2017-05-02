@@ -83,6 +83,13 @@ class PLATFORM_EXPORT WebViewScheduler {
   // WebFrameSchedulers.
   virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
 
+  // Set the remaining virtual time budget to |budget|. Once the budget runs
+  // out, |budget_exhausted_callback| is called. Note that the virtual time
+  // policy is not affected when the budget expires.
+  virtual void GrantVirtualTimeBudget(
+      base::TimeDelta budget,
+      std::unique_ptr<WTF::Closure> budget_exhausted_callback) = 0;
+
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
   virtual bool HasActiveConnectionForTest() const = 0;

@@ -627,6 +627,62 @@ TEST_F(WebViewSchedulerImplTest, SuspendTimersWhileVirtualTimeIsPaused) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
+TEST_F(WebViewSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
+  std::vector<base::TimeTicks> real_times;
+  std::vector<size_t> virtual_times_ms;
+  base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
+  size_t initial_virtual_time_ms =
+      web_frame_scheduler_->TimerTaskRunner()
+          ->MonotonicallyIncreasingVirtualTimeSeconds() *
+      1000.0;
+
+  web_view_scheduler_->EnableVirtualTime();
+
+  web_frame_scheduler_->TimerTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      MakeVirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->TimerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
+      1.0);
+
+  web_frame_scheduler_->TimerTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      MakeVirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->TimerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
+      2.0);
+
+  web_frame_scheduler_->TimerTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      MakeVirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->TimerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
+      5.0);
+
+  web_frame_scheduler_->TimerTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      MakeVirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->TimerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
+      7.0);
+
+  web_view_scheduler_->GrantVirtualTimeBudget(
+      base::TimeDelta::FromMilliseconds(5),
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+          },
+          WTF::Unretained(web_view_scheduler_.get())));
+
+  mock_task_runner_->RunUntilIdle();
+
+  // The timer that is scheduled for the exact point in time when virtual time
+  // expires will not run.
+  EXPECT_THAT(real_times, ElementsAre(initial_real_time, initial_real_time));
+  EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 1,
+                                            initial_virtual_time_ms + 2));
+}
+
 namespace {
 
 using ScopedExpensiveBackgroundTimerThrottlingForTest =
