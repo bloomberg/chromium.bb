@@ -31,14 +31,6 @@
     async setLESupported(available) {
       if (typeof available !== 'boolean') throw 'Type Not Supported';
       await (await this.getFakeBluetoothInterface_()).setLESupported(available);
-
-      // TODO(crbug.com/569709): Remove once FakeBluetooth.setLESupported is
-      // implemented in the browser.
-      navigator.bluetooth.requestDevice = function() {
-        return Promise.reject(new DOMException(
-            'Bluetooth Low Energy is not supported on this platform.',
-            'NotFoundError'));
-        };
     }
 
     async getFakeBluetoothInterface_() {
