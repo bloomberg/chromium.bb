@@ -157,11 +157,10 @@ source_set("eg_tests") {
   ]
   deps = [
     ":metrics_internal",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/toolbar",
@@ -169,10 +168,48 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",
-    "//ios/third_party/earl_grey",
     "//ios/web:earl_grey_test_support",
     "//ios/web:test_support",
     "//ui/base",
+    "//url",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+# TODO(crbug.com/694662): These tests depend on loading errors, which are
+# behaving differently when the network is not available. When the underlying
+# issue is resolved, these tests can move back to |eg_tests|.
+source_set("external_url_eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "external_url_tab_usage_recorder_egtest.mm",
+  ]
+  deps = [
+    ":metrics_internal",
+    ":test_support",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/web:test_support",
+  ]
+  libs = [ "XCTest.framework" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "tab_usage_recorder_test_util.h",
+    "tab_usage_recorder_test_util.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ui/base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
