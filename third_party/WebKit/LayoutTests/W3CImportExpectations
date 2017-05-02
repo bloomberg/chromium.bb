@@ -319,7 +319,8 @@ external/wpt/page-visibility [ Skip ]
 external/wpt/performance-timeline [ Skip ]
 ## Owners: nzolghadr@chromium.org,mustaq@chromium.org
 # external/wpt/pointerevents [ Pass ]
-external/wpt/pointerlock [ Skip ]
+## Owners: chongz@chromium.org
+# external/wpt/pointerlock [ Pass ]
 external/wpt/presentation-api [ Skip ]
 external/wpt/progress-events [ Skip ]
 external/wpt/proximity [ Skip ]
