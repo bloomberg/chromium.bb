@@ -2216,7 +2216,8 @@ class TestMetricsReporter : public ui::AnimationMetricsReporter {
 
 // Starts an animation and tests that incrementing compositor frame count can
 // be used to report animation smoothness metrics.
-TEST_F(LayerWithRealCompositorTest, ReportMetrics) {
+// Flaky test crbug.com/709080
+TEST_F(LayerWithRealCompositorTest, DISABLED_ReportMetrics) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   GetCompositor()->SetRootLayer(root.get());
   LayerAnimator* animator = root->GetAnimator();
