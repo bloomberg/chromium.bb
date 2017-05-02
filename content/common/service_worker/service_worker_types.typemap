@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//content/common/service_worker/service_worker_types.mojom"
-public_headers = [ "//content/common/service_worker/service_worker_types.h" ]
+public_headers = [
+  "//content/common/service_worker/service_worker_client_info.h",
+  "//content/common/service_worker/service_worker_types.h",
+]
 traits_headers =
     [ "//content/common/service_worker/service_worker_types_struct_traits.h" ]
 sources = [

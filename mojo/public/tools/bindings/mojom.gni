@@ -602,6 +602,9 @@ template("mojom") {
           deps += _typemap_config.deps
         }
       }
+      if (defined(invoker.export_header)) {
+        sources += [ "//" + invoker.export_header ]
+      }
       if (defined(bindings_configuration.for_blink) &&
           bindings_configuration.for_blink) {
         public_deps += [ "//mojo/public/cpp/bindings:wtf_support" ]
