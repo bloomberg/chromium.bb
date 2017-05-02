@@ -31,6 +31,8 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/exported/WebViewBase.h"
+#include "platform/mhtml/MHTMLArchive.h"
+#include "platform/mhtml/MHTMLParser.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -219,16 +221,53 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
 
   ~WebFrameSerializerSanitizationTest() override {}
 
-  String GenerateMHTMLParts(const String& url,
-                            const String& file_name,
-                            const String& mime_type = "text/html") {
+  String GenerateMHTMLFromHtml(const String& url, const String& file_name) {
+    return GenerateMHTML(url, file_name, "text/html", false);
+  }
+
+  String GenerateMHTMLPartsFromPng(const String& url, const String& file_name) {
+    return GenerateMHTML(url, file_name, "image/png", true);
+  }
+
+  String GenerateMHTML(const String& url,
+                       const String& file_name,
+                       const String& mime_type,
+                       const bool only_body_parts) {
     KURL parsed_url(kParsedURLString, url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
     FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
-    WebThreadSafeData result = WebFrameSerializer::GenerateMHTMLParts(
-        WebString("boundary"), MainFrameImpl(), &mhtml_delegate_);
-    return String(result.Data(), result.size());
+    // Boundaries are normally randomly generated but this one is predefined for
+    // simplicity and as good as any other. Plus it gets used in almost all the
+    // examples in the MHTML spec - RFC 2557.
+    const WebString boundary("boundary-example");
+    StringBuilder mhtml;
+    if (!only_body_parts) {
+      WebThreadSafeData header_result = WebFrameSerializer::GenerateMHTMLHeader(
+          boundary, MainFrameImpl(), &mhtml_delegate_);
+      mhtml.Append(header_result.Data(), header_result.size());
+    }
+
+    WebThreadSafeData body_result = WebFrameSerializer::GenerateMHTMLParts(
+        boundary, MainFrameImpl(), &mhtml_delegate_);
+    mhtml.Append(body_result.Data(), body_result.size());
+
+    if (!only_body_parts) {
+      RefPtr<RawData> footer_data = RawData::Create();
+      MHTMLArchive::GenerateMHTMLFooterForTesting(boundary,
+                                                  *footer_data->MutableData());
+      mhtml.Append(footer_data->data(), footer_data->length());
+    }
+
+    String mhtml_string = mhtml.ToString();
+    if (!only_body_parts) {
+      // Validate the generated MHTML.
+      MHTMLParser parser(SharedBuffer::Create(mhtml_string.Characters8(),
+                                              size_t(mhtml_string.length())));
+      EXPECT_FALSE(parser.ParseArchive().IsEmpty())
+          << "Generated MHTML is not well formed";
+    }
+    return mhtml_string;
   }
 
   void SetRemovePopupOverlay(bool remove_popup_overlay) {
@@ -244,7 +283,7 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
 
 TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
   String mhtml =
-      GenerateMHTMLParts("http://www.test.com", "script_in_attributes.html");
+      GenerateMHTMLFromHtml("http://www.test.com", "script_in_attributes.html");
 
   // These scripting attributes should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("onload="));
@@ -265,7 +304,7 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
 }
 
 TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "form.html");
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "form.html");
 
   const char kDisabledAttr[] = "disabled=3D\"\"";
   int matches =
@@ -275,7 +314,7 @@ TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
 
 TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   String mhtml =
-      GenerateMHTMLParts("http://www.test.com", "hidden_elements.html");
+      GenerateMHTMLFromHtml("http://www.test.com", "hidden_elements.html");
 
   // The element with hidden attribute should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<p id=3D\"hidden_id\""));
@@ -309,8 +348,10 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
 // Regression test for crbug.com/678893, where in some cases serializing an
 // image document could cause code to pick an element from an empty container.
 TEST_F(WebFrameSerializerSanitizationTest, FromBrokenImageDocument) {
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "broken-image.png",
-                                    "image/png");
+  // This test only cares that the result of the parts generation is empty so it
+  // is simpler to not generate only that instead of the full MHTML.
+  String mhtml =
+      GenerateMHTMLPartsFromPng("http://www.test.com", "broken-image.png");
   EXPECT_TRUE(mhtml.IsEmpty());
 }
 
@@ -325,7 +366,8 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcsetForHiDPI) {
   // Set high DPR in order to load image from srcset, instead of src.
   WebView()->SetDeviceScaleFactor(2.0f);
 
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "img_srcset.html");
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "img_srcset.html");
 
   // srcset attribute should be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("srcset="));
@@ -347,7 +389,8 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
       KURL(kParsedURLString, "http://www.test.com/2x.png"),
       "frameserialization/2x.png");
 
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "img_srcset.html");
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "img_srcset.html");
 
   // srcset attribute should be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("srcset="));
@@ -360,7 +403,7 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
 TEST_F(WebFrameSerializerSanitizationTest, RemovePopupOverlayIfRequested) {
   WebView()->Resize(WebSize(500, 500));
   SetRemovePopupOverlay(true);
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "popup.html");
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
   histogram_tester_.ExpectUniqueSample(
@@ -371,7 +414,7 @@ TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
   WebView()->Resize(WebSize(500, 500));
   SetRemovePopupOverlay(true);
   String mhtml =
-      GenerateMHTMLParts("http://www.test.com", "text_only_page.html");
+      GenerateMHTMLFromHtml("http://www.test.com", "text_only_page.html");
   histogram_tester_.ExpectUniqueSample(
       "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", false, 1);
 }
@@ -379,7 +422,7 @@ TEST_F(WebFrameSerializerSanitizationTest, PopupOverlayNotFound) {
 TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
   WebView()->Resize(WebSize(500, 500));
   SetRemovePopupOverlay(false);
-  String mhtml = GenerateMHTMLParts("http://www.test.com", "popup.html");
+  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "popup.html");
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"overlay"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("class=3D\"modal"));
   histogram_tester_.ExpectTotalCount(
@@ -388,8 +431,7 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
 
 TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
   String mhtml =
-      GenerateMHTMLParts("http://www.test.com", "remove_elements.html");
-  LOG(ERROR) << mhtml;
+      GenerateMHTMLFromHtml("http://www.test.com", "remove_elements.html");
 
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<script"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<noscript"));
