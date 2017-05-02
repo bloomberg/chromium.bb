@@ -13,14 +13,10 @@ import android.os.MessageQueue;
 import android.os.SystemClock;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
-import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PowerMonitor;
-import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -29,7 +25,6 @@ import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.notifications.ChannelsUpdater;
@@ -45,15 +40,12 @@ import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.minidump_uploader.CrashFileManager;
-import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -206,18 +198,6 @@ public class DeferredStartupHandler {
                 if (ChannelsUpdater.getInstance().shouldUpdateChannels()) {
                     initChannelsAsync();
                 }
-            }
-        });
-
-        mDeferredTasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // Clear any media notifications that existed when Chrome was last killed.
-                MediaCaptureNotificationService.clearMediaNotifications(mAppContext);
-
-                startModerateBindingManagementIfNeeded();
-
-                recordKeyboardLocaleUma();
             }
         });
 
@@ -393,12 +373,6 @@ public class DeferredStartupHandler {
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void startModerateBindingManagementIfNeeded() {
-        // Moderate binding doesn't apply to low end devices.
-        if (SysUtils.isLowEndDevice()) return;
-        ChildProcessLauncher.startModerateBindingManagement(mAppContext);
-    }
-
     /**
      * Deletes the snapshot database which is no longer used because the feature has been removed
      * in Chrome M41.
@@ -411,35 +385,6 @@ public class DeferredStartupHandler {
                 mAppContext.deleteDatabase(SNAPSHOT_DATABASE_NAME);
                 prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
             }
-        }
-    }
-
-    @SuppressWarnings("deprecation")  // InputMethodSubtype.getLocale() deprecated in API 24
-    private void recordKeyboardLocaleUma() {
-        InputMethodManager imm =
-                (InputMethodManager) mAppContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
-        ArrayList<String> uniqueLanguages = new ArrayList<>();
-        for (InputMethodInfo method : ims) {
-            List<InputMethodSubtype> submethods =
-                    imm.getEnabledInputMethodSubtypeList(method, true);
-            for (InputMethodSubtype submethod : submethods) {
-                if (submethod.getMode().equals("keyboard")) {
-                    String language = submethod.getLocale().split("_")[0];
-                    if (!uniqueLanguages.contains(language)) {
-                        uniqueLanguages.add(language);
-                    }
-                }
-            }
-        }
-        RecordHistogram.recordCountHistogram("InputMethod.ActiveCount", uniqueLanguages.size());
-
-        InputMethodSubtype currentSubtype = imm.getCurrentInputMethodSubtype();
-        Locale systemLocale = Locale.getDefault();
-        if (currentSubtype != null && currentSubtype.getLocale() != null && systemLocale != null) {
-            String keyboardLanguage = currentSubtype.getLocale().split("_")[0];
-            boolean match = systemLocale.getLanguage().equalsIgnoreCase(keyboardLanguage);
-            RecordHistogram.recordBooleanHistogram("InputMethod.MatchesSystemLanguage", match);
         }
     }
 
