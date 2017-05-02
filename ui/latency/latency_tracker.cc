@@ -112,7 +112,10 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
 void LatencyTracker::ReportRapporScrollLatency(
     const std::string& name,
     const LatencyInfo::LatencyComponent& start_component,
-    const LatencyInfo::LatencyComponent& end_component) {}
+    const LatencyInfo::LatencyComponent& end_component) {
+  // TODO(mfomitchev): crbug.com/717629: Make RAPPOR or UKM reporting work with
+  // Mus.
+}
 
 void LatencyTracker::ComputeTouchAndWheelScrollLatencyHistograms(
     const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
