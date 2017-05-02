@@ -45,9 +45,6 @@ class ClipboardRecentContent {
   // older than this.
   static base::TimeDelta MaximumAgeOfClipboard();
 
-  // Returns true if the URL is appropriate to be suggested.
-  static bool IsAppropriateSuggestion(const GURL& url);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContent);
 };

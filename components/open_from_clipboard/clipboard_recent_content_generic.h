@@ -27,6 +27,9 @@ class ClipboardRecentContentGeneric : public ClipboardRecentContent {
   void SuppressClipboardContent() override;
 
  private:
+  // Returns true if the URL is appropriate to be suggested.
+  static bool IsAppropriateSuggestion(const GURL& url);
+
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContentGeneric);
 };
 
