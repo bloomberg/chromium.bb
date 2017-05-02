@@ -11,6 +11,7 @@
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 #endif  // OS_ANDROID
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/amp_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/css_scanning_page_load_metrics_observer.h"
@@ -94,6 +95,10 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(base::MakeUnique<CssScanningMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<ProtocolPageLoadMetricsObserver>());
     tracker->AddObserver(base::MakeUnique<TabRestorePageLoadMetricsObserver>());
+    std::unique_ptr<AdsPageLoadMetricsObserver> ads_observer =
+        AdsPageLoadMetricsObserver::CreateIfNeeded();
+    if (ads_observer)
+      tracker->AddObserver(std::move(ads_observer));
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
         UkmPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
