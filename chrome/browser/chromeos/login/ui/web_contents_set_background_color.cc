@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -23,7 +24,8 @@ void WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
   // WebContentsSetBackgroundColor instance and will destroy it when the
   // WebContents instance is destroyed.
   web_contents->SetUserData(
-      UserDataKey(), new WebContentsSetBackgroundColor(web_contents, color));
+      UserDataKey(),
+      base::WrapUnique(new WebContentsSetBackgroundColor(web_contents, color)));
 }
 
 WebContentsSetBackgroundColor::WebContentsSetBackgroundColor(
