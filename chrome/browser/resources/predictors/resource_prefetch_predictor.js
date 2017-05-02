@@ -92,6 +92,8 @@ function renderCacheData(body, database) {
           resource.position;
       row.appendChild(document.createElement('td')).textContent =
           resource.score;
+      row.appendChild(document.createElement('td')).textContent =
+          resource.before_first_contentful_paint;
       body.appendChild(row);
     }
   }

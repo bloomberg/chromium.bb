@@ -72,6 +72,7 @@ const char kScriptXHRPath[] = "/predictors/xhr.js";
 const char kHtmlIframePath[] = "/predictors/html_iframe.html";
 const char kHtmlJavascriptRedirectPath[] =
     "/predictors/javascript_redirect.html";
+const char kHtmlFcpOrderPath[] = "/predictors/subresource_fcp_order.html";
 
 // Host, path.
 const char* kScript[2] = {kFooHost, kScriptPath};
@@ -85,7 +86,9 @@ struct ResourceSummary {
         is_no_store(false),
         is_external(false),
         is_observable(true),
-        is_prohibited(false) {}
+        is_prohibited(false) {
+    request.before_first_contentful_paint = true;
+  }
 
   ResourcePrefetchPredictor::URLRequestSummary request;
   // Allows to update HTTP ETag.
@@ -99,6 +102,9 @@ struct ResourceSummary {
   // A request with |is_prohibited| set to true makes the test that originates
   // the request fail.
   bool is_prohibited;
+  // If set, the HTTP request handler will sleep for this long before
+  // responding.
+  base::TimeDelta delay;
 };
 
 struct RedirectEdge {
@@ -170,9 +176,12 @@ void SetValidNavigationID(NavigationID* navigation_id) {
 }
 
 void ModifySubresourceForComparison(URLRequestSummary* subresource,
-                                    bool match_navigation_id) {
+                                    bool match_navigation_id,
+                                    bool match_before_first_contentful_paint) {
   if (!match_navigation_id)
     SetValidNavigationID(&subresource->navigation_id);
+  if (!match_before_first_contentful_paint)
+    subresource->before_first_contentful_paint = true;
   if (subresource->resource_type == content::RESOURCE_TYPE_IMAGE &&
       subresource->priority == net::LOWEST) {
     // Fuzzy comparison for images because an image priority can be
@@ -186,15 +195,18 @@ void ModifySubresourceForComparison(URLRequestSummary* subresource,
 // and fail the test if the expectation is not met.
 void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
                          std::vector<URLRequestSummary> expected_subresources,
-                         bool match_navigation_id) {
+                         bool match_navigation_id,
+                         bool match_before_first_contentful_paint) {
   // Duplicate resources can be observed in a single navigation but
   // ResourcePrefetchPredictor only cares about the first occurrence of each.
   RemoveDuplicateSubresources(&actual_subresources);
 
   for (auto& subresource : actual_subresources)
-    ModifySubresourceForComparison(&subresource, match_navigation_id);
+    ModifySubresourceForComparison(&subresource, match_navigation_id,
+                                   match_before_first_contentful_paint);
   for (auto& subresource : expected_subresources)
-    ModifySubresourceForComparison(&subresource, match_navigation_id);
+    ModifySubresourceForComparison(&subresource, match_navigation_id,
+                                   match_before_first_contentful_paint);
 
   EXPECT_THAT(actual_subresources,
               testing::UnorderedElementsAreArray(expected_subresources));
@@ -234,11 +246,14 @@ class LearningObserver : public TestObserver {
   LearningObserver(ResourcePrefetchPredictor* predictor,
                    const size_t expected_url_visit_count,
                    const PageRequestSummary& expected_summary,
-                   bool match_navigation_id)
+                   bool match_navigation_id,
+                   bool match_before_first_contentful_paint)
       : TestObserver(predictor),
         url_visit_count_(expected_url_visit_count),
         summary_(expected_summary),
-        match_navigation_id_(match_navigation_id) {}
+        match_navigation_id_(match_navigation_id),
+        match_before_first_contentful_paint_(
+            match_before_first_contentful_paint) {}
 
   // TestObserver:
   void OnNavigationLearned(size_t url_visit_count,
@@ -249,7 +264,8 @@ class LearningObserver : public TestObserver {
     for (const auto& resource : summary.subresource_requests)
       current_navigation_ids_.insert(resource.navigation_id);
     CompareSubresources(summary.subresource_requests,
-                        summary_.subresource_requests, match_navigation_id_);
+                        summary_.subresource_requests, match_navigation_id_,
+                        match_before_first_contentful_paint_);
     run_loop_.Quit();
   }
 
@@ -264,6 +280,7 @@ class LearningObserver : public TestObserver {
   size_t url_visit_count_;
   PageRequestSummary summary_;
   bool match_navigation_id_;
+  bool match_before_first_contentful_paint_;
   std::set<NavigationID> current_navigation_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(LearningObserver);
@@ -361,12 +378,18 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(false);
   }
 
-  void TestLearningAndPrefetching(const GURL& main_frame_url) {
+  void TestLearningAndPrefetching(
+      const GURL& main_frame_url,
+      bool match_before_first_contentful_paint = false) {
     // Navigate to |main_frame_url| and check all the expectations.
-    NavigateToURLAndCheckSubresources(main_frame_url);
+    NavigateToURLAndCheckSubresources(main_frame_url,
+                                      WindowOpenDisposition::CURRENT_TAB,
+                                      match_before_first_contentful_paint);
     ClearCache();
     // It is needed to have at least two resource hits to trigger prefetch.
-    NavigateToURLAndCheckSubresources(main_frame_url);
+    NavigateToURLAndCheckSubresources(main_frame_url,
+                                      WindowOpenDisposition::CURRENT_TAB,
+                                      match_before_first_contentful_paint);
     ClearCache();
     // Prefetch all needed resources and change expectations so that all
     // cacheable resources should be served from cache next navigation.
@@ -390,7 +413,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
 
   void NavigateToURLAndCheckSubresources(
       const GURL& navigation_url,
-      WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB) {
+      WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB,
+      bool match_before_first_contentful_paint = false) {
     GURL initial_url = GetLastClientSideRedirectEndpoint(navigation_url);
     GURL main_frame_url = GetRedirectEndpoint(navigation_url);
     std::vector<URLRequestSummary> url_request_summaries;
@@ -408,7 +432,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         predictor_, UpdateAndGetVisitCount(initial_url),
         CreatePageRequestSummary(main_frame_url.spec(), initial_url.spec(),
                                  url_request_summaries),
-        match_navigation_id);
+        match_navigation_id, match_before_first_contentful_paint);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), navigation_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
@@ -674,6 +698,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     // 0kB.
     http_response->set_content(std::string(1024, ' '));
 
+    if (!summary.delay.is_zero())
+      base::PlatformThread::Sleep(summary.delay);
+
     return std::move(http_response);
   }
 
@@ -742,6 +769,22 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Simple) {
   // Each request is ~1k, see HandleResourceRequest() above.
   histogram_tester_->ExpectBucketCount(
       internal::kResourcePrefetchPredictorPrefetchHitsSize, 4, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       SubresourceFcpOrder) {
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+
+  ResourceSummary* image = AddResource(
+      GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  // Delay HTTP response to ensure enough time to receive notice of
+  // firstContentfulPaint.
+  image->delay = base::TimeDelta::FromMilliseconds(1500);
+  image->request.before_first_contentful_paint = false;
+
+  TestLearningAndPrefetching(GetURL(kHtmlFcpOrderPath), true);
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Redirect) {

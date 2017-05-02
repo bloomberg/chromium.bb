@@ -139,7 +139,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 8;
+  static constexpr int kDatabaseVersion = 9;
 
   // PredictorTableBase:
   void CreateTableIfNonExistent() override;

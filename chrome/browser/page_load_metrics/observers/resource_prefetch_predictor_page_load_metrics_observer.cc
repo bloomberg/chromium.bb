@@ -31,13 +31,16 @@ ResourcePrefetchPredictorPageLoadMetricsObserver::CreateIfNeeded(
   if (!predictor)
     return nullptr;
   return base::MakeUnique<ResourcePrefetchPredictorPageLoadMetricsObserver>(
-      predictor);
+      predictor, web_contents);
 }
 
 ResourcePrefetchPredictorPageLoadMetricsObserver::
     ResourcePrefetchPredictorPageLoadMetricsObserver(
-        predictors::ResourcePrefetchPredictor* predictor)
-    : predictor_(predictor) {
+        predictors::ResourcePrefetchPredictor* predictor,
+        content::WebContents* web_contents)
+    : predictor_(predictor),
+      web_contents_(web_contents),
+      record_histograms_(false) {
   DCHECK(predictor_);
 }
 
@@ -49,31 +52,42 @@ ResourcePrefetchPredictorPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_commited_url,
     bool started_in_foreground) {
-  return (started_in_foreground &&
-          predictor_->IsUrlPrefetchable(navigation_handle->GetURL()))
-             ? CONTINUE_OBSERVING
-             : STOP_OBSERVING;
+  record_histograms_ =
+      started_in_foreground &&
+      predictor_->IsUrlPrefetchable(navigation_handle->GetURL());
+
+  return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ResourcePrefetchPredictorPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  return STOP_OBSERVING;
+  record_histograms_ = false;
+  return CONTINUE_OBSERVING;
 }
 
 void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
-      timing.paint_timing.first_contentful_paint.value());
+  predictors::NavigationID navigation_id(web_contents_);
+
+  predictor_->RecordFirstContentfulPaint(
+      navigation_id, extra_info.navigation_start +
+                         timing.paint_timing.first_contentful_paint.value());
+  if (record_histograms_) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
+        timing.paint_timing.first_contentful_paint.value());
+  }
 }
 
 void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
-      timing.paint_timing.first_meaningful_paint.value());
+  if (record_histograms_) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
+        timing.paint_timing.first_meaningful_paint.value());
+  }
 }
