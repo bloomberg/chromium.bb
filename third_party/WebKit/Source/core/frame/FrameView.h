@@ -498,7 +498,6 @@ class CORE_EXPORT FrameView final
   void SetSelfVisible(bool v) { self_visible_ = v; }
   void SetParent(FrameViewBase*) override;
   FrameViewBase* Parent() const override { return parent_; }
-  FrameView* Root() const;
   void RemoveChild(FrameViewBase*);
   void AddChild(FrameViewBase*);
   const ChildrenSet* Children() const { return &children_; }
