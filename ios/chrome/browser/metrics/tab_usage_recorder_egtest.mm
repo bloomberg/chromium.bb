@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,15 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -38,14 +33,16 @@
 #import "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/response_providers/delayed_response_provider.h"
 #include "ios/web/public/test/response_providers/html_response_provider.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 using chrome_test_util::OpenLinkInNewTabButton;
+using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
+using tab_usage_recorder_test_util::SwitchToNormalMode;
 
 namespace {
 
@@ -123,24 +120,6 @@ void OpenNewMainTabUsingUIUnsynced() {
   chrome_test_util::AssertMainTabCount(nb_main_tab + 1);
 }
 
-// Opens a new incognito tab using the UI and evicts any main tab model tabs.
-void OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
-  int nb_incognito_tab = chrome_test_util::GetIncognitoTabCount();
-  [ChromeEarlGreyUI openToolsMenu];
-  id<GREYMatcher> new_incognito_tab_button_matcher =
-      grey_accessibilityID(kToolsMenuNewIncognitoTabId);
-  [[EarlGrey selectElementWithMatcher:new_incognito_tab_button_matcher]
-      performAction:grey_tap()];
-  chrome_test_util::AssertIncognitoTabCount(nb_incognito_tab + 1);
-  ConditionBlock condition = ^bool {
-    return chrome_test_util::IsIncognitoMode();
-  };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
-      @"Waiting switch to incognito mode.");
-  chrome_test_util::EvictOtherTabModelTabs();
-}
-
 // Closes a tab in the current tab model. Synchronize on tab number afterwards.
 void CloseTabAtIndexAndSync(NSUInteger i) {
   NSUInteger nb_main_tab = chrome_test_util::GetMainTabCount();
@@ -151,52 +130,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   GREYAssert(
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
       @"Waiting for tab to close");
-}
-
-// Closes the tabs switcher.
-void CloseTabSwitcher() {
-  id<GREYMatcher> matcher = chrome_test_util::ButtonWithAccessibilityLabelId(
-      IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-}
-
-// Swithches to normal mode using swith button (iPad) or stack view (iPhone).
-// Assumes current mode is Incognito.
-void SwitchToNormalMode() {
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Switching to normal mode is only allowed from Incognito.");
-  if (IsIPadIdiom()) {
-    // Enter the tab switcher.
-    id<GREYMatcher> tabSwitcherEnterButton = grey_accessibilityLabel(
-        l10n_util::GetNSStringWithFixup(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER));
-    [[EarlGrey selectElementWithMatcher:tabSwitcherEnterButton]
-        performAction:grey_tap()];
-
-    // Select the non incognito panel.
-    id<GREYMatcher> tabSwitcherHeaderPanelButton =
-        grey_accessibilityLabel(l10n_util::GetNSStringWithFixup(
-            IDS_IOS_TAB_SWITCHER_HEADER_NON_INCOGNITO_TABS));
-    [[EarlGrey selectElementWithMatcher:tabSwitcherHeaderPanelButton]
-        performAction:grey_tap()];
-
-    // Leave the tab switcher.
-    CloseTabSwitcher();
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-        performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)]
-        performAction:grey_swipeSlowInDirection(kGREYDirectionRight)];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-        performAction:grey_tap()];
-  }
-  ConditionBlock condition = ^bool {
-    return !chrome_test_util::IsIncognitoMode();
-  };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
-      @"Waiting switch to normal mode.");
 }
 
 // Open the settings submenu. Assumes that settings menu is visible.
@@ -490,40 +423,6 @@ void SelectTabUsingUI(NSString* title) {
                                      TabUsageRecorder::USER_WAITED, 1,
                                      failureBlock);
   histogramTester.ExpectTotalCount(kEvictedTabReloadTime, 1, failureBlock);
-}
-
-// Verify correct recording of metrics when the reloading of an evicted tab
-// fails.
-- (void)testEvictedTabReloadFailure {
-// TODO(crbug.com/709126): Evaluate and re-enable this test if necessary.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-
-  web::test::SetUpFileBasedHttpServer();
-  chrome_test_util::HistogramTester histogramTester;
-  FailureBlock failureBlock = ^(NSString* error) {
-    GREYFail(error);
-  };
-
-  // This URL is purposely invalid so it triggers a navigation error.
-  GURL invalidURL(kTestUrl1);
-
-  chrome_test_util::OpenNewTab();
-  [ChromeEarlGrey loadURL:invalidURL];
-  [ChromeEarlGrey waitForErrorPage];
-  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-
-  SwitchToNormalMode();
-  [ChromeEarlGrey waitForErrorPage];
-
-  histogramTester.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
-                                     TabUsageRecorder::LOAD_FAILURE, 1,
-                                     failureBlock);
-  histogramTester.ExpectUniqueSample(kDidUserWaitForEvictedTabReload,
-                                     TabUsageRecorder::USER_WAITED, 1,
-                                     failureBlock);
-  histogramTester.ExpectTotalCount(kEvictedTabReloadTime, 0, failureBlock);
 }
 
 // Test that USER_DID_NOT_WAIT is reported if the user does not wait for the
