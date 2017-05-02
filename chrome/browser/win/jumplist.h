@@ -119,16 +119,12 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   void ShutdownOnUIThread() override;
 
   // Returns true if the custom JumpList is enabled.
-  // The custom jumplist works only on Windows 7 and above.
   static bool Enabled();
 
  private:
   friend JumpListFactory;
   explicit JumpList(Profile* profile);  // Use JumpListFactory instead
   ~JumpList() override;
-
-  // The AddTab and AddWindow functions are copied from the
-  // RecentlyClosedTabsHandler class for compatibility with the new-tab page.
 
   // Adds a new ShellLinkItem for |tab| to |data| provided that doing so will
   // not exceed |max_items|.
