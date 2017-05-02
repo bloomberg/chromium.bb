@@ -11,6 +11,8 @@ symbol information parsed from a linker .map file.
 
 ### Example Usage:
 
+Note: Supersize on Linux has known deficiencies (crbug/717550).
+
     # Android:
     # Googlers:
     gn gen out/Release --args='is_official_build=true symbol_level=1 is_chrome_branded=true target_os="android"'
@@ -110,5 +112,4 @@ Tracked in https://crbug.com/681694
 # Roadmap for diagnose_apk_bloat.py:
 1. More `diagnose_apk_bloat.py` features:
 
-  * Add more diff types (pak files, Java symbols, native symbols).
-  * Support local builds for revs before supersize existed.
+  * Add more diff types (pak files, Java symbols).
