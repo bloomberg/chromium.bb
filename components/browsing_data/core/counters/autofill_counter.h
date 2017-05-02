@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 namespace autofill {
@@ -19,28 +20,33 @@ class AutofillWebDataService;
 namespace browsing_data {
 
 class AutofillCounter : public browsing_data::BrowsingDataCounter,
-                        public WebDataServiceConsumer {
+                        public WebDataServiceConsumer,
+                        public syncer::SyncServiceObserver {
  public:
   class AutofillResult : public FinishedResult {
    public:
     AutofillResult(const AutofillCounter* source,
                    ResultInt num_suggestions,
                    ResultInt num_credit_cards,
-                   ResultInt num_addresses);
+                   ResultInt num_addresses,
+                   bool autofill_sync_enabled_);
     ~AutofillResult() override;
 
     ResultInt num_credit_cards() const { return num_credit_cards_; }
     ResultInt num_addresses() const { return num_addresses_; }
+    bool autofill_sync_enabled() const { return autofill_sync_enabled_; }
 
    private:
     ResultInt num_credit_cards_;
     ResultInt num_addresses_;
+    bool autofill_sync_enabled_;
 
     DISALLOW_COPY_AND_ASSIGN(AutofillResult);
   };
 
   explicit AutofillCounter(
-      scoped_refptr<autofill::AutofillWebDataService> web_data_service);
+      scoped_refptr<autofill::AutofillWebDataService> web_data_service,
+      syncer::SyncService* sync_service);
   ~AutofillCounter() override;
 
   // BrowsingDataCounter implementation.
@@ -64,12 +70,16 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
       WebDataServiceBase::Handle handle,
       std::unique_ptr<WDTypedResult> result) override;
 
+  // SyncServiceObserver implementation.
+  void OnStateChanged(syncer::SyncService* sync) override;
+
   // Cancel all pending requests to AutofillWebdataService.
   void CancelAllRequests();
 
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  syncer::SyncService* sync_service_;
 
   WebDataServiceBase::Handle suggestions_query_;
   WebDataServiceBase::Handle credit_cards_query_;
@@ -78,6 +88,7 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   ResultInt num_suggestions_;
   ResultInt num_credit_cards_;
   ResultInt num_addresses_;
+  bool autofill_sync_enabled_;
 
   base::Time period_start_for_testing_;
 

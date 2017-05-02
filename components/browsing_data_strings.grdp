@@ -65,11 +65,20 @@
      =1 {1 other}
      other {# others}}
   </message>
+  <message name="IDS_DEL_AUTOFILL_COUNTER_ONE_TYPE_SYNCED" desc="A counter showing that the user has one type of form data and that it is synced. The type will be substituted, this message only provides the (synced) part.">
+    <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph> (synced)
+  </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_TWO_TYPES" desc="A counter showing that the user has two types of form data. The types and their counts will be substituted, this message only provides the comma separator.">
     <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph>, <ph name="TYPE_2">$2<ex>1 address</ex></ph>
   </message>
+  <message name="IDS_DEL_AUTOFILL_COUNTER_TWO_TYPES_SYNCED" desc="A counter showing that the user has two types of form data and that they are synced. The types and their counts will be substituted, this message only provides the comma separator.">
+    <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph>, <ph name="TYPE_2">$2<ex>1 address</ex></ph> (synced)
+  </message>
   <message name="IDS_DEL_AUTOFILL_COUNTER_THREE_TYPES" desc="A counter showing that the user has three types of form data. The types and their counts will be substituted, this message only provides the comma separators.">
     <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph>, <ph name="TYPE_2">$2<ex>1 address</ex></ph>, <ph name="TYPE_3">$3<ex>5 others</ex></ph>
+  </message>
+  <message name="IDS_DEL_AUTOFILL_COUNTER_THREE_TYPES_SYNCED" desc="A counter showing that the user has three types of form data and that they are synced. The types and their counts will be substituted, this message only provides the comma separators.">
+    <ph name="TYPE_1">$1<ex>2 credit cards</ex></ph>, <ph name="TYPE_2">$2<ex>1 address</ex></ph>, <ph name="TYPE_3">$3<ex>5 others</ex></ph> (synced)
   </message>
   <message name="IDS_DEL_COOKIES_COUNTER" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that deleting cookies and site data will result in the user being signed out of most websites.">
     This will sign you out of most websites.

@@ -398,10 +398,12 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, RestartOnSyncChange) {
   WaitForCountingOrConfirmFinished();
 
   // We stop syncing history deletion in particular. This restarts the counter.
-  syncer::ModelTypeSet everything_except_history = syncer::ModelTypeSet::All();
+  syncer::ModelTypeSet everything_except_history =
+      syncer::UserSelectableTypes();
   everything_except_history.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
   auto sync_blocker = sync_service->GetSetupInProgressHandle();
-  sync_service->ChangePreferredDataTypes(everything_except_history);
+  sync_service->OnUserChoseDatatypes(/*sync_everything=*/false,
+                                     everything_except_history);
   sync_blocker.reset();
   WaitForCountingOrConfirmFinished();
 
