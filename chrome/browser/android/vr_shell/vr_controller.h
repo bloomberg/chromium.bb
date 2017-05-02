@@ -42,9 +42,6 @@ class VrController {
   // Must be called when the Activity gets OnPause().
   void OnPause();
 
-  // Must be called when the GL renderer gets OnSurfaceCreated().
-  void Initialize(gvr_context* gvr_context);
-
   device::GvrGamepadData GetGamepadData();
 
   // Must be called when the GL renderer gets OnDrawFrame().
@@ -141,12 +138,14 @@ class VrController {
   // The last controller state (updated once per frame).
   std::unique_ptr<gvr::ControllerState> controller_state_;
 
+  std::unique_ptr<gvr::GvrApi> gvr_api_;
+
   float last_qx_;
   bool pinch_started_;
   bool zoom_in_progress_ = false;
   bool touch_position_changed_ = false;
 
-  // Handedness from user prefs (currently only read once on initialization)
+  // Handedness from user prefs.
   gvr::ControllerHandedness handedness_;
 
   // Current touch info after the extrapolation.

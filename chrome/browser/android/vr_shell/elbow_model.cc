@@ -32,9 +32,18 @@ constexpr float kDefaultElbowRotationRatio = 0.4f;
 }  // namespace
 
 ElbowModel::ElbowModel(gvr::ControllerHandedness handedness)
-    : handedness_(handedness), alpha_value_(1.0f), torso_direction_(kForward) {}
+    : handedness_(handedness), alpha_value_(1.0f), torso_direction_(kForward) {
+  UpdateHandedness();
+}
 
 ElbowModel::~ElbowModel() = default;
+
+void ElbowModel::SetHandedness(gvr::ControllerHandedness handedness) {
+  if (handedness == handedness_)
+    return;
+  handedness_ = handedness;
+  UpdateHandedness();
+}
 
 void ElbowModel::UpdateHandedness() {
   handed_multiplier_ = {
@@ -45,7 +54,6 @@ void ElbowModel::UpdateHandedness() {
 }
 
 void ElbowModel::Update(const UpdateData& update) {
-  UpdateHandedness();
   UpdateTorsoDirection(update);
   ApplyArmModel(update);
   UpdateTransparency(update);
