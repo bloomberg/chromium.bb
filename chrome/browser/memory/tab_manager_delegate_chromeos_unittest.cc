@@ -245,8 +245,12 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
                              kNotFocused, 200);
   arc_processes.emplace_back(
       3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
-  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
+  arc_processes.emplace_back(4, 40, "visible2",
+                             arc::mojom::ProcessState::IMPORTANT_FOREGROUND,
                              kNotFocused, 150);
+  arc_processes.emplace_back(5, 50, "not-visible",
+                             arc::mojom::ProcessState::IMPORTANT_BACKGROUND,
+                             kNotFocused, 300);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
@@ -280,10 +284,12 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // tab1              pid: 11  tab_contents_id 1
   // tab5              pid: 12  tab_contents_id 5
   // tab2              pid: 11  tab_contents_id 2
+  // app "not-visible" pid: 50  nspid 5
   // app "service"     pid: 30  nspid 3
   memory_stat->SetTargetMemoryToFreeKB(250000);
   // Entities to be killed.
   memory_stat->SetProcessPss(30, 10000);
+  memory_stat->SetProcessPss(50, 5000);
   memory_stat->SetProcessPss(11, 200000);
   memory_stat->SetProcessPss(12, 30000);
   // Should not be used.
@@ -297,12 +303,13 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   auto killed_tabs = tab_manager_delegate.GetKilledTabs();
 
   // Killed apps and their nspid.
-  EXPECT_EQ(1U, killed_arc_processes.size());
+  ASSERT_EQ(2U, killed_arc_processes.size());
   EXPECT_EQ(3, killed_arc_processes[0]);
+  EXPECT_EQ(5, killed_arc_processes[1]);
   // Killed tabs and their content id.
   // Note that process with pid 11 is counted twice. But so far I don't have a
   // good way to estimate the memory freed if multiple tabs share one process.
-  EXPECT_EQ(3U, killed_tabs.size());
+  ASSERT_EQ(3U, killed_tabs.size());
   EXPECT_EQ(2, killed_tabs[0]);
   EXPECT_EQ(5, killed_tabs[1]);
   EXPECT_EQ(1, killed_tabs[2]);

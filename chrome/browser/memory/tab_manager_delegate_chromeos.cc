@@ -152,8 +152,10 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
   if (app()) {
     if (app()->is_focused())
       return ProcessType::FOCUSED_APP;
-    if (app()->process_state() == arc::mojom::ProcessState::TOP)
+    if (app()->process_state() <=
+        arc::mojom::ProcessState::IMPORTANT_FOREGROUND) {
       return ProcessType::VISIBLE_APP;
+    }
     return ProcessType::BACKGROUND_APP;
   }
   if (tab()) {
