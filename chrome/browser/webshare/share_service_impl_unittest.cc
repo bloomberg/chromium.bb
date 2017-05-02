@@ -85,18 +85,17 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     return targets_in_picker_;
   }
 
-  const base::Callback<void(base::Optional<std::string>)>& picker_callback() {
-    return picker_callback_;
+  chrome::WebShareTargetPickerCallback picker_callback() {
+    return std::move(picker_callback_);
   }
 
  private:
   void ShowPickerDialog(
       const std::vector<std::pair<base::string16, GURL>>& targets,
-      const base::Callback<void(base::Optional<std::string>)>& callback)
-      override {
+      chrome::WebShareTargetPickerCallback callback) override {
     // Store the arguments passed to the picker dialog.
     targets_in_picker_ = targets;
-    picker_callback_ = callback;
+    picker_callback_ = std::move(callback);
 
     // Quit the test's run loop. It is the test's responsibility to call the
     // callback, to simulate the user's choice.
@@ -126,7 +125,7 @@ class ShareServiceTestImpl : public ShareServiceImpl {
   std::vector<std::pair<base::string16, GURL>> targets_in_picker_;
   // The callback passed to ShowPickerDialog (which is supposed to be called
   // with the user's chosen result, or nullopt if cancelled).
-  base::Callback<void(base::Optional<std::string>)> picker_callback_;
+  chrome::WebShareTargetPickerCallback picker_callback_;
 };
 
 class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
@@ -343,13 +342,13 @@ TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
       make_pair(base::UTF8ToUTF16(kTargetName), GURL(kManifestUrlLow))};
   EXPECT_EQ(kExpectedTargets, share_service_helper()->GetTargetsInPicker());
 
-  const base::Callback<void(base::Optional<std::string>)> picker_callback =
+  chrome::WebShareTargetPickerCallback picker_callback =
       share_service_helper()->picker_callback();
 
   DeleteShareService();
 
   // Pick example-low.com.
-  picker_callback.Run(base::Optional<std::string>(kManifestUrlLow));
+  std::move(picker_callback).Run(base::Optional<std::string>(kManifestUrlLow));
 }
 
 // Replace various numbers of placeholders in various orders. Placeholders are

@@ -57,7 +57,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   // target, or is null if the user cancelled the share. Virtual for testing.
   virtual void ShowPickerDialog(
       const std::vector<std::pair<base::string16, GURL>>& targets,
-      const base::Callback<void(base::Optional<std::string>)>& callback);
+      chrome::WebShareTargetPickerCallback callback);
 
   // Opens a new tab and navigates to |target_url|.
   // Virtual for testing purposes.
@@ -88,7 +88,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
                       const std::string& text,
                       const GURL& share_url,
                       const ShareCallback& callback,
-                      base::Optional<std::string> result);
+                      const base::Optional<std::string>& result);
 
   base::WeakPtrFactory<ShareServiceImpl> weak_factory_;
 

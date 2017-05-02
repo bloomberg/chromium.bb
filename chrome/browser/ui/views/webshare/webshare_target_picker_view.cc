@@ -66,9 +66,9 @@ namespace chrome {
 void ShowWebShareTargetPickerDialog(
     gfx::NativeWindow parent_window,
     const std::vector<std::pair<base::string16, GURL>>& targets,
-    const base::Callback<void(base::Optional<std::string>)>& callback) {
+    chrome::WebShareTargetPickerCallback callback) {
   constrained_window::CreateBrowserModalDialogViews(
-      new WebShareTargetPickerView(targets, callback), parent_window)
+      new WebShareTargetPickerView(targets, std::move(callback)), parent_window)
       ->Show();
 }
 
@@ -76,10 +76,10 @@ void ShowWebShareTargetPickerDialog(
 
 WebShareTargetPickerView::WebShareTargetPickerView(
     const std::vector<std::pair<base::string16, GURL>>& targets,
-    const base::Callback<void(base::Optional<std::string>)>& close_callback)
+    chrome::WebShareTargetPickerCallback close_callback)
     : targets_(targets),
       table_model_(base::MakeUnique<TargetPickerTableModel>(&targets_)),
-      close_callback_(close_callback) {
+      close_callback_(std::move(close_callback)) {
   const int panel_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_PANEL_CONTENT_MARGIN);
   views::BoxLayout* layout =
@@ -129,7 +129,7 @@ base::string16 WebShareTargetPickerView::GetWindowTitle() const {
 
 bool WebShareTargetPickerView::Cancel() {
   if (!close_callback_.is_null())
-    close_callback_.Run(base::nullopt);
+    std::move(close_callback_).Run(base::nullopt);
 
   return true;
 }
@@ -137,7 +137,8 @@ bool WebShareTargetPickerView::Cancel() {
 bool WebShareTargetPickerView::Accept() {
   if (!close_callback_.is_null()) {
     DCHECK(!table_->selection_model().empty());
-    close_callback_.Run(targets_[table_->FirstSelectedRow()].second.spec());
+    std::move(close_callback_)
+        .Run(targets_[table_->FirstSelectedRow()].second.spec());
   }
 
   return true;

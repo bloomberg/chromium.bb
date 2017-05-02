@@ -61,8 +61,8 @@ class WebShareTargetPickerViewTest : public views::ViewsTestBase {
   // Creates the WebShareTargetPickerView (available as view()).
   void CreateView(const std::vector<std::pair<base::string16, GURL>>& targets) {
     view_ = new WebShareTargetPickerView(
-        targets, base::Bind(&WebShareTargetPickerViewTest::OnCallback,
-                            base::Unretained(this)));
+        targets, base::BindOnce(&WebShareTargetPickerViewTest::OnCallback,
+                                base::Unretained(this)));
     constrained_window::CreateBrowserModalDialogViews(
         view_, parent_widget_->GetNativeWindow())
         ->Show();
@@ -83,7 +83,7 @@ class WebShareTargetPickerViewTest : public views::ViewsTestBase {
   const base::Optional<std::string>& result() { return result_; }
 
  private:
-  void OnCallback(base::Optional<std::string> result) {
+  void OnCallback(const base::Optional<std::string>& result) {
     result_ = result;
     if (quit_closure_)
       quit_closure_.Run();
