@@ -249,19 +249,22 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutSize previous_size = Size();
     has_definite_logical_height_ = HasDefiniteLogicalHeight();
 
-    // We need to clear both own and containingBlock override sizes to
-    // ensure we get the same result when grid's intrinsic size is
-    // computed again in the updateLogicalWidth call bellow.
-    if (SizesLogicalWidthToFitContent(StyleRef().LogicalWidth()) ||
-        StyleRef().LogicalWidth().IsIntrinsicOrAuto()) {
-      for (auto* child = FirstInFlowChildBox(); child;
-           child = child->NextInFlowSiblingBox()) {
-        if (!IsOrthogonalChild(*child))
-          continue;
-        child->ClearOverrideSize();
-        child->ClearContainingBlockOverrideSize();
-        child->ForceLayout();
-      }
+    // Grid's layout logic controls the grid item's override size, hence
+    // we need to clear any override size set previously, so it doesn't
+    // interfere in current layout execution.
+    for (auto* child = FirstInFlowChildBox(); child;
+         child = child->NextInFlowSiblingBox()) {
+      child->ClearOverrideSize();
+      if (!IsOrthogonalChild(*child) ||
+          (!SizesLogicalWidthToFitContent(StyleRef().LogicalWidth()) &&
+           !StyleRef().LogicalWidth().IsIntrinsicOrAuto()))
+        continue;
+      // Additionally, we may need to clear containingBlock override sizes and
+      // force a layout of the grid items to ensure we get the same result when
+      // grid's intrinsic size is computed again in the updateLogicalWidth call
+      // bellow.
+      child->ClearContainingBlockOverrideSize();
+      child->ForceLayout();
     }
 
     UpdateLogicalWidth();
@@ -1576,11 +1579,6 @@ GridTrackSizingDirection LayoutGrid::FlowAwareDirectionForChild(
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to
 // LayoutBox.
 void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
-  // We clear height override values because we will decide now whether it's
-  // allowed or not, evaluating the conditions which might have changed since
-  // the old values were set.
-  child.ClearOverrideLogicalContentHeight();
-
   GridTrackSizingDirection child_block_direction =
       FlowAwareDirectionForChild(child, kForRows);
   bool block_flow_is_column_axis = child_block_direction == kForRows;
