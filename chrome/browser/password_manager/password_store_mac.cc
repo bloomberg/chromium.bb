@@ -1037,7 +1037,8 @@ void PasswordStoreMac::set_login_metadata_db(
 }
 
 bool PasswordStoreMac::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    PrefService* prefs) {
   // The class should be used inside PasswordStoreProxyMac only.
   NOTREACHED();
   return true;

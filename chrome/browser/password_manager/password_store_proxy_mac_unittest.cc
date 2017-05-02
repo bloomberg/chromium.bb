@@ -182,7 +182,7 @@ void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       base::MakeUnique<crypto::MockAppleKeychain>(), std::move(login_db),
       &testing_prefs_);
-  ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 }
 
 void PasswordStoreProxyMacTest::ClosePasswordStore() {
@@ -480,7 +480,7 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
   store_ = new PasswordStoreProxyMac(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       std::move(keychain_), std::move(login_db_), &testing_prefs_);
-  ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
   FinishAsyncProcessing();
 
   MockPasswordStoreConsumer mock_consumer;

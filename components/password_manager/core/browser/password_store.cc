@@ -111,8 +111,10 @@ PasswordStore::PasswordStore(
       is_propagating_password_changes_to_web_credentials_enabled_(false),
       shutdown_called_(false) {}
 
-bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
-  ScheduleTask(base::Bind(&PasswordStore::InitOnBackgroundThread, this, flare));
+bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
+                         PrefService* prefs) {
+  ScheduleTask(
+      base::Bind(&PasswordStore::InitOnBackgroundThread, this, flare, prefs));
   return true;
 }
 
@@ -718,14 +720,15 @@ void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
 }
 
 void PasswordStore::InitOnBackgroundThread(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    PrefService* prefs) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(!syncable_service_);
   syncable_service_.reset(new PasswordSyncableService(this));
   syncable_service_->InjectStartSyncFlare(flare);
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  reuse_detector_.reset(new PasswordReuseDetector);
+  reuse_detector_ = base::MakeUnique<PasswordReuseDetector>(prefs);
   GetAutofillableLoginsImpl(
       base::MakeUnique<GetLoginsRequest>(reuse_detector_.get()));
 #endif

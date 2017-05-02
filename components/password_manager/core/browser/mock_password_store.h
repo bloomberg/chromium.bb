@@ -13,13 +13,16 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class PrefService;
+
 namespace password_manager {
 
 class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
 
-  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override {
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare,
+            PrefService* prefs) override {
     return true;
   };
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));

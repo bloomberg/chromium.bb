@@ -27,7 +27,7 @@ namespace password_manager {
 template <class Context, class Store>
 scoped_refptr<RefcountedKeyedService> BuildPasswordStore(Context* context) {
   scoped_refptr<password_manager::PasswordStore> store(new Store);
-  if (!store->Init(syncer::SyncableService::StartSyncFlare()))
+  if (!store->Init(syncer::SyncableService::StartSyncFlare(), nullptr))
     return nullptr;
   return store;
 }

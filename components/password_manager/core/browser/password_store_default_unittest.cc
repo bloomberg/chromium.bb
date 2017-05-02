@@ -145,7 +145,7 @@ PasswordStoreDefaultTestDelegate::CreateInitializedStore(
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       std::move(database)));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   return store;
 }

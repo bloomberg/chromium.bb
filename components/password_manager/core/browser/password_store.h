@@ -28,6 +28,7 @@
 #endif
 
 class PasswordStoreProxyMac;
+class PrefService;
 
 namespace autofill {
 struct PasswordForm;
@@ -92,7 +93,8 @@ class PasswordStore : protected PasswordStoreSync,
                 scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
-  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare);
+  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare,
+                    PrefService* prefs);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
@@ -550,7 +552,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Creates PasswordSyncableService and PasswordReuseDetector instances on the
   // background thread.
   void InitOnBackgroundThread(
-      const syncer::SyncableService::StartSyncFlare& flare);
+      const syncer::SyncableService::StartSyncFlare& flare,
+      PrefService* prefs);
 
   // Deletes objest that should be destroyed on the background thread.
   void DestroyOnBackgroundThread();

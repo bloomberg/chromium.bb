@@ -68,6 +68,9 @@ extern const char kWasSignInPasswordPromoClicked[];
 // Number of times the Chrome Sign in promo popped up.
 extern const char kNumberSignInPasswordPromoShown[];
 
+// String that represent the sync password hash.
+extern const char kSyncPasswordHash[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

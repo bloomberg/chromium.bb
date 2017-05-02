@@ -220,7 +220,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   done.Wait();
 
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
   MockPasswordStoreConsumer consumer;
 
@@ -273,7 +273,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 
 TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
   PasswordFormData form_data = {
       PasswordForm::SCHEME_HTML,
@@ -323,7 +323,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   done.Wait();
 
   store_ = CreatePasswordStore();
-  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  EXPECT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
   MockPasswordStoreConsumer password_consumer;
   // Make sure we quit the MessageLoop even if the test fails.
@@ -386,7 +386,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare());
+  store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   PasswordFormData form_data = {
       PasswordForm::SCHEME_HTML,
@@ -418,7 +418,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare());
+  store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   MockPasswordStoreConsumer consumer;
 
@@ -434,7 +434,7 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
   store_ = CreatePasswordStore();
-  store_->Init(syncer::SyncableService::StartSyncFlare());
+  store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   MockPasswordStoreConsumer consumer;
 

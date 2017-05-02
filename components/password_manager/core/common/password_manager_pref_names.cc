@@ -39,5 +39,7 @@ const char kWasSignInPasswordPromoClicked[] =
 const char kNumberSignInPasswordPromoShown[] =
     "profile.number_sign_in_password_promo_shown";
 
+const char kSyncPasswordHash[] = "profile.sync_password_hash";
+
 }  // namespace prefs
 }  // namespace password_manager

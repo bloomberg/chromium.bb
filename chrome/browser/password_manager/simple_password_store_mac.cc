@@ -31,7 +31,8 @@ void SimplePasswordStoreMac::InitWithTaskRunner(
 }
 
 bool SimplePasswordStoreMac::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    PrefService* prefs) {
   NOTREACHED();
   return false;
 }

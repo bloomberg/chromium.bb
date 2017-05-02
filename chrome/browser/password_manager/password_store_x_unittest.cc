@@ -337,7 +337,7 @@ PasswordStoreXTestDelegate::PasswordStoreXTestDelegate(BackendType backend_type)
                               base::MakeUnique<password_manager::LoginDatabase>(
                                   test_login_db_file_path()),
                               GetBackend(backend_type_));
-  store_->Init(syncer::SyncableService::StartSyncFlare());
+  store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 }
 
 PasswordStoreXTestDelegate::~PasswordStoreXTestDelegate() {
@@ -406,7 +406,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       std::move(login_db), GetBackend(GetParam())));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   password_manager::PasswordFormData form_data = {
       PasswordForm::SCHEME_HTML,
@@ -512,7 +512,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       std::move(login_db), GetBackend(GetParam())));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   MockPasswordStoreConsumer consumer;
 

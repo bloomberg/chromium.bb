@@ -18,6 +18,8 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
+class PrefService;
+
 namespace password_manager {
 
 class PasswordReuseDetectorConsumer;
@@ -34,7 +36,7 @@ struct ReverseStringLess {
 // a password reuse.
 class PasswordReuseDetector : public PasswordStoreConsumer {
  public:
-  PasswordReuseDetector();
+  explicit PasswordReuseDetector(PrefService* prefs);
   ~PasswordReuseDetector() override;
 
   // PasswordStoreConsumer
@@ -92,6 +94,7 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   int saved_passwords_ = 0;
 
   base::Optional<uint64_t> sync_password_hash_;
+  PrefService* const prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };
