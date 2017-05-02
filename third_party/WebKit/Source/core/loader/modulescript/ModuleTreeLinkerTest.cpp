@@ -503,4 +503,32 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
             ModuleInstantiationState::kInstantiated);
 }
 
+TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
+  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+
+  KURL url(kParsedURLString, "http://example.com/a.js");
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  TestModuleTreeClient* client = new TestModuleTreeClient;
+  registry->Fetch(
+      module_request,
+      AncestorList{KURL(kParsedURLString, "http://example.com/a.js")},
+      ModuleGraphLevel::kDependentModuleFetch, GetModulator(), client);
+
+  EXPECT_FALSE(client->WasNotifyFinished())
+      << "ModuleTreeLinker should always finish asynchronously.";
+  EXPECT_FALSE(client->GetModuleScript());
+
+  GetModulator()->ResolveSingleModuleScriptFetch(
+      url, {"./a.js"}, ModuleInstantiationState::kUninstantiated);
+
+  auto ancestor_list = GetModulator()->GetAncestorListForTreeFetch(url);
+  EXPECT_EQ(0u, ancestor_list.size());
+
+  EXPECT_TRUE(client->WasNotifyFinished());
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kInstantiated);
+}
+
 }  // namespace blink
