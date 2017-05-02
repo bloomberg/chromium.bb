@@ -898,9 +898,11 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
   }
 }
 
-LayoutUnit InlineFlowBox::MaxLogicalBottomForUnderline(
-    LineLayoutItem decoration_object,
-    LayoutUnit max_logical_bottom) const {
+LayoutUnit InlineFlowBox::FarthestPositionForUnderline(
+    LineLayoutItem decorating_box,
+    LineVerticalPositionType position_type,
+    FontBaseline baseline_type,
+    LayoutUnit farthest) const {
   for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {
     if (curr->GetLineLayoutItem().IsOutOfFlowPositioned())
       continue;  // Positioned placeholders don't affect calculations.
@@ -911,45 +913,23 @@ LayoutUnit InlineFlowBox::MaxLogicalBottomForUnderline(
           kTextDecorationUnderline))
       continue;
 
-    if (decoration_object && decoration_object.IsLayoutInline() &&
-        !IsAncestorAndWithinBlock(decoration_object, curr->GetLineLayoutItem()))
+    if (decorating_box && decorating_box.IsLayoutInline() &&
+        !IsAncestorAndWithinBlock(decorating_box, curr->GetLineLayoutItem()))
       continue;
 
     if (curr->IsInlineFlowBox()) {
-      max_logical_bottom = ToInlineFlowBox(curr)->MaxLogicalBottomForUnderline(
-          decoration_object, max_logical_bottom);
+      farthest = ToInlineFlowBox(curr)->FarthestPositionForUnderline(
+          decorating_box, position_type, baseline_type, farthest);
     } else if (curr->IsInlineTextBox()) {
-      max_logical_bottom = std::max(max_logical_bottom, curr->LogicalBottom());
+      LayoutUnit position =
+          ToInlineTextBox(curr)->VerticalPosition(position_type, baseline_type);
+      if (IsLineOverSide(position_type))
+        farthest = std::min(farthest, position);
+      else
+        farthest = std::max(farthest, position);
     }
   }
-  return max_logical_bottom;
-}
-
-LayoutUnit InlineFlowBox::MinLogicalTopForUnderline(
-    LineLayoutItem decoration_object,
-    LayoutUnit min_logical_top) const {
-  for (InlineBox* curr = FirstChild(); curr; curr = curr->NextOnLine()) {
-    if (curr->GetLineLayoutItem().IsOutOfFlowPositioned())
-      continue;  // Positioned placeholders don't affect calculations.
-
-    // If the text decoration isn't in effect on the child, it must be outside
-    // of |decorationObject|.
-    if (!(curr->LineStyleRef().TextDecorationsInEffect() &
-          kTextDecorationUnderline))
-      continue;
-
-    if (decoration_object && decoration_object.IsLayoutInline() &&
-        !IsAncestorAndWithinBlock(decoration_object, curr->GetLineLayoutItem()))
-      continue;
-
-    if (curr->IsInlineFlowBox()) {
-      min_logical_top = ToInlineFlowBox(curr)->MinLogicalTopForUnderline(
-          decoration_object, min_logical_top);
-    } else if (curr->IsInlineTextBox()) {
-      min_logical_top = std::min(min_logical_top, curr->LogicalTop());
-    }
-  }
-  return min_logical_top;
+  return farthest;
 }
 
 void InlineFlowBox::FlipLinesInBlockDirection(LayoutUnit line_top,

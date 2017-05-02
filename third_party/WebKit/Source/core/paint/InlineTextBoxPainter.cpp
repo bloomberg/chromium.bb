@@ -43,20 +43,14 @@ enum class ResolvedUnderlinePosition { kRoman, kUnder, kOver };
 
 static ResolvedUnderlinePosition ResolveUnderlinePosition(
     const ComputedStyle& style,
-    const InlineTextBox* inline_text_box) {
+    FontBaseline baseline_type) {
   // |auto| should resolve to |under| to avoid drawing through glyphs in
   // scripts where it would not be appropriate (e.g., ideographs.)
   // However, this has performance implications. For now, we only work with
   // vertical text.
-  switch (inline_text_box->Root().BaselineType()) {
-    default:
-      NOTREACHED();
-    // Fall though.
+  switch (baseline_type) {
     case kAlphabeticBaseline:
       switch (style.GetTextUnderlinePosition()) {
-        default:
-          NOTREACHED();
-        // Fall though.
         case kTextUnderlinePositionAuto:
           return ResolvedUnderlinePosition::kRoman;
         case kTextUnderlinePositionUnder:
@@ -71,6 +65,8 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
         return ResolvedUnderlinePosition::kOver;
       return ResolvedUnderlinePosition::kUnder;
   }
+  NOTREACHED();
+  return ResolvedUnderlinePosition::kRoman;
 }
 
 static LineLayoutItem EnclosingUnderlineObject(
@@ -98,30 +94,30 @@ static LineLayoutItem EnclosingUnderlineObject(
   }
 }
 
-static int ComputeUnderlineOffsetForUnder(const ComputedStyle& style,
-                                          const InlineTextBox* inline_text_box,
-                                          bool is_overline = false) {
+static int ComputeUnderlineOffsetForUnder(
+    const ComputedStyle& style,
+    const InlineTextBox* inline_text_box,
+    LineLayoutItem decorating_box,
+    float text_decoration_thickness,
+    LineVerticalPositionType position_type) {
   const RootInlineBox& root = inline_text_box->Root();
-  LineLayoutItem decoration_object = EnclosingUnderlineObject(inline_text_box);
-  LayoutUnit offset;
-  if (style.IsFlippedLinesWritingMode()) {
-    LayoutUnit position = inline_text_box->LogicalTop();
-    offset =
-        position - root.MinLogicalTopForUnderline(decoration_object, position);
-  } else {
-    LayoutUnit position = inline_text_box->LogicalBottom();
-    offset = root.MaxLogicalBottomForUnderline(decoration_object, position) -
-             position;
-  }
-  if (is_overline)
-    return std::min(-offset, LayoutUnit()).ToInt();
-  return (inline_text_box->LogicalHeight() + std::max(offset, LayoutUnit()))
-      .ToInt();
-}
+  FontBaseline baseline_type = root.BaselineType();
+  LayoutUnit offset = inline_text_box->OffsetTo(position_type, baseline_type);
 
-static int ComputeOverlineOffset(const ComputedStyle& style,
-                                 const InlineTextBox* inline_text_box) {
-  return ComputeUnderlineOffsetForUnder(style, inline_text_box, true);
+  // Compute offset to the farthest position of the decorating box.
+  LayoutUnit logical_top = inline_text_box->LogicalTop();
+  LayoutUnit position = logical_top + offset;
+  LayoutUnit farthest = root.FarthestPositionForUnderline(
+      decorating_box, position_type, baseline_type, position);
+  // Round() looks more logical but Floor() produces better results in
+  // positive/negative offsets, in horizontal/vertical flows, on Win/Mac/Linux.
+  int offset_int = (farthest - logical_top).Floor();
+
+  // Gaps are not needed for TextTop because it generally has internal
+  // leadings.
+  if (position_type == LineVerticalPositionType::TextTop)
+    return offset_int;
+  return !IsLineOverSide(position_type) ? offset_int + 1 : offset_int - 1;
 }
 
 static int ComputeUnderlineOffsetForRoman(
@@ -150,6 +146,7 @@ static int ComputeUnderlineOffset(ResolvedUnderlinePosition underline_position,
                                   const ComputedStyle& style,
                                   const FontMetrics& font_metrics,
                                   const InlineTextBox* inline_text_box,
+                                  LineLayoutItem decorating_box,
                                   const float text_decoration_thickness) {
   switch (underline_position) {
     default:
@@ -161,7 +158,9 @@ static int ComputeUnderlineOffset(ResolvedUnderlinePosition underline_position,
     case ResolvedUnderlinePosition::kUnder:
       // Position underline at the under edge of the lowest element's
       // content box.
-      return ComputeUnderlineOffsetForUnder(style, inline_text_box);
+      return ComputeUnderlineOffsetForUnder(
+          style, inline_text_box, decorating_box, text_decoration_thickness,
+          LineVerticalPositionType::BottomOfEmHeight);
   }
 }
 
@@ -233,6 +232,10 @@ struct DecorationInfo final {
   const SimpleFontData* font_data;
   float thickness;
   float double_offset;
+  FontBaseline baseline_type;
+  ResolvedUnderlinePosition underline_position;
+  // Decorating box: https://drafts.csswg.org/css-text-decor-3/#decorating-box
+  LineLayoutItem decorating_box;
 };
 
 class AppliedDecorationPainter final {
@@ -509,6 +512,28 @@ static void RestoreContextFromDecoration(GraphicsContext& context,
   }
 }
 
+static float ComputeDecorationThickness(const ComputedStyle* style,
+                                        const SimpleFontData* font_data) {
+  // Set the thick of the line to be 10% (or something else ?)of the computed
+  // font size and not less than 1px.  Using computedFontSize should take care
+  // of zoom as well.
+
+  // Update Underline thickness, in case we have Faulty Font Metrics calculating
+  // underline thickness by old method.
+  float text_decoration_thickness = 0.0;
+  int font_height_int = 0;
+  if (font_data) {
+    text_decoration_thickness =
+        font_data->GetFontMetrics().UnderlineThickness();
+    font_height_int = font_data->GetFontMetrics().Height();
+  }
+  if ((text_decoration_thickness == 0.f) ||
+      (text_decoration_thickness >= (font_height_int >> 1))) {
+    text_decoration_thickness = std::max(1.f, style->ComputedFontSize() / 10.f);
+  }
+  return text_decoration_thickness;
+}
+
 static void ComputeDecorationInfo(
     DecorationInfo& decoration_info,
     const InlineTextBox& box,
@@ -537,6 +562,10 @@ static void ComputeDecorationInfo(
   decoration_info.style =
       LineLayoutAPIShim::LayoutObjectFrom(box.GetLineLayoutItem())
           ->Style(box.IsFirstLineStyle());
+  decoration_info.baseline_type = box.Root().BaselineType();
+  decoration_info.underline_position = ResolveUnderlinePosition(
+      *decoration_info.style, decoration_info.baseline_type);
+
   decoration_info.font_data = decoration_info.style->GetFont().PrimaryFont();
   DCHECK(decoration_info.font_data);
   decoration_info.baseline =
@@ -544,29 +573,27 @@ static void ComputeDecorationInfo(
           ? decoration_info.font_data->GetFontMetrics().FloatAscent()
           : 0;
 
-  // Set the thick of the line to be 10% (or something else ?)of the computed
-  // font size and not less than 1px.  Using computedFontSize should take care
-  // of zoom as well.
-
-  // Update Underline thickness, in case we have Faulty Font Metrics calculating
-  // underline thickness by old method.
-  float text_decoration_thickness = 0.0;
-  int font_height_int = 0;
-  if (decoration_info.font_data) {
-    text_decoration_thickness =
-        decoration_info.font_data->GetFontMetrics().UnderlineThickness();
-    font_height_int =
-        (int)(decoration_info.font_data->GetFontMetrics().FloatHeight() + 0.5);
+  if (decoration_info.underline_position == ResolvedUnderlinePosition::kRoman) {
+    decoration_info.thickness = ComputeDecorationThickness(
+        decoration_info.style, decoration_info.font_data);
+  } else {
+    // Compute decorating box. Position and thickness are computed from the
+    // decorating box.
+    // Only for non-Roman for now for the performance implications.
+    // https:// drafts.csswg.org/css-text-decor-3/#decorating-box
+    decoration_info.decorating_box = EnclosingUnderlineObject(&box);
+    if (decoration_info.decorating_box) {
+      decoration_info.thickness = ComputeDecorationThickness(
+          decoration_info.decorating_box.Style(),
+          decoration_info.decorating_box.Style()->GetFont().PrimaryFont());
+    } else {
+      decoration_info.thickness = ComputeDecorationThickness(
+          decoration_info.style, decoration_info.font_data);
+    }
   }
-  if ((text_decoration_thickness == 0.f) ||
-      (text_decoration_thickness >= (font_height_int >> 1))) {
-    text_decoration_thickness =
-        std::max(1.f, decoration_info.style->ComputedFontSize() / 10.f);
-  }
-  decoration_info.thickness = text_decoration_thickness;
 
   // Offset between lines - always non-zero, so lines never cross each other.
-  decoration_info.double_offset = text_decoration_thickness + 1.f;
+  decoration_info.double_offset = decoration_info.thickness + 1.f;
 }
 
 static void PaintDecorationsExceptLineThrough(
@@ -584,7 +611,7 @@ static void PaintDecorationsExceptLineThrough(
 
   // text-underline-position may flip underline and overline.
   ResolvedUnderlinePosition underline_position =
-      ResolveUnderlinePosition(*decoration_info.style, &box);
+      decoration_info.underline_position;
   bool flip_underline_and_overline = false;
   if (underline_position == ResolvedUnderlinePosition::kOver) {
     flip_underline_and_overline = true;
@@ -598,10 +625,10 @@ static void PaintDecorationsExceptLineThrough(
           lines ^ (kTextDecorationUnderline | kTextDecorationOverline));
     }
     if ((lines & kTextDecorationUnderline) && decoration_info.font_data) {
-      const int underline_offset =
-          ComputeUnderlineOffset(underline_position, *decoration_info.style,
-                                 decoration_info.font_data->GetFontMetrics(),
-                                 &box, decoration_info.thickness);
+      const int underline_offset = ComputeUnderlineOffset(
+          underline_position, *decoration_info.style,
+          decoration_info.font_data->GetFontMetrics(), &box,
+          decoration_info.decorating_box, decoration_info.thickness);
       AppliedDecorationPainter decoration_painter(
           context, decoration_info, underline_offset, decoration,
           decoration_info.double_offset, 1);
@@ -616,8 +643,11 @@ static void PaintDecorationsExceptLineThrough(
       decoration_painter.Paint();
     }
     if (lines & kTextDecorationOverline) {
-      const int overline_offset =
-          ComputeOverlineOffset(*decoration_info.style, &box);
+      const int overline_offset = ComputeUnderlineOffsetForUnder(
+          *decoration_info.style, &box, decoration_info.decorating_box,
+          decoration_info.thickness,
+          flip_underline_and_overline ? LineVerticalPositionType::TopOfEmHeight
+                                      : LineVerticalPositionType::TextTop);
       AppliedDecorationPainter decoration_painter(
           context, decoration_info, overline_offset, decoration,
           -decoration_info.double_offset, 1);
