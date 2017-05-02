@@ -27,6 +27,7 @@ group("blink") {
 group("test_support") {
   testonly = true
   public_deps = [
+    ":test_headers",
     "//third_party/WebKit/Source/platform:test_support",
     "//third_party/WebKit/Source/web:test_support",
   ]
@@ -84,6 +85,20 @@ if (is_android) {
     ]
     srcjar_deps = [ ":blink_headers_java_enums_srcjar" ]
   }
+}
+
+source_set("test_headers") {
+  testonly = true
+  sources = [
+    "platform/scheduler/test/fake_renderer_scheduler.h",
+    "platform/scheduler/test/mock_renderer_scheduler.h",
+    "platform/scheduler/test/renderer_scheduler_test_support.h",
+  ]
+  deps = [
+    "//base:base",
+    "//cc:cc",
+    "//testing/gmock:gmock",
+  ]
 }
 
 # Depend on this target to use public blink API headers for things like enums
@@ -430,9 +445,6 @@ source_set("blink_headers") {
     "platform/scheduler/child/webthread_base.h",
     "platform/scheduler/renderer/render_widget_scheduling_state.h",
     "platform/scheduler/renderer/renderer_scheduler.h",
-    "platform/scheduler/test/fake_renderer_scheduler.h",
-    "platform/scheduler/test/mock_renderer_scheduler.h",
-    "platform/scheduler/test/renderer_scheduler_test_support.h",
     "web/WebAXEnums.h",
     "web/WebAXObject.h",
     "web/WebActiveWheelFlingParameters.h",
