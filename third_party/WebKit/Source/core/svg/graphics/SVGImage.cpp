@@ -365,7 +365,7 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
   FloatRect float_bounds(FloatPoint(), size);
   const SkRect bounds(float_bounds);
 
-  flags.setShader(SkShader::MakePictureShader(
+  flags.setShader(MakePaintShaderRecord(
       PaintRecordForCurrentFrame(float_bounds, url), SkShader::kRepeat_TileMode,
       SkShader::kRepeat_TileMode, &local_matrix, &bounds));
 

@@ -23,11 +23,12 @@ void BeginClipPathDisplayItem::AppendToWebDisplayItemList(
   list->AppendClipPathItem(clip_path_, true);
 }
 
-void BeginClipPathDisplayItem::AnalyzeForGpuRasterization(
-    SkPictureGpuAnalyzer& analyzer) const {
+int BeginClipPathDisplayItem::NumberOfSlowPaths() const {
   // Temporarily disabled (pref regressions due to GPU veto stickiness:
   // http://crbug.com/603969).
   // analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
+  // TODO(enne): fixup this code to return an int.
+  return 0;
 }
 
 void EndClipPathDisplayItem::Replay(GraphicsContext& context) const {

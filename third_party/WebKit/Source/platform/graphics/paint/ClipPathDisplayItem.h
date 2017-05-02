@@ -24,7 +24,7 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final
   void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
-  void AnalyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+  int NumberOfSlowPaths() const override;
 
  private:
 #ifndef NDEBUG

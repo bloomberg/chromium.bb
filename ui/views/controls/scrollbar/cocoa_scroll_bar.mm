@@ -5,6 +5,7 @@
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 
 #import "base/mac/sdk_forward_declarations.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/compositor/layer.h"
