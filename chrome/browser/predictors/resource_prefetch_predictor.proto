@@ -57,6 +57,7 @@ message ResourceData {
   optional Priority priority = 7;
   optional bool has_validators = 8;
   optional bool always_revalidate = 9;
+  optional bool before_first_contentful_paint = 10;
 }
 
 // Represents a collection of subresources associated with URL or host.

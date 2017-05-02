@@ -37,6 +37,7 @@ void InitializeResourceData(ResourceData* resource,
   resource->set_consecutive_misses(consecutive_misses);
   resource->set_average_position(average_position);
   resource->set_priority(static_cast<ResourceData::Priority>(priority));
+  resource->set_before_first_contentful_paint(true);
   resource->set_has_validators(has_validators);
   resource->set_always_revalidate(always_revalidate);
 }
@@ -163,6 +164,7 @@ URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
   summary.request_url = summary.resource_url;
   summary.resource_type = resource_type;
   summary.priority = priority;
+  summary.before_first_contentful_paint = true;
   summary.mime_type = mime_type;
   summary.was_cached = was_cached;
   if (!redirect_url.empty())
@@ -188,6 +190,7 @@ std::ostream& operator<<(std::ostream& os, const ResourceData& resource) {
             << resource.number_of_misses() << ","
             << resource.consecutive_misses() << ","
             << resource.average_position() << "," << resource.priority() << ","
+            << resource.before_first_contentful_paint() << ","
             << resource.has_validators() << "," << resource.always_revalidate()
             << "]";
 }
@@ -232,9 +235,10 @@ std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
 std::ostream& operator<<(std::ostream& os, const URLRequestSummary& summary) {
   return os << "[" << summary.navigation_id << "," << summary.resource_url
             << "," << summary.resource_type << "," << summary.priority << ","
-            << summary.mime_type << "," << summary.was_cached << ","
-            << summary.redirect_url << "," << summary.has_validators << ","
-            << summary.always_revalidate << "]";
+            << summary.before_first_contentful_paint << "," << summary.mime_type
+            << "," << summary.was_cached << "," << summary.redirect_url << ","
+            << summary.has_validators << "," << summary.always_revalidate
+            << "]";
 }
 
 std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
@@ -262,6 +266,8 @@ bool operator==(const ResourceData& lhs, const ResourceData& rhs) {
          lhs.consecutive_misses() == rhs.consecutive_misses() &&
          AlmostEqual(lhs.average_position(), rhs.average_position()) &&
          lhs.priority() == rhs.priority() &&
+         lhs.before_first_contentful_paint() ==
+             rhs.before_first_contentful_paint() &&
          lhs.has_validators() == rhs.has_validators() &&
          lhs.always_revalidate() == rhs.always_revalidate();
 }
@@ -297,6 +303,8 @@ bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
          lhs.resource_url == rhs.resource_url &&
          lhs.resource_type == rhs.resource_type &&
          lhs.priority == rhs.priority && lhs.mime_type == rhs.mime_type &&
+         lhs.before_first_contentful_paint ==
+             rhs.before_first_contentful_paint &&
          lhs.was_cached == rhs.was_cached &&
          lhs.redirect_url == rhs.redirect_url &&
          lhs.has_validators == rhs.has_validators &&

@@ -48,7 +48,7 @@ class ResourcePrefetchPredictorPageLoadMetricsObserverTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         base::MakeUnique<ResourcePrefetchPredictorPageLoadMetricsObserver>(
-            predictor_.get()));
+            predictor_.get(), web_contents()));
   }
 
   std::unique_ptr<testing::StrictMock<MockResourcePrefetchPredictor>>

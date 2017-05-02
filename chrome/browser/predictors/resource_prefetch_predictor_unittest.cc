@@ -2117,4 +2117,57 @@ TEST_F(ResourcePrefetchPredictorTest, TestPrefetchingDurationHistogram) {
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
 }
 
+TEST_F(ResourcePrefetchPredictorTest, TestRecordFirstContentfulPaint) {
+  using testing::_;
+  EXPECT_CALL(*mock_tables_.get(), UpdateRedirectData(_, _));
+  EXPECT_CALL(*mock_tables_.get(), UpdateOriginData(_));
+
+  auto res1_time = base::TimeTicks::FromInternalValue(1);
+  auto res2_time = base::TimeTicks::FromInternalValue(2);
+  auto fcp_time = base::TimeTicks::FromInternalValue(3);
+  auto res3_time = base::TimeTicks::FromInternalValue(4);
+
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1, "http://www.google.com");
+  predictor_->RecordURLRequest(main_frame);
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
+
+  URLRequestSummary resource1 = CreateURLRequestSummary(
+      1, "http://www.google.com", "http://google.com/style1.css",
+      content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", false);
+  resource1.response_time = res1_time;
+  predictor_->RecordURLResponse(resource1);
+  URLRequestSummary resource2 = CreateURLRequestSummary(
+      1, "http://www.google.com", "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
+  resource2.response_time = res2_time;
+  predictor_->RecordURLResponse(resource2);
+  URLRequestSummary resource3 = CreateURLRequestSummary(
+      1, "http://www.google.com", "http://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
+  resource3.response_time = res3_time;
+  predictor_->RecordURLResponse(resource3);
+
+  predictor_->RecordFirstContentfulPaint(main_frame.navigation_id, fcp_time);
+
+  PrefetchData host_data = CreatePrefetchData("www.google.com");
+  InitializeResourceData(host_data.add_resources(),
+                         "http://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      host_data.add_resources(), "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 2.0, net::MEDIUM, false, false);
+  ResourceData* resource3_rd = host_data.add_resources();
+  InitializeResourceData(resource3_rd, "http://google.com/script2.js",
+                         content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0,
+                         net::MEDIUM, false, false);
+  resource3_rd->set_before_first_contentful_paint(false);
+  EXPECT_CALL(*mock_tables_.get(),
+              UpdateResourceData(host_data, PREFETCH_KEY_TYPE_HOST));
+
+  predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
+  profile_->BlockUntilHistoryProcessesPendingRequests();
+}
+
 }  // namespace predictors

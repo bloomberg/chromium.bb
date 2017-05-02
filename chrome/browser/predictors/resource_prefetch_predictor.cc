@@ -469,6 +469,7 @@ ResourcePrefetchPredictor::OriginRequestSummary::~OriginRequestSummary() {}
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
       priority(net::IDLE),
+      before_first_contentful_paint(false),
       was_cached(false),
       has_validators(false),
       always_revalidate(false),
@@ -490,6 +491,14 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
   if (!request_info)
     return false;
 
+  // This method is called when the response is started, so this field reflects
+  // the time at which the response began, not when it finished, as would
+  // arguably be ideal. This means if firstContentfulPaint happens after the
+  // response has started, but before it's finished, we will erroneously mark
+  // the resource as having been loaded before firstContentfulPaint. This is
+  // a rare and insignificant enough occurrence that we opt to record the time
+  // here for the sake of simplicity.
+  summary->response_time = base::TimeTicks::Now();
   summary->resource_url = request.original_url();
   summary->request_url = request.url();
   content::ResourceType resource_type_from_request =
@@ -517,7 +526,9 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
 
 ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
     const GURL& i_main_frame_url)
-    : main_frame_url(i_main_frame_url), initial_url(i_main_frame_url) {}
+    : main_frame_url(i_main_frame_url),
+      initial_url(i_main_frame_url),
+      first_contentful_paint(base::TimeTicks::Max()) {}
 
 ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
     const PageRequestSummary& other) = default;
@@ -643,6 +654,18 @@ void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
       NOTREACHED() << "Unexpected initialization_state_: "
                    << initialization_state_;
   }
+}
+
+void ResourcePrefetchPredictor::RecordFirstContentfulPaint(
+    const NavigationID& navigation_id,
+    const base::TimeTicks& first_contentful_paint) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (initialization_state_ != INITIALIZED)
+    return;
+
+  NavigationMap::iterator nav_it = inflight_navigations_.find(navigation_id);
+  if (nav_it != inflight_navigations_.end())
+    nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
 void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
@@ -843,6 +866,12 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   // Remove the navigation from the inflight navigations.
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
+
+  // Set before_first_contentful paint for each resource.
+  for (auto& request_summary : summary->subresource_requests) {
+    request_summary.before_first_contentful_paint =
+        request_summary.response_time < summary->first_contentful_paint;
+  }
 
   const GURL& initial_url = summary->initial_url;
   ResourcePrefetchPredictor::Prediction prediction;
@@ -1359,6 +1388,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
       resource_to_add->set_average_position(i + 1);
       resource_to_add->set_priority(
           static_cast<ResourceData::Priority>(summary.priority));
+      resource_to_add->set_before_first_contentful_paint(
+          summary.before_first_contentful_paint);
       resource_to_add->set_has_validators(summary.has_validators);
       resource_to_add->set_always_revalidate(summary.always_revalidate);
 
@@ -1408,6 +1439,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
 
         old_resource->set_priority(
             static_cast<ResourceData::Priority>(new_summary.priority));
+        old_resource->set_before_first_contentful_paint(
+            new_summary.before_first_contentful_paint);
 
         int position = new_index[resource_url] + 1;
         int total =
@@ -1435,6 +1468,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
       resource_to_add->set_average_position(i + 1);
       resource_to_add->set_priority(
           static_cast<ResourceData::Priority>(summary.priority));
+      resource_to_add->set_before_first_contentful_paint(
+          summary.before_first_contentful_paint);
       resource_to_add->set_has_validators(new_resources[i].has_validators);
       resource_to_add->set_always_revalidate(
           new_resources[i].always_revalidate);

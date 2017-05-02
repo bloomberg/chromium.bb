@@ -35,7 +35,8 @@ class ResourcePrefetchPredictorPageLoadMetricsObserver
   // Public for testing. Normally one should use CreateIfNeeded. Predictor must
   // outlive this observer.
   explicit ResourcePrefetchPredictorPageLoadMetricsObserver(
-      predictors::ResourcePrefetchPredictor* predictor);
+      predictors::ResourcePrefetchPredictor* predictor,
+      content::WebContents* web_contents);
 
   ~ResourcePrefetchPredictorPageLoadMetricsObserver() override;
 
@@ -55,6 +56,8 @@ class ResourcePrefetchPredictorPageLoadMetricsObserver
 
  private:
   predictors::ResourcePrefetchPredictor* predictor_;
+  content::WebContents* web_contents_;
+  bool record_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorPageLoadMetricsObserver);
 };

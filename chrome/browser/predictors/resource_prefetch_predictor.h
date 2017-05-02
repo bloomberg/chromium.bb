@@ -132,6 +132,8 @@ class ResourcePrefetchPredictor
     GURL request_url;  // URL after all redirects.
     content::ResourceType resource_type;
     net::RequestPriority priority;
+    base::TimeTicks response_time;
+    bool before_first_contentful_paint;
 
     // Only for responses.
     std::string mime_type;
@@ -158,6 +160,7 @@ class ResourcePrefetchPredictor
 
     GURL main_frame_url;
     GURL initial_url;
+    base::TimeTicks first_contentful_paint;
 
     // Stores all subresource requests within a single navigation, from initial
     // main frame request to navigation completion.
@@ -228,6 +231,11 @@ class ResourcePrefetchPredictor
   // Called when the main frame of a page completes loading.
   void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
 
+  // Called after the main frame's first contentful paint.
+  void RecordFirstContentfulPaint(
+      const NavigationID& navigation_id,
+      const base::TimeTicks& first_contentful_paint);
+
   // Starts prefetching if it is enabled for |origin| and prefetching data
   // exists for the |main_frame_url| either at the URL or at the host level.
   void StartPrefetching(const GURL& main_frame_url, PrefetchOrigin origin);
@@ -297,6 +305,8 @@ class ResourcePrefetchPredictor
                            TestPrecisionRecallHistograms);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            TestPrefetchingDurationHistogram);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           TestRecordFirstContentfulPaint);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
