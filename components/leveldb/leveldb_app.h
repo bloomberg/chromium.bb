@@ -13,7 +13,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/tracing/public/cpp/provider.h"
 
 namespace leveldb {
 
@@ -35,7 +34,6 @@ class LevelDBApp
   void Create(const service_manager::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
-  tracing::Provider tracing_;
   std::unique_ptr<mojom::LevelDBService> service_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::LevelDBService> bindings_;

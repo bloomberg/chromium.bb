@@ -18,7 +18,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
 
 namespace aura {
@@ -89,8 +88,6 @@ class WindowManagerApplication : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   const bool show_primary_host_on_connect_;
-
-  tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 

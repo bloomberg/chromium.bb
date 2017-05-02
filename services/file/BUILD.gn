@@ -26,7 +26,6 @@ source_set("lib") {
     "//services/file/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
-    "//services/tracing/public/cpp",
     "//url",
   ]
 }

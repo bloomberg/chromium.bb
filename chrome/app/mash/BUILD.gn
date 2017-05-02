@@ -40,8 +40,6 @@ source_set("embedded_services") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/service_manager/standalone",
-    "//services/tracing:lib",
-    "//services/tracing/public/interfaces:constants",
     "//services/ui:lib",
     "//services/ui/ime/test_ime_driver:lib",
     "//services/ui/public/interfaces:constants",
@@ -75,7 +73,6 @@ catalog("catalog") {
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
-    "//services/tracing:manifest",
     "//services/ui:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
   ]

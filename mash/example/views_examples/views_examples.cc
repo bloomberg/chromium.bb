@@ -16,7 +16,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/mus/aura_init.h"
@@ -34,7 +33,6 @@ class ViewsExamples
  private:
   // service_manager::Service:
   void OnStart() override {
-    tracing_.Initialize(context()->connector(), context()->identity().name());
     aura_init_ = base::MakeUnique<views::AuraInit>(
         context()->connector(), context()->identity(),
         "views_mus_resources.pak", std::string(), nullptr,
@@ -62,7 +60,6 @@ class ViewsExamples
 
   service_manager::BinderRegistry registry_;
 
-  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsExamples);

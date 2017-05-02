@@ -14,7 +14,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
@@ -49,8 +48,6 @@ class FontServiceApp
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::FontService> bindings_;
-
-  tracing::Provider tracing_;
 
   // We don't want to leak paths to our callers; we thus enumerate the paths of
   // fonts.

@@ -33,7 +33,6 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_control.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
-#include "services/tracing/public/interfaces/constants.mojom.h"
 
 namespace service_manager {
 
@@ -702,7 +701,6 @@ ServiceManager::ServiceManager(
   spec.requires["*"].insert("service_manager:service_factory");
   spec.requires[catalog::mojom::kServiceName].insert(
       "service_manager:resolver");
-  spec.requires[tracing::mojom::kServiceName].insert("app");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = spec;
 

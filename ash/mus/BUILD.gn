@@ -89,7 +89,6 @@ source_set("lib") {
     "//mash/public/interfaces",
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
-    "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/input_devices",

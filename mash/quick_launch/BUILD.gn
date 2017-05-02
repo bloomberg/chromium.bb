@@ -21,7 +21,6 @@ source_set("lib") {
     "//services/catalog/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
-    "//services/tracing/public/cpp",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
     "//url",
