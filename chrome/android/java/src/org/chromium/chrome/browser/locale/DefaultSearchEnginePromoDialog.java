@@ -9,17 +9,18 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import org.chromium.base.Callback;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.widget.PromoDialog;
+import org.chromium.chrome.browser.widget.RadioButtonLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,10 +109,13 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog implements OnChe
         }
 
         // Add the search engines to the dialog.
-        InfoBarControlLayout controls = addControlLayout();
-        mRadioGroup = controls.addRadioButtons(
-                engineNames, engineKeywords, InfoBarControlLayout.INVALID_INDEX);
-        mRadioGroup.setOnCheckedChangeListener(this);
+        RadioButtonLayout radioButtons = new RadioButtonLayout(getContext());
+        radioButtons.addOptions(engineNames, engineKeywords);
+        radioButtons.setOnCheckedChangeListener(this);
+        addControl(radioButtons);
+
+        Button button = (Button) findViewById(R.id.button_primary);
+        button.setOnClickListener(this);
         updateButtonState();
     }
 

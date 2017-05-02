@@ -23,7 +23,7 @@
 
         <org.chromium.chrome.browser.widget.FadingEdgeScrollView
                 android:id="@+id/promo_container"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:fadeScrollbars="false" >
@@ -81,12 +81,12 @@
                 android:layout="@layout/infobar_control_description"
                 android:inflatedId="@+id/footer"
                 android:layout_margin="@dimen/promo_dialog_padding"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         <org.chromium.chrome.browser.widget.DualControlLayout
                 android:id="@+id/button_bar"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:padding="@dimen/promo_dialog_padding"
