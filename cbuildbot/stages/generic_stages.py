@@ -265,6 +265,7 @@ class BuilderStage(object):
     elif result == results_lib.Results.SKIPPED:
       return constants.BUILDER_STATUS_SKIPPED
     else:
+      logging.info('Translating result %s to fail.' % result)
       return constants.BUILDER_STATUS_FAILED
 
   def _ExtractOverlays(self):
