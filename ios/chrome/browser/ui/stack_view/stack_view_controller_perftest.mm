@@ -356,7 +356,8 @@ base::TimeDelta StackViewControllerPerfTest::TakeSnapshot() {
   return elapsed;
 }
 
-TEST_F(StackViewControllerPerfTest, WebView_Shapshot) {
+// TODO(crbug.com/717314): Failed DCHECK in PerfTestWithBVC::SetUp().
+TEST_F(StackViewControllerPerfTest, DISABLED_WebView_Shapshot) {
   // Opening a StackViewController is done only on iPhones, not on iPads.
   // This test is meaningless on an iPad.
   if (IsIPadIdiom())
