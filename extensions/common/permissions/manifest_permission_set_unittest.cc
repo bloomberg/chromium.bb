@@ -7,54 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/values.h"
-#include "extensions/common/permissions/manifest_permission.h"
+#include "extensions/common/permissions/mock_manifest_permission.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
-
-class MockManifestPermission : public ManifestPermission {
- public:
-  MockManifestPermission(const std::string& name)
-      : name_(name) {
-  }
-
-  std::string name() const override { return name_; }
-
-  std::string id() const override { return name(); }
-
-  PermissionIDSet GetPermissions() const override { return PermissionIDSet(); }
-
-  bool FromValue(const base::Value* value) override { return true; }
-
-  std::unique_ptr<base::Value> ToValue() const override {
-    return base::MakeUnique<base::Value>();
-  }
-
-  ManifestPermission* Diff(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return NULL;
-  }
-
-  ManifestPermission* Union(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return new MockManifestPermission(name_);
-  }
-
-  ManifestPermission* Intersect(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return new MockManifestPermission(name_);
-  }
-
- private:
-  std::string name_;
-};
 
 TEST(ManifestPermissionSetTest, General) {
   ManifestPermissionSet set;

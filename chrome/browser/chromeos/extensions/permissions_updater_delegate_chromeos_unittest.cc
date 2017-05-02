@@ -15,8 +15,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/manifest_permission.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
+#include "extensions/common/permissions/mock_manifest_permission.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -28,51 +28,6 @@ namespace {
 
 const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
 const char kBogusId[] = "bogus";
-
-// TODO(isandrk, crbug.com/715638): Extract MockManifestPermission into its own
-// file (since it's duplicated in two places).
-class MockManifestPermission : public ManifestPermission {
- public:
-  MockManifestPermission(const std::string& name)
-      : name_(name) {
-  }
-
-  std::string name() const override { return name_; }
-
-  std::string id() const override { return name(); }
-
-  PermissionIDSet GetPermissions() const override { return PermissionIDSet(); }
-
-  bool FromValue(const base::Value* value) override { return true; }
-
-  std::unique_ptr<base::Value> ToValue() const override {
-    return base::MakeUnique<base::Value>();
-  }
-
-  ManifestPermission* Diff(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return NULL;
-  }
-
-  ManifestPermission* Union(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return new MockManifestPermission(name_);
-  }
-
-  ManifestPermission* Intersect(const ManifestPermission* rhs) const override {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return new MockManifestPermission(name_);
-  }
-
- private:
-  std::string name_;
-};
 
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
   std::string error;
