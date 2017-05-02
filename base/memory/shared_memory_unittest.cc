@@ -316,7 +316,7 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   }
 }
 
-TEST(SharedMemoryTest, ShareReadOnly) {
+TEST(SharedMemoryTest, GetReadOnlyHandle) {
   StringPiece contents = "Hello World";
 
   SharedMemory writable_shmem;
@@ -332,9 +332,8 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   memcpy(writable_shmem.memory(), contents.data(), contents.size());
   EXPECT_TRUE(writable_shmem.Unmap());
 
-  SharedMemoryHandle readonly_handle;
-  ASSERT_TRUE(writable_shmem.ShareReadOnlyToProcess(GetCurrentProcessHandle(),
-                                                    &readonly_handle));
+  SharedMemoryHandle readonly_handle = writable_shmem.GetReadOnlyHandle();
+  ASSERT_TRUE(readonly_handle.IsValid());
   SharedMemory readonly_shmem(readonly_handle, /*readonly=*/true);
 
   ASSERT_TRUE(readonly_shmem.Map(contents.size()));

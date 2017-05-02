@@ -204,13 +204,11 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateReadOnlyDuplicate() {
   }
 
   base::SharedMemoryHandle handle;
-  bool success;
   {
     base::AutoLock locker(lock_);
-    success = shared_memory_->ShareReadOnlyToProcess(
-        base::GetCurrentProcessHandle(), &handle);
+    handle = shared_memory_->GetReadOnlyHandle();
   }
-  if (!success || !handle.IsValid())
+  if (!handle.IsValid())
     return nullptr;
 
   return CreateFromSharedMemoryHandle(num_bytes_, true, handle);

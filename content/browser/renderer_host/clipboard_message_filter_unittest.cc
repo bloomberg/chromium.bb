@@ -52,9 +52,10 @@ class ClipboardMessageFilterTest : public ::testing::Test {
 
   void CallWriteImage(const gfx::Size& size,
                       base::SharedMemory* shared_memory) {
-    base::SharedMemoryHandle handle;
-    ASSERT_TRUE(shared_memory->GiveReadOnlyToProcess(
-        base::GetCurrentProcessHandle(), &handle));
+    base::SharedMemoryHandle handle = shared_memory->GetReadOnlyHandle();
+    shared_memory->Unmap();
+    shared_memory->Close();
+    ASSERT_TRUE(handle.IsValid());
     CallWriteImageDirectly(size, handle);
   }
 

@@ -394,7 +394,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
   EXPECT_EQ(active_name_count, GetActiveNameCount());
 }
 
-// Tests that the method ShareReadOnlyToProcess() creates a memory object that
+// Tests that the method GetReadOnlyHandle() creates a memory object that
 // is read only.
 TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
   std::unique_ptr<SharedMemory> shared_memory(
@@ -409,8 +409,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
   ASSERT_EQ(VM_PROT_READ | VM_PROT_WRITE, max_prot);
 
   // Make a new memory object.
-  SharedMemoryHandle shm2;
-  ASSERT_TRUE(shared_memory->ShareReadOnlyToProcess(GetCurrentProcId(), &shm2));
+  SharedMemoryHandle shm2 = shared_memory->GetReadOnlyHandle();
   ASSERT_TRUE(shm2.IsValid());
 
   // Mapping with |readonly| set to |false| should fail.
@@ -435,7 +434,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
   ASSERT_DEATH(memset(shared_memory2.memory(), 'b', s_memory_size), "");
 }
 
-// Tests that the method ShareReadOnlyToProcess() doesn't leak.
+// Tests that the method GetReadOnlyHandle() doesn't leak.
 TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonlyLeak) {
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
@@ -443,9 +442,7 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonlyLeak) {
     std::unique_ptr<SharedMemory> shared_memory(
         CreateSharedMemory(s_memory_size));
 
-    SharedMemoryHandle shm2;
-    ASSERT_TRUE(
-        shared_memory->ShareReadOnlyToProcess(GetCurrentProcId(), &shm2));
+    SharedMemoryHandle shm2 = shared_memory->GetReadOnlyHandle();
     ASSERT_TRUE(shm2.IsValid());
 
     // Intentionally map with |readonly| set to |false|.
