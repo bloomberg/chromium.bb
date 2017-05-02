@@ -59,9 +59,6 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      $('auto-signin-block').hidden =
-          !loadTimeData.getBoolean('enableCredentialManagerAPI');
-
       $('password-manager-confirm').onclick = function() {
         PageManager.closeOverlay();
       };

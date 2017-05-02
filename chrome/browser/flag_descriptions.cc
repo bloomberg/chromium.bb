@@ -929,12 +929,6 @@ const char kPinchScaleName[] = "Pinch scale";
 const char kPinchScaleDescription[] =
     "Enables experimental support for scale using pinch.";
 
-const char kCredentialManagerApiName[] = "Experimental Credential Manager API";
-
-const char kCredentialManagerApiDescription[] =
-    "Enables an experimental implementation of the Credential Manager API. "
-    "Don't enable this unless you know what you're doing.";
-
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 

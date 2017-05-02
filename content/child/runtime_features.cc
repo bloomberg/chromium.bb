@@ -194,9 +194,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableNetworkInformation(true);
   }
 
-  if (!base::FeatureList::IsEnabled(features::kCredentialManagementAPI))
-    WebRuntimeFeatures::EnableCredentialManagerAPI(false);
-
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::EnableReducedReferrerGranularity(true);
 

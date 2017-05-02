@@ -42,9 +42,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
-    // Native switch kEnableCredentialManagerAPI
-    public static final String ENABLE_CREDENTIAL_MANAGER_API = "enable-credential-manager-api";
-
     // Native switch kDisableGestureRequirementForPresentation
     public static final String DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION =
             "disable-gesture-requirement-for-presentation";

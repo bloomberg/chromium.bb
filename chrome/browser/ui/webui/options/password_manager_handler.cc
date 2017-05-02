@@ -44,7 +44,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -165,9 +164,6 @@ void PasswordManagerHandler::GetLocalizedValues(
 #endif
 
   localized_strings->SetBoolean("disableShowPasswords", disable_show_passwords);
-  localized_strings->SetBoolean(
-      "enableCredentialManagerAPI",
-      base::FeatureList::IsEnabled(features::kCredentialManagementAPI));
 }
 
 void PasswordManagerHandler::RegisterMessages() {

@@ -39,7 +39,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &features::kConsistentOmniboxGeolocation,
     &features::kCopylessPaste,
-    &features::kCredentialManagementAPI,
     &features::kNativeAndroidHistoryManager,
     &features::kServiceWorkerPaymentApps,
     &features::kSimplifiedFullscreenUI,

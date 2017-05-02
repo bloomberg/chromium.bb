@@ -57,11 +57,6 @@ const base::Feature kCompositeOpaqueFixedPosition{
 const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the credential management API:
-// https://w3c.github.io/webappsec-credential-management/
-const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Speculatively pre-evaluate Javascript which will likely use document.write to
 // load an external script. The feature extracts the written markup and sends it
 // to the preload scanner.
