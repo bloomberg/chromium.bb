@@ -47,7 +47,7 @@ BRANCH_HEADS_REFSPEC = '+refs/branch-heads/*'
 TAGS_REFSPEC = '+refs/tags/*'
 
 # Regular expression that matches a single commit footer line.
-COMMIT_FOOTER_ENTRY_RE = re.compile(r'([^:]+):\s+(.+)')
+COMMIT_FOOTER_ENTRY_RE = re.compile(r'([^:]+):\s*(.*)')
 
 # Footer metadata keys for regular and gsubtreed mirrored commit positions.
 COMMIT_POSITION_FOOTER_KEY = 'Cr-Commit-Position'
