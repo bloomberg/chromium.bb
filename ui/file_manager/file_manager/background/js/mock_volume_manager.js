@@ -74,15 +74,27 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
  */
 MockVolumeManager.prototype.getLocationInfo = function(entry) {
   if (util.isFakeEntry(entry)) {
-    return new EntryLocationImpl(this.volumeInfoList.item(0), entry.rootType,
-        true, true);
+    return new EntryLocationImpl(
+        this.volumeInfoList.item(0), entry.rootType, true, true);
   }
 
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
     var volumeInfo = this.volumeInfoList.item(0);
-    var isRootEntry = entry.fullPath === '/root';
-    return new EntryLocationImpl(volumeInfo, VolumeManagerCommon.RootType.DRIVE,
-        isRootEntry, true);
+    var roootType;
+    var isRootEntry;
+    if (entry.fullPath.startsWith('/team_drives')) {
+      if (entry.fullPath === '/team_drives') {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        isRootEntry = util.isTeamDriveRoot(entry);
+      }
+    } else {
+      rootType = VolumeManagerCommon.RootType.DRIVE;
+      isRootEntry = entry.fullPath === '/root';
+    }
+    return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
 
   throw new Error('Not implemented exception.');
@@ -208,14 +220,26 @@ MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  */
 MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
   if (util.isFakeEntry(entry)) {
-    return new EntryLocationImpl(this.volumeInfoList.item(0), entry.rootType,
-        true, true);
+    return new EntryLocationImpl(
+        this.volumeInfoList.item(0), entry.rootType, true, true);
   }
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
     var volumeInfo = this.volumeInfoList.item(0);
-    var isRootEntry = entry.fullPath === '/root';
-    return new EntryLocationImpl(volumeInfo, VolumeManagerCommon.RootType.DRIVE,
-        isRootEntry, true);
+    var roootType;
+    var isRootEntry;
+    if (entry.fullPath.startsWith('/team_drives')) {
+      if (entry.fullPath === '/team_drives') {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        isRootEntry = util.isTeamDriveRoot(entry);
+      }
+    } else {
+      rootType = VolumeManagerCommon.RootType.DRIVE;
+      isRootEntry = entry.fullPath === '/root';
+    }
+    return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
   throw new Error('Not implemented exception.');
 };

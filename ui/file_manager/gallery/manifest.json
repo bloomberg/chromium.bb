@@ -23,6 +23,7 @@
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
+    "commandLinePrivate",
     "fileManagerPrivate",
     {
       "fileSystem": ["requestFileSystem", "write"]

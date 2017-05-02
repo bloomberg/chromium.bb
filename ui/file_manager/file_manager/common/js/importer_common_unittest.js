@@ -34,7 +34,7 @@ loadTimeData.data = {
 
 // Set up the test components.
 function setUp() {
-
+  new MockCommandLinePrivate();
   new MockChromeStorageAPI();
   importer.setupTestLogger();
 

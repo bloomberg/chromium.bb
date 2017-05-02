@@ -108,6 +108,7 @@ function setUp() {
                 NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION]);
     }
   };
+  new MockCommandLinePrivate();
   chrome.runtime = {};
 
   // Create a dummy volume manager.

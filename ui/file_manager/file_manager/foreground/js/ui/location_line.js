@@ -35,6 +35,22 @@ LocationLine.prototype.show = function(entry) {
 };
 
 /**
+ * Replace the root directory name at the end of a url.
+ * The input, |url| is a displayRoot URL of a Drive volume like
+ * filesystem:chrome-extension://....foo.com-hash/root
+ * The output is like:
+ * filesystem:chrome-extension://....foo.com-hash/other
+ *
+ * @param {string} url which points to a volume display root
+ * @param {string} newRoot new root directory name
+ * @return {string} new URL with the new root directory name
+ * @private
+ */
+LocationLine.prototype.replaceRootName_ = function(url, newRoot) {
+  return url.slice(0, url.length - '/root'.length) + newRoot;
+};
+
+/**
  * Get components for the path of entry.
  * @param {!Entry|!FakeEntry} entry An entry.
  * @return {!Array<!LocationLine.PathComponent>} Components.
@@ -59,15 +75,19 @@ LocationLine.prototype.getComponents_ = function(entry) {
   var displayRootFullPath = locationInfo.volumeInfo.displayRoot.fullPath;
   if (locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER) {
     // When target path is a shared directory, volume should be shared with me.
-    displayRootUrl = displayRootUrl.slice(
-        0, displayRootUrl.length - '/root'.length) + '/other';
-    displayRootFullPath = '/other';
+    displayRootUrl = this.replaceRootName_(displayRootUrl, '/other');
     var sharedWithMeFakeEntry = locationInfo.volumeInfo.fakeEntries[
         VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
     components.push(new LocationLine.PathComponent(
         str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
         sharedWithMeFakeEntry.toURL(),
         sharedWithMeFakeEntry));
+  } else if (
+      locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE) {
+    displayRootUrl = this.replaceRootName_(
+        displayRootUrl, VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH);
+    components.push(new LocationLine.PathComponent(
+        util.getRootTypeLabel(locationInfo), displayRootUrl));
   } else {
     components.push(new LocationLine.PathComponent(
         util.getRootTypeLabel(locationInfo), displayRootUrl));
@@ -75,6 +95,11 @@ LocationLine.prototype.getComponents_ = function(entry) {
 
   // Get relative path to display root (e.g. /root/foo/bar -> foo/bar).
   var relativePath = entry.fullPath.slice(displayRootFullPath.length);
+  if (entry.fullPath.startsWith(
+          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH)) {
+    relativePath = entry.fullPath.slice(
+        VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH.length);
+  }
   if (relativePath.indexOf('/') === 0) {
     relativePath = relativePath.slice(1);
   }

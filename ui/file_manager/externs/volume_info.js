@@ -25,6 +25,13 @@ VolumeInfo.prototype.fileSystem;
 VolumeInfo.prototype.displayRoot;
 
 /**
+ * The display root path of Team Drives directory. It is null before finishing
+ * to resolve the entry. Valid only for Drive volume.
+ * @type {DirectoryEntry}
+ */
+VolumeInfo.prototype.teamDriveDisplayRoot;
+
+/**
  * The volume's fake entries such as Recent, Offline, Shared with me, etc...
  * in Google Drive.
  * @type {Object<!FakeEntry>}}

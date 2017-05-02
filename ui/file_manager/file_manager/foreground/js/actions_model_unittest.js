@@ -80,6 +80,7 @@ function setUp() {
       pinDriveFile: null
     },
   };
+  new MockCommandLinePrivate();
 
   volumeManager = new MockVolumeManager();
   volumeManager.createVolumeInfo(

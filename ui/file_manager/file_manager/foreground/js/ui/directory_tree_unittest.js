@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var chrome;
+var mockCommandLinePrivate;
 
 /**
  * Set string data.
@@ -12,6 +13,7 @@ loadTimeData.data = {
   DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
   DRIVE_DIRECTORY_LABEL: 'Google Drive',
   DRIVE_MY_DRIVE_LABEL: 'My Drive',
+  DRIVE_TEAM_DRIVES_LABEL: 'Team Drives',
   DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
   DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
   DRIVE_RECENT_COLLECTION_LABEL: 'Recent',
@@ -27,6 +29,7 @@ function setUp() {
       }
     }
   };
+  mockCommandLinePrivate = new MockCommandLinePrivate();
 
   window.webkitResolveLocalFileSystemURLEntries = {};
   window.webkitResolveLocalFileSystemURL = function(url, callback) {
@@ -107,6 +110,80 @@ function testCreateDirectoryTree(callback) {
     assertEquals(str('DRIVE_OFFLINE_COLLECTION_LABEL'),
         driveItem.items[3].label);
   }), callback);
+}
+
+/**
+ * Test case for creating tree with Team Drives.
+ * This test expect that the following tree is built.
+ *
+ * Google Drive
+ * - My Drive
+ * - Team Drives
+ * - Shared with me
+ * - Recent
+ * - Offline
+ * Downloads
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testCreateDirectoryTreeWithTeamDrive(callback) {
+  mockCommandLinePrivate.addSwitch('team-drives');
+
+  // Create elements.
+  var parentElement = document.createElement('div');
+  var directoryTree = document.createElement('div');
+  directoryTree.metadataModel = {
+    notifyEntriesChanged: function() {},
+    get: function(entries, labels) {
+      // Mock a non-shared directory
+      return Promise.resolve([{shared: false}]);
+    }
+  };
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  var directoryModel = new MockDirectoryModel();
+  var volumeManager = new MockVolumeManagerWrapper();
+  var fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window
+      .webkitResolveLocalFileSystemURLEntries['filesystem:drive/team_drives'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives');
+
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  // At top level, Drive and downloads should be listed.
+  assertEquals(2, directoryTree.items.length);
+  assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
+  assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
+
+  var driveItem = directoryTree.items[0];
+
+  reportPromise(waitUntil(function() {
+    // Under the drive item, there exist 5 entries.
+    return driveItem.items.length == 5;
+  }).then(function() {
+    // There exist 1 my drive entry and 3 fake entries under the drive item.
+    assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
+    assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
+    assertEquals(str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
+        driveItem.items[2].label);
+    assertEquals(str('DRIVE_RECENT_COLLECTION_LABEL'),
+        driveItem.items[3].label);
+    assertEquals(str('DRIVE_OFFLINE_COLLECTION_LABEL'),
+        driveItem.items[4].label);
+  }),
+  callback);
 }
 
 /**

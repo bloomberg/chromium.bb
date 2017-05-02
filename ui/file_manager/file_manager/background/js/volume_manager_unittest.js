@@ -79,6 +79,7 @@ function setUp() {
       }
     }
   };
+  new MockCommandLinePrivate();
 
   chrome.fileManagerPrivate.mountSourcePath_ = null;
   chrome.fileManagerPrivate.onMountCompletedListeners_ = [];
@@ -247,6 +248,7 @@ function testGetLocationInfo(callback) {
         var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
         assertEquals(VolumeManagerCommon.RootType.DOWNLOADS,
             downloadLocationInfo.rootType);
+        assertFalse(downloadLocationInfo.hasFixedLabel);
         assertFalse(downloadLocationInfo.isReadOnly);
         assertFalse(downloadLocationInfo.isRootEntry);
 
@@ -256,8 +258,32 @@ function testGetLocationInfo(callback) {
         var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
         assertEquals(VolumeManagerCommon.RootType.DRIVE,
             driveLocationInfo.rootType);
+        assertTrue(driveLocationInfo.hasFixedLabel);
         assertFalse(driveLocationInfo.isReadOnly);
         assertTrue(driveLocationInfo.isRootEntry);
+
+        var teamDrivesGrandRoot = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/team_drives');
+        var teamDrivesGrandRootLocationInfo =
+            volumeManager.getLocationInfo(teamDrivesGrandRoot);
+        assertEquals(
+            VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT,
+            teamDrivesGrandRootLocationInfo.rootType);
+        assertTrue(teamDrivesGrandRootLocationInfo.hasFixedLabel);
+        assertTrue(teamDrivesGrandRootLocationInfo.isReadOnly);
+        assertTrue(teamDrivesGrandRootLocationInfo.isRootEntry);
+
+        var teamDrive = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/team_drives/MyTeamDrive');
+        var teamDriveLocationInfo = volumeManager.getLocationInfo(teamDrive);
+        assertEquals(
+            VolumeManagerCommon.RootType.TEAM_DRIVE,
+            teamDriveLocationInfo.rootType);
+        assertFalse(teamDriveLocationInfo.hasFixedLabel);
+        assertFalse(teamDriveLocationInfo.isReadOnly);
+        assertTrue(teamDriveLocationInfo.isRootEntry);
       }),
       callback);
 }

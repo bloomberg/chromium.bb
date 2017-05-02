@@ -633,6 +633,31 @@ util.isFakeEntry = function(entry) {
 };
 
 /**
+ * Obtains whether an entry is the root directory of a Team Drive.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean} True if the given entry is root of a Team Drive.
+ */
+util.isTeamDriveRoot = function(entry) {
+  if (!entry.fullPath)
+    return false;
+  var tree = entry.fullPath.split('/');
+  return tree.length == 3 && util.isTeamDriveEntry(entry);
+};
+
+/**
+ * Obtains whether an entry is descendant of the Team Drives directory.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean} True if the given entry is under Team Drives.
+ */
+util.isTeamDriveEntry = function(entry) {
+  if (!entry.fullPath)
+    return false;
+  var tree = entry.fullPath.split('/');
+  return tree[0] == '' &&
+      tree[1] == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
+};
+
+/**
  * Creates an instance of UserDOMError with given error name that looks like a
  * FileError except that it does not have the deprecated FileError.code member.
  *
@@ -956,6 +981,8 @@ util.getRootTypeLabel = function(locationInfo) {
       return str('DOWNLOADS_DIRECTORY_LABEL');
     case VolumeManagerCommon.RootType.DRIVE:
       return str('DRIVE_MY_DRIVE_LABEL');
+    case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
+      return str('DRIVE_TEAM_DRIVES_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
       return str('DRIVE_OFFLINE_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
@@ -986,7 +1013,7 @@ util.getRootTypeLabel = function(locationInfo) {
       console.error('Unsupported root type: ' + locationInfo.rootType);
       return locationInfo.volumeInfo.label;
   }
-}
+};
 
 /**
  * Returns the localized name of the entry.
@@ -996,7 +1023,7 @@ util.getRootTypeLabel = function(locationInfo) {
  * @return {?string} The localized name.
  */
 util.getEntryLabel = function(locationInfo, entry) {
-  if (locationInfo && locationInfo.isRootEntry)
+  if (locationInfo && locationInfo.hasFixedLabel)
     return util.getRootTypeLabel(locationInfo);
   else
     return entry.name;

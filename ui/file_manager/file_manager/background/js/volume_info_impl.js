@@ -53,11 +53,19 @@ function VolumeInfoImpl(
   this.fileSystem_ = fileSystem;
   this.label_ = label;
   this.displayRoot_ = null;
+  this.teamDriveDisplayRoot_ = null;
+
+  /** @type {boolean} */
+  this.isTeamDrivesEnabled_ = false;
+
+  chrome.commandLinePrivate.hasSwitch('team-drives', function(enabled) {
+    this.isTeamDrivesEnabled_ = enabled;
+  }.bind(this));
 
   /** @type {Object<!FakeEntry>} */
   this.fakeEntries_ = {};
 
-  /** @type {Promise.<!DirectoryEntry>} */
+  /** @type {Promise<!DirectoryEntry>} */
   this.displayRootPromise_ = null;
 
   if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
@@ -120,6 +128,14 @@ VolumeInfoImpl.prototype = /** @struct */ {
    */
   get displayRoot() {
     return this.displayRoot_;
+  },
+  /**
+   * @return {DirectoryEntry} The display root path of Team Drives directory.
+   * It is null before finishing to resolve the entry. Valid only for Drive
+   * volume.
+   */
+  get teamDriveDisplayRoot() {
+    return this.teamDriveDisplayRoot_;
   },
   /**
    * @return {Object<!FakeEntry>} Fake entries.
@@ -221,6 +237,23 @@ VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
       var displayRootURL = this.fileSystem_.root.toURL() + '/root';
       this.displayRootPromise_ = new Promise(
           window.webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
+      if (this.isTeamDrivesEnabled_) {
+        // Make sure that the Team Drives display root is also resolved when
+        // Drive root is resolved.
+        this.displayRootPromise_ =
+            Promise
+                .all([
+                  this.displayRootPromise_,
+                  new Promise(window.webkitResolveLocalFileSystemURL.bind(
+                      null,
+                      this.fileSystem_.root.toURL() +
+                          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH))
+                ])
+                .then(function(displayRoots) {
+                  this.teamDriveDisplayRoot_ = displayRoots[1];
+                  return displayRoots[0];
+                }.bind(this));
+      }
     }
 
     // Store the obtained displayRoot.
