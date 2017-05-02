@@ -27,10 +27,10 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
@@ -2643,8 +2643,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
 class DownloadHistoryWaiter : public DownloadHistory::Observer {
  public:
   explicit DownloadHistoryWaiter(content::BrowserContext* browser_context) {
-    DownloadService* service =
-        DownloadServiceFactory::GetForBrowserContext(browser_context);
+    DownloadCoreService* service =
+        DownloadCoreServiceFactory::GetForBrowserContext(browser_context);
     download_history_ = service->GetDownloadHistory();
     download_history_->AddObserver(this);
   }

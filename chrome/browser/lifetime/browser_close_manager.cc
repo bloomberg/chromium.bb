@@ -12,8 +12,8 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -31,9 +31,9 @@ namespace {
 // Navigates a browser window for |profile|, creating one if necessary, to the
 // downloads page if there are downloads in progress for |profile|.
 void ShowInProgressDownloads(Profile* profile) {
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profile);
-  if (download_service->NonMaliciousDownloadCount() > 0) {
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile);
+  if (download_core_service->NonMaliciousDownloadCount() > 0) {
     chrome::ScopedTabbedBrowserDisplayer displayer(profile);
     chrome::ShowDownloads(displayer.browser());
   }
@@ -101,7 +101,8 @@ void BrowserCloseManager::CheckForDownloadsInProgress() {
   return;
 #endif
 
-  int download_count = DownloadService::NonMaliciousDownloadCountAllProfiles();
+  int download_count =
+      DownloadCoreService::NonMaliciousDownloadCountAllProfiles();
   if (download_count == 0) {
     CloseBrowsers();
     return;

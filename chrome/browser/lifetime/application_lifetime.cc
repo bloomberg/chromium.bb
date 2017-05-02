@@ -21,7 +21,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -72,7 +72,7 @@ bool AreAllBrowsersCloseable() {
 
   // If there are any downloads active, all browsers are not closeable.
   // However, this does not block for malicious downloads.
-  if (DownloadService::NonMaliciousDownloadCountAllProfiles() > 0)
+  if (DownloadCoreService::NonMaliciousDownloadCountAllProfiles() > 0)
     return false;
 
   // Check TabsNeedBeforeUnloadFired().

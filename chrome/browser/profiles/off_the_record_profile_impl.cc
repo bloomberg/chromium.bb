@@ -22,8 +22,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/proxy_service_factory.h"
@@ -311,8 +311,8 @@ PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
 }
 
 DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
-  return DownloadServiceFactory::GetForBrowserContext(this)->
-      GetDownloadManagerDelegate();
+  return DownloadCoreServiceFactory::GetForBrowserContext(this)
+      ->GetDownloadManagerDelegate();
 }
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(

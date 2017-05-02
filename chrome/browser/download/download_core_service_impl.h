@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_IMPL_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_IMPL_H_
 
 #include <memory>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_core_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/features/features.h"
 
@@ -28,12 +28,12 @@ class ExtensionDownloadsEventRouter;
 }
 
 // Owning class for ChromeDownloadManagerDelegate.
-class DownloadServiceImpl : public DownloadService {
+class DownloadCoreServiceImpl : public DownloadCoreService {
  public:
-  explicit DownloadServiceImpl(Profile* profile);
-  ~DownloadServiceImpl() override;
+  explicit DownloadCoreServiceImpl(Profile* profile);
+  ~DownloadCoreServiceImpl() override;
 
-  // DownloadService
+  // DownloadCoreService
   ChromeDownloadManagerDelegate* GetDownloadManagerDelegate() override;
   DownloadHistory* GetDownloadHistory() override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -82,7 +82,7 @@ class DownloadServiceImpl : public DownloadService {
       extension_event_router_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(DownloadCoreServiceImpl);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_IMPL_H_

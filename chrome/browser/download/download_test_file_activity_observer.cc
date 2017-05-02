@@ -11,8 +11,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace content {
@@ -78,7 +78,7 @@ DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
   std::unique_ptr<MockDownloadManagerDelegate> mock_delegate(
       new MockDownloadManagerDelegate(profile));
   test_delegate_ = mock_delegate->GetWeakPtr();
-  DownloadServiceFactory::GetForBrowserContext(profile)
+  DownloadCoreServiceFactory::GetForBrowserContext(profile)
       ->SetDownloadManagerDelegateForTesting(std::move(mock_delegate));
 }
 

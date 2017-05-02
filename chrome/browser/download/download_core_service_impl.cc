@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_service_impl.h"
+#include "chrome/browser/download/download_core_service_impl.h"
 
 #include "base/callback.h"
 #include "build/build_config.h"
@@ -25,15 +25,13 @@ using content::BrowserContext;
 using content::DownloadManager;
 using content::DownloadManagerDelegate;
 
-DownloadServiceImpl::DownloadServiceImpl(Profile* profile)
-    : download_manager_created_(false), profile_(profile) {
-}
+DownloadCoreServiceImpl::DownloadCoreServiceImpl(Profile* profile)
+    : download_manager_created_(false), profile_(profile) {}
 
-DownloadServiceImpl::~DownloadServiceImpl() {
-}
+DownloadCoreServiceImpl::~DownloadCoreServiceImpl() {}
 
 ChromeDownloadManagerDelegate*
-DownloadServiceImpl::GetDownloadManagerDelegate() {
+DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   DownloadManager* manager = BrowserContext::GetDownloadManager(profile_);
   // If we've already created the delegate, just return it.
   if (download_manager_created_) {
@@ -77,7 +75,7 @@ DownloadServiceImpl::GetDownloadManagerDelegate() {
   return manager_delegate_.get();
 }
 
-DownloadHistory* DownloadServiceImpl::GetDownloadHistory() {
+DownloadHistory* DownloadCoreServiceImpl::GetDownloadHistory() {
   if (!download_manager_created_) {
     GetDownloadManagerDelegate();
   }
@@ -87,23 +85,23 @@ DownloadHistory* DownloadServiceImpl::GetDownloadHistory() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extensions::ExtensionDownloadsEventRouter*
-DownloadServiceImpl::GetExtensionEventRouter() {
+DownloadCoreServiceImpl::GetExtensionEventRouter() {
   return extension_event_router_.get();
 }
 #endif
 
-bool DownloadServiceImpl::HasCreatedDownloadManager() {
+bool DownloadCoreServiceImpl::HasCreatedDownloadManager() {
   return download_manager_created_;
 }
 
-int DownloadServiceImpl::NonMaliciousDownloadCount() const {
+int DownloadCoreServiceImpl::NonMaliciousDownloadCount() const {
   if (!download_manager_created_)
     return 0;
   return BrowserContext::GetDownloadManager(profile_)
       ->NonMaliciousInProgressCount();
 }
 
-void DownloadServiceImpl::CancelDownloads() {
+void DownloadCoreServiceImpl::CancelDownloads() {
   if (!download_manager_created_)
     return;
 
@@ -118,7 +116,7 @@ void DownloadServiceImpl::CancelDownloads() {
   }
 }
 
-void DownloadServiceImpl::SetDownloadManagerDelegateForTesting(
+void DownloadCoreServiceImpl::SetDownloadManagerDelegateForTesting(
     std::unique_ptr<ChromeDownloadManagerDelegate> new_delegate) {
   manager_delegate_.swap(new_delegate);
   DownloadManager* dm = BrowserContext::GetDownloadManager(profile_);
@@ -128,7 +126,7 @@ void DownloadServiceImpl::SetDownloadManagerDelegateForTesting(
     new_delegate->Shutdown();
 }
 
-bool DownloadServiceImpl::IsShelfEnabled() {
+bool DownloadCoreServiceImpl::IsShelfEnabled() {
 #if defined(OS_ANDROID)
   return true;
 #else
@@ -136,7 +134,7 @@ bool DownloadServiceImpl::IsShelfEnabled() {
 #endif
 }
 
-void DownloadServiceImpl::Shutdown() {
+void DownloadCoreServiceImpl::Shutdown() {
   if (download_manager_created_) {
     // Normally the DownloadManager would be shutdown later, after the Profile
     // goes away and BrowserContext's destructor runs. But that would be too

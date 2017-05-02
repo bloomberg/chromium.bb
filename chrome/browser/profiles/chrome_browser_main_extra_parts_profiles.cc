@@ -21,7 +21,7 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -220,7 +220,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   domain_reliability::DomainReliabilityServiceFactory::GetInstance();
-  DownloadServiceFactory::GetInstance();
+  DownloadCoreServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EasyUnlockServiceFactory::GetInstance();
   EnhancedBookmarkKeyServiceFactory::GetInstance();

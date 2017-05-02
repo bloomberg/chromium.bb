@@ -16,9 +16,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -197,8 +197,9 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
   if (download->GetState() == DownloadItem::COMPLETE &&
       DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete())
     return;
-  if (!DownloadServiceFactory::GetForBrowserContext(
-        download->GetBrowserContext())->IsShelfEnabled())
+  if (!DownloadCoreServiceFactory::GetForBrowserContext(
+           download->GetBrowserContext())
+           ->IsShelfEnabled())
     return;
 
   if (is_hidden_)

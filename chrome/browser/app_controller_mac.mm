@@ -30,8 +30,8 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -414,8 +414,8 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
     // At this point, the user has already chosen to cancel downloads. If we
     // were to shut down as usual, the downloads would be cancelled in
-    // DownloadService::Shutdown().
-    DownloadService::CancelAllDownloads();
+    // DownloadCoreService::Shutdown().
+    DownloadCoreService::CancelAllDownloads();
 
     return NO;
   }
@@ -787,11 +787,12 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profiles[i]);
+    DownloadCoreService* download_core_service =
+        DownloadCoreServiceFactory::GetForBrowserContext(profiles[i]);
     DownloadManager* download_manager =
-        (download_service->HasCreatedDownloadManager() ?
-         BrowserContext::GetDownloadManager(profiles[i]) : NULL);
+        (download_core_service->HasCreatedDownloadManager()
+             ? BrowserContext::GetDownloadManager(profiles[i])
+             : NULL);
     if (download_manager &&
         download_manager->NonMaliciousInProgressCount() > 0) {
       int downloadCount = download_manager->NonMaliciousInProgressCount();

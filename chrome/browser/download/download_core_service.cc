@@ -2,46 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_core_service.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
-DownloadService::DownloadService() {
-}
+DownloadCoreService::DownloadCoreService() = default;
 
-DownloadService::~DownloadService() {}
+DownloadCoreService::~DownloadCoreService() = default;
 
 // static
-int DownloadService::NonMaliciousDownloadCountAllProfiles() {
+int DownloadCoreService::NonMaliciousDownloadCountAllProfiles() {
   std::vector<Profile*> profiles(
       g_browser_process->profile_manager()->GetLoadedProfiles());
 
   int count = 0;
   for (std::vector<Profile*>::iterator it = profiles.begin();
        it < profiles.end(); ++it) {
-    count += DownloadServiceFactory::GetForBrowserContext(*it)->
-        NonMaliciousDownloadCount();
+    count += DownloadCoreServiceFactory::GetForBrowserContext(*it)
+                 ->NonMaliciousDownloadCount();
     if ((*it)->HasOffTheRecordProfile())
-      count += DownloadServiceFactory::GetForBrowserContext(
-          (*it)->GetOffTheRecordProfile())->NonMaliciousDownloadCount();
+      count += DownloadCoreServiceFactory::GetForBrowserContext(
+                   (*it)->GetOffTheRecordProfile())
+                   ->NonMaliciousDownloadCount();
   }
 
   return count;
 }
 
 // static
-void DownloadService::CancelAllDownloads() {
+void DownloadCoreService::CancelAllDownloads() {
   std::vector<Profile*> profiles(
       g_browser_process->profile_manager()->GetLoadedProfiles());
   for (std::vector<Profile*>::iterator it = profiles.begin();
-       it < profiles.end();
-       ++it) {
-    DownloadService* service =
-        DownloadServiceFactory::GetForBrowserContext(*it);
+       it < profiles.end(); ++it) {
+    DownloadCoreService* service =
+        DownloadCoreServiceFactory::GetForBrowserContext(*it);
     service->CancelDownloads();
   }
 }
-

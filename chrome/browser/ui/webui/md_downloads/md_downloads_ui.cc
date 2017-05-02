@@ -11,8 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"

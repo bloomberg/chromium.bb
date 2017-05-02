@@ -35,12 +35,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_query.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
@@ -1091,13 +1091,15 @@ ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
   GetManagers(browser_context(), include_incognito(), &manager,
               &incognito_manager);
   ExtensionDownloadsEventRouter* router =
-      DownloadServiceFactory::GetForBrowserContext(
-          manager->GetBrowserContext())->GetExtensionEventRouter();
+      DownloadCoreServiceFactory::GetForBrowserContext(
+          manager->GetBrowserContext())
+          ->GetExtensionEventRouter();
   router->CheckForHistoryFilesRemoval();
   if (incognito_manager) {
     ExtensionDownloadsEventRouter* incognito_router =
-        DownloadServiceFactory::GetForBrowserContext(
-            incognito_manager->GetBrowserContext())->GetExtensionEventRouter();
+        DownloadCoreServiceFactory::GetForBrowserContext(
+            incognito_manager->GetBrowserContext())
+            ->GetExtensionEventRouter();
     incognito_router->CheckForHistoryFilesRemoval();
   }
   DownloadQuery::DownloadVector results;
@@ -1434,16 +1436,16 @@ ExtensionFunction::ResponseAction DownloadsSetShelfEnabledFunction::Run() {
   DownloadManager* incognito_manager = NULL;
   GetManagers(browser_context(), include_incognito(), &manager,
               &incognito_manager);
-  DownloadService* service = NULL;
-  DownloadService* incognito_service = NULL;
+  DownloadCoreService* service = NULL;
+  DownloadCoreService* incognito_service = NULL;
   if (manager) {
-    service = DownloadServiceFactory::GetForBrowserContext(
+    service = DownloadCoreServiceFactory::GetForBrowserContext(
         manager->GetBrowserContext());
     service->GetExtensionEventRouter()->SetShelfEnabled(extension(),
                                                         params->enabled);
   }
   if (incognito_manager) {
-    incognito_service = DownloadServiceFactory::GetForBrowserContext(
+    incognito_service = DownloadCoreServiceFactory::GetForBrowserContext(
         incognito_manager->GetBrowserContext());
     incognito_service->GetExtensionEventRouter()->SetShelfEnabled(
         extension(), params->enabled);
@@ -1454,8 +1456,8 @@ ExtensionFunction::ResponseAction DownloadsSetShelfEnabledFunction::Run() {
     for (BrowserList::const_iterator iter = browsers->begin();
         iter != browsers->end(); ++iter) {
       const Browser* browser = *iter;
-      DownloadService* current_service =
-        DownloadServiceFactory::GetForBrowserContext(browser->profile());
+      DownloadCoreService* current_service =
+          DownloadCoreServiceFactory::GetForBrowserContext(browser->profile());
       if (((current_service == service) ||
            (current_service == incognito_service)) &&
           browser->window()->IsDownloadShelfVisible() &&

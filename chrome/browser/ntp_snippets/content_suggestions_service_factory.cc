@@ -63,9 +63,9 @@
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
@@ -342,9 +342,10 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       RequestCoordinatorFactory::GetForBrowserContext(profile);
   DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile);
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* download_history = download_service->GetDownloadHistory();
+  DownloadCoreService* download_core_service =
+      DownloadCoreServiceFactory::GetForBrowserContext(profile);
+  DownloadHistory* download_history =
+      download_core_service->GetDownloadHistory();
   PhysicalWebDataSource* physical_web_data_source =
       g_browser_process->GetPhysicalWebDataSource();
 #endif  // OS_ANDROID

@@ -13,9 +13,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -331,7 +331,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     test_delegate.reset(new TestChromeDownloadManagerDelegate(profile));
     test_delegate->GetDownloadIdReceiverCallback().Run(
         content::DownloadItem::kInvalidId + 1);
-    DownloadServiceFactory::GetForBrowserContext(profile)
+    DownloadCoreServiceFactory::GetForBrowserContext(profile)
         ->SetDownloadManagerDelegateForTesting(std::move(test_delegate));
 
     DownloadNotificationTestBase::SetUpOnMainThread();
@@ -339,7 +339,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
 
   TestChromeDownloadManagerDelegate* GetDownloadManagerDelegate() const {
     return static_cast<TestChromeDownloadManagerDelegate*>(
-        DownloadServiceFactory::GetForBrowserContext(browser()->profile())
+        DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
             ->GetDownloadManagerDelegate());
   }
 
@@ -352,7 +352,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     std::unique_ptr<TestChromeDownloadManagerDelegate> incognito_test_delegate;
     incognito_test_delegate.reset(
         new TestChromeDownloadManagerDelegate(incognito_profile));
-    DownloadServiceFactory::GetForBrowserContext(incognito_profile)
+    DownloadCoreServiceFactory::GetForBrowserContext(incognito_profile)
         ->SetDownloadManagerDelegateForTesting(
             std::move(incognito_test_delegate));
   }
@@ -361,8 +361,8 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
       const {
     Profile* incognito_profile = incognito_browser()->profile();
     return static_cast<TestChromeDownloadManagerDelegate*>(
-        DownloadServiceFactory::GetForBrowserContext(incognito_profile)->
-        GetDownloadManagerDelegate());
+        DownloadCoreServiceFactory::GetForBrowserContext(incognito_profile)
+            ->GetDownloadManagerDelegate());
   }
 
   void CreateDownload() {

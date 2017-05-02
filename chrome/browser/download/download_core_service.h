@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_H_
 
 #include <memory>
 
@@ -23,12 +23,12 @@ namespace extensions {
 class ExtensionDownloadsEventRouter;
 }
 
-// Abstract base class for the download service; see DownloadServiceImpl for
-// implementation.
-class DownloadService : public KeyedService {
+// Abstract base class for the download core service; see
+// DownloadCoreServiceImpl for implementation.
+class DownloadCoreService : public KeyedService {
  public:
-  DownloadService();
-  ~DownloadService() override;
+  DownloadCoreService();
+  ~DownloadCoreService() override;
 
   // Get the download manager delegate, creating it if it doesn't already exist.
   virtual ChromeDownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
@@ -70,7 +70,7 @@ class DownloadService : public KeyedService {
   virtual bool IsShelfEnabled() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadService);
+  DISALLOW_COPY_AND_ASSIGN(DownloadCoreService);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CORE_SERVICE_H_
