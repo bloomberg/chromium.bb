@@ -60,6 +60,9 @@ class InputInjectorChromeos::Core {
   void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
+  // Sets the caps lock state to match states
+  void SetLockStates(uint32_t states);
+
   std::unique_ptr<ui::SystemInputInjector> delegate_;
   std::unique_ptr<Clipboard> clipboard_;
 
@@ -81,6 +84,10 @@ void InputInjectorChromeos::Core::InjectClipboardEvent(
 void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
+
+  if (event.has_lock_states()) {
+    SetLockStates(event.lock_states());
+  }
 
   ui::DomCode dom_code =
       ui::KeycodeConverter::UsbKeycodeToDomCode(event.usb_keycode());
@@ -121,6 +128,13 @@ void InputInjectorChromeos::Core::Start(
   clipboard_ = Clipboard::Create();
   clipboard_->Start(std::move(client_clipboard));
   point_transformer_.reset(new PointTransformer());
+}
+
+void InputInjectorChromeos::Core::SetLockStates(uint32_t states) {
+  ui::InputController* input_controller =
+      ui::OzonePlatform::GetInstance()->GetInputController();
+  input_controller->SetCapsLockEnabled(
+      states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK);
 }
 
 InputInjectorChromeos::InputInjectorChromeos(
