@@ -189,9 +189,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void GetRegistrationUserData(int64_t registration_id,
                                const std::vector<std::string>& keys,
                                const GetUserDataCallback& callback);
-  void GetRegistrationUserDataByKeyPrefix(int64_t registration_id,
-                                          const std::string& key_prefix,
-                                          const GetUserDataCallback& callback);
   void StoreRegistrationUserData(
       int64_t registration_id,
       const GURL& origin,

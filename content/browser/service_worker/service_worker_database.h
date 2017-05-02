@@ -198,13 +198,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
                       const std::vector<std::string>& user_data_names,
                       std::vector<std::string>* user_data_values);
 
-  // Reads user data for |registration_id| and |key_prefix| from the database.
-  // Returns OK only if keys matched to |key_prefix| are found; otherwise
-  // NOT_FOUND, and |user_data_values| will be empty.
-  Status ReadUserDataByKeyPrefix(int64_t registration_id,
-                                 const std::string key_prefix,
-                                 std::vector<std::string>* user_data_values);
-
   // Writes |name_value_pairs| into the database. Returns NOT_FOUND if the
   // registration specified by |registration_id| does not exist in the database.
   Status WriteUserData(
