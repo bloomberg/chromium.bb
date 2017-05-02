@@ -207,9 +207,57 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
 
   // Request a stream and verify that a stream was created.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(OK, stream_request->StartRequest(callback.callback()));
+  EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Request a stream and verify that a stream was created.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest(/*requires_confirmation=*/true);
+  TestCompletionCallback callback;
+  ASSERT_EQ(OK, stream_request->StartRequest(callback.callback()));
+  EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
+
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
+  MockQuicData quic_data;
+  quic_data.AddWrite(client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+
+  // Request a stream and verify that a stream was created.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest(/*requires_confirmation=*/true);
+  TestCompletionCallback callback;
+  ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
+
+  CompleteCryptoHandshake();
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
   EXPECT_TRUE(stream_request->ReleaseStream() != nullptr);
 
   quic_data.Resume();
@@ -231,7 +279,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
 
   // Request a stream and cancel it without releasing the stream.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(OK, stream_request->StartRequest(callback.callback()));
   stream_request.reset();
@@ -263,7 +311,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
@@ -301,7 +349,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
@@ -332,10 +380,35 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
 
   // Request a stream and verify that it failed.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_CONNECTION_CLOSED,
             stream_request->StartRequest(callback.callback()));
+
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
+  MockQuicData quic_data;
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(server_maker_.MakeConnectionClosePacket(1));
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+
+  // Request a stream and verify that it's pending.
+  std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
+      session_->CreateStreamRequest(/*requires_confirmation=*/true);
+  TestCompletionCallback callback;
+  ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
+
+  // Close the connection and verify that the StreamRequest completes with
+  // an error.
+  quic_data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -361,7 +434,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
@@ -728,7 +801,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   }
 
   std::unique_ptr<QuicChromiumClientSession::StreamRequest> stream_request =
-      session_->CreateStreamRequest();
+      session_->CreateStreamRequest(/*requires_confirmation=*/false);
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING, stream_request->StartRequest(callback.callback()));
 
