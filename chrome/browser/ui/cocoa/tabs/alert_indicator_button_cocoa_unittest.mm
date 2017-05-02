@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,9 @@ namespace {
 
 class AlertIndicatorButtonTest : public CocoaTest {
  public:
-  AlertIndicatorButtonTest() {
+  AlertIndicatorButtonTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         std::string("--") + switches::kEnableTabAudioMuting);
 
@@ -82,7 +84,9 @@ class AlertIndicatorButtonTest : public CocoaTest {
   }
 
   base::scoped_nsobject<AlertIndicatorButton> button_;
-  base::MessageLoopForUI message_loop_;  // Needed for gfx::Animation.
+
+  // Needed for gfx::Animation.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_VIEW(AlertIndicatorButtonTest, button_)

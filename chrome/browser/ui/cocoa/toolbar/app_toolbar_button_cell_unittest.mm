@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 
 @interface TestAppToolbarButton : NSButton
@@ -21,7 +21,9 @@
 
 class AppToolbarButtonCellTest : public CocoaTest {
  protected:
-  AppToolbarButtonCellTest() {
+  AppToolbarButtonCellTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     base::scoped_nsobject<NSButton> button([[TestAppToolbarButton alloc]
         initWithFrame:NSMakeRect(0, 0, 29, 29)]);
     button_ = button;
@@ -30,7 +32,9 @@ class AppToolbarButtonCellTest : public CocoaTest {
 
   NSButton* button_;
   base::scoped_nsobject<AppToolbarButtonCell> cell_;
-  base::MessageLoopForUI message_loop_;  // Needed for gfx::Animation.
+
+  // Needed for gfx::Animation.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppToolbarButtonCellTest);
