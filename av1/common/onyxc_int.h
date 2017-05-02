@@ -640,6 +640,14 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
 
   xd->left_available = (mi_col > tile->mi_col_start);
+#if CONFIG_CHROMA_SUB8X8
+  xd->chroma_up_available = xd->up_available;
+  xd->chroma_left_available = xd->left_available;
+  if (xd->plane[1].subsampling_x && bw < mi_size_wide[BLOCK_8X8])
+    xd->chroma_left_available = (mi_col - 1) > tile->mi_col_start;
+  if (xd->plane[1].subsampling_y && bh < mi_size_high[BLOCK_8X8])
+    xd->chroma_up_available = (mi_row - 1) > tile->mi_row_start;
+#endif
   if (xd->up_available) {
     xd->above_mi = xd->mi[-xd->mi_stride];
     // above_mi may be NULL in encoder's first pass.

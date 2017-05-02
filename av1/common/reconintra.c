@@ -2184,8 +2184,16 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
+#if CONFIG_CB4X4 && CONFIG_CHROMA_SUB8X8
+  const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
+                                                     : xd->up_available);
+  const int have_left =
+      col_off ||
+      (pd->subsampling_x ? xd->chroma_left_available : xd->left_available);
+#else
   const int have_top = row_off || xd->up_available;
   const int have_left = col_off || xd->left_available;
+#endif
   const int x = col_off << tx_size_wide_log2[0];
   const int y = row_off << tx_size_high_log2[0];
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);

@@ -585,6 +585,10 @@ typedef struct macroblockd {
 
   int up_available;
   int left_available;
+#if CONFIG_CHROMA_SUB8X8
+  int chroma_up_available;
+  int chroma_left_available;
+#endif
 
   const aom_prob (*partition_probs)[PARTITION_TYPES - 1];
 
