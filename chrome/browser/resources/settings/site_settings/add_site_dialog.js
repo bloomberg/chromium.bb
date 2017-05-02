@@ -41,14 +41,11 @@ Polymer({
     assert(this.contentSetting);
   },
 
-  /**
-   * Opens the dialog.
-   * @param {string} type Whether this was launched from an Allow list or a
-   *     Block list.
-   */
-  open: function(type) {
-    this.addWebUIListener('onIncognitoStatusChanged', function(isActive) {
-      this.showIncognitoSessionOnly_ = isActive &&
+  /** Open the dialog. */
+  open: function() {
+    this.addWebUIListener('onIncognitoStatusChanged', function(hasIncognito) {
+      this.$.incognito.checked = false;
+      this.showIncognitoSessionOnly_ = hasIncognito &&
           this.contentSetting != settings.PermissionValues.SESSION_ONLY;
     }.bind(this));
     this.browserProxy.updateIncognitoStatus();

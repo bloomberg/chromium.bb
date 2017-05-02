@@ -1161,10 +1161,24 @@ cr.define('site_list', function() {
       dialog.category = settings.ContentSettingsTypes.GEOLOCATION;
       dialog.contentSetting = settings.PermissionValues.ALLOW;
       document.body.appendChild(dialog);
+      dialog.open();
     });
 
     teardown(function() {
       dialog.remove();
+    });
+
+    test('incognito', function() {
+      cr.webUIListenerCallback(
+          'onIncognitoStatusChanged',
+          /*hasIncognito=*/true);
+      assertFalse(dialog.$.incognito.checked);
+      dialog.$.incognito.checked = true;
+      // Changing the incognito status will reset the checkbox.
+      cr.webUIListenerCallback(
+          'onIncognitoStatusChanged',
+          /*hasIncognito=*/false);
+      assertFalse(dialog.$.incognito.checked);
     });
 
     test('invalid input', function() {
