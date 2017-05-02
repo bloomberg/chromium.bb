@@ -13,11 +13,69 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace payments {
+
+namespace {
+
+// This class is the actual sheet that gets pushed on the view_stack_. It
+// implements views::FocusTraversable to trap focus within its hierarchy. This
+// way, focus doesn't leave the topmost sheet on the view stack to go on views
+// that happen to be underneath.
+// This class also overrides RequestFocus() to allow consumers to specify which
+// view should be focused first (through SetFirstFocusableView). If no initial
+// view is specified, the first view added to the hierarchy will get focus when
+// this SheetView's RequestFocus() is called.
+class SheetView : public views::View, public views::FocusTraversable {
+ public:
+  SheetView()
+      : first_focusable_(nullptr),
+        focus_search_(base::MakeUnique<views::FocusSearch>(this, true, false)) {
+  }
+
+  // Sets |view| as the first focusable view in this pane. If it's nullptr, the
+  // fallback is to use focus_search_ to find the first focusable view.
+  void SetFirstFocusableView(views::View* view) { first_focusable_ = view; }
+
+ private:
+  // views::FocusTraversable:
+  views::FocusSearch* GetFocusSearch() override { return focus_search_.get(); }
+
+  views::FocusTraversable* GetFocusTraversableParent() override {
+    return parent()->GetFocusTraversable();
+  }
+
+  views::View* GetFocusTraversableParentView() override { return this; }
+
+  // views::View:
+  views::FocusTraversable* GetPaneFocusTraversable() override { return this; }
+
+  void RequestFocus() override {
+    views::View* first_focusable = first_focusable_;
+
+    if (!first_focusable) {
+      views::FocusTraversable* dummy_focus_traversable;
+      views::View* dummy_focus_traversable_view;
+      first_focusable = focus_search_->FindNextFocusableView(
+          nullptr, false, views::FocusSearch::DOWN, false,
+          &dummy_focus_traversable, &dummy_focus_traversable_view);
+    }
+
+    if (first_focusable)
+      first_focusable->RequestFocus();
+  }
+
+  views::View* first_focusable_;
+  std::unique_ptr<views::FocusSearch> focus_search_;
+
+  DISALLOW_COPY_AND_ASSIGN(SheetView);
+};
+
+}  // namespace
 
 PaymentRequestSheetController::PaymentRequestSheetController(
     PaymentRequestSpec* spec,
@@ -81,7 +139,7 @@ void PaymentRequestSheetController::ButtonPressed(
 
 std::unique_ptr<views::View>
 PaymentRequestSheetController::CreatePaymentView() {
-  std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
+  std::unique_ptr<SheetView> view = base::MakeUnique<SheetView>();
   view->set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
   // Paint the sheets to layers, otherwise the MD buttons (which do paint to a
@@ -130,6 +188,8 @@ PaymentRequestSheetController::CreatePaymentView() {
   layout->StartRow(0, 0);
   layout->AddView(CreateFooterView().release());
 
+  view->SetFirstFocusableView(GetFirstFocusedView());
+
   return view;
 }
 
@@ -167,19 +227,33 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
   trailing_buttons_container->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kPaymentRequestButtonSpacing));
 
-  std::unique_ptr<views::Button> primary_button = CreatePrimaryButton();
-  if (primary_button)
-    trailing_buttons_container->AddChildView(primary_button.release());
+  primary_button_ = CreatePrimaryButton();
+  if (primary_button_) {
+    primary_button_->set_owned_by_client();
+    trailing_buttons_container->AddChildView(primary_button_.get());
+  }
 
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, GetSecondaryButtonLabel());
-  button->set_tag(static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
-  button->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
-  trailing_buttons_container->AddChildView(button);
+  secondary_button_ = std::unique_ptr<views::Button>(
+      views::MdTextButton::CreateSecondaryUiButton(this,
+                                                   GetSecondaryButtonLabel()));
+  secondary_button_->set_owned_by_client();
+  secondary_button_->set_tag(
+      static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
+  secondary_button_->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
+  trailing_buttons_container->AddChildView(secondary_button_.get());
 
   layout->AddView(trailing_buttons_container.release());
 
   return container;
+}
+
+views::View* PaymentRequestSheetController::GetFirstFocusedView() {
+  if (primary_button_ && primary_button_->enabled())
+    return primary_button_.get();
+
+  DCHECK(secondary_button_);
+
+  return secondary_button_.get();
 }
 
 }  // namespace payments

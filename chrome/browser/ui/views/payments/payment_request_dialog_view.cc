@@ -86,6 +86,10 @@ ui::ModalType PaymentRequestDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
+views::View* PaymentRequestDialogView::GetInitiallyFocusedView() {
+  return view_stack_.get();
+}
+
 bool PaymentRequestDialogView::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Called when the widget is about to close. We send a message to the

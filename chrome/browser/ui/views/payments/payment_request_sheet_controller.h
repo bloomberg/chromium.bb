@@ -92,6 +92,14 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // |controller| is installed as the listener for button events.
   std::unique_ptr<views::View> CreateFooterView();
 
+  // Returns the view that should be initially focused on this sheet. Typically,
+  // this returns the primary button if it's enabled or the secondary button
+  // otherwise. Subclasses may return a different view if they need focus to
+  // start off on a different view (a textfield for example). This will only be
+  // called after the view has been completely created through calls to
+  // CreatePaymentView and related functions.
+  virtual views::View* GetFirstFocusedView();
+
  private:
   // Creates a view to be displayed in the PaymentRequestDialog.
   // |header_view| is the view displayed on top of the dialog, containing title,
@@ -122,6 +130,11 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Hold on to the ScrollView because it must be explicitly laid out in some
   // cases.
   std::unique_ptr<views::ScrollView> scroll_;
+
+  // Hold on to the primary and secondary buttons to use them as initial focus
+  // targets when subclasses don't want to focus anything else.
+  std::unique_ptr<views::Button> primary_button_;
+  std::unique_ptr<views::Button> secondary_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };

@@ -19,10 +19,18 @@ class PaymentRequestRowView : public views::CustomButton {
   PaymentRequestRowView(views::ButtonListener* listener, bool clickable);
   ~PaymentRequestRowView() override;
 
+ private:
+  // Sets this row's background to the theme's hovered color to indicate that
+  // it's begin hovered or it's focused.
+  void SetActiveBackground();
+
   // views::CustomButton:
   void StateChanged(ButtonState old_state) override;
 
- private:
+  // views::View:
+  void OnFocus() override;
+  void OnBlur() override;
+
   bool clickable_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowView);

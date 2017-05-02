@@ -6,8 +6,10 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/widget/widget.h"
 
 namespace payments {
 
@@ -16,17 +18,38 @@ PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
     : views::CustomButton(listener), clickable_(clickable) {
   SetEnabled(clickable_);
   SetBorder(payments::CreatePaymentRequestRowBorder());
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 }
 
 PaymentRequestRowView::~PaymentRequestRowView() {}
+
+void PaymentRequestRowView::SetActiveBackground() {
+  ui::NativeTheme* theme = GetWidget()->GetNativeTheme();
+  set_background(views::Background::CreateSolidBackground(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_ResultsTableHoveredBackground)));
+}
 
 // views::CustomButton:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
   if (clickable_ && (state() == views::Button::STATE_HOVERED ||
                      state() == views::Button::STATE_PRESSED)) {
-    set_background(views::Background::CreateSolidBackground(SK_ColorLTGRAY));
+    SetActiveBackground();
   } else {
     set_background(nullptr);
+  }
+}
+
+void PaymentRequestRowView::OnFocus() {
+  if (clickable_) {
+    SetActiveBackground();
+    SchedulePaint();
+  }
+}
+
+void PaymentRequestRowView::OnBlur() {
+  if (clickable_) {
+    set_background(nullptr);
+    SchedulePaint();
   }
 }
 
