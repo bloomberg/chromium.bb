@@ -181,11 +181,15 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Provide a storage mechanism to read/write arbitrary data associated with
   // a registration. Each registration has its own key namespace.
-  // GetUserData responds OK only if all keys are found; otherwise NOT_FOUND,
-  // and the callback's data will be empty.
+  // GetUserData/GetUserDataByKeyPrefix responds OK only if all keys are found;
+  // otherwise NOT_FOUND, and the callback's data will be empty.
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    const GetUserDataCallback& callback);
+  void GetUserDataByKeyPrefix(int64_t registration_id,
+                              const std::string& key_prefix,
+                              const GetUserDataCallback& callback);
+
   // Stored data is deleted when the associated registraton is deleted.
   void StoreUserData(
       int64_t registration_id,
@@ -498,6 +502,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       int64_t registration_id,
       const std::vector<std::string>& keys,
+      const GetUserDataInDBCallback& callback);
+  static void GetUserDataByKeyPrefixInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      int64_t registration_id,
+      const std::string& key_prefix,
       const GetUserDataInDBCallback& callback);
   static void GetUserDataForAllRegistrationsInDB(
       ServiceWorkerDatabase* database,
