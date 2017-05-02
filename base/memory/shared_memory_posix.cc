@@ -33,15 +33,11 @@
 namespace base {
 
 SharedMemory::SharedMemory()
-    : readonly_mapped_file_(-1),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(false),
-      requested_size_(0) {}
+    : mapped_size_(0), memory_(NULL), read_only_(false), requested_size_(0) {}
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : shm_(handle),
-      readonly_mapped_file_(-1),
+
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
@@ -173,7 +169,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     }
 
     if (options.share_read_only) {
-      // Also open as readonly so that we can ShareReadOnlyToProcess.
+      // Also open as readonly so that we can GetReadOnlyHandle.
       readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
       if (!readonly_fd.is_valid()) {
         DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
@@ -213,9 +209,11 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   }
 
   int mapped_file = -1;
+  int readonly_mapped_file = -1;
   bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
-                               &mapped_file, &readonly_mapped_file_);
+                               &mapped_file, &readonly_mapped_file);
   shm_ = SharedMemoryHandle::ImportHandle(mapped_file);
+  readonly_shm_ = SharedMemoryHandle::ImportHandle(readonly_mapped_file);
   return result;
 }
 
@@ -249,9 +247,11 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
     return false;
   }
   int mapped_file = -1;
+  int readonly_mapped_file = -1;
   bool result = PrepareMapFile(std::move(fp), std::move(readonly_fd),
-                               &mapped_file, &readonly_mapped_file_);
+                               &mapped_file, &readonly_mapped_file);
   shm_ = SharedMemoryHandle::ImportHandle(mapped_file);
+  readonly_shm_ = SharedMemoryHandle::ImportHandle(readonly_mapped_file);
   return result;
 }
 #endif  // !defined(OS_ANDROID)
@@ -324,10 +324,9 @@ void SharedMemory::Close() {
     shm_.Close();
     shm_ = SharedMemoryHandle();
   }
-  if (readonly_mapped_file_ > 0) {
-    if (IGNORE_EINTR(close(readonly_mapped_file_)) < 0)
-      PLOG(ERROR) << "close";
-    readonly_mapped_file_ = -1;
+  if (readonly_shm_.IsValid()) {
+    readonly_shm_.Close();
+    readonly_shm_ = SharedMemoryHandle();
   }
 }
 
@@ -356,42 +355,20 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
 }
 #endif  // !defined(OS_ANDROID)
 
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+  CHECK(readonly_shm_.IsValid());
+  return readonly_shm_.Duplicate();
+}
+
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle* new_handle,
-                                        bool close_self,
-                                        ShareMode share_mode) {
-  int handle_to_dup = -1;
-  switch(share_mode) {
-    case SHARE_CURRENT_MODE:
-      handle_to_dup = shm_.GetHandle();
-      break;
-    case SHARE_READONLY:
-      // We could imagine re-opening the file from /dev/fd, but that can't make
-      // it readonly on Mac: https://codereview.chromium.org/27265002/#msg10
-      CHECK_GE(readonly_mapped_file_, 0);
-      handle_to_dup = readonly_mapped_file_;
-      break;
-  }
-
-  const int new_fd = HANDLE_EINTR(dup(handle_to_dup));
-  if (new_fd < 0) {
-    if (close_self) {
-      Unmap();
-      Close();
-    }
-    DPLOG(ERROR) << "dup() failed.";
-    return false;
-  }
-
-  new_handle->SetHandle(new_fd);
-  new_handle->SetOwnershipPassesToIPC(true);
-
+                                        bool close_self) {
+  *new_handle = shm_.Duplicate();
   if (close_self) {
     Unmap();
     Close();
   }
-
-  return true;
+  return new_handle->IsValid();
 }
 
 bool SharedMemory::GetUniqueId(SharedMemory::UniqueId* id) const {

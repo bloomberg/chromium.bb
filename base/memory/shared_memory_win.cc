@@ -338,16 +338,28 @@ bool SharedMemory::Unmap() {
   return true;
 }
 
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+  HANDLE result;
+  ProcessHandle process = GetCurrentProcess();
+  if (!::DuplicateHandle(process, mapped_file_.Get(), process, &result,
+                         FILE_MAP_READ | SECTION_QUERY, FALSE, 0)) {
+    return SharedMemoryHandle();
+  }
+  SharedMemoryHandle handle =
+      SharedMemoryHandle(result, base::GetProcId(process));
+  handle.SetOwnershipPassesToIPC(true);
+  return handle;
+}
+
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle* new_handle,
-                                        bool close_self,
-                                        ShareMode share_mode) {
+                                        bool close_self) {
   *new_handle = SharedMemoryHandle();
   DWORD access = FILE_MAP_READ | SECTION_QUERY;
   DWORD options = 0;
   HANDLE mapped_file = mapped_file_.Get();
   HANDLE result;
-  if (share_mode == SHARE_CURRENT_MODE && !read_only_)
+  if (!read_only_)
     access |= FILE_MAP_WRITE;
   if (close_self) {
     // DUPLICATE_CLOSE_SOURCE causes DuplicateHandle to close mapped_file.

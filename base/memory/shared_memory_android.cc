@@ -42,8 +42,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   // Android doesn't appear to have a way to drop write access on an ashmem
   // segment for a single descriptor.  http://crbug.com/320865
-  readonly_mapped_file_ = dup(shm_.GetHandle());
-  if (-1 == readonly_mapped_file_) {
+  readonly_shm_ = SharedMemoryHandle::ImportHandle(dup(shm_.GetHandle()));
+  if (!readonly_shm_.IsValid()) {
     DPLOG(ERROR) << "dup() failed";
     return false;
   }

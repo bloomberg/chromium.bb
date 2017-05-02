@@ -125,18 +125,16 @@ void SharedMemory::Close() {
   }
 }
 
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+  // Untrusted code can't create descriptors or handles, which is needed to
+  // drop permissions.
+  return SharedMemoryHandle();
+}
+
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
-                                        SharedMemoryHandle *new_handle,
-                                        bool close_self,
-                                        ShareMode share_mode) {
-  if (share_mode == SHARE_READONLY) {
-    // Untrusted code can't create descriptors or handles, which is needed to
-    // drop permissions.
-    return false;
-  }
-
+                                        SharedMemoryHandle* new_handle,
+                                        bool close_self) {
   *new_handle = shm_.Duplicate();
-
   if (close_self) {
     Unmap();
     Close();
