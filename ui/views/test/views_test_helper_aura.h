@@ -22,16 +22,11 @@ class AuraTestHelper;
 }
 }
 
-namespace base {
-class MessageLoopForUI;
-}
-
 namespace views {
 
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
-  ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
-                      ui::ContextFactory* context_factory,
+  ViewsTestHelperAura(ui::ContextFactory* context_factory,
                       ui::ContextFactoryPrivate* context_factory_private);
   ~ViewsTestHelperAura() override;
 

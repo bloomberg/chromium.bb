@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/test/test_clipboard.h"
@@ -33,9 +32,8 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   test_views_delegate_->set_context_factory(context_factory);
   test_views_delegate_->set_context_factory_private(context_factory_private);
 
-  test_helper_.reset(ViewsTestHelper::Create(base::MessageLoopForUI::current(),
-                                             context_factory,
-                                             context_factory_private));
+  test_helper_.reset(
+      ViewsTestHelper::Create(context_factory, context_factory_private));
   platform_test_helper_->OnTestHelperCreated(test_helper_.get());
   test_helper_->SetUp();
 

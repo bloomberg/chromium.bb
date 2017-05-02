@@ -276,6 +276,7 @@ static_library("test_support") {
     ":aura",
   ]
   deps = [
+    "//base/test:test_support",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

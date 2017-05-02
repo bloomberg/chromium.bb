@@ -104,8 +104,7 @@ class SnapshotAuraTest : public testing::Test {
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
 
-    helper_.reset(
-        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
+    helper_.reset(new aura::test::AuraTestHelper());
     helper_->SetUp(context_factory, context_factory_private);
     new ::wm::DefaultActivationClient(helper_->root_window());
   }

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/aura_test_base.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -22,7 +23,10 @@ namespace aura {
 namespace test {
 
 AuraTestBase::AuraTestBase()
-    : window_manager_delegate_(this), window_tree_client_delegate_(this) {}
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      window_manager_delegate_(this),
+      window_tree_client_delegate_(this) {}
 
 AuraTestBase::~AuraTestBase() {
   CHECK(setup_called_)
@@ -79,7 +83,7 @@ void AuraTestBase::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                        &context_factory_private);
 
-  helper_.reset(new AuraTestHelper(&message_loop_));
+  helper_ = base::MakeUnique<AuraTestHelper>();
   if (use_mus_) {
     helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_,
                                          window_manager_delegate_);
