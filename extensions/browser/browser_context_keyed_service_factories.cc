@@ -33,7 +33,6 @@
 #include "extensions/browser/api/usb/usb_event_router.h"
 #include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
-#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
@@ -42,6 +41,10 @@
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
+
+#if defined(OS_CHROMEOS)
+#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
 
