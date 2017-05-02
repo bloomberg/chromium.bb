@@ -26,7 +26,6 @@ CONTENT_EXPORT extern const base::Feature kBrowserSideNavigation;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
-CONTENT_EXPORT extern const base::Feature kCredentialManagementAPI;
 CONTENT_EXPORT extern const base::Feature kDocumentWriteEvaluator;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;

@@ -1027,12 +1027,6 @@ extern const char kPinchScaleName[];
 // Description of the flag to turn on experiental pinch to scale.
 extern const char kPinchScaleDescription[];
 
-// Name for the flag to enable 'navigator.credentials'.
-extern const char kCredentialManagerApiName[];
-
-// Description for the flag to enable 'navigator.credentials'.
-extern const char kCredentialManagerApiDescription[];
-
 // Name for the flag to reduce referer granularity.
 extern const char kReducedReferrerGranularityName[];
 

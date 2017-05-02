@@ -188,10 +188,6 @@
       status: "test",
     },
     {
-      name: "CredentialManager",
-      status: "stable",
-    },
-    {
       name: "CSS3Text",
       status: "experimental",
     },

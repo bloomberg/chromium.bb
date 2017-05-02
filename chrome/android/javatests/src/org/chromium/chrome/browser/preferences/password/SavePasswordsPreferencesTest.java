@@ -15,9 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -100,7 +98,6 @@ public class SavePasswordsPreferencesTest {
      */
     @Test
     @SmallTest
-    @CommandLineFlags.Add("enable-features=" + SavePasswordsPreferences.CREDENTIAL_MANAGER_API)
     @Feature({"Preferences"})
     public void testAutoSignInCheckbox() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -117,8 +114,6 @@ public class SavePasswordsPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(ChromeFeatureList.isEnabled(
-                        SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
@@ -145,8 +140,6 @@ public class SavePasswordsPreferencesTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertTrue(ChromeFeatureList.isEnabled(
-                        SavePasswordsPreferences.CREDENTIAL_MANAGER_API));
                 SavePasswordsPreferences passwordPrefs =
                         (SavePasswordsPreferences) preferences2.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =

@@ -74,7 +74,6 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void EnableCanvas2dImageChromium(bool);
   BLINK_EXPORT static void EnableColorCorrectRendering(bool);
   BLINK_EXPORT static void EnableColorCorrectRenderingDefaultMode(bool);
-  BLINK_EXPORT static void EnableCredentialManagerAPI(bool);
   BLINK_EXPORT static void EnableDatabase(bool);
   BLINK_EXPORT static void EnableDecodeToYUV(bool);
   BLINK_EXPORT static void EnableDocumentWriteEvaluator(bool);

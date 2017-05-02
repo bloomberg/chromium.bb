@@ -302,10 +302,6 @@ void WebRuntimeFeatures::EnablePrintBrowser(bool enable) {
   RuntimeEnabledFeatures::setPrintBrowserEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableCredentialManagerAPI(bool enable) {
-  RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableV8IdleTasks(bool enable) {
   RuntimeEnabledFeatures::setV8IdleTasksEnabled(enable);
 }
