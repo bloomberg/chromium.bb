@@ -139,9 +139,17 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
 
   ~ProxyImpl() override {}
 
-  // Sudden termination is disabled when there are callbacks pending
-  // to more reliably commit changes during shutdown.
   void PushPendingCallback(const CompletionCallback& callback) {
+    // Terminate the renderer if an excessive number of calls are made,
+    // This is indicative of script in an infinite loop or being malicious.
+    // It's better to crash intentionally than by running the system OOM
+    // and interfering with everything else running in the system.
+    const int kMaxPendingCompletionCallbacks = 1000000;
+    if (pending_callbacks_.size() > kMaxPendingCompletionCallbacks)
+      CHECK(false) << "Too many pending DOMStorage calls.";
+
+    // Sudden termination is disabled when there are callbacks pending
+    // to more reliably commit changes during shutdown.
     if (pending_callbacks_.empty())
       blink::Platform::Current()->SuddenTerminationChanged(false);
     pending_callbacks_.push_back(callback);
