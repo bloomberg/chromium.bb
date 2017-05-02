@@ -23,6 +23,9 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
+script_dir="$(dirname "${0}")"
+source "${script_dir}/variables.sh"
+
 codesign_display_and_verify() {
   path=${1}
   shift
@@ -33,14 +36,46 @@ codesign_display_and_verify() {
   codesign --verify --verbose=6 "${@}" "${path}"
 }
 
-if [[ ${#} -ne 3 ]]; then
-  echo "usage: ${ME} app_path codesign_keychain codesign_id" >& 2
+if [[ ${#} -ne 3 && ${#} -ne 4 ]]; then
+  echo "usage: ${ME} app_path codesign_keychain codesign_id \
+[--development]" >& 2
   exit 1
 fi
 
 app_path="${1}"
 codesign_keychain="${2}"
 codesign_id="${3}"
+is_development=
+
+if [[ ${#} == 4 && ${4} == "--development" ]]; then
+  is_development=1
+fi
+
+codesign_with_options() {
+  path=${1}
+  options=${2}
+  requirement_identifier=${3}
+
+  codesign_cmd=(
+    codesign --sign "${codesign_id}" --keychain "${codesign_keychain}"
+    "${path}"
+  )
+
+  if [[ "${requirement_identifier}" = "app_mode_loader" ]]; then
+    codesign_cmd+=( --identifier "${requirement_identifier}" )
+  fi
+
+  if [[ -n "${options}" ]]; then
+    codesign_cmd+=( --options "${options}" )
+  fi
+
+  if [[ -z "${is_development}" ]]; then
+    requirement="designated => identifier \"${requirement_identifier}\" \
+${requirement_suffix}"
+    codesign_cmd+=( -r="${requirement}" )
+  fi
+  "${codesign_cmd[@]}"
+}
 
 versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 
@@ -57,19 +92,9 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
-requirement_suffix="\
-and (certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\" or \
-certificate leaf = H\"c9a99324ca3fcb23dbcc36bd5fd4f9753305130a\") \
-"
-
-enforcement_flags_app="restrict"
-enforcement_flags="${enforcement_flags_app},library"
-
-codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${crashpad_handler}" \
-    --options "${enforcement_flags}" \
-    -r="designated => identifier \"crashpad_handler\" \
-${requirement_suffix}"
+codesign_with_options "${crashpad_handler}" \
+                      "${enforcement_flags_helpers}" \
+                      "crashpad_handler"
 
 # The app mode loader bundle is modified dynamically at runtime. Just sign the
 # executable, which shouldn't change. In order to do this, the executable needs
@@ -78,32 +103,24 @@ ${requirement_suffix}"
 # verified in isolation or with --ignore-resources, it will.
 app_mode_loader_tmp="$(mktemp -t app_mode_loader)"
 cp "${app_mode_loader}" "${app_mode_loader_tmp}"
-codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${app_mode_loader_tmp}" \
-    --identifier app_mode_loader \
-    --options "${enforcement_flags}" \
-    -r="designated => identifier \"app_mode_loader\" \
-${requirement_suffix}"
+
+codesign_with_options "${app_mode_loader_tmp}" \
+                      "${enforcement_flags_helpers}" \
+                      "app_mode_loader"
+
 cp "${app_mode_loader_tmp}" "${app_mode_loader}"
 rm -f "${app_mode_loader_tmp}"
 
-codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${notification_service}" \
-    --options "${enforcement_flags}" \
-    -r="designated => identifier \"com.google.Chrome.framework.AlertNotificationService\" \
-${requirement_suffix}"
+codesign_with_options "${notification_service}" \
+                      "${enforcement_flags_helpers}" \
+                      "com.google.Chrome.framework.AlertNotificationService"
 
-# The framework is a dylib, so ${enforcement_flags} are meaningless.
-codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${framework}" \
-    -r="designated => identifier \"com.google.Chrome.framework\" \
-${requirement_suffix}"
+# The framework is a dylib, so ${enforcement_flags_helpers} are meaningless.
+codesign_with_options "${framework}" "" "com.google.Chrome.framework"
 
-codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${helper_app}" \
-    --options "${enforcement_flags_app}" \
-    -r="designated => identifier \"com.google.Chrome.helper\" \
-${requirement_suffix}"
+codesign_with_options "${helper_app}" \
+                      "${enforcement_flags_app}" \
+                      "com.google.Chrome.helper"
 
 # Show the signatures and verify everything.
 codesign_display_and_verify "${crashpad_handler}" --deep

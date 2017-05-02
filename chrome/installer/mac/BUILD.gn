@@ -71,6 +71,7 @@ copy("copies") {
     "dmgdiffer.sh",
     "pkg-dmg",
     "sign_installer_tools.sh",
+    "variables.sh",
   ]
 
   if (is_chrome_branded) {
