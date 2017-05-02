@@ -15,7 +15,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/tracing/public/cpp/provider.h"
 
 namespace views {
 class AuraInit;
@@ -54,7 +53,6 @@ class CatalogViewer
 
   service_manager::BinderRegistry registry_;
 
-  tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(CatalogViewer);

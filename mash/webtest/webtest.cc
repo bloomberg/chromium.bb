@@ -19,7 +19,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -169,7 +168,6 @@ void Webtest::RemoveWindow(views::Widget* window) {
 }
 
 void Webtest::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);

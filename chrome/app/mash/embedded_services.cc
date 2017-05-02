@@ -13,8 +13,6 @@
 #include "mash/session/session.h"
 #include "mash/task_viewer/public/interfaces/constants.mojom.h"
 #include "mash/task_viewer/task_viewer.h"
-#include "services/tracing/public/interfaces/constants.mojom.h"
-#include "services/tracing/service.h"
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/service.h"
@@ -42,8 +40,6 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedMashService(
     return base::MakeUnique<ash::autoclick::AutoclickApplication>();
   if (service_name == "touch_hud")
     return base::MakeUnique<ash::touch_hud::TouchHudApplication>();
-  if (service_name == tracing::mojom::kServiceName)
-    return base::MakeUnique<tracing::Service>();
 #endif  // defined(OS_CHROMEOS)
   if (service_name == mash::catalog_viewer::mojom::kServiceName)
     return base::MakeUnique<mash::catalog_viewer::CatalogViewer>();

@@ -43,9 +43,7 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
-}
+void FileSystemApp::OnStart() {}
 
 void FileSystemApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

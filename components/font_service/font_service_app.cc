@@ -45,9 +45,7 @@ FontServiceApp::FontServiceApp() {
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
-}
+void FontServiceApp::OnStart() {}
 
 void FontServiceApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

@@ -15,9 +15,7 @@ LevelDBApp::LevelDBApp() : file_thread_("LevelDBFile") {
 
 LevelDBApp::~LevelDBApp() {}
 
-void LevelDBApp::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
-}
+void LevelDBApp::OnStart() {}
 
 void LevelDBApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

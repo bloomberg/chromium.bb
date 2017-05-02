@@ -44,7 +44,6 @@ catalog("catalog") {
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
-    "//services/tracing:manifest",
     "//services/ui:manifest",
     "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",

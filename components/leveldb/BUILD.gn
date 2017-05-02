@@ -48,7 +48,6 @@ service("leveldb") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/tracing/public/cpp",
   ]
 }
 

@@ -18,7 +18,6 @@
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
@@ -187,7 +186,6 @@ class Service
 
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
-  tracing::Provider tracing_;
   using PendingRequests = std::vector<std::unique_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
 

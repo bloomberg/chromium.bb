@@ -1,5 +1,4 @@
 include_rules = [
   "+components/tracing",
   "+services/catalog",
-  "+services/tracing",
 ]

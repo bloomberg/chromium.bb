@@ -292,8 +292,6 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
 }
 
 void TaskViewer::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
-
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);

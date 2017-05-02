@@ -4,5 +4,4 @@ include_rules = [
   "+mojo/public",
   "+mojo/util",
   "+services/service_manager",
-  "+services/tracing/public/cpp",
 ]

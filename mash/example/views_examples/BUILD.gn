@@ -21,7 +21,6 @@ service("views_examples") {
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:sources",
-    "//services/tracing/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
     "//ui/gfx",

@@ -1,5 +1,4 @@
 include_rules = [
   "+components/filesystem",
   "+components/leveldb",
-  "+services/tracing/public/cpp",
 ]

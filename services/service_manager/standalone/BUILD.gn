@@ -10,8 +10,6 @@ source_set("standalone") {
   sources = [
     "context.cc",
     "context.h",
-    "tracer.cc",
-    "tracer.h",
   ]
 
   deps = [
@@ -26,8 +24,6 @@ source_set("standalone") {
     "//services/service_manager/public/cpp/standalone_service",
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
-    "//services/tracing/public/cpp",
-    "//services/tracing/public/interfaces",
     "//url",
   ]
 }

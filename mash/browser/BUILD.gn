@@ -27,7 +27,6 @@ source_set("lib") {
     "//services/navigation/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
-    "//services/tracing/public/cpp",
     "//ui/aura",
     "//ui/gfx/geometry/mojo",
     "//ui/native_theme",
