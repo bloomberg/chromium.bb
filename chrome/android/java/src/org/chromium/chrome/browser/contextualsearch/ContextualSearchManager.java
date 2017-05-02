@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
@@ -635,6 +636,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                 quickActionCategory);
     }
 
+    @SuppressLint("StringFormatMatches")
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
@@ -657,6 +659,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             message = mSelectionController.getSelectedText();
             doLiteralSearch = true;
         } else {
+            // TODO(crbug.com/635567): Fix lint properly.
             message = mActivity.getResources().getString(
                     R.string.contextual_search_error, responseCode);
             doLiteralSearch = true;

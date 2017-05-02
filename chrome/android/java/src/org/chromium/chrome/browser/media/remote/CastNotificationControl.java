@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -28,6 +29,7 @@ import javax.annotation.Nullable;
 public class CastNotificationControl implements MediaRouteController.UiListener,
         MediaNotificationListener, AudioManager.OnAudioFocusChangeListener {
 
+    @SuppressLint("StaticFieldLeak")
     private static CastNotificationControl sInstance;
 
     private Bitmap mPosterBitmap;

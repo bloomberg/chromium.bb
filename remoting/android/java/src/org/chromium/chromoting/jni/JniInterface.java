@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting.jni;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
@@ -26,6 +27,7 @@ public class JniInterface {
     private static final String LIBRARY_NAME = "remoting_client_jni";
 
     // Used to fetch auth token for native client.
+    @SuppressLint("StaticFieldLeak")
     private static OAuthTokenConsumer sLoggerTokenConsumer;
 
     private static String sAccount;

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -43,6 +44,7 @@ public class ChromeActivitySessionTracker {
 
     private static final String PREF_LOCALE = "locale";
 
+    @SuppressLint("StaticFieldLeak")
     private static ChromeActivitySessionTracker sInstance;
 
     private final PowerBroadcastReceiver mPowerBroadcastReceiver = new PowerBroadcastReceiver();

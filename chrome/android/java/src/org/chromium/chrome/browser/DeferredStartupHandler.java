@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -69,6 +70,7 @@ public class DeferredStartupHandler {
     private static final String SNAPSHOT_DATABASE_NAME = "snapshots.db";
 
     private static class Holder {
+        @SuppressLint("StaticFieldLeak")
         private static final DeferredStartupHandler INSTANCE = new DeferredStartupHandler();
     }
 
@@ -93,6 +95,7 @@ public class DeferredStartupHandler {
         sDeferredStartupHandler = handler;
     }
 
+    @SuppressLint("StaticFieldLeak")
     private static DeferredStartupHandler sDeferredStartupHandler;
 
     protected DeferredStartupHandler() {

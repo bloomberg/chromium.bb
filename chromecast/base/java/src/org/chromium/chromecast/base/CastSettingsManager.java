@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.base;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -65,6 +66,7 @@ public final class CastSettingsManager {
         return new CastSettingsManager(contentResolver, listener, settings);
     }
 
+    @SuppressLint("NewApi")
     private CastSettingsManager(
             ContentResolver contentResolver,
             OnSettingChangedListener listener,
@@ -94,6 +96,7 @@ public final class CastSettingsManager {
                 mListener.onDeviceNameChanged(getDeviceName());
             }
         };
+        // TODO(crbug.com/635567): Fix lint properly.
         mContentResolver.registerContentObserver(
                 Settings.Global.getUriFor(DEVICE_NAME_SETTING_KEY), true, mDeviceNameObserver);
 
@@ -105,6 +108,7 @@ public final class CastSettingsManager {
                     mListener.onCastEnabledChanged(isCastEnabled());
                 }
             };
+            // TODO(crbug.com/635567): Fix lint properly.
             mContentResolver.registerContentObserver(
                     Settings.Global.getUriFor(DEVICE_PROVISIONED_SETTING_KEY), true,
                     mIsDeviceProvisionedObserver);
@@ -123,8 +127,10 @@ public final class CastSettingsManager {
         }
     }
 
+    @SuppressLint("NewApi")
     public boolean isCastEnabled() {
         // However, Cast is disabled until the device is provisioned (see b/18950240).
+        // TODO(crbug.com/635567): Fix lint properly.
         return Settings.Global.getInt(
                 mContentResolver, DEVICE_PROVISIONED_SETTING_KEY, 0) == 1;
     }
@@ -137,7 +143,9 @@ public final class CastSettingsManager {
         mSettings.edit().putBoolean(SEND_USAGE_STATS_SETTING, enabled).apply();
     }
 
+    @SuppressLint("NewApi")
     public String getDeviceName() {
+        // TODO(crbug.com/635567): Fix lint properly.
         String deviceName = Settings.Global.getString(mContentResolver, DEVICE_NAME_SETTING_KEY);
         return (deviceName != null) ? deviceName : DEFAULT_DEVICE_NAME;
     }

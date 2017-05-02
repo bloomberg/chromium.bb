@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
@@ -28,6 +29,7 @@ import org.chromium.ui.widget.Toast;
  */
 @JNINamespace("ui")
 public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener {
+    @SuppressLint("StaticFieldLeak")
     private static Clipboard sInstance;
 
     // Necessary for coercing clipboard contents to text if they require

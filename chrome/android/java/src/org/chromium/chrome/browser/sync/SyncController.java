@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.sync;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 
@@ -61,6 +62,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     @VisibleForTesting
     public static final String SESSION_TAG_PREFIX = "session_sync";
 
+    @SuppressLint("StaticFieldLeak")
     private static SyncController sInstance;
     private static boolean sInitialized;
 

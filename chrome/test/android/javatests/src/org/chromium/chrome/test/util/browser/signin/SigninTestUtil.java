@@ -5,6 +5,7 @@
 package org.chromium.chrome.test.util.browser.signin;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.app.Instrumentation;
 import android.content.Context;
 
@@ -29,7 +30,9 @@ public final class SigninTestUtil {
 
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
 
+    @SuppressLint("StaticFieldLeak")
     private static Context sContext;
+    @SuppressLint("StaticFieldLeak")
     private static FakeAccountManagerDelegate sAccountManager;
 
     /**

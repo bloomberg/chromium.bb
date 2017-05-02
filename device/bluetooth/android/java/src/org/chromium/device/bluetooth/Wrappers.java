@@ -5,6 +5,7 @@
 package org.chromium.device.bluetooth;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -159,6 +160,7 @@ class Wrappers {
             return mAdapter.enable();
         }
 
+        @SuppressLint("HardwareIds")
         public String getAddress() {
             return mAdapter.getAddress();
         }

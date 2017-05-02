@@ -4,6 +4,7 @@
 
 package org.chromium.device.usb;
 
+import android.annotation.SuppressLint;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 
@@ -38,6 +39,8 @@ final class ChromeUsbInterface {
         return mInterface.getId();
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("NewApi")
     @CalledByNative
     private int getAlternateSetting() {
         return mInterface.getAlternateSetting();
