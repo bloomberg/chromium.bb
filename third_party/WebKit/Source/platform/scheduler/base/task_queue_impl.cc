@@ -498,7 +498,8 @@ TaskQueueImpl::QueuePriority TaskQueueImpl::GetQueuePriority() const {
   return static_cast<TaskQueue::QueuePriority>(set_index);
 }
 
-void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
+void TaskQueueImpl::AsValueInto(base::TimeTicks now,
+                                base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
   base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   state->BeginDictionary();
@@ -533,16 +534,16 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->SetInteger("current_fence", main_thread_only().current_fence);
   if (verbose_tracing_enabled) {
     state->BeginArray("immediate_incoming_queue");
-    QueueAsValueInto(immediate_incoming_queue(), state);
+    QueueAsValueInto(immediate_incoming_queue(), now, state);
     state->EndArray();
     state->BeginArray("delayed_work_queue");
-    main_thread_only().delayed_work_queue->AsValueInto(state);
+    main_thread_only().delayed_work_queue->AsValueInto(now, state);
     state->EndArray();
     state->BeginArray("immediate_work_queue");
-    main_thread_only().immediate_work_queue->AsValueInto(state);
+    main_thread_only().immediate_work_queue->AsValueInto(now, state);
     state->EndArray();
     state->BeginArray("delayed_incoming_queue");
-    QueueAsValueInto(main_thread_only().delayed_incoming_queue, state);
+    QueueAsValueInto(main_thread_only().delayed_incoming_queue, now, state);
     state->EndArray();
   }
   state->SetString("priority", PriorityToString(GetQueuePriority()));
@@ -706,14 +707,16 @@ EnqueueOrder TaskQueueImpl::GetFenceForTest() const {
 
 // static
 void TaskQueueImpl::QueueAsValueInto(const WTF::Deque<Task>& queue,
+                                     base::TimeTicks now,
                                      base::trace_event::TracedValue* state) {
   for (const Task& task : queue) {
-    TaskAsValueInto(task, state);
+    TaskAsValueInto(task, now, state);
   }
 }
 
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
+                                     base::TimeTicks now,
                                      base::trace_event::TracedValue* state) {
   // Remove const to search |queue| in the destructive manner. Restore the
   // content from |visited| later.
@@ -721,7 +724,7 @@ void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
       const_cast<std::priority_queue<Task>*>(&queue);
   std::priority_queue<Task> visited;
   while (!mutable_queue->empty()) {
-    TaskAsValueInto(mutable_queue->top(), state);
+    TaskAsValueInto(mutable_queue->top(), now, state);
     visited.push(std::move(const_cast<Task&>(mutable_queue->top())));
     mutable_queue->pop();
   }
@@ -730,6 +733,7 @@ void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
 
 // static
 void TaskQueueImpl::TaskAsValueInto(const Task& task,
+                                    base::TimeTicks now,
                                     base::trace_event::TracedValue* state) {
   state->BeginDictionary();
   state->SetString("posted_from", task.posted_from.ToString());
@@ -745,7 +749,9 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
   state->SetBoolean("is_cancelled", task.task.IsCancelled());
   state->SetDouble(
       "delayed_run_time",
-      (task.delayed_run_time - base::TimeTicks()).InMicroseconds() / 1000.0L);
+      (task.delayed_run_time - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("delayed_run_time_milliseconds_from_now",
+                   (task.delayed_run_time - now).InMillisecondsF());
   state->EndDictionary();
 }
 

@@ -20,9 +20,10 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
       fence_(0),
       queue_type_(queue_type) {}
 
-void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
+void WorkQueue::AsValueInto(base::TimeTicks now,
+                            base::trace_event::TracedValue* state) const {
   for (const TaskQueueImpl::Task& task : work_queue_) {
-    TaskQueueImpl::TaskAsValueInto(task, state);
+    TaskQueueImpl::TaskAsValueInto(task, now, state);
   }
 }
 

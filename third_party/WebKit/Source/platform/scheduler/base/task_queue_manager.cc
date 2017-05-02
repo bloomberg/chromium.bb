@@ -636,9 +636,10 @@ TaskQueueManager::AsValueWithSelectorResult(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
+  base::TimeTicks now = real_time_domain()->CreateLazyNow().Now();
   state->BeginArray("queues");
   for (auto& queue : queues_)
-    queue->AsValueInto(state.get());
+    queue->AsValueInto(now, state.get());
   state->EndArray();
   state->BeginDictionary("selector");
   selector_.AsValueInto(state.get());
