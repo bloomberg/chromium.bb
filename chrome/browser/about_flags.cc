@@ -2773,6 +2773,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableHeapProfilingChoices)},
 
+#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+    {"show-cert-link", flag_descriptions::kShowCertLinkOnPageInfoName,
+     flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kShowCertLink)},
+#endif
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

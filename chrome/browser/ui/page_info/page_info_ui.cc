@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 
+#include <utility>
+
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -12,6 +15,7 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -22,6 +26,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#endif
 
 namespace {
 
@@ -447,4 +457,17 @@ const gfx::Image& PageInfoUI::GetConnectionIcon(
     PageInfo::SiteConnectionStatus status) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(GetConnectionIconID(status));
+}
+
+#if !defined(OS_ANDROID)
+// static
+const gfx::ImageSkia PageInfoUI::GetCertificateIcon() {
+  return gfx::CreateVectorIcon(kCertificateIcon, 16, gfx::kChromeIconGrey);
+}
+#endif
+
+// static
+bool PageInfoUI::ShouldShowCertificateLink() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowCertLink);
 }

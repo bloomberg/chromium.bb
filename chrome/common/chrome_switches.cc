@@ -755,6 +755,9 @@ const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
 
+// If true the Certificate link will be shown in Page Info for HTTPS pages.
+const char kShowCertLink[] = "show-cert-link";
+
 // Does not show an infobar when an extension attaches to a page using
 // chrome.debugger page. Required to attach to extension background pages.
 const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";

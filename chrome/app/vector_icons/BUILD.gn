@@ -25,6 +25,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "caret_down.icon",
     "caret_up.1x.icon",
     "caret_up.icon",
+    "certificate.icon",
     "close_all.icon",
     "code.icon",
     "cookie.icon",

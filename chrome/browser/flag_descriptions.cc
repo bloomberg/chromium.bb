@@ -1576,6 +1576,16 @@ const char kEnableAppcontainerDescription[] =
 
 #endif  // defined(OS_WIN)
 
+#if defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
+const char kShowCertLinkOnPageInfoName[] = "Show certificate link";
+
+const char kShowCertLinkOnPageInfoDescription[] =
+    "Add a link from the Page Info bubble to the certificate viewer for HTTPS "
+    "sites.";
+
+#endif  // defined(TOOLKIT_VIEWS) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 const char kAutofillCreditCardUploadName[] =
