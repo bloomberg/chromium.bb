@@ -7,6 +7,13 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "components/guest_view/browser/guest_view_base.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
+#include "extensions/features/features.h"
+#include "printing/features/features.h"
+
+#if !defined(OS_ANDROID)
 #include "chrome/browser/task_manager/providers/web_contents/background_contents_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/devtools_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/extension_tag.h"
@@ -15,11 +22,7 @@
 #include "chrome/browser/task_manager/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/tab_contents_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
-#include "components/guest_view/browser/guest_view_base.h"
-#include "content/public/browser/web_contents.h"
-#include "extensions/browser/view_type_utils.h"
-#include "extensions/features/features.h"
-#include "printing/features/features.h"
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_manager.h"
