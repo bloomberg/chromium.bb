@@ -371,7 +371,8 @@ static int32_t do_cubic_filter(int32_t *p, int x) {
     return p[1] * (1 << WARPEDPIXEL_FILTER_BITS);
   } else {
     const int64_t v1 = (int64_t)x * x * x * (3 * (p[0] - p[1]) + p[2] - p[-1]);
-    const int64_t v2 = x * x * (2 * p[-1] - 5 * p[0] + 4 * p[1] - p[2]);
+    const int64_t v2 =
+        (int64_t)x * x * (2 * p[-1] - 5 * p[0] + 4 * p[1] - p[2]);
     const int64_t v3 = x * (p[1] - p[-1]);
     const int64_t v4 = 2 * p[0];
     return (int32_t)ROUND_POWER_OF_TWO_SIGNED(
