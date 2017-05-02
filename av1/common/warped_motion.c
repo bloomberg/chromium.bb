@@ -1342,14 +1342,9 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     const int16_t gamma = wm->gamma;
     const int16_t delta = wm->delta;
 
-    if (p_width == 4)
-      av1_warp_affine_c(mat, ref, width, height, stride, pred, p_col, p_row,
-                        p_width, p_height, p_stride, subsampling_x,
-                        subsampling_y, ref_frm, alpha, beta, gamma, delta);
-    else
-      av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
-                      p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                      ref_frm, alpha, beta, gamma, delta);
+    av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
+                    p_width, p_height, p_stride, subsampling_x, subsampling_y,
+                    ref_frm, alpha, beta, gamma, delta);
   } else {
     warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                    p_height, p_stride, subsampling_x, subsampling_y, x_scale,
