@@ -106,7 +106,7 @@ RequestInit::RequestInit(ExecutionContext* context,
   v8::Isolate* isolate = ToIsolate(context);
 
   if (is_header_set) {
-    V8ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders::toImpl(
+    V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(
         isolate, v8_headers, headers, UnionTypeConversionMode::kNotNullable,
         exception_state);
     if (exception_state.HadException())

@@ -14,11 +14,10 @@
 
 namespace blink {
 
-class ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders;
+class ByteStringSequenceSequenceOrByteStringByteStringRecord;
 class ExceptionState;
 
-using HeadersInit =
-    ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders;
+using HeadersInit = ByteStringSequenceSequenceOrByteStringByteStringRecord;
 
 // http://fetch.spec.whatwg.org/#headers-class
 class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
