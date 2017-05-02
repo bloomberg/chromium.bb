@@ -16,8 +16,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
@@ -101,9 +101,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     /** The toolbar handle view that indicates the toolbar can be pulled upward. */
     private ImageView mToolbarHandleView;
-
-    /** Whether accessibility is enabled. */
-    private boolean mAccessibilityEnabled;
 
     /**
      * Constructs a BottomToolbarPhone object.
@@ -294,7 +291,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         // Don't use transparency for accessibility mode or low-end devices since the
         // {@link OverviewListLayout} will be used instead of the normal tab switcher.
-        if (!mAccessibilityEnabled && !SysUtils.isLowEndDevice()) {
+        if (!DeviceClassManager.enableAccessibilityLayout()) {
             float alphaTransition = 1f - TAB_SWITCHER_TOOLBAR_ALPHA;
             mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
         }
@@ -304,12 +301,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void finishAnimations() {
         super.finishAnimations();
         drawTabSwitcherFadeAnimation(true, mTabSwitcherModePercent);
-    }
-
-    @Override
-    protected void onAccessibilityStatusChanged(boolean enabled) {
-        super.onAccessibilityStatusChanged(enabled);
-        mAccessibilityEnabled = enabled;
     }
 
     @Override

@@ -546,20 +546,12 @@ public class LayoutManagerChrome
     }
 
     /**
-     * @return Whether or not to use the accessibility layout.
-     */
-    protected boolean useAccessibilityLayout() {
-        return AccessibilityUtil.isAccessibilityEnabled()
-                || DeviceClassManager.enableAccessibilityLayout();
-    }
-
-    /**
      * Show the overview {@link Layout}.  This is generally a {@link Layout} that visibly represents
      * all of the {@link Tab}s opened by the user.
      * @param animate Whether or not to animate the transition to overview mode.
      */
     public void showOverview(boolean animate) {
-        boolean useAccessibility = useAccessibilityLayout();
+        boolean useAccessibility = DeviceClassManager.enableAccessibilityLayout();
 
         boolean accessibilityIsVisible =
                 useAccessibility && getActiveLayout() == mOverviewListLayout;
