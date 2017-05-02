@@ -862,9 +862,10 @@ static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           int mi_col_start, int mi_col_end) {
   const int width = mi_col_end - mi_col_start;
+  const int aligned_width = ALIGN_POWER_OF_TWO(width, cm->mib_size_log2);
 
   const int offset_y = 2 * mi_col_start;
-  const int width_y = 2 * width;
+  const int width_y = 2 * aligned_width;
   const int offset_uv = offset_y >> cm->subsampling_x;
   const int width_uv = width_y >> cm->subsampling_x;
 
@@ -872,10 +873,10 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
   av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
 
-  av1_zero_array(cm->above_seg_context + mi_col_start, width);
+  av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
 
 #if CONFIG_VAR_TX
-  av1_zero_array(cm->above_txfm_context + mi_col_start, width);
+  av1_zero_array(cm->above_txfm_context + mi_col_start, aligned_width);
 #endif  // CONFIG_VAR_TX
 }
 
