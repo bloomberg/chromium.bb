@@ -13,6 +13,7 @@ import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom";
 import "url/mojo/origin.mojom";
+import "url/mojo/url.mojom";
 
 [Native]
 struct PlatformNotificationData;
@@ -78,6 +79,10 @@ interface ServiceWorkerFetchResponseCallback {
 // 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback can be used
 // to create the callback for these.
 interface ServiceWorkerEventDispatcher {
+  DispatchInstallEvent(associated ServiceWorkerInstallEventMethods method)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          bool has_fetch_handler,
+          mojo.common.mojom.Time dispatch_event_time);
   DispatchActivateEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
@@ -140,4 +145,12 @@ interface ServiceWorkerEventDispatcher {
   // worker. Unlike the other functions in this interface, Ping() does not
   // dispatch an event.
   Ping() => ();
+};
+
+// This interface is passed from the browser to the renderer with
+// DispatchInstallEvent. The ordering between RegisterForeignFetchScopes and the
+// callback of DispatchInstallEvent should be preserved.
+interface ServiceWorkerInstallEventMethods {
+  RegisterForeignFetchScopes(array<url.mojom.Url> sub_scopes,
+                             array<url.mojom.Origin> origins);
 };

@@ -264,6 +264,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                      bool was_handled,
                      base::Time dispatch_event_time);
 
+  void RegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes,
+                                  const std::vector<url::Origin>& origins);
+
   // Finishes an external request that was started by StartExternalRequest().
   // Returns false if there was an error finishing the request: e.g. the request
   // was not found or the worker already terminated.
@@ -280,15 +283,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     DCHECK(event_dispatcher_.is_bound());
     return event_dispatcher_.get();
   }
-
-  // Dispatches an event. If dispatching the event fails, all of the error
-  // callbacks that were associated with |request_ids| via StartRequest are
-  // called.
-  // Use RegisterRequestCallback to register a callback to receive messages sent
-  // back in response to this event before calling this method. This must be
-  // called when the worker is running.
-  void DispatchEvent(const std::vector<int>& request_ids,
-                     const IPC::Message& message);
 
   // This method registers a callback to receive messages sent back from the
   // service worker in response to |request_id|.
@@ -409,6 +403,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
+  friend class ServiceWorkerJobTest;
   friend class ServiceWorkerMetrics;
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerStallInStoppingTest;
@@ -420,6 +415,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            ActivateWaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            FallbackWithNoFetchHandler);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Register);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, IdleTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_FreshWorker);
@@ -615,9 +611,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnFocusClientFinished(int request_id,
                              const ServiceWorkerClientInfo& client_info);
-
-  void OnRegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes,
-                                    const std::vector<url::Origin>& origins);
 
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,

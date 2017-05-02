@@ -240,9 +240,10 @@ void ServiceWorkerGlobalScopeClientImpl::Navigate(
 }
 
 void ServiceWorkerGlobalScopeClientImpl::RegisterForeignFetchScopes(
+    int install_event_id,
     const WebVector<WebURL>& sub_scopes,
     const WebVector<WebSecurityOrigin>& origins) {
-  client_.RegisterForeignFetchScopes(sub_scopes, origins);
+  client_.RegisterForeignFetchScopes(install_event_id, sub_scopes, origins);
 }
 
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(

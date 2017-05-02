@@ -126,7 +126,8 @@ class ServiceWorkerGlobalScopeClientImpl final
   void Navigate(const WebString& client_uuid,
                 const WebURL&,
                 std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
-  void RegisterForeignFetchScopes(const WebVector<WebURL>& sub_scopes,
+  void RegisterForeignFetchScopes(int install_event_id,
+                                  const WebVector<WebURL>& sub_scopes,
                                   const WebVector<WebSecurityOrigin>&) override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

@@ -315,6 +315,7 @@ class WebServiceWorkerContextClient {
   // Called when the worker wants to register subscopes to handle via foreign
   // fetch. Will only be called while an install event is in progress.
   virtual void RegisterForeignFetchScopes(
+      int install_event_id,
       const WebVector<WebURL>& sub_scopes,
       const WebVector<WebSecurityOrigin>& origins) = 0;
 };

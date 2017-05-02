@@ -249,11 +249,11 @@ void ToWebServiceWorkerResponse(const ServiceWorkerResponse& response,
 
 // Use this template in willDestroyWorkerContext to abort all the pending
 // events callbacks.
-template <typename T>
-void AbortPendingEventCallbacks(T& callbacks) {
+template <typename T, class... TArgs>
+void AbortPendingEventCallbacks(T& callbacks, TArgs... args) {
   for (typename T::iterator it(&callbacks); !it.IsAtEnd(); it.Advance()) {
     std::move(*it.GetCurrentValue())
-        .Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+        .Run(SERVICE_WORKER_ERROR_ABORT, args..., base::Time::Now());
   }
 }
 
@@ -278,6 +278,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<std::unique_ptr<blink::WebServiceWorkerClientCallbacks>>;
   using SkipWaitingCallbacksMap =
       IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
+  using InstallEventCallbacksMap =
+      IDMap<std::unique_ptr<DispatchInstallEventCallback>>;
   using ActivateEventCallbacksMap =
       IDMap<std::unique_ptr<DispatchActivateEventCallback>>;
   using BackgroundFetchAbortEventCallbacksMap =
@@ -299,6 +301,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<std::unique_ptr<DispatchExtendableMessageEventCallback>>;
   using NavigationPreloadRequestsMap = IDMap<
       std::unique_ptr<ServiceWorkerContextClient::NavigationPreloadRequest>>;
+  using InstallEventMethodsMap =
+      std::map<int, mojom::ServiceWorkerInstallEventMethodsAssociatedPtr>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
       : event_dispatcher_binding(owner),
@@ -322,6 +326,9 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for ClaimClients().
   ClaimClientsCallbacksMap claim_clients_callbacks;
+
+  // Pending callbacks for Install Events.
+  InstallEventCallbacksMap install_event_callbacks;
 
   // Pending callbacks for Activate Events.
   ActivateEventCallbacksMap activate_event_callbacks;
@@ -372,6 +379,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending navigation preload requests.
   NavigationPreloadRequestsMap preload_requests;
+
+  // Maps every install event id with its corresponding
+  // mojom::ServiceWorkerInstallEventMethodsAssociatedPt.
+  InstallEventMethodsMap install_methods_map;
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
@@ -573,7 +584,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
   CHECK_EQ(embedded_worker_id_, embedded_worker_id);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerContextClient, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -736,6 +746,8 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
   proxy_ = NULL;
 
   // Aborts all the pending events callbacks.
+  AbortPendingEventCallbacks(context_->install_event_callbacks,
+                             false /* has_fetch_handler */);
   AbortPendingEventCallbacks(context_->activate_event_callbacks);
   AbortPendingEventCallbacks(context_->background_fetch_abort_event_callbacks);
   AbortPendingEventCallbacks(context_->background_fetch_click_event_callbacks);
@@ -908,12 +920,18 @@ void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
 }
 
 void ServiceWorkerContextClient::DidHandleInstallEvent(
-    int request_id,
+    int event_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  Send(new ServiceWorkerHostMsg_InstallEventFinished(
-      GetRoutingID(), request_id, result, proxy_->HasFetchEventHandler(),
-      base::Time::FromDoubleT(event_dispatch_time)));
+  DispatchInstallEventCallback* callback =
+      context_->install_event_callbacks.Lookup(event_id);
+  DCHECK(callback);
+  DCHECK(*callback);
+  std::move(*callback).Run(EventResultToStatus(result),
+                           proxy_->HasFetchEventHandler(),
+                           base::Time::FromDoubleT(event_dispatch_time));
+  context_->install_event_callbacks.Remove(event_id);
+  context_->install_methods_map.erase(event_id);
 }
 
 void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
@@ -1153,11 +1171,13 @@ void ServiceWorkerContextClient::Claim(
 }
 
 void ServiceWorkerContextClient::RegisterForeignFetchScopes(
+    int install_event_id,
     const blink::WebVector<blink::WebURL>& sub_scopes,
     const blink::WebVector<blink::WebSecurityOrigin>& origins) {
-  Send(new ServiceWorkerHostMsg_RegisterForeignFetchScopes(
-      GetRoutingID(), std::vector<GURL>(sub_scopes.begin(), sub_scopes.end()),
-      std::vector<url::Origin>(origins.begin(), origins.end())));
+  DCHECK(context_->install_methods_map[install_event_id].is_bound());
+  context_->install_methods_map[install_event_id]->RegisterForeignFetchScopes(
+      std::vector<GURL>(sub_scopes.begin(), sub_scopes.end()),
+      std::vector<url::Origin>(origins.begin(), origins.end()));
 }
 
 void ServiceWorkerContextClient::DispatchSyncEvent(
@@ -1309,6 +1329,23 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchedEvent(
       request_id, blink::WebString::FromUTF8(tag), web_fetches);
 }
 
+void ServiceWorkerContextClient::DispatchInstallEvent(
+    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+    DispatchInstallEventCallback callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchInstallEvent");
+
+  int event_id = context_->install_event_callbacks.Add(
+      base::MakeUnique<DispatchInstallEventCallback>(std::move(callback)));
+
+  DCHECK(!context_->install_methods_map.count(event_id));
+  mojom::ServiceWorkerInstallEventMethodsAssociatedPtr install_methods;
+  install_methods.Bind(std::move(client));
+  context_->install_methods_map[event_id] = std::move(install_methods);
+
+  proxy_->DispatchInstallEvent(event_id);
+}
+
 void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     mojom::ExtendableMessageEventPtr event,
     DispatchExtendableMessageEventCallback callback) {
@@ -1343,12 +1380,6 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       request_id, blink::WebString::FromUTF16(event->message),
       event->source_origin, std::move(ports),
       WebServiceWorkerImpl::CreateHandle(worker));
-}
-
-void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnInstallEvent");
-  proxy_->DispatchInstallEvent(request_id);
 }
 
 void ServiceWorkerContextClient::DispatchFetchEvent(

@@ -145,6 +145,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
                         const WebURL&,
                         std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
   virtual void RegisterForeignFetchScopes(
+      int install_event_id,
       const WebVector<WebURL>& sub_scopes,
       const WebVector<WebSecurityOrigin>&) = 0;
 

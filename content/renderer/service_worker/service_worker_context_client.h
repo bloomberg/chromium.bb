@@ -157,7 +157,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       int request_id,
       blink::WebServiceWorkerEventResult result,
       double dispatch_event_time) override;
-  void DidHandleInstallEvent(int request_id,
+  void DidHandleInstallEvent(int event_id,
                              blink::WebServiceWorkerEventResult result,
                              double event_dispatch_time) override;
   void RespondToFetchEventWithNoResponse(int fetch_event_id,
@@ -217,6 +217,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void Claim(std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>
                  callbacks) override;
   void RegisterForeignFetchScopes(
+      int install_event_id,
       const blink::WebVector<blink::WebURL>& sub_scopes,
       const blink::WebVector<blink::WebSecurityOrigin>& origins) override;
 
@@ -235,6 +236,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const ServiceWorkerVersionAttributes& attrs);
 
   // mojom::ServiceWorkerEventDispatcher
+  void DispatchInstallEvent(
+      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+      DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
       const std::string& tag,
@@ -283,7 +287,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       DispatchPaymentRequestEventCallback callback) override;
   void Ping(PingCallback callback) override;
 
-  void OnInstallEvent(int request_id);
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,

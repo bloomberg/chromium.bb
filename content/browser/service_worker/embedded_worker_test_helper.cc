@@ -27,6 +27,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
@@ -154,6 +155,14 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
       : helper_(helper), thread_id_(thread_id) {}
 
   ~MockServiceWorkerEventDispatcher() override {}
+
+  void DispatchInstallEvent(
+      mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+      DispatchInstallEventCallback callback) override {
+    if (!helper_)
+      return;
+    helper_->OnInstallEventStub(std::move(client), std::move(callback));
+  }
 
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override {
     if (!helper_)
@@ -413,20 +422,6 @@ void EmbeddedWorkerTestHelper::OnStopWorker(int embedded_worker_id) {
   SimulateWorkerStopped(embedded_worker_id);
 }
 
-bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
-                                                 int embedded_worker_id,
-                                                 const IPC::Message& message) {
-  bool handled = true;
-  current_embedded_worker_id_ = embedded_worker_id;
-  IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  // Record all messages directed to inner script context.
-  inner_sink_.OnMessageReceived(message);
-  return handled;
-}
-
 void EmbeddedWorkerTestHelper::OnActivateEvent(
     mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
         callback) {
@@ -472,14 +467,13 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
   std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
-void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
-                                              int request_id) {
-  // The installing worker may have been doomed and terminated.
-  if (!registry()->GetWorker(embedded_worker_id))
-    return;
-  SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
-      embedded_worker_id, request_id,
-      blink::kWebServiceWorkerEventResultCompleted, true, base::Time::Now()));
+void EmbeddedWorkerTestHelper::OnInstallEvent(
+    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+    mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
+        callback) {
+  dispatched_events()->push_back(Event::Install);
+  std::move(callback).Run(SERVICE_WORKER_OK, true /* has_fetch_handler */,
+                          base::Time::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -667,11 +661,6 @@ void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   EXPECT_EQ(worker->thread_id(), thread_id);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&EmbeddedWorkerTestHelper::OnMessageToWorker),
-          AsWeakPtr(), thread_id, embedded_worker_id, message));
 }
 
 void EmbeddedWorkerTestHelper::OnActivateEventStub(
@@ -735,11 +724,14 @@ void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
                  AsWeakPtr(), base::Passed(&event), base::Passed(&callback)));
 }
 
-void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
+void EmbeddedWorkerTestHelper::OnInstallEventStub(
+    mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
+    mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
+        callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent, AsWeakPtr(),
-                 current_embedded_worker_id_, request_id));
+                 base::Passed(&client), base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
