@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageView;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
 
 /**
@@ -145,9 +145,11 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    /** Adds a View to the layout within the scrollable area. */
-    void addControl(View control) {
+    /** Adds a standardized set of controls to the layout. */
+    InfoBarControlLayout addControlLayout() {
+        InfoBarControlLayout layout = new InfoBarControlLayout(getContext());
         mScrollableContent.addView(
-                control, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+                layout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        return layout;
     }
 }
