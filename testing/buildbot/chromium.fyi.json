@@ -12941,6 +12941,11 @@
         "name": "webkit_layout_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-10240"
+            }
+          ],
           "shards": 1
         }
       }
