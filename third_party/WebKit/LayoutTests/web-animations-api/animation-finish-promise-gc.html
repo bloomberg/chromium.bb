@@ -3,13 +3,9 @@
 <title>Garbage collect an animation with a finish promise</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/gc.js"></script>
 <body>
 <script>
-function gc()
-{
-  return GCController.collectAll();
-}
-
 async_test(t => {
   assert_exists(window, "GCController", "gc controller needed");
   setInterval(gc, 0);

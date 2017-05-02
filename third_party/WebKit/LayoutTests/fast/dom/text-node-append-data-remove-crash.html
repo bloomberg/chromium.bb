@@ -1,5 +1,6 @@
 <html>
 <body onload="runTest()">
+<script src="../../resources/gc.js"></script>
 <script>
 var count = 0;
 if (window.testRunner)
@@ -33,15 +34,6 @@ function eventListener()
   } catch(e) { }
 }
 
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("");
-    }
-}
 </script>
 <div id="divBlock">
 <br/>textnode1<p id="pBlock"></p>textnode2<br/>

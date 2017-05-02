@@ -2,21 +2,11 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/gc.js"></script>
 </head>
 <body>
 <script>
 description("This tests that custom properties on element.dataset persist GC.");
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) {
-        var s = new String("");
-    }
-}
-
 
 var d = document.createElement("div");
 

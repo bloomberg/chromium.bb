@@ -3,21 +3,12 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/gc.js"></script>
 <script src="resources/mediasessionservice-mock.js"></script>
 <script src="resources/utils.js"></script>
 <script>
 
 var mock;
-
-function gc() {
-  if (window.GCController) {
-    GCController.collect();
-  } else {
-    for (var i = 0; i < 10000; ++i) {
-      ({ });
-    }
-  }
-}
 
 async_test(function(t) {
   mediaSessionServiceMock.then(m => {

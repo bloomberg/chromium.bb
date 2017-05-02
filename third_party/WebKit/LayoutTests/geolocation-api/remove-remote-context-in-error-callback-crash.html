@@ -3,21 +3,12 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
+<script src="../resources/gc.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
 <script>
 description("Tests that we do not crash when a Geolocation request is made from a remote frame, which is then removed from the DOM in the error callback.");
-
-function gc() {
-    if (window.GCController) {
-        GCController.collect();
-        return;
-    }
-
-    for (var i = 0; i < 10000; i++)
-        new String(i);
-}
 
 function onIframeReady() {
     // Make request from remote frame

@@ -8,7 +8,7 @@ PASS: You didn't crash.
 </pre>
 
 <a id="a"></a>
-
+<script src="../../resources/gc.js"></script>
 <script>
 function log(s)
 {
@@ -31,15 +31,6 @@ function FailureObject()
 FailureObject.prototype.toString = function()
 {
     return "FAIL"; // A marker to indicate that an object was collected and then overwritten by a FailureObject.
-}
-
-function gc()
-{
-    if (window.GCController)
-        GCController.collect();
-    else
-        for (var i = 0; i < 10000; ++i) // Allocate a sufficient number of objects to force a GC.
-            new FailureObject;
 }
 
 function gc1()

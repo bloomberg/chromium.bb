@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/gc.js"></script>
 <script src="resources/worker-create-common.js"></script>
 <script>
 description("Test GCing of WorkerGlobalScope supplementable");
@@ -7,15 +8,6 @@ window.jsTestIsAsync = true;
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-}
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
 }
 
 // Test that garbage collection of 'supplements' that extend the

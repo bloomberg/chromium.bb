@@ -1,5 +1,6 @@
 <html>
 <head>
+<script src="../../../resources/gc.js"></script>
 <script>
 if (window.testRunner)
 {
@@ -12,7 +13,6 @@ function runTest()
     style = document.createElement('style');
     style.textContent = 'body { color: red }';
     document.head.appendChild(style);
-  
     ruleList = getMatchedCSSRules(document.body);
   
     document.styleSheets[0].deleteRule(0);
@@ -26,15 +26,6 @@ function runTest()
         testRunner.notifyDone();
 }
 
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
-}
 </script>
 </head>
 <body onload="runTest()">

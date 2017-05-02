@@ -4,23 +4,11 @@
         <title>Test that the callback is not garbage collected if registered.</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
+        <script src="../../resources/gc.js"></script>
         <script src="../media-file.js"></script>
     </head>
     <body>
         <script>
-            // WPT: this test can't be moved to WPT because of its usage of:
-            // - GCController.collect()
-
-            function gc() {
-                if (window.GCController)
-                    GCController.collect();
-                else {
-                    for (var i = 0; i < 10000; ++i) {
-                        ({ });
-                    }
-                }
-            }
-
             async_test(function(t)
             {
                 var v = document.createElement('video');

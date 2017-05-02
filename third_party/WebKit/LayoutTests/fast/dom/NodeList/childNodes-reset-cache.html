@@ -1,5 +1,6 @@
 <html>
 <body>
+<script src="../../../resources/gc.js"></script>
 <p>Test for <a href="http://bugs.webkit.org/show_bug.cgi?id=13514">bug 13514</a>:
 REGRESSION (r20997-21003): Crash in WebCore::Node::Document.</p>
 <div id="elem"><p></p></div>
@@ -7,16 +8,6 @@ REGRESSION (r20997-21003): Crash in WebCore::Node::Document.</p>
 <script>
 if (window.testRunner)
   testRunner.dumpAsText();
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("");
-    }
-}
 
 elem = document.getElementById('elem');
 

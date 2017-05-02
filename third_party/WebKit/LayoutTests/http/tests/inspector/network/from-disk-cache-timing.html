@@ -3,6 +3,7 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script src="../debugger-test.js"></script>
+<script src="../../../../resources/gc.js"></script>
 <script>
 
 var scriptElement;
@@ -16,13 +17,6 @@ function loadScript()
 function unloadScript()
 {
     scriptElement.parentElement.removeChild(scriptElement);
-}
-
-function gc()
-{
-    // In Oilpan, Resource objects are not destructed until GC.
-    if (window.GCController)
-        GCController.collectAll();
 }
 
 function test()
