@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeBackupAgent;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
@@ -29,9 +30,11 @@ import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
+import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
@@ -201,8 +204,40 @@ public class ProcessInitializationHandler {
     protected void handleDeferredStartupTasksInitialization() {
         final ChromeApplication application =
                 (ChromeApplication) ContextUtils.getApplicationContext();
+        DeferredStartupHandler deferredStartupHandler = DeferredStartupHandler.getInstance();
 
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                // Start or stop Physical Web
+                PhysicalWeb.onChromeStart();
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                LocaleManager.getInstance().recordStartupMetrics();
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                // Starts syncing with GSA.
+                AppHooks.get().createGsaHelper().startSync();
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
+                // Record the saved restore state in a histogram
+                ChromeBackupAgent.recordRestoreHistogram();
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 ForcedSigninProcessor.start(application, null);
@@ -221,7 +256,7 @@ public class ProcessInitializationHandler {
             }
         });
 
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+        deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 GoogleServicesManager.get(application).onMainActivityStart();
@@ -229,7 +264,7 @@ public class ProcessInitializationHandler {
             }
         });
 
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+        deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
@@ -238,7 +273,7 @@ public class ProcessInitializationHandler {
             }
         });
 
-        DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
+        deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 // Add process check to diagnose http://crbug.com/606309. Remove this after the bug
