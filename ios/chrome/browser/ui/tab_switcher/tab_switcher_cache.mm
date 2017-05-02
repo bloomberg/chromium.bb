@@ -6,9 +6,7 @@
 
 #include <unordered_map>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -16,6 +14,10 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix.h"
 #include "ios/web/public/navigation_item.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The maximum amount of pixels the cache should hold.
@@ -34,11 +36,11 @@ const CGFloat kMaxFloatDelta = 0.01;
 @end
 
 @implementation TabSwitcherCache {
-  base::scoped_nsobject<NSCache> _cache;
+  NSCache* _cache;
   dispatch_queue_t _cacheQueue;
   // The tab models.
-  TabModel* _mainTabModel;  // weak
-  TabModel* _otrTabModel;   // weak
+  __weak TabModel* _mainTabModel;
+  __weak TabModel* _otrTabModel;
 
   // Lock protecting the pending requests map.
   base::Lock _lock;
@@ -50,7 +52,7 @@ const CGFloat kMaxFloatDelta = 0.01;
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _cache.reset([[NSCache alloc] init]);
+    _cache = [[NSCache alloc] init];
     [_cache setTotalCostLimit:kCacheMaxPixelCount];
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self
@@ -71,10 +73,8 @@ const CGFloat kMaxFloatDelta = 0.01;
   [nc removeObserver:self
                 name:UIApplicationDidReceiveMemoryWarningNotification
               object:nil];
-  dispatch_release(_cacheQueue);
   [_mainTabModel removeObserver:self];
   [_otrTabModel removeObserver:self];
-  [super dealloc];
 }
 
 - (PendingSnapshotRequest)requestSnapshotForTab:(Tab*)tab
@@ -231,28 +231,39 @@ const CGFloat kMaxFloatDelta = 0.01;
   UIImage* resizedSnapshot =
       ResizeImage(image, pixelSize, ProjectionMode::kAspectFillNoClipping, YES);
   // Creates a new image with the correct |scale| attribute.
-  return [[[UIImage alloc] initWithCGImage:resizedSnapshot.CGImage
-                                     scale:screenScale
-                               orientation:UIImageOrientationUp] autorelease];
+  return [[UIImage alloc] initWithCGImage:resizedSnapshot.CGImage
+                                    scale:screenScale
+                              orientation:UIImageOrientationUp];
 }
 
 - (void)lowMemoryWarningReceived {
   [_cache removeAllObjects];
 }
 
-- (void)setMainTabModel:(TabModel*)mainTabModel
-            otrTabModel:(TabModel*)otrTabModel {
-  if (mainTabModel != _mainTabModel)
-    [self replaceOldTabModel:&_mainTabModel withTabModel:mainTabModel];
-  if (otrTabModel != _otrTabModel)
-    [self replaceOldTabModel:&_otrTabModel withTabModel:otrTabModel];
+- (void)setMainTabModel:(TabModel*)mainTabModel {
+  if (mainTabModel == _mainTabModel) {
+    return;
+  }
+
+  [_mainTabModel removeObserver:self];
+  _mainTabModel = mainTabModel;
+  [_mainTabModel addObserver:self];
 }
 
-- (void)replaceOldTabModel:(TabModel**)oldTabModel
-              withTabModel:(TabModel*)newTabModel {
-  [*oldTabModel removeObserver:self];
-  *oldTabModel = newTabModel;
-  [newTabModel addObserver:self];
+- (void)setOTRTabModel:(TabModel*)otrTabModel {
+  if (_otrTabModel == otrTabModel) {
+    return;
+  }
+
+  [_otrTabModel removeObserver:self];
+  _otrTabModel = otrTabModel;
+  [_otrTabModel addObserver:self];
+}
+
+- (void)setMainTabModel:(TabModel*)mainTabModel
+            otrTabModel:(TabModel*)otrTabModel {
+  [self setMainTabModel:mainTabModel];
+  [self setOTRTabModel:otrTabModel];
 }
 
 #pragma mark - TabModelObserver

@@ -4,11 +4,14 @@
 
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_button.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface TabSwitcherButton () {
-  base::scoped_nsobject<MDCInkTouchController> _inkTouchController;
+  MDCInkTouchController* _inkTouchController;
 }
 @end
 
@@ -17,8 +20,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _inkTouchController.reset(
-        [[MDCInkTouchController alloc] initWithView:self]);
+    _inkTouchController = [[MDCInkTouchController alloc] initWithView:self];
     [_inkTouchController addInkView];
     // TODO(crbug.com/606807): Adjust the desired ink color.
     [_inkTouchController defaultInkView].inkColor =

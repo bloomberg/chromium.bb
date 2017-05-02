@@ -23,6 +23,10 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model_private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 bool TabSwitcherSessionTypeIsLocalSession(TabSwitcherSessionType sessionType) {
   return sessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION ||
          sessionType == TabSwitcherSessionType::REGULAR_SESSION;
@@ -54,10 +58,10 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
   // The browser state.
   ios::ChromeBrowserState* _browserState;  // weak
   // The tab models.
-  TabModel* _mainTabModel;  // weak
-  TabModel* _otrTabModel;   // weak
+  __weak TabModel* _mainTabModel;
+  __weak TabModel* _otrTabModel;
   // The delegate for event callbacks.
-  id<TabSwitcherModelDelegate> _delegate;  // weak, owns us.
+  __weak id<TabSwitcherModelDelegate> _delegate;
   // The synced sessions. Must never be null.
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
   // The synced sessions change observer.
@@ -67,7 +71,7 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
   std::unique_ptr<TabModelSnapshot> _mainTabModelSnapshot;
   std::unique_ptr<TabModelSnapshot> _otrTabModelSnapshot;
   // The cache holding resized tabs snapshots.
-  base::scoped_nsobject<TabSwitcherCache> _cache;
+  TabSwitcherCache* _cache;
 }
 
 // Returns the type of the local session corresponding to the given |tabModel|.
@@ -101,23 +105,36 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
     _otrTabModelSnapshot.reset(new TabModelSnapshot(otrTabModel));
     [_mainTabModel addObserver:self];
     [_otrTabModel addObserver:self];
-    _cache.reset([cache retain]);
+    _cache = cache;
   }
   return self;
 }
 
 - (void)setMainTabModel:(TabModel*)mainTabModel
             otrTabModel:(TabModel*)otrTabModel {
-  [self replaceOldTabModel:&_mainTabModel withTabModel:mainTabModel];
-  [self replaceOldTabModel:&_otrTabModel withTabModel:otrTabModel];
+  [self replaceMainTabModelWithTabModel:mainTabModel];
+  [self replaceOTRTabModelWithTabModel:otrTabModel];
 }
 
-- (void)replaceOldTabModel:(TabModel**)oldTabModel
-              withTabModel:(TabModel*)newTabModel {
-  if (*oldTabModel == newTabModel)
+- (void)replaceMainTabModelWithTabModel:(TabModel*)newTabModel {
+  if (_mainTabModel == newTabModel)
     return;
-  [*oldTabModel removeObserver:self];
-  *oldTabModel = newTabModel;
+  [_mainTabModel removeObserver:self];
+  _mainTabModel = newTabModel;
+  [newTabModel addObserver:self];
+  // Calling |tabModelChanged:| may trigger an animated refresh of the
+  // Tab Switcher's collection view.
+  // Here in |replaceOldTabModel:withTabModel:| the animation is undesirable.
+  [UIView performWithoutAnimation:^{
+    [self tabModelChanged:newTabModel];
+  }];
+}
+
+- (void)replaceOTRTabModelWithTabModel:(TabModel*)newTabModel {
+  if (_otrTabModel == newTabModel)
+    return;
+  [_otrTabModel removeObserver:self];
+  _otrTabModel = newTabModel;
   [newTabModel addObserver:self];
   // Calling |tabModelChanged:| may trigger an animated refresh of the
   // Tab Switcher's collection view.
@@ -130,7 +147,6 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 - (void)dealloc {
   [_mainTabModel removeObserver:self];
   [_otrTabModel removeObserver:self];
-  [super dealloc];
 }
 
 - (NSInteger)sessionCount {

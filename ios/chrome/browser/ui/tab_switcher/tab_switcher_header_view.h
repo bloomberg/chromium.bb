@@ -31,9 +31,9 @@
 
 @interface TabSwitcherHeaderView : UIView
 
-@property(nonatomic, assign) id<TabSwitcherHeaderViewDelegate> delegate;
-@property(nonatomic, assign) id<TabSwitcherHeaderViewDataSource> dataSource;
-@property(nonatomic, readonly) UIView* dismissButton;
+@property(nonatomic, weak) id<TabSwitcherHeaderViewDelegate> delegate;
+@property(nonatomic, weak) id<TabSwitcherHeaderViewDataSource> dataSource;
+@property(weak, nonatomic, readonly) UIView* dismissButton;
 
 // Selects the item at the specified index.
 // The delegate is not called.

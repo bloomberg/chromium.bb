@@ -50,8 +50,9 @@ class ChromeBrowserState;
 
 @interface TabSwitcherPanelController : NSObject
 
-@property(nonatomic, readonly) TabSwitcherPanelView* view;
-@property(nonatomic, assign) id<TabSwitcherPanelControllerDelegate> delegate;
+@property(unsafe_unretained, nonatomic, readonly) TabSwitcherPanelView* view;
+@property(nonatomic, unsafe_unretained) id<TabSwitcherPanelControllerDelegate>
+    delegate;
 @property(nonatomic, readonly) TabSwitcherSessionType sessionType;
 
 // Initializes a controller for a view showing local tabs. |offTheRecord|

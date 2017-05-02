@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_cell.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_session_cell_data.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // View alpha value used when the header cell is not selected.
@@ -18,8 +21,8 @@ const CGFloat kImageViewWidth = 24;
 }
 
 @interface TabSwitcherHeaderCell () {
-  base::scoped_nsobject<UIImageView> _imageView;
-  base::scoped_nsobject<UILabel> _label;
+  UIImageView* _imageView;
+  UILabel* _label;
 }
 @end
 
@@ -59,11 +62,11 @@ const CGFloat kImageViewWidth = 24;
 #pragma mark - Private
 
 - (void)loadSubviews {
-  _imageView.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+  _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
   [_imageView setContentMode:UIViewContentModeCenter];
   [_imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_imageView setTintColor:[UIColor whiteColor]];
-  _label.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  _label = [[UILabel alloc] initWithFrame:CGRectZero];
   [_label setBackgroundColor:[UIColor clearColor]];
   [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_label setTextColor:[UIColor whiteColor]];
@@ -72,8 +75,8 @@ const CGFloat kImageViewWidth = 24;
   // Configure layout.
   // The icon and the title are centered within |contentView|, have a spacing of
   // one-third of icon width and the icon is on the leading side of title.
-  base::scoped_nsobject<UIStackView> stackView(
-      [[UIStackView alloc] initWithArrangedSubviews:@[ _imageView, _label ]]);
+  UIStackView* stackView =
+      [[UIStackView alloc] initWithArrangedSubviews:@[ _imageView, _label ]];
   [stackView setSpacing:kImageViewWidth / 3];
   [self.contentView addSubview:stackView];
 

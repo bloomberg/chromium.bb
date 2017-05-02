@@ -8,10 +8,12 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Returns the animation drag coefficient set by the iPhone simulator.
 // This is useful when debugging with the simulator because when
@@ -106,16 +108,15 @@ const CGFloat kTabFoldAnimationDuration = 0.15;
   _animatingFold = YES;
   [self setUserInteractionEnabled:NO];
   [CATransaction begin];
-  base::WeakNSObject<TabSwitcherTabStripPlaceholderView> weakSelf(self);
+  __weak TabSwitcherTabStripPlaceholderView* weakSelf = self;
   [CATransaction setCompletionBlock:^{
-    base::scoped_nsobject<TabSwitcherTabStripPlaceholderView> strongSelf(
-        [weakSelf retain]);
+    TabSwitcherTabStripPlaceholderView* strongSelf = weakSelf;
     if (!strongSelf) {
       if (completion)
         completion();
       return;
     }
-    strongSelf.get()->_animatingFold = NO;
+    strongSelf->_animatingFold = NO;
     [strongSelf setUserInteractionEnabled:YES];
     if (completion)
       completion();

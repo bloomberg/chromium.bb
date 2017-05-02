@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_view.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_collection_view_layout.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface TabSwitcherPanelView () {
-  base::scoped_nsobject<UICollectionView> _collectionView;
-  base::scoped_nsobject<TabSwitcherPanelCollectionViewLayout>
-      _collectionViewLayout;
+  UICollectionView* _collectionView;
+  TabSwitcherPanelCollectionViewLayout* _collectionViewLayout;
   TabSwitcherSessionType _sessionType;
 }
 
@@ -57,11 +59,10 @@
 #pragma mark - Private
 
 - (void)loadSubviews {
-  _collectionViewLayout.reset(
-      [[TabSwitcherPanelCollectionViewLayout alloc] init]);
-  _collectionView.reset([[UICollectionView alloc]
-             initWithFrame:self.bounds
-      collectionViewLayout:_collectionViewLayout.get()]);
+  _collectionViewLayout = [[TabSwitcherPanelCollectionViewLayout alloc] init];
+  _collectionView =
+      [[UICollectionView alloc] initWithFrame:self.bounds
+                         collectionViewLayout:_collectionViewLayout];
   if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     [_collectionView registerClass:[TabSwitcherDistantSessionCell class]
         forCellWithReuseIdentifier:[TabSwitcherDistantSessionCell identifier]];

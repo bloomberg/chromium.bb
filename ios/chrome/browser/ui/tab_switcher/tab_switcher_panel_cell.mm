@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/fade_truncated_label.h"
 #import "ios/chrome/browser/ui/image_util.h"
@@ -20,6 +19,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace gfx {
 class ImageSkia;
@@ -46,7 +49,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 @end
 
 @implementation TabSwitcherSessionCell {
-  base::scoped_nsobject<UIView> _containerView;
+  UIView* _containerView;
   CGSize _cachedShadowSize;
 }
 
@@ -61,7 +64,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   self = [super initWithFrame:frame];
   if (self) {
     [self contentView].isAccessibilityElement = YES;
-    _containerView.reset([[UIView alloc] initWithFrame:self.bounds]);
+    _containerView = [[UIView alloc] initWithFrame:self.bounds];
     [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                         UIViewAutoresizingFlexibleWidth];
     [[_containerView layer] setCornerRadius:kCellCornerRadius];
@@ -94,19 +97,19 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 }
 
 - (UIView*)containerView {
-  return _containerView.get();
+  return _containerView;
 }
 
 @end
 
 @implementation TabSwitcherLocalSessionCell {
-  base::scoped_nsobject<UIView> _topBar;
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UIImageView> _favicon;
-  base::scoped_nsobject<UIButton> _closeButton;
-  base::scoped_nsobject<UIImageView> _shadow;
-  base::scoped_nsobject<UIImageView> _snapshot;
-  base::scoped_nsobject<TabSwitcherButton> _snapshotButton;
+  UIView* _topBar;
+  UILabel* _titleLabel;
+  UIImageView* _favicon;
+  UIButton* _closeButton;
+  UIImageView* _shadow;
+  UIImageView* _snapshot;
+  TabSwitcherButton* _snapshotButton;
   PendingSnapshotRequest _currentPendingSnapshotRequest;
 }
 
@@ -114,19 +117,19 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   self = [super initWithFrame:frame];
   if (self) {
     // Top bar.
-    _topBar.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _topBar = [[UIView alloc] initWithFrame:CGRectZero];
     [_topBar setTranslatesAutoresizingMaskIntoConstraints:NO];
     [[self containerView] addSubview:_topBar];
 
     // Snapshot view.
-    _snapshot.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    _snapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
     [_snapshot setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_snapshot setContentMode:UIViewContentModeScaleAspectFill];
     [_snapshot setClipsToBounds:YES];
     [[self containerView] addSubview:_snapshot];
 
     // Cell button.
-    _snapshotButton.reset([[TabSwitcherButton alloc] initWithFrame:CGRectZero]);
+    _snapshotButton = [[TabSwitcherButton alloc] initWithFrame:CGRectZero];
     [_snapshotButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_snapshotButton addTarget:self
                         action:@selector(snapshotPressed)
@@ -134,17 +137,17 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     [[self containerView] addSubview:_snapshotButton];
 
     // Shadow view.
-    _shadow.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    _shadow = [[UIImageView alloc] initWithFrame:CGRectZero];
     [_shadow setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_shadow setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
     [[self containerView] addSubview:_shadow];
 
     // Constraints on the Top bar, snapshot view, and shadow view.
     NSDictionary* viewsDictionary = @{
-      @"bar" : _topBar.get(),
-      @"shadow" : _shadow.get(),
-      @"snapshot" : _snapshot.get(),
-      @"snapshotButton" : _snapshotButton.get(),
+      @"bar" : _topBar,
+      @"shadow" : _shadow,
+      @"snapshot" : _snapshot,
+      @"snapshotButton" : _snapshotButton,
     };
     NSArray* constraints = @[
       @"H:|-0-[bar]-0-|",
@@ -162,19 +165,19 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
     // Create and add subviews to the cell bar.
     // Title label.
-    _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_titleLabel setFont:[[MDFRobotoFontLoader sharedInstance]
                              regularFontOfSize:kFontSize]];
     [_topBar addSubview:_titleLabel];
 
     // Favicon.
-    _favicon.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    _favicon = [[UIImageView alloc] initWithFrame:CGRectZero];
     [_favicon setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_topBar addSubview:_favicon];
 
     // Close button.
-    _closeButton.reset([[UIButton alloc] initWithFrame:CGRectZero]);
+    _closeButton = [[UIButton alloc] initWithFrame:CGRectZero];
     [_closeButton
         setImage:[[UIImage imageNamed:@"card_close_button"]
                      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
@@ -188,9 +191,9 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
     // Constraints on the title label, favicon, and close button.
     NSDictionary* barViewsDictionary = @{
-      @"favicon" : _favicon.get(),
-      @"title" : _titleLabel.get(),
-      @"closeButton" : _closeButton.get()
+      @"favicon" : _favicon,
+      @"title" : _titleLabel,
+      @"closeButton" : _closeButton
     };
     NSArray* barConstraints = @[
       @"H:|-16-[favicon(==24)]-8-[title]-0-[closeButton(==32)]-8-|",
@@ -206,7 +209,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 }
 
 - (UIView*)topBar {
-  return _topBar.get();
+  return _topBar;
 }
 
 - (UIImage*)screenshot {
@@ -229,7 +232,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
   CGSize snapshotSize = cellSize;
   snapshotSize.height -= tabSwitcherLocalSessionCellTopBarHeight();
-  base::WeakNSObject<TabSwitcherLocalSessionCell> weakCell(self);
+  __weak TabSwitcherLocalSessionCell* weakCell = self;
   DCHECK(self.delegate);
   DCHECK([self cache]);
   _currentPendingSnapshotRequest =
@@ -304,51 +307,50 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 #pragma mark - UIAccessibilityAction
 
 - (NSArray*)accessibilityCustomActions {
-  base::scoped_nsobject<NSMutableArray> customActions(
-      [[NSMutableArray alloc] init]);
-  base::scoped_nsobject<UIAccessibilityCustomAction> customAction(
+  NSMutableArray* customActions = [[NSMutableArray alloc] init];
+  UIAccessibilityCustomAction* customAction =
       [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_CLOSE_TAB)
                 target:self
-              selector:@selector(closeButtonPressed)]);
-  [customActions addObject:customAction.autorelease()];
-  return customActions.autorelease();
+              selector:@selector(closeButtonPressed)];
+  [customActions addObject:customAction = nil];
+  return customActions = nil;
 }
 
 @end
 
 @implementation TabSwitcherDistantSessionCell {
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UIImageView> _favicon;
-  base::scoped_nsobject<UIImageView> _newTabIcon;
-  base::scoped_nsobject<UIView> _verticallyCenteredView;
-  base::scoped_nsobject<TabSwitcherButton> _raisedButton;
-  base::scoped_nsobject<NSOperation> _faviconObtainer;
+  UILabel* _titleLabel;
+  UIImageView* _favicon;
+  UIImageView* _newTabIcon;
+  UIView* _verticallyCenteredView;
+  TabSwitcherButton* _raisedButton;
+  NSOperation* _faviconObtainer;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     // Create and add the button that contains all other subviews.
-    _raisedButton.reset([[TabSwitcherButton alloc] initWithFrame:CGRectZero]);
+    _raisedButton = [[TabSwitcherButton alloc] initWithFrame:CGRectZero];
     [_raisedButton setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_raisedButton addTarget:self
                       action:@selector(cellPressed)
             forControlEvents:UIControlEventTouchUpInside];
     [[self containerView] addSubview:_raisedButton];
     ApplyVisualConstraints(@[ @"H:|-0-[button]-0-|", @"V:|-0-[button]-0-|" ],
-                           @{ @"button" : _raisedButton.get() },
+                           @{ @"button" : _raisedButton },
                            [self containerView]);
 
     // Create and add view that will be vertically centered in the space over
     // the favicon.
-    _verticallyCenteredView.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _verticallyCenteredView = [[UIView alloc] initWithFrame:CGRectZero];
     [_verticallyCenteredView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_verticallyCenteredView setUserInteractionEnabled:NO];
     [_raisedButton addSubview:_verticallyCenteredView];
 
     // Create and add title label to |_verticallyCenteredContent|.
-    _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_titleLabel setNumberOfLines:5];
     [_titleLabel setTextAlignment:NSTextAlignmentCenter];
@@ -359,22 +361,22 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     // Create and add new tab icon to |_verticallyCenteredContent|.
     UIImage* newTabIcon = [[UIImage imageNamed:@"tabswitcher_new_tab"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _newTabIcon.reset([[UIImageView alloc] initWithImage:newTabIcon]);
+    _newTabIcon = [[UIImageView alloc] initWithImage:newTabIcon];
     [_newTabIcon setAlpha:0];
     [_newTabIcon setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_verticallyCenteredView addSubview:_newTabIcon];
 
     // Create and add favicon image container.
-    _favicon.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    _favicon = [[UIImageView alloc] initWithFrame:CGRectZero];
     [_favicon setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_raisedButton addSubview:_favicon];
 
     // Add constraints to the button's subviews.
     NSDictionary* viewsDictionary = @{
-      @"newTabIcon" : _newTabIcon.get(),
-      @"title" : _titleLabel.get(),
-      @"favicon" : _favicon.get(),
-      @"centeredView" : _verticallyCenteredView.get(),
+      @"newTabIcon" : _newTabIcon,
+      @"title" : _titleLabel,
+      @"favicon" : _favicon,
+      @"centeredView" : _verticallyCenteredView,
     };
     NSArray* constraintsInButton = @[
       @"H:|-0-[centeredView]-0-|",
@@ -382,16 +384,15 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
       @"V:|-(>=16)-[centeredView]-(>=16)-[favicon(==16)]-16-|",
     ];
     ApplyVisualConstraints(constraintsInButton, viewsDictionary, _raisedButton);
-    AddSameCenterXConstraint(_raisedButton, _favicon.get());
-    [_raisedButton
-        addConstraint:[NSLayoutConstraint
-                          constraintWithItem:_verticallyCenteredView.get()
-                                   attribute:NSLayoutAttributeCenterY
-                                   relatedBy:NSLayoutRelationEqual
-                                      toItem:_favicon.get()
-                                   attribute:NSLayoutAttributeCenterY
-                                  multiplier:0.5
-                                    constant:0]];
+    AddSameCenterXConstraint(_raisedButton, _favicon);
+    [_raisedButton addConstraint:[NSLayoutConstraint
+                                     constraintWithItem:_verticallyCenteredView
+                                              attribute:NSLayoutAttributeCenterY
+                                              relatedBy:NSLayoutRelationEqual
+                                                 toItem:_favicon
+                                              attribute:NSLayoutAttributeCenterY
+                                             multiplier:0.5
+                                               constant:0]];
 
     // Add constraints to the subviews of the vertically centered view.
     NSArray* constraintsInVerticallyCenteredView = @[
@@ -400,7 +401,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     ];
     ApplyVisualConstraints(constraintsInVerticallyCenteredView, viewsDictionary,
                            _verticallyCenteredView);
-    AddSameCenterXConstraint(_verticallyCenteredView, _newTabIcon.get());
+    AddSameCenterXConstraint(_verticallyCenteredView, _newTabIcon);
   }
   return self;
 }
@@ -437,9 +438,9 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
                      }];
   };
   GURL gurlCopy = gurl;
-  _faviconObtainer.reset([[NSBlockOperation blockOperationWithBlock:^{
+  _faviconObtainer = [NSBlockOperation blockOperationWithBlock:^{
     TabSwitcherGetFavicon(gurlCopy, browserState, block);
-  }] retain]);
+  }];
   NSOperationQueue* operationQueue = [NSOperationQueue mainQueue];
   [operationQueue addOperation:_faviconObtainer];
 }
@@ -451,7 +452,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 - (void)prepareForReuse {
   [_newTabIcon setAlpha:0];
   [_faviconObtainer cancel];
-  _faviconObtainer.reset();
+  _faviconObtainer = nil;
   [_raisedButton setAlpha:0];
   [_raisedButton resetState];
   [super prepareForReuse];

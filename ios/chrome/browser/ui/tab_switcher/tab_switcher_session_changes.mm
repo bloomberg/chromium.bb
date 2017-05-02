@@ -6,6 +6,10 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 TabSwitcherSessionChanges::TabSwitcherSessionChanges(
     std::vector<size_t> const& tabHashesInInitialState,
     std::vector<size_t> const& tabHashesInFinalState) {
