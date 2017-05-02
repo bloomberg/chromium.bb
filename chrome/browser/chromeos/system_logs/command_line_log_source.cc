@@ -80,6 +80,12 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
     commands.push_back(std::make_pair("system_files", command));
   }
 
+  // Track the list of plugged-in USB devices.
+  command = base::CommandLine(base::FilePath("/bin/sh"));
+  command.AppendArg("-c");
+  command.AppendArg("/usr/bin/lsusb -t");
+  commands.emplace_back("usb_devices", command);
+
   // Get disk space usage information
   command = base::CommandLine(base::FilePath("/bin/df"));
   commands.push_back(std::make_pair("disk_usage", command));
