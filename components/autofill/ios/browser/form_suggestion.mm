@@ -4,7 +4,9 @@
 
 #import "components/autofill/ios/browser/form_suggestion.h"
 
-#include "base/mac/objc_property_releaser.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface FormSuggestion ()
 // Local initializer for a FormSuggestion.
@@ -14,13 +16,7 @@
             identifier:(NSInteger)identifier;
 @end
 
-@implementation FormSuggestion {
-  NSString* _value;
-  NSString* _displayDescription;
-  NSString* _icon;
-  NSInteger _identifier;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_FormSuggestion;
-}
+@implementation FormSuggestion
 
 @synthesize value = _value;
 @synthesize displayDescription = _displayDescription;
@@ -33,7 +29,6 @@
             identifier:(NSInteger)identifier {
   self = [super init];
   if (self) {
-    _propertyReleaser_FormSuggestion.Init(self, [FormSuggestion class]);
     _value = [value copy];
     _displayDescription = [displayDescription copy];
     _icon = [icon copy];
@@ -46,10 +41,10 @@
                     displayDescription:(NSString*)displayDescription
                                   icon:(NSString*)icon
                             identifier:(NSInteger)identifier {
-  return [[[FormSuggestion alloc] initWithValue:value
-                             displayDescription:displayDescription
-                                           icon:icon
-                                     identifier:identifier] autorelease];
+  return [[FormSuggestion alloc] initWithValue:value
+                            displayDescription:displayDescription
+                                          icon:icon
+                                    identifier:identifier];
 }
 
 @end
