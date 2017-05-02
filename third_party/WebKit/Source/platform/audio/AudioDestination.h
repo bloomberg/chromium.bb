@@ -85,14 +85,16 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
   virtual void Start();
   virtual void Stop();
 
-  size_t CallbackBufferSize() const { return callback_buffer_size_; }
-  bool IsPlaying() { return is_playing_; }
+  // Getters must be accessed from the main thread.
+  size_t CallbackBufferSize() const;
+  bool IsPlaying();
 
+  // TODO(hongchan): this should not be called by the rendering thread.
   double SampleRate() const { return web_audio_device_->SampleRate(); }
 
   // Returns the audio buffer size in frames used by the underlying audio
   // hardware.
-  int FramesPerBuffer() const { return web_audio_device_->FramesPerBuffer(); }
+  int FramesPerBuffer() const;
 
   // The information from the actual audio hardware. (via Platform::current)
   static float HardwareSampleRate();
@@ -106,12 +108,13 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
 
   bool IsRenderingThread();
 
+  // Accessed by the main thread.
   std::unique_ptr<WebAudioDevice> web_audio_device_;
   const unsigned number_of_output_channels_;
   size_t callback_buffer_size_;
   bool is_playing_;
 
-  // Rendering thread for WebAudio graph.
+  // Accessed by the device thread. Rendering thread for WebAudio graph.
   std::unique_ptr<WebThread> rendering_thread_;
 
   // Accessed by both threads: resolves the buffer size mismatch between the
