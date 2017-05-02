@@ -21,6 +21,7 @@
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
@@ -576,9 +577,8 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
                "Apply change lists (is delta: %d)",
                is_delta_update);
   loader_controller_->ScheduleRun(base::Bind(
-      base::IgnoreResult(
-          &base::PostTaskAndReplyWithResult<FileError, FileError>),
-      base::RetainedRef(blocking_task_runner_), FROM_HERE,
+      &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
+      FROM_HERE,
       base::Bind(&ChangeListProcessor::Apply,
                  base::Unretained(change_list_processor),
                  base::Passed(&about_resource), base::Passed(&change_lists),

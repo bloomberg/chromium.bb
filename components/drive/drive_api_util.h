@@ -8,13 +8,20 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/md5.h"
+#include "components/drive/file_errors.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
+
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace base {
 class CancellationFlag;
 class FilePath;
+class TaskRunner;
 }  // namespace base
 
 namespace drive {
@@ -68,6 +75,13 @@ bool IsKnownHostedDocumentMimeType(const std::string& mime_type);
 // Returns true if the given file path has an extension corresponding to one of
 // hosted document types.
 bool HasHostedDocumentExtension(const base::FilePath& path);
+
+// Runs |task| on |task_runner|, then runs |reply| on the original thread with
+// the resulting error code.
+void RunAsyncTask(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  base::OnceCallback<FileError()> task,
+                  base::OnceCallback<void(FileError)> reply);
 
 }  // namespace util
 }  // namespace drive

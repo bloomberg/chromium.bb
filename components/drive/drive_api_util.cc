@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/base/escape.h"
@@ -197,6 +198,14 @@ bool HasHostedDocumentExtension(const base::FilePath& path) {
       return true;
   }
   return extension == kUnknownHostedDocumentExtension;
+}
+
+void RunAsyncTask(base::TaskRunner* task_runner,
+                  const tracked_objects::Location& from_here,
+                  base::OnceCallback<FileError()> task,
+                  base::OnceCallback<void(FileError)> reply) {
+  PostTaskAndReplyWithResult(task_runner, from_here, std::move(task),
+                             std::move(reply));
 }
 
 }  // namespace util

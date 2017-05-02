@@ -142,12 +142,30 @@ class CONTENT_EXPORT BrowserThread {
   static bool PostTaskAndReplyWithResult(
       ID identifier,
       const tracked_objects::Location& from_here,
-      base::Callback<ReturnType()> task,
-      base::Callback<void(ReplyArgType)> reply) {
+      base::OnceCallback<ReturnType()> task,
+      base::OnceCallback<void(ReplyArgType)> reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetTaskRunnerForThread(identifier);
     return base::PostTaskAndReplyWithResult(task_runner.get(), from_here,
                                             std::move(task), std::move(reply));
+  }
+
+  // Callback version of PostTaskAndReplyWithResult above.
+  // Though RepeatingCallback is convertible to OnceCallback, we need this since
+  // we cannot use template deduction and object conversion at once on the
+  // overload resolution.
+  // TODO(crbug.com/714018): Update all callers of the Callback version to use
+  // OnceCallback.
+  template <typename ReturnType, typename ReplyArgType>
+  static bool PostTaskAndReplyWithResult(
+      ID identifier,
+      const tracked_objects::Location& from_here,
+      base::Callback<ReturnType()> task,
+      base::Callback<void(ReplyArgType)> reply) {
+    return PostTaskAndReplyWithResult(
+        identifier, from_here,
+        base::OnceCallback<ReturnType()>(std::move(task)),
+        base::OnceCallback<void(ReplyArgType)>(std::move(reply)));
   }
 
   template <class T>
