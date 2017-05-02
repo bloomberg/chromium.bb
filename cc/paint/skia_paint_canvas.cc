@@ -22,7 +22,6 @@ SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)
     : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
 
-SkiaPaintCanvas::SkiaPaintCanvas(SkiaPaintCanvas&& other) = default;
 SkiaPaintCanvas::~SkiaPaintCanvas() = default;
 
 SkMetaData& SkiaPaintCanvas::getMetaData() {
@@ -45,7 +44,7 @@ int SkiaPaintCanvas::saveLayer(const SkRect* bounds, const PaintFlags* flags) {
   return canvas_->saveLayer(bounds, ToSkPaint(flags));
 }
 
-int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, U8CPU alpha) {
+int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
   return canvas_->saveLayerAlpha(bounds, alpha);
 }
 
