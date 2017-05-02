@@ -59,10 +59,26 @@ float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
 
 }  // namespace
 
-VrController::VrController(gvr_context* vr_context) {
+VrController::VrController(gvr_context* gvr_context) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  Initialize(vr_context);
+  CHECK(gvr_context != nullptr) << "invalid gvr_context";
+  controller_api_ = base::MakeUnique<gvr::ControllerApi>();
+  controller_state_ = base::MakeUnique<gvr::ControllerState>();
+  gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_context);
+
+  int32_t options = gvr::ControllerApi::DefaultOptions();
+
+  // Enable non-default options - WebVR needs gyro and linear acceleration, and
+  // since VrShell implements GvrGamepadDataProvider we need this always.
+  options |= GVR_CONTROLLER_ENABLE_GYRO;
+  options |= GVR_CONTROLLER_ENABLE_ACCEL;
+
+  CHECK(controller_api_->Init(options, gvr_context));
+  controller_api_->Resume();
+
+  handedness_ = gvr_api_->GetUserPrefs().GetControllerHandedness();
   elbow_model_ = base::MakeUnique<ElbowModel>(handedness_);
+
   Reset();
   last_timestamp_nanos_ =
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
@@ -73,8 +89,11 @@ VrController::~VrController() {
 }
 
 void VrController::OnResume() {
-  if (controller_api_)
+  if (controller_api_) {
     controller_api_->Resume();
+    handedness_ = gvr_api_->GetUserPrefs().GetControllerHandedness();
+    elbow_model_->SetHandedness(handedness_);
+  }
 }
 
 void VrController::OnPause() {
@@ -223,27 +242,6 @@ void VrController::UpdateTouchInfo() {
   last_touch_timestamp_ = controller_state_->GetLastTouchTimestamp();
   last_timestamp_nanos_ =
       gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
-}
-
-void VrController::Initialize(gvr_context* gvr_context) {
-  CHECK(gvr_context != nullptr) << "invalid gvr_context";
-  controller_api_.reset(new gvr::ControllerApi);
-  controller_state_.reset(new gvr::ControllerState);
-
-  int32_t options = gvr::ControllerApi::DefaultOptions();
-
-  // Enable non-default options - WebVR needs gyro and linear acceleration, and
-  // since VrShell implements GvrGamepadDataProvider we need this always.
-  options |= GVR_CONTROLLER_ENABLE_GYRO;
-  options |= GVR_CONTROLLER_ENABLE_ACCEL;
-
-  CHECK(controller_api_->Init(options, gvr_context));
-
-  std::unique_ptr<gvr::GvrApi> gvr = gvr::GvrApi::WrapNonOwned(gvr_context);
-  // TODO(bajones): Monitor changes to the controller handedness.
-  handedness_ = gvr->GetUserPrefs().GetControllerHandedness();
-
-  controller_api_->Resume();
 }
 
 std::vector<std::unique_ptr<WebGestureEvent>> VrController::DetectGestures() {

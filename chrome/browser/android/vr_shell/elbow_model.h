@@ -31,6 +31,7 @@ class ElbowModel {
   float GetAlphaValue() const { return alpha_value_; }
 
   void Update(const UpdateData& update);
+  void SetHandedness(gvr::ControllerHandedness handedness);
 
  private:
   void UpdateHandedness();
