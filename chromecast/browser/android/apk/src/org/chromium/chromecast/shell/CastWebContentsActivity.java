@@ -260,6 +260,7 @@ public class CastWebContentsActivity extends Activity {
 
                 // Stop key should end the entire session.
                 if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
+                    mReceivedUserLeave = true;
                     finish();
                 }
 
