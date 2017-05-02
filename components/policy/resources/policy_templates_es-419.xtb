@@ -656,7 +656,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y la computadora no podrá compartir las impresoras con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Permite finalizar procesos en el Administrador de tareas</translation>
-<translation id="3307746730474515290">Controla los tipos de apps o de extensiones que se pueden instalar y limita el acceso al tiempo de ejecución.
+<translation id="3307746730474515290">Controla los tipos de apps o extensiones que se pueden instalar y limita el acceso al tiempo de ejecución.
 
           Esta configuración indica los tipos de extensiones o de apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista de strings; cada una debe contener la siguiente información: "extensión", "tema", "secuencia de comandos del usuario", "app alojada", "app empaquetada heredada", "app de plataforma". Consulta la documentación de las extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
 
@@ -1192,13 +1192,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si esta política no se establece, o se establece como falsa, los certificados de servidores que no tengan la extensión subjectAlternativeName con un nombre de DNS o una dirección IP no serán confiables.</translation>
 <translation id="557658534286111200">Habilitar o inhabilitar la edición de favoritos</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
-<translation id="5613179474872285001">Configura el nombre de dominio de cliente requerido que se impondrá a los clientes de acceso remoto y evita que los usuarios lo cambien.
-
-          Si esta configuración está habilitada, solo los clientes de un dominio específico pueden conectarse al host.
-
-          Si esta configuración está inhabilitada, se aplica la política predeterminada para el tipo de conexión habilitada. Para la asistencia remota, esto permite que los clientes de cualquier dominio puedan conectarse al host. Para el acceso remoto en cualquier momento, solo el propietario del host puede conectarse.
-
-          Consulta también la política RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5694594914843889579">Cuando esta política se establece como verdadera, el almacenamiento externo no estará disponible en el navegador de archivos.
@@ -1496,13 +1489,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="6943577887654905793">Nombre de preferencia de Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
-<translation id="695891079107014261">Configura el nombre de dominio de host requerido que se impondrá a los hosts de acceso remoto y evita que los usuarios lo cambien.
-
-          Si esta configuración está habilitada, los hosts pueden compartirse solamente utilizando cuentas registradas en el nombre de dominio especificado.
-
-          Si esta configuración está inhabilitada o no está establecida, los hosts pueden compartirse utilizando cualquier cuenta.
-
-          Consulta también la política RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Establecer si es necesario realizar comprobaciones de OCSP/CRL en línea para los anclajes de confianza locales</translation>
 <translation id="7003334574344702284">Esta política, si se habilita, fuerza la importación de las contraseñas guardadas del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importan las contraseñas guardadas. Si no se configura, se le puede preguntar al usuario si desea importar las contraseñas guardadas o la importación puede realizarse de forma automática.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME" /></translation>

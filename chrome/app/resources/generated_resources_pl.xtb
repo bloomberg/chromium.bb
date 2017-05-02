@@ -2165,7 +2165,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="4090404313667273475">Wyświetlenie pewnych elementów na tej stronie wymaga wtyczki <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(To rozszerzenie jest zarządzane i nie można go usunąć).</translation>
 <translation id="4091434297613116013">kartki</translation>
-<translation id="4092878864607680421">Najnowsza wersja aplikacji „<ph name="APP_NAME" />” wymaga większej liczby pozwoleń, została więc wyłączona.</translation>
 <translation id="4093955363990068916">Plik lokalny:</translation>
 <translation id="4095507791297118304">Ekran główny</translation>
 <translation id="409579654357498729">Dodaj do Cloud Print</translation>
@@ -3085,7 +3084,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5499313591153584299">Ten plik może wyrządzić szkody na Twoim komputerze.</translation>
 <translation id="5500122897333236901">Islandzki</translation>
 <translation id="5502500733115278303">Importowane z Firefoxa</translation>
-<translation id="5506868365569362143">Zmiana trybu dotykowego interfejsu HUD</translation>
 <translation id="5507756662695126555">Niezaprzeczalność</translation>
 <translation id="5509693895992845810">Zapisz &amp;jako...</translation>
 <translation id="5509914365760201064">Wystawca: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3663,7 +3661,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6404519443262761446">Do wybudzenia systemu wymagane jest odblokowanie ekranu.</translation>
 <translation id="6406303162637086258">Symuluj ponowne uruchomienie przeglądarki</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
-<translation id="6407080938771313237">Interfejs HUD projekcji dotyku</translation>
 <translation id="6408118934673775994">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Wyskakujące okienka</translation>
 <translation id="6410063390789552572">Nie można uzyskać dostępu do biblioteki sieciowej</translation>
@@ -4276,7 +4273,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
 <translation id="7348749398828259943">Amerykańska klawiatura międzynarodowa Workman</translation>
 <translation id="7352651011704765696">Coś poszło nie tak</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> żąda nowych uprawnień</translation>
 <translation id="735745346212279324">VPN odłączona</translation>
 <translation id="7360183604634508679">Menu Zakładki</translation>
 <translation id="7361039089383199231">$1 bajty(ów)</translation>
@@ -4595,7 +4591,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7839192898639727867">Identyfikator klucza podmiotu certyfikatu</translation>
 <translation id="7839804798877833423">Pobranie tych plików spowoduje przesłanie <ph name="FILE_SIZE" /> przy użyciu komórkowej transmisji danych.</translation>
 <translation id="7839963980801867006">Wybierz, które metody wprowadzania dla rozszerzeń będą dostępne w menu Język.</translation>
-<translation id="7842346819602959665">Najnowsza wersja rozszerzenia „<ph name="EXTENSION_NAME" />” wymaga większej liczby pozwoleń, została więc wyłączona.</translation>
 <translation id="7844992432319478437">Aktualizowanie zmian</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
 <translation id="7846634333498149051">Klawiatura</translation>

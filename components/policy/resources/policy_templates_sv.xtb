@@ -710,7 +710,7 @@
 
           Om inställningen konfigureras installeras inte tillägg/appar som har en typ som inte finns med på listan.
 
-          Om denna inställning ingen konfigureras tillämpas inga begränsningar för godkända typer av tillägg/appar.</translation>
+          Om denna inställning inte konfigureras tillämpas inga begränsningar för godkända typer av tillägg/appar.</translation>
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
@@ -1286,13 +1286,6 @@
       Om den här principen inte har ställts in eller har ställts in på falskt betraktas servercertifikat som saknar tillägget subjectAlternativeName och innehåller antingen ett DNS-namn eller en IP-adress som otillförlitliga.</translation>
 <translation id="557658534286111200">Aktiverar eller inaktiverar bokmärkesredigering</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
-<translation id="5613179474872285001">Konfigurerar vilket klientdomännamn som fjärråtkomstklienter måste använda och hindrar användare från att ändra det.
-
-          Om inställningen är aktiverad kan endast klienter från den angivna domänen ansluta till värden.
-
-          Om inställningen är inaktiverad eller inte angiven gäller standardprincipen för den här anslutningstypen. Vid fjärrhjälp kan klienter från alla domäner ansluta till värden; vid fjärråtkomst när som helst kan endast värdens ägare ansluta.
-
-          Se även RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
 <translation id="5694594914843889579">När den här principen är inställd på sant är inte extern lagring tillgängligt i filsökaren.
@@ -1615,13 +1608,6 @@
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
-<translation id="695891079107014261">Konfigurerar vilket värddomännamn som fjärråtkomstvärdar måste använda och hindrar användare från att ändra det.
-
-          Om inställningen är aktiverad kan värdar endast delas med hjälp av konton som är registrerade på det angivna domännamnet.
-
-          Om inställningen är inaktiverad eller inte angiven kan värdar delas med hjälp av vilka konton som helst.
-
-          Se även RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Om OCSP/CRL-kontroller online krävs för lokala tillitsankare</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 

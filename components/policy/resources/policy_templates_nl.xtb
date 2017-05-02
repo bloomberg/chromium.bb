@@ -1277,13 +1277,6 @@
       Als dit beleid niet is ingesteld of is ingesteld op 'false' (onwaar), worden de servercertificaten die geen subjectAlternativeName-extensie met een DNS-naam of IP-adres bevatten, niet vertrouwd.</translation>
 <translation id="557658534286111200">Het bewerken van bladwijzers in- of uitschakelen</translation>
 <translation id="5586942249556966598">Niets doen</translation>
-<translation id="5613179474872285001">Hiermee configureer je de vereiste clientdomeinnaam die wordt opgelegd aan clients voor externe toegang en voorkom je dat gebruikers deze wijzigen.
-
-          Als deze instelling is ingeschakeld, kunnen alleen clients in het opgegeven domein verbinding maken met de host.
-
-          Als deze instelling is uitgeschakeld of niet is ingesteld, wordt het standaardbeleid voor het verbindingstype toegepast. Zo kunnen clients in elk domein verbinding maken met de host voor hulp op afstand. Voor externe toegang op elk gewenst moment kan alleen de hosteigenaar verbinding maken.
-
-          Bekijk ook RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="5694594914843889579">Wanneer de instelling is ingesteld op 'waar', is externe opslag niet beschikbaar in de bestandsbrowser.
@@ -1604,13 +1597,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>
 <translation id="6956272732789158625">Sites niet toestaan sleutels te genereren</translation>
-<translation id="695891079107014261">Hiermee configureer je de vereiste hostdomeinnaam die wordt opgelegd aan hosts voor externe toegang en voorkom je dat gebruikers deze wijzigen.
-
-          Als deze instelling is ingeschakeld, kunnen hosts alleen worden gedeeld met accounts die zijn geregistreerd op de opgegeven domeinnaam.
-
-          Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen hosts worden gedeeld met elk account.
-
-          Bekijk ook RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Of online OCSP/CRL-controles zijn vereist voor lokale vertrouwensankers</translation>
 <translation id="7003334574344702284">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de opgeslagen wachtwoorden worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 

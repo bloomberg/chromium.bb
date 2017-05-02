@@ -1212,7 +1212,7 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2733275712367076659">Imate potrdila teh organizacij, ki vas identificirajo:</translation>
 <translation id="2733364097704495499">Ali želite tiskalnik <ph name="PRINTER_NAME" /> registrirati v storitvi Google Tiskanje v oblaku?</translation>
 <translation id="2735698359135166290">Romunska standardna tipkovnica</translation>
-<translation id="2736434052592900364">Upravljanje sinhronizacijo za Chrome in prilagajanja v nastavitvah</translation>
+<translation id="2736434052592900364">Upravljanje sinhronizacije za Chrome in prilagajanja v nastavitvah</translation>
 <translation id="2737363922397526254">Strni ...</translation>
 <translation id="2738771556149464852">Ne po</translation>
 <translation id="2739191690716947896">Odpravljanje napak</translation>
@@ -2167,7 +2167,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Za prikaz nekaterih elementov na tej strani je potreben vtičnik <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(To je upravljana razširitev in je ni mogoče odstraniti.)</translation>
 <translation id="4091434297613116013">listi papirja</translation>
-<translation id="4092878864607680421">Za najnovejšo različico programa »<ph name="APP_NAME" />« je potrebno več dovoljenj, zato je bila onemogočena.</translation>
 <translation id="4093955363990068916">Lokalna datoteka:</translation>
 <translation id="4095507791297118304">Glavni zaslon</translation>
 <translation id="409579654357498729">Dodaj v Google Tiskanje v oblaku</translation>
@@ -3089,7 +3088,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5499313591153584299">Ta datoteka lahko škoduje vašemu računalniku.</translation>
 <translation id="5500122897333236901">islandščina</translation>
 <translation id="5502500733115278303">Uvoženo iz brskalnika Firefox</translation>
-<translation id="5506868365569362143">Sprememba načina HUD za dotik</translation>
 <translation id="5507756662695126555">Brez zavračanja</translation>
 <translation id="5509693895992845810">Shrani &amp;kot ...</translation>
 <translation id="5509914365760201064">Izdajatelj: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3668,7 +3666,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6404519443262761446">Zahtevaj zaklepanje zaslona za prehod iz stanja pripravljenosti.</translation>
 <translation id="6406303162637086258">Posnemaj vnovični zagon brskalnika</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
-<translation id="6407080938771313237">Projiciranje prikaza HUD za dotik</translation>
 <translation id="6408118934673775994">Branje in spreminjanje vaših podatkov na spletnih mestih <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pojavna okna</translation>
 <translation id="6410063390789552572">Ni mogoče dostopiti do omrežne knjižnice</translation>
@@ -4280,7 +4277,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="7348749398828259943">Mednarodna tipkovnica za angleščino (Združene države) – Workman</translation>
 <translation id="7352651011704765696">Prišlo je do neznane težave</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> zahteva nova dovoljenja</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="7360183604634508679">Meni »Zaznamki«</translation>
 <translation id="7361039089383199231">$1 B</translation>
@@ -4606,7 +4602,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7839192898639727867">ID ključa subjekta potrdila</translation>
 <translation id="7839804798877833423">Za prenos teh datotek bo porabljenih približno <ph name="FILE_SIZE" /> MB mobilnih podatkov.</translation>
 <translation id="7839963980801867006">Izberite, kateri urejevalniki načina vnosa razširitve bodo na voljo v meniju jezikov.</translation>
-<translation id="7842346819602959665">Za najnovejšo različico razširitve »<ph name="EXTENSION_NAME" />« je potrebno več dovoljenj, zato je bila onemogočena.</translation>
 <translation id="7844992432319478437">Posodabljanje razlik</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>

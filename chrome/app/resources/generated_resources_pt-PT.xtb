@@ -2167,7 +2167,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">É necessário o <ph name="PLUGIN_NAME" /> para apresentar alguns elementos nesta página.</translation>
 <translation id="4090535558450035482">(Esta extensão é gerida e não é possível removê-la.)</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
-<translation id="4092878864607680421">A versão mais recente da aplicação "<ph name="APP_NAME" />" necessita de mais permissões, pelo que foi desactivada.</translation>
 <translation id="4093955363990068916">Ficheiro local:</translation>
 <translation id="4095507791297118304">Ecrã principal</translation>
 <translation id="409579654357498729">Adicionar ao Google Cloud Print</translation>
@@ -3089,7 +3088,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5499313591153584299">Este ficheiro pode ser prejudicial para o seu computador.</translation>
 <translation id="5500122897333236901">Islandês</translation>
 <translation id="5502500733115278303">Importado do Firefox</translation>
-<translation id="5506868365569362143">Alteração do modo HUD tátil</translation>
 <translation id="5507756662695126555">Não repudiação</translation>
 <translation id="5509693895992845810">Guard&amp;ar Como...</translation>
 <translation id="5509914365760201064">Emissor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3668,7 +3666,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6404519443262761446">Solicitar bloqueio de ecrã para ativar a partir do modo de suspensão.</translation>
 <translation id="6406303162637086258">Simular reinício do navegador</translation>
 <translation id="6406506848690869874">Sincronização</translation>
-<translation id="6407080938771313237">HUD tátil com projeção</translation>
 <translation id="6408118934673775994">Ler e alterar os seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="6410063390789552572">Não é possível aceder à biblioteca de rede</translation>
@@ -4282,7 +4279,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
 <translation id="7348749398828259943">Teclado Workman internacional dos EUA</translation>
 <translation id="7352651011704765696">Algo correu mal</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> necessita de novas permissões</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="7360183604634508679">Menu marcadores</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4532,7 +4528,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7719421816612904796">A formação expirou</translation>
 <translation id="771953673318695590">Controlo de Qualidade</translation>
 <translation id="7720375555307821262">Para supervisionar esta pessoa, <ph name="BEGIN_LINK" />inicie sessão no Chrome<ph name="END_LINK" />.</translation>
-<translation id="7721179060400456005">Permitir às janelas expandir os monitores</translation>
+<translation id="7721179060400456005">Permitir que a área de janela corresponda à dos ecrãs</translation>
 <translation id="7724603315864178912">Cortar</translation>
 <translation id="7728668285692163452">A alteração do canal será aplicada mais tarde</translation>
 <translation id="7730449930968088409">Capturar o conteúdo do ecrã</translation>
@@ -4608,7 +4604,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7839192898639727867">ID da chave de requerente do certificado</translation>
 <translation id="7839804798877833423">A obtenção destes ficheiros utilizará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="7839963980801867006">Seleciona que IMEs de extensão estarão disponíveis no menu de idioma.</translation>
-<translation id="7842346819602959665">A versão mais recente da extensão "<ph name="EXTENSION_NAME" />" necessita de mais permissões, pelo que foi desactivada.</translation>
 <translation id="7844992432319478437">A atualizar dif.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7846634333498149051">Teclado</translation>

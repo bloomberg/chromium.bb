@@ -2166,7 +2166,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4090404313667273475">Для отображения некоторых элементов на этой странице требуется плагин <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">Это расширение контролируется правилами и не может быть удалено.</translation>
 <translation id="4091434297613116013">лист. бумаги</translation>
-<translation id="4092878864607680421">Новейшая версия расширения <ph name="APP_NAME" /> требует дополнительных разрешений, поэтому расширение было отключено.</translation>
 <translation id="4093955363990068916">Локальный файл:</translation>
 <translation id="4095507791297118304">Основной дисплей</translation>
 <translation id="409579654357498729">Добавить в Виртуальный принтер</translation>
@@ -3088,7 +3087,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5499313591153584299">Этот файл может быть опасен для вашего компьютера.</translation>
 <translation id="5500122897333236901">Исландский</translation>
 <translation id="5502500733115278303">Импортированные из Firefox</translation>
-<translation id="5506868365569362143">Смена режима Touch HUD</translation>
 <translation id="5507756662695126555">Без отказа</translation>
 <translation id="5509693895992845810">Сохранить как...</translation>
 <translation id="5509914365760201064">Поставщик сертификата: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3666,7 +3664,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6404519443262761446">Запрашивать разблокировку экрана для выхода из спящего режима</translation>
 <translation id="6406303162637086258">Симулировать перезапуск браузера</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
-<translation id="6407080938771313237">Проецирование точек касания на экран</translation>
 <translation id="6408118934673775994">Просмотр и изменение данных на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Всплывающие окна</translation>
 <translation id="6410063390789552572">Не удается получить доступ к сетевой библиотеке</translation>
@@ -4280,7 +4277,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7348093485538360975">Экранная клавиатура</translation>
 <translation id="7348749398828259943">Раскладка США (Workman, международная)</translation>
 <translation id="7352651011704765696">Ошибка</translation>
-<translation id="7353651168734309780">Для расширения "<ph name="EXTENSION_NAME" />" требуется повторная проверка разрешений</translation>
 <translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="7360183604634508679">Меню закладок</translation>
 <translation id="7361039089383199231">$1 Б</translation>
@@ -4606,7 +4602,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7839192898639727867">Идентификатор ключа субъекта сертификата</translation>
 <translation id="7839804798877833423">При загрузке этих файлов по мобильному каналу передачи данных будет использовано около <ph name="FILE_SIZE" /> трафика.</translation>
 <translation id="7839963980801867006">Выберите IME расширений, которые должны быть доступны в меню языков.</translation>
-<translation id="7842346819602959665">Новейшей версии расширения "<ph name="EXTENSION_NAME" />" требуются дополнительные разрешения, поэтому оно было отключено.</translation>
 <translation id="7844992432319478437">Утилита diff обновляется</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="7846634333498149051">Клавиатура</translation>

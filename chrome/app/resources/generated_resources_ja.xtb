@@ -375,7 +375,7 @@
 <translation id="1519759545815312682"><ph name="USER_EMAIL" /> に対して音声アクティビティが有効になりました。</translation>
 <translation id="1520635877184409083">調整...</translation>
 <translation id="1521442365706402292">証明書の管理</translation>
-<translation id="152234381334907219">未保存</translation>
+<translation id="152234381334907219">常に保存しない</translation>
 <translation id="1523350272063152305">Chromebox for meetings 搭載デバイスを設定できます。</translation>
 <translation id="1524152555482653726">ムービー</translation>
 <translation id="1524430321211440688">キーボード</translation>
@@ -2166,7 +2166,6 @@
 <translation id="4090404313667273475">このページには、表示するのに <ph name="PLUGIN_NAME" /> が必要なコンテンツがあります。</translation>
 <translation id="4090535558450035482">（この拡張機能は管理対象であり、削除できません。）</translation>
 <translation id="4091434297613116013">枚</translation>
-<translation id="4092878864607680421">アプリ「<ph name="APP_NAME" />」の最新バージョンは、さらに許可が必要なため無効になっています。</translation>
 <translation id="4093955363990068916">ローカル ファイル:</translation>
 <translation id="4095507791297118304">メイン ディスプレイ</translation>
 <translation id="409579654357498729">クラウド プリントに追加</translation>
@@ -3014,7 +3013,7 @@
 <translation id="5399158067281117682">PIN が一致しません。</translation>
 <translation id="5400640815024374115">Trusted Platform Module（TPM）チップは、無効であるか、存在しません。</translation>
 <translation id="5402367795255837559">点字</translation>
-<translation id="5402815541704507626">モバイルデータでのアップデートのダウンロード</translation>
+<translation id="5402815541704507626">モバイルデータ接続でのアップデートのダウンロード</translation>
 <translation id="540296380408672091"><ph name="HOST" /> の Cookie を常にブロックする</translation>
 <translation id="5408750356094797285">ズーム: <ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">おまかせ</translation>
@@ -3088,7 +3087,6 @@
 <translation id="5499313591153584299">このファイルはパソコンに危害を加える可能性があります。</translation>
 <translation id="5500122897333236901">アイスランド語</translation>
 <translation id="5502500733115278303">Firefox ブックマーク</translation>
-<translation id="5506868365569362143">タッチ HUD のモードを変更</translation>
 <translation id="5507756662695126555">否認防止</translation>
 <translation id="5509693895992845810">別名で保存(&amp;A)...</translation>
 <translation id="5509914365760201064">発行元: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3375,7 +3373,7 @@
 <translation id="5941153596444580863">ユーザーを追加...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="5941711191222866238">最小化</translation>
-<translation id="5941907479813014493">入力方法を切り替えるには Ctrl+Shift+スペースキーを押します。</translation>
+<translation id="5941907479813014493">入力方法を切り替えるには Ctrl+Shift+Space キーを押します。</translation>
 <translation id="5946591249682680882">レポート ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">開かない</translation>
 <translation id="5948544841277865110">プライベート ネットワークを追加</translation>
@@ -3666,7 +3664,6 @@
 <translation id="6404519443262761446">スリープから復帰する際に画面をロックする。</translation>
 <translation id="6406303162637086258">ブラウザ再起動のシミュレート</translation>
 <translation id="6406506848690869874">同期</translation>
-<translation id="6407080938771313237">プロジェクション タッチ HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> 上にある自分のデータの読み取りと変更</translation>
 <translation id="6409731863280057959">ポップアップ</translation>
 <translation id="6410063390789552572">ネットワーク ライブラリにアクセスできません</translation>
@@ -4280,7 +4277,6 @@
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="7348749398828259943">US Workman インターナショナル キーボード</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> をご利用になるには新たに権限を付与する必要があります</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7360183604634508679">ブックマーク メニュー</translation>
 <translation id="7361039089383199231">$1 バイト</translation>
@@ -4608,7 +4604,6 @@
 <translation id="7839192898639727867">証明書のサブジェクトのキー ID</translation>
 <translation id="7839804798877833423">このファイルを取得すると、約 <ph name="FILE_SIZE" /> のモバイル データを使用します。</translation>
 <translation id="7839963980801867006">言語メニューで使用可能にする拡張 IME を選択します。</translation>
-<translation id="7842346819602959665">拡張機能「<ph name="EXTENSION_NAME" />」の最新バージョンは、許可がさらに必要なため、無効になっています。</translation>
 <translation id="7844992432319478437">差分の更新中</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="7846634333498149051">キーボード</translation>
@@ -5559,6 +5554,6 @@
 <translation id="992592832486024913">ChromeVox（音声フィードバック）を無効にする</translation>
 <translation id="994289308992179865">ループ(&amp;L)</translation>
 <translation id="996250603853062861">安全な接続を確立しています...</translation>
-<translation id="996987097147224996">以前の入力方式を選択するには、Ctrl+ スペース キーを押します。</translation>
+<translation id="996987097147224996">以前の入力方式を選択するには、Ctrl+Space キーを押します。</translation>
 <translation id="998747458861718449">検証(&amp;I)</translation>
 </translationbundle>

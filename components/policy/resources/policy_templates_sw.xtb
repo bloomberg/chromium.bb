@@ -692,7 +692,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           Ikiwa mipangilio hii imewekwa, viendelezi/programu ambazo zina aina isiyo kwenye orodha hazitasakinishwa.
 
-          Ikiwa mipangilio hii itawachwa bila kuwekwa, hakuna vikwazo vya aina za viendelezi/programu zinazokubalika zitatekelezwa.</translation>
+          Ikiwa mipangilio hii itaachwa bila kuwekwa, hakuna vikwazo vya aina za viendelezi/programu zinazokubalika zitatekelezwa.</translation>
 <translation id="3322771899429619102">Hukuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuunda ufunguo. Ikiwa ruwaza ya url iko katika 'KeygenBlockedForUrls', hiyo hubatilisha vighairi hivi.
 
           Sera hii ikiachwa bila kuwekwa, thamani chaguo-msingi ya kote duniani itatumiwa kwenye tovuti zote iwe ni kutoka sera ya 'DefaultKeygenSetting', ikiwa imewekwa, la sivyo mipangilio ya kibinafsi ya mtumiaji itatumika.</translation>
@@ -751,7 +751,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3660562134618097814">Hamisha vidakuzi vya SAML IdP wakati wa kuingia katika akaunti</translation>
 <translation id="3709266154059827597">Sanidi orodha inayotiliwa shaka ya usakinishaji wa kiendelezi</translation>
 <translation id="3711895659073496551">Sitisha</translation>
-<translation id="3736879847913515635">Washa kipengele cha kuongeza mtu katika kidhibiti cha mtumiaji</translation>
+<translation id="3736879847913515635">Washa kipengele cha kuongeza wasifu katika kidhibiti cha mtumiaji</translation>
 <translation id="3750220015372671395">Zuia uundaji ufunguo kwenye tovuti hizi</translation>
 <translation id="3756011779061588474">Zuia hali ya wasanidi programu</translation>
 <translation id="3758089716224084329">Hukuwezesha kubainisha seva mbadala iliyotumiwa na <ph name="PRODUCT_NAME" /> na huwazuia watumiaji kubadilisha mipangilio ya seva mbadala.
@@ -1097,7 +1097,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="489803897780524242">Kigezo kinachodhibiti uwekaji wa hoja ya utafutaji kwa mtoa huduma ya utafutaji chaguo-msingi</translation>
 <translation id="4899708173828500852">Wezesha Kuvinjari Salama</translation>
 <translation id="4906194810004762807">Onyesha upya kiwango cha Sera ya Kifaa</translation>
-<translation id="4962262530309732070">Sera hii ikiwekwa kuwa ndivyo au isipowekwa mipangilio, <ph name="PRODUCT_NAME" /> itaruhusu kipengee cha Ongeza Mtu kutoka kwenye kidhibiti cha mtumiaji.
+<translation id="4962262530309732070">Sera hii ikiwekwa kuwa ndivyo au isipowekwa mipangilio, <ph name="PRODUCT_NAME" /> itaruhusu kipengee cha Ongeza Wasifu kutoka kwenye kidhibiti cha mtumiaji.
 
      Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu kuunda wasifu mpya kutoka kwenye kidhibiti cha mtumiaji.</translation>
 <translation id="4971529314808359013">Hukuruhusu kubainisha orodha ya ruwaza za url zinazobainisha tovuti ambazo <ph name="PRODUCT_NAME" /> inapaswa kuchagua cheti cha seva teja kiotomatiki, tovuti ikiomba cheti.
@@ -1264,13 +1264,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, vyeti vya seva visivyo na kiendelezi cha subjectAlternativeName kilicho na jina la DNS au anwani ya IP havitaaminiwa.</translation>
 <translation id="557658534286111200">Inawezesha au kulemaza uhariri wa alamisho</translation>
 <translation id="5586942249556966598">Usifanye chochote</translation>
-<translation id="5613179474872285001">Huweka mipangilio ya jina la kikoa cha seva teja ambalo litawekwa kwenye seva teja za ufikiaji wa mbali na huzuia watumiaji kulibadilisha.
-
-          Mipangilio hii ikiwashwa, basi ni seva teja kutoka kwenye kikoa kilichobainishwa pekee zinazoweza kuunganisha kwenye seva pangishi.
-
-          Mipangilio hii ikizimwa au isipowekwa, basi sera chaguo-msingi ya aina ya uunganishi hutumika. Kwa ajili ya usaidizi wa mbali, hii huruhusu seva teja kutoka kwenye kikoa chochote kuunganisha kwenye seva pangishi; kwa ufikiaji wa mbali wa wakati wowote, ni mmiliki wa seva panishi pekee anayeweza kuunganisha.
-
-          Angalia pia RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Rejesha kipindi kilichopita</translation>
 <translation id="5645779841392247734">Ruhusu vidakuzi kwenye tovuti hizi</translation>
 <translation id="5694594914843889579">Sera hii ikiwekwa kuwa ndivyo, hifadhi ya nje haitapatikana katika kivinjari cha faili.
@@ -1586,13 +1579,6 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="6943577887654905793">Jina la Mac/Linux inayopendelewa:</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguo-msingi</translation>
 <translation id="6956272732789158625">Usiruhusu tovuti yoyote itumie uundaji ufunguo</translation>
-<translation id="695891079107014261">Huweka mipangilio ya jina la kikoa cha seva pangishi linalohitajika litakalolazimishwa kwa seva pangishi za ufikiaji wa mbali na huzuia watumiaji kulibadilisha.
-
-          Ikiwa mipangilio hii itawashwa, basi seva pangishi zinaweza kushirikiwa tu kwa kutumia akaunti zilizosajiliwa kwenye jina la kikoa lililobainishwa.
-
-          Ikiwa mipangilio hii itazimwa au isiwekwe, basi seva pangishi zinaweza kushirikiwa kwa kutumia akaunti yoyote.
-
-          Angalia pia RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Iwapo ukaguzi wa OCSP/CRL mtandaoni unahitajika kwa nanga za uaminifu za karibu</translation>
 <translation id="7003334574344702284">Sera hii inalazimisha manaenosiri yaliyohifadhiwa kuletwa kutoka kwenye kivinjari chaguo-msingi cha awali ikiwezeshwa. Ikiwezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 

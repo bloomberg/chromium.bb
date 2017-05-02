@@ -2165,7 +2165,6 @@
 <translation id="4090404313667273475">Для відтворення деяких елементів на цій сторінці потрібен плагін <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4090535558450035482">(Це розширення є керованим і його неможливо видалити).</translation>
 <translation id="4091434297613116013">аркуші паперу</translation>
-<translation id="4092878864607680421">Найновіша версія програми "<ph name="APP_NAME" />" потребує більше дозволів, тому її вимкнено.</translation>
 <translation id="4093955363990068916">Локальний файл:</translation>
 <translation id="4095507791297118304">Основний дисплей</translation>
 <translation id="409579654357498729">Додати в Cloud Print</translation>
@@ -3087,7 +3086,6 @@
 <translation id="5499313591153584299">Цей файл може зашкодити вашому комп’ютеру.</translation>
 <translation id="5500122897333236901">Ісландська</translation>
 <translation id="5502500733115278303">Імпортовано із Firefox</translation>
-<translation id="5506868365569362143">Зміна режиму Touch HUD</translation>
 <translation id="5507756662695126555">Неспростовність</translation>
 <translation id="5509693895992845810">Зберегти &amp;як...</translation>
 <translation id="5509914365760201064">Видавець: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@
 <translation id="6404519443262761446">Вимагати розблокувати екран для виходу з режиму сну.</translation>
 <translation id="6406303162637086258">Імітувати перезапуск веб-переглядача</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
-<translation id="6407080938771313237">Індикатор проекції дотику</translation>
 <translation id="6408118934673775994">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Спливаючі вікна</translation>
 <translation id="6410063390789552572">Немає доступу до бібліотеки мережі</translation>
@@ -3854,7 +3851,7 @@
 <translation id="6663792236418322902">Вибраний вами пароль буде потрібен, щоб відновити цей файл пізніше. Зберігайте його в безпечному місці.</translation>
 <translation id="6664237456442406323">На жаль, ваш комп’ютер налаштовано за допомогою ідентифікатора апаратного забезпечення з невірною структурою. Це перешкоджає оновленню ОС Chrome найновішими виправленнями системи безпеки, а тому ваш комп’ютер <ph name="BEGIN_BOLD" />може бути вразливим до зловмисних атак<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не вдалося відкрити профіль. Вийдіть і знову ввійдіть.</translation>
-<translation id="6666647326143344290">за допомогою даних облікового запису Google</translation>
+<translation id="6666647326143344290">Введіть дані облікового запису Google</translation>
 <translation id="667517062706956822">Перекласти цю сторінку (<ph name="SOURCE_LANGUAGE" />) такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Маніпулятор підключено</translation>
 <translation id="6677037229676347494">Очікуваний ідентифікатор – "<ph name="EXPECTED_ID" />". Використаний ідентифікатор – "<ph name="NEW_ID" />".</translation>
@@ -4279,7 +4276,6 @@
 <translation id="7348093485538360975">Екранна клавіатура</translation>
 <translation id="7348749398828259943">Міжнародна клавіатура US Workman</translation>
 <translation id="7352651011704765696">Виникли проблеми</translation>
-<translation id="7353651168734309780">Розширення <ph name="EXTENSION_NAME" /> потребує нових дозволів</translation>
 <translation id="735745346212279324">VPN від’єднано</translation>
 <translation id="7360183604634508679">Меню закладок</translation>
 <translation id="7361039089383199231">$1 б</translation>
@@ -4605,7 +4601,6 @@
 <translation id="7839192898639727867">Ідентифікатор ключа суб'єкта сертифіката</translation>
 <translation id="7839804798877833423">Для отримання цих файлів буде використано приблизно <ph name="FILE_SIZE" /> мобільного передавання даних.</translation>
 <translation id="7839963980801867006">Виберіть, які редактори IME розширення будуть доступні в меню мови.</translation>
-<translation id="7842346819602959665">Найновіша версія розширення "<ph name="EXTENSION_NAME" />" потребує більше дозволів, тому його було вимкнуто.</translation>
 <translation id="7844992432319478437">Оновлення відмінностей</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="7846634333498149051">Клавіатура</translation>

@@ -2165,7 +2165,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">O <ph name="PLUGIN_NAME" /> é necessário para a exibição de alguns elementos desta página.</translation>
 <translation id="4090535558450035482">Esta extensão é gerenciada e não pode ser removida.</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
-<translation id="4092878864607680421">A versão mais recente do aplicativo "<ph name="APP_NAME" />" exige mais permissões, e por isso foi desativada.</translation>
 <translation id="4093955363990068916">Arquivo local:</translation>
 <translation id="4095507791297118304">Tela principal</translation>
 <translation id="409579654357498729">Adicionar ao Google Cloud Print</translation>
@@ -3084,7 +3083,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5499313591153584299">Este arquivo pode ser prejudicial para seu computador.</translation>
 <translation id="5500122897333236901">Islandês</translation>
 <translation id="5502500733115278303">Importado do Firefox</translation>
-<translation id="5506868365569362143">Alteração no modo de toque de HUB</translation>
 <translation id="5507756662695126555">Não repúdio</translation>
 <translation id="5509693895992845810">Salvar &amp;como...</translation>
 <translation id="5509914365760201064">Emissor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3664,7 +3662,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6404519443262761446">Exigir bloqueio de tela para ativação.</translation>
 <translation id="6406303162637086258">Simular reinicialização do navegador</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
-<translation id="6407080938771313237">HUD de toque com projeção</translation>
 <translation id="6408118934673775994">Ler e alterar seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="6410063390789552572">Não é possível acessar a biblioteca de rede</translation>
@@ -4278,7 +4275,6 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="7348749398828259943">Teclado Workman internacional dos EUA</translation>
 <translation id="7352651011704765696">Algo deu errado</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> requer novas permissões</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7360183604634508679">Menu Favoritos</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4605,7 +4601,6 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7839192898639727867">ID da chave do requerente do certificado</translation>
 <translation id="7839804798877833423">A busca destes arquivos usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="7839963980801867006">Selecione quais IMEs de extensão ficarão disponíveis no menu de idiomas.</translation>
-<translation id="7842346819602959665">A versão mais recente da extensão "<ph name="EXTENSION_NAME" />" exige mais permissões, e por isso foi desativada.</translation>
 <translation id="7844992432319478437">Atualizando diff</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7846634333498149051">Teclado</translation>

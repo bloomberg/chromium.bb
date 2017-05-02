@@ -710,7 +710,7 @@
 <translation id="2025632980034333559"><ph name="APP_NAME" /> ক্র্যাশ করেছে৷ এক্সটেনশন পুনঃসূচনা করতে এই বেলুনটি ক্লিক করুন৷</translation>
 <translation id="2028531481946156667">বিন্যাসনের প্রক্রিয়াটি শুরু করতে পারেনা৷</translation>
 <translation id="2028997212275086731">RAR আর্কাইভ</translation>
-<translation id="2034346955588403444">অন্য WiFi নেটওয়ার্ক যোগ করুন</translation>
+<translation id="2034346955588403444">অন্য ওয়াই ফাই নেটওয়ার্ক যোগ করুন</translation>
 <translation id="2039623879703305659">আঙ্গুল অতি দ্রুত সরানো হয়েছে</translation>
 <translation id="2040460856718599782">ওহো! আপনাকে প্রমাণীকরণ করতে চেষ্টা করার সময় কিছু ত্রুটি হয়েছিল৷  দয়া করে আপনার লগ-ইন শংসাপত্রাদি আবার পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="204497730941176055">Microsoft শংসাপত্র টেম্পলেট নাম</translation>
@@ -816,7 +816,7 @@
 <translation id="2187317261103489799">সনাক্ত করুন (ডিফল্ট)</translation>
 <translation id="2187895286714876935">সার্ভার শংসাপত্র  আমদানি  ত্রুটি</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> খুলুন</translation>
-<translation id="2190069059097339078">WiFi শংসাপত্র সংগ্রহকারী</translation>
+<translation id="2190069059097339078">ওয়াই ফাই শংসাপত্র সংগ্রহকারী</translation>
 <translation id="219008588003277019">স্থানীয় গ্রাহক মডিউল: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(খালি)</translation>
 <translation id="2190469909648452501">কমান</translation>
@@ -882,6 +882,7 @@
 <translation id="2260567344816042527">আপনি অন্য নেটওয়ার্কের সাথে সংযুক্ত না থাকলে Google Chrome সেলুলার ডেটা ব্যবহার করবে।</translation>
 <translation id="2262477216570151239">পুনরাবৃত্তির আগের বিলম্ব</translation>
 <translation id="226269835214688456">আপনি Chromebook এর জন্য Smart Lock বন্ধ করলে, আপনি আপনার ফোন ব্যবহার করে Chrome ডিভিইসগুলি আনলক করতে পারবেন না। আপনাকে আপনার পাসওয়ার্ড লিখতে হবে।</translation>
+<translation id="2263189956353037928">বেরিয়ে আসুন এবং আবার প্রবেশ করুন</translation>
 <translation id="2263497240924215535">(অক্ষম)</translation>
 <translation id="2266168284394154563">স্ক্রিন জুম পুনরায় সেট করুন</translation>
 <translation id="2266763207955011525">স্থানীয় প্রিন্টারগুলি সেট আপ বা পরিচালনা করুন।</translation>
@@ -918,6 +919,7 @@
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2317031807364506312">বাতিল করুন</translation>
 <translation id="2318143611928805047">কাগজের আকার</translation>
+<translation id="2318817390901984578">Android অ্যাপ ব্যবহার করতে, আপনার <ph name="DEVICE_TYPE" /> চার্জ ও আপডেট করতে।</translation>
 <translation id="2318923050469484167">বর্তমান ছদ্মবেশী সেশন (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">শিরোলেখ এবং পাদলেখ</translation>
 <translation id="2325650632570794183">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ্লিকেশন খুঁজতে দয়া করে Chrome ওয়েব দোকান দেখুন৷</translation>
@@ -1207,6 +1209,7 @@
 <translation id="2733275712367076659">আপনার পরিচয় শনাক্তকরী এই সংস্থাগুলির থেকে আপনার কাছে শংসাপত্র আছে:</translation>
 <translation id="2733364097704495499">আপনি কি Google মেঘ মুদ্রণে মুদ্রকটিকে <ph name="PRINTER_NAME" /> নিবন্ধিত করতে চান?</translation>
 <translation id="2735698359135166290">রোমানিয়ান আদর্শ কীবোর্ড</translation>
+<translation id="2736434052592900364">সেটিংসে Chrome সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করুন</translation>
 <translation id="2737363922397526254">সঙ্কুচিত করুন...</translation>
 <translation id="2738771556149464852">এরপরে নয়</translation>
 <translation id="2739191690716947896">ডিবাগ</translation>
@@ -1367,7 +1370,7 @@
 <translation id="2932883381142163287">আপত্তিজনক হিসাবে অভিযোগ করুন</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" /> লিঙ্কগুলি খুলুন</translation>
 <translation id="2938685643439809023">মঙ্গোলীয়</translation>
-<translation id="2939938020978911855">উপলব্ধ Bluetooth ডিভাইসগুলি দেখান</translation>
+<translation id="2939938020978911855">উপলব্ধ ব্লুটুথ ডিভাইসগুলি দেখান</translation>
 <translation id="2941112035454246133">নিম্ন</translation>
 <translation id="2942290791863759244">জার্মান NEO 2 কীবোর্ড</translation>
 <translation id="2943400156390503548">স্লাইড</translation>
@@ -1602,6 +1605,7 @@
 <translation id="3274763671541996799">আপনি পূর্ণ পর্দায় দেথতে শুরু করেছেন৷</translation>
 <translation id="3275778913554317645">উইন্ডো হিসাবে খুলুন</translation>
 <translation id="3280237271814976245">এই &amp;রূপে সংরক্ষণ করুন...</translation>
+<translation id="3280243678470289153">Chrome থেকে যান</translation>
 <translation id="3280431534455935878">প্রস্তুতি</translation>
 <translation id="3282568296779691940">Chrome-এ প্রবেশ করুন</translation>
 <translation id="3285322247471302225">নতুন &amp;ট্যাব</translation>
@@ -2152,7 +2156,6 @@
 <translation id="4090404313667273475">কিছু সামগ্রী এই পৃষ্ঠায় প্রদর্শন করতে <ph name="PLUGIN_NAME" /> আবশ্যক৷</translation>
 <translation id="4090535558450035482">(এই এক্সটেনশানটি পরিচালিত হচ্ছে এবং সরানো যাবে না।)</translation>
 <translation id="4091434297613116013">কাগজের তাল</translation>
-<translation id="4092878864607680421">"<ph name="APP_NAME" />" অ্যাপটির নবীনতম সংস্করণটির আরো অনুমতির প্রয়োজন, তাই এটি অক্ষম করা আছে৷</translation>
 <translation id="4093955363990068916">স্থানীয় ফাইল:</translation>
 <translation id="4095507791297118304">প্রাথমিক প্রদর্শন</translation>
 <translation id="409579654357498729">মেঘ মুদ্রণে যোগ করুন</translation>
@@ -2433,7 +2436,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরো...</translation>
 <translation id="4576537685267142337">আঙ্গুল তুলুন, তারপরে আবার সেন্সরে স্পর্শ করুন</translation>
-<translation id="4576541033847873020">Bluetooth ডিভাইস যুক্ত করুন</translation>
+<translation id="4576541033847873020">ব্লুটুথ ডিভাইস যুক্ত করুন</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> কাস্ট করতে ব্যর্থ হয়েছে।</translation>
 <translation id="4580526846085481512">আপনি কি "$1" আইটেম মুছতে চান?</translation>
 <translation id="458150753955139441">ইতিহাস দেখার জন্য পেছনে গিয়ে প্রসঙ্গ মেনুতে টিপুন</translation>
@@ -2597,7 +2600,7 @@
 <translation id="4823484602432206655">ব্যবহারকারী এবং ডিভাইস সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="4823651846660089135">ডিভাইস শুধুমাত্র পঠনযোগ্য</translation>
 <translation id="4827948050554950725">ক্রেডিট কার্ড যোগ করুন</translation>
-<translation id="4828493911650550108">অ্যাপ্লিকেশান এবং পরিষেবাগুলিকে Wi-Fi নেটওয়ার্কগুলি এবং Bluetooth ডিভাইসগুলির জন্য স্ক্যান করার অনুমতি দিয়ে অবস্থানের নির্ভুলতার উন্নত করুন।</translation>
+<translation id="4828493911650550108">অ্যাপ্লিকেশান এবং পরিষেবাগুলিকে Wi-Fi নেটওয়ার্কগুলি এবং ব্লুটুথ ডিভাইসগুলির জন্য স্ক্যান করার অনুমতি দিয়ে অবস্থানের নির্ভুলতার উন্নত করুন।</translation>
 <translation id="4828937774870308359">অস্ট্রেলীয়</translation>
 <translation id="4829768588131278040">পিন সেট আপ করুন</translation>
 <translation id="4830573902900904548">আপনার <ph name="DEVICE_TYPE" /> <ph name="NETWORK_NAME" /> ব্যবহার করে ইন্টারনেটে সংযুক্ত হতে অক্ষম। দয়া করে অন্য নেটওয়ার্ক বেছে নিন। <ph name="LEARN_MORE_LINK_START" />আরো জানুন<ph name="LEARN_MORE_LINK_END" /></translation>
@@ -3094,6 +3097,7 @@
 <translation id="5534520101572674276">আকার গণনা করা হচ্ছে</translation>
 <translation id="5535941515421698170">এছাড়াও এই ডিভাইস থেকে আপনার বিদ্যমান ডেটা মুছুন</translation>
 <translation id="5537725057119320332">কাস্ট করুন</translation>
+<translation id="5541687815721799001">অ্যাপ ব্যবহার করুন</translation>
 <translation id="5542132724887566711">প্রোফাইল</translation>
 <translation id="5543983818738093899">স্থিতি চেক করা হচ্ছে...</translation>
 <translation id="5546477470896554111">বিদ্যুতের উৎস পরিচালনা করুন...</translation>
@@ -3207,6 +3211,7 @@
 <translation id="5729996640881880439">দুঃখিত, আমরা এই ত্রুটির জন্য কোড প্রদর্শন করতে পারবো না৷</translation>
 <translation id="5731247495086897348">আ&amp;টকান এবং যান</translation>
 <translation id="5734362860645681824">যোগাযোগগুলি</translation>
+<translation id="5735973442555172575">Android অ্যাপ ব্যবহার করতে আবার প্রবেশ করে আপডেট করুন।</translation>
 <translation id="5736796278325406685">অনুগ্রহ করে একটি বৈধ ইউজারনেম লিখুন</translation>
 <translation id="5739458112391494395">খুব বড়</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" />, এবং আরো <ph name="NUM_ADDITIONAL_LANGUAGES" />টি</translation>
@@ -3338,6 +3343,7 @@
 <translation id="59174027418879706">সক্ষম করা হযেছে</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{১টি ব্যবহৃত হচ্ছে}one{#টি ব্যবহৃত হচ্ছে}other{#টি ব্যবহৃত হচ্ছে}}</translation>
 <translation id="5920543303088087579">এই নেটওয়ার্কের সাথে সংযোগ আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে</translation>
+<translation id="5921745308587794300">উইন্ডো ঘোরান</translation>
 <translation id="5924047253200400718">সহায়তা পান<ph name="SCANNING_STATUS" /></translation>
 <translation id="5925147183566400388">সার্টিফিকেশান প্র্যাকটিস স্টেটমেন্ট পয়েন্টার</translation>
 <translation id="5931146425219109062">আপনার দ্বারা পরিদর্শন করা ওয়েবসাইটগুলিতে আপনার সমস্ত ডেটা পড়ুন ও সংশোধন করুন</translation>
@@ -3373,7 +3379,7 @@
 <translation id="5979421442488174909">&amp;এতে অনুবাদ করুন <ph name="LANGUAGE" /></translation>
 <translation id="5982621672636444458">বাছাই বিকল্পগুলি</translation>
 <translation id="5984222099446776634">সাম্প্রতিককালে দেখা</translation>
-<translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />এটি আপনার ডিভাইস সম্পর্কিত সাধারণ তথ্য এবং আপনি কীভাবে এটি ব্যবহার করেন সে বিষয়ের তথ্য হতে পারে যেমন, যখন ঠিক যেমনটি কাজ করা দরকার তেমনভাবে জিনিসপত্র কাজ না করে সে সময়ের ব্যাটারির স্তর, আপনি কত ঘনঘন আপনার অ্যাপ্লিকেশান ব্যবহার করেন, আপনার নেটওয়ার্ক সংযোগ (যেমন Wi-Fi ও Bluetooth) এর গুণমান ও স্থায়িত্ব এবং ক্র্যাশ প্রতিবেদনগুলি। সবার জন্য Google এর পণ্য ও পরিষেবাগুলি উন্নত করার কাজে এটি ব্যবহার করা হবে। কিছু সমষ্টিভূত তথ্য অংশীদারদের যেমন, Android বিকাশকারীদেরকে তাদের অ্যাপ্লিকেশান ও পণ্যগুলি আরো উন্নত করতেও সহায়তা করবে।<ph name="END_PARAGRAPH1" />
+<translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />এটি আপনার ডিভাইস সম্পর্কিত সাধারণ তথ্য এবং আপনি কীভাবে এটি ব্যবহার করেন সে বিষয়ের তথ্য হতে পারে যেমন, যখন ঠিক যেমনটি কাজ করা দরকার তেমনভাবে জিনিসপত্র কাজ না করে সে সময়ের ব্যাটারির স্তর, আপনি কত ঘনঘন আপনার অ্যাপ্লিকেশান ব্যবহার করেন, আপনার নেটওয়ার্ক সংযোগ (যেমন Wi-Fi ও ব্লুটুথ) এর গুণমান ও স্থায়িত্ব এবং ক্র্যাশ প্রতিবেদনগুলি। সবার জন্য Google এর পণ্য ও পরিষেবাগুলি উন্নত করার কাজে এটি ব্যবহার করা হবে। কিছু সমষ্টিভূত তথ্য অংশীদারদের যেমন, Android বিকাশকারীদেরকে তাদের অ্যাপ্লিকেশান ও পণ্যগুলি আরো উন্নত করতেও সহায়তা করবে।<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />আপনি যে কোনো সময় Android অ্যাপ্লিকেশান সেটিংস থেকে এটি চালু বা বন্ধ করতে পারেন। এর ফলে প্রয়োজনীয় পরিষেবা যেমন, সিস্টেম আপডেট ও নিরাপত্তা গ্রহণের জন্য আপনার ডিভাইসটির প্রয়োজনীয় ডেটা পাঠানোর সক্ষমতা প্রভাবিত হবে না।<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5991049340509704927">বিবর্ধিত করুন</translation>
 <translation id="5993332328670040093">আপনার ডেটা ব্যবহার আর পরিমাপ করা হবে না।</translation>
@@ -3639,7 +3645,6 @@
 <translation id="6404519443262761446">নিদ্রা মোড থেকে জাগতে স্ক্রীন লক দরকার।</translation>
 <translation id="6406303162637086258">ব্রাউজার আরম্ভ অনুকরণ করুন</translation>
 <translation id="6406506848690869874">সিঙ্ক</translation>
-<translation id="6407080938771313237">অভিক্ষেপ স্পর্শ HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ও <ph name="WEBSITE_3" /> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="6409731863280057959">পপ-আপসমূহ</translation>
 <translation id="6410063390789552572">নেটওয়ার্ক গ্রন্থাগার অ্যাক্সেস করা যায় না</translation>
@@ -3650,6 +3655,7 @@
 <translation id="6412931879992742813">নতুন ছদ্মবেশ উইন্ডো</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> এর পূর্বে ইনস্টল করা সংস্করণে ফিরিয়ে নিয়ে যাওয়া হচ্ছে</translation>
 <translation id="6418481728190846787">সমস্ত অ্যাপ্লিকেশানের অ্যাক্সেস স্থায়ীভাবে সরান</translation>
+<translation id="6418511932144861495">জরুরী আপডেট ইনস্টল করুন</translation>
 <translation id="6419288379019356534">এই ডিভাইসটি <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> দ্বারা পরিচালিত হয়।
     <ph name="LINE_BREAK" />
     আপনার <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> অ্যাকাউন্টে প্রবেশ করুন চালিয়ে যেতে দয়া করে "পরবর্তী" ক্লিক করুন।</translation>
@@ -3695,6 +3701,7 @@
 <translation id="646727171725540434">HTTP প্রক্সি</translation>
 <translation id="6468485451923838994">হরফগুলি</translation>
 <translation id="6472893788822429178">হোম বোতাম দেখান</translation>
+<translation id="6473842110411557830">পাওয়ারওয়াশের সচিত্র বর্ণনা</translation>
 <translation id="6474706907372204693">পূর্ববর্তী ইনপুট পদ্ধতি</translation>
 <translation id="6474884162850599008">Google ড্রাইভ অ্যাকাউন্টের সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> আপনার স্ক্রীনের সামগ্রী শেয়ার করতে চায়। আপনি কী শেয়ার করতে চান তা বেছে নিন।</translation>
@@ -3840,6 +3847,7 @@
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> ব্যক্তি পরিবর্তন করুন</translation>
 <translation id="6690659332373509948">ফাইল বিশ্লেষণ করতে অক্ষম: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">এই ডিভাইসটিতে যোগ করতে একটি তত্ত্বাবধানে থাকা ব্যবহারকারী নির্বাচন করুন৷</translation>
+<translation id="6691331417640343772">Google ড্যাশবোর্ডে সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>
 <translation id="6691936601825168937">&amp;ফরওয়ার্ড</translation>
 <translation id="6698381487523150993">তৈরি হয়েছে:</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1" /> ও <ph name="WEBSITE_2" /> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
@@ -3994,6 +4002,7 @@
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6949306908218145636">খোলা পৃষ্ঠাগুলিকে বুকমার্ক করুন...</translation>
 <translation id="6955446738988643816">পপআপ সংবীক্ষণ</translation>
+<translation id="6957519909849772545">একটি জরুরী আপডেট করতে হবে। শুরু করতে প্রবেশ করুন।</translation>
 <translation id="695755122858488207">অনির্বাচিত রেডিও বোতাম</translation>
 <translation id="696203921837389374">মোবাইল ডেটার মাধ্যমে সিঙ্ক করা সক্ষম করুন</translation>
 <translation id="6964390816189577014">হিরো</translation>
@@ -4250,7 +4259,6 @@
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="7348749398828259943">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক কীবোর্ড</translation>
 <translation id="7352651011704765696">কিছু সমস্যা হয়েছে</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" />-এর নতুন অনুমতি প্রয়োজন</translation>
 <translation id="735745346212279324">VPN সংযোগ বিচ্ছিন্ন করা হয়েছে</translation>
 <translation id="7360183604634508679">Bookmarks মেনু</translation>
 <translation id="7361039089383199231">$১ বাইট</translation>
@@ -4499,6 +4507,7 @@
 <translation id="7719421816612904796">প্রশিক্ষণের সময় শেষ হয়েছে</translation>
 <translation id="771953673318695590">প্রশ্ন-উত্তর</translation>
 <translation id="7720375555307821262">এই ব্যক্তিকে তত্ত্বাবধান করার জন্য, <ph name="BEGIN_LINK" />Chrome এ প্রবেশ করুন<ph name="END_LINK" />।</translation>
+<translation id="7721179060400456005">উইন্ডোগুলিকে স্ক্রিন জুড়ে দেখানোর অনুমতি দিন।</translation>
 <translation id="7724603315864178912">কাটুন</translation>
 <translation id="7728668285692163452">চ্যানেলের পরিবর্তন পরে প্রয়োগ করা হবে</translation>
 <translation id="7730449930968088409">আপনার স্ক্রীনের সামগ্রী ক্যাপচার করতে চায়</translation>
@@ -4573,7 +4582,6 @@
 <translation id="7839192898639727867">শংসাপত্র বিষয় কী ID</translation>
 <translation id="7839804798877833423">এই ফাইলগুলি আনয়ন করতে আনুমানিক মোবাইল ডেটার <ph name="FILE_SIZE" /> ব্যবহার করবে</translation>
 <translation id="7839963980801867006">ভাষা মেনুতে কোনো এক্সটেনশান IME উপলব্ধ হবে তা নির্বাচন করুন৷</translation>
-<translation id="7842346819602959665">এক্সটেনশন "<ph name="EXTENSION_NAME" />"-এর সবচেয়ে নতুন সংস্করণটির আরো অনুমতির প্রয়োজন, সেই কারণে এটি অক্ষম করা হয়েছে৷</translation>
 <translation id="7844992432319478437">ভিন্ন আপডেট হচ্ছে</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
@@ -4596,6 +4604,7 @@
 <translation id="7874357055309047713">সর্বদা সমস্ত সাইটে চালু রাখুন</translation>
 <translation id="7876243839304621966">সকল সরান</translation>
 <translation id="7877451762676714207">অজানা সার্ভার ত্রুটি৷ দয়া করে আবার চেষ্টা করুন, অথবা সার্ভার প্রশাসকের সাথে যোগাযোগ করুন৷</translation>
+<translation id="7877680364634660272">ভ্রমণ</translation>
 <translation id="7881483672146086348">আ্যাকাউন্ট দেখুন</translation>
 <translation id="7881969471599061635">সাবটাইটেল অক্ষম করুন</translation>
 <translation id="7882358943899516840">পরিষেবা প্রদানকারীর ধরন</translation>
@@ -5305,6 +5314,7 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সঙ্গে একটি উইন্ডো শেয়ার করছে।</translation>
 <translation id="8946284507644756416">আপনার <ph name="DEVICE_TYPE" /> আপনার Android ফোন দিয়ে আনলক করা যাবে।</translation>
 <translation id="8946359700442089734">এই <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইসে ডিবাগিং বৈশিষ্ট্যগুলি সম্পূর্ণরূপে সক্ষম করা নেই৷</translation>
+<translation id="8948677146203372548">আপডেট করা হয়েছে। এখন আপনি Android অ্যাপ ব্যবহার করতে পারেন।</translation>
 <translation id="895347679606913382">শুরু হচ্ছে...</translation>
 <translation id="8954952943849489823">স্থানান্তরণ ব্যর্থ হয়েছে, অপ্রত্যাশিত ত্রুটি: $1</translation>
 <translation id="895586998699996576">$ 1 চিত্র</translation>
@@ -5381,6 +5391,7 @@
 <translation id="9046895021617826162">সংযোগ ব্যর্থ হয়েছে</translation>
 <translation id="9050666287014529139">পাসফ্রেজ</translation>
 <translation id="9052208328806230490">আপনি আপনার মুদ্রকগুলি <ph name="EMAIL" /> অ্যাকাউন্টটি ব্যবহার করে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত করেছেন</translation>
+<translation id="9053893665344928494">আমার পছন্দ মনে রাখুন</translation>
 <translation id="9056034633062863292">Chromebox আপডেট করা হচ্ছে</translation>
 <translation id="9056810968620647706">কোন মিল খুঁজে পাওয়া যায় নি৷</translation>
 <translation id="9057119625587205566">আশেপাশে কোনো প্রিন্টার নেই</translation>
@@ -5463,7 +5474,7 @@
 <translation id="9170397650136757332">এবার আপনার আঙ্গুলের ছাপের সমস্ত অংশ ক্যাপচার করতে আপনার আঙ্গুল সামান্য সরান</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="9170884462774788842">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি থিম জুড়েছে যা Chrome এর কাজ করার পদ্ধতিকে পাল্টে দিতে পারে৷</translation>
-<translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Bluetooth ডিভাইস সংযুক্ত হয়েছে</translation>
+<translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - ব্লুটুথ ডিভাইস সংযুক্ত হয়েছে</translation>
 <translation id="9177499212658576372">আপনি বর্তমানে <ph name="NETWORK_TYPE" /> নেটওয়ার্কের সাথে সংযুক্ত৷</translation>
 <translation id="917861274483335838">প্ল্যাগ ইন অবরুদ্ধ করা পরিচালনা করুন...</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" />, থেকে <ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

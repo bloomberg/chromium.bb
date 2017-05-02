@@ -2164,7 +2164,6 @@
 <translation id="4090404313667273475">इस पेज पर कुछ तत्‍व प्रदर्शित करने के लिए <ph name="PLUGIN_NAME" /> की आवश्‍यकता है.</translation>
 <translation id="4090535558450035482">(यह एक्‍सटेंशन प्रबंधित है और इसे निकाला नहीं जा सकता.)</translation>
 <translation id="4091434297613116013">कागज़ की पत्रक</translation>
-<translation id="4092878864607680421">ऐप्स  "<ph name="APP_NAME" />" के सबसे नए वर्शन को अधिक अनुमतियों की आवश्यकता है, इसलिए इसे अक्षम कर दिया गया है.</translation>
 <translation id="4093955363990068916">स्थानीय फ़ाइल:</translation>
 <translation id="4095507791297118304">प्राथमिक प्रदर्शन</translation>
 <translation id="409579654357498729">क्लाउड प्रिंट में जोड़ें</translation>
@@ -3086,7 +3085,6 @@
 <translation id="5499313591153584299">यह फ़ाइल आपके कंप्‍यूटर के लिए हानिकारक हो सकती है.</translation>
 <translation id="5500122897333236901">आइसलैंडिक</translation>
 <translation id="5502500733115278303">Firefox से आयात किया गया</translation>
-<translation id="5506868365569362143">Touch HUD मोड में बदलाव</translation>
 <translation id="5507756662695126555">गैर-अस्वीकरण</translation>
 <translation id="5509693895992845810">इस &amp;रूप में सहेजें...</translation>
 <translation id="5509914365760201064">जारीकर्ता: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3664,7 +3662,6 @@
 <translation id="6404519443262761446">निष्क्रिय से सक्रिय होने के लिए स्क्रीन लॉक आवश्यक है.</translation>
 <translation id="6406303162637086258">ब्राउज़र पुनर्प्रारंभ को सिम्युलेट करें</translation>
 <translation id="6406506848690869874">समन्वय</translation>
-<translation id="6407080938771313237">प्रक्षेपण स्पर्श HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और <ph name="WEBSITE_3" /> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="6410063390789552572">नेटवर्क लाइब्रेरी तक नहीं पहुंच सकता</translation>
@@ -4020,7 +4017,7 @@
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6949306908218145636">खुले पृष्ठों को बुकमार्क करें...</translation>
 <translation id="6955446738988643816">पॉपअप का निरीक्षण करें</translation>
-<translation id="6957519909849772545">आपको एक महत्वपूर्ण अपडेट मिला है. प्रारंभ करने के लिए प्रवेश करें.</translation>
+<translation id="6957519909849772545">आपको एक नया महत्वपूर्ण अपडेट मिला है. प्रारंभ करने के लिए प्रवेश करें.</translation>
 <translation id="695755122858488207">अचयनित रेडियो बटन</translation>
 <translation id="696203921837389374">मोबाइल डेटा पर समन्‍वयन सक्षम करें</translation>
 <translation id="6964390816189577014">हीरो</translation>
@@ -4278,7 +4275,6 @@
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="7348749398828259943">यूएस वर्कमैन अंतर्राष्‍ट्रीय कीबोर्ड</translation>
 <translation id="7352651011704765696">कुछ गलत हुआ</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> को नई अनुमतियों की आवश्‍यकता है</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7360183604634508679">बुकमार्क मेनू</translation>
 <translation id="7361039089383199231">$1 बाइट</translation>
@@ -4604,7 +4600,6 @@
 <translation id="7839192898639727867">प्रमाणपत्र विषय कुंजी ID</translation>
 <translation id="7839804798877833423">इन फ़ाइलों को लाने में मोबाइल डेटा का लगभग <ph name="FILE_SIZE" /> उपयोग होगा.</translation>
 <translation id="7839963980801867006">भाषा मेनू में उपलब्ध होने वाले एक्सटेंशन IME चुनें.</translation>
-<translation id="7842346819602959665">एक्सटेंशन "<ph name="EXTENSION_NAME" />" के सबसे नए वर्शन को अधिक अनुमतियों की आवश्यकता है, इसलिए इसे अक्षम कर दिया गया है.</translation>
 <translation id="7844992432319478437">अंतर अपडेट हो रहा है</translation>
 <translation id="7846076177841592234">चयन हटाएं</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>

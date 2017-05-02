@@ -236,6 +236,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3549657413697417275">Cerca el teu historial.</translation>
 <translation id="3557336313807607643">Afegeix als contactes</translation>
 <translation id="3583454905526475291">No s'ha pogut iniciar l'aplicació</translation>
+<translation id="3587482841069643663">Tots</translation>
 <translation id="3590487821116122040">Emmagatzematge del lloc web que Chrome no considera important (com ara els llocs web sense configuració desada o aquells que no visiteu sovint)</translation>
 <translation id="360480449234699036">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el seu context a la Cerca de Google i ofereix com a resultat definicions, imatges, resultats de la cerca i altres detalls.
 
@@ -730,7 +731,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 
 Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingut que tingueu baixat.</translation>
 <translation id="8636825310635137004">Activeu la sincronització per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
-<translation id="8639651215196239211">Totes les baixades</translation>
 <translation id="8641930654639604085">Prova de bloquejar els llocs per a adults</translation>
 <translation id="8660471606262461360">De Google Payments</translation>
 <translation id="8662811608048051533">Et tanca la sessió de la majoria de llocs.</translation>

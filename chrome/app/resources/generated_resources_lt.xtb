@@ -2166,7 +2166,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4090404313667273475">Norint pateikti kelis elementus šiame puslapyje reikalingas papildinys „<ph name="PLUGIN_NAME" />“.</translation>
 <translation id="4090535558450035482">(Šis plėtinys tvarkomas ir jo negalima pašalinti.)</translation>
 <translation id="4091434297613116013">popieriaus lapai</translation>
-<translation id="4092878864607680421">Naujausiai „<ph name="APP_NAME" />“ programos versijai reikia daugiau leidimų, todėl ji neleidžiama.</translation>
 <translation id="4093955363990068916">Vietinis failas:</translation>
 <translation id="4095507791297118304">Pagrindinis vaizdas</translation>
 <translation id="409579654357498729">Pridėti prie Spausdinimo iš debesies</translation>
@@ -3088,7 +3087,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5499313591153584299">Šis failas gali pažeisti jūsų kompiuterį.</translation>
 <translation id="5500122897333236901">Islandų</translation>
 <translation id="5502500733115278303">Importuota iš „Firefox“</translation>
-<translation id="5506868365569362143">Režimo keitimas palietus HUD</translation>
 <translation id="5507756662695126555">Ne atsisakymas</translation>
 <translation id="5509693895992845810">Išsaugoti &amp;kaip...</translation>
 <translation id="5509914365760201064">Išdavėjas: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3667,7 +3665,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="6404519443262761446">Norint pažadinti iš miego būsenos, reikia ekrano užrakto.</translation>
 <translation id="6406303162637086258">Imituoti naršyklės paleidimą iš naujo</translation>
 <translation id="6406506848690869874">Sinchronizavimas</translation>
-<translation id="6407080938771313237">Projektavimo paliečiant HUD</translation>
 <translation id="6408118934673775994">Skaityti ir keisti duomenis <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Iššokantieji langai</translation>
 <translation id="6410063390789552572">Nepavyksta pasiekti tinklo bibliotekos</translation>
@@ -4282,7 +4279,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="7348093485538360975">Ekraninė klaviatūra</translation>
 <translation id="7348749398828259943">JAV „Workman“ tarptautinė klaviatūra</translation>
 <translation id="7352651011704765696">Kažkas negerai</translation>
-<translation id="7353651168734309780">„<ph name="EXTENSION_NAME" />“ reikalingi nauji leidimai</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="7360183604634508679">Žymių meniu</translation>
 <translation id="7361039089383199231">$1 B</translation>
@@ -4608,7 +4604,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="7839192898639727867">Sertifikato subjekto rakto ID</translation>
 <translation id="7839804798877833423">Šiems failams gauti reikės apytiksliai <ph name="FILE_SIZE" /> duomenų mobiliesiems.</translation>
 <translation id="7839963980801867006">Pasirinkite, kurie plėtinio IME bus pasiekiami kalbos meniu.</translation>
-<translation id="7842346819602959665">Naujausiai plėtinio „<ph name="EXTENSION_NAME" />“ versijai reikia daugiau leidimų, todėl ji buvo išjungta.</translation>
 <translation id="7844992432319478437">Atnaujinamas skirt.</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
 <translation id="7846634333498149051">Klaviatūra</translation>

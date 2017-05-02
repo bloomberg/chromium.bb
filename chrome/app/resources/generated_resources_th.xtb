@@ -2165,7 +2165,6 @@
 <translation id="4090404313667273475">ต้องใช้ <ph name="PLUGIN_NAME" /> เพื่อแสดงเอลิเมนต์บางอย่างในหน้าเว็บนี้</translation>
 <translation id="4090535558450035482">(ส่วนขยายนี้มีการจัดการและไม่สามารถนำออกได้)</translation>
 <translation id="4091434297613116013">หน้ากระดาษ</translation>
-<translation id="4092878864607680421">แอปพลิเคชัน "<ph name="APP_NAME" />" รุ่นใหม่ล่าสุดจำเป็นต้องได้รับการอนุญาตมากกว่าเดิม ดังนั้นจึงมีการปิดใช้งานไว้</translation>
 <translation id="4093955363990068916">ไฟล์ในเครื่อง:</translation>
 <translation id="4095507791297118304">การแสดงผลหลัก</translation>
 <translation id="409579654357498729">เพิ่มไปยัง Cloud Print</translation>
@@ -2356,7 +2355,7 @@
 <translation id="4421932782753506458">ฟลัฟฟี</translation>
 <translation id="4422347585044846479">แก้ไขบุ๊กมาร์กสำหรับหน้านี้</translation>
 <translation id="4422428420715047158">โดเมน:</translation>
-<translation id="4423376891418188461">คืนค่าการตั้งค่า</translation>
+<translation id="4423376891418188461">กู้คืนการตั้งค่า</translation>
 <translation id="4423482519432579560">&amp;ตรวจการสะกด</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" /> ผู้ดูแลระบบต้องการให้คุณเปลี่ยนรหัสผ่าน</translation>
 <translation id="4425149324548788773">ไดรฟ์ของฉัน</translation>
@@ -3087,7 +3086,6 @@
 <translation id="5499313591153584299">ไฟล์นี้อาจเป็นอันตรายต่อคอมพิวเตอร์</translation>
 <translation id="5500122897333236901">ไอซ์แลนดิก</translation>
 <translation id="5502500733115278303">นำเข้าจาก Firefox</translation>
-<translation id="5506868365569362143">เปลี่ยนโหมด HUD การแตะ</translation>
 <translation id="5507756662695126555">การป้องกันการปฏิเสธความรับผิดชอบต่อข้อมูล</translation>
 <translation id="5509693895992845810">บันทึกเ&amp;ป็น...</translation>
 <translation id="5509914365760201064">ผู้ออก: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@
 <translation id="6404519443262761446">จำเป็นต้องล็อกหน้าจอเพื่อออกจากโหมดนอนหลับ</translation>
 <translation id="6406303162637086258">จำลองการรีสตาร์ทเบราว์เซอร์</translation>
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
-<translation id="6407080938771313237">HUD การแตะการฉายภาพ</translation>
 <translation id="6408118934673775994">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และ <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">ป๊อปอัป</translation>
 <translation id="6410063390789552572">ไม่สามารถเข้าถึงไลบรารีเครือข่าย</translation>
@@ -4278,7 +4275,6 @@
 <translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="7348749398828259943">แป้นพิมพ์ Workman สหรัฐฯ แบบสากล</translation>
 <translation id="7352651011704765696">มีข้อผิดพลาดเกิดขึ้น</translation>
-<translation id="7353651168734309780">ต้องมีการอนุญาตใหม่สำหรับ <ph name="EXTENSION_NAME" /></translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="7360183604634508679">เมนูบุ๊กมาร์ก</translation>
 <translation id="7361039089383199231">$1 ไบต์</translation>
@@ -4604,7 +4600,6 @@
 <translation id="7839192898639727867">รหัสคีย์หัวเรื่องใบรับรอง</translation>
 <translation id="7839804798877833423">การดึงไฟล์เหล่านี้จะใช้ข้อมูลมือถือขนาดประมาณ <ph name="FILE_SIZE" /></translation>
 <translation id="7839963980801867006">เลือกว่าจะให้ IME ส่วนขยายใดสามารถใช้งานได้ในเมนูภาษา</translation>
-<translation id="7842346819602959665">ส่วนขยายเวอร์ชันใหม่ล่าสุด "<ph name="EXTENSION_NAME" />" จำเป็นต้องได้รับการอนุญาตที่มากกว่าเดิม ดังนั้นจึงถูกปิดการใช้งานไว้</translation>
 <translation id="7844992432319478437">กำลังอัปเดตความต่าง</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="7846634333498149051">แป้นพิมพ์</translation>

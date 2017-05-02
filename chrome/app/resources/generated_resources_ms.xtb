@@ -2166,7 +2166,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> diperlukan untuk memaparkan beberapa unsur pada halaman ini.</translation>
 <translation id="4090535558450035482">(Sambungan ini diurus dan tidak boleh dialih keluar.)</translation>
 <translation id="4091434297613116013">helai kertas</translation>
-<translation id="4092878864607680421">Versi terbaru apl "<ph name="APP_NAME" />" memerlukan lebih banyak kebenaran, maka ia telah dilumpuhkan.</translation>
 <translation id="4093955363990068916">Fail setempat:</translation>
 <translation id="4095507791297118304">Paparan utama</translation>
 <translation id="409579654357498729">Tambahkan pada Cetakan Awan</translation>
@@ -3088,7 +3087,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5499313591153584299">Fail ini mungkin berbahaya bagi komputer anda.</translation>
 <translation id="5500122897333236901">Bahasa Iceland</translation>
 <translation id="5502500733115278303">Diimport Daripada Firefox</translation>
-<translation id="5506868365569362143">Sentuh pertukaran mod HUD</translation>
 <translation id="5507756662695126555">Bukan penolakan</translation>
 <translation id="5509693895992845810">Simpan &amp;Sebagai...</translation>
 <translation id="5509914365760201064">Pengeluar: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3666,7 +3664,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6404519443262761446">Kunci skrin perlu bangun daripada tidur.</translation>
 <translation id="6406303162637086258">Rangsang mula semula penyemak imbas</translation>
 <translation id="6406506848690869874">Segerak</translation>
-<translation id="6407080938771313237">HUD sentuh unjuran</translation>
 <translation id="6408118934673775994">Baca dan tukar data anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pop muncul</translation>
 <translation id="6410063390789552572">Tidak dapat mengakses perpustakaan rangkaian</translation>
@@ -4280,7 +4277,6 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
 <translation id="7348749398828259943">Papan kekunci US Workman international</translation>
 <translation id="7352651011704765696">Kesilapan telah berlaku</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> memerlukan kebenaran baharu</translation>
 <translation id="735745346212279324">VPN diputuskan sambungan</translation>
 <translation id="7360183604634508679">Menu penanda halaman</translation>
 <translation id="7361039089383199231">$1 bait</translation>
@@ -4605,7 +4601,6 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7839192898639727867">ID Kunci Subjek Sijil</translation>
 <translation id="7839804798877833423">Pengambilan fail ini akan menggunakan kira-kira <ph name="FILE_SIZE" /> data mudah alih.</translation>
 <translation id="7839963980801867006">Pilih IME sambungan yang akan tersedia dalam menu bahasa.</translation>
-<translation id="7842346819602959665">Versi terbaru sambungan "<ph name="EXTENSION_NAME" />" memerlukan lebih banyak kebenaran, jadi ia telah dilumpuhkan.</translation>
 <translation id="7844992432319478437">Mengemaskini beza</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>

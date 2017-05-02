@@ -2160,7 +2160,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4090404313667273475">יש צורך בפלאגין <ph name="PLUGIN_NAME" /> כדי להציג חלק מהרכיבים בדף זה.</translation>
 <translation id="4090535558450035482">(תוסף זה מנוהל ולא ניתן להסירו).</translation>
 <translation id="4091434297613116013">גליונות נייר</translation>
-<translation id="4092878864607680421">הגירסה החדשה ביותר של היישום "<ph name="APP_NAME" />" דורשת הרשאות נוספות, ולכן הושבתה.</translation>
 <translation id="4093955363990068916">קובץ מקומי:</translation>
 <translation id="4095507791297118304">צג ראשי</translation>
 <translation id="409579654357498729">‏הוסף ל-Google Cloud Print</translation>
@@ -3083,7 +3082,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5499313591153584299">קובץ זה עלול להסב נזק למחשב שלך.</translation>
 <translation id="5500122897333236901">איסלנדית</translation>
 <translation id="5502500733115278303">‏מיובא מ-Firefox</translation>
-<translation id="5506868365569362143">‏שינוי מצב של מגע HUD</translation>
 <translation id="5507756662695126555">אי התכחשות</translation>
 <translation id="5509693895992845810">שמור &amp;כ...</translation>
 <translation id="5509914365760201064">מנפיק: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3661,7 +3659,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6404519443262761446">מחייב נעילת מסך כדי לעורר ממצב שינה.</translation>
 <translation id="6406303162637086258">בצע הדמיה של הפעלת דפדפן מחדש</translation>
 <translation id="6406506848690869874">סנכרן</translation>
-<translation id="6407080938771313237">תצוגה עילית מסוג מגע להקרנה</translation>
 <translation id="6408118934673775994">לקרוא ולשנות את הנתונים שלך ב-<ph name="WEBSITE_1" />‏, <ph name="WEBSITE_2" /> וב-<ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">חלונות קופצים</translation>
 <translation id="6410063390789552572">לא ניתן לגשת לספריית רשת</translation>
@@ -4274,7 +4271,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7348093485538360975">מקלדת על המסך</translation>
 <translation id="7348749398828259943">‏מקלדת US Workman בינלאומית</translation>
 <translation id="7352651011704765696">משהו השתבש</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> דורש הרשאות חדשות</translation>
 <translation id="735745346212279324">‏VPN מנותק</translation>
 <translation id="7360183604634508679">תפריט הסימניות</translation>
 <translation id="7361039089383199231">$1 בייטים</translation>
@@ -4591,7 +4587,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7839192898639727867">מזהה מפתח של נושא אישור</translation>
 <translation id="7839804798877833423">הבאת קבצים אלה תשתמש בערך ב-<ph name="FILE_SIZE" /> של נתונים לנייד.</translation>
 <translation id="7839963980801867006">‏בחר אילו רכיבי IME של תוספים יהיו זמינים בתפריט השפה.</translation>
-<translation id="7842346819602959665">הגרסה החדשה ביותר של ההרחבה, "<ph name="EXTENSION_NAME" />", דורשת הרשאות נוספות, כך שהיא הושבתה.</translation>
 <translation id="7844992432319478437">מעדכן הבדל</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="7846634333498149051">מקלדת</translation>

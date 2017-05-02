@@ -1204,13 +1204,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
       Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, DNS-nimen tai IP-osoitteen sisältäviä palvelinvarmenteita ei pidetä luotettavina, jos niistä puuttuu subjectAlternativeName-laajennus.</translation>
 <translation id="557658534286111200">Ottaa kirjanmerkkien muokkauksen käyttöön tai poistaa sen käytöstä</translation>
 <translation id="5586942249556966598">Ei toimia</translation>
-<translation id="5613179474872285001">Määrittää pakollisen asiakasverkkotunnuksen nimen, joka pakotetaan käyttöön etäkäytön asiakassovelluksissa ja jota käyttäjät eivät voi muokata.
-
-          Jos tämä asetus on käytössä, vain määritetyssä verkkotunnuksessa olevat asiakassovellukset voivat muodostaa yhteyden isäntään.
-
-          Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, käytetään yhteystyypin oletuskäytäntöä. Tällöin asiakassovellukset voivat muodostaa yhteyden isäntään etätukea varten mistä tahansa verkkotunnuksesta. Muissa etäkäyttötapauksissa vain isännän omistaja voi muodostaa yhteyden.
-
-          Katso myös RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Palauta edellinen käyttökerta</translation>
 <translation id="5645779841392247734">Salli evästeet näissä sivustoissa</translation>
 <translation id="5694594914843889579">Jos tämän käytännön arvoksi on määritetty tosi, ulkoista tallennustilaa ei voi käyttää tiedostoselaimessa.
@@ -1506,13 +1499,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
-<translation id="695891079107014261">Määrittää vaaditun isäntäverkkotunnuksen nimen, joka pakotetaan etäkäytön isäntien käyttöön ja jota käyttäjät eivät voi muokata.
-
-          Jos tämä asetus on käytössä, isäntiä voi jakaa vain käyttämällä määritettyyn verkkotunnukseen rekisteröityjä tilejä.
-
-          Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, isäntiä voi jakaa kaikilla tileillä.
-
-          Katso myös RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Vaaditaanko paikallisilta luottamusankkureilta verkossa suoritettavat OCSP/CRL-tarkistukset vai ei</translation>
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>

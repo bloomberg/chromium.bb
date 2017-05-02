@@ -236,6 +236,7 @@
 <translation id="3549657413697417275">搜尋您的紀錄</translation>
 <translation id="3557336313807607643">新增為聯絡人</translation>
 <translation id="3583454905526475291">無法啟動應用程式</translation>
+<translation id="3587482841069643663">全部</translation>
 <translation id="3590487821116122040">Chrome 認定為不重要的網站 (例如未儲存任何設定的網站，或是您不常造訪的網站) 所儲存的資料</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
 
@@ -325,7 +326,7 @@
 <translation id="4535858793016067060">開啟 Android 安全性設定中的「不明來源」即可體驗「增強型新增至主畫面」實驗功能。體驗結束後請務必停用這項設定。</translation>
 <translation id="4558311620361989323">網頁快速鍵</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
-<translation id="4581964774250883625">您已啟用無痕模式。</translation>
+<translation id="4581964774250883625">你已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
 <translation id="4587589328781138893">網站</translation>
 <translation id="4605958867780575332">已移除項目：<ph name="ITEM_TITLE" /></translation>
@@ -730,7 +731,6 @@
 
 如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
-<translation id="8639651215196239211">所有下載內容</translation>
 <translation id="8641930654639604085">嘗試封鎖成人網站</translation>
 <translation id="8660471606262461360">來自 Google Payments</translation>
 <translation id="8662811608048051533">你會從大多數網站登出。</translation>

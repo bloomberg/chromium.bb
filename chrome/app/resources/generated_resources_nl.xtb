@@ -241,7 +241,7 @@
 <translation id="1359381790106966506">Rechten updaten</translation>
 <translation id="1361164813881551742">Handmatig toevoegen</translation>
 <translation id="1361655923249334273">Ongebruikt</translation>
-<translation id="136180453919764941">Accu - <ph name="STATUS" /></translation>
+<translation id="136180453919764941">Batterij - <ph name="STATUS" /></translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1364639026564874341">Houd je <ph name="DEVICE_TYPE" /> ontgrendeld wanneer je telefoon is ontgrendeld en zich in de buurt bevindt.
       Bluetooth wordt ingeschakeld voor alle compatibele apparaten van <ph name="USER_DISPLAY_EMAIL" /> en er wordt informatie over de hardware verzonden naar Google. &lt;a&gt;Meer informatie&lt;/a&gt;</translation>
@@ -2166,7 +2166,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Voor de weergave van sommige elementen op deze pagina is <ph name="PLUGIN_NAME" /> vereist.</translation>
 <translation id="4090535558450035482">(Deze extensie wordt beheerd en kan niet worden verwijderd.)</translation>
 <translation id="4091434297613116013">vellen papier</translation>
-<translation id="4092878864607680421">De nieuwste versie van de applicatie '<ph name="APP_NAME" />' vereist meer rechten. Daarom is deze applicatie uitgeschakeld.</translation>
 <translation id="4093955363990068916">Lokaal bestand:</translation>
 <translation id="4095507791297118304">Primair scherm</translation>
 <translation id="409579654357498729">Toevoegen aan Cloudprinter</translation>
@@ -2377,7 +2376,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4444304522807523469">Toegang tot documentscanners die zijn aangesloten via USB of die zich op het lokale netwerk bevinden</translation>
 <translation id="4444512841222467874">Als er geen ruimte beschikbaar wordt gemaakt, kunnen gebruikers en gegevens automatisch worden verwijderd.</translation>
 <translation id="4446933390699670756">Gespiegeld</translation>
-<translation id="4447465454292850432">Accu:</translation>
+<translation id="4447465454292850432">Batterij:</translation>
 <translation id="4449935293120761385">Over Automatisch aanvullen</translation>
 <translation id="4449996769074858870">Op dit tabblad wordt audio afgespeeld.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
@@ -3087,7 +3086,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5499313591153584299">Dit bestand is mogelijk schadelijk voor je computer.</translation>
 <translation id="5500122897333236901">IJslands</translation>
 <translation id="5502500733115278303">Geïmporteerd uit Firefox</translation>
-<translation id="5506868365569362143">Aanraak-HUD-modus wijzigen</translation>
 <translation id="5507756662695126555">Onweerlegbaarheid</translation>
 <translation id="5509693895992845810">Opslaan &amp;als...</translation>
 <translation id="5509914365760201064">Uitgever: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3228,7 +3226,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5729996640881880439">De code voor deze fout kan niet worden weergegeven.</translation>
 <translation id="5731247495086897348">Pla&amp;kken en gaan</translation>
 <translation id="5734362860645681824">Communicatie</translation>
-<translation id="5735973442555172575">Log weer in en voer een update uit om Android-apps te gebruiken.</translation>
+<translation id="5735973442555172575">Log weer in en voer een update uit om Android-apps te kunnen gebruiken.</translation>
 <translation id="5736796278325406685">Geef een geldige gebruikersnaam op</translation>
 <translation id="5739458112391494395">Zeer groot</translation>
 <translation id="5740331643563157105"><ph name="LANGUAGE_1" />, <ph name="LANGUAGE_2" /> en <ph name="NUM_ADDITIONAL_LANGUAGES" /> andere</translation>
@@ -3543,7 +3541,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6228691855869374890">Deze site heeft volledig beheer van MIDI-apparaten.</translation>
 <translation id="6229890768313448549">De Servicevoorwaarden van Google Play kunnen niet worden geladen. Probeer het opnieuw.</translation>
 <translation id="6231881193380278751">Voeg een queryparameter aan de URL toe om de pagina automatisch te laten vernieuwen: chrome://device-log/?refresh=&lt;sec&gt;</translation>
-<translation id="6232017090690406397">Accu</translation>
+<translation id="6232017090690406397">Batterij</translation>
 <translation id="6232116551750539448">Verbinding met <ph name="NAME" /> is verbroken</translation>
 <translation id="6237816943013845465">Hiermee kun je de schermresolutie aanpassen</translation>
 <translation id="6239558157302047471">&amp;Frame opnieuw laden</translation>
@@ -3665,7 +3663,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6404519443262761446">Schermvergrendeling is nodig om te activeren vanuit de slaapstand.</translation>
 <translation id="6406303162637086258">Opnieuw starten van browser simuleren</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
-<translation id="6407080938771313237">Projectie aanraak-HUD</translation>
 <translation id="6408118934673775994">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="6410063390789552572">Geen toegang tot netwerkbibliotheek</translation>
@@ -4279,7 +4276,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
 <translation id="7348749398828259943">Amerikaans Workman-toetsenbord (internationaal)</translation>
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
-<translation id="7353651168734309780">Voor <ph name="EXTENSION_NAME" /> zijn nieuwe rechten vereist</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7360183604634508679">Bladwijzermenu</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4604,7 +4600,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7839192898639727867">Sleutel-ID van certificaatonderwerp</translation>
 <translation id="7839804798877833423">Voor het ophalen van deze bestanden wordt ongeveer <ph name="FILE_SIZE" /> aan mobiele gegevens gebruikt.</translation>
 <translation id="7839963980801867006">Selecteer welke extensie-IME's beschikbaar moeten zijn in het taalmenu.</translation>
-<translation id="7842346819602959665">De nieuwste versie van de extensie '<ph name="EXTENSION_NAME" />' vereist meer rechten. Daarom is deze extensie uitgeschakeld.</translation>
 <translation id="7844992432319478437">Diff bijwerken</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>

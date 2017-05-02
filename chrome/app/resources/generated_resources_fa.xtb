@@ -1207,7 +1207,7 @@
 <translation id="2733275712367076659">شما گواهی هایی از این سازمان‌ها دارید که هویت شما را شناسایی می‌کنند:</translation>
 <translation id="2733364097704495499">‏آیا می‌خواهید چاپگر <ph name="PRINTER_NAME" /> را در Google Cloud Print ثبت کنید؟</translation>
 <translation id="2735698359135166290">صفحه‌کلید استاندارد رومانیایی</translation>
-<translation id="2736434052592900364">‏مدیریت «همگام‌سازی» و شخصی‌سازی Chrome در تنظیمات</translation>
+<translation id="2736434052592900364">‏مدیریت همگام‌سازی Chrome و شخصی‌سازی در تنظیمات</translation>
 <translation id="2737363922397526254">کوچک کردن...</translation>
 <translation id="2738771556149464852">نه بعد از</translation>
 <translation id="2739191690716947896">رفع اشکال</translation>
@@ -2162,7 +2162,6 @@
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> برای نمایش برخی از عناصر این صفحه لازم است.</translation>
 <translation id="4090535558450035482">(این برنامه افزودنی مدیریت می‌شود و نمی‌تواند حذف شود.)</translation>
 <translation id="4091434297613116013">صفحات کاغذ</translation>
-<translation id="4092878864607680421">جدیدترین نسخه برنامه "<ph name="APP_NAME" />" به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
 <translation id="4093955363990068916">فایل محلی:</translation>
 <translation id="4095507791297118304">نمایشگر اصلی</translation>
 <translation id="409579654357498729">‏افزودن به Cloud Print</translation>
@@ -3083,7 +3082,6 @@
 <translation id="5499313591153584299">شاید این فایل برای کامپیوتر شما مضر باشد.</translation>
 <translation id="5500122897333236901">ایسلندی</translation>
 <translation id="5502500733115278303">‏وارد شده از Firefox</translation>
-<translation id="5506868365569362143">‏تغییر حالت HUD لمسی</translation>
 <translation id="5507756662695126555">انکارناپذیری</translation>
 <translation id="5509693895992845810">ذخیره &amp;به‌عنوان...</translation>
 <translation id="5509914365760201064">صادرکننده: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3661,7 +3659,6 @@
 <translation id="6404519443262761446">برای بیدار کردن دستگاه، به قفل صفحه نیاز است.</translation>
 <translation id="6406303162637086258">شبیه‌سازی راه‌اندازی مجدد مرورگر</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
-<translation id="6407080938771313237">رابط لمسی پروژکتوری</translation>
 <translation id="6408118934673775994">خواندن و تغییر داده‌هایتان در <ph name="WEBSITE_1" />، ‏<ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">پنجره‌های بازشو</translation>
 <translation id="6410063390789552572">دسترسی به کتابخانه شبکه ممکن نیست</translation>
@@ -3865,7 +3862,7 @@
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> تعویض فرد</translation>
 <translation id="6690659332373509948">این فایل تجزیه نمی‌شود: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">یک کاربر نظارت‌شده را برای افزودن به این دستگاه انتخاب کنید.</translation>
-<translation id="6691331417640343772">‏مدیریت داده‌های همگام‌سازی‌شده در «داشبورد Google»</translation>
+<translation id="6691331417640343772">‏مدیریت داده‌های همگام‌سازی‌شده در داشبورد Google</translation>
 <translation id="6691936601825168937">&amp;ارسال کردن</translation>
 <translation id="6698381487523150993">ایجاد شده:</translation>
 <translation id="6698810901424468597">خواندن و تغییر داده‌هایتان در <ph name="WEBSITE_1" /> و <ph name="WEBSITE_2" /></translation>
@@ -4274,7 +4271,6 @@
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="7348749398828259943">‏صفحه‌کلید بین‌المللی US Workman</translation>
 <translation id="7352651011704765696">مشکلی پیش آمد</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> به مجوزهای جدید نیاز دارد</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7360183604634508679">منوی نشانک‌ها</translation>
 <translation id="7361039089383199231">$1 بایت</translation>
@@ -4601,7 +4597,6 @@
 <translation id="7839192898639727867">شناسه کلید موضوع گواهی</translation>
 <translation id="7839804798877833423">دریافت این فایل‌ها تقریباً <ph name="FILE_SIZE" /> از داده تلفن همراه شما را مصرف می‌کند.</translation>
 <translation id="7839963980801867006">‏انتخاب کنید کدام IME برنامه افزودنی در منوی زبان فعال شود.</translation>
-<translation id="7842346819602959665">جدیدترین نسخه برنامهٔ افزودنی "<ph name="EXTENSION_NAME" />" به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
 <translation id="7844992432319478437">به‌روزرسانی تفاوت</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="7846634333498149051">صفحه‌کلید</translation>

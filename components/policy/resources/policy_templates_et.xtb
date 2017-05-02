@@ -1268,13 +1268,6 @@
       Kui see reegel on määramata või määratud väärtusele Väär, ei usaldata serveri sertifikaate, millel pole laiendit subjectAlternativeName koos DNS-i nime või IP-aadressiga.</translation>
 <translation id="557658534286111200">Lubab või keelab järjehoidjate muutmise</translation>
 <translation id="5586942249556966598">Ära tee midagi</translation>
-<translation id="5613179474872285001">Seadistab nõutud kliendi domeeninime kaugjuurdepääsu klientidele ja takistab kasutajatel seda muuta.
-
-          Kui seade on lubatud, saavad hostiga ühenduse luua ainult määratud domeenis olevad kliendid.
-
-          Kui seade on keelatud või määramata, siis rakendatakse ühenduse tüübi vaikereegel. Kaugabi puhul võimaldab see mis tahes domeenist pärinevatel klientidel hostiga ühenduse luua; kaugjuurdepääs mis tahes ajal on võimalik ainult hosti omanikule.
-
-          Vt ka reeglit RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Viimase seansi taastamine</translation>
 <translation id="5645779841392247734">Luba küpsised nendel saitidel</translation>
 <translation id="5694594914843889579">Kui reegli väärtuseks on määratud Tõene, siis ei ole väline salvestusseade failibrauseris saadaval.
@@ -1596,14 +1589,6 @@
 <translation id="6943577887654905793">Maci/Linuxi eelistuse nimi:</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
-<translation id="695891079107014261">Seadistab nõutud hosti domeeninime kaugjuurdepääsu hostidele ja takistab kasutajatel seda muuta.
-
-          Kui seade on lubatud, siis saab hoste jagada ainult täpselt määratud domeeninimele registreeritud kontodelt.
-
-          Kui seade on keelatud või määramata, siis saab hoste jagada mis tahes kontolt.
-
-
-          Vt ka reeglit RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Kas OCSP/CRL-i onlain-kontroll on vajalikud kohalike usaldusvõtmete puhul või mitte</translation>
 <translation id="7003334574344702284">Reegli lubamisel imporditakse salvestatud paroolid eelmisest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 

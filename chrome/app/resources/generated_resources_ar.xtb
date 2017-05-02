@@ -2160,7 +2160,6 @@
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> مطلوب لعرض بعض العناصر في هذه الصفحة.</translation>
 <translation id="4090535558450035482">(هذه الإضافة مُدارة ولا يمكن إزالتها.)</translation>
 <translation id="4091434297613116013">أوراق</translation>
-<translation id="4092878864607680421">يتطلب أحدث إصدار من التطبيق "<ph name="APP_NAME" />" مزيدًا من الأذونات، لذا فقد تم تعطيله.</translation>
 <translation id="4093955363990068916">الملف المحلي:</translation>
 <translation id="4095507791297118304">شاشة أساسية</translation>
 <translation id="409579654357498729">إضافة إلى الطباعة في السحاب</translation>
@@ -3081,7 +3080,6 @@
 <translation id="5499313591153584299">قد يلحق هذا الملف الضرر بجهاز الكمبيوتر.</translation>
 <translation id="5500122897333236901">الأيسلندية</translation>
 <translation id="5502500733115278303">تمّ الاستيراد من متصفّح فايرفوكس</translation>
-<translation id="5506868365569362143">‏تغيير وضع HUD للمس</translation>
 <translation id="5507756662695126555">عدم الإنكار</translation>
 <translation id="5509693895992845810">&amp;حفظ باسم...</translation>
 <translation id="5509914365760201064">جهة الإصدار: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3660,7 +3658,6 @@
 <translation id="6404519443262761446">طلب قفل الشاشة للتنشيط من وضع السكون.</translation>
 <translation id="6406303162637086258">محاكاة إعادة تشغيل المتصفح</translation>
 <translation id="6406506848690869874">المزامنة</translation>
-<translation id="6407080938771313237">‏HUD للمس العرض</translation>
 <translation id="6408118934673775994">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> و <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">النوافذ المنبثقة</translation>
 <translation id="6410063390789552572">لا يمكن الدخول إلى مكتبة الشبكة</translation>
@@ -4274,7 +4271,6 @@
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="7348749398828259943">‏لوحة مفاتيح US Workman الدولية</translation>
 <translation id="7352651011704765696">حدث خطأ ما</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> تتطلب أذونات جديدة</translation>
 <translation id="735745346212279324">تم قطع اتصال الشبكة الظاهرية الخاصة</translation>
 <translation id="7360183604634508679">قائمة الإشارات</translation>
 <translation id="7361039089383199231">$1 بايت</translation>
@@ -4600,7 +4596,6 @@
 <translation id="7839192898639727867">معرّف مفتاح صاحب الشهادة</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>
 <translation id="7839963980801867006">حدد أدوات أسلوب تحرير الإضافات التي ستتوفر في قائمة اللغة..</translation>
-<translation id="7842346819602959665">يتطلب أحدث إصدار من الإضافة "<ph name="EXTENSION_NAME" />" مزيدًا من الأذونات، لذا فقد تم تعطيله.</translation>
 <translation id="7844992432319478437">تحديث الاختلافات</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>

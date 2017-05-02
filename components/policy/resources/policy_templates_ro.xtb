@@ -1216,13 +1216,6 @@
       Dacă politica nu este configurată sau dacă este dezactivată, certificatele de server din care lipsește extensia subjectAlternativeName cu un nume DNS sau o adresă IP nu vor fi considerate de încredere.</translation>
 <translation id="557658534286111200">Activează sau dezactivează editarea marcajelor</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
-<translation id="5613179474872285001">Configurează numele de domeniu client necesar care va fi impus pentru clienții cu acces la distanță și împiedică utilizatorii să îl modifice.
-
-          Dacă această setare este activată, numai clienții din domeniul indicat se pot conecta la gazdă.
-
-          Dacă această setare este dezactivată sau neconfigurată, se aplică politica prestabilită pentru tipul conexiunii. Pentru asistența la distanță, clienții din orice domeniu se pot conecta la gazdă. Pentru acces la distanță oricând, numai proprietarul gazdei se poate conecta.
-
-          Vezi și RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
 <translation id="5645779841392247734">Permite cookie-uri de pe aceste site-uri</translation>
 <translation id="5694594914843889579">Dacă această politică este activată, stocarea externă nu va fi disponibilă în browserul de fișiere.
@@ -1520,13 +1513,6 @@
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
-<translation id="695891079107014261">Configurează numele de domeniu gazdă necesar care va fi impus pentru gazdele cu acces la distanță și împiedică utilizatorii să îl modifice.
-
-          Dacă această setare este activată, gazdele pot fi accesate folosind numai conturi înregistrate pe numele de domeniu indicat.
-
-          Dacă această setare este dezactivată sau neconfigurată, gazdele pot fi accesate folosind orice cont.
-
-          Vezi și RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Dacă verificările OCSP/CRL online sunt necesare sau nu pentru ancorele de încredere locale</translation>
 <translation id="7003334574344702284">Dacă este activată, această politică forțează importarea parolelor salvate din browserul prestabilit anterior. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, parolele salvate nu sunt importate. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME" /></translation>

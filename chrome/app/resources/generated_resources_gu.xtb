@@ -2158,7 +2158,6 @@
 <translation id="4090404313667273475">આ પૃષ્ઠ પર કેટલાક ઘટકોને પ્રદર્શિત કરવા માટે <ph name="PLUGIN_NAME" /> ની આવશ્યકતા છે.</translation>
 <translation id="4090535558450035482">(આ એક્સટેન્શન સંચાલિત છે અને દૂર કરી શકાતું નથી.)</translation>
 <translation id="4091434297613116013">કાગળનાં પત્રકો</translation>
-<translation id="4092878864607680421">ઍપ્લિકેશન "<ph name="APP_NAME" />" ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="4093955363990068916">સ્થાનિક ફાઇલ:</translation>
 <translation id="4095507791297118304">પ્રાથમિક પ્રદર્શન</translation>
 <translation id="409579654357498729">મેઘ મુદ્રણ પર ઉમેરો</translation>
@@ -3076,7 +3075,6 @@
 <translation id="5499313591153584299">આ ફાઇલ તમારા કમ્પ્યુટર માટે હાનિકારક હોઇ શકે છે.</translation>
 <translation id="5500122897333236901">આઇસલેન્ડિક</translation>
 <translation id="5502500733115278303">Firefox પરથી આયાત કરેલું</translation>
-<translation id="5506868365569362143">HUD મોડ બદલોને ટચ કરો</translation>
 <translation id="5507756662695126555">નૉન-રીપ્યૂડિએશન</translation>
 <translation id="5509693895992845810">આ &amp;રૂપમાં સાચવો...</translation>
 <translation id="5509914365760201064">રજૂકર્તા: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3650,7 +3648,6 @@
 <translation id="6404519443262761446">નિષ્ક્રિયમાંથી સક્રિય કરવા માટે સ્ક્રીન લૉક આવશ્યક છે.</translation>
 <translation id="6406303162637086258">બ્રાઉઝર પુનઃપ્રારંભનું અનુકરણ કરો</translation>
 <translation id="6406506848690869874">સમન્વયન</translation>
-<translation id="6407080938771313237">પ્રોજેક્શન ટચ HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને <ph name="WEBSITE_3" /> પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="6409731863280057959">પૉપ-અપ્સ</translation>
 <translation id="6410063390789552572">નેટવર્ક લાઇબ્રેરીને ઍક્સેસ કરી શકાતું નથી</translation>
@@ -4265,7 +4262,6 @@
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="7348749398828259943">US Workman આંતરરાષ્ટ્રીય કીબોર્ડ</translation>
 <translation id="7352651011704765696">કંઈક ખોટું થયું હતું</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> ને નવી પરવાનગીઓની આવશ્યકતા છે</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7360183604634508679">બુકમાર્ક્સ મેનૂ</translation>
 <translation id="7361039089383199231">$1 બાઇટ્સ</translation>
@@ -4590,7 +4586,6 @@
 <translation id="7839192898639727867">પ્રમાણપત્ર વિષય કી ID</translation>
 <translation id="7839804798877833423">આ ફાઇલોને આનયન કરવું લગભગ <ph name="FILE_SIZE" /> મોબાઇલ ડેટાનો ઉપયોગ કરશે.</translation>
 <translation id="7839963980801867006">ભાષા મેનૂમાં કઈ એક્સ્ટેંશન IME ઉપલબ્ધ હશે તે પસંદ કરો.</translation>
-<translation id="7842346819602959665">એક્સ્ટેંશન "<ph name="EXTENSION_NAME" />" ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="7844992432319478437">અપડેટનો તફાવત</translation>
 <translation id="7846076177841592234">પસંદગી રદ કરો</translation>
 <translation id="7846634333498149051">કીબોર્ડ</translation>

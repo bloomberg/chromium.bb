@@ -920,7 +920,7 @@
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="2317031807364506312">ОТКАЖИ</translation>
 <translation id="2318143611928805047">Величина папира</translation>
-<translation id="2318817390901984578">Да бисте користили Android апликације, напуните и ажурирајте уређај <ph name="DEVICE_TYPE" />.</translation>
+<translation id="2318817390901984578">Да бисте користили Android апликације, напуните и ажурирајте <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2318923050469484167">Актуелна сесија без архивирања (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Заглавља и подножја</translation>
 <translation id="2325650632570794183">Овај тип датотеке није подржан. Посетите Chrome веб-продавницу и пронађите апликацију која може да отвара овај тип датотеке.</translation>
@@ -1208,7 +1208,7 @@
 <translation id="2733275712367076659">Имате сертификате следећих организација који вас идентификују:</translation>
 <translation id="2733364097704495499">Желите ли да региструјете штампач <ph name="PRINTER_NAME" /> за Google Cloud штампање?</translation>
 <translation id="2735698359135166290">Стандардна тастатура за румунски</translation>
-<translation id="2736434052592900364">Управљај Chrome синхронизацијом и персонализацијом у подешавањима</translation>
+<translation id="2736434052592900364">Управљајте синхронизацијом и персонализацијом за Chrome у подешавањима</translation>
 <translation id="2737363922397526254">Скупи...</translation>
 <translation id="2738771556149464852">Не после</translation>
 <translation id="2739191690716947896">Отклони грешке</translation>
@@ -2163,7 +2163,6 @@
 <translation id="4090404313667273475">Потребна је додатна компонента <ph name="PLUGIN_NAME" /> да би се приказали неки елементи на овој страници.</translation>
 <translation id="4090535558450035482">(Овим додатком неко управља и не можете да га уклоните.)</translation>
 <translation id="4091434297613116013">листови папира</translation>
-<translation id="4092878864607680421">Најновија верзија апликације „<ph name="APP_NAME" />“ захтева више дозвола па је онемогућена.</translation>
 <translation id="4093955363990068916">Локална датотека:</translation>
 <translation id="4095507791297118304">Главни приказ</translation>
 <translation id="409579654357498729">Додај у Cloud штампање</translation>
@@ -3085,7 +3084,6 @@
 <translation id="5499313591153584299">Ова датотека може бити штетна по рачунар.</translation>
 <translation id="5500122897333236901">исландски</translation>
 <translation id="5502500733115278303">Увезено из Firefox прегледача</translation>
-<translation id="5506868365569362143">Промена режима додирног дисплеја у игри</translation>
 <translation id="5507756662695126555">Немогућност порицања</translation>
 <translation id="5509693895992845810">Сачувај &amp;као...</translation>
 <translation id="5509914365760201064">Издавалац: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3665,7 +3663,6 @@
 <translation id="6404519443262761446">Захтевај закључавање екрана при покретању из режима спавања.</translation>
 <translation id="6406303162637086258">Симулирај поновно покретање прегледача</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
-<translation id="6407080938771313237">Пројекција додирног дисплеја у игри</translation>
 <translation id="6408118934673775994">Читање и мењање података на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Искачући прозори</translation>
 <translation id="6410063390789552572">Није могуће приступити мрежној библиотеци</translation>
@@ -3868,7 +3865,7 @@
 <translation id="6690565918367819723"><ph name="PROFILE_NAME" /> Други корисник</translation>
 <translation id="6690659332373509948">Није могуће рашчланити датотеку: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Изаберите корисника под надзором кога ћете додати на овај уређај.</translation>
-<translation id="6691331417640343772">Управљај синхронизованим подацима на Google контролној табли</translation>
+<translation id="6691331417640343772">Управљајте синхронизованим подацима на Google контролној табли</translation>
 <translation id="6691936601825168937">&amp;Проследи</translation>
 <translation id="6698381487523150993">Направљено:</translation>
 <translation id="6698810901424468597">Читање и мењање података на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /></translation>
@@ -4278,7 +4275,6 @@
 <translation id="7348093485538360975">Тастатура на екрану</translation>
 <translation id="7348749398828259943">Америчка Workman интернационална тастатура</translation>
 <translation id="7352651011704765696">Нешто није у реду</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> захтева нове дозволе</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7360183604634508679">Мени Обележивачи</translation>
 <translation id="7361039089383199231">Бајтова: $1</translation>
@@ -4598,7 +4594,6 @@
 <translation id="7839192898639727867">ИД кључа субјекта сертификата</translation>
 <translation id="7839804798877833423">Преузимање ових датотека ће искористити око <ph name="FILE_SIZE" /> података за мобилне уређаје.</translation>
 <translation id="7839963980801867006">Изаберите који IME-ови додатака ће бити доступни у менију језика.</translation>
-<translation id="7842346819602959665">Најновија верзија додатка „<ph name="EXTENSION_NAME" />“ захтева више дозвола, па је онемогућена.</translation>
 <translation id="7844992432319478437">Ажурирање diff датотеке</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
 <translation id="7846634333498149051">Тастатура</translation>

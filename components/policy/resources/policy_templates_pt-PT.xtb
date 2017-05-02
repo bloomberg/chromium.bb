@@ -1203,13 +1203,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política não estiver definida ou for definida como falsa, os certificados de servidor que não possuam uma extensão subjectAlternativeName com um nome DNS ou um endereço IP não serão fidedignos.</translation>
 <translation id="557658534286111200">Ativa ou desativa a edição de marcadores</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
-<translation id="5613179474872285001">Configura o nome do domínio do cliente obrigatório que é imposto aos clientes de acesso remoto e impede os utilizadores de o alterar.
-
-          Se esta definição estiver ativada, apenas os clientes do domínio especificado podem estabelecer ligação ao anfitrião.
-
-          Se esta definição estiver desativada ou por definir, aplica-se a política predefinida para o tipo de ligação. Para assistência remota, permite que os clientes de qualquer domínio estabeleçam ligação ao anfitrião; para acesso remoto a qualquer momento, apenas o proprietário do anfitrião pode estabelecer ligação.
-
-          Consulte também RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5694594914843889579">Se esta política estiver definida como verdadeira, o armazenamento externo não estará disponível no navegador de ficheiros.
@@ -1507,13 +1500,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
-<translation id="695891079107014261">Configura o nome do domínio do anfitrião obrigatório que é imposto aos anfitriões de acesso remoto e impede os utilizadores de o alterar.
-
-          Se esta definição estiver ativada, apenas é possível partilhar os anfitriões através de contas registadas no nome do domínio especificado.
-
-          Se esta definição estiver desativada ou por definir, é possível partilhar os anfitriões através de qualquer conta.
-
-          Consulte também RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Se são necessárias verificações de OCSP/CRL online para âncoras fidedignas locais</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>

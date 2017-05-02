@@ -236,6 +236,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3549657413697417275">Search your history</translation>
 <translation id="3557336313807607643">Add to contacts</translation>
 <translation id="3583454905526475291">Could not launch app</translation>
+<translation id="3587482841069643663">All</translation>
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
 
@@ -728,7 +729,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
-<translation id="8639651215196239211">All downloads</translation>
 <translation id="8641930654639604085">Try to block mature sites</translation>
 <translation id="8660471606262461360">From Google Payments</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>

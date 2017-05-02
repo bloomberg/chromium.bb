@@ -2168,7 +2168,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4090404313667273475">Kinakailangan ang <ph name="PLUGIN_NAME" /> upang maipakita ang ilang elemento sa pahinang ito.</translation>
 <translation id="4090535558450035482">(Pinamamahalaan at hindi maaaring alisin ang extension na ito.)</translation>
 <translation id="4091434297613116013">mga sheet ng papel</translation>
-<translation id="4092878864607680421">Ang pinakabagong bersyon ng app na "<ph name="APP_NAME" />" ay nangangailangan ng higit pang mga pahintulot, kaya hindi ito pinagana.</translation>
 <translation id="4093955363990068916">Lokal na file:</translation>
 <translation id="4095507791297118304">Pangunahing display</translation>
 <translation id="409579654357498729">Idagdag sa Cloud Print</translation>
@@ -3090,7 +3089,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5499313591153584299">Maaaring nakakapinsala ang file na ito para sa iyong computer.</translation>
 <translation id="5500122897333236901">Icelandic</translation>
 <translation id="5502500733115278303">Nai-import Mula sa Firefox</translation>
-<translation id="5506868365569362143">Baguhin ang touch HUD mode</translation>
 <translation id="5507756662695126555">Hindi makokontra</translation>
 <translation id="5509693895992845810">I-save &amp;Bilang...</translation>
 <translation id="5509914365760201064">Nagbigay: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3668,7 +3666,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="6404519443262761446">Kinakailangang mag-wake ang lock ng screen mula sa pag-sleep.</translation>
 <translation id="6406303162637086258">I-simulate ang pag-restart ng browser</translation>
 <translation id="6406506848690869874">Pag-sync</translation>
-<translation id="6407080938771313237">Projection touch HUD</translation>
 <translation id="6408118934673775994">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> at <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Mga Pop-up</translation>
 <translation id="6410063390789552572">Hindi ma-access ang network library</translation>
@@ -4283,7 +4280,6 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
 <translation id="7348749398828259943">US Workman international na keyboard</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
-<translation id="7353651168734309780">Nangangailangan ang <ph name="EXTENSION_NAME" /> ng mga bagong pahintulot</translation>
 <translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="7360183604634508679">Menu ng mga bookmark</translation>
 <translation id="7361039089383199231">$1 bytes</translation>
@@ -4609,7 +4605,6 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="7839192898639727867">Subject Key ID ng Certificate </translation>
 <translation id="7839804798877833423">Ang pagkuha sa mga file na ito ay gagamit ng humigit-kumulang <ph name="FILE_SIZE" /> (na) mobile data.</translation>
 <translation id="7839963980801867006">Piliin kung aling mga IME ng extension ang magiging available sa menu ng wika.</translation>
-<translation id="7842346819602959665">Ang pinakabagong bersyon ng extension na "<ph name="EXTENSION_NAME" />" ay nangangailangan ng marami pang mga pahintulot, kaya hindi ito pinagana.</translation>
 <translation id="7844992432319478437">Ina-update ang diff</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
 <translation id="7846634333498149051">Keyboard</translation>

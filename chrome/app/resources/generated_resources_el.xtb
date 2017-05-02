@@ -2175,7 +2175,6 @@
 <translation id="4090404313667273475">Η προσθήκη <ph name="PLUGIN_NAME" /> απαιτείται για την εμφάνιση κάποιων στοιχείων σε αυτήν τη σελίδα.</translation>
 <translation id="4090535558450035482">(Η επέκταση αυτή είναι διαχειριζόμενη και δεν μπορεί να καταργηθεί),</translation>
 <translation id="4091434297613116013">φύλλα χαρτιού</translation>
-<translation id="4092878864607680421">Η πιο πρόσφατη έκδοση της επέκτασης "<ph name="APP_NAME" />" απαιτεί περισσότερα δικαιώματα, οπότε απενεργοποιήθηκε.</translation>
 <translation id="4093955363990068916">Τοπικό αρχείο:</translation>
 <translation id="4095507791297118304">Κύρια οθόνη</translation>
 <translation id="409579654357498729">Προσθήκη στο Cloud Print</translation>
@@ -3102,7 +3101,6 @@
 <translation id="5499313591153584299">Αυτό το αρχείο ενδέχεται να είναι επιβλαβές για τον υπολογιστή σας.</translation>
 <translation id="5500122897333236901">Ισλανδικά</translation>
 <translation id="5502500733115278303">Εισαγωγή από το Firefox</translation>
-<translation id="5506868365569362143">Αλλαγή λειτουργίας αφής HUD</translation>
 <translation id="5507756662695126555">Χωρίς δυνατότητα υπαναχώρησης</translation>
 <translation id="5509693895992845810">Αποθήκευση &amp;Ως...</translation>
 <translation id="5509914365760201064">Εκδότης: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3681,7 +3679,6 @@
 <translation id="6404519443262761446">Απαιτείται κλείδωμα οθόνης για αφύπνιση.</translation>
 <translation id="6406303162637086258">Προσομοίωση επανεκκίνησης προγράμματος περιήγησης</translation>
 <translation id="6406506848690869874">Συγχρονισμός</translation>
-<translation id="6407080938771313237">Projection touch HUD</translation>
 <translation id="6408118934673775994">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1" />, στο <ph name="WEBSITE_2" /> και το <ph name="WEBSITE_3" /></translation>
 <translation id="6409731863280057959">Αναδυόμενα παράθυρα</translation>
 <translation id="6410063390789552572">Δεν είναι δυνατή η πρόσβαση στη βιβλιοθήκη του δικτύου</translation>
@@ -4296,7 +4293,6 @@
 <translation id="7348093485538360975">Πληκτρολόγιο οθόνης</translation>
 <translation id="7348749398828259943">Διεθνές πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="7352651011704765696">Παρουσιάστηκε κάποιο πρόβλημα</translation>
-<translation id="7353651168734309780">Η επέκταση <ph name="EXTENSION_NAME" /> απαιτεί νέες άδειες</translation>
 <translation id="735745346212279324">Το VPN αποσυνδέθηκε</translation>
 <translation id="7360183604634508679">Μενού σελιδοδεικτών</translation>
 <translation id="7361039089383199231">$1 byte</translation>
@@ -4625,7 +4621,6 @@
 <translation id="7839192898639727867">Αναγνωριστικό κλειδιού υποκειμένου πιστοποιητικού</translation>
 <translation id="7839804798877833423">Για την ανάκτηση αυτών των αρχείων θα χρησιμοποιηθούν περίπου <ph name="FILE_SIZE" /> δεδομένων κινητής τηλεφωνίας.</translation>
 <translation id="7839963980801867006">Επιλέξτε τα IME επέκτασης που θα είναι διαθέσιμα στο μενού γλωσσών.</translation>
-<translation id="7842346819602959665">Η πιο πρόσφατη έκδοση της επέκτασης "<ph name="EXTENSION_NAME" />" απαιτεί περισσότερα δικαιώματα, οπότε απενεργοποιήθηκε.</translation>
 <translation id="7844992432319478437">Ενημέρωση ανενεργή</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
 <translation id="7846634333498149051">Πληκτρολόγιο</translation>

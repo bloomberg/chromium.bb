@@ -1269,13 +1269,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, certifikáty servera bez rozšírenia subjectAlternativeName, ktoré obsahujú názov DNS alebo adresu IP, nebudú považované za dôveryhodné.</translation>
 <translation id="557658534286111200">Povolí alebo zakáže úpravu záložiek</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
-<translation id="5613179474872285001">Nakonfiguruje požadovaný názov domény klienta, ktorý bude použitý pre klientov vzdialeného prístupu, a zabráni používateľom ho zmeniť.
-
-Ak je toto nastavenie povolené, k hostiteľovi sa budú môcť pripojiť iba klienti zo špecifikovanej domény.
-
-Ak je toto nastavenie zakázané alebo nie je nastavené, použije sa predvolené pravidlo podľa typu pripojenia. V prípade vzdialenej pomoci to umožňuje klientom z ľubovoľnej domény pripojiť sa k hostiteľovi. V prípade neobmedzeného vzdialeného prístupu sa môže pripojiť iba vlastník hostiteľa.
-
-Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
 <translation id="5645779841392247734">Povoliť súbory cookie na týchto webových stránkach</translation>
 <translation id="5694594914843889579">Ak je toto pravidlo nastavené na hodnotu True, externé úložisko sa nezobrazí v prehliadači súborov.
@@ -1596,13 +1589,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
-<translation id="695891079107014261">Nakonfiguruje požadovaný názov domény hostiteľa, ktorý bude použitý pre hostiteľov vzdialeného prístupu, a zabráni používateľom ho zmeniť.
-
-Ak je toto nastavenie povolené, hostiteľov je možné zdieľať iba pomocou účtov registrovaných pre špecifikovaný názov domény.
-
-Ak je toto nastavenie zakázané alebo nie je nastavené, hostiteľov je možné zdieľať pomocou ľubovoľného účtu.
-
-Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Toto pravidlo určuje, či sa pre miestne dôveryhodné ukotvenia vyžadujú kontroly OCSP/CRL online</translation>
 <translation id="7003334574344702284">Ak je toto pravidlo povolené, uložené heslá sú importované z predchádzajúceho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 

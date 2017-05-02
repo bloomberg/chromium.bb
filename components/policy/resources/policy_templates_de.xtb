@@ -1189,13 +1189,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Wenn diese Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, werden Serverzertifikate ohne "subjectAlternativeName"-Erweiterung, die entweder einen DNS-Namen oder eine IP-Adresse enthalten, als nicht vertrauenswürdig eingestuft.</translation>
 <translation id="557658534286111200">Bearbeitung von Lesezeichen aktivieren oder deaktivieren</translation>
 <translation id="5586942249556966598">Nichts tun</translation>
-<translation id="5613179474872285001">Konfiguriert den erforderlichen Client-Domainnamen, der verpflichtend für Remote-Zugriff-Clients verwendet wird und von Nutzern nicht geändert werden kann.
-
-          Wenn diese Einstellung aktiviert ist, können sich nur Clients aus der angegebenen Domain mit dem Host verbinden.
-
-          Wenn diese Einstellung deaktiviert oder nicht festgelegt wird, wird die Standardrichtlinie für den Verbindungstyp angewendet. Bei der Remote-Unterstützung können sich Clients aus allen Domains mit dem Host verbinden, bei einem stetigen Remote-Zugriff kann nur der Hostinhaber eine Verbindung herstellen.
-
-          Siehe auch "RemoteAccessHostDomain".</translation>
 <translation id="5630352020869108293">Letzte Sitzung wiederherstellen</translation>
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
 <translation id="5694594914843889579">Wenn diese Einstellung auf "true" gesetzt ist, ist im Datei-Browser kein externer Speicher verfügbar.
@@ -1492,13 +1485,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="6943577887654905793">Bevorzugter Mac-/Linux-Name:</translation>
 <translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="6956272732789158625">Schlüsselgenerierung für keine Website zulassen</translation>
-<translation id="695891079107014261">Konfiguriert den erforderlichen Client-Domainnamen, der verpflichtend für Remote-Zugriff-Clients verwendet wird und von Nutzern nicht geändert werden kann.
-
-          Wenn diese Einstellung aktiviert wird, können Hosts nur mithilfe von Konten freigegeben werden, die unter dem angegebenen Domainnamen registriert sind.
-
-          Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, können Hosts für alle Konten freigegeben werden.
-
-          Siehe auch "RemoteAccessHostClientDomain".</translation>
 <translation id="6997592395211691850">Gibt an, ob für lokale Vertrauensanker Online-OCSP/CRLS-Prüfungen erforderlich sind</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>

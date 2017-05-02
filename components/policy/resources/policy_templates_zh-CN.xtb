@@ -1172,13 +1172,6 @@
       如果此政策未设置或设为 false，系统将不会信任包含 DNS 名称或 IP 地址但缺少 subjectAlternativeName 扩展项的服务器证书。</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
-<translation id="5613179474872285001">配置强制远程访问客户端使用的必要客户端域名，并禁止用户进行更改。
-
-启用此设置后，只有来自指定网域的客户端可以连接到主机。
-
-如果停用或未配置此设置，那么系统会应用默认的连接类型政策。如果是远程协助，则会允许来自任何网域的客户端连接到主机；如果是没有时间限制的远程访问，则只有主机所有者可以连接到主机。
-
-另请参阅 RemoteAccessHostDomain。</translation>
 <translation id="5630352020869108293">恢复上次的会话</translation>
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
 <translation id="5694594914843889579">如果此政策设为 True，用户便无法在文件浏览器中使用外部存储设备。
@@ -1472,13 +1465,6 @@
 <translation id="6943577887654905793">Mac/Linux 偏好设置名称：</translation>
 <translation id="69525503251220566">用来为默认搜索服务提供商提供图片搜索功能的参数</translation>
 <translation id="6956272732789158625">不允许任何网站使用密钥生成功能</translation>
-<translation id="695891079107014261">配置强制远程访问客户端使用的必要客户端域名，并禁止用户进行更改。
-
-启用这项设置后，必须使用在指定域名上注册的帐号才能共享主机。
-
-如果停用或未配置此设置，则可以使用任何帐号共享主机。
-
-另请参阅 RemoteAccessHostClientDomain。</translation>
 <translation id="6997592395211691850">是否需要为本地信任锚执行在线 OCSP/CRL 检查</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME" />”偏好设置</translation>
@@ -2023,7 +2009,7 @@
 
       请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME" />停止支持的提示</translation>
-<translation id="8971221018777092728">公用自助终端自动登录计时器</translation>
+<translation id="8971221018777092728">公用自助终端自动登录定时器</translation>
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>

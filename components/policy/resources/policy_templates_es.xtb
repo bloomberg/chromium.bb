@@ -1279,13 +1279,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si esta política no se configura o se le asigna el valor valse, los certificados de servidor que no tengan ninguna extensión subjectAlternativeName que incluya un nombre de DNS o una dirección IP no serán de confianza.</translation>
 <translation id="557658534286111200">Permite habilitar o inhabilitar la edición de marcadores.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
-<translation id="5613179474872285001">Configura el nombre de dominio del cliente requerido que se impondrá a los clientes de acceso remoto y evita que los usuarios lo cambien.
-
-          Si esta configuración se habilita, solo podrán conectarse al host los clientes del dominio que se haya especificado.
-
-          Si esta configuración se inhabilita o no se establece, se aplica la política predeterminada para establecer el tipo de conexión. Para la asistencia remota, permite que los clientes de cualquier dominio puedan conectarse al host. En el caso del acceso remoto en cualquier momento, solo puede conectarse el propietario del host.
-
-          Consulta también RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5694594914843889579">Si se asigna el valor True a esta política, el almacenamiento externo no estará disponible en el explorador de archivos.
@@ -1604,13 +1597,6 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 <translation id="6943577887654905793">Nombre de preferencia en Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
-<translation id="695891079107014261">Configura el nombre de dominio del host requerido que se impondrá a los hosts de acceso remoto y evita que los usuarios lo cambien.
-
-          Si esta configuración se habilita, los hosts solo podrán compartirse con cuentas registradas en el nombre de dominio que se haya especificado.
-
-          Si esta configuración se inhabilita o no se establece, los hosts se pueden compartir utilizando cualquier cuenta.
-
-          Consulta también RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Permite establecer si es necesario realizar comprobaciones de OCSP/CRL online para los anclajes de veracidad locales</translation>
 <translation id="7003334574344702284">Si se habilita, esta política fuerza la importación de las contraseñas guardadas desde el navegador predeterminado actual. Si está habilitada, esta política también afecta al cuadro de diálogo de importación.
 

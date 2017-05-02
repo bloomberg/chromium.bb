@@ -2166,7 +2166,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="4090404313667273475">Bu sayfada bazı öğeleri görüntülemek için <ph name="PLUGIN_NAME" /> eklentisi gerekir.</translation>
 <translation id="4090535558450035482">(Bu uzantı yönetiliyor ve kaldırılamaz.)</translation>
 <translation id="4091434297613116013">yaprak</translation>
-<translation id="4092878864607680421">"<ph name="APP_NAME" />" uygulamasının en yeni sürümü daha fazla izin gerektirir. Bu nedenle devre dışı bırakıldı.</translation>
 <translation id="4093955363990068916">Yerel dosya:</translation>
 <translation id="4095507791297118304">Birincil ekran</translation>
 <translation id="409579654357498729">Google Cloud Print'e ekle</translation>
@@ -3088,7 +3087,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5499313591153584299">Bu dosya bilgisayarınıza zarar verebilir.</translation>
 <translation id="5500122897333236901">İzlanda dili</translation>
 <translation id="5502500733115278303">Firefox'tan Aktarıldı</translation>
-<translation id="5506868365569362143">Dokunmatik HUD modu değişikliği</translation>
 <translation id="5507756662695126555">İnkar edilemez</translation>
 <translation id="5509693895992845810">Farklı &amp;Kaydet...</translation>
 <translation id="5509914365760201064">Sertifikayı Veren: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3667,7 +3665,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6404519443262761446">Uykudan uyandırmak için ekran kilidi gerektir.</translation>
 <translation id="6406303162637086258">Tarayıcı yeniden başlatmasını simüle et</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
-<translation id="6407080938771313237">Projeksiyon dokunmatik HUD'si</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ve <ph name="WEBSITE_3" /> web sitelerinde verilerinizi okuma ve değiştirme</translation>
 <translation id="6409731863280057959">Pop-up'lar</translation>
 <translation id="6410063390789552572">Ağ kitaplığına erişilemiyor</translation>
@@ -4280,7 +4277,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>
 <translation id="7348749398828259943">ABD Workman uluslararası klavye</translation>
 <translation id="7352651011704765696">Bir şeyler ters gitti</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> yeni izinler gerektiriyor</translation>
 <translation id="735745346212279324">VPN bağlantısı kesildi</translation>
 <translation id="7360183604634508679">Yer İşaretleri menüsü</translation>
 <translation id="7361039089383199231">$1 bayt</translation>
@@ -4606,7 +4602,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="7839192898639727867">Sertifika Konusu Anahtar Kimliği</translation>
 <translation id="7839804798877833423">Bu dosyaları getirmek için yaklaşık olarak <ph name="FILE_SIZE" /> mobil veri kullanılacak.</translation>
 <translation id="7839963980801867006">Dil menüsünde hangi uzantı IME'lerinin kullanılabileceğini seçin.</translation>
-<translation id="7842346819602959665">"<ph name="EXTENSION_NAME" />" uzantısının en yeni sürümü daha fazla izin gerektirir. Bu nedenle devre dışı bırakılmış.</translation>
 <translation id="7844992432319478437">Fark güncelleniyor</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="7846634333498149051">Klavye</translation>

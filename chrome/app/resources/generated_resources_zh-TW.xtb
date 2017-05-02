@@ -2164,7 +2164,6 @@
 <translation id="4090404313667273475">需要 <ph name="PLUGIN_NAME" /> 才能顯示這個網頁的部分元素。</translation>
 <translation id="4090535558450035482">(這項擴充功能受到管理，無法任意移除)。</translation>
 <translation id="4091434297613116013">張紙</translation>
-<translation id="4092878864607680421">「<ph name="APP_NAME" />」應用程式需要額外授權才能更新為最新版本，因此目前已停用。</translation>
 <translation id="4093955363990068916">本機檔案：</translation>
 <translation id="4095507791297118304">主要顯示畫面</translation>
 <translation id="409579654357498729">新增至雲端列印</translation>
@@ -2621,7 +2620,7 @@
 <translation id="4842976633412754305">這個網頁正在嘗試載入來源未經驗證的指令碼。</translation>
 <translation id="4844333629810439236">其他鍵盤</translation>
 <translation id="4846680374085650406">您目前所採用的是管理員的建議設定。</translation>
-<translation id="4848518990323155912">啟用 SIM 卡鎖定功能 (輸入 PIN 才能使用行動數據)</translation>
+<translation id="4848518990323155912">啟用 SIM 卡鎖定功能 (輸入 PIN 碼才能使用行動數據)</translation>
 <translation id="484921817528146567">最後一個檔案櫃項目</translation>
 <translation id="4849286518551984791">世界標準時間 (UTC/GMT)</translation>
 <translation id="4849517651082200438">不要安裝</translation>
@@ -3082,7 +3081,6 @@
 <translation id="5499313591153584299">這個檔案可能對您的電腦有害。</translation>
 <translation id="5500122897333236901">冰島文</translation>
 <translation id="5502500733115278303">從 Firefox 匯入的書籤</translation>
-<translation id="5506868365569362143">觸控 HUD 模式變更</translation>
 <translation id="5507756662695126555">不可否認性</translation>
 <translation id="5509693895992845810">另存為(&amp;A)...</translation>
 <translation id="5509914365760201064">發行者：<ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3660,7 +3658,6 @@
 <translation id="6404519443262761446">必須解除螢幕鎖定，才能從休眠狀態中喚醒裝置。</translation>
 <translation id="6406303162637086258">模擬瀏覽器重新啟動</translation>
 <translation id="6406506848690869874">同步</translation>
-<translation id="6407080938771313237">投影觸控 HUD</translation>
 <translation id="6408118934673775994">讀取及變更您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 網站上的資料</translation>
 <translation id="6409731863280057959">彈出式視窗</translation>
 <translation id="6410063390789552572">無法存取網路程式庫</translation>
@@ -4273,7 +4270,6 @@
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="7348749398828259943">美式 Workman 國際鍵盤</translation>
 <translation id="7352651011704765696">發生錯誤</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> 需要新權限</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7360183604634508679">書籤選單</translation>
 <translation id="7361039089383199231">$1 位元組</translation>
@@ -4596,7 +4592,6 @@
 <translation id="7839192898639727867">憑證主體金鑰識別碼</translation>
 <translation id="7839804798877833423">擷取這些檔案大約會使用 <ph name="FILE_SIZE" /> 行動數據流量。</translation>
 <translation id="7839963980801867006">選取語言選單中可用的擴充功能輸入法編輯器。</translation>
-<translation id="7842346819602959665">系統需要您的授權才能更新「<ph name="EXTENSION_NAME" />」擴充功能，因此目前已將其暫時停用。</translation>
 <translation id="7844992432319478437">正在更新差異部分</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="7846634333498149051">鍵盤</translation>

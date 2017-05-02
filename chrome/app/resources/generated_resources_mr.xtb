@@ -2154,7 +2154,6 @@
 <translation id="4090404313667273475">या पृष्‍ठावरील काही घटक प्रदर्शित करण्यासाठी <ph name="PLUGIN_NAME" /> आवश्‍यक आहे.</translation>
 <translation id="4090535558450035482">(हा विस्तार व्यवस्थापित केलेला आहे आणि तो काढला जाऊ शकत नाही.)</translation>
 <translation id="4091434297613116013">कागदी पत्रके</translation>
-<translation id="4092878864607680421">"<ph name="APP_NAME" />" अनुप्रयोगाच्या नवीनतम आवृत्तीस अधिक परवानग्या आवश्यक आहेत, म्हणून हा अक्षम केला गेला.</translation>
 <translation id="4093955363990068916">स्थानिक फाईल:</translation>
 <translation id="4095507791297118304">प्राथमिक प्रदर्शन</translation>
 <translation id="409579654357498729">क्लाउड प्रिंट वर जोडा</translation>
@@ -3074,7 +3073,6 @@
 <translation id="5499313591153584299">ही फाईल आपल्या संगणकासाठी हानिकारक ठरू शकते.</translation>
 <translation id="5500122897333236901">आइसलँडिक</translation>
 <translation id="5502500733115278303">Firefox कडून आयातीत</translation>
-<translation id="5506868365569362143">स्पर्श HUD मोड बदल</translation>
 <translation id="5507756662695126555">अस्वीकार नसलेले</translation>
 <translation id="5509693895992845810">&amp;म्हणून जतन करा...</translation>
 <translation id="5509914365760201064">जारी केले: <ph name="CERTIFICATE_AUTHORITY" /></translation>
@@ -3647,7 +3645,6 @@
 <translation id="6404519443262761446">निष्क्रियवरून सक्रिय होण्‍यासाठी स्क्रीन लॉक आवश्यक आहे.</translation>
 <translation id="6406303162637086258">ब्राउझर रीस्टार्ट प्रतिकृती करा</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6407080938771313237">प्रोजेक्शन स्पर्श HUD</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, आणि <ph name="WEBSITE_3" /> वर आपला डेटा वाचा आणि बदला</translation>
 <translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="6410063390789552572">नेटवर्क लायब्ररीमध्ये प्रवेश करणे शक्य नाही</translation>
@@ -4261,7 +4258,6 @@
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="7348749398828259943">यूएस कामगार आंतरराष्ट्रीय कीबोर्ड</translation>
 <translation id="7352651011704765696">काहीतरी चूक झाली</translation>
-<translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> ला नवीन परवानग्या आवश्‍यक आहेत</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="7360183604634508679">बुकमार्क मेनू</translation>
 <translation id="7361039089383199231">$1 बाइट</translation>
@@ -4585,7 +4581,6 @@
 <translation id="7839192898639727867">प्रमाणपत्र विषय की आयडी</translation>
 <translation id="7839804798877833423">या फायली प्राप्त करताना अंदाजे <ph name="FILE_SIZE" /> मोबाइल डेटा वापरला जाईल.</translation>
 <translation id="7839963980801867006">भाषा मेनूमध्ये कोणत्या विस्तार IMEs उपलब्ध होतील ते निवडा.</translation>
-<translation id="7842346819602959665">"<ph name="EXTENSION_NAME" />" विस्ताराच्या नवीनतम आवृत्तीस अधिक परवानग्या आवश्यक आहेत, म्हणून हा अक्षम केला गेला आहे.</translation>
 <translation id="7844992432319478437">फरक अद्यतनित करत आहे</translation>
 <translation id="7846076177841592234">निवड रद्द करा</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
