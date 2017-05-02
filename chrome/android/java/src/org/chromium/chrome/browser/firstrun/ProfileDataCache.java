@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.accounts.Account;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -16,18 +15,19 @@ import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
-import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Fetches and caches Google Account profile images and full names for the accounts on the device.
+ * ProfileDataCache doesn't observe account list changes by itself, so account list
+ * should be provided by calling {@link #update(List)}
  */
 public class ProfileDataCache implements ProfileDownloader.Observer {
     private static final int PROFILE_IMAGE_SIZE_DP = 136;  // Max size of the user picture.
@@ -71,26 +71,19 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         mPlaceholderImage = getCroppedBitmap(placeHolder);
 
         ProfileDownloader.addObserver(this);
-
-        update();
     }
 
     /**
      * Initiate fetching the user accounts data (images and the full name).
      * Fetched data will be sent to observers of ProfileDownloader.
      */
-    public void update() {
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
-            @Override
-            public void onResult(Account[] result) {
-                for (Account account : result) {
-                    if (mCacheEntries.get(account.name) == null) {
-                        ProfileDownloader.startFetchingAccountInfoFor(
-                                mContext, mProfile, account.name, mImageSizePx, true);
-                    }
-                }
+    public void update(List<String> accounts) {
+        for (int i = 0; i < accounts.size(); i++) {
+            if (mCacheEntries.get(accounts.get(i)) == null) {
+                ProfileDownloader.startFetchingAccountInfoFor(
+                        mContext, mProfile, accounts.get(i), mImageSizePx, true);
             }
-        });
+        }
     }
 
     /**
