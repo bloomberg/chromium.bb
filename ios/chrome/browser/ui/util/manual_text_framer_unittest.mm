@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/ui/util/manual_text_framer.h"
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
@@ -14,6 +13,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Copy of ManualTextFramer's alignment function.
@@ -26,16 +29,14 @@ CGFloat AlignValueToPixel(CGFloat value, AlignmentFunction function) {
 
 class ManualTextFramerTest : public PlatformTest {
  protected:
-  void SetUp() override {
-    attributes_.reset([[NSMutableDictionary alloc] init]);
-    string_.reset([[NSMutableAttributedString alloc] init]);
+  ManualTextFramerTest() {
+    attributes_ = [[NSMutableDictionary alloc] init];
+    string_ = [[NSMutableAttributedString alloc] init];
   }
 
   NSString* text() { return [string_ string]; }
   NSRange text_range() { return NSMakeRange(0, [string_ length]); }
-  id<TextFrame> text_frame() {
-    return static_cast<id<TextFrame>>(text_frame_.get());
-  }
+  id<TextFrame> text_frame() { return static_cast<id<TextFrame>>(text_frame_); }
 
   void SetText(NSString* text) {
     DCHECK(text.length);
@@ -43,11 +44,11 @@ class ManualTextFramerTest : public PlatformTest {
   }
 
   void FrameTextInBounds(CGRect bounds) {
-    base::scoped_nsobject<ManualTextFramer> manual_framer(
-        [[ManualTextFramer alloc] initWithString:string_ inBounds:bounds]);
+    ManualTextFramer* manual_framer =
+        [[ManualTextFramer alloc] initWithString:string_ inBounds:bounds];
     [manual_framer frameText];
     id frame = [manual_framer textFrame];
-    text_frame_.reset([frame retain]);
+    text_frame_ = frame;
   }
 
   UIFont* RobotoFontWithSize(CGFloat size) {
@@ -57,8 +58,7 @@ class ManualTextFramerTest : public PlatformTest {
   NSParagraphStyle* CreateParagraphStyle(CGFloat line_height,
                                          NSTextAlignment alignment,
                                          NSLineBreakMode line_break_mode) {
-    NSMutableParagraphStyle* style =
-        [[[NSMutableParagraphStyle alloc] init] autorelease];
+    NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
     style.alignment = alignment;
     style.lineBreakMode = line_break_mode;
     style.minimumLineHeight = line_height;
@@ -79,9 +79,9 @@ class ManualTextFramerTest : public PlatformTest {
     EXPECT_EQ(framed_range.length, text_frame().framedRange.length);
   }
 
-  base::scoped_nsobject<NSMutableDictionary> attributes_;
-  base::scoped_nsobject<NSMutableAttributedString> string_;
-  base::scoped_nsprotocol<id<TextFrame>> text_frame_;
+  NSMutableDictionary* attributes_;
+  NSMutableAttributedString* string_;
+  id<TextFrame> text_frame_;
 };
 
 // Tests that newline characters cause an attributed string to be laid out on

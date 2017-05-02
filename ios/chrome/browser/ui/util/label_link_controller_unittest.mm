@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/util/text_region_mapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A simple text region mapper that just returns the mapped bounds for
 // any range.
@@ -40,26 +43,26 @@ namespace {
 
 class LabelLinkControllerTest : public PlatformTest {
  protected:
-  void SetUp() override {
-    label_container_.reset([[UIView alloc] initWithFrame:CGRectZero]);
-    label_.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  LabelLinkControllerTest() {
+    label_container_ = [[UIView alloc] initWithFrame:CGRectZero];
+    label_ = [[UILabel alloc] initWithFrame:CGRectZero];
     [label_container_ addSubview:label_];
   }
 
   void setLabelAttrString(NSString* str) {
-    str_.reset([[NSAttributedString alloc] initWithString:str]);
+    str_ = [[NSAttributedString alloc] initWithString:str];
     [label_ setAttributedText:str_];
   }
 
   void setLabelAttrStringWithAttr(NSString* str, NSString* attr, id value) {
-    str_.reset([[NSAttributedString alloc] initWithString:str
-                                               attributes:@{attr : value}]);
+    str_ = [[NSAttributedString alloc] initWithString:str
+                                           attributes:@{attr : value}];
     [label_ setAttributedText:str_];
   }
 
-  base::scoped_nsobject<UIView> label_container_;
-  base::scoped_nsobject<UILabel> label_;
-  base::scoped_nsobject<NSAttributedString> str_;
+  UIView* label_container_;
+  UILabel* label_;
+  NSAttributedString* str_;
 };
 
 TEST_F(LabelLinkControllerTest, TapTest) {
@@ -67,15 +70,14 @@ TEST_F(LabelLinkControllerTest, TapTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(5, 3);  // "tap".
 
-  base::scoped_nsobject<LabelLinkController> llc;
   GURL url = GURL("http://www.google.com");
   __block NSInteger taps = 0;
-  llc.reset([[LabelLinkController alloc]
-      initWithLabel:label_
-             action:^(const GURL& tappedUrl) {
-               EXPECT_EQ(tappedUrl, url);
-               taps++;
-             }]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_
+                                          action:^(const GURL& tappedUrl) {
+                                            EXPECT_EQ(tappedUrl, url);
+                                            taps++;
+                                          }];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   [llc addLinkWithRange:linkRange url:url];
   NSArray* rects = [llc tapRectsForURL:url];
@@ -93,8 +95,8 @@ TEST_F(LabelLinkControllerTest, LinkColorTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(5, 5);  // "color".
 
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   [llc addLinkWithRange:linkRange url:GURL("http://www.google.com")];
 
@@ -128,8 +130,8 @@ TEST_F(LabelLinkControllerTest, LinkUnderlineTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(5, 9);  // "underline".
 
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   [llc addLinkWithRange:linkRange url:GURL("http://www.google.com")];
 
@@ -166,8 +168,8 @@ TEST_F(LabelLinkControllerTest, BoundsChangeTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(7, 6);  // "change".
 
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   GURL url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
@@ -193,8 +195,8 @@ TEST_F(LabelLinkControllerTest, AttributedTextChangeTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(16, 6);  // "change".
 
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   GURL url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
@@ -213,8 +215,8 @@ TEST_F(LabelLinkControllerTest, TextChangeTest) {
   [label_ sizeToFit];
   NSRange linkRange = NSMakeRange(5, 6);  // "change".
 
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   [llc setTextMapperClass:[SimpleTextRegionMapper class]];
   GURL url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
@@ -234,8 +236,8 @@ TEST_F(LabelLinkControllerTest, LabelStyleInitTest) {
   NSRange linkRange = NSMakeRange(6, 5);  // "init".
 
   // Don't use an injected text mapper for this test.
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   GURL url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
 
@@ -247,12 +249,11 @@ TEST_F(LabelLinkControllerTest, LabelStyleInitTest) {
   // Make a new label and controller with a very large font size, and
   // compute the same tap rect. It should be different from the rect computed
   // above.
-  llc.reset();
-  label_.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  label_ = [[UILabel alloc] initWithFrame:CGRectZero];
   [label_ setText:@"style init test"];
   [label_ setFont:[UIFont systemFontOfSize:40]];
   [label_ sizeToFit];
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  llc = [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
   rects = [llc tapRectsForURL:url];
@@ -272,8 +273,8 @@ TEST_F(LabelLinkControllerTest, LabelStylePropertyChangeTest) {
   NSRange linkRange = NSMakeRange(6, 6);  // "change".
 
   // Don't use an injected text mapper for this test.
-  base::scoped_nsobject<LabelLinkController> llc;
-  llc.reset([[LabelLinkController alloc] initWithLabel:label_ action:nullptr]);
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
   GURL url = GURL("http://www.google.com");
   [llc addLinkWithRange:linkRange url:url];
 

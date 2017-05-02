@@ -4,10 +4,13 @@
 
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -16,13 +19,11 @@ namespace {
 // Tests that the minimum line height attribute is reflected in GetLineHeight().
 TEST(CoreTextUtilTest, MinLineHeightText) {
   CGFloat min_line_height = 30.0;
-  base::scoped_nsobject<NSMutableParagraphStyle> style(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setMinimumLineHeight:min_line_height];
-  base::scoped_nsobject<NSMutableAttributedString> str(
-      [[NSMutableAttributedString alloc]
-          initWithString:@"test"
-              attributes:@{NSParagraphStyleAttributeName : style}]);
+  NSMutableAttributedString* str = [[NSMutableAttributedString alloc]
+      initWithString:@"test"
+          attributes:@{NSParagraphStyleAttributeName : style}];
   ASSERT_EQ(min_line_height,
             core_text_util::GetLineHeight(str, NSMakeRange(0, [str length])));
 }
@@ -30,13 +31,11 @@ TEST(CoreTextUtilTest, MinLineHeightText) {
 // Tests that the maximum line height attribute is reflected in GetLineHeight().
 TEST(CoreTextUtilTest, MaxLineHeightText) {
   CGFloat max_line_height = 10.0;
-  base::scoped_nsobject<NSMutableParagraphStyle> style(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setMaximumLineHeight:max_line_height];
-  base::scoped_nsobject<NSMutableAttributedString> str(
-      [[NSMutableAttributedString alloc]
-          initWithString:@"test"
-              attributes:@{NSParagraphStyleAttributeName : style}]);
+  NSMutableAttributedString* str = [[NSMutableAttributedString alloc]
+      initWithString:@"test"
+          attributes:@{NSParagraphStyleAttributeName : style}];
   ASSERT_EQ(max_line_height,
             core_text_util::GetLineHeight(str, NSMakeRange(0, [str length])));
 }
@@ -47,16 +46,14 @@ TEST(CoreTextUtilTest, LineHeightMultipleTest) {
   UIFont* font = [UIFont systemFontOfSize:20.0];
   CGFloat font_line_height = font.ascender - font.descender;
   CGFloat line_height_multiple = 2.0;
-  base::scoped_nsobject<NSMutableParagraphStyle> style(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setLineHeightMultiple:line_height_multiple];
-  base::scoped_nsobject<NSMutableAttributedString> str(
-      [[NSMutableAttributedString alloc]
-          initWithString:@"test"
-              attributes:@{
-                NSParagraphStyleAttributeName : style,
-                NSFontAttributeName : font
-              }]);
+  NSMutableAttributedString* str = [[NSMutableAttributedString alloc]
+      initWithString:@"test"
+          attributes:@{
+            NSParagraphStyleAttributeName : style,
+            NSFontAttributeName : font
+          }];
   ASSERT_EQ(font_line_height * line_height_multiple,
             core_text_util::GetLineHeight(str, NSMakeRange(0, [str length])));
 }

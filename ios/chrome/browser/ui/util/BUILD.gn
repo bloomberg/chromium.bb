@@ -44,6 +44,7 @@ source_set("util") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "CRUILabel+AttributeUtils_unittest.mm",
