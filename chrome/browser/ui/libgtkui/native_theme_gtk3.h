@@ -7,17 +7,22 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "ui/base/glib/glib_signal.h"
+#include "ui/base/glib/scoped_gobject.h"
 #include "ui/native_theme/native_theme_base.h"
 
+typedef struct _GtkCssProvider GtkCssProvider;
+typedef struct _GtkParamSpec GtkParamSpec;
+typedef struct _GtkSettings GtkSettings;
+
 namespace libgtkui {
+
+using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
 // A version of NativeTheme that uses GTK3-rendered widgets.
 class NativeThemeGtk3 : public ui::NativeThemeBase {
  public:
   static NativeThemeGtk3* instance();
-
-  // Called when gtk theme changes.
-  void ResetColorCache();
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
@@ -63,7 +68,17 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
   NativeThemeGtk3();
   ~NativeThemeGtk3() override;
 
+  void SetThemeCssOverride(ScopedCssProvider provider);
+
+  CHROMEG_CALLBACK_1(NativeThemeGtk3,
+                     void,
+                     OnThemeChanged,
+                     GtkSettings*,
+                     GtkParamSpec*);
+
   mutable base::Optional<SkColor> color_cache_[kColorId_NumColors];
+
+  ScopedCssProvider theme_css_override_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk3);
 };

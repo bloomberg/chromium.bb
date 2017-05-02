@@ -27,6 +27,17 @@ enum BackgroundRenderMode {
   BG_RENDER_RECURSIVE,
 };
 
+std::string GetGtkSettingsStringProperty(GtkSettings* settings,
+                                         const gchar* prop_name) {
+  GValue layout = G_VALUE_INIT;
+  g_value_init(&layout, G_TYPE_STRING);
+  g_object_get_property(G_OBJECT(settings), prop_name, &layout);
+  DCHECK(G_VALUE_HOLDS_STRING(&layout));
+  std::string prop_value(g_value_get_string(&layout));
+  g_value_unset(&layout);
+  return prop_value;
+}
+
 SkBitmap GetWidgetBitmap(const gfx::Size& size,
                          GtkStyleContext* context,
                          BackgroundRenderMode bg_mode,
@@ -370,10 +381,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
   return kInvalidColorIdColor;
 }
 
-void OnThemeChanged(GObject* obj, GParamSpec* param, NativeThemeGtk3* theme) {
-  theme->ResetColorCache();
-}
-
 }  // namespace
 
 // static
@@ -382,7 +389,6 @@ NativeThemeGtk3* NativeThemeGtk3::instance() {
   return &s_native_theme;
 }
 
-// Constructors automatically called
 NativeThemeGtk3::NativeThemeGtk3() {
   // These types are needed by g_type_from_name(), but may not be registered at
   // this point.  We need the g_type_class magic to make sure the compiler
@@ -405,15 +411,47 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 
   g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChanged), this);
+                         G_CALLBACK(OnThemeChangedThunk), this);
+  OnThemeChanged(gtk_settings_get_default(), nullptr);
 }
 
-// This doesn't actually get called
-NativeThemeGtk3::~NativeThemeGtk3() {}
+NativeThemeGtk3::~NativeThemeGtk3() {
+  NOTREACHED();
+}
 
-void NativeThemeGtk3::ResetColorCache() {
+void NativeThemeGtk3::SetThemeCssOverride(ScopedCssProvider provider) {
+  if (theme_css_override_) {
+    gtk_style_context_remove_provider_for_screen(
+        gdk_screen_get_default(),
+        GTK_STYLE_PROVIDER(theme_css_override_.get()));
+  }
+  theme_css_override_ = std::move(provider);
+  if (theme_css_override_) {
+    gtk_style_context_add_provider_for_screen(
+        gdk_screen_get_default(), GTK_STYLE_PROVIDER(theme_css_override_.get()),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  }
+}
+
+void NativeThemeGtk3::OnThemeChanged(GtkSettings* settings,
+                                     GtkParamSpec* param) {
+  SetThemeCssOverride(ScopedCssProvider());
   for (auto& color : color_cache_)
     color = base::nullopt;
+
+  // Hack to workaround a bug on GNOME standard themes which would
+  // cause black patches to be rendered on GtkFileChooser dialogs.
+  std::string theme_name =
+      GetGtkSettingsStringProperty(settings, "gtk-theme-name");
+  if (!GtkVersionCheck(3, 14)) {
+    if (theme_name == "Adwaita") {
+      SetThemeCssOverride(GetCssProvider(
+          "GtkFileChooser GtkPaned { background-color: @theme_bg_color; }"));
+    } else if (theme_name == "HighContrast") {
+      SetThemeCssOverride(GetCssProvider(
+          "GtkFileChooser GtkPaned { background-color: @theme_base_color; }"));
+    }
+  }
 }
 
 SkColor NativeThemeGtk3::GetSystemColor(ColorId color_id) const {
