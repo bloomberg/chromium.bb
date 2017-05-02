@@ -42,10 +42,12 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
 }  // namespace
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
-    PixelResourceTestCase test_case)
+    PixelResourceTestCase test_case,
+    Layer::LayerMaskType mask_type)
     : draw_texture_target_(GL_INVALID_VALUE),
       raster_buffer_provider_type_(RASTER_BUFFER_PROVIDER_TYPE_BITMAP),
       texture_hint_(ResourceProvider::TEXTURE_HINT_IMMUTABLE),
+      mask_type_(mask_type),
       initialized_(false),
       test_case_(test_case) {
   InitializeFromTestCase(test_case);
@@ -54,6 +56,7 @@ LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest()
     : draw_texture_target_(GL_INVALID_VALUE),
       raster_buffer_provider_type_(RASTER_BUFFER_PROVIDER_TYPE_BITMAP),
+      mask_type_(Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
       initialized_(false),
       test_case_(SOFTWARE) {}
 
@@ -186,7 +189,7 @@ void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
 }
 
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()
-    : LayerTreeHostPixelResourceTest(GetParam()) {
-}
+    : LayerTreeHostPixelResourceTest(::testing::get<0>(GetParam()),
+                                     ::testing::get<1>(GetParam())) {}
 
 }  // namespace cc
