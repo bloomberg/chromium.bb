@@ -345,7 +345,7 @@ external/wpt/selectors-api [ Skip ]
 external/wpt/serve [ Skip ]
 external/wpt/serve.py [ Skip ]
 external/wpt/server-side.md [ Skip ]
-## Owners: shimazu@chromium.org
+## Owners: worker-dev@chromium.org
 # external/wpt/service-workers [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/service-workers/cache-storage [ Pass ]
@@ -389,7 +389,7 @@ external/wpt/websockets [ Skip ]
 ## Owners: foolip@chromium.org,maksim.sisov@intel.com
 # external/wpt/webvtt [ Pass ]
 external/wpt/web-nfc [ Skip ]
-## Owners: nhiroki@chromium.org
+## Owners: worker-dev@chromium.org
 # external/wpt/workers [ Pass ]
 
 # Exceptions for individual files that fail due to bugs in the
