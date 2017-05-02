@@ -3848,6 +3848,13 @@ void FrameView::RemoveAnimatingScrollableArea(ScrollableArea* scrollable_area) {
   animating_scrollable_areas_->erase(scrollable_area);
 }
 
+FrameView* FrameView::Root() const {
+  const FrameView* top = this;
+  while (top->Parent())
+    top = ToFrameView(top->Parent());
+  return const_cast<FrameView*>(top);
+}
+
 void FrameView::SetParent(FrameViewBase* parent_frame_view_base) {
   FrameView* parent = ToFrameView(parent_frame_view_base);
   if (parent == parent_)
