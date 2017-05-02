@@ -592,7 +592,8 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
   net::TestURLFetcherFactory factory;
 
   GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
-  auth.StartTokenFetchForUberAuthExchange("myAccessToken");
+  auth.StartTokenFetchForUberAuthExchange("myAccessToken",
+                                          true /* is_bound_to_channel_id */);
 
   EXPECT_TRUE(auth.HasPendingFetch());
   MockFetcher mock_fetcher(

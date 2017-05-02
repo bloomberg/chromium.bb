@@ -50,6 +50,7 @@ UbertokenFetcher::UbertokenFetcher(
       consumer_(consumer),
       source_(source),
       request_context_(request_context),
+      is_bound_to_channel_id_(true),
       gaia_auth_fetcher_factory_(factory),
       retry_number_(0),
       second_access_token_request_(false) {
@@ -152,5 +153,6 @@ void UbertokenFetcher::RequestAccessToken() {
 void UbertokenFetcher::ExchangeTokens() {
   gaia_auth_fetcher_ =
       gaia_auth_fetcher_factory_.Run(this, source_, request_context_);
-  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
+  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
+      access_token_, is_bound_to_channel_id_);
 }

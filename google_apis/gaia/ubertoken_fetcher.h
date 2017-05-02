@@ -60,6 +60,10 @@ class UbertokenFetcher : public GaiaAuthConsumer,
                    GaiaAuthFetcherFactory factory);
   ~UbertokenFetcher() override;
 
+  void set_is_bound_to_channel_id(bool is_bound_to_channel_id) {
+    is_bound_to_channel_id_ = is_bound_to_channel_id;
+  }
+
   // Start fetching the token for |account_id|.
   virtual void StartFetchingToken(const std::string& account_id);
   virtual void StartFetchingTokenWithAccessToken(const std::string& account_id,
@@ -87,6 +91,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   UbertokenConsumer* consumer_;
   std::string source_;
   net::URLRequestContextGetter* request_context_;
+  bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<OAuth2TokenService::Request> access_token_request_;

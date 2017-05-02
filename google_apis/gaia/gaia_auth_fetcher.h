@@ -168,10 +168,13 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // Start a request to exchange an OAuthLogin-scoped oauth2 access token for an
   // uber-auth token.  The returned token can be used with the method
   // StartMergeSession().
+  // If |is_bound_to_channel_id| is true, then the generated UberToken will
+  // be bound to the channel ID of the network context of |getter_|.
   //
   // Either OnUberAuthTokenSuccess or OnUberAuthTokenFailure will be
   // called on the consumer on the original thread.
-  void StartTokenFetchForUberAuthExchange(const std::string& access_token);
+  void StartTokenFetchForUberAuthExchange(const std::string& access_token,
+                                          bool is_bound_to_channel_id);
 
   // Start a request to exchange an OAuthLogin-scoped oauth2 access token for a
   // ClientLogin-style service tokens.  The response to this request is the

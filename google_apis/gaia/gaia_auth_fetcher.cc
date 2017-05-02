@@ -628,15 +628,18 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
 }
 
 void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
-    const std::string& access_token) {
+    const std::string& access_token,
+    bool is_bound_to_channel_id) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting StartTokenFetchForUberAuthExchange with access_token="
            << access_token;
   std::string authentication_header =
       base::StringPrintf(kOAuthHeaderFormat, access_token.c_str());
+  int load_flags =
+      is_bound_to_channel_id ? net::LOAD_NORMAL : kLoadFlagsIgnoreCookies;
   CreateAndStartGaiaFetcher(std::string(), authentication_header,
-                            uberauth_token_gurl_, net::LOAD_NORMAL);
+                            uberauth_token_gurl_, load_flags);
 }
 
 void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
