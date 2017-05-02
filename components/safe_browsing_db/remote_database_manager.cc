@@ -105,6 +105,10 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 
 // TODO(nparker): Add more tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
+  // Avoid memory allocations growing the underlying vector. Although this
+  // usually wastes a bit of memory, it will still be less than the default
+  // vector allocation strategy.
+  resource_types_to_check_.reserve(content::RESOURCE_TYPE_LAST_TYPE + 1);
   // Decide which resource types to check. These two are the minimum.
   resource_types_to_check_.insert(content::RESOURCE_TYPE_MAIN_FRAME);
   resource_types_to_check_.insert(content::RESOURCE_TYPE_SUB_FRAME);

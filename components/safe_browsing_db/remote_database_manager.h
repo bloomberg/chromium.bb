@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -74,7 +75,7 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   // Requests currently outstanding.  This owns the ptrs.
   std::vector<ClientRequest*> current_requests_;
 
-  std::set<content::ResourceType> resource_types_to_check_;
+  base::flat_set<content::ResourceType> resource_types_to_check_;
 
   friend class base::RefCountedThreadSafe<RemoteSafeBrowsingDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(RemoteSafeBrowsingDatabaseManager);
