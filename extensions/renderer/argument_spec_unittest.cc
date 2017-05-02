@@ -761,4 +761,21 @@ TEST_F(ArgumentSpecUnitTest, PreserveNull) {
   }
 }
 
+TEST_F(ArgumentSpecUnitTest, NaNFun) {
+  using namespace api_errors;
+
+  {
+    const char kAnySpec[] = "{'type': 'any'}";
+    ArgumentSpec spec(*ValueFromString(kAnySpec));
+    ExpectFailure(spec, "NaN", UnserializableValue());
+  }
+
+  {
+    const char kObjectWithAnyPropertiesSpec[] =
+        "{'type': 'object', 'additionalProperties': {'type': 'any'}}";
+    ArgumentSpec spec(*ValueFromString(kObjectWithAnyPropertiesSpec));
+    ExpectSuccess(spec, "({foo: NaN, bar: 'baz'})", "{'bar':'baz'}");
+  }
+}
+
 }  // namespace extensions
