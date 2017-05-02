@@ -129,7 +129,6 @@ extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnableProfiling[];
 extern const char kEnablePushApiBackgroundMode[];
 extern const char kEnableQuic[];
-extern const char kEnableSaveAsMenuLabelExperiment[];
 extern const char kEnableSettingsWindow[];
 extern const char kEnableSiteEngagementEvictionPolicy[];
 extern const char kEnableSiteSettings[];

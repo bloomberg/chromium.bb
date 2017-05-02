@@ -550,7 +550,6 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
-      save_as_text_experiement_enabled_(false),
       embedder_web_contents_(GetWebContentsToUse(source_web_contents_)) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
@@ -559,12 +558,6 @@ RenderViewContextMenu::RenderViewContextMenu(
   }
   set_content_type(ContextMenuContentTypeFactory::Create(
       source_web_contents_, params));
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSaveAsMenuLabelExperiment) ||
-      base::FieldTrialList::FindFullName("SaveAsMenuText") == "download") {
-    save_as_text_experiement_enabled_ = true;
-  }
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -1064,13 +1057,8 @@ void RenderViewContextMenu::AppendLinkItems() {
     }
 #endif  // !defined(OS_CHROMEOS)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    if (save_as_text_experiement_enabled_) {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
-                                      IDS_CONTENT_CONTEXT_DOWNLOADLINK);
-    } else {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
-                                      IDS_CONTENT_CONTEXT_SAVELINKAS);
-    }
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
+                                    IDS_CONTENT_CONTEXT_SAVELINKAS);
   }
 
   menu_model_.AddItemWithStringId(
@@ -1116,13 +1104,8 @@ void RenderViewContextMenu::AppendImageItems() {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                     IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
   }
-  if (save_as_text_experiement_enabled_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
-                                    IDS_CONTENT_CONTEXT_DOWNLOADIMAGE);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
-                                    IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
+                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
@@ -1153,26 +1136,16 @@ void RenderViewContextMenu::AppendAudioItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
-  if (save_as_text_experiement_enabled_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
-                                    IDS_CONTENT_CONTEXT_DOWNLOADAUDIO);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
-                                    IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+                                  IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
   AppendMediaRouterItem();
 }
 
 void RenderViewContextMenu::AppendCanvasItems() {
-  if (save_as_text_experiement_enabled_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
-                                    IDS_CONTENT_CONTEXT_DOWNLOADIMAGE);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
-                                    IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
+                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
 }
@@ -1182,13 +1155,8 @@ void RenderViewContextMenu::AppendVideoItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
-  if (save_as_text_experiement_enabled_) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
-                                    IDS_CONTENT_CONTEXT_DOWNLOADVIDEO);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
-                                    IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
+                                  IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   AppendMediaRouterItem();
@@ -1226,13 +1194,8 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  if (save_as_text_experiement_enabled_) {
-    menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
-                                    IDS_CONTENT_CONTEXT_DOWNLOADPAGE);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
-                                    IDS_CONTENT_CONTEXT_SAVEPAGEAS);
-  }
+  menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
+                                  IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
 

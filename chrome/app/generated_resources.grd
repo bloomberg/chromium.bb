@@ -452,9 +452,6 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
           I&amp;nspect
         </message>
-        <message name="IDS_CONTENT_CONTEXT_DOWNLOADPAGE" desc="The name of the Download Page command in the content area context menu">
-          &amp;Download...
-        </message>
         <if expr="is_macosx">
             <message name="IDS_CONTENT_CONTEXT_LOOK_UP" desc="The name of the 'Look Up “string”' item in the content area context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
               Look Up “<ph name="LOOKUP_STRING">$1<ex>orthogonal</ex></ph>”
@@ -527,9 +524,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
             Save lin&amp;k as...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADLINK" desc="The name of the Download Link As command in the content area context menu">
-            &amp;Download link...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="The name of the Copy Link Location command in the content area context menu">
             Copy link addr&amp;ess
           </message>
@@ -544,9 +538,6 @@ are declared in build/common.gypi.
 
           <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
             Sa&amp;ve image as...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADIMAGE" desc="The name of the Download Image command in the content area context menu">
-            &amp;Download image...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
             C&amp;opy image address
@@ -580,9 +571,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
             Sa&amp;ve video as...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADVIDEO" desc="The name of the Download Video command in the content area context menu">
-            &amp;Download video...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
             C&amp;opy video address
           </message>
@@ -592,9 +580,6 @@ are declared in build/common.gypi.
 
           <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
             Sa&amp;ve audio as...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADAUDIO" desc="The name of the Download Audio command in the content area context menu">
-            &amp;Download audio...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
             C&amp;opy audio address
@@ -734,9 +719,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="In Title Case: The name of the Save Link As command in the content area context menu">
             Save Lin&amp;k As...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADLINK" desc="In Title Case: The name of the Download Link command in the content area context menu">
-            &amp;Download Link...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="In Title Case: The name of the Copy Link Location command in the content area context menu">
             Copy Link Addr&amp;ess
           </message>
@@ -751,9 +733,6 @@ are declared in build/common.gypi.
 
           <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="In Title Case: The name of the Save Image As command in the content area context menu">
             Sa&amp;ve Image As...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADIMAGE" desc="In Title Case: The name of the Download Image command in the content area context menu">
-            &amp;Download Image...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="In Title Case: The name of the Copy Image Location command in the content area context menu">
             C&amp;opy Image Address
@@ -787,9 +766,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
            Sa&amp;ve Video As...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADVIDEO" desc="In Title Case: The name of the Download Video As command in the content area context menu">
-           &amp;Download Video...
-          </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
             C&amp;opy Video Address
           </message>
@@ -799,9 +775,6 @@ are declared in build/common.gypi.
 
           <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="In Title Case: The name of the Save Audio As command in the content area context menu">
             Sa&amp;ve Audio As...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_DOWNLOADAUDIO" desc="In Title Case: The name of the Download Audio command in the content area context menu">
-            &amp;Download Audio...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="In Title Case: The name of the Copy Audio Location command in the content area context menu">
             C&amp;opy Audio Address
@@ -977,9 +950,6 @@ Subsequent notifications, windows and dialogs may be split between desktops.
           <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
             Save page &amp;as...
           </message>
-          <message name="IDS_DOWNLOAD_PAGE" desc="The text label of the Download Page menu item">
-            &amp;Download page...
-          </message>
           <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Distill page' menu item">
             Distill page
           </message>
@@ -1044,9 +1014,6 @@ Subsequent notifications, windows and dialogs may be split between desktops.
           </message>
           <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
             Save Page &amp;As...
-          </message>
-          <message name="IDS_DOWNLOAD_PAGE" desc="In Title Case: The text label of the Download Page menu item">
-           &amp;Download Page...
           </message>
           <message name="IDS_DISTILL_PAGE" desc="The text label of the 'Distill Page' menu item">
             Distill Page

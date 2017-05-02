@@ -405,9 +405,6 @@ const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 // Enables the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[] = "enable-quic";
 
-// Switches 'Save as...' context and app menu labels to 'Download...'.
-const char kEnableSaveAsMenuLabelExperiment[] = "saveas-menu-label";
-
 // Enable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";

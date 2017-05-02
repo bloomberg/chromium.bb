@@ -218,8 +218,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   bool multiple_profiles_open_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
-  // Whether the Save As text experiment is on.
-  bool save_as_text_experiement_enabled_;
 
   // An observer that handles spelling suggestions, "Add to dictionary", and
   // "Ask Google for suggestions" items.
