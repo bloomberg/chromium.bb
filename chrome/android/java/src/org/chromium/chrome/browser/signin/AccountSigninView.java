@@ -280,7 +280,9 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
                 mAccountNames = result;
 
-                int accountToSelect = 0;
+                int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
+                final int accountToSelect;
+                final boolean shouldJumpToConfirmationScreen;
                 if (isInForcedAccountMode()) {
                     accountToSelect = mAccountNames.indexOf(mForcedAccountName);
                     if (accountToSelect < 0) {
@@ -288,43 +290,31 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                         callback.onResult(false);
                         return;
                     }
+                    shouldJumpToConfirmationScreen = false;
                 } else {
-                    accountToSelect = getIndexOfNewElement(
-                            oldAccountNames, mAccountNames,
-                            mSigninChooseView.getSelectedAccountPosition());
+                    AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
+                            oldAccountNames, mAccountNames, oldSelectedAccount);
+                    accountToSelect = selection.getSelectedAccountIndex();
+                    shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
                 }
 
-                int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
                 mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
-                if (mAccountNames.isEmpty()) {
-                    setUpSigninButton(false);
-                    callback.onResult(true);
-                    return;
-                }
-                setUpSigninButton(true);
+                setUpSigninButton(!mAccountNames.isEmpty());
+                mProfileData.update(mAccountNames);
 
-                mProfileData.update();
-
-                // Determine how the accounts have changed. Each list should only have unique
-                // elements.
-                if (oldAccountNames == null || oldAccountNames.isEmpty()) {
-                    callback.onResult(true);
-                    return;
-                }
-
-                if (!mAccountNames.get(accountToSelect).equals(
-                        oldAccountNames.get(oldSelectedAccount))) {
+                boolean selectedAccountChanged = oldAccountNames != null
+                        && !oldAccountNames.isEmpty()
+                        && (mAccountNames.isEmpty()
+                                   || mAccountNames.get(accountToSelect)
+                                              .equals(oldAccountNames.get(oldSelectedAccount)));
+                if (selectedAccountChanged) {
                     // Any dialogs that may have been showing are now invalid (they were created
                     // for the previously selected account).
-                    ConfirmSyncDataStateMachine
-                            .cancelAllDialogs(mDelegate.getFragmentManager());
+                    ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
+                }
 
-                    if (mAccountNames.containsAll(oldAccountNames)) {
-                        // A new account has been added and no accounts have been deleted. We
-                        // will have changed the account selection to the newly added account, so
-                        // shortcut to the confirm signin page.
-                        showConfirmSigninPageAccountTrackerServiceCheck();
-                    }
+                if (shouldJumpToConfirmationScreen) {
+                    showConfirmSigninPageAccountTrackerServiceCheck();
                 }
                 callback.onResult(true);
             }
@@ -346,26 +336,51 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         return resultCode == ConnectionResult.SUCCESS;
     }
 
+    private static class AccountSelectionResult {
+        private final int mSelectedAccountIndex;
+        private final boolean mShouldJumpToConfirmationScreen;
+
+        AccountSelectionResult(int selectedAccountIndex, boolean shouldJumpToConfirmationScreen) {
+            mSelectedAccountIndex = selectedAccountIndex;
+            mShouldJumpToConfirmationScreen = shouldJumpToConfirmationScreen;
+        }
+
+        int getSelectedAccountIndex() {
+            return mSelectedAccountIndex;
+        }
+
+        boolean shouldJumpToConfirmationScreen() {
+            return mShouldJumpToConfirmationScreen;
+        }
+    }
+
     /**
-     * Attempt to select a new element that is in the new list, but not in the old list.
-     * If no such element exist and both the new and the old lists are the same then keep
-     * the selection. Otherwise select the first element.
+     * Determine what account should be selected after account list update. This function also
+     * decides whether AccountSigninView should jump to confirmation screen.
+     *
      * @param oldList Old list of user accounts.
      * @param newList New list of user accounts.
      * @param oldIndex Index of the selected account in the old list.
-     * @return The index of the new element, if it does not exist but lists are the same the
-     *         return the old index, otherwise return 0.
+     * @return {@link AccountSelectionResult} that incapsulates new index and jump/no jump flag.
      */
-    private static int getIndexOfNewElement(
+    private static AccountSelectionResult selectAccountAfterAccountsUpdate(
             List<String> oldList, List<String> newList, int oldIndex) {
-        if (oldList == null || newList == null) return 0;
-        if (oldList.size() == newList.size() && oldList.containsAll(newList)) return oldIndex;
-        if (oldList.size() + 1 == newList.size()) {
+        if (oldList == null || newList == null) return new AccountSelectionResult(0, false);
+        // Return the old index if nothing changed
+        if (oldList.size() == newList.size() && oldList.containsAll(newList)) {
+            return new AccountSelectionResult(oldIndex, false);
+        }
+        if (newList.containsAll(oldList)) {
+            // A new account(s) has been added and no accounts have been deleted. Select new account
+            // and jump to the confirmation screen if only one account was added.
+            boolean shouldJumpToConfirmationScreen = newList.size() == oldList.size() + 1;
             for (int i = 0; i < newList.size(); i++) {
-                if (!oldList.contains(newList.get(i))) return i;
+                if (!oldList.contains(newList.get(i))) {
+                    return new AccountSelectionResult(i, shouldJumpToConfirmationScreen);
+                }
             }
         }
-        return 0;
+        return new AccountSelectionResult(0, false);
     }
 
     @Override
