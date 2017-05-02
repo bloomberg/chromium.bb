@@ -190,7 +190,7 @@ PaymentRequestSheetController::CreatePaymentView() {
 
   view->SetFirstFocusableView(GetFirstFocusedView());
 
-  return view;
+  return std::move(view);
 }
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
