@@ -12,7 +12,7 @@ function onLoad() {
 document.addEventListener('DOMContentLoaded', onLoad);
 
 /**
- * This class handles the presentation of our profiler view. Used as a
+ * This class handles the presentation of the net-export view. Used as a
  * singleton.
  */
 var NetExportView = (function() {
@@ -20,18 +20,30 @@ var NetExportView = (function() {
 
   // --------------------------------------------------------------------------
 
+  var kIdStateDivUninitialized = 'state-uninitialized';
+  var kIdStateDivInitial = 'state-initial';
+  var kIdStateDivLogging = 'state-logging';
+  var kIdStateDivStopped = 'state-stopped';
+  var kIdStartLoggingButton = 'start-logging';
+  var kIdStopLoggingButton = 'stop-logging';
+  var kIdEmailLogButton = 'mobile-email';
+  var kIdCaptureModeLogging = 'capture-mode-logging';
+  var kIdFilePathLogging = 'file-path-logging';
+  var kIdCaptureModeStopped = 'capture-mode-stopped';
+  var kIdFilePathStoppedLogging = 'file-path-stopped';
+  var kIdStartOverButton = 'startover';
+  var kIdReadMoreLink = 'privacy-read-more-link';
+  var kIdReadMoreDiv = 'privacy-read-more'
+
   /**
    * @constructor
    */
   function NetExportView() {
-    $('export-view-start-data').onclick = this.onStartData_.bind(this);
-    $('export-view-stop-data').onclick = this.onStopData_.bind(this);
-    if (this.useMobileUI_())
-      $('export-view-mobile-send-data').onclick = this.onSendData_.bind(this);
-
     // Tell NetExportMessageHandler to notify the UI of future state changes
     // from this point on (through onExportNetLogInfoChanged()).
     chrome.send('enableNotifyUIWithState');
+
+    this.infoForLoggedFile_ = null;
   }
 
   cr.addSingletonGetter(NetExportView);
@@ -40,7 +52,7 @@ var NetExportView = (function() {
     /**
      * Starts saving NetLog data to a file.
      */
-    onStartData_: function() {
+    onStartLogging_: function() {
       var logMode =
           document.querySelector('input[name="log-mode"]:checked').value;
       chrome.send('startNetLog', [logMode]);
@@ -49,85 +61,190 @@ var NetExportView = (function() {
     /**
      * Stops saving NetLog data to a file.
      */
-    onStopData_: function() {
+    onStopLogging_: function() {
       chrome.send('stopNetLog');
     },
 
     /**
-     * Sends NetLog data via email from browser.
+     * Sends NetLog data via email from browser (mobile only).
      */
-    onSendData_: function() {
+    onSendEmail_: function() {
       chrome.send('sendNetLog');
     },
 
     /**
-     * Updates the UI to reflect the current state. Displays the path name of
-     * the file where NetLog data is collected.
+     * Transitions back to the "Start logging to disk" state.
      */
-    onExportNetLogInfoChanged: function(exportNetLogInfo) {
-      if (exportNetLogInfo.file) {
-        var message = '';
-        if (exportNetLogInfo.state == 'LOGGING')
-          message = 'NetLog data is collected in: ';
-        else if (exportNetLogInfo.logType != 'NONE')
-          message = 'NetLog data to send is in: ';
-        $('export-view-file-path-text').textContent =
-            message + exportNetLogInfo.file;
-      } else {
-        $('export-view-file-path-text').textContent = '';
-      }
+    onStartOver_: function() {
+      this.infoForLoggedFile_ = null;
+      this.renderInitial_();
+    },
 
-      // Disable all controls.  Useable controls are enabled below.
-      var controls = document.querySelectorAll('button, input');
-      for (var i = 0; i < controls.length; ++i) {
-        controls[i].disabled = true;
-      }
+    /**
+     * Updates the UI to reflect the current state. The state transitions are
+     * sent by the browser controller (NetLogFileWriter):
+     *
+     *   * UNINITIALIZED - This is the initial state when net-export is opened
+     *         for the first time, or there was an error during initialization.
+     *         This state is short-lived and likely not observed; will
+     *         immediately transition to INITIALIZING).
+     *
+     *   * INITIALIZING - On desktop UI this is pretty much a no-op. On the
+     *         mobile UI, this state is when the controller checks the disk for
+     *         a previous net-log file (from past run of the browser). After
+     *         success will transition to NOT_LOGGING. On failure will
+     *         transition to UNINITIALIZED (rare).
+     *
+     *   * NOT_LOGGING - This is the steady-state. It means initialization
+     *        completed and we are not currently logging. Being in this state
+     *        either means:
+     *         (1) We were logging and then the user stopped (earlier states
+     *             were STATE_LOGGING / STATE_STOPPING_LOG).
+     *         (2) We have never started logging (previous state was
+     *             INITIALIZING).
+     *
+     *   * STARTING_LOG - This state means the user has clicked the "Start log"
+     *        button and logging is about to get started (files may not have
+     *        been created yet).
+     *
+     *   * LOGGING - This state means that logging is currently in progress.
+     *        The destination path of the log, and the capture mode are known
+     *        and will be reflected in the parameters.
+     *
+     *   * STOPPING_LOG - This state means the user has clicked the "Stop
+     *        logging" button, and the log file is in the process of being
+     *        finalized. Once the state transitions to NOT_LOGGING then the log
+     *        is complete, and can safely be copied/emailed.
+     */
+    onExportNetLogInfoChanged: function(info) {
+      switch (info.state) {
+        case 'UNINITIALIZED':
+        case 'INITIALIZING':
+          this.renderUninitialized_();
+          break;
 
-      if (this.useMobileUI_()) {
-        $('export-view-mobile-deletes-log-text').hidden = true;
-        $('export-view-mobile-private-data-text').hidden = true;
-        $('export-view-mobile-send-old-log-text').hidden = true;
-      }
+        case 'NOT_LOGGING':
+          if (this.infoForLoggedFile_) {
+            // There is no "stopped logging" state. We manufacture that in the
+            // UI in response to a transition from LOGGING --> NOT_LOGGING.
+            this.renderStoppedLogging_(this.infoForLoggedFile_);
 
-      if (exportNetLogInfo.state == 'NOT_LOGGING') {
-        // Allow making a new log.
-        $('export-view-strip-private-data-button').disabled = false;
-        $('export-view-include-private-data-button').disabled = false;
-        $('export-view-log-bytes-button').disabled = false;
-        $('export-view-start-data').disabled = false;
-
-        // If there's a pre-existing log, allow sending it (this only
-        // applies to the mobile UI).
-        if (this.useMobileUI_() && exportNetLogInfo.logExists) {
-          $('export-view-mobile-deletes-log-text').hidden = false;
-          $('export-view-mobile-send-data').disabled = false;
-          if (!exportNetLogInfo.logCaptureModeKnown) {
-            $('export-view-mobile-send-old-log-text').hidden = false;
-          } else if (exportNetLogInfo.captureMode != 'STRIP_PRIVATE_DATA') {
-            $('export-view-mobile-private-data-text').hidden = false;
+            // TODO(eroman): prevent future state transitions. In desktop UI
+            // could start logging in a new tab, and it would reset this one.
+          } else if (info.logExists) {
+            // In the mobile UI, initialization may have found a
+            // pre-existing log file.
+            this.renderStoppedLogging_(info);
+          } else {
+            this.renderInitial_();
           }
-        }
-      } else if (exportNetLogInfo.state == 'LOGGING') {
-        // Only possible to stop logging. Radio buttons reflects current state.
-        document
-            .querySelector(
-                'input[name="log-mode"][value="' +
-                exportNetLogInfo.captureMode + '"]')
-            .checked = true;
-        $('export-view-stop-data').disabled = false;
-      } else if (exportNetLogInfo.state == 'UNINITIALIZED') {
-        $('export-view-file-path-text').textContent =
-            'Unable to initialize NetLog data file.';
+          break;
+
+        case 'STARTING_LOG':
+          // This is a short-lived state, no need to do anything special.
+          // Disabling the buttons would be nice, however it is not crucial as
+          // the controller will reject commands while in this state anyway.
+          this.renderInitial_();
+          break;
+
+        case 'LOGGING':
+          // Cache the last information for this logging session, so once
+          // logging is stopped will know what path information to display.
+          this.infoForLoggedFile_ = info;
+          this.renderLogging_(info);
+          break;
+
+        case 'STOPPING_LOG':
+          // This is a short-lived state, no need to do anything special.
+          this.renderLogging_(info);
+          break;
       }
     },
 
-    /*
-     * Returns true if the UI is being displayed for mobile, otherwise false
-     * for desktop. This is controlled by the HTML template.
+    /**
+     * Updates the UI to display the "uninitialized" state. This is only
+     * visible for a short period of time, or longer if initialization failed
+     * (and didn't transition to a different state).
      */
-    useMobileUI_: function() {
-      return !!document.getElementById('export-view-mobile-send-data');
-    }
+    renderUninitialized_: function() {
+      this.showStateDiv_(kIdStateDivUninitialized);
+    },
+
+    /**
+     * Updates the UI to display the "initial" state. This is the state when
+     * logging has not been started yet, and there are controls to start
+     * logging.
+     */
+    renderInitial_: function() {
+      this.showStateDiv_(kIdStateDivInitial);
+      $(kIdStartLoggingButton).onclick = this.onStartLogging_.bind(this);
+    },
+
+    /**
+     * Updates the UI to display the "logging" state. This is the state while
+     * capturing is in progress and being written to disk.
+     */
+    renderLogging_: function(info) {
+      this.showStateDiv_(kIdStateDivLogging);
+
+      $(kIdStopLoggingButton).onclick = this.onStopLogging_.bind(this);
+      $(kIdCaptureModeLogging).textContent = this.getCaptureModeText_(info);
+      $(kIdFilePathLogging).textContent = info.file;
+    },
+
+    /*
+     * Updates the UI to display the state when logging has stopped.
+     */
+    renderStoppedLogging_: function(info) {
+      this.showStateDiv_(kIdStateDivStopped);
+
+      // The email button is only available in the mobile UI.
+      if ($(kIdEmailLogButton))
+        $(kIdEmailLogButton).onclick = this.onSendEmail_.bind(this);
+      $(kIdStartOverButton).onclick = this.onStartOver_.bind(this);
+
+      $(kIdFilePathStoppedLogging).textContent = info.file;
+
+      $(kIdCaptureModeStopped).textContent = this.getCaptureModeText_(info);
+
+      // Hook up the "read more..." link for privacy information.
+      $(kIdReadMoreLink).onclick = this.showPrivacyReadMore_.bind(this, true);
+      this.showPrivacyReadMore_(false);
+    },
+
+    /**
+     * Gets the textual label for a capture mode from the HTML.
+     */
+    getCaptureModeText_: function(info) {
+      // TODO(eroman): Should not hardcode "Unknown" (will not work properly if
+      //               the HTML is internationalized).
+      if (!info.logCaptureModeKnown)
+        return "Unknown";
+
+      var radioButton = document.querySelector(
+          'input[name="log-mode"][value="' + info.captureMode + '"]');
+      if (!radioButton)
+        return 'Unknown';
+      return radioButton.parentElement.textContent;
+    },
+
+    showPrivacyReadMore_: function(show) {
+      $(kIdReadMoreDiv).hidden = !show;
+      $(kIdReadMoreLink).hidden = show;
+    },
+
+    showStateDiv_: function(divId) {
+      var kAllDivIds = [
+        kIdStateDivUninitialized,
+        kIdStateDivInitial,
+        kIdStateDivLogging,
+        kIdStateDivStopped
+      ];
+
+      for (var curDivId of kAllDivIds) {
+        $(curDivId).hidden = divId != curDivId;
+      }
+    },
   };
 
   return NetExportView;
