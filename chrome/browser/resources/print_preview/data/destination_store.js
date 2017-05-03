@@ -1600,7 +1600,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onGetCapabilitiesFail_: function(event) {
-      console.error('Failed to get print capabilities for printer ' +
+      console.warn('Failed to get print capabilities for printer ' +
                     event.destinationId);
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
