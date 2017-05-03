@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -196,6 +197,8 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
              withReuseIdentifier:[BookmarkHeaderSeparatorView reuseIdentifier]];
   [self.collectionView registerClass:[BookmarkPromoCell class]
           forCellWithReuseIdentifier:[BookmarkPromoCell reuseIdentifier]];
+  [self.collectionView registerClass:[BookmarkSigninPromoCell class]
+          forCellWithReuseIdentifier:[BookmarkSigninPromoCell reuseIdentifier]];
 
   [self addSubview:self.collectionView];
 
@@ -686,18 +689,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 }
 
 - (CGSize)cellSizeForIndexPath:(NSIndexPath*)indexPath {
-  if ([self isPromoSection:indexPath.section]) {
-    CGRect estimatedFrame = CGRectMake(0, 0, CGRectGetWidth(self.bounds), 100);
-    UICollectionViewCell* cell =
-        [self.collectionView cellForItemAtIndexPath:indexPath];
-    if (!cell) {
-      cell = [[BookmarkPromoCell alloc] initWithFrame:estimatedFrame];
-    }
-    cell.frame = estimatedFrame;
-    [cell layoutIfNeeded];
-    return [cell systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-  }
-
+  DCHECK(![self isPromoSection:indexPath.section]);
   UIEdgeInsets insets = [self insetForSectionAtIndex:indexPath.section];
   return CGSizeMake(self.bounds.size.width - (insets.right + insets.left),
                     rowHeight);
