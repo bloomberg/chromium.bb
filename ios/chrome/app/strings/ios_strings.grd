@@ -1107,6 +1107,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
         Search Engine
       </message>
+      <message name="IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON" desc="Button that the user can press to copy the username to clipboard. [Length: 12em]">
+        Copy
+      </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON" desc="Button that the user can press to copy the password to clipboard. [Length: 12em]">
         Copy
       </message>
@@ -1127,6 +1130,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON" desc="Button that the user can press in order to have the password displayed in plain text. [Length: 12em]">
         Show
+      </message>
+      <message name="IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE" desc="Confirmation that the username was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
+        Your username was copied.
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE" desc="Confirmation that the password was copied. This is shown alone in an infobar at the bottom of the screen after the user successfully reauthenticates with Touch ID or PIN. [Length: 40em]">
         Your password was copied.
