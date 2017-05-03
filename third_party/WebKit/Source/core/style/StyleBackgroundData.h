@@ -46,13 +46,21 @@ class CORE_EXPORT StyleBackgroundData
     return AdoptRef(new StyleBackgroundData(*this));
   }
 
-  bool operator==(const StyleBackgroundData&) const;
-  bool operator!=(const StyleBackgroundData& o) const { return !(*this == o); }
+  bool operator==(const StyleBackgroundData& other) const {
+    return background_ == other.background_ &&
+           background_color_ == other.background_color_;
+  }
+  bool operator!=(const StyleBackgroundData& other) const {
+    return !(*this == other);
+  }
 
  private:
   friend class ComputedStyle;
 
-  StyleBackgroundData();
+  StyleBackgroundData()
+      : background_(FillLayer(kBackgroundFillLayer, true)),
+        background_color_(Color::kTransparent) {}
+
   StyleBackgroundData(const StyleBackgroundData&) = default;
 
   FillLayer background_;
