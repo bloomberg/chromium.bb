@@ -4907,12 +4907,14 @@ void FrameView::UpdateViewportIntersectionsForSubtree(
 
   if (target_state == DocumentLifecycle::kPaintClean) {
     RecordDeferredLoadingStats();
-    // Notify javascript IntersectionObservers
-    if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
-      GetFrame()
-          .GetDocument()
-          ->GetIntersectionObserverController()
-          ->ComputeTrackedIntersectionObservations();
+    if (!NeedsLayout()) {
+      // Notify javascript IntersectionObservers
+      if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
+        GetFrame()
+            .GetDocument()
+            ->GetIntersectionObserverController()
+            ->ComputeTrackedIntersectionObservations();
+      }
     }
   }
 
