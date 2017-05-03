@@ -13,6 +13,11 @@
 #include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const size_t kMaxURLDisplayChars = 32 * 1024;
