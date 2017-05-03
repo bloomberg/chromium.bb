@@ -1,7 +1,7 @@
 Name: Retrolambda, backport of Java 8's lambda expressions to Java 7, 6, 5
 Short Name: retrolambda
 URL: https://github.com/orfjackal/retrolambda/
-Version: 2.3.0
+Version: 2.5.1
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: no
@@ -14,7 +14,13 @@ lambda expressions for Chrome on Android without switching from javac to Jack.
 Local Modifications:
 None
 
-Source of the .jar:
-Downloaded from Maven Central. Link:
-http://central.maven.org/maven2/net/orfjackal/retrolambda/retrolambda/2.3.0/retrolambda-2.3.0.jar
+Update instructions (requires @google.com account):
+- Download jar from Maven Central
+http://central.maven.org/maven2/net/orfjackal/retrolambda/retrolambda
+- Modify build/android/gyp/retrolambda.py and verify the new jar works
+- Remove existing SHA1 file
+- If gcloud auth tokens are not set up, run
+$ download_from_google_storage --config
+- Upload new jar to gcloud. In third_party/retrolambda, run
+$ upload_to_google_storage.py -b chromium-android-tools/retrolambda {new_jar}
 
