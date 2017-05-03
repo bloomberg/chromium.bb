@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "dbus/bus.h"
