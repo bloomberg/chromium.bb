@@ -37,7 +37,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public File getCrashParentDir() {
-        return CrashReceiverService.getOrCreateWebViewCrashDir();
+        return CrashReceiverService.getWebViewCrashDir();
     }
 
     @Override

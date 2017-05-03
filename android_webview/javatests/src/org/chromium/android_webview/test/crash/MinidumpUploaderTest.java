@@ -140,20 +140,9 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     }
                 });
 
-        File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0");
-        File secondFile = createMinidumpFileInCrashDir("12_abcd.dmp0");
-        File expectedFirstUploadFile =
-                new File(mCrashDir, firstFile.getName().replace(".dmp", ".up"));
-        File expectedSecondUploadFile =
-                new File(mCrashDir, secondFile.getName().replace(".dmp", ".up"));
-
+        // Ensure that we don't crash when trying to upload minidumps without a crash directory.
         MinidumpUploadTestUtility.uploadMinidumpsSync(
                 minidumpUploader, false /* expectReschedule */);
-
-        assertFalse(firstFile.exists());
-        assertTrue(expectedFirstUploadFile.exists());
-        assertFalse(secondFile.exists());
-        assertTrue(expectedSecondUploadFile.exists());
     }
 
     private interface MinidumpUploadCallableCreator {
@@ -258,6 +247,31 @@ public class MinidumpUploaderTest extends CrashTestCase {
         }
     }
 
+    /**
+     * Minidump uploader implementation that stalls minidump-uploading until a given CountDownLatch
+     * counts down.
+     */
+    private static class StallingMinidumpUploaderImpl extends TestMinidumpUploaderImpl {
+        CountDownLatch mStopStallingLatch;
+        boolean mSuccessfulUpload;
+
+        public StallingMinidumpUploaderImpl(File cacheDir,
+                CrashReportingPermissionManager permissionManager, CountDownLatch stopStallingLatch,
+                boolean successfulUpload) {
+            super(cacheDir, permissionManager);
+            mStopStallingLatch = stopStallingLatch;
+            mSuccessfulUpload = successfulUpload;
+        }
+
+        @Override
+        public MinidumpUploadCallable createMinidumpUploadCallable(
+                File minidumpFile, File logfile) {
+            return new MinidumpUploadCallable(minidumpFile, logfile,
+                    new StallingHttpUrlConnectionFactory(mStopStallingLatch, mSuccessfulUpload),
+                    mDelegate.createCrashReportingPermissionManager());
+        }
+    }
+
     private static class FailingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
         public HttpURLConnection createHttpURLConnection(String url) {
             return null;
@@ -286,16 +300,8 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     { mIsEnabledForTests = true; }
                 };
         final CountDownLatch stopStallingLatch = new CountDownLatch(1);
-        MinidumpUploaderImpl minidumpUploader = new TestMinidumpUploaderImpl(
-                getExistingCacheDir(), permManager) {
-            @Override
-            public MinidumpUploadCallable createMinidumpUploadCallable(
-                    File minidumpFile, File logfile) {
-                return new MinidumpUploadCallable(minidumpFile, logfile,
-                        new StallingHttpUrlConnectionFactory(stopStallingLatch, successfulUpload),
-                        permManager);
-            }
-        };
+        MinidumpUploaderImpl minidumpUploader = new StallingMinidumpUploaderImpl(
+                getExistingCacheDir(), permManager, stopStallingLatch, successfulUpload);
 
         File firstFile = createMinidumpFileInCrashDir("123_abc.dmp0");
         File expectedFirstUploadFile =
@@ -337,6 +343,40 @@ public class MinidumpUploaderTest extends CrashTestCase {
             assertFalse(expectedFirstUploadFile.exists());
             assertFalse(expectedFirstRetryFile.exists());
         }
+    }
+
+    /**
+     * Ensure that canceling an upload that fails causes a reschedule.
+     */
+    @MediumTest
+    public void testCancelFailedUploadCausesReschedule() throws IOException {
+        final CrashReportingPermissionManager permManager =
+                new MockCrashReportingPermissionManager() {
+                    { mIsEnabledForTests = true; }
+                };
+        final CountDownLatch stopStallingLatch = new CountDownLatch(1);
+        MinidumpUploaderImpl minidumpUploader =
+                new StallingMinidumpUploaderImpl(getExistingCacheDir(), permManager,
+                        stopStallingLatch, false /* successfulUpload */);
+
+        createMinidumpFileInCrashDir("123_abc.dmp0");
+
+        MinidumpUploader.UploadsFinishedCallback crashingCallback =
+                new MinidumpUploader.UploadsFinishedCallback() {
+                    @Override
+                    public void uploadsFinished(boolean reschedule) {
+                        // We don't guarantee whether uploadsFinished is called after a job has been
+                        // cancelled, but if it is, it should indicate that we want to reschedule
+                        // the job.
+                        assertTrue(reschedule);
+                    }
+                };
+
+        // This is run on the UI thread to avoid failing any assertOnUiThread assertions.
+        MinidumpUploadTestUtility.uploadAllMinidumpsOnUiThread(minidumpUploader, crashingCallback);
+        // Ensure we tell JobScheduler to reschedule the job.
+        assertTrue(minidumpUploader.cancelUploads());
+        stopStallingLatch.countDown();
     }
 
     /**
