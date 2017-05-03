@@ -1227,7 +1227,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
-    TetherService::Get(profile)->StartTether();
+    TetherService::Get(profile)->StartTetherIfEnabled();
   }
 
   UpdateEasyUnlockKeys(user_context_);

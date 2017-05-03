@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/net/tether_notification_presenter.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
@@ -16,9 +17,11 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/initializer.h"
 #include "chromeos/network/network_connect.h"
-#include "chromeos/network/network_state_handler.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "chromeos/network/network_type_pattern.h"
+#include "components/cryptauth/cryptauth_service.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/message_center/message_center.h"
 
 // static
@@ -27,25 +30,39 @@ TetherService* TetherService::Get(Profile* profile) {
 }
 
 // static
-void TetherService::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void TetherService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kInstantTetheringAllowed, true);
+  registry->RegisterBooleanPref(prefs::kInstantTetheringEnabled, true);
   chromeos::tether::Initializer::RegisterProfilePrefs(registry);
 }
 
-TetherService::TetherService(Profile* profile)
-    : profile_(profile), shut_down_(false) {
+TetherService::TetherService(
+    Profile* profile,
+    cryptauth::CryptAuthService* cryptauth_service,
+    chromeos::NetworkStateHandler* network_state_handler)
+    : profile_(profile),
+      cryptauth_service_(cryptauth_service),
+      network_state_handler_(network_state_handler),
+      weak_ptr_factory_(this) {
+  cryptauth_service_->GetCryptAuthDeviceManager()->AddObserver(this);
+
+  network_state_handler_->AddObserver(this, FROM_HERE);
+
   registrar_.Init(profile_->GetPrefs());
-  registrar_.Add(
-      prefs::kInstantTetheringAllowed,
-      base::Bind(&TetherService::OnPrefsChanged, base::Unretained(this)));
+  registrar_.Add(prefs::kInstantTetheringAllowed,
+                 base::Bind(&TetherService::OnPrefsChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&TetherService::OnBluetoothAdapterFetched,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 TetherService::~TetherService() {}
 
-void TetherService::StartTether() {
-  // TODO(hansberry): Switch to using an IsEnabled() method.
-  if (!IsAllowed() || !IsEnabled()) {
+void TetherService::StartTetherIfEnabled() {
+  if (GetTetherTechnologyState() !=
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
     return;
   }
 
@@ -54,25 +71,17 @@ void TetherService::StartTether() {
           message_center::MessageCenter::Get(),
           chromeos::NetworkConnect::Get());
   chromeos::tether::Initializer::Init(
-      ChromeCryptAuthServiceFactory::GetForBrowserContext(profile_),
-      std::move(notification_presenter), profile_->GetPrefs(),
+      cryptauth_service_, std::move(notification_presenter),
+      profile_->GetPrefs(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-      chromeos::NetworkHandler::Get()->network_state_handler(),
+      network_state_handler_,
       chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
       chromeos::NetworkConnect::Get(),
       chromeos::NetworkHandler::Get()->network_connection_handler());
 }
 
-bool TetherService::IsAllowed() const {
-  if (shut_down_)
-    return false;
-
-  return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringAllowed);
-}
-
-bool TetherService::IsEnabled() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableTether);
+void TetherService::StopTether() {
+  chromeos::tether::Initializer::Shutdown();
 }
 
 void TetherService::Shutdown() {
@@ -80,15 +89,126 @@ void TetherService::Shutdown() {
     return;
 
   shut_down_ = true;
+
+  cryptauth_service_->GetCryptAuthDeviceManager()->RemoveObserver(this);
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  if (adapter_)
+    adapter_->RemoveObserver(this);
   registrar_.RemoveAll();
-  chromeos::tether::Initializer::Shutdown();
+
+  UpdateTetherTechnologyState();
 }
 
-void TetherService::OnPrefsChanged() {
-  if (IsAllowed() && IsEnabled()) {
-    StartTether();
+void TetherService::OnSyncFinished(
+    cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
+    cryptauth::CryptAuthDeviceManager::DeviceChangeResult
+        device_change_result) {
+  if (device_change_result ==
+      cryptauth::CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED) {
     return;
   }
 
-  chromeos::tether::Initializer::Shutdown();
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                                          bool powered) {
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::DeviceListChanged() {
+  bool was_pref_enabled = IsEnabledbyPreference();
+  chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
+      network_state_handler_->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether());
+
+  // If |was_tether_setting_enabled| differs from the new Tether
+  // TechnologyState, the settings toggle has been changed. Update the
+  // kInstantTetheringEnabled user pref accordingly.
+  bool is_enabled;
+  if (was_pref_enabled && tether_technology_state ==
+                              chromeos::NetworkStateHandler::TechnologyState::
+                                  TECHNOLOGY_AVAILABLE) {
+    is_enabled = false;
+  } else if (!was_pref_enabled && tether_technology_state ==
+                                      chromeos::NetworkStateHandler::
+                                          TechnologyState::TECHNOLOGY_ENABLED) {
+    is_enabled = true;
+  } else {
+    is_enabled = was_pref_enabled;
+  }
+
+  profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringEnabled, is_enabled);
+
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::OnPrefsChanged() {
+  UpdateTetherTechnologyState();
+}
+
+void TetherService::OnBluetoothAdapterFetched(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  adapter_ = adapter;
+  adapter_->AddObserver(this);
+  UpdateTetherTechnologyState();
+}
+
+bool TetherService::HasSyncedTetherHosts() const {
+  return !cryptauth_service_->GetCryptAuthDeviceManager()
+              ->GetTetherHosts()
+              .empty();
+}
+
+bool TetherService::IsFeatureFlagEnabled() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableTether);
+}
+
+bool TetherService::IsBluetoothAvailable() const {
+  return adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
+}
+
+bool TetherService::IsAllowedByPolicy() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringAllowed);
+}
+
+bool TetherService::IsEnabledbyPreference() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled);
+}
+
+void TetherService::UpdateTetherTechnologyState() {
+  chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
+      GetTetherTechnologyState();
+
+  network_state_handler_->SetTetherTechnologyState(tether_technology_state);
+
+  if (tether_technology_state ==
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
+    StartTetherIfEnabled();
+  } else {
+    StopTether();
+  }
+}
+
+chromeos::NetworkStateHandler::TechnologyState
+TetherService::GetTetherTechnologyState() {
+  if (shut_down_ || !IsFeatureFlagEnabled() || !HasSyncedTetherHosts()) {
+    return chromeos::NetworkStateHandler::TechnologyState::
+        TECHNOLOGY_UNAVAILABLE;
+  } else if (!IsAllowedByPolicy()) {
+    return chromeos::NetworkStateHandler::TechnologyState::
+        TECHNOLOGY_PROHIBITED;
+  } else if (!IsBluetoothAvailable()) {
+    // TODO (hansberry): This unfortunately results in a weird UI state for
+    // Settings where the toggle is clickable but immediately becomes disabled
+    // after enabling it. Possible solution: grey out the toggle and tell the
+    // user to turn Bluetooth on?
+    return chromeos::NetworkStateHandler::TechnologyState::
+        TECHNOLOGY_UNINITIALIZED;
+  } else if (!IsEnabledbyPreference()) {
+    return chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE;
+  }
+
+  return chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED;
 }
