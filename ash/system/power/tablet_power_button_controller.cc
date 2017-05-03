@@ -220,11 +220,7 @@ void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
       ->GetPowerManagerClient()
       ->SetBacklightsForcedOff(forced_off);
   backlights_forced_off_ = forced_off;
-
-  ShellDelegate* delegate = Shell::Get()->shell_delegate();
-  delegate->SetTouchscreenEnabledInPrefs(!forced_off,
-                                         true /* use_local_state */);
-  delegate->UpdateTouchscreenStatusFromPrefs();
+  UpdateTouchscreenStatus();
 
   // Send an a11y alert.
   Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
@@ -242,6 +238,14 @@ void TabletPowerButtonController::GetInitialBacklightsForcedOff() {
 void TabletPowerButtonController::OnGotInitialBacklightsForcedOff(
     bool is_forced_off) {
   backlights_forced_off_ = is_forced_off;
+  UpdateTouchscreenStatus();
+}
+
+void TabletPowerButtonController::UpdateTouchscreenStatus() {
+  ShellDelegate* delegate = Shell::Get()->shell_delegate();
+  delegate->SetTouchscreenEnabledInPrefs(!backlights_forced_off_,
+                                         true /* use_local_state */);
+  delegate->UpdateTouchscreenStatusFromPrefs();
 }
 
 void TabletPowerButtonController::StartShutdownTimer() {

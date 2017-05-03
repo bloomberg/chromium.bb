@@ -507,5 +507,25 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
+// Tests that with system reboot, the local state of touchscreen enabled state
+// should be synced with new backlights forced off state from powerd.
+TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenStatus) {
+  shell_delegate_->SetTouchscreenEnabledInPrefs(false,
+                                                true /* use_local_state */);
+  ASSERT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  // Simulate system reboot by resetting backlights forced off state in powerd
+  // and TabletPowerButtonController.
+  power_manager_client_->SetBacklightsForcedOff(false);
+  Shell::Get()
+      ->power_button_controller()
+      ->ResetTabletPowerButtonControllerForTest();
+
+  // Check that the local state of touchscreen enabled state is in line with
+  // backlights forced off state.
+  EXPECT_FALSE(GetBacklightsForcedOff());
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+}
+
 }  // namespace test
 }  // namespace ash
