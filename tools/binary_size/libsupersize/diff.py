@@ -4,8 +4,39 @@
 """Logic for diffing two SizeInfo objects."""
 
 import collections
+import re
 
 import models
+
+
+def _SymbolKey(symbol):
+  """Returns a tuple that can be used to see if two Symbol are the same.
+
+  Keys are not guaranteed to be unique within a SymbolGroup. When multiple
+  symbols have the same key, they will be matched up in order of appearance.
+  We do this because the numbering of these generated symbols is not stable.
+
+  Examples of symbols with shared keys:
+    "** merge strings"
+    "** symbol gap 3", "** symbol gap 5"
+    "foo() [clone ##]"
+    "CSWTCH.61", "CSWTCH.62"
+    "._468", "._467"
+    ".L__unnamed_1193", ".L__unnamed_712"
+  """
+  name = symbol.full_name or symbol.name
+  clone_idx = name.find(' [clone ')
+  if clone_idx != -1:
+    name = name[:clone_idx]
+  if name.startswith('*'):
+    # "symbol gap 3 (bar)" -> "symbol gaps"
+    name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)
+
+  if '.' not in name:
+    return (symbol.section_name, name)
+  # Compiler or Linker generated symbol.
+  name = re.sub(r'[.0-9]', '', name)  # Strip out all numbers and dots.
+  return (symbol.section_name, name, symbol.object_path)
 
 
 def _CloneSymbol(sym, size):
@@ -101,7 +132,7 @@ def _NegateAndClone(before_symbols, matched_before_aliases,
 def _DiffSymbolGroups(before, after):
   before_symbols_by_key = collections.defaultdict(list)
   for s in before:
-    before_symbols_by_key[s._Key()].append(s)
+    before_symbols_by_key[_SymbolKey(s)].append(s)
 
   similar = []
   diffed_symbol_by_after_aliases = {}
@@ -113,7 +144,7 @@ def _DiffSymbolGroups(before, after):
 
   # Step 1: Create all delta symbols and record unmatched symbols.
   for after_sym in after:
-    matching_syms = before_symbols_by_key.get(after_sym._Key())
+    matching_syms = before_symbols_by_key.get(_SymbolKey(after_sym))
     if matching_syms:
       before_sym = matching_syms.pop(0)
       if before_sym.IsGroup() and after_sym.IsGroup():

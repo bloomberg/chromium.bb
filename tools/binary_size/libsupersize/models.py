@@ -57,13 +57,6 @@ FLAG_REL = 8
 FLAG_REL_LOCAL = 16
 
 
-def _StripCloneSuffix(name):
-  clone_idx = name.find(' [clone ')
-  if clone_idx != -1:
-    return name[:clone_idx]
-  return name
-
-
 class SizeInfo(object):
   """Represents all size information for a single binary.
 
@@ -177,17 +170,6 @@ class BaseSymbol(object):
     # TODO(agrieve): Also match generated functions such as:
     #     startup._GLOBAL__sub_I_page_allocator.cc
     return self.name.endswith(']') and not self.name.endswith('[]')
-
-  def _Key(self):
-    """Returns a tuple that can be used to see if two Symbol are the same.
-
-    Keys are not guaranteed to be unique within a SymbolGroup. For example, it
-    is common to have multiple "** merge strings" symbols, which will have a
-    common key."""
-    stripped_full_name = self.full_name
-    if stripped_full_name:
-      stripped_full_name = _StripCloneSuffix(stripped_full_name)
-    return (self.section_name, stripped_full_name or self.name)
 
 
 class Symbol(BaseSymbol):

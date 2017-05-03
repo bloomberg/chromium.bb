@@ -236,6 +236,29 @@ class IntegrationTest(unittest.TestCase):
     self.assertEquals(d.symbols.size, a1.size)
     self.assertEquals(d.symbols.added_count, 3)
 
+  def test_Diff_Clustering(self):
+    size_info1 = self._CloneSizeInfo()
+    size_info2 = self._CloneSizeInfo()
+    S = '.text'
+    size_info1.symbols += [
+        models.Symbol(S, 11, name='.L__unnamed_1193', object_path='a'), # 1
+        models.Symbol(S, 22, name='.L__unnamed_1194', object_path='a'), # 2
+        models.Symbol(S, 33, name='.L__unnamed_1195', object_path='b'), # 3
+        models.Symbol(S, 44, name='.L__bar_195', object_path='b'), # 4
+        models.Symbol(S, 55, name='.L__bar_1195', object_path='b'), # 5
+    ]
+    size_info2.symbols += [
+        models.Symbol(S, 33, name='.L__unnamed_2195', object_path='b'), # 3
+        models.Symbol(S, 11, name='.L__unnamed_2194', object_path='a'), # 1
+        models.Symbol(S, 22, name='.L__unnamed_2193', object_path='a'), # 2
+        models.Symbol(S, 44, name='.L__bar_2195', object_path='b'), # 4
+        models.Symbol(S, 55, name='.L__bar_295', object_path='b'), # 5
+    ]
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals(d.symbols.added_count, 0)
+    self.assertEquals(d.symbols.size, 0)
+
+
   @_CompareWithGolden()
   def test_FullDescription(self):
     return describe.GenerateLines(self._CloneSizeInfo().Cluster(),
