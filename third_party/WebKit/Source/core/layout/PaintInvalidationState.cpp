@@ -49,13 +49,7 @@ PaintInvalidationState::PaintInvalidationState(
           paint_invalidation_container_),
       container_for_absolute_position_(layout_view),
       pending_delayed_paint_invalidations_(pending_delayed_paint_invalidations),
-      painting_layer_(*layout_view.Layer())
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-      ,
-      m_canCheckFastPathSlowPathEquality(layoutView ==
-                                         m_paintInvalidationContainer)
-#endif
-{
+      painting_layer_(*layout_view.Layer()) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
 
   if (!SupportsCachedOffsets(layout_view)) {
@@ -98,13 +92,7 @@ PaintInvalidationState::PaintInvalidationState(
       svg_transform_(parent_state.svg_transform_),
       pending_delayed_paint_invalidations_(
           parent_state.pending_delayed_paint_invalidations_),
-      painting_layer_(parent_state.ChildPaintingLayer(current_object))
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-      ,
-      m_canCheckFastPathSlowPathEquality(
-          parentState.m_canCheckFastPathSlowPathEquality)
-#endif
-{
+      painting_layer_(parent_state.ChildPaintingLayer(current_object)) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
   DCHECK_EQ(&painting_layer_, current_object.PaintingLayer());
 
@@ -222,9 +210,6 @@ PaintInvalidationState::PaintInvalidationState(
 
     clipped_ = false;  // Will be updated in updateForChildren().
     paint_offset_ = LayoutSize();
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-    m_canCheckFastPathSlowPathEquality = true;
-#endif
     return;
   }
 
@@ -276,12 +261,7 @@ void PaintInvalidationState::UpdateForCurrentObject(
     // just assume no clip. Clip on fixed-position is rare, in case that
     // paintInvalidationContainer crosses frame boundary and the LayoutView is
     // clipped by something in owner document.
-    if (clipped_) {
-      clipped_ = false;
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-      m_canCheckFastPathSlowPathEquality = false;
-#endif
-    }
+    clipped_ = false;
     return;
   }
 
@@ -441,11 +421,6 @@ LayoutPoint PaintInvalidationState::ComputeLocationInBacking(
       if (current_object_.IsSVGChild())
         point = svg_transform_.MapPoint(point);
       point += FloatPoint(paint_offset_);
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-      DCHECK_EQ(point, slowLocalOriginToAncestorPoint(
-                           m_currentObject, m_paintInvalidationContainer,
-                           FloatPoint()));
-#endif
     } else {
       point = SlowLocalToAncestorPoint(
           current_object_, *paint_invalidation_container_, FloatPoint());
@@ -483,11 +458,6 @@ LayoutRect PaintInvalidationState::ComputeVisualRectInBackingForSVG() const {
     rect.Move(paint_offset_);
     if (clipped_)
       rect.Intersect(clip_rect_);
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-    LayoutRect slowPathRect = SVGLayoutSupport::visualRectInAncestorSpace(
-        m_currentObject, *m_paintInvalidationContainer);
-    assertFastPathAndSlowPathRectsEqual(rect, slowPathRect);
-#endif
   } else {
     // TODO(wangxianzhu): Sometimes m_cachedOffsetsEnabled==false doesn't mean
     // we can't use cached m_svgTransform. We can use hybrid fast path (for SVG)
@@ -533,17 +503,9 @@ void PaintInvalidationState::MapLocalRectToPaintInvalidationContainer(
 #endif
 
   if (cached_offsets_enabled_) {
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-    LayoutRect slowPathRect(rect);
-    slowMapToVisualRectInAncestorSpace(
-        m_currentObject, *m_paintInvalidationContainer, slowPathRect);
-#endif
     rect.Move(paint_offset_);
     if (clipped_)
       rect.Intersect(clip_rect_);
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-    assertFastPathAndSlowPathRectsEqual(rect, slowPathRect);
-#endif
   } else {
     SlowMapToVisualRectInAncestorSpace(current_object_,
                                        *paint_invalidation_container_, rect);
@@ -579,63 +541,6 @@ PaintLayer& PaintInvalidationState::PaintingLayer() const {
   DCHECK_EQ(&painting_layer_, current_object_.PaintingLayer());
   return painting_layer_;
 }
-
-#ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-
-static bool mayHaveBeenSaturated(LayoutUnit value) {
-  // This is not accurate, just to avoid too big values.
-  return value.abs() >= LayoutUnit::max() / 2;
-}
-
-static bool mayHaveBeenSaturated(const LayoutRect& rect) {
-  return mayHaveBeenSaturated(rect.x()) || mayHaveBeenSaturated(rect.y()) ||
-         mayHaveBeenSaturated(rect.width()) ||
-         mayHaveBeenSaturated(rect.height());
-}
-
-void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(
-    const LayoutRect& fastPathRect,
-    const LayoutRect& slowPathRect) const {
-  if (!m_canCheckFastPathSlowPathEquality)
-    return;
-
-  // TODO(crbug.com/597903): Fast path and slow path should generate equal empty
-  // rects.
-  if (fastPathRect.isEmpty() && slowPathRect.isEmpty())
-    return;
-
-  if (fastPathRect == slowPathRect)
-    return;
-
-  // LayoutUnit uses saturated arithmetic operations. If any interim or final
-  // result is saturated, the same operations in different order produce
-  // different results. Don't compare results if any of them may have been
-  // saturated.
-  if (mayHaveBeenSaturated(fastPathRect) || mayHaveBeenSaturated(slowPathRect))
-    return;
-
-  // Tolerate the difference between the two paths when crossing frame
-  // boundaries.
-  if (m_currentObject.view() != m_paintInvalidationContainer->view()) {
-    LayoutRect inflatedFastPathRect = fastPathRect;
-    inflatedFastPathRect.inflate(1);
-    if (inflatedFastPathRect.contains(slowPathRect))
-      return;
-    LayoutRect inflatedSlowPathRect = slowPathRect;
-    inflatedSlowPathRect.inflate(1);
-    if (inflatedSlowPathRect.contains(fastPathRect))
-      return;
-  }
-
-  LOG(ERROR) << "Fast path visual rect differs from slow path: fast: "
-             << fastPathRect.toString()
-             << " vs slow: " << slowPathRect.toString();
-  showLayoutTree(&m_currentObject);
-
-  NOTREACHED();
-}
-
-#endif  // CHECK_FAST_PATH_SLOW_PATH_EQUALITY
 
 PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
     const PaintInvalidationState& paint_invalidation_state)
