@@ -9,8 +9,13 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,7 +24,27 @@
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarkFolderCollectionView ()<BookmarkPromoCellDelegate> {
+namespace {
+// Computes the cell size based on width.
+CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
+  CGRect cellFrame = cell.frame;
+  cellFrame.size.width = width;
+  cellFrame.size.height = CGFLOAT_MAX;
+  cell.frame = cellFrame;
+  [cell setNeedsLayout];
+  [cell layoutIfNeeded];
+  CGSize result =
+      [cell systemLayoutSizeFittingSize:UILayoutFittingCompressedSize
+          withHorizontalFittingPriority:UILayoutPriorityRequired
+                verticalFittingPriority:UILayoutPriorityDefaultLow];
+  cellFrame.size = result;
+  cell.frame = cellFrame;
+  return result;
+}
+}
+
+@interface BookmarkFolderCollectionView ()<BookmarkPromoCellDelegate,
+                                           SigninPromoViewConsumer> {
   // A vector of folders to display in the collection view.
   std::vector<const BookmarkNode*> _subFolders;
   // A vector of bookmark urls to display in the collection view.
@@ -27,6 +52,9 @@ using bookmarks::BookmarkNode;
 
   // True if the promo is visible.
   BOOL _promoVisible;
+
+  // Mediator, helper for the sign-in promo view.
+  SigninPromoViewMediator* _signinPromoViewMediator;
 }
 @property(nonatomic, assign) const bookmarks::BookmarkNode* folder;
 
@@ -36,15 +64,11 @@ using bookmarks::BookmarkNode;
 @property(nonatomic, readonly, assign) NSInteger itemsSection;
 @property(nonatomic, readonly, assign) NSInteger sectionCount;
 
-// Keep a reference to the promo cell to deregister as delegate.
-@property(nonatomic, strong) BookmarkPromoCell* promoCell;
-
 @end
 
 @implementation BookmarkFolderCollectionView
 @synthesize delegate = _delegate;
 @synthesize folder = _folder;
-@synthesize promoCell = _promoCell;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                frame:(CGRect)frame {
@@ -53,10 +77,6 @@ using bookmarks::BookmarkNode;
     [self updateCollectionView];
   }
   return self;
-}
-
-- (void)dealloc {
-  _promoCell.delegate = nil;
 }
 
 - (void)setDelegate:(id<BookmarkFolderCollectionViewDelegate>)delegate {
@@ -356,14 +376,53 @@ using bookmarks::BookmarkNode;
 }
 
 // Parent class override.
+- (CGSize)cellSizeForIndexPath:(NSIndexPath*)indexPath {
+  if ([self isPromoSection:indexPath.section]) {
+    UICollectionViewCell* cell =
+        [self.collectionView cellForItemAtIndexPath:indexPath];
+    if (!cell) {
+      // -[UICollectionView
+      // dequeueReusableCellWithReuseIdentifier:forIndexPath:] cannot be used
+      // here since this method is called by -[id<UICollectionViewDelegate>
+      // collectionView:layout:sizeForItemAtIndexPath:]. This would generate
+      // crash: SIGFPE, EXC_I386_DIV.
+      if (experimental_flags::IsSigninPromoEnabled()) {
+        DCHECK(_signinPromoViewMediator);
+        BookmarkSigninPromoCell* signinPromoCell =
+            [[BookmarkSigninPromoCell alloc]
+                initWithFrame:CGRectMake(0, 0, 1000, 1000)];
+        [[_signinPromoViewMediator createConfigurator]
+            configureSigninPromoView:signinPromoCell.signinPromoView];
+        cell = signinPromoCell;
+      } else {
+        cell = [[BookmarkPromoCell alloc] init];
+      }
+    }
+    return PreferredCellSizeForWidth(cell, CGRectGetWidth(self.bounds));
+  }
+  return [super cellSizeForIndexPath:indexPath];
+}
+
+// Parent class override.
 - (UICollectionViewCell*)cellAtIndexPath:(NSIndexPath*)indexPath {
   if (indexPath.section == self.promoSection) {
-    self.promoCell = [self.collectionView
-        dequeueReusableCellWithReuseIdentifier:[BookmarkPromoCell
-                                                   reuseIdentifier]
-                                  forIndexPath:indexPath];
-    self.promoCell.delegate = self;
-    return self.promoCell;
+    if (experimental_flags::IsSigninPromoEnabled()) {
+      BookmarkSigninPromoCell* signinPromoCell = [self.collectionView
+          dequeueReusableCellWithReuseIdentifier:[BookmarkSigninPromoCell
+                                                     reuseIdentifier]
+                                    forIndexPath:indexPath];
+      signinPromoCell.signinPromoView.sendChromeCommand = YES;
+      [[_signinPromoViewMediator createConfigurator]
+          configureSigninPromoView:signinPromoCell.signinPromoView];
+      return signinPromoCell;
+    } else {
+      BookmarkPromoCell* promoCell = [self.collectionView
+          dequeueReusableCellWithReuseIdentifier:[BookmarkPromoCell
+                                                     reuseIdentifier]
+                                    forIndexPath:indexPath];
+      promoCell.delegate = self;
+      return promoCell;
+    }
   }
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
 
@@ -445,6 +504,15 @@ using bookmarks::BookmarkNode;
     // in and out of edit mode is fixed, this is probably the cleanest thing to
     // do.
     _promoVisible = newPromoState;
+    if (experimental_flags::IsSigninPromoEnabled()) {
+      if (!_promoVisible) {
+        _signinPromoViewMediator.consumer = nil;
+        _signinPromoViewMediator = nil;
+      } else {
+        _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+        _signinPromoViewMediator.consumer = self;
+      }
+    }
     [self.collectionView reloadData];
   }
 }
@@ -463,6 +531,27 @@ using bookmarks::BookmarkNode;
 
 - (BOOL)shouldShowPromoCell {
   return _promoVisible;
+}
+
+#pragma mark - SigninPromoViewConsumer
+
+- (void)configureSigninPromoViewWithNewIdentity:(BOOL)newIdentity
+                                   configurator:(SigninPromoViewConfigurator*)
+                                                    configurator {
+  DCHECK(_signinPromoViewMediator);
+  if (newIdentity) {
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:self.promoSection];
+    [self.collectionView reloadSections:indexSet];
+    return;
+  }
+  NSIndexPath* indexPath =
+      [NSIndexPath indexPathForRow:0 inSection:self.promoSection];
+  BookmarkSigninPromoCell* signinPromoCell =
+      static_cast<BookmarkSigninPromoCell*>(
+          [self.collectionView cellForItemAtIndexPath:indexPath]);
+  if (!signinPromoCell)
+    return;
+  [configurator configureSigninPromoView:signinPromoCell.signinPromoView];
 }
 
 @end
