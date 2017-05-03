@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -78,6 +79,11 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   // Called when the timer fires, sets oom_adjust_score for all renderers.
   void AdjustOomPriorities(const TabStatsList& tab_list);
 
+  // Returns true if the process has recently been killed.
+  // Virtual for unit testing.
+  virtual bool IsRecentlyKilledArcProcess(const std::string& process_name,
+                                          const base::TimeTicks& now);
+
  protected:
   // Kills an ARC process. Returns true if the kill request is successfully sent
   // to Android. Virtual for unit testing.
@@ -87,11 +93,14 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   // Virtual for unit testing.
   virtual bool KillTab(int64_t tab_id);
 
-  // Get debugd client instance.
+  // Get debugd client instance. Virtual for unit testing.
   virtual chromeos::DebugDaemonClient* GetDebugDaemonClient();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, CandidatesSorted);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
+                           DoNotKillRecentlyKilledArcProcesses);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, IsRecentlyKilledArcProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
@@ -111,6 +120,9 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
 
   // Cache OOM scores in memory.
   typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
+
+  // A map from an ARC process name to a monotonic timestamp when it's killed.
+  typedef base::hash_map<std::string, base::TimeTicks> KilledArcProcessesMap;
 
   // Get the list of candidates to kill, sorted by descending importance.
   static std::vector<Candidate> GetSortedCandidates(
@@ -149,6 +161,14 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
   // Initiates an oom priority adjustment.
   void ScheduleEarlyOomPrioritiesAdjustment();
 
+  // Returns a TimeDelta object that represents a minimum delay for killing
+  // the same ARC process again. ARC processes sometimes respawn right after
+  // being killed. In that case, killing them every time is just a waste of
+  // resources.
+  static constexpr base::TimeDelta GetArcRespawnKillDelay() {
+    return base::TimeDelta::FromSeconds(60);
+  }
+
   // Holds a reference to the owning TabManager.
   const base::WeakPtr<TabManager> tab_manager_;
 
@@ -164,6 +184,9 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
 
   // Map maintaining the process handle - oom_score mapping.
   ProcessScoreMap oom_score_map_;
+
+  // Map maintaing ARC process names and their last killed time.
+  KilledArcProcessesMap recently_killed_arc_processes_;
 
   // Util for getting system memory status.
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
