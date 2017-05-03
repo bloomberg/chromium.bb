@@ -271,9 +271,16 @@ function wrap(value) {
       return wrapped;
     }
 
-    var obj = (typeof(value.length) == 'number') ? [] : {};
-    for (var prop in value)
-      obj[prop] = wrap(value[prop]);
+    var obj;
+    if (typeof(value.length) == 'number') {
+      obj = [];
+      for (var i = 0; i < value.length; i++)
+        obj[i] = wrap(value[i]);
+    } else {
+      obj = {};
+      for (var prop in value)
+        obj[prop] = wrap(value[prop]);
+    }
     return obj;
   }
   return value;
@@ -292,9 +299,16 @@ function unwrap(value, cache) {
     if (ELEMENT_KEY in value)
       return cache.retrieveItem(value[ELEMENT_KEY]);
 
-    var obj = (typeof(value.length) == 'number') ? [] : {};
-    for (var prop in value)
-      obj[prop] = unwrap(value[prop], cache);
+    var obj;
+    if (typeof(value.length) == 'number') {
+      obj = [];
+      for (var i = 0; i < value.length; i++)
+        obj[i] = unwrap(value[i], cache);
+    } else {
+      obj = {};
+      for (var prop in value)
+        obj[prop] = unwrap(value[prop], cache);
+    }
     return obj;
   }
   return value;
