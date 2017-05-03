@@ -467,10 +467,14 @@ class NotificationPlatformBridgeLinuxImpl
       bool incognito,
       const GetDisplayedNotificationsCallback& callback) const {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    // TODO(thomasanderson): Implement.
-    PostTaskToUiThread(base::BindOnce(
-        callback, base::Passed(base::MakeUnique<std::set<std::string>>()),
-        false));
+    auto displayed = base::MakeUnique<std::set<std::string>>();
+    for (const auto& notification : notifications_) {
+      if (notification.first->profile_id == profile_id &&
+          notification.first->is_incognito == incognito) {
+        displayed->insert(notification.first->notification_id);
+      }
+    }
+    PostTaskToUiThread(base::BindOnce(callback, std::move(displayed), true));
   }
 
   NotificationData* FindNotificationData(const std::string& notification_id,
