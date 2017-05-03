@@ -182,12 +182,6 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
     });
 
     test('ResolutionFails', function() {
-      if (!cr.isChromeOS) {
-        // Capabilities failure logs a console error for non-CrOS printers.
-        // TODO(crbug.com/708739): Handle this gracefully and activate test.
-        return;
-      }
-
       var destId = "001122DEADBEEF";
 
       var resolver = mockSetupCall(destId, nativeLayer_);
