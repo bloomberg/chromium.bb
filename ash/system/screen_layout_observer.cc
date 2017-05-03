@@ -271,8 +271,12 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
           GetDisplayName(iter.first), GetDisplaySize(iter.first));
       return true;
     }
-    if (iter.second.GetActiveRotation() !=
-        old_iter->second.GetActiveRotation()) {
+    // We don't show rotation change notification when the rotation source is
+    // the accelerometer.
+    if (iter.second.active_rotation_source() !=
+            display::Display::ROTATION_SOURCE_ACCELEROMETER &&
+        iter.second.GetActiveRotation() !=
+            old_iter->second.GetActiveRotation()) {
       int rotation_text_id = 0;
       switch (iter.second.GetActiveRotation()) {
         case display::Display::ROTATE_0:
