@@ -895,7 +895,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
   if (Visibility() != other.Visibility() ||
       PrintColorAdjust() != other.PrintColorAdjust() ||
       InsideLink() != other.InsideLink() ||
-      !Border().VisuallyEqual(other.Border()) ||
+      !Border().VisuallyEqual(other.Border()) || !RadiiEqual(other) ||
       *background_data_ != *other.background_data_)
     return true;
 
@@ -1396,24 +1396,24 @@ void ComputedStyle::SetBoxShadow(PassRefPtr<ShadowList> s) {
 }
 
 static FloatRoundedRect::Radii CalcRadiiFor(const BorderData& border,
+                                            const LengthSize& top_left,
+                                            const LengthSize& top_right,
+                                            const LengthSize& bottom_left,
+                                            const LengthSize& bottom_right,
                                             LayoutSize size) {
   return FloatRoundedRect::Radii(
       FloatSize(
-          FloatValueForLength(border.TopLeft().Width(), size.Width().ToFloat()),
-          FloatValueForLength(border.TopLeft().Height(),
-                              size.Height().ToFloat())),
-      FloatSize(FloatValueForLength(border.TopRight().Width(),
-                                    size.Width().ToFloat()),
-                FloatValueForLength(border.TopRight().Height(),
-                                    size.Height().ToFloat())),
-      FloatSize(FloatValueForLength(border.BottomLeft().Width(),
-                                    size.Width().ToFloat()),
-                FloatValueForLength(border.BottomLeft().Height(),
-                                    size.Height().ToFloat())),
-      FloatSize(FloatValueForLength(border.BottomRight().Width(),
-                                    size.Width().ToFloat()),
-                FloatValueForLength(border.BottomRight().Height(),
-                                    size.Height().ToFloat())));
+          FloatValueForLength(top_left.Width(), size.Width().ToFloat()),
+          FloatValueForLength(top_left.Height(), size.Height().ToFloat())),
+      FloatSize(
+          FloatValueForLength(top_right.Width(), size.Width().ToFloat()),
+          FloatValueForLength(top_right.Height(), size.Height().ToFloat())),
+      FloatSize(
+          FloatValueForLength(bottom_left.Width(), size.Width().ToFloat()),
+          FloatValueForLength(bottom_left.Height(), size.Height().ToFloat())),
+      FloatSize(
+          FloatValueForLength(bottom_right.Width(), size.Width().ToFloat()),
+          FloatValueForLength(bottom_right.Height(), size.Height().ToFloat())));
 }
 
 StyleImage* ComputedStyle::ListStyleImage() const {
@@ -1456,7 +1456,10 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     bool include_logical_right_edge) const {
   FloatRoundedRect rounded_rect(PixelSnappedIntRect(border_rect));
   if (HasBorderRadius()) {
-    FloatRoundedRect::Radii radii = CalcRadiiFor(Border(), border_rect.Size());
+    FloatRoundedRect::Radii radii =
+        CalcRadiiFor(Border(), BorderTopLeftRadius(), BorderTopRightRadius(),
+                     BorderBottomLeftRadius(), BorderBottomRightRadius(),
+                     border_rect.Size());
     rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(),
                                      include_logical_left_edge,
                                      include_logical_right_edge);

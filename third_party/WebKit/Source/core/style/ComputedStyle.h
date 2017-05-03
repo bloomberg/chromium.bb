@@ -560,43 +560,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_BORDERVALUE_COLOR(surround_data_, border_.bottom_, v);
   }
 
-  // Border radius properties.
-  static LengthSize InitialBorderRadius() {
-    return LengthSize(Length(0, kFixed), Length(0, kFixed));
-  }
-
-  // border-top-left-radius (aka -webkit-border-top-left-radius)
-  const LengthSize& BorderTopLeftRadius() const {
-    return surround_data_->border_.TopLeft();
-  }
-  void SetBorderTopLeftRadius(const LengthSize& s) {
-    SET_VAR(surround_data_, border_.top_left_, s);
-  }
-
-  // border-top-right-radius (aka -webkit-border-top-right-radius)
-  const LengthSize& BorderTopRightRadius() const {
-    return surround_data_->border_.TopRight();
-  }
-  void SetBorderTopRightRadius(const LengthSize& s) {
-    SET_VAR(surround_data_, border_.top_right_, s);
-  }
-
-  // border-bottom-left-radius (aka -webkit-border-bottom-left-radius)
-  const LengthSize& BorderBottomLeftRadius() const {
-    return surround_data_->border_.BottomLeft();
-  }
-  void SetBorderBottomLeftRadius(const LengthSize& s) {
-    SET_VAR(surround_data_, border_.bottom_left_, s);
-  }
-
-  // border-bottom-right-radius (aka -webkit-border-bottom-right-radius)
-  const LengthSize& BorderBottomRightRadius() const {
-    return surround_data_->border_.BottomRight();
-  }
-  void SetBorderBottomRightRadius(const LengthSize& s) {
-    SET_VAR(surround_data_, border_.bottom_right_, s);
-  }
-
   // box-shadow (aka -webkit-box-shadow)
   static ShadowList* InitialBoxShadow() { return 0; }
   ShadowList* BoxShadow() const {
@@ -2885,9 +2848,26 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasBorderFill() const { return Border().HasBorderFill(); }
   bool HasBorder() const { return Border().HasBorder(); }
   bool HasBorderDecoration() const { return HasBorder() || HasBorderFill(); }
-  bool HasBorderRadius() const { return Border().HasBorderRadius(); }
+  bool HasBorderRadius() const {
+    if (!BorderTopLeftRadius().Width().IsZero())
+      return true;
+    if (!BorderTopRightRadius().Width().IsZero())
+      return true;
+    if (!BorderBottomLeftRadius().Width().IsZero())
+      return true;
+    if (!BorderBottomRightRadius().Width().IsZero())
+      return true;
+    return false;
+  }
   bool HasBorderColorReferencingCurrentColor() const {
     return Border().HasBorderColorReferencingCurrentColor();
+  }
+
+  bool RadiiEqual(const ComputedStyle& o) const {
+    return BorderTopLeftRadius() == o.BorderTopLeftRadius() &&
+           BorderTopRightRadius() == o.BorderTopRightRadius() &&
+           BorderBottomLeftRadius() == o.BorderBottomLeftRadius() &&
+           BorderBottomRightRadius() == o.BorderBottomRightRadius();
   }
 
   void ResetBorder() {
@@ -2915,18 +2895,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void ResetBorderImage() {
     SET_VAR(surround_data_, border_.image_, NinePieceImage());
-  }
-  void ResetBorderTopLeftRadius() {
-    SET_VAR(surround_data_, border_.top_left_, InitialBorderRadius());
-  }
-  void ResetBorderTopRightRadius() {
-    SET_VAR(surround_data_, border_.top_right_, InitialBorderRadius());
-  }
-  void ResetBorderBottomLeftRadius() {
-    SET_VAR(surround_data_, border_.bottom_left_, InitialBorderRadius());
-  }
-  void ResetBorderBottomRightRadius() {
-    SET_VAR(surround_data_, border_.bottom_right_, InitialBorderRadius());
   }
 
   void SetBorderRadius(const LengthSize& s) {

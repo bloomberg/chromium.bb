@@ -45,12 +45,20 @@ class CachedUAStyle {
   }
 
   BorderData border;
+  LengthSize top_left_;
+  LengthSize top_right_;
+  LengthSize bottom_left_;
+  LengthSize bottom_right_;
   FillLayer background_layers;
   StyleColor background_color;
 
  private:
   explicit CachedUAStyle(const ComputedStyle* style)
       : border(style->Border()),
+        top_left_(style->BorderTopLeftRadius()),
+        top_right_(style->BorderTopRightRadius()),
+        bottom_left_(style->BorderBottomLeftRadius()),
+        bottom_right_(style->BorderBottomRightRadius()),
         background_layers(style->BackgroundLayers()),
         background_color(style->BackgroundColor()) {}
 };
