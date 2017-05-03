@@ -4,13 +4,23 @@
 
 package org.chromium.chrome.browser.video;
 
+import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.KeyUtils;
@@ -20,7 +30,14 @@ import org.chromium.net.test.EmbeddedTestServer;
 /**
  * Test suite for fullscreen video implementation.
  */
-public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class FullscreenVideoTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final int TEST_TIMEOUT = 3000;
     private boolean mIsTabFullscreen = false;
 
@@ -31,13 +48,9 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
     }
 
-    public FullscreenVideoTest() {
-        super(ChromeActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     /**
@@ -46,27 +59,29 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
      *
      * @MediumTest
      */
+    @Test
     @FlakyTest(message = "crbug.com/458368")
     public void testExitFullscreenNotifiesTabObservers() throws InterruptedException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                getInstrumentation().getContext());
+                InstrumentationRegistry.getInstrumentation().getContext());
         try {
             String url = testServer.getURL(
                     "/chrome/test/data/android/media/video-fullscreen.html");
-            loadUrl(url);
-            Tab tab = getActivity().getActivityTab();
+            mActivityTestRule.loadUrl(url);
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
             FullscreenTabObserver observer = new FullscreenTabObserver();
             tab.addObserver(observer);
 
-            TestTouchUtils.singleClickView(getInstrumentation(), tab.getView(), 500, 500);
+            TestTouchUtils.singleClickView(
+                    InstrumentationRegistry.getInstrumentation(), tab.getView(), 500, 500);
             waitForVideoToEnterFullscreen();
             // Key events have to be dispached on UI thread.
-            KeyUtils.singleKeyEventActivity(
-                    getInstrumentation(), getActivity(), KeyEvent.KEYCODE_BACK);
+            KeyUtils.singleKeyEventActivity(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), KeyEvent.KEYCODE_BACK);
 
             waitForTabToExitFullscreen();
-            assertEquals("URL mismatch after exiting fullscreen video",
-                    url, getActivity().getActivityTab().getUrl());
+            Assert.assertEquals("URL mismatch after exiting fullscreen video", url,
+                    mActivityTestRule.getActivity().getActivityTab().getUrl());
         } finally {
             testServer.stopAndDestroyServer();
         }

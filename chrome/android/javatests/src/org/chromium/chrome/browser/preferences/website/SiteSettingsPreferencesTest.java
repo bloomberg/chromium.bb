@@ -6,13 +6,22 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -20,7 +29,8 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content.common.ContentSwitches;
@@ -31,30 +41,27 @@ import java.util.concurrent.Callable;
 /**
  * Tests for everything under Settings > Site Settings.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class SiteSettingsPreferencesTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private EmbeddedTestServer mTestServer;
 
-    public SiteSettingsPreferencesTest() {
-        super(ChromeActivity.class);
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
-        super.tearDown();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
     private void setAllowLocation(final boolean enabled) {
@@ -72,8 +79,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                                 SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
 
                 websitePreferences.onPreferenceChange(location, enabled);
-                assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
-                        LocationSettings.getInstance().areAllLocationSettingsEnabled());
+                Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, LocationSettings.getInstance().areAllLocationSettingsEnabled());
                 preferenceActivity.finish();
             }
         });
@@ -84,8 +91,9 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                 new Callable<InfoBarTestAnimationListener>() {
                     @Override
                     public InfoBarTestAnimationListener call() throws Exception {
-                        InfoBarContainer container =
-                                getActivity().getActivityTab().getInfoBarContainer();
+                        InfoBarContainer container = mActivityTestRule.getActivity()
+                                                             .getActivityTab()
+                                                             .getInfoBarContainer();
                         InfoBarTestAnimationListener listener =  new InfoBarTestAnimationListener();
                         container.addAnimationListener(listener);
                         return listener;
@@ -96,6 +104,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Sets Allow Location Enabled to be true and make sure it is set correctly.
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testSetAllowLocationEnabled() throws Exception {
@@ -103,54 +112,58 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses geolocation and make sure an infobar shows up.
-        loadUrl(mTestServer.getURL(
-                "/chrome/test/data/geolocation/geolocation_on_load.html"));
+        mActivityTestRule.loadUrl(
+                mTestServer.getURL("/chrome/test/data/geolocation/geolocation_on_load.html"));
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        assertEquals("Wrong infobar count", 1, getInfoBars().size());
+        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
     }
 
     /**
      * Sets Allow Location Enabled to be false and make sure it is set correctly.
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testSetAllowLocationNotEnabled() throws Exception {
         setAllowLocation(false);
 
         // Launch a page that uses geolocation.
-        loadUrl(mTestServer.getURL(
-                "/chrome/test/data/geolocation/geolocation_on_load.html"));
+        mActivityTestRule.loadUrl(
+                mTestServer.getURL("/chrome/test/data/geolocation/geolocation_on_load.html"));
 
         // No infobars are expected.
-        assertTrue(getInfoBars().isEmpty());
+        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
     private Preferences startSiteSettingsMenu(String category) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getInstrumentation().getTargetContext(), SiteSettingsPreferences.class.getName());
+                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                SiteSettingsPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        return (Preferences) getInstrumentation().startActivitySync(intent);
+        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
     private Preferences startSiteSettingsCategory(String category) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getInstrumentation().getTargetContext(), SingleCategoryPreferences.class.getName());
+                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                SingleCategoryPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        return (Preferences) getInstrumentation().startActivitySync(intent);
+        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
     private Preferences startSingleWebsitePreferences(Website site) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getInstrumentation().getTargetContext(), SingleWebsitePreferences.class.getName());
+                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                SingleWebsitePreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        return (Preferences) getInstrumentation().startActivitySync(intent);
+        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
     private void setCookiesEnabled(final Preferences preferenceActivity, final boolean enabled) {
@@ -166,11 +179,11 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
-                assertEquals("Third-party cookie toggle should be "
-                        + (doesAcceptCookies() ? "enabled" : " disabled"),
+                Assert.assertEquals("Third-party cookie toggle should be "
+                                + (doesAcceptCookies() ? "enabled" : " disabled"),
                         doesAcceptCookies(), thirdPartyCookies.isEnabled());
                 websitePreferences.onPreferenceChange(cookies, enabled);
-                assertEquals("Cookies should be " + (enabled ? "allowed" : "blocked"),
+                Assert.assertEquals("Cookies should be " + (enabled ? "allowed" : "blocked"),
                         doesAcceptCookies(), enabled);
             }
 
@@ -192,7 +205,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
                 websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
-                assertEquals("Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
+                Assert.assertEquals(
+                        "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
                         !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(),
                         enabled);
             }
@@ -212,8 +226,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         websitePreferences.findPreference(
                                 SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(popups, enabled);
-                assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                        PrefServiceBridge.getInstance().popupsEnabled());
+                Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, PrefServiceBridge.getInstance().popupsEnabled());
             }
         });
         preferenceActivity.finish();
@@ -232,7 +246,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         websitePreferences.findPreference(
                                 SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
-                assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
+                Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
                         enabled, PrefServiceBridge.getInstance().isCameraEnabled());
             }
         });
@@ -252,8 +266,8 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                         websitePreferences.findPreference(
                                 SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
-                assertEquals("Mic should be " + (enabled ? "allowed" : "blocked"),
-                        enabled, PrefServiceBridge.getInstance().isMicEnabled());
+                Assert.assertEquals("Mic should be " + (enabled ? "allowed" : "blocked"), enabled,
+                        PrefServiceBridge.getInstance().isMicEnabled());
             }
         });
         preferenceActivity.finish();
@@ -282,6 +296,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Tests that disabling cookies turns off the third-party cookie toggle.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
@@ -297,6 +312,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Allows cookies to be set and ensures that they are.
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
@@ -308,19 +324,22 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        loadUrl(url + "#clear");
-        assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
-        runJavaScriptCodeInCurrentTab("setCookie()");
-        assertEquals("\"Foo=Bar\"", runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.loadUrl(url + "#clear");
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie still is set.
-        loadUrl(url);
-        assertEquals("\"Foo=Bar\"", runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
      * Blocks cookies from being set and ensures that no cookies can be set.
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
@@ -332,52 +351,55 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        loadUrl(url + "#clear");
-        assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
-        runJavaScriptCodeInCurrentTab("setCookie()");
-        assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.loadUrl(url + "#clear");
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie remains unset.
-        loadUrl(url);
-        assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
 
     /**
      * Sets Allow Popups Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testPopupsBlocked() throws Exception {
         setEnablePopups(false);
 
         // Test that the popup doesn't open.
-        loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
+        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
 
-        getInstrumentation().waitForIdleSync();
-        assertEquals(1, getTabCount());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertEquals(1, getTabCount());
     }
 
     /**
      * Sets Allow Popups Enabled to be true and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testPopupsNotBlocked() throws Exception {
         setEnablePopups(true);
 
         // Test that a popup opens.
-        loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
-        getInstrumentation().waitForIdleSync();
+        mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        assertEquals(2, getTabCount());
+        Assert.assertEquals(2, getTabCount());
     }
 
     /**
      * Test that showing the Site Settings menu doesn't crash (crbug.com/610576).
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testSiteSettingsMenu() throws Exception {
@@ -389,6 +411,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Test the Media Menu.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testMediaMenu() throws Exception {
@@ -402,15 +425,15 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
 
                 SiteSettingsPreference allSites  = (SiteSettingsPreference)
                         siteSettings.findPreference(SiteSettingsPreferences.ALL_SITES_KEY);
-                assertEquals(null, allSites);
+                Assert.assertEquals(null, allSites);
 
                 SiteSettingsPreference autoplay  = (SiteSettingsPreference)
                         siteSettings.findPreference(SiteSettingsPreferences.AUTOPLAY_KEY);
-                assertFalse(autoplay == null);
+                Assert.assertFalse(autoplay == null);
 
                 SiteSettingsPreference protectedContent = (SiteSettingsPreference)
                         siteSettings.findPreference(SiteSettingsPreferences.PROTECTED_CONTENT_KEY);
-                assertFalse(protectedContent == null);
+                Assert.assertFalse(protectedContent == null);
 
                 preferenceActivity.finish();
             }
@@ -421,6 +444,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Tests Reset Site not crashing on host names (issue 600232).
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testResetCrash600232() throws Exception {
@@ -443,6 +467,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      * Sets Allow Camera Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
@@ -450,17 +475,19 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnableCamera(false);
 
         // Test that the camera permission doesn't get requested.
-        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
+        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                "getUserMediaAndStop({video: true, audio: false});");
 
         // No infobars are expected.
-        assertTrue(getInfoBars().isEmpty());
+        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
     /**
      * Sets Allow Mic Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
@@ -468,17 +495,19 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         setEnableMic(false);
 
         // Test that the microphone permission doesn't get requested.
-        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
+        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                "getUserMediaAndStop({video: false, audio: true});");
 
         // No infobars are expected.
-        assertTrue(getInfoBars().isEmpty());
+        Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
     /**
      * Sets Allow Camera Enabled to be true and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
@@ -488,17 +517,19 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses camera and make sure an infobar shows up.
-        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
+        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                "getUserMediaAndStop({video: true, audio: false});");
 
         listener.addInfoBarAnimationFinished("InfoBar not added.");
-        assertEquals("Wrong infobar count", 1, getInfoBars().size());
+        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
     }
 
     /**
      * Sets Allow Mic Enabled to be true and make sure it is set correctly.
      * @throws Exception
      */
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
@@ -508,11 +539,12 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
         // Launch a page that uses the microphone and make sure an infobar shows up.
-        loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
+        mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                "getUserMediaAndStop({video: false, audio: true});");
 
         listener.addInfoBarAnimationFinished("InfoBar not added.");
-        assertEquals("Wrong infobar count", 1, getInfoBars().size());
+        Assert.assertEquals("Wrong infobar count", 1, mActivityTestRule.getInfoBars().size());
     }
 
     /**
@@ -524,18 +556,21 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
+                Assert.assertEquals(
+                        "Background Sync should be " + (enabled ? "enabled" : "disabled"),
                         PrefServiceBridge.getInstance().isBackgroundSyncAllowed(), enabled);
             }
         });
     }
 
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testAllowBackgroundSync() {
         doTestBackgroundSyncPermission(true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Preferences"})
     public void testBlockBackgroundSync() {
@@ -546,7 +581,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return getActivity().getTabModelSelector().getTotalTabCount();
+                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
             }
         });
     }

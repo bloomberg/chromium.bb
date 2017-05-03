@@ -11,13 +11,23 @@ import static org.junit.Assert.assertThat;
 import android.content.Context;
 import android.preference.CheckBoxPreference;
 import android.preference.PreferenceScreen;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
@@ -25,26 +35,27 @@ import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 /**
  * Integration tests for ClearBrowsingDataPreferencesBasic.
  */
-public class ClearBrowsingDataPreferencesBasicTest
-        extends ChromeActivityTestCaseBase<ChromeActivity> {
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class ClearBrowsingDataPreferencesBasicTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     private static final String GOOGLE_ACCOUNT = "Google Account";
     private static final String OTHER_ACTIVITY = "other activity";
     private static final String SIGNED_IN_DEVICES = "signed-in devices";
 
-    public ClearBrowsingDataPreferencesBasicTest() {
-        super(ChromeActivity.class);
+    @Before
+    public void setUp() throws InterruptedException {
+        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTest(getInstrumentation());
-        startMainActivityOnBlankPage();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         ProfileSyncService.overrideForTests(null);
-        super.tearDown();
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
@@ -54,7 +65,7 @@ public class ClearBrowsingDataPreferencesBasicTest
     }
 
     private void setSyncable(boolean syncable) {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         delegate.setMasterSyncAutomatically(syncable);
         AndroidSyncSettings.overrideForTests(context, delegate);
@@ -80,12 +91,13 @@ public class ClearBrowsingDataPreferencesBasicTest
     /**
      * Tests that for users who are not signed in, only the general information is shown.
      */
+    @Test
     @SmallTest
     public void testCheckBoxTextNonsigned() throws Exception {
         SigninTestUtil.resetSigninState();
 
-        final Preferences preferences =
-                startPreferences(ClearBrowsingDataPreferencesBasic.class.getName());
+        final Preferences preferences = mActivityTestRule.startPreferences(
+                ClearBrowsingDataPreferencesBasic.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -110,13 +122,14 @@ public class ClearBrowsingDataPreferencesBasicTest
      * Tests that for users who are signed in but don't have sync activated, only information about
      * your "google account" which will stay signed in and "other activity" is shown.
      */
+    @Test
     @SmallTest
     public void testCheckBoxTextSigned() throws Exception {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(false);
 
-        final Preferences preferences =
-                startPreferences(ClearBrowsingDataPreferencesBasic.class.getName());
+        final Preferences preferences = mActivityTestRule.startPreferences(
+                ClearBrowsingDataPreferencesBasic.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -141,13 +154,14 @@ public class ClearBrowsingDataPreferencesBasicTest
      * Tests that users who are signed in, and have sync enabled see information about their
      * "google account", "other activity" and history on "signed in devices".
      */
+    @Test
     @SmallTest
     public void testCheckBoxTextSignedAndSynced() throws Exception {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(true);
 
-        final Preferences preferences =
-                startPreferences(ClearBrowsingDataPreferencesBasic.class.getName());
+        final Preferences preferences = mActivityTestRule.startPreferences(
+                ClearBrowsingDataPreferencesBasic.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
