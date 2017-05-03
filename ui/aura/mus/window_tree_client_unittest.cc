@@ -665,6 +665,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   ~InputEventBasicTestWindowDelegate() override {}
 
   bool got_move() const { return got_move_; }
+  bool got_press() const { return got_press_; }
+  bool got_release() const { return got_release_; }
   bool was_acked() const { return was_acked_; }
   const gfx::Point& last_event_location() const { return last_event_location_; }
   void set_event_id(uint32_t event_id) { event_id_ = event_id; }
@@ -674,6 +676,20 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
     was_acked_ = test_window_tree_->WasEventAcked(event_id_);
     if (event->type() == ui::ET_MOUSE_MOVED)
       got_move_ = true;
+    else if (event->type() == ui::ET_MOUSE_PRESSED)
+      got_press_ = true;
+    else if (event->type() == ui::ET_MOUSE_RELEASED)
+      got_release_ = true;
+    last_event_location_ = event->location();
+    event->SetHandled();
+  }
+
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    was_acked_ = test_window_tree_->WasEventAcked(event_id_);
+    if (event->type() == ui::ET_TOUCH_PRESSED)
+      got_press_ = true;
+    else if (event->type() == ui::ET_TOUCH_RELEASED)
+      got_release_ = true;
     last_event_location_ = event->location();
     event->SetHandled();
   }
@@ -681,6 +697,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   void reset() {
     was_acked_ = false;
     got_move_ = false;
+    got_press_ = false;
+    got_release_ = false;
     last_event_location_ = gfx::Point();
     event_id_ = 0;
   }
@@ -689,6 +707,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
   TestWindowTree* test_window_tree_;
   bool was_acked_ = false;
   bool got_move_ = false;
+  bool got_press_ = false;
+  bool got_release_ = false;
   gfx::Point last_event_location_;
   uint32_t event_id_ = 0;
 
@@ -697,7 +717,8 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
 
 class InputEventBasicTestEventHandler : public ui::test::TestEventHandler {
  public:
-  InputEventBasicTestEventHandler() {}
+  explicit InputEventBasicTestEventHandler(Window* target_window)
+      : target_window_(target_window) {}
   ~InputEventBasicTestEventHandler() override {}
 
   bool got_move() const { return got_move_; }
@@ -706,10 +727,12 @@ class InputEventBasicTestEventHandler : public ui::test::TestEventHandler {
 
   // ui::test::TestEventHandler overrides.
   void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_MOVED)
-      got_move_ = true;
-    last_event_location_ = event->location();
-    event->SetHandled();
+    if (event->target() == target_window_) {
+      if (event->type() == ui::ET_MOUSE_MOVED)
+        got_move_ = true;
+      last_event_location_ = event->location();
+      event->SetHandled();
+    }
   }
 
   void reset() {
@@ -719,6 +742,7 @@ class InputEventBasicTestEventHandler : public ui::test::TestEventHandler {
   }
 
  private:
+  Window* target_window_ = nullptr;
   bool got_move_ = false;
   gfx::Point last_event_location_;
   uint32_t event_id_ = 0;
@@ -1011,7 +1035,7 @@ TEST_F(WindowTreeClientClientTest, InputEventRootWindow) {
   WindowTreeHostMus window_tree_host(
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
-  InputEventBasicTestEventHandler root_handler;
+  InputEventBasicTestEventHandler root_handler(top_level);
   top_level->AddPreTargetHandler(&root_handler);
   const gfx::Rect bounds(0, 0, 100, 100);
   window_tree_host.SetBoundsInPixels(bounds);
@@ -1047,6 +1071,129 @@ TEST_F(WindowTreeClientClientTest, InputEventRootWindow) {
   EXPECT_EQ(gfx::Point(20, 30), root_handler.last_event_location());
   EXPECT_FALSE(child_delegate.got_move());
   EXPECT_EQ(gfx::Point(), child_delegate.last_event_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputMouseEventNoWindow) {
+  Env* env = Env::GetInstance();
+  InputEventBasicTestWindowDelegate window_delegate(window_tree());
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  Window child(&window_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child.Show();
+
+  EXPECT_FALSE(window_delegate.got_press());
+  EXPECT_FALSE(env->IsMouseButtonDown());
+  EXPECT_FALSE(env->mouse_button_flags());
+  EXPECT_EQ(gfx::Point(), env->last_mouse_location());
+
+  const gfx::Point event_location(2, 3);
+  uint32_t event_id = 1;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event_down(
+      ui::ET_POINTER_DOWN, event_location, gfx::Point(),
+      ui::EF_LEFT_MOUSE_BUTTON, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
+      ui::EventTimeForNow());
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child), window_tree_host.display_id(),
+      ui::Event::Clone(pointer_event_down), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate.got_press());
+  EXPECT_TRUE(env->IsMouseButtonDown());
+  EXPECT_EQ(1024, env->mouse_button_flags());  // ui::EF_LEFT_MOUSE_BUTTON
+  EXPECT_EQ(event_location, env->last_mouse_location());
+  window_delegate.reset();
+
+  const gfx::Point event_location1(4, 5);
+  event_id = 2;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event_up(
+      ui::ET_POINTER_UP, event_location1, gfx::Point(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
+      ui::EventTimeForNow());
+  window_tree_client()->OnWindowInputEvent(
+      event_id, kInvalidServerId, window_tree_host.display_id(),
+      ui::Event::Clone(pointer_event_up), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  // WindowTreeClient::OnWindowInputEvent cannot find a target window with
+  // kInvalidServerId but should use the event to update event states kept in
+  // aura::Env, location shouldn't be updated.
+  EXPECT_EQ(ui::mojom::EventResult::UNHANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_FALSE(window_delegate.got_release());
+  EXPECT_FALSE(env->IsMouseButtonDown());
+  EXPECT_FALSE(env->mouse_button_flags());
+  EXPECT_EQ(event_location, env->last_mouse_location());
+}
+
+TEST_F(WindowTreeClientClientTest, InputTouchEventNoWindow) {
+  Env* env = Env::GetInstance();
+  InputEventBasicTestWindowDelegate window_delegate(window_tree());
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  Window child(&window_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child.Show();
+
+  EXPECT_FALSE(window_delegate.got_press());
+  EXPECT_FALSE(env->is_touch_down());
+
+  const gfx::Point event_location(2, 3);
+  uint32_t event_id = 1;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event_down(
+      ui::ET_POINTER_DOWN, event_location, gfx::Point(), 0, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
+      ui::EventTimeForNow());
+  window_tree_client()->OnWindowInputEvent(
+      event_id, server_id(&child), window_tree_host.display_id(),
+      ui::Event::Clone(pointer_event_down), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate.got_press());
+  EXPECT_TRUE(env->is_touch_down());
+  window_delegate.reset();
+
+  event_id = 2;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event_up(
+      ui::ET_POINTER_UP, event_location, gfx::Point(), 0, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
+      ui::EventTimeForNow());
+  window_tree_client()->OnWindowInputEvent(
+      event_id, kInvalidServerId, window_tree_host.display_id(),
+      ui::Event::Clone(pointer_event_up), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  // WindowTreeClient::OnWindowInputEvent cannot find a target window with
+  // kInvalidServerId but should use the event to update event states kept in
+  // aura::Env.
+  EXPECT_EQ(ui::mojom::EventResult::UNHANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_FALSE(window_delegate.got_release());
+  EXPECT_FALSE(env->is_touch_down());
 }
 
 class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {
@@ -1116,11 +1263,14 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
 // Tests pointer watchers triggered by events that hit this window tree.
 TEST_F(WindowTreeClientPointerObserverTest,
        OnWindowInputEventWithPointerWatcher) {
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
-  top_level->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  top_level->Init(ui::LAYER_NOT_DRAWN);
-  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
-  top_level->Show();
+  WindowTreeHostMus window_tree_host(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
 
   // Start a pointer watcher for all events excluding move events.
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
@@ -1130,7 +1280,7 @@ TEST_F(WindowTreeClientPointerObserverTest,
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks::Now()));
-  window_tree_client()->OnWindowInputEvent(1, server_id(top_level.get()), 0,
+  window_tree_client()->OnWindowInputEvent(1, server_id(top_level), 0,
                                            std::move(pointer_event_down), true);
 
   // Delegate sensed the event.

@@ -63,6 +63,11 @@ void EnvInputStateController::UpdateStateForTouchEvent(
 void EnvInputStateController::SetLastMouseLocation(
     const Window* root_window,
     const gfx::Point& location_in_root) const {
+  // If |root_window| is null, we are only using the event to update event
+  // states, so we shouldn't update mouse location.
+  if (!root_window && Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+
   client::ScreenPositionClient* client =
       client::GetScreenPositionClient(root_window);
   if (client) {
