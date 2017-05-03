@@ -4,7 +4,7 @@ FAIL Window interface: attribute ondevicemotion assert_true: The prototype objec
 PASS DeviceOrientationEvent interface: existence and properties of interface object 
 PASS DeviceOrientationEvent interface object length 
 PASS DeviceOrientationEvent interface object name 
-FAIL DeviceOrientationEvent interface: existence and properties of interface prototype object assert_equals: class string of DeviceOrientationEvent.prototype expected "[object DeviceOrientationEventPrototype]" but got "[object DeviceOrientationEvent]"
+PASS DeviceOrientationEvent interface: existence and properties of interface prototype object 
 PASS DeviceOrientationEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS DeviceOrientationEvent interface: attribute alpha 
 PASS DeviceOrientationEvent interface: attribute beta 
@@ -19,7 +19,7 @@ PASS DeviceOrientationEvent interface: new DeviceOrientationEvent("foo") must in
 PASS DeviceMotionEvent interface: existence and properties of interface object 
 PASS DeviceMotionEvent interface object length 
 PASS DeviceMotionEvent interface object name 
-FAIL DeviceMotionEvent interface: existence and properties of interface prototype object assert_equals: class string of DeviceMotionEvent.prototype expected "[object DeviceMotionEventPrototype]" but got "[object DeviceMotionEvent]"
+PASS DeviceMotionEvent interface: existence and properties of interface prototype object 
 PASS DeviceMotionEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS DeviceMotionEvent interface: attribute acceleration 
 PASS DeviceMotionEvent interface: attribute accelerationIncludingGravity 

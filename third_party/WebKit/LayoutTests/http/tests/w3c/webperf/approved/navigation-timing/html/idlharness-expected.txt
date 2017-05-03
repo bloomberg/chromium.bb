@@ -6,7 +6,7 @@ FAIL Window interface: window must inherit property "performance" with the prope
 PASS PerformanceTiming interface: existence and properties of interface object 
 PASS PerformanceTiming interface object length 
 PASS PerformanceTiming interface object name 
-FAIL PerformanceTiming interface: existence and properties of interface prototype object assert_equals: class string of PerformanceTiming.prototype expected "[object PerformanceTimingPrototype]" but got "[object PerformanceTiming]"
+PASS PerformanceTiming interface: existence and properties of interface prototype object 
 PASS PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property 
 PASS PerformanceTiming interface: attribute navigationStart 
 PASS PerformanceTiming interface: attribute unloadEventStart 
@@ -55,7 +55,7 @@ PASS PerformanceTiming interface: window.performance.timing must inherit propert
 PASS PerformanceNavigation interface: existence and properties of interface object 
 PASS PerformanceNavigation interface object length 
 PASS PerformanceNavigation interface object name 
-FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_equals: class string of PerformanceNavigation.prototype expected "[object PerformanceNavigationPrototype]" but got "[object PerformanceNavigation]"
+PASS PerformanceNavigation interface: existence and properties of interface prototype object 
 PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property 
 PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object 
 PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object 

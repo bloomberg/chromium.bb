@@ -5,7 +5,7 @@ PASS ServiceWorkerGlobalScope interface: existence and properties of interface o
 PASS BackgroundFetchManager interface: existence and properties of interface object 
 PASS BackgroundFetchManager interface object length 
 PASS BackgroundFetchManager interface object name 
-FAIL BackgroundFetchManager interface: existence and properties of interface prototype object assert_equals: class string of BackgroundFetchManager.prototype expected "[object BackgroundFetchManagerPrototype]" but got "[object BackgroundFetchManager]"
+PASS BackgroundFetchManager interface: existence and properties of interface prototype object 
 PASS BackgroundFetchManager interface: existence and properties of interface prototype object's "constructor" property 
 PASS BackgroundFetchManager interface: operation fetch(DOMString,[object Object],[object Object],BackgroundFetchOptions) 
 PASS BackgroundFetchManager interface: operation get(DOMString) 
@@ -13,7 +13,7 @@ PASS BackgroundFetchManager interface: operation getTags()
 PASS BackgroundFetchRegistration interface: existence and properties of interface object 
 PASS BackgroundFetchRegistration interface object length 
 PASS BackgroundFetchRegistration interface object name 
-FAIL BackgroundFetchRegistration interface: existence and properties of interface prototype object assert_equals: class string of BackgroundFetchRegistration.prototype expected "[object BackgroundFetchRegistrationPrototype]" but got "[object BackgroundFetchRegistration]"
+PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object 
 PASS BackgroundFetchRegistration interface: existence and properties of interface prototype object's "constructor" property 
 PASS BackgroundFetchRegistration interface: attribute tag 
 PASS BackgroundFetchRegistration interface: attribute icons 

@@ -1,9 +1,10 @@
 This is a testharness.js-based test.
-Found 1609 tests; 1451 PASS, 158 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1610 tests; 1478 PASS, 132 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Test driver 
 PASS Event interface: existence and properties of interface object 
 PASS Event interface object length 
 PASS Event interface object name 
-FAIL Event interface: existence and properties of interface prototype object assert_equals: class string of Event.prototype expected "[object EventPrototype]" but got "[object Event]"
+PASS Event interface: existence and properties of interface prototype object 
 PASS Event interface: existence and properties of interface prototype object's "constructor" property 
 PASS Event interface: attribute type 
 PASS Event interface: attribute target 
@@ -68,7 +69,7 @@ PASS Event interface: calling initEvent(DOMString,boolean,boolean) on new Event(
 PASS CustomEvent interface: existence and properties of interface object 
 PASS CustomEvent interface object length 
 PASS CustomEvent interface object name 
-FAIL CustomEvent interface: existence and properties of interface prototype object assert_equals: class string of CustomEvent.prototype expected "[object CustomEventPrototype]" but got "[object CustomEvent]"
+PASS CustomEvent interface: existence and properties of interface prototype object 
 PASS CustomEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS CustomEvent interface: attribute detail 
 PASS CustomEvent interface: operation initCustomEvent(DOMString,boolean,boolean,any) 
@@ -98,7 +99,7 @@ PASS Event interface: calling initEvent(DOMString,boolean,boolean) on new Custom
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
-FAIL EventTarget interface: existence and properties of interface prototype object assert_equals: class string of EventTarget.prototype expected "[object EventTargetPrototype]" but got "[object EventTarget]"
+PASS EventTarget interface: existence and properties of interface prototype object 
 PASS EventTarget interface: existence and properties of interface prototype object's "constructor" property 
 PASS EventTarget interface: operation addEventListener(DOMString,EventListener,[object Object],[object Object]) 
 PASS EventTarget interface: operation removeEventListener(DOMString,EventListener,[object Object],[object Object]) 
@@ -110,7 +111,7 @@ PASS EventListener interface: operation handleEvent(Event)
 PASS NodeList interface: existence and properties of interface object 
 PASS NodeList interface object length 
 PASS NodeList interface object name 
-FAIL NodeList interface: existence and properties of interface prototype object assert_equals: class string of NodeList.prototype expected "[object NodeListPrototype]" but got "[object NodeList]"
+PASS NodeList interface: existence and properties of interface prototype object 
 PASS NodeList interface: existence and properties of interface prototype object's "constructor" property 
 PASS NodeList interface: operation item(unsigned long) 
 PASS NodeList interface: attribute length 
@@ -122,7 +123,7 @@ PASS NodeList interface: document.querySelectorAll("script") must inherit proper
 PASS HTMLCollection interface: existence and properties of interface object 
 PASS HTMLCollection interface object length 
 PASS HTMLCollection interface object name 
-FAIL HTMLCollection interface: existence and properties of interface prototype object assert_equals: class string of HTMLCollection.prototype expected "[object HTMLCollectionPrototype]" but got "[object HTMLCollection]"
+PASS HTMLCollection interface: existence and properties of interface prototype object 
 PASS HTMLCollection interface: existence and properties of interface prototype object's "constructor" property 
 PASS HTMLCollection interface: attribute length 
 PASS HTMLCollection interface: operation item(unsigned long) 
@@ -137,7 +138,7 @@ PASS HTMLCollection interface: calling namedItem(DOMString) on document.body.chi
 PASS MutationObserver interface: existence and properties of interface object 
 PASS MutationObserver interface object length 
 PASS MutationObserver interface object name 
-FAIL MutationObserver interface: existence and properties of interface prototype object assert_equals: class string of MutationObserver.prototype expected "[object MutationObserverPrototype]" but got "[object MutationObserver]"
+PASS MutationObserver interface: existence and properties of interface prototype object 
 PASS MutationObserver interface: existence and properties of interface prototype object's "constructor" property 
 PASS MutationObserver interface: operation observe(Node,MutationObserverInit) 
 PASS MutationObserver interface: operation disconnect() 
@@ -145,7 +146,7 @@ PASS MutationObserver interface: operation takeRecords()
 PASS MutationRecord interface: existence and properties of interface object 
 PASS MutationRecord interface object length 
 PASS MutationRecord interface object name 
-FAIL MutationRecord interface: existence and properties of interface prototype object assert_equals: class string of MutationRecord.prototype expected "[object MutationRecordPrototype]" but got "[object MutationRecord]"
+PASS MutationRecord interface: existence and properties of interface prototype object 
 PASS MutationRecord interface: existence and properties of interface prototype object's "constructor" property 
 PASS MutationRecord interface: attribute type 
 PASS MutationRecord interface: attribute target 
@@ -159,7 +160,7 @@ PASS MutationRecord interface: attribute oldValue
 PASS Node interface: existence and properties of interface object 
 PASS Node interface object length 
 PASS Node interface object name 
-FAIL Node interface: existence and properties of interface prototype object assert_equals: class string of Node.prototype expected "[object NodePrototype]" but got "[object Node]"
+PASS Node interface: existence and properties of interface prototype object 
 PASS Node interface: existence and properties of interface prototype object's "constructor" property 
 PASS Node interface: constant ELEMENT_NODE on interface object 
 PASS Node interface: constant ELEMENT_NODE on interface prototype object 
@@ -229,7 +230,7 @@ PASS Node interface: operation removeChild(Node)
 PASS Document interface: existence and properties of interface object 
 PASS Document interface object length 
 PASS Document interface object name 
-FAIL Document interface: existence and properties of interface prototype object assert_equals: class string of Document.prototype expected "[object DocumentPrototype]" but got "[object Document]"
+PASS Document interface: existence and properties of interface prototype object 
 PASS Document interface: existence and properties of interface prototype object's "constructor" property 
 PASS Document interface: attribute implementation 
 PASS Document interface: attribute URL 
@@ -399,7 +400,7 @@ FAIL EventTarget interface: calling dispatchEvent(Event) on new Document() with 
 PASS XMLDocument interface: existence and properties of interface object 
 PASS XMLDocument interface object length 
 PASS XMLDocument interface object name 
-FAIL XMLDocument interface: existence and properties of interface prototype object assert_equals: class string of XMLDocument.prototype expected "[object XMLDocumentPrototype]" but got "[object XMLDocument]"
+PASS XMLDocument interface: existence and properties of interface prototype object 
 PASS XMLDocument interface: existence and properties of interface prototype object's "constructor" property 
 PASS XMLDocument must be primary interface of xmlDoc 
 PASS Stringification of xmlDoc 
@@ -531,7 +532,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on xmlDoc with too few 
 PASS DOMImplementation interface: existence and properties of interface object 
 PASS DOMImplementation interface object length 
 PASS DOMImplementation interface object name 
-FAIL DOMImplementation interface: existence and properties of interface prototype object assert_equals: class string of DOMImplementation.prototype expected "[object DOMImplementationPrototype]" but got "[object DOMImplementation]"
+PASS DOMImplementation interface: existence and properties of interface prototype object 
 PASS DOMImplementation interface: existence and properties of interface prototype object's "constructor" property 
 PASS DOMImplementation interface: operation createDocumentType(DOMString,DOMString,DOMString) 
 PASS DOMImplementation interface: operation createDocument(DOMString,DOMString,DocumentType) 
@@ -549,7 +550,7 @@ PASS DOMImplementation interface: document.implementation must inherit property 
 PASS DocumentType interface: existence and properties of interface object 
 PASS DocumentType interface object length 
 PASS DocumentType interface object name 
-FAIL DocumentType interface: existence and properties of interface prototype object assert_equals: class string of DocumentType.prototype expected "[object DocumentTypePrototype]" but got "[object DocumentType]"
+PASS DocumentType interface: existence and properties of interface prototype object 
 PASS DocumentType interface: existence and properties of interface prototype object's "constructor" property 
 PASS DocumentType interface: attribute name 
 PASS DocumentType interface: attribute publicId 
@@ -639,7 +640,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on document.doctype wit
 PASS DocumentFragment interface: existence and properties of interface object 
 PASS DocumentFragment interface object length 
 PASS DocumentFragment interface object name 
-FAIL DocumentFragment interface: existence and properties of interface prototype object assert_equals: class string of DocumentFragment.prototype expected "[object DocumentFragmentPrototype]" but got "[object DocumentFragment]"
+PASS DocumentFragment interface: existence and properties of interface prototype object 
 PASS DocumentFragment interface: existence and properties of interface prototype object's "constructor" property 
 PASS DocumentFragment interface: operation getElementById(DOMString) 
 PASS DocumentFragment interface: attribute children 
@@ -735,14 +736,14 @@ PASS EventTarget interface: calling dispatchEvent(Event) on document.createDocum
 PASS ShadowRoot interface: existence and properties of interface object 
 PASS ShadowRoot interface object length 
 PASS ShadowRoot interface object name 
-FAIL ShadowRoot interface: existence and properties of interface prototype object assert_equals: class string of ShadowRoot.prototype expected "[object ShadowRootPrototype]" but got "[object ShadowRoot]"
+PASS ShadowRoot interface: existence and properties of interface prototype object 
 PASS ShadowRoot interface: existence and properties of interface prototype object's "constructor" property 
 PASS ShadowRoot interface: attribute mode 
 PASS ShadowRoot interface: attribute host 
 PASS Element interface: existence and properties of interface object 
 PASS Element interface object length 
 PASS Element interface object name 
-FAIL Element interface: existence and properties of interface prototype object assert_equals: class string of Element.prototype expected "[object ElementPrototype]" but got "[object Element]"
+PASS Element interface: existence and properties of interface prototype object 
 PASS Element interface: existence and properties of interface prototype object's "constructor" property 
 PASS Element interface: attribute namespaceURI 
 PASS Element interface: attribute prefix 
@@ -942,7 +943,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on element with too few
 PASS NamedNodeMap interface: existence and properties of interface object 
 PASS NamedNodeMap interface object length 
 PASS NamedNodeMap interface object name 
-FAIL NamedNodeMap interface: existence and properties of interface prototype object assert_equals: class string of NamedNodeMap.prototype expected "[object NamedNodeMapPrototype]" but got "[object NamedNodeMap]"
+PASS NamedNodeMap interface: existence and properties of interface prototype object 
 PASS NamedNodeMap interface: existence and properties of interface prototype object's "constructor" property 
 PASS NamedNodeMap interface: attribute length 
 PASS NamedNodeMap interface: operation item(unsigned long) 
@@ -955,7 +956,7 @@ PASS NamedNodeMap interface: operation removeNamedItemNS(DOMString,DOMString)
 PASS Attr interface: existence and properties of interface object 
 PASS Attr interface object length 
 PASS Attr interface object name 
-FAIL Attr interface: existence and properties of interface prototype object assert_equals: class string of Attr.prototype expected "[object AttrPrototype]" but got "[object Attr]"
+PASS Attr interface: existence and properties of interface prototype object 
 PASS Attr interface: existence and properties of interface prototype object's "constructor" property 
 PASS Attr interface: attribute namespaceURI 
 PASS Attr interface: attribute prefix 
@@ -1042,7 +1043,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on document.querySelect
 PASS CharacterData interface: existence and properties of interface object 
 PASS CharacterData interface object length 
 PASS CharacterData interface object name 
-FAIL CharacterData interface: existence and properties of interface prototype object assert_equals: class string of CharacterData.prototype expected "[object CharacterDataPrototype]" but got "[object CharacterData]"
+PASS CharacterData interface: existence and properties of interface prototype object 
 PASS CharacterData interface: existence and properties of interface prototype object's "constructor" property 
 PASS CharacterData interface: attribute data 
 PASS CharacterData interface: attribute length 
@@ -1060,7 +1061,7 @@ PASS CharacterData interface: operation remove()
 PASS Text interface: existence and properties of interface object 
 PASS Text interface object length 
 PASS Text interface object name 
-FAIL Text interface: existence and properties of interface prototype object assert_equals: class string of Text.prototype expected "[object TextPrototype]" but got "[object Text]"
+PASS Text interface: existence and properties of interface prototype object 
 PASS Text interface: existence and properties of interface prototype object's "constructor" property 
 PASS Text interface: operation splitText(unsigned long) 
 PASS Text interface: attribute wholeText 
@@ -1161,12 +1162,12 @@ PASS EventTarget interface: calling dispatchEvent(Event) on document.createTextN
 PASS CDATASection interface: existence and properties of interface object 
 PASS CDATASection interface object length 
 PASS CDATASection interface object name 
-FAIL CDATASection interface: existence and properties of interface prototype object assert_equals: class string of CDATASection.prototype expected "[object CDATASectionPrototype]" but got "[object CDATASection]"
+PASS CDATASection interface: existence and properties of interface prototype object 
 PASS CDATASection interface: existence and properties of interface prototype object's "constructor" property 
 PASS ProcessingInstruction interface: existence and properties of interface object 
 PASS ProcessingInstruction interface object length 
 PASS ProcessingInstruction interface object name 
-FAIL ProcessingInstruction interface: existence and properties of interface prototype object assert_equals: class string of ProcessingInstruction.prototype expected "[object ProcessingInstructionPrototype]" but got "[object ProcessingInstruction]"
+PASS ProcessingInstruction interface: existence and properties of interface prototype object 
 PASS ProcessingInstruction interface: existence and properties of interface prototype object's "constructor" property 
 PASS ProcessingInstruction interface: attribute target 
 PASS ProcessingInstruction must be primary interface of xmlDoc.createProcessingInstruction("abc", "def") 
@@ -1262,7 +1263,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on xmlDoc.createProcess
 PASS Comment interface: existence and properties of interface object 
 PASS Comment interface object length 
 PASS Comment interface object name 
-FAIL Comment interface: existence and properties of interface prototype object assert_equals: class string of Comment.prototype expected "[object CommentPrototype]" but got "[object Comment]"
+PASS Comment interface: existence and properties of interface prototype object 
 PASS Comment interface: existence and properties of interface prototype object's "constructor" property 
 PASS Comment must be primary interface of document.createComment("abc") 
 PASS Stringification of document.createComment("abc") 
@@ -1356,7 +1357,7 @@ PASS EventTarget interface: calling dispatchEvent(Event) on document.createComme
 PASS Range interface: existence and properties of interface object 
 PASS Range interface object length 
 PASS Range interface object name 
-FAIL Range interface: existence and properties of interface prototype object assert_equals: class string of Range.prototype expected "[object RangePrototype]" but got "[object Range]"
+PASS Range interface: existence and properties of interface prototype object 
 PASS Range interface: existence and properties of interface prototype object's "constructor" property 
 PASS Range interface: attribute startContainer 
 PASS Range interface: attribute startOffset 
@@ -1490,7 +1491,7 @@ PASS Range interface: calling intersectsNode(Node) on detachedRange with too few
 PASS NodeIterator interface: existence and properties of interface object 
 PASS NodeIterator interface object length 
 PASS NodeIterator interface object name 
-FAIL NodeIterator interface: existence and properties of interface prototype object assert_equals: class string of NodeIterator.prototype expected "[object NodeIteratorPrototype]" but got "[object NodeIterator]"
+PASS NodeIterator interface: existence and properties of interface prototype object 
 PASS NodeIterator interface: existence and properties of interface prototype object's "constructor" property 
 PASS NodeIterator interface: attribute root 
 PASS NodeIterator interface: attribute referenceNode 
@@ -1513,7 +1514,7 @@ PASS NodeIterator interface: document.createNodeIterator(document.body, NodeFilt
 PASS TreeWalker interface: existence and properties of interface object 
 PASS TreeWalker interface object length 
 PASS TreeWalker interface object name 
-FAIL TreeWalker interface: existence and properties of interface prototype object assert_equals: class string of TreeWalker.prototype expected "[object TreeWalkerPrototype]" but got "[object TreeWalker]"
+PASS TreeWalker interface: existence and properties of interface prototype object 
 PASS TreeWalker interface: existence and properties of interface prototype object's "constructor" property 
 PASS TreeWalker interface: attribute root 
 PASS TreeWalker interface: attribute whatToShow 
@@ -1579,7 +1580,7 @@ PASS NodeFilter interface: operation acceptNode(Node)
 PASS DOMTokenList interface: existence and properties of interface object 
 PASS DOMTokenList interface object length 
 PASS DOMTokenList interface object name 
-FAIL DOMTokenList interface: existence and properties of interface prototype object assert_equals: class string of DOMTokenList.prototype expected "[object DOMTokenListPrototype]" but got "[object DOMTokenList]"
+PASS DOMTokenList interface: existence and properties of interface prototype object 
 PASS DOMTokenList interface: existence and properties of interface prototype object's "constructor" property 
 PASS DOMTokenList interface: attribute length 
 PASS DOMTokenList interface: operation item(unsigned long) 

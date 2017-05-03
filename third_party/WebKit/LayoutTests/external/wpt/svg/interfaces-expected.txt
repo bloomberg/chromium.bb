@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
-Found 6082 tests; 5643 PASS, 439 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6082 tests; 5729 PASS, 353 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute rootElement 
 PASS SVGElement interface: existence and properties of interface object 
 PASS SVGElement interface object length 
 PASS SVGElement interface object name 
-FAIL SVGElement interface: existence and properties of interface prototype object assert_equals: class string of SVGElement.prototype expected "[object SVGElementPrototype]" but got "[object SVGElement]"
+PASS SVGElement interface: existence and properties of interface prototype object 
 PASS SVGElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGElement interface: attribute className 
 PASS SVGElement interface: attribute dataset 
@@ -16,7 +16,7 @@ PASS SVGElement interface: operation blur()
 PASS SVGGraphicsElement interface: existence and properties of interface object 
 PASS SVGGraphicsElement interface object length 
 PASS SVGGraphicsElement interface object name 
-FAIL SVGGraphicsElement interface: existence and properties of interface prototype object assert_equals: class string of SVGGraphicsElement.prototype expected "[object SVGGraphicsElementPrototype]" but got "[object SVGGraphicsElement]"
+PASS SVGGraphicsElement interface: existence and properties of interface prototype object 
 PASS SVGGraphicsElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGGraphicsElement interface: attribute transform 
 PASS SVGGraphicsElement interface: operation getBBox(SVGBoundingBoxOptions) 
@@ -27,7 +27,7 @@ PASS SVGGraphicsElement interface: attribute systemLanguage
 PASS SVGGeometryElement interface: existence and properties of interface object 
 PASS SVGGeometryElement interface object length 
 PASS SVGGeometryElement interface object name 
-FAIL SVGGeometryElement interface: existence and properties of interface prototype object assert_equals: class string of SVGGeometryElement.prototype expected "[object SVGGeometryElementPrototype]" but got "[object SVGGeometryElement]"
+PASS SVGGeometryElement interface: existence and properties of interface prototype object 
 PASS SVGGeometryElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGGeometryElement interface: attribute pathLength 
 PASS SVGGeometryElement interface: operation isPointInFill(DOMPoint) 
@@ -37,7 +37,7 @@ PASS SVGGeometryElement interface: operation getPointAtLength(float)
 PASS SVGNumber interface: existence and properties of interface object 
 PASS SVGNumber interface object length 
 PASS SVGNumber interface object name 
-FAIL SVGNumber interface: existence and properties of interface prototype object assert_equals: class string of SVGNumber.prototype expected "[object SVGNumberPrototype]" but got "[object SVGNumber]"
+PASS SVGNumber interface: existence and properties of interface prototype object 
 PASS SVGNumber interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGNumber interface: attribute value 
 PASS SVGNumber must be primary interface of svg.createSVGNumber() 
@@ -46,7 +46,7 @@ PASS SVGNumber interface: svg.createSVGNumber() must inherit property "value" wi
 PASS SVGLength interface: existence and properties of interface object 
 PASS SVGLength interface object length 
 PASS SVGLength interface object name 
-FAIL SVGLength interface: existence and properties of interface prototype object assert_equals: class string of SVGLength.prototype expected "[object SVGLengthPrototype]" but got "[object SVGLength]"
+PASS SVGLength interface: existence and properties of interface prototype object 
 PASS SVGLength interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGLength interface: constant SVG_LENGTHTYPE_UNKNOWN on interface object 
 PASS SVGLength interface: constant SVG_LENGTHTYPE_UNKNOWN on interface prototype object 
@@ -100,7 +100,7 @@ PASS SVGLength interface: calling convertToSpecifiedUnits(unsigned short) on svg
 PASS SVGAngle interface: existence and properties of interface object 
 PASS SVGAngle interface object length 
 PASS SVGAngle interface object name 
-FAIL SVGAngle interface: existence and properties of interface prototype object assert_equals: class string of SVGAngle.prototype expected "[object SVGAnglePrototype]" but got "[object SVGAngle]"
+PASS SVGAngle interface: existence and properties of interface prototype object 
 PASS SVGAngle interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAngle interface: constant SVG_ANGLETYPE_UNKNOWN on interface object 
 PASS SVGAngle interface: constant SVG_ANGLETYPE_UNKNOWN on interface prototype object 
@@ -136,7 +136,7 @@ PASS SVGAngle interface: calling convertToSpecifiedUnits(unsigned short) on svg.
 PASS SVGNumberList interface: existence and properties of interface object 
 PASS SVGNumberList interface object length 
 PASS SVGNumberList interface object name 
-FAIL SVGNumberList interface: existence and properties of interface prototype object assert_equals: class string of SVGNumberList.prototype expected "[object SVGNumberListPrototype]" but got "[object SVGNumberList]"
+PASS SVGNumberList interface: existence and properties of interface prototype object 
 PASS SVGNumberList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGNumberList interface: attribute length 
 PASS SVGNumberList interface: attribute numberOfItems 
@@ -167,7 +167,7 @@ PASS SVGNumberList interface: calling appendItem(SVGNumber) on text.rotate.baseV
 PASS SVGLengthList interface: existence and properties of interface object 
 PASS SVGLengthList interface object length 
 PASS SVGLengthList interface object name 
-FAIL SVGLengthList interface: existence and properties of interface prototype object assert_equals: class string of SVGLengthList.prototype expected "[object SVGLengthListPrototype]" but got "[object SVGLengthList]"
+PASS SVGLengthList interface: existence and properties of interface prototype object 
 PASS SVGLengthList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGLengthList interface: attribute length 
 PASS SVGLengthList interface: attribute numberOfItems 
@@ -181,7 +181,7 @@ PASS SVGLengthList interface: operation appendItem(SVGLength)
 PASS SVGAnimatedBoolean interface: existence and properties of interface object 
 PASS SVGAnimatedBoolean interface object length 
 PASS SVGAnimatedBoolean interface object name 
-FAIL SVGAnimatedBoolean interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedBoolean.prototype expected "[object SVGAnimatedBooleanPrototype]" but got "[object SVGAnimatedBoolean]"
+PASS SVGAnimatedBoolean interface: existence and properties of interface prototype object 
 PASS SVGAnimatedBoolean interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedBoolean interface: attribute baseVal 
 PASS SVGAnimatedBoolean interface: attribute animVal 
@@ -192,7 +192,7 @@ PASS SVGAnimatedBoolean interface: feConvolveMatrix.preserveAlpha must inherit p
 PASS SVGAnimatedEnumeration interface: existence and properties of interface object 
 PASS SVGAnimatedEnumeration interface object length 
 PASS SVGAnimatedEnumeration interface object name 
-FAIL SVGAnimatedEnumeration interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedEnumeration.prototype expected "[object SVGAnimatedEnumerationPrototype]" but got "[object SVGAnimatedEnumeration]"
+PASS SVGAnimatedEnumeration interface: existence and properties of interface prototype object 
 PASS SVGAnimatedEnumeration interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedEnumeration interface: attribute baseVal 
 PASS SVGAnimatedEnumeration interface: attribute animVal 
@@ -203,7 +203,7 @@ PASS SVGAnimatedEnumeration interface: text.lengthAdjust must inherit property "
 PASS SVGAnimatedInteger interface: existence and properties of interface object 
 PASS SVGAnimatedInteger interface object length 
 PASS SVGAnimatedInteger interface object name 
-FAIL SVGAnimatedInteger interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedInteger.prototype expected "[object SVGAnimatedIntegerPrototype]" but got "[object SVGAnimatedInteger]"
+PASS SVGAnimatedInteger interface: existence and properties of interface prototype object 
 PASS SVGAnimatedInteger interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedInteger interface: attribute baseVal 
 PASS SVGAnimatedInteger interface: attribute animVal 
@@ -214,7 +214,7 @@ PASS SVGAnimatedInteger interface: feConvolveMatrix.orderX must inherit property
 PASS SVGAnimatedNumber interface: existence and properties of interface object 
 PASS SVGAnimatedNumber interface object length 
 PASS SVGAnimatedNumber interface object name 
-FAIL SVGAnimatedNumber interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedNumber.prototype expected "[object SVGAnimatedNumberPrototype]" but got "[object SVGAnimatedNumber]"
+PASS SVGAnimatedNumber interface: existence and properties of interface prototype object 
 PASS SVGAnimatedNumber interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedNumber interface: attribute baseVal 
 PASS SVGAnimatedNumber interface: attribute animVal 
@@ -225,7 +225,7 @@ PASS SVGAnimatedNumber interface: stop.offset must inherit property "animVal" wi
 PASS SVGAnimatedLength interface: existence and properties of interface object 
 PASS SVGAnimatedLength interface object length 
 PASS SVGAnimatedLength interface object name 
-FAIL SVGAnimatedLength interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedLength.prototype expected "[object SVGAnimatedLengthPrototype]" but got "[object SVGAnimatedLength]"
+PASS SVGAnimatedLength interface: existence and properties of interface prototype object 
 PASS SVGAnimatedLength interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedLength interface: attribute baseVal 
 PASS SVGAnimatedLength interface: attribute animVal 
@@ -236,7 +236,7 @@ PASS SVGAnimatedLength interface: svg.x must inherit property "animVal" with the
 PASS SVGAnimatedAngle interface: existence and properties of interface object 
 PASS SVGAnimatedAngle interface object length 
 PASS SVGAnimatedAngle interface object name 
-FAIL SVGAnimatedAngle interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedAngle.prototype expected "[object SVGAnimatedAnglePrototype]" but got "[object SVGAnimatedAngle]"
+PASS SVGAnimatedAngle interface: existence and properties of interface prototype object 
 PASS SVGAnimatedAngle interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedAngle interface: attribute baseVal 
 PASS SVGAnimatedAngle interface: attribute animVal 
@@ -247,7 +247,7 @@ PASS SVGAnimatedAngle interface: marker.orientAngle must inherit property "animV
 PASS SVGAnimatedString interface: existence and properties of interface object 
 PASS SVGAnimatedString interface object length 
 PASS SVGAnimatedString interface object name 
-FAIL SVGAnimatedString interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedString.prototype expected "[object SVGAnimatedStringPrototype]" but got "[object SVGAnimatedString]"
+PASS SVGAnimatedString interface: existence and properties of interface prototype object 
 PASS SVGAnimatedString interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedString interface: attribute baseVal 
 PASS SVGAnimatedString interface: attribute animVal 
@@ -258,7 +258,7 @@ PASS SVGAnimatedString interface: a.target must inherit property "animVal" with 
 PASS SVGAnimatedRect interface: existence and properties of interface object 
 PASS SVGAnimatedRect interface object length 
 PASS SVGAnimatedRect interface object name 
-FAIL SVGAnimatedRect interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedRect.prototype expected "[object SVGAnimatedRectPrototype]" but got "[object SVGAnimatedRect]"
+PASS SVGAnimatedRect interface: existence and properties of interface prototype object 
 PASS SVGAnimatedRect interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedRect interface: attribute baseVal 
 PASS SVGAnimatedRect interface: attribute animVal 
@@ -269,7 +269,7 @@ FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "animVal" with
 PASS SVGAnimatedNumberList interface: existence and properties of interface object 
 PASS SVGAnimatedNumberList interface object length 
 PASS SVGAnimatedNumberList interface object name 
-FAIL SVGAnimatedNumberList interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedNumberList.prototype expected "[object SVGAnimatedNumberListPrototype]" but got "[object SVGAnimatedNumberList]"
+PASS SVGAnimatedNumberList interface: existence and properties of interface prototype object 
 PASS SVGAnimatedNumberList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedNumberList interface: attribute baseVal 
 PASS SVGAnimatedNumberList interface: attribute animVal 
@@ -280,7 +280,7 @@ PASS SVGAnimatedNumberList interface: text.rotate must inherit property "animVal
 PASS SVGAnimatedLengthList interface: existence and properties of interface object 
 PASS SVGAnimatedLengthList interface object length 
 PASS SVGAnimatedLengthList interface object name 
-FAIL SVGAnimatedLengthList interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedLengthList.prototype expected "[object SVGAnimatedLengthListPrototype]" but got "[object SVGAnimatedLengthList]"
+PASS SVGAnimatedLengthList interface: existence and properties of interface prototype object 
 PASS SVGAnimatedLengthList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedLengthList interface: attribute baseVal 
 PASS SVGAnimatedLengthList interface: attribute animVal 
@@ -291,7 +291,7 @@ PASS SVGAnimatedLengthList interface: text.x must inherit property "animVal" wit
 PASS SVGStringList interface: existence and properties of interface object 
 PASS SVGStringList interface object length 
 PASS SVGStringList interface object name 
-FAIL SVGStringList interface: existence and properties of interface prototype object assert_equals: class string of SVGStringList.prototype expected "[object SVGStringListPrototype]" but got "[object SVGStringList]"
+PASS SVGStringList interface: existence and properties of interface prototype object 
 PASS SVGStringList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGStringList interface: attribute length 
 PASS SVGStringList interface: attribute numberOfItems 
@@ -322,7 +322,7 @@ PASS SVGStringList interface: calling appendItem(DOMString) on a.requiredExtensi
 PASS SVGUnitTypes interface: existence and properties of interface object 
 PASS SVGUnitTypes interface object length 
 PASS SVGUnitTypes interface object name 
-FAIL SVGUnitTypes interface: existence and properties of interface prototype object assert_equals: class string of SVGUnitTypes.prototype expected "[object SVGUnitTypesPrototype]" but got "[object SVGUnitTypes]"
+PASS SVGUnitTypes interface: existence and properties of interface prototype object 
 PASS SVGUnitTypes interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGUnitTypes interface: constant SVG_UNIT_TYPE_UNKNOWN on interface object 
 PASS SVGUnitTypes interface: constant SVG_UNIT_TYPE_UNKNOWN on interface prototype object 
@@ -333,7 +333,7 @@ PASS SVGUnitTypes interface: constant SVG_UNIT_TYPE_OBJECTBOUNDINGBOX on interfa
 PASS SVGSVGElement interface: existence and properties of interface object 
 PASS SVGSVGElement interface object length 
 PASS SVGSVGElement interface object name 
-FAIL SVGSVGElement interface: existence and properties of interface prototype object assert_equals: class string of SVGSVGElement.prototype expected "[object SVGSVGElementPrototype]" but got "[object SVGSVGElement]"
+PASS SVGSVGElement interface: existence and properties of interface prototype object 
 PASS SVGSVGElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGSVGElement interface: attribute x 
 PASS SVGSVGElement interface: attribute y 
@@ -500,7 +500,7 @@ PASS SVGElement interface: svg must inherit property "onwaiting" with the proper
 PASS SVGGElement interface: existence and properties of interface object 
 PASS SVGGElement interface object length 
 PASS SVGGElement interface object name 
-FAIL SVGGElement interface: existence and properties of interface prototype object assert_equals: class string of SVGGElement.prototype expected "[object SVGGElementPrototype]" but got "[object SVGGElement]"
+PASS SVGGElement interface: existence and properties of interface prototype object 
 PASS SVGGElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGGElement must be primary interface of g 
 PASS Stringification of g 
@@ -589,7 +589,7 @@ FAIL SVGUnknownElement interface: existence and properties of interface prototyp
 PASS SVGDefsElement interface: existence and properties of interface object 
 PASS SVGDefsElement interface object length 
 PASS SVGDefsElement interface object name 
-FAIL SVGDefsElement interface: existence and properties of interface prototype object assert_equals: class string of SVGDefsElement.prototype expected "[object SVGDefsElementPrototype]" but got "[object SVGDefsElement]"
+PASS SVGDefsElement interface: existence and properties of interface prototype object 
 PASS SVGDefsElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGDefsElement must be primary interface of defs 
 PASS Stringification of defs 
@@ -673,7 +673,7 @@ PASS SVGElement interface: defs must inherit property "onwaiting" with the prope
 PASS SVGDescElement interface: existence and properties of interface object 
 PASS SVGDescElement interface object length 
 PASS SVGDescElement interface object name 
-FAIL SVGDescElement interface: existence and properties of interface prototype object assert_equals: class string of SVGDescElement.prototype expected "[object SVGDescElementPrototype]" but got "[object SVGDescElement]"
+PASS SVGDescElement interface: existence and properties of interface prototype object 
 PASS SVGDescElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGDescElement must be primary interface of Desc 
 PASS Stringification of Desc 
@@ -750,7 +750,7 @@ PASS SVGElement interface: Desc must inherit property "onwaiting" with the prope
 PASS SVGMetadataElement interface: existence and properties of interface object 
 PASS SVGMetadataElement interface object length 
 PASS SVGMetadataElement interface object name 
-FAIL SVGMetadataElement interface: existence and properties of interface prototype object assert_equals: class string of SVGMetadataElement.prototype expected "[object SVGMetadataElementPrototype]" but got "[object SVGMetadataElement]"
+PASS SVGMetadataElement interface: existence and properties of interface prototype object 
 PASS SVGMetadataElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGMetadataElement must be primary interface of metadata 
 PASS Stringification of metadata 
@@ -827,7 +827,7 @@ PASS SVGElement interface: metadata must inherit property "onwaiting" with the p
 PASS SVGTitleElement interface: existence and properties of interface object 
 PASS SVGTitleElement interface object length 
 PASS SVGTitleElement interface object name 
-FAIL SVGTitleElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTitleElement.prototype expected "[object SVGTitleElementPrototype]" but got "[object SVGTitleElement]"
+PASS SVGTitleElement interface: existence and properties of interface prototype object 
 PASS SVGTitleElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTitleElement must be primary interface of title 
 PASS Stringification of title 
@@ -904,7 +904,7 @@ PASS SVGElement interface: title must inherit property "onwaiting" with the prop
 PASS SVGSymbolElement interface: existence and properties of interface object 
 PASS SVGSymbolElement interface object length 
 PASS SVGSymbolElement interface object name 
-FAIL SVGSymbolElement interface: existence and properties of interface prototype object assert_equals: class string of SVGSymbolElement.prototype expected "[object SVGSymbolElementPrototype]" but got "[object SVGSymbolElement]"
+PASS SVGSymbolElement interface: existence and properties of interface prototype object 
 PASS SVGSymbolElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGSymbolElement interface: attribute viewBox 
 PASS SVGSymbolElement interface: attribute preserveAspectRatio 
@@ -985,7 +985,7 @@ PASS SVGElement interface: symbol must inherit property "onwaiting" with the pro
 PASS SVGUseElement interface: existence and properties of interface object 
 PASS SVGUseElement interface object length 
 PASS SVGUseElement interface object name 
-FAIL SVGUseElement interface: existence and properties of interface prototype object assert_equals: class string of SVGUseElement.prototype expected "[object SVGUseElementPrototype]" but got "[object SVGUseElement]"
+PASS SVGUseElement interface: existence and properties of interface prototype object 
 PASS SVGUseElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGUseElement interface: attribute x 
 PASS SVGUseElement interface: attribute y 
@@ -1079,7 +1079,7 @@ PASS SVGElement interface: use must inherit property "onwaiting" with the proper
 PASS SVGSwitchElement interface: existence and properties of interface object 
 PASS SVGSwitchElement interface object length 
 PASS SVGSwitchElement interface object name 
-FAIL SVGSwitchElement interface: existence and properties of interface prototype object assert_equals: class string of SVGSwitchElement.prototype expected "[object SVGSwitchElementPrototype]" but got "[object SVGSwitchElement]"
+PASS SVGSwitchElement interface: existence and properties of interface prototype object 
 PASS SVGSwitchElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGSwitchElement must be primary interface of Switch 
 PASS Stringification of Switch 
@@ -1163,7 +1163,7 @@ PASS SVGElement interface: Switch must inherit property "onwaiting" with the pro
 PASS SVGStyleElement interface: existence and properties of interface object 
 PASS SVGStyleElement interface object length 
 PASS SVGStyleElement interface object name 
-FAIL SVGStyleElement interface: existence and properties of interface prototype object assert_equals: class string of SVGStyleElement.prototype expected "[object SVGStyleElementPrototype]" but got "[object SVGStyleElement]"
+PASS SVGStyleElement interface: existence and properties of interface prototype object 
 PASS SVGStyleElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGStyleElement interface: attribute type 
 PASS SVGStyleElement interface: attribute media 
@@ -1247,7 +1247,7 @@ PASS SVGElement interface: style must inherit property "onwaiting" with the prop
 PASS SVGTransform interface: existence and properties of interface object 
 PASS SVGTransform interface object length 
 PASS SVGTransform interface object name 
-FAIL SVGTransform interface: existence and properties of interface prototype object assert_equals: class string of SVGTransform.prototype expected "[object SVGTransformPrototype]" but got "[object SVGTransform]"
+PASS SVGTransform interface: existence and properties of interface prototype object 
 PASS SVGTransform interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTransform interface: constant SVG_TRANSFORM_UNKNOWN on interface object 
 PASS SVGTransform interface: constant SVG_TRANSFORM_UNKNOWN on interface prototype object 
@@ -1299,7 +1299,7 @@ PASS SVGTransform interface: calling setSkewY(float) on svg.createSVGTransform()
 PASS SVGTransformList interface: existence and properties of interface object 
 PASS SVGTransformList interface object length 
 PASS SVGTransformList interface object name 
-FAIL SVGTransformList interface: existence and properties of interface prototype object assert_equals: class string of SVGTransformList.prototype expected "[object SVGTransformListPrototype]" but got "[object SVGTransformList]"
+PASS SVGTransformList interface: existence and properties of interface prototype object 
 PASS SVGTransformList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTransformList interface: attribute length 
 PASS SVGTransformList interface: attribute numberOfItems 
@@ -1335,7 +1335,7 @@ PASS SVGTransformList interface: pattern.patternTransform.baseVal must inherit p
 PASS SVGAnimatedTransformList interface: existence and properties of interface object 
 PASS SVGAnimatedTransformList interface object length 
 PASS SVGAnimatedTransformList interface object name 
-FAIL SVGAnimatedTransformList interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedTransformList.prototype expected "[object SVGAnimatedTransformListPrototype]" but got "[object SVGAnimatedTransformList]"
+PASS SVGAnimatedTransformList interface: existence and properties of interface prototype object 
 PASS SVGAnimatedTransformList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedTransformList interface: attribute baseVal 
 PASS SVGAnimatedTransformList interface: attribute animVal 
@@ -1346,7 +1346,7 @@ PASS SVGAnimatedTransformList interface: pattern.patternTransform must inherit p
 PASS SVGPreserveAspectRatio interface: existence and properties of interface object 
 PASS SVGPreserveAspectRatio interface object length 
 PASS SVGPreserveAspectRatio interface object name 
-FAIL SVGPreserveAspectRatio interface: existence and properties of interface prototype object assert_equals: class string of SVGPreserveAspectRatio.prototype expected "[object SVGPreserveAspectRatioPrototype]" but got "[object SVGPreserveAspectRatio]"
+PASS SVGPreserveAspectRatio interface: existence and properties of interface prototype object 
 PASS SVGPreserveAspectRatio interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPreserveAspectRatio interface: constant SVG_PRESERVEASPECTRATIO_UNKNOWN on interface object 
 PASS SVGPreserveAspectRatio interface: constant SVG_PRESERVEASPECTRATIO_UNKNOWN on interface prototype object 
@@ -1399,7 +1399,7 @@ PASS SVGPreserveAspectRatio interface: image.preserveAspectRatio.baseVal must in
 PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface object 
 PASS SVGAnimatedPreserveAspectRatio interface object length 
 PASS SVGAnimatedPreserveAspectRatio interface object name 
-FAIL SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object assert_equals: class string of SVGAnimatedPreserveAspectRatio.prototype expected "[object SVGAnimatedPreserveAspectRatioPrototype]" but got "[object SVGAnimatedPreserveAspectRatio]"
+PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object 
 PASS SVGAnimatedPreserveAspectRatio interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAnimatedPreserveAspectRatio interface: attribute baseVal 
 PASS SVGAnimatedPreserveAspectRatio interface: attribute animVal 
@@ -1410,7 +1410,7 @@ PASS SVGAnimatedPreserveAspectRatio interface: image.preserveAspectRatio must in
 PASS SVGPathElement interface: existence and properties of interface object 
 PASS SVGPathElement interface object length 
 PASS SVGPathElement interface object name 
-FAIL SVGPathElement interface: existence and properties of interface prototype object assert_equals: class string of SVGPathElement.prototype expected "[object SVGPathElementPrototype]" but got "[object SVGPathElement]"
+PASS SVGPathElement interface: existence and properties of interface prototype object 
 PASS SVGPathElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPathElement must be primary interface of path 
 PASS Stringification of path 
@@ -1502,7 +1502,7 @@ PASS SVGElement interface: path must inherit property "onwaiting" with the prope
 PASS SVGRectElement interface: existence and properties of interface object 
 PASS SVGRectElement interface object length 
 PASS SVGRectElement interface object name 
-FAIL SVGRectElement interface: existence and properties of interface prototype object assert_equals: class string of SVGRectElement.prototype expected "[object SVGRectElementPrototype]" but got "[object SVGRectElement]"
+PASS SVGRectElement interface: existence and properties of interface prototype object 
 PASS SVGRectElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGRectElement interface: attribute x 
 PASS SVGRectElement interface: attribute y 
@@ -1606,7 +1606,7 @@ PASS SVGElement interface: rect must inherit property "onwaiting" with the prope
 PASS SVGCircleElement interface: existence and properties of interface object 
 PASS SVGCircleElement interface object length 
 PASS SVGCircleElement interface object name 
-FAIL SVGCircleElement interface: existence and properties of interface prototype object assert_equals: class string of SVGCircleElement.prototype expected "[object SVGCircleElementPrototype]" but got "[object SVGCircleElement]"
+PASS SVGCircleElement interface: existence and properties of interface prototype object 
 PASS SVGCircleElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGCircleElement interface: attribute cx 
 PASS SVGCircleElement interface: attribute cy 
@@ -1704,7 +1704,7 @@ PASS SVGElement interface: circle must inherit property "onwaiting" with the pro
 PASS SVGEllipseElement interface: existence and properties of interface object 
 PASS SVGEllipseElement interface object length 
 PASS SVGEllipseElement interface object name 
-FAIL SVGEllipseElement interface: existence and properties of interface prototype object assert_equals: class string of SVGEllipseElement.prototype expected "[object SVGEllipseElementPrototype]" but got "[object SVGEllipseElement]"
+PASS SVGEllipseElement interface: existence and properties of interface prototype object 
 PASS SVGEllipseElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGEllipseElement interface: attribute cx 
 PASS SVGEllipseElement interface: attribute cy 
@@ -1804,7 +1804,7 @@ PASS SVGElement interface: ellipse must inherit property "onwaiting" with the pr
 PASS SVGLineElement interface: existence and properties of interface object 
 PASS SVGLineElement interface object length 
 PASS SVGLineElement interface object name 
-FAIL SVGLineElement interface: existence and properties of interface prototype object assert_equals: class string of SVGLineElement.prototype expected "[object SVGLineElementPrototype]" but got "[object SVGLineElement]"
+PASS SVGLineElement interface: existence and properties of interface prototype object 
 PASS SVGLineElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGLineElement interface: attribute x1 
 PASS SVGLineElement interface: attribute y1 
@@ -1904,7 +1904,7 @@ PASS SVGElement interface: line must inherit property "onwaiting" with the prope
 PASS SVGPointList interface: existence and properties of interface object 
 PASS SVGPointList interface object length 
 PASS SVGPointList interface object name 
-FAIL SVGPointList interface: existence and properties of interface prototype object assert_equals: class string of SVGPointList.prototype expected "[object SVGPointListPrototype]" but got "[object SVGPointList]"
+PASS SVGPointList interface: existence and properties of interface prototype object 
 PASS SVGPointList interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPointList interface: attribute length 
 PASS SVGPointList interface: attribute numberOfItems 
@@ -1935,7 +1935,7 @@ PASS SVGPointList interface: calling appendItem(DOMPoint) on polygon.points with
 PASS SVGPolylineElement interface: existence and properties of interface object 
 PASS SVGPolylineElement interface object length 
 PASS SVGPolylineElement interface object name 
-FAIL SVGPolylineElement interface: existence and properties of interface prototype object assert_equals: class string of SVGPolylineElement.prototype expected "[object SVGPolylineElementPrototype]" but got "[object SVGPolylineElement]"
+PASS SVGPolylineElement interface: existence and properties of interface prototype object 
 PASS SVGPolylineElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPolylineElement interface: attribute points 
 PASS SVGPolylineElement interface: attribute animatedPoints 
@@ -2031,7 +2031,7 @@ PASS SVGElement interface: polyline must inherit property "onwaiting" with the p
 PASS SVGPolygonElement interface: existence and properties of interface object 
 PASS SVGPolygonElement interface object length 
 PASS SVGPolygonElement interface object name 
-FAIL SVGPolygonElement interface: existence and properties of interface prototype object assert_equals: class string of SVGPolygonElement.prototype expected "[object SVGPolygonElementPrototype]" but got "[object SVGPolygonElement]"
+PASS SVGPolygonElement interface: existence and properties of interface prototype object 
 PASS SVGPolygonElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPolygonElement interface: attribute points 
 PASS SVGPolygonElement interface: attribute animatedPoints 
@@ -2127,7 +2127,7 @@ PASS SVGElement interface: polygon must inherit property "onwaiting" with the pr
 PASS SVGTextContentElement interface: existence and properties of interface object 
 PASS SVGTextContentElement interface object length 
 PASS SVGTextContentElement interface object name 
-FAIL SVGTextContentElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTextContentElement.prototype expected "[object SVGTextContentElementPrototype]" but got "[object SVGTextContentElement]"
+PASS SVGTextContentElement interface: existence and properties of interface prototype object 
 PASS SVGTextContentElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTextContentElement interface: constant LENGTHADJUST_UNKNOWN on interface object 
 PASS SVGTextContentElement interface: constant LENGTHADJUST_UNKNOWN on interface prototype object 
@@ -2249,7 +2249,7 @@ PASS SVGElement interface: textContent must inherit property "onwaiting" with th
 PASS SVGTextPositioningElement interface: existence and properties of interface object 
 PASS SVGTextPositioningElement interface object length 
 PASS SVGTextPositioningElement interface object name 
-FAIL SVGTextPositioningElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTextPositioningElement.prototype expected "[object SVGTextPositioningElementPrototype]" but got "[object SVGTextPositioningElement]"
+PASS SVGTextPositioningElement interface: existence and properties of interface prototype object 
 PASS SVGTextPositioningElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTextPositioningElement interface: attribute x 
 PASS SVGTextPositioningElement interface: attribute y 
@@ -2259,7 +2259,7 @@ PASS SVGTextPositioningElement interface: attribute rotate
 PASS SVGTextElement interface: existence and properties of interface object 
 PASS SVGTextElement interface object length 
 PASS SVGTextElement interface object name 
-FAIL SVGTextElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTextElement.prototype expected "[object SVGTextElementPrototype]" but got "[object SVGTextElement]"
+PASS SVGTextElement interface: existence and properties of interface prototype object 
 PASS SVGTextElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTextElement must be primary interface of text 
 PASS Stringification of text 
@@ -2369,7 +2369,7 @@ PASS SVGElement interface: text must inherit property "onwaiting" with the prope
 PASS SVGTSpanElement interface: existence and properties of interface object 
 PASS SVGTSpanElement interface object length 
 PASS SVGTSpanElement interface object name 
-FAIL SVGTSpanElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTSpanElement.prototype expected "[object SVGTSpanElementPrototype]" but got "[object SVGTSpanElement]"
+PASS SVGTSpanElement interface: existence and properties of interface prototype object 
 PASS SVGTSpanElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTSpanElement must be primary interface of tspan 
 PASS Stringification of tspan 
@@ -2479,7 +2479,7 @@ PASS SVGElement interface: tspan must inherit property "onwaiting" with the prop
 PASS SVGTextPathElement interface: existence and properties of interface object 
 PASS SVGTextPathElement interface object length 
 PASS SVGTextPathElement interface object name 
-FAIL SVGTextPathElement interface: existence and properties of interface prototype object assert_equals: class string of SVGTextPathElement.prototype expected "[object SVGTextPathElementPrototype]" but got "[object SVGTextPathElement]"
+PASS SVGTextPathElement interface: existence and properties of interface prototype object 
 PASS SVGTextPathElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGTextPathElement interface: constant TEXTPATH_METHODTYPE_UNKNOWN on interface object 
 PASS SVGTextPathElement interface: constant TEXTPATH_METHODTYPE_UNKNOWN on interface prototype object 
@@ -2610,7 +2610,7 @@ PASS SVGElement interface: textPath must inherit property "onwaiting" with the p
 PASS SVGImageElement interface: existence and properties of interface object 
 PASS SVGImageElement interface object length 
 PASS SVGImageElement interface object name 
-FAIL SVGImageElement interface: existence and properties of interface prototype object assert_equals: class string of SVGImageElement.prototype expected "[object SVGImageElementPrototype]" but got "[object SVGImageElement]"
+PASS SVGImageElement interface: existence and properties of interface prototype object 
 PASS SVGImageElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGImageElement interface: attribute x 
 PASS SVGImageElement interface: attribute y 
@@ -2708,7 +2708,7 @@ PASS SVGElement interface: image must inherit property "onwaiting" with the prop
 PASS SVGForeignObjectElement interface: existence and properties of interface object 
 PASS SVGForeignObjectElement interface object length 
 PASS SVGForeignObjectElement interface object name 
-FAIL SVGForeignObjectElement interface: existence and properties of interface prototype object assert_equals: class string of SVGForeignObjectElement.prototype expected "[object SVGForeignObjectElementPrototype]" but got "[object SVGForeignObjectElement]"
+PASS SVGForeignObjectElement interface: existence and properties of interface prototype object 
 PASS SVGForeignObjectElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGForeignObjectElement interface: attribute x 
 PASS SVGForeignObjectElement interface: attribute y 
@@ -2800,7 +2800,7 @@ PASS SVGElement interface: foreignObject must inherit property "onwaiting" with 
 PASS SVGMarkerElement interface: existence and properties of interface object 
 PASS SVGMarkerElement interface object length 
 PASS SVGMarkerElement interface object name 
-FAIL SVGMarkerElement interface: existence and properties of interface prototype object assert_equals: class string of SVGMarkerElement.prototype expected "[object SVGMarkerElementPrototype]" but got "[object SVGMarkerElement]"
+PASS SVGMarkerElement interface: existence and properties of interface prototype object 
 PASS SVGMarkerElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGMarkerElement interface: constant SVG_MARKERUNITS_UNKNOWN on interface object 
 PASS SVGMarkerElement interface: constant SVG_MARKERUNITS_UNKNOWN on interface prototype object 
@@ -2925,7 +2925,7 @@ FAIL SVGSolidcolorElement interface: existence and properties of interface proto
 PASS SVGGradientElement interface: existence and properties of interface object 
 PASS SVGGradientElement interface object length 
 PASS SVGGradientElement interface object name 
-FAIL SVGGradientElement interface: existence and properties of interface prototype object assert_equals: class string of SVGGradientElement.prototype expected "[object SVGGradientElementPrototype]" but got "[object SVGGradientElement]"
+PASS SVGGradientElement interface: existence and properties of interface prototype object 
 PASS SVGGradientElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGGradientElement interface: constant SVG_SPREADMETHOD_UNKNOWN on interface object 
 PASS SVGGradientElement interface: constant SVG_SPREADMETHOD_UNKNOWN on interface prototype object 
@@ -2942,7 +2942,7 @@ PASS SVGGradientElement interface: attribute href
 PASS SVGLinearGradientElement interface: existence and properties of interface object 
 PASS SVGLinearGradientElement interface object length 
 PASS SVGLinearGradientElement interface object name 
-FAIL SVGLinearGradientElement interface: existence and properties of interface prototype object assert_equals: class string of SVGLinearGradientElement.prototype expected "[object SVGLinearGradientElementPrototype]" but got "[object SVGLinearGradientElement]"
+PASS SVGLinearGradientElement interface: existence and properties of interface prototype object 
 PASS SVGLinearGradientElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGLinearGradientElement interface: attribute x1 
 PASS SVGLinearGradientElement interface: attribute y1 
@@ -3035,7 +3035,7 @@ PASS SVGElement interface: linearGradient must inherit property "onwaiting" with
 PASS SVGRadialGradientElement interface: existence and properties of interface object 
 PASS SVGRadialGradientElement interface object length 
 PASS SVGRadialGradientElement interface object name 
-FAIL SVGRadialGradientElement interface: existence and properties of interface prototype object assert_equals: class string of SVGRadialGradientElement.prototype expected "[object SVGRadialGradientElementPrototype]" but got "[object SVGRadialGradientElement]"
+PASS SVGRadialGradientElement interface: existence and properties of interface prototype object 
 PASS SVGRadialGradientElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGRadialGradientElement interface: attribute cx 
 PASS SVGRadialGradientElement interface: attribute cy 
@@ -3147,7 +3147,7 @@ FAIL SVGMeshpatchElement interface: existence and properties of interface protot
 PASS SVGStopElement interface: existence and properties of interface object 
 PASS SVGStopElement interface object length 
 PASS SVGStopElement interface object name 
-FAIL SVGStopElement interface: existence and properties of interface prototype object assert_equals: class string of SVGStopElement.prototype expected "[object SVGStopElementPrototype]" but got "[object SVGStopElement]"
+PASS SVGStopElement interface: existence and properties of interface prototype object 
 PASS SVGStopElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGStopElement interface: attribute offset 
 PASS SVGStopElement must be primary interface of stop 
@@ -3226,7 +3226,7 @@ PASS SVGElement interface: stop must inherit property "onwaiting" with the prope
 PASS SVGPatternElement interface: existence and properties of interface object 
 PASS SVGPatternElement interface object length 
 PASS SVGPatternElement interface object name 
-FAIL SVGPatternElement interface: existence and properties of interface prototype object assert_equals: class string of SVGPatternElement.prototype expected "[object SVGPatternElementPrototype]" but got "[object SVGPatternElement]"
+PASS SVGPatternElement interface: existence and properties of interface prototype object 
 PASS SVGPatternElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGPatternElement interface: attribute patternUnits 
 PASS SVGPatternElement interface: attribute patternContentUnits 
@@ -3416,7 +3416,7 @@ PASS SVGElement interface: cursor must inherit property "onwaiting" with the pro
 PASS SVGScriptElement interface: existence and properties of interface object 
 PASS SVGScriptElement interface object length 
 PASS SVGScriptElement interface object name 
-FAIL SVGScriptElement interface: existence and properties of interface prototype object assert_equals: class string of SVGScriptElement.prototype expected "[object SVGScriptElementPrototype]" but got "[object SVGScriptElement]"
+PASS SVGScriptElement interface: existence and properties of interface prototype object 
 PASS SVGScriptElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGScriptElement interface: attribute type 
 FAIL SVGScriptElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
@@ -3509,7 +3509,7 @@ FAIL SVGZoomEvent interface: attribute newTranslate assert_own_property: self do
 PASS SVGAElement interface: existence and properties of interface object 
 PASS SVGAElement interface object length 
 PASS SVGAElement interface object name 
-FAIL SVGAElement interface: existence and properties of interface prototype object assert_equals: class string of SVGAElement.prototype expected "[object SVGAElementPrototype]" but got "[object SVGAElement]"
+PASS SVGAElement interface: existence and properties of interface prototype object 
 PASS SVGAElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGAElement interface: attribute target 
 PASS SVGAElement interface: attribute href 
@@ -3597,7 +3597,7 @@ PASS SVGElement interface: a must inherit property "onwaiting" with the proper t
 PASS SVGViewElement interface: existence and properties of interface object 
 PASS SVGViewElement interface object length 
 PASS SVGViewElement interface object name 
-FAIL SVGViewElement interface: existence and properties of interface prototype object assert_equals: class string of SVGViewElement.prototype expected "[object SVGViewElementPrototype]" but got "[object SVGViewElement]"
+PASS SVGViewElement interface: existence and properties of interface prototype object 
 PASS SVGViewElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGViewElement interface: attribute viewBox 
 PASS SVGViewElement interface: attribute preserveAspectRatio 
@@ -3689,7 +3689,7 @@ PASS SVGElement interface: view must inherit property "onwaiting" with the prope
 PASS SVGFilterElement interface: existence and properties of interface object 
 PASS SVGFilterElement interface object length 
 PASS SVGFilterElement interface object name 
-FAIL SVGFilterElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFilterElement.prototype expected "[object SVGFilterElementPrototype]" but got "[object SVGFilterElement]"
+PASS SVGFilterElement interface: existence and properties of interface prototype object 
 PASS SVGFilterElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFilterElement interface: attribute filterUnits 
 PASS SVGFilterElement interface: attribute primitiveUnits 
@@ -3780,7 +3780,7 @@ PASS SVGElement interface: filter must inherit property "onwaiting" with the pro
 PASS SVGFEBlendElement interface: existence and properties of interface object 
 PASS SVGFEBlendElement interface object length 
 PASS SVGFEBlendElement interface object name 
-FAIL SVGFEBlendElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEBlendElement.prototype expected "[object SVGFEBlendElementPrototype]" but got "[object SVGFEBlendElement]"
+PASS SVGFEBlendElement interface: existence and properties of interface prototype object 
 PASS SVGFEBlendElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_UNKNOWN on interface object 
 PASS SVGFEBlendElement interface: constant SVG_FEBLEND_MODE_UNKNOWN on interface prototype object 
@@ -3891,7 +3891,7 @@ PASS SVGElement interface: feBlend must inherit property "onwaiting" with the pr
 PASS SVGFEColorMatrixElement interface: existence and properties of interface object 
 PASS SVGFEColorMatrixElement interface object length 
 PASS SVGFEColorMatrixElement interface object name 
-FAIL SVGFEColorMatrixElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEColorMatrixElement.prototype expected "[object SVGFEColorMatrixElementPrototype]" but got "[object SVGFEColorMatrixElement]"
+PASS SVGFEColorMatrixElement interface: existence and properties of interface prototype object 
 PASS SVGFEColorMatrixElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEColorMatrixElement interface: constant SVG_FECOLORMATRIX_TYPE_UNKNOWN on interface object 
 PASS SVGFEColorMatrixElement interface: constant SVG_FECOLORMATRIX_TYPE_UNKNOWN on interface prototype object 
@@ -3999,7 +3999,7 @@ PASS SVGElement interface: feColorMatrix must inherit property "onwaiting" with 
 PASS SVGFEComponentTransferElement interface: existence and properties of interface object 
 PASS SVGFEComponentTransferElement interface object length 
 PASS SVGFEComponentTransferElement interface object name 
-FAIL SVGFEComponentTransferElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEComponentTransferElement.prototype expected "[object SVGFEComponentTransferElementPrototype]" but got "[object SVGFEComponentTransferElement]"
+PASS SVGFEComponentTransferElement interface: existence and properties of interface prototype object 
 PASS SVGFEComponentTransferElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEComponentTransferElement interface: attribute in1 
 PASS SVGFEComponentTransferElement interface: attribute x 
@@ -4088,7 +4088,7 @@ PASS SVGElement interface: feComponentTransfer must inherit property "onwaiting"
 PASS SVGComponentTransferFunctionElement interface: existence and properties of interface object 
 PASS SVGComponentTransferFunctionElement interface object length 
 PASS SVGComponentTransferFunctionElement interface object name 
-FAIL SVGComponentTransferFunctionElement interface: existence and properties of interface prototype object assert_equals: class string of SVGComponentTransferFunctionElement.prototype expected "[object SVGComponentTransferFunctionElementPrototype]" but got "[object SVGComponentTransferFunctionElement]"
+PASS SVGComponentTransferFunctionElement interface: existence and properties of interface prototype object 
 PASS SVGComponentTransferFunctionElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGComponentTransferFunctionElement interface: constant SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN on interface object 
 PASS SVGComponentTransferFunctionElement interface: constant SVG_FECOMPONENTTRANSFER_TYPE_UNKNOWN on interface prototype object 
@@ -4112,7 +4112,7 @@ PASS SVGComponentTransferFunctionElement interface: attribute offset
 PASS SVGFEFuncRElement interface: existence and properties of interface object 
 PASS SVGFEFuncRElement interface object length 
 PASS SVGFEFuncRElement interface object name 
-FAIL SVGFEFuncRElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEFuncRElement.prototype expected "[object SVGFEFuncRElementPrototype]" but got "[object SVGFEFuncRElement]"
+PASS SVGFEFuncRElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncRElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEFuncRElement must be primary interface of feFuncR 
 PASS Stringification of feFuncR 
@@ -4202,7 +4202,7 @@ PASS SVGElement interface: feFuncR must inherit property "onwaiting" with the pr
 PASS SVGFEFuncGElement interface: existence and properties of interface object 
 PASS SVGFEFuncGElement interface object length 
 PASS SVGFEFuncGElement interface object name 
-FAIL SVGFEFuncGElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEFuncGElement.prototype expected "[object SVGFEFuncGElementPrototype]" but got "[object SVGFEFuncGElement]"
+PASS SVGFEFuncGElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncGElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEFuncGElement must be primary interface of feFuncG 
 PASS Stringification of feFuncG 
@@ -4292,7 +4292,7 @@ PASS SVGElement interface: feFuncG must inherit property "onwaiting" with the pr
 PASS SVGFEFuncBElement interface: existence and properties of interface object 
 PASS SVGFEFuncBElement interface object length 
 PASS SVGFEFuncBElement interface object name 
-FAIL SVGFEFuncBElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEFuncBElement.prototype expected "[object SVGFEFuncBElementPrototype]" but got "[object SVGFEFuncBElement]"
+PASS SVGFEFuncBElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncBElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEFuncBElement must be primary interface of feFuncB 
 PASS Stringification of feFuncB 
@@ -4382,7 +4382,7 @@ PASS SVGElement interface: feFuncB must inherit property "onwaiting" with the pr
 PASS SVGFEFuncAElement interface: existence and properties of interface object 
 PASS SVGFEFuncAElement interface object length 
 PASS SVGFEFuncAElement interface object name 
-FAIL SVGFEFuncAElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEFuncAElement.prototype expected "[object SVGFEFuncAElementPrototype]" but got "[object SVGFEFuncAElement]"
+PASS SVGFEFuncAElement interface: existence and properties of interface prototype object 
 PASS SVGFEFuncAElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEFuncAElement must be primary interface of feFuncA 
 PASS Stringification of feFuncA 
@@ -4472,7 +4472,7 @@ PASS SVGElement interface: feFuncA must inherit property "onwaiting" with the pr
 PASS SVGFECompositeElement interface: existence and properties of interface object 
 PASS SVGFECompositeElement interface object length 
 PASS SVGFECompositeElement interface object name 
-FAIL SVGFECompositeElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFECompositeElement.prototype expected "[object SVGFECompositeElementPrototype]" but got "[object SVGFECompositeElement]"
+PASS SVGFECompositeElement interface: existence and properties of interface prototype object 
 PASS SVGFECompositeElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFECompositeElement interface: constant SVG_FECOMPOSITE_OPERATOR_UNKNOWN on interface object 
 PASS SVGFECompositeElement interface: constant SVG_FECOMPOSITE_OPERATOR_UNKNOWN on interface prototype object 
@@ -4594,7 +4594,7 @@ PASS SVGElement interface: feComposite must inherit property "onwaiting" with th
 PASS SVGFEConvolveMatrixElement interface: existence and properties of interface object 
 PASS SVGFEConvolveMatrixElement interface object length 
 PASS SVGFEConvolveMatrixElement interface object name 
-FAIL SVGFEConvolveMatrixElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEConvolveMatrixElement.prototype expected "[object SVGFEConvolveMatrixElementPrototype]" but got "[object SVGFEConvolveMatrixElement]"
+PASS SVGFEConvolveMatrixElement interface: existence and properties of interface prototype object 
 PASS SVGFEConvolveMatrixElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEConvolveMatrixElement interface: constant SVG_EDGEMODE_UNKNOWN on interface object 
 PASS SVGFEConvolveMatrixElement interface: constant SVG_EDGEMODE_UNKNOWN on interface prototype object 
@@ -4715,7 +4715,7 @@ PASS SVGElement interface: feConvolveMatrix must inherit property "onwaiting" wi
 PASS SVGFEDiffuseLightingElement interface: existence and properties of interface object 
 PASS SVGFEDiffuseLightingElement interface object length 
 PASS SVGFEDiffuseLightingElement interface object name 
-FAIL SVGFEDiffuseLightingElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEDiffuseLightingElement.prototype expected "[object SVGFEDiffuseLightingElementPrototype]" but got "[object SVGFEDiffuseLightingElement]"
+PASS SVGFEDiffuseLightingElement interface: existence and properties of interface prototype object 
 PASS SVGFEDiffuseLightingElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEDiffuseLightingElement interface: attribute in1 
 PASS SVGFEDiffuseLightingElement interface: attribute surfaceScale 
@@ -4812,14 +4812,14 @@ PASS SVGElement interface: feDiffuseLighting must inherit property "onwaiting" w
 PASS SVGFEDistantLightElement interface: existence and properties of interface object 
 PASS SVGFEDistantLightElement interface object length 
 PASS SVGFEDistantLightElement interface object name 
-FAIL SVGFEDistantLightElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEDistantLightElement.prototype expected "[object SVGFEDistantLightElementPrototype]" but got "[object SVGFEDistantLightElement]"
+PASS SVGFEDistantLightElement interface: existence and properties of interface prototype object 
 PASS SVGFEDistantLightElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEDistantLightElement interface: attribute azimuth 
 PASS SVGFEDistantLightElement interface: attribute elevation 
 PASS SVGFEPointLightElement interface: existence and properties of interface object 
 PASS SVGFEPointLightElement interface object length 
 PASS SVGFEPointLightElement interface object name 
-FAIL SVGFEPointLightElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEPointLightElement.prototype expected "[object SVGFEPointLightElementPrototype]" but got "[object SVGFEPointLightElement]"
+PASS SVGFEPointLightElement interface: existence and properties of interface prototype object 
 PASS SVGFEPointLightElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEPointLightElement interface: attribute x 
 PASS SVGFEPointLightElement interface: attribute y 
@@ -4902,7 +4902,7 @@ PASS SVGElement interface: fePointLight must inherit property "onwaiting" with t
 PASS SVGFESpotLightElement interface: existence and properties of interface object 
 PASS SVGFESpotLightElement interface object length 
 PASS SVGFESpotLightElement interface object name 
-FAIL SVGFESpotLightElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFESpotLightElement.prototype expected "[object SVGFESpotLightElementPrototype]" but got "[object SVGFESpotLightElement]"
+PASS SVGFESpotLightElement interface: existence and properties of interface prototype object 
 PASS SVGFESpotLightElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFESpotLightElement interface: attribute x 
 PASS SVGFESpotLightElement interface: attribute y 
@@ -4995,7 +4995,7 @@ PASS SVGElement interface: feSpotLight must inherit property "onwaiting" with th
 PASS SVGFEDisplacementMapElement interface: existence and properties of interface object 
 PASS SVGFEDisplacementMapElement interface object length 
 PASS SVGFEDisplacementMapElement interface object name 
-FAIL SVGFEDisplacementMapElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEDisplacementMapElement.prototype expected "[object SVGFEDisplacementMapElementPrototype]" but got "[object SVGFEDisplacementMapElement]"
+PASS SVGFEDisplacementMapElement interface: existence and properties of interface prototype object 
 PASS SVGFEDisplacementMapElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEDisplacementMapElement interface: constant SVG_CHANNEL_UNKNOWN on interface object 
 PASS SVGFEDisplacementMapElement interface: constant SVG_CHANNEL_UNKNOWN on interface prototype object 
@@ -5107,7 +5107,7 @@ PASS SVGElement interface: feDisplacementMap must inherit property "onwaiting" w
 PASS SVGFEDropShadowElement interface: existence and properties of interface object 
 PASS SVGFEDropShadowElement interface object length 
 PASS SVGFEDropShadowElement interface object name 
-FAIL SVGFEDropShadowElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEDropShadowElement.prototype expected "[object SVGFEDropShadowElementPrototype]" but got "[object SVGFEDropShadowElement]"
+PASS SVGFEDropShadowElement interface: existence and properties of interface prototype object 
 PASS SVGFEDropShadowElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEDropShadowElement interface: attribute in1 
 PASS SVGFEDropShadowElement interface: attribute dx 
@@ -5207,7 +5207,7 @@ PASS SVGElement interface: feDropShadow must inherit property "onwaiting" with t
 PASS SVGFEFloodElement interface: existence and properties of interface object 
 PASS SVGFEFloodElement interface object length 
 PASS SVGFEFloodElement interface object name 
-FAIL SVGFEFloodElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEFloodElement.prototype expected "[object SVGFEFloodElementPrototype]" but got "[object SVGFEFloodElement]"
+PASS SVGFEFloodElement interface: existence and properties of interface prototype object 
 PASS SVGFEFloodElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEFloodElement interface: attribute x 
 PASS SVGFEFloodElement interface: attribute y 
@@ -5294,7 +5294,7 @@ PASS SVGElement interface: feFlood must inherit property "onwaiting" with the pr
 PASS SVGFEGaussianBlurElement interface: existence and properties of interface object 
 PASS SVGFEGaussianBlurElement interface object length 
 PASS SVGFEGaussianBlurElement interface object name 
-FAIL SVGFEGaussianBlurElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEGaussianBlurElement.prototype expected "[object SVGFEGaussianBlurElementPrototype]" but got "[object SVGFEGaussianBlurElement]"
+PASS SVGFEGaussianBlurElement interface: existence and properties of interface prototype object 
 PASS SVGFEGaussianBlurElement interface: existence and properties of interface prototype object's "constructor" property 
 FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface object assert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
 FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface prototype object assert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
@@ -5404,7 +5404,7 @@ PASS SVGElement interface: feGaussianBlur must inherit property "onwaiting" with
 PASS SVGFEImageElement interface: existence and properties of interface object 
 PASS SVGFEImageElement interface object length 
 PASS SVGFEImageElement interface object name 
-FAIL SVGFEImageElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEImageElement.prototype expected "[object SVGFEImageElementPrototype]" but got "[object SVGFEImageElement]"
+PASS SVGFEImageElement interface: existence and properties of interface prototype object 
 PASS SVGFEImageElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEImageElement interface: attribute preserveAspectRatio 
 FAIL SVGFEImageElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
@@ -5497,7 +5497,7 @@ PASS SVGElement interface: feImage must inherit property "onwaiting" with the pr
 PASS SVGFEMergeElement interface: existence and properties of interface object 
 PASS SVGFEMergeElement interface object length 
 PASS SVGFEMergeElement interface object name 
-FAIL SVGFEMergeElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEMergeElement.prototype expected "[object SVGFEMergeElementPrototype]" but got "[object SVGFEMergeElement]"
+PASS SVGFEMergeElement interface: existence and properties of interface prototype object 
 PASS SVGFEMergeElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEMergeElement interface: attribute x 
 PASS SVGFEMergeElement interface: attribute y 
@@ -5584,7 +5584,7 @@ PASS SVGElement interface: feMerge must inherit property "onwaiting" with the pr
 PASS SVGFEMergeNodeElement interface: existence and properties of interface object 
 PASS SVGFEMergeNodeElement interface object length 
 PASS SVGFEMergeNodeElement interface object name 
-FAIL SVGFEMergeNodeElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEMergeNodeElement.prototype expected "[object SVGFEMergeNodeElementPrototype]" but got "[object SVGFEMergeNodeElement]"
+PASS SVGFEMergeNodeElement interface: existence and properties of interface prototype object 
 PASS SVGFEMergeNodeElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEMergeNodeElement interface: attribute in1 
 PASS SVGFEMergeNodeElement must be primary interface of feMergeNode 
@@ -5663,7 +5663,7 @@ PASS SVGElement interface: feMergeNode must inherit property "onwaiting" with th
 PASS SVGFEMorphologyElement interface: existence and properties of interface object 
 PASS SVGFEMorphologyElement interface object length 
 PASS SVGFEMorphologyElement interface object name 
-FAIL SVGFEMorphologyElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEMorphologyElement.prototype expected "[object SVGFEMorphologyElementPrototype]" but got "[object SVGFEMorphologyElement]"
+PASS SVGFEMorphologyElement interface: existence and properties of interface prototype object 
 PASS SVGFEMorphologyElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEMorphologyElement interface: constant SVG_MORPHOLOGY_OPERATOR_UNKNOWN on interface object 
 PASS SVGFEMorphologyElement interface: constant SVG_MORPHOLOGY_OPERATOR_UNKNOWN on interface prototype object 
@@ -5767,7 +5767,7 @@ PASS SVGElement interface: feMorphology must inherit property "onwaiting" with t
 PASS SVGFEOffsetElement interface: existence and properties of interface object 
 PASS SVGFEOffsetElement interface object length 
 PASS SVGFEOffsetElement interface object name 
-FAIL SVGFEOffsetElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFEOffsetElement.prototype expected "[object SVGFEOffsetElementPrototype]" but got "[object SVGFEOffsetElement]"
+PASS SVGFEOffsetElement interface: existence and properties of interface prototype object 
 PASS SVGFEOffsetElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFEOffsetElement interface: attribute in1 
 PASS SVGFEOffsetElement interface: attribute dx 
@@ -5780,7 +5780,7 @@ PASS SVGFEOffsetElement interface: attribute result
 PASS SVGFESpecularLightingElement interface: existence and properties of interface object 
 PASS SVGFESpecularLightingElement interface object length 
 PASS SVGFESpecularLightingElement interface object name 
-FAIL SVGFESpecularLightingElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFESpecularLightingElement.prototype expected "[object SVGFESpecularLightingElementPrototype]" but got "[object SVGFESpecularLightingElement]"
+PASS SVGFESpecularLightingElement interface: existence and properties of interface prototype object 
 PASS SVGFESpecularLightingElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFESpecularLightingElement interface: attribute in1 
 PASS SVGFESpecularLightingElement interface: attribute surfaceScale 
@@ -5879,7 +5879,7 @@ PASS SVGElement interface: feSpecularLighting must inherit property "onwaiting" 
 PASS SVGFETileElement interface: existence and properties of interface object 
 PASS SVGFETileElement interface object length 
 PASS SVGFETileElement interface object name 
-FAIL SVGFETileElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFETileElement.prototype expected "[object SVGFETileElementPrototype]" but got "[object SVGFETileElement]"
+PASS SVGFETileElement interface: existence and properties of interface prototype object 
 PASS SVGFETileElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFETileElement interface: attribute in1 
 PASS SVGFETileElement interface: attribute x 
@@ -5968,7 +5968,7 @@ PASS SVGElement interface: feTile must inherit property "onwaiting" with the pro
 PASS SVGFETurbulenceElement interface: existence and properties of interface object 
 PASS SVGFETurbulenceElement interface object length 
 PASS SVGFETurbulenceElement interface object name 
-FAIL SVGFETurbulenceElement interface: existence and properties of interface prototype object assert_equals: class string of SVGFETurbulenceElement.prototype expected "[object SVGFETurbulenceElementPrototype]" but got "[object SVGFETurbulenceElement]"
+PASS SVGFETurbulenceElement interface: existence and properties of interface prototype object 
 PASS SVGFETurbulenceElement interface: existence and properties of interface prototype object's "constructor" property 
 PASS SVGFETurbulenceElement interface: constant SVG_TURBULENCE_TYPE_UNKNOWN on interface object 
 PASS SVGFETurbulenceElement interface: constant SVG_TURBULENCE_TYPE_UNKNOWN on interface prototype object 

@@ -3,7 +3,7 @@ PASS Tests that the video MediaStreamTrack objects are properly initialized
 PASS EventTarget interface: existence and properties of interface object 
 PASS EventTarget interface object length 
 PASS EventTarget interface object name 
-FAIL EventTarget interface: existence and properties of interface prototype object assert_equals: class string of EventTarget.prototype expected "[object EventTargetPrototype]" but got "[object EventTarget]"
+PASS EventTarget interface: existence and properties of interface prototype object 
 PASS EventTarget interface: existence and properties of interface prototype object's "constructor" property 
 PASS EventTarget interface: operation addEventListener(DOMString,EventListener,boolean) 
 PASS EventTarget interface: operation removeEventListener(DOMString,EventListener,boolean) 
@@ -11,7 +11,7 @@ PASS EventTarget interface: operation dispatchEvent(Event)
 PASS MediaStreamTrack interface: existence and properties of interface object 
 PASS MediaStreamTrack interface object length 
 PASS MediaStreamTrack interface object name 
-FAIL MediaStreamTrack interface: existence and properties of interface prototype object assert_equals: class string of MediaStreamTrack.prototype expected "[object MediaStreamTrackPrototype]" but got "[object MediaStreamTrack]"
+PASS MediaStreamTrack interface: existence and properties of interface prototype object 
 PASS MediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
 PASS MediaStreamTrack interface: attribute kind 
 PASS MediaStreamTrack interface: attribute id 

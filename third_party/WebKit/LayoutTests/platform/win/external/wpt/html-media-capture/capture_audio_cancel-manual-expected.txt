@@ -1,0 +1,30 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x210
+  LayoutBlockFlow {HTML} at (0,0) size 800x210
+    LayoutBlockFlow {BODY} at (8,16) size 784x186
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 592x19
+          text run at (0,0) width 592: "Clear all microphone permissions before running this test. If prompted for permission, please allow."
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 175x19
+          text run at (0,0) width 175: "After hitting the button below"
+      LayoutBlockFlow {UL} at (0,72) size 784x40
+        LayoutListItem {LI} at (40,0) size 744x20
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
+          LayoutText {#text} at (0,0) size 282x19
+            text run at (0,0) width 282: "capture an audio and then cancel the capturing;"
+        LayoutListItem {LI} at (40,20) size 744x20
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
+          LayoutText {#text} at (0,0) size 289x19
+            text run at (0,0) width 289: "capture an audio and then confirm the capturing."
+      LayoutBlockFlow {P} at (0,128) size 784x20
+        LayoutText {#text} at (0,0) size 453x19
+          text run at (0,0) width 453: "Test passes if there is no captured audio saved to the system's data storage."
+      LayoutBlockFlow (anonymous) at (0,164) size 784x22
+        LayoutFileUploadControl {INPUT} at (0,0) size 238x22 "No file chosen"
+          LayoutButton {INPUT} at (0,0) size 85x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+            LayoutBlockFlow (anonymous) at (8,3) size 69x16
+              LayoutText {#text} at (0,0) size 69x16
+                text run at (0,0) width 69: "Choose File"
+        LayoutText {#text} at (0,0) size 0x0

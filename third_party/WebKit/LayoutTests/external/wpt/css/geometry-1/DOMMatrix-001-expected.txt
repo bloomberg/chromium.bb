@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+PASS testConstructor0 
+PASS testConstructor1 
+FAIL testConstructor2 Failed to construct 'DOMMatrix': Failed to parse '0,0'.
+FAIL testConstructor3 Failed to construct 'DOMMatrix': Failed to parse '0,0'.
+FAIL testConstructor4 Failed to construct 'DOMMatrix': Failed to parse '2,0,0,0,0,2,0,0,0,0,1,0,10,10,0,1'.
+FAIL testConstructor5 Failed to construct 'DOMMatrix': Failed to parse '0,0'.
+PASS testConstructor6 
+FAIL testConstructor7 float64Array is not defined
+FAIL testConstructor8 assert_equals: Expected value for is2D is false expected false but got true
+FAIL testConstructor9 Failed to construct 'DOMMatrix': Failed to parse 'scale(2 2) translateX(5) translateY(5)'.
+FAIL testConstructor10 Failed to construct 'DOMMatrix': Failed to parse 'scale(2, 2), translateX(5)  ,translateY(5)'.
+FAIL testConstructor11 assert_throws: function "function () { new DOMMatrix('scale(2)translateX(5px)'); }" did not throw
+PASS testConstructor12 
+PASS testConstructor13 
+FAIL testConstructorIllegal0 assert_throws: function "function () { new DOMMatrixReadOnly(); }" did not throw
+FAIL testConstructorIllegal1 assert_throws: function "function () { new DOMMatrixReadOnly(string); }" threw object "SyntaxError: Failed to construct 'DOMMatrixReadOnly': Failed to parse 'scale(2, 2), translateX(5px) translateY(5px)'." ("SyntaxError") expected object "TypeError" ("TypeError")
+PASS testConstructorIllegal2 
+Harness: the test ran to completion.
+

@@ -7,7 +7,7 @@ PASS WorkerNavigator interface: existence and properties of interface object
 PASS MediaCapabilitiesInfo interface: existence and properties of interface object 
 PASS MediaCapabilitiesInfo interface object length 
 PASS MediaCapabilitiesInfo interface object name 
-FAIL MediaCapabilitiesInfo interface: existence and properties of interface prototype object assert_equals: class string of MediaCapabilitiesInfo.prototype expected "[object MediaCapabilitiesInfoPrototype]" but got "[object MediaCapabilitiesInfo]"
+PASS MediaCapabilitiesInfo interface: existence and properties of interface prototype object 
 PASS MediaCapabilitiesInfo interface: existence and properties of interface prototype object's "constructor" property 
 PASS MediaCapabilitiesInfo interface: attribute supported 
 PASS MediaCapabilitiesInfo interface: attribute smooth 
@@ -15,7 +15,7 @@ PASS MediaCapabilitiesInfo interface: attribute powerEfficient
 PASS MediaCapabilities interface: existence and properties of interface object 
 PASS MediaCapabilities interface object length 
 PASS MediaCapabilities interface object name 
-FAIL MediaCapabilities interface: existence and properties of interface prototype object assert_equals: class string of MediaCapabilities.prototype expected "[object MediaCapabilitiesPrototype]" but got "[object MediaCapabilities]"
+PASS MediaCapabilities interface: existence and properties of interface prototype object 
 PASS MediaCapabilities interface: existence and properties of interface prototype object's "constructor" property 
 FAIL MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
             fn.apply(obj, args);

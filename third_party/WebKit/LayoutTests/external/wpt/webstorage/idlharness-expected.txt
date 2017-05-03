@@ -4,7 +4,7 @@ PASS Window interface: attribute localStorage
 PASS Storage interface: existence and properties of interface object 
 PASS Storage interface object length 
 PASS Storage interface object name 
-FAIL Storage interface: existence and properties of interface prototype object assert_equals: class string of Storage.prototype expected "[object StoragePrototype]" but got "[object Storage]"
+PASS Storage interface: existence and properties of interface prototype object 
 PASS Storage interface: existence and properties of interface prototype object's "constructor" property 
 FAIL Storage interface: attribute length assert_true: property is not enumerable expected true got false
 FAIL Storage interface: operation key(unsigned long) assert_true: property is not enumerable expected true got false
@@ -27,7 +27,7 @@ PASS Storage interface: window.localStorage must inherit property "clear" with t
 PASS StorageEvent interface: existence and properties of interface object 
 PASS StorageEvent interface object length 
 PASS StorageEvent interface object name 
-FAIL StorageEvent interface: existence and properties of interface prototype object assert_equals: class string of StorageEvent.prototype expected "[object StorageEventPrototype]" but got "[object StorageEvent]"
+PASS StorageEvent interface: existence and properties of interface prototype object 
 PASS StorageEvent interface: existence and properties of interface prototype object's "constructor" property 
 PASS StorageEvent interface: attribute key 
 PASS StorageEvent interface: attribute oldValue 
