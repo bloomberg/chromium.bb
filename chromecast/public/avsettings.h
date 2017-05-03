@@ -165,9 +165,10 @@ class AvSettings {
   // Returns current active state.
   virtual ActiveState GetActiveState() = 0;
 
-  // Turns the screen on and sets the active input to the cast receiver.
+  // Turns the screen on. Sets the active input to the cast receiver iff
+  // switch_to_cast == true.
   // If successful, it must return true and fire ACTIVE_STATE_CHANGED.
-  virtual bool TurnActive() = 0;
+  virtual bool TurnActive(bool switch_to_cast) = 0;
 
   // Turns the screen off (or stand-by). If the device is connecting to HDMI
   // sinks, broadcasts a CEC standby message on the HDMI control bus to put all
