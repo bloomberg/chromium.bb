@@ -4,13 +4,60 @@
 
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 
+#include <map>
+#include <memory>
 #include <string>
 
+#include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_filter {
+namespace testing {
+
+namespace {
+
+constexpr const char kTestFieldTrialName[] = "FieldTrialNameShouldNotMatter";
+constexpr const char kTestExperimentGroupName[] = "GroupNameShouldNotMatter";
+
+class ScopedExperimentalStateToggle {
+ public:
+  ScopedExperimentalStateToggle(
+      base::FeatureList::OverrideState feature_state,
+      std::map<std::string, std::string> variation_params)
+      : field_trial_list_(nullptr /* entropy_provider */),
+        scoped_configurator_(nullptr) {
+    EXPECT_TRUE(base::AssociateFieldTrialParams(
+        kTestFieldTrialName, kTestExperimentGroupName, variation_params));
+    base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
+        kTestFieldTrialName, kTestExperimentGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list =
+        base::MakeUnique<base::FeatureList>();
+    feature_list->RegisterFieldTrialOverride(
+        kSafeBrowsingSubresourceFilter.name, feature_state, field_trial);
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  ~ScopedExperimentalStateToggle() {
+    variations::testing::ClearAllVariationParams();
+  }
+
+ private:
+  base::FieldTrialList field_trial_list_;
+
+  ScopedSubresourceFilterConfigurator scoped_configurator_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedExperimentalStateToggle);
+};
+
+}  // namespace
+}  // namespace testing
 
 TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
   const struct {
@@ -36,11 +83,11 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevel) {
     SCOPED_TRACE(::testing::Message("ActivationLevelParam = \"")
                  << test_case.activation_level_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        test_case.activation_level_param, kActivationScopeNoSites);
+        {{kActivationLevelParameterName, test_case.activation_level_param},
+         {kActivationScopeParameterName, kActivationScopeNoSites}});
 
     const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
@@ -75,11 +122,11 @@ TEST(SubresourceFilterFeaturesTest, ActivationScope) {
     SCOPED_TRACE(::testing::Message("ActivationScopeParam = \"")
                  << test_case.activation_scope_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        kActivationLevelDisabled, test_case.activation_scope_param);
+        {{kActivationLevelParameterName, kActivationLevelDisabled},
+         {kActivationScopeParameterName, test_case.activation_scope_param}});
 
     const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
@@ -128,11 +175,11 @@ TEST(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
        kActivationScopeAllSites, ActivationScope::NO_SITES}};
 
   for (const auto& test_case : kTestCases) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        test_case.activation_level_param, test_case.activation_scope_param);
+        {{kActivationLevelParameterName, test_case.activation_level_param},
+         {kActivationScopeParameterName, test_case.activation_scope_param}});
 
     const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
@@ -185,12 +232,12 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
     SCOPED_TRACE(::testing::Message("ActivationListParam = \"")
                  << test_case.activation_list_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        kActivationLevelDisabled, kActivationScopeNoSites,
-        test_case.activation_list_param);
+        {{kActivationLevelParameterName, kActivationLevelDisabled},
+         {kActivationScopeParameterName, kActivationScopeNoSites},
+         {kActivationListsParameterName, test_case.activation_list_param}});
 
     const auto active_configurations = GetActiveConfigurations();
     const Configuration& actual_configuration =
@@ -224,8 +271,7 @@ TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
     SCOPED_TRACE(::testing::Message("PerfMeasurementParam = \"")
                  << test_case.perf_measurement_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         {{kPerformanceMeasurementRateParameterName,
@@ -260,8 +306,7 @@ TEST(SubresourceFilterFeaturesTest, SuppressNotifications) {
     SCOPED_TRACE(::testing::Message("SuppressNotificationsParam = \"")
                  << test_case.suppress_notifications_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         {{kSuppressNotificationsParameterName,
@@ -296,8 +341,7 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
     SCOPED_TRACE(::testing::Message("WhitelistSiteOnReloadParam = \"")
                  << test_case.whitelist_site_on_reload_param << "\"");
 
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
         test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
                                   : base::FeatureList::OVERRIDE_USE_DEFAULT,
         {{kWhitelistSiteOnReloadParameterName,
@@ -311,4 +355,30 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
   }
 }
 
+TEST(SubresourceFilterFeaturesTest, RulesetFlavor) {
+  const struct {
+    bool feature_enabled;
+    const char* ruleset_flavor_param;
+    const char* expected_ruleset_flavor_value;
+  } kTestCases[] = {
+      {false, "", ""}, {false, "a", ""}, {false, "test value", ""},
+      {true, "", ""},  {true, "a", "a"}, {true, "test value", "test value"}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("Flavor = \"")
+                 << test_case.ruleset_flavor_param << "\"");
+
+    testing::ScopedExperimentalStateToggle scoped_experimental_state(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        {{kRulesetFlavorParameterName, test_case.ruleset_flavor_param}});
+
+    const auto active_configurations = GetActiveConfigurations();
+    const Configuration& actual_configuration =
+        active_configurations->the_one_and_only();
+    EXPECT_EQ(std::string(test_case.expected_ruleset_flavor_value),
+              actual_configuration.ruleset_flavor);
+  }
+}
 }  // namespace subresource_filter

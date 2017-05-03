@@ -85,6 +85,13 @@ class SubresourceFilterMockComponentUpdateService
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterMockComponentUpdateService);
 };
 
+subresource_filter::Configuration CreateConfigUsingRulesetFlavor(
+    const char* ruleset_flavor) {
+  subresource_filter::Configuration config;
+  config.ruleset_flavor = ruleset_flavor;
+  return config;
+}
+
 }  //  namespace
 
 namespace component_updater {
@@ -166,11 +173,8 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
   void ExpectInstallerTag(const char* expected_tag,
                           const char* ruleset_flavor) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-    subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-        scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                              {{subresource_filter::kRulesetFlavorParameterName,
-                                ruleset_flavor}});
+    subresource_filter::testing::ScopedSubresourceFilterConfigurator
+        scoped_configuration(CreateConfigUsingRulesetFlavor(ruleset_flavor));
     EXPECT_EQ(expected_tag,
               SubresourceFilterComponentInstallerTraits::GetInstallerTag());
   }
@@ -190,11 +194,8 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
 TEST_F(SubresourceFilterComponentInstallerTest,
        TestComponentRegistrationWhenFeatureDisabled) {
-  base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-                            subresource_filter::kActivationLevelEnabled,
-                            subresource_filter::kActivationScopeNoSites);
+      scoped_feature(base::FeatureList::OVERRIDE_DISABLE_FEATURE);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_)).Times(0);
@@ -204,11 +205,8 @@ TEST_F(SubresourceFilterComponentInstallerTest,
 
 TEST_F(SubresourceFilterComponentInstallerTest,
        TestComponentRegistrationWhenFeatureEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
   subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                            subresource_filter::kActivationLevelDisabled,
-                            subresource_filter::kActivationScopeNoSites);
+      scoped_feature(base::FeatureList::OVERRIDE_ENABLE_FEATURE);
   std::unique_ptr<SubresourceFilterMockComponentUpdateService>
       component_updater(new SubresourceFilterMockComponentUpdateService());
   EXPECT_CALL(*component_updater, RegisterComponent(testing::_))
@@ -274,10 +272,8 @@ TEST_F(SubresourceFilterComponentInstallerTest, InstallerTag) {
 }
 
 TEST_F(SubresourceFilterComponentInstallerTest, InstallerAttributesDefault) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                            std::map<std::string, std::string>());
+  subresource_filter::testing::ScopedSubresourceFilterConfigurator
+      scoped_configuration((subresource_filter::Configuration()));
   EXPECT_EQ(update_client::InstallerAttributes(), GetInstallerAttributes());
 }
 
@@ -285,25 +281,10 @@ TEST_F(SubresourceFilterComponentInstallerTest, InstallerAttributesCustomTag) {
   constexpr char kTagKey[] = "tag";
   constexpr char kTagValue[] = "a";
 
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          {{subresource_filter::kRulesetFlavorParameterName, kTagValue}});
+  subresource_filter::testing::ScopedSubresourceFilterConfigurator
+      scoped_configuration(CreateConfigUsingRulesetFlavor(kTagValue));
   EXPECT_EQ(update_client::InstallerAttributes({{kTagKey, kTagValue}}),
             GetInstallerAttributes());
-}
-
-TEST_F(SubresourceFilterComponentInstallerTest,
-       InstallerAttributesFeatureDisabled) {
-  constexpr char kTagValue[] = "test_value";
-
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
-      scoped_feature_toggle(
-          base::FeatureList::OVERRIDE_USE_DEFAULT,
-          {{subresource_filter::kRulesetFlavorParameterName, kTagValue}});
-  EXPECT_EQ(update_client::InstallerAttributes(), GetInstallerAttributes());
 }
 
 }  // namespace component_updater

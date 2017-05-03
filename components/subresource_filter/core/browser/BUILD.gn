@@ -51,6 +51,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/subresource_filter/core/common:test_support",
     "//components/subresource_filter/core/common/proto",
+    "//components/variations",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
