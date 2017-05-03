@@ -36,6 +36,7 @@
 #include "components/update_client/update_engine.h"
 #include "components/update_client/update_response.h"
 #include "components/update_client/utils.h"
+#include "third_party/libxml/src/include/libxml/parser.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -77,7 +78,10 @@ UpdateClientImpl::UpdateClientImpl(
           crx_downloader_factory,
           ping_manager_.get(),
           base::Bind(&UpdateClientImpl::NotifyObservers,
-                     base::Unretained(this)))) {}
+                     base::Unretained(this)))) {
+  // Temporary change while investigating crbug.com/717889.
+  xmlInitParser();
+}
 
 UpdateClientImpl::~UpdateClientImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
