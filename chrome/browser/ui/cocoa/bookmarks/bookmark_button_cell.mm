@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/grit/generated_resources.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -23,15 +24,15 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-// Padding on the right side of the arrow icon.
-const int kHierarchyButtonRightPadding = 4;
+// Padding on the trailing side of the arrow icon.
+const int kHierarchyButtonTrailingPadding = 4;
 
-// Padding on the left side of the arrow icon.
-const int kHierarchyButtonLeftPadding = 11;
+// Padding on the leading side of the arrow icon.
+const int kHierarchyButtonLeadingPadding = 11;
 
 const int kIconTextSpacer = 4;
-const int kTextRightPadding = 4;
-const int kIconLeftPadding = 4;
+const int kTrailingPadding = 4;
+const int kIconLeadingPadding = 4;
 
 const int kDefaultFontSize = 12;
 
@@ -118,16 +119,16 @@ const CGFloat kKernAmount = 0.2;
                       image:(NSImage*)image {
   NSString* title =
       [self cleanTitle:base::SysUTF16ToNSString(node->GetTitle())];
-  CGFloat width = kIconLeftPadding + [image size].width;
+  CGFloat width = kIconLeadingPadding + [image size].width;
   if ([title length] > 0) {
     CGSize titleSize = [title sizeWithAttributes:@{
       NSParagraphStyleAttributeName : [self paragraphStyleForBookmarkBarCell],
       NSKernAttributeName : @(kKernAmount),
       NSFontAttributeName : [self fontForBookmarkBarCell],
     }];
-    width += kIconTextSpacer + std::ceil(titleSize.width) + kTextRightPadding;
+    width += kIconTextSpacer + std::ceil(titleSize.width) + kTrailingPadding;
   } else {
-    width += kIconLeftPadding;
+    width += kTrailingPadding;
   }
   return width;
 }
@@ -195,7 +196,7 @@ const CGFloat kKernAmount = 0.2;
   [self setButtonType:NSMomentaryPushInButton];
   [self setShowsBorderOnlyWhileMouseInside:YES];
   [self setControlSize:NSSmallControlSize];
-  [self setAlignment:NSLeftTextAlignment];
+  [self setAlignment:NSNaturalTextAlignment];
   [self setFont:[[self class] fontForBookmarkBarCell]];
   [self setBordered:NO];
   [self setBezeled:NO];
@@ -233,12 +234,12 @@ const CGFloat kKernAmount = 0.2;
                       image:(NSImage*)image {
   title = [[self class] cleanTitle:title];
   if ([title length] && ![self isOffTheSideButtonCell]) {
-    [self setImagePosition:NSImageLeft];
+    [self setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
     [self setTitle:title];
   } else if ([self isFolderButtonCell]) {
     // Left-align icons for bookmarks within folders, regardless of whether
     // there is a title.
-    [self setImagePosition:NSImageLeft];
+    [self setImagePosition:cocoa_l10n_util::LeadingCellImagePosition()];
   } else {
     // For bookmarks without a title that aren't visible directly in the
     // bookmarks bar, squeeze things tighter by displaying only the image.
@@ -328,8 +329,11 @@ const CGFloat kKernAmount = 0.2;
   drawFolderArrow_ = draw;
   if (draw && !arrowImage_) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    arrowImage_.reset(
-        [rb.GetNativeImageNamed(IDR_MENU_HIERARCHY_ARROW).ToNSImage() retain]);
+    NSImage* image =
+        rb.GetNativeImageNamed(IDR_MENU_HIERARCHY_ARROW).ToNSImage();
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+      image = cocoa_l10n_util::FlippedImage(image);
+    arrowImage_.reset([image retain]);
   }
 }
 
@@ -365,38 +369,51 @@ const CGFloat kKernAmount = 0.2;
   NSSize cellSize = NSZeroSize;
   // Return the space needed to display the image and title, with a little
   // distance between them.
-  cellSize = NSMakeSize(kIconLeftPadding + [[self image] size].width,
+  cellSize = NSMakeSize(kIconLeadingPadding + [[self image] size].width,
                         bookmarks::kBookmarkButtonHeight);
   NSString* title = [self visibleTitle];
   if ([title length] > 0) {
     CGFloat textWidth =
         [title sizeWithAttributes:[self titleTextAttributes]].width;
-    cellSize.width +=
-        kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
+    cellSize.width += kIconTextSpacer + std::ceil(textWidth) + kTrailingPadding;
   } else {
-    // Make buttons without visible titles 20pts wide (18 plus padding).
-    cellSize.width += kIconLeftPadding;
+    cellSize.width += kIconLeadingPadding;
   }
 
   if (drawFolderArrow_) {
     cellSize.width += [arrowImage_ size].width +
-                      kHierarchyButtonLeftPadding +
-                      kHierarchyButtonRightPadding;
+                      kHierarchyButtonLeadingPadding +
+                      kHierarchyButtonTrailingPadding;
   }
   return cellSize;
 }
 
 - (NSRect)imageRectForBounds:(NSRect)theRect {
   NSRect imageRect = [super imageRectForBounds:theRect];
-  // Add a little space between the image and the button's left edge, but only
-  // if there's a visible title.
+  const CGFloat inset = [self insetInView:[self controlView]];
   imageRect.origin.y -= 1;
-  imageRect.origin.x = kIconLeftPadding;
+  imageRect.origin.x =
+      cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+          ? NSMaxX(theRect) - kIconLeadingPadding - NSWidth(imageRect) + inset
+          : kIconLeadingPadding;
   return imageRect;
 }
 
-- (CGFloat)textStartXOffset {
-  return kIconLeftPadding + [[self image] size].width + kIconTextSpacer;
+- (NSRect)titleRectForBounds:(NSRect)theRect {
+  NSRect textRect = [super titleRectForBounds:theRect];
+  NSRect imageRect = [self imageRectForBounds:theRect];
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    textRect.origin.x = kTrailingPadding;
+    if (drawFolderArrow_) {
+      textRect.origin.x +=
+          [arrowImage_ size].width + kHierarchyButtonTrailingPadding;
+    }
+    textRect.size.width =
+        NSMinX(imageRect) - textRect.origin.x - kIconTextSpacer;
+  } else {
+    textRect.origin.x = NSMaxX(imageRect) + kIconTextSpacer;
+  }
+  return textRect;
 }
 
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
@@ -428,8 +445,10 @@ const CGFloat kKernAmount = 0.2;
     NSRect imageRect = NSZeroRect;
     imageRect.size = [arrowImage_ size];
     const CGFloat kArrowOffset = 1.0;  // Required for proper centering.
-    CGFloat dX =
-        NSWidth(cellFrame) - NSWidth(imageRect) - kHierarchyButtonRightPadding;
+    CGFloat dX = cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+                     ? kHierarchyButtonTrailingPadding
+                     : NSWidth(cellFrame) - NSWidth(imageRect) -
+                           kHierarchyButtonTrailingPadding;
     CGFloat dY = (NSHeight(cellFrame) / 2.0) - (NSHeight(imageRect) / 2.0) +
         kArrowOffset;
     NSRect drawRect = NSOffsetRect(imageRect, dX, dY);

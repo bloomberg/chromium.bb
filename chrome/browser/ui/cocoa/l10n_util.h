@@ -52,6 +52,13 @@ bool ShouldDoExperimentalRTLLayout();
 // OSes would make Chrome stick out.
 bool ShouldFlipWindowControlsInRTL();
 
+// Returns NSImageLeading when available (10.12+), otherwise
+// NSImageLeft for LTR and NSImageRight in RTL.
+NSCellImagePosition LeadingCellImagePosition();
+// Returns NSImageTrailing when available (10.12+), otherwise
+// NSImageRight for LTR and NSImageLeft in RTL.
+NSCellImagePosition TrailingCellImagePosition();
+
 // Returns an autoreleased image containing |image| flipped
 // across the x axis.
 NSImage* FlippedImage(NSImage* image);
