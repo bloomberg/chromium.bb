@@ -28,7 +28,7 @@ void PlatformSensorProviderMac::CreateSensorInternal(
   switch (type) {
     case mojom::SensorType::AMBIENT_LIGHT: {
       scoped_refptr<PlatformSensor> sensor =
-          new PlatformSensorAmbientLightMac(type, std::move(mapping), this);
+          new PlatformSensorAmbientLightMac(std::move(mapping), this);
       callback.Run(std::move(sensor));
       break;
     }
