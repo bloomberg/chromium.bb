@@ -183,9 +183,9 @@ function test()
                     return InspectorTest.uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber + 10, 0);
                 },
 
-                uiLocationToRawLocations: function(uiSourceCode, lineNumber)
+                uiLocationToRawLocation: function(uiSourceCode, lineNumber)
                 {
-                    return [new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCode.url(), lineNumber - 10, 0)];
+                    return new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCode.url(), lineNumber - 10, 0);
                 },
 
                 isIdentity: function()
@@ -255,9 +255,9 @@ function test()
                         return uiSourceCodeB.uiLocation(rawLocation.lineNumber + 10, 0);
                     },
 
-                    uiLocationToRawLocations: function(uiSourceCode, lineNumber)
+                    uiLocationToRawLocation: function(uiSourceCode, lineNumber)
                     {
-                        return [new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCodeA.url(), lineNumber - 10, 0)];
+                        return new SDK.DebuggerModel.Location(mockTarget.debuggerModel, uiSourceCodeA.url(), lineNumber - 10, 0);
                     },
 
                     isIdentity: function()

@@ -35,11 +35,11 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
             return InspectorTest.uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber, 0);
         },
 
-        uiLocationToRawLocations: function(uiSourceCode, lineNumber)
+        uiLocationToRawLocation: function(uiSourceCode, lineNumber)
         {
             if (!InspectorTest.uiSourceCodes[uiSourceCode.url()])
-                return [];
-            return [new SDK.DebuggerModel.Location(target.debuggerModel, uiSourceCode.url(), lineNumber, 0)];
+                return null;
+            return new SDK.DebuggerModel.Location(target.debuggerModel, uiSourceCode.url(), lineNumber, 0);
         },
 
         isIdentity: function()
