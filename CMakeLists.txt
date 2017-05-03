@@ -9,6 +9,13 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 cmake_minimum_required(VERSION 3.5)
+
+if (NOT EMSCRIPTEN)
+  if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+  endif ()
+endif ()
+
 project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
