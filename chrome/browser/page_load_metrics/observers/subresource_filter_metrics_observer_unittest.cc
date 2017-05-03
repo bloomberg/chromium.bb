@@ -153,11 +153,11 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
 TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  SimulateLoadedResource(
-      {GURL(), -1 /* frame_tree_node_id */, false /* was_cached */,
-       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 40 /* raw_body_bytes */,
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -166,14 +166,13 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
-  SimulateLoadedResource(
-      {GURL(), -1 /* frame_tree_node_id */, false /* was_cached */,
-       1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 20 /* raw_body_bytes */,
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
-  SimulateLoadedResource({GURL(), -1 /* frame_tree_node_id */,
-                          true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
+  SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
                           nullptr /* data_reduction_proxy_data */,
                           content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
@@ -252,11 +251,11 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
 
   SimulateMediaPlayed();
 
-  SimulateLoadedResource(
-      {GURL(), -1 /* frame_tree_node_id */, false /* was_cached */,
-       1024 * 40 /* raw_body_bytes */, 0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 40 /* raw_body_bytes */,
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -265,14 +264,13 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
-  SimulateLoadedResource(
-      {GURL(), -1 /* frame_tree_node_id */, false /* was_cached */,
-       1024 * 20 /* raw_body_bytes */, 0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 20 /* raw_body_bytes */,
+                          0 /* original_network_content_length */,
+                          nullptr /* data_reduction_proxy_data */,
+                          content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});
 
-  SimulateLoadedResource({GURL(), -1 /* frame_tree_node_id */,
-                          true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
+  SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
                           nullptr /* data_reduction_proxy_data */,
                           content::ResourceType::RESOURCE_TYPE_MAIN_FRAME});

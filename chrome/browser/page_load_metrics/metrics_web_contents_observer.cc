@@ -274,8 +274,6 @@ void MetricsWebContentsObserver::OnRequestStarted(
 }
 
 void MetricsWebContentsObserver::OnRequestComplete(
-    const GURL& url,
-    int frame_tree_node_id,
     const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
     bool was_cached,
@@ -288,8 +286,7 @@ void MetricsWebContentsObserver::OnRequestComplete(
       GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
   if (tracker) {
     ExtraRequestCompleteInfo extra_request_complete_info(
-        url, frame_tree_node_id, was_cached, raw_body_bytes,
-        was_cached ? 0 : original_content_length,
+        was_cached, raw_body_bytes, was_cached ? 0 : original_content_length,
         std::move(data_reduction_proxy_data), resource_type);
     tracker->OnLoadedResource(extra_request_complete_info);
   }
@@ -313,10 +310,8 @@ MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
 
 void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() && committed_load_) {
-    committed_load_->DidFinishSubFrameNavigation(navigation_handle);
+  if (!navigation_handle->IsInMainFrame())
     return;
-  }
 
   std::unique_ptr<PageLoadTracker> finished_nav(
       std::move(provisional_loads_[navigation_handle]));

@@ -155,14 +155,14 @@ void PageLoadMetricsObserverTestHarness::SimulateStartedResource(
 
 void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info) {
-  observer_->OnRequestComplete(
-      info.url, info.frame_tree_node_id, content::GlobalRequestID(),
-      content::RESOURCE_TYPE_SCRIPT, info.was_cached,
-      info.data_reduction_proxy_data
-          ? info.data_reduction_proxy_data->DeepCopy()
-          : nullptr,
-      info.raw_body_bytes, info.original_network_content_length,
-      base::TimeTicks::Now());
+  observer_->OnRequestComplete(content::GlobalRequestID(),
+                               content::RESOURCE_TYPE_SCRIPT, info.was_cached,
+                               info.data_reduction_proxy_data
+                                   ? info.data_reduction_proxy_data->DeepCopy()
+                                   : nullptr,
+                               info.raw_body_bytes,
+                               info.original_network_content_length,
+                               base::TimeTicks::Now());
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateInputEvent(
