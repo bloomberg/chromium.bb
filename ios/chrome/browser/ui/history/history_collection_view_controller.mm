@@ -108,20 +108,14 @@ const CGFloat kSeparatorInset = 10;
 // the empty string, all history is fetched.
 - (void)fetchHistoryForQuery:(NSString*)query
                  priorToTime:(const base::Time&)time;
-// Updates various elements after history items have been deleted from the
-// CollectionView.
-- (void)updateCollectionViewAfterDeletingEntries;
 // Updates header section to provide relevant information about the currently
 // displayed history entries.
 - (void)updateEntriesStatusMessage;
 // Removes selected items from the visible collection, but does not delete them
 // from browser history.
 - (void)removeSelectedItemsFromCollection;
-// Selects all items in the collection that are not included in entries.
+// Removes all items in the collection that are not included in entries.
 - (void)filterForHistoryEntries:(NSArray*)entries;
-// Deletes all items in the collection which indexes are included in indexArray,
-// needs to be run inside a performBatchUpdates block.
-- (void)deleteItemsFromCollectionViewModelWithIndex:(NSArray*)indexArray;
 // Adds loading indicator to the top of the history collection, if one is not
 // already present.
 - (void)addLoadingIndicator;
@@ -376,20 +370,16 @@ const CGFloat kSeparatorInset = 10;
       }
     }
     [self.delegate historyCollectionViewControllerDidChangeEntries:self];
-    if (([self isSearching] && [searchQuery length] > 0 &&
-         [self.currentQuery isEqualToString:searchQuery]) ||
-        self.filterQueryResult) {
-      // If in search mode, filter out entries that are not
-      // part of the search result.
-      [self filterForHistoryEntries:filterResults];
-      NSArray* deletedIndexPaths =
-          self.collectionView.indexPathsForSelectedItems;
-      [self deleteItemsFromCollectionViewModelWithIndex:deletedIndexPaths];
-      self.filterQueryResult = NO;
-    }
   }
       completion:^(BOOL) {
-        [self updateCollectionViewAfterDeletingEntries];
+        if (([self isSearching] && [searchQuery length] > 0 &&
+             [self.currentQuery isEqualToString:searchQuery]) ||
+            self.filterQueryResult) {
+          // If in search mode, filter out entries that are not
+          // part of the search result.
+          [self filterForHistoryEntries:filterResults];
+          self.filterQueryResult = NO;
+        }
       }];
 }
 
@@ -574,15 +564,6 @@ const CGFloat kSeparatorInset = 10;
   _historyServiceFacade->QueryOtherFormsOfBrowsingHistory();
 }
 
-- (void)updateCollectionViewAfterDeletingEntries {
-  // If only the header section remains, there are no history entries.
-  if ([self.collectionViewModel numberOfSections] == 1) {
-    self.entriesType = NO_ENTRIES;
-  }
-  [self updateEntriesStatusMessage];
-  [self.delegate historyCollectionViewControllerDidChangeEntries:self];
-}
-
 - (void)updateEntriesStatusMessage {
   CollectionViewItem* entriesStatusItem = nil;
   if (!self.hasHistoryEntries) {
@@ -637,25 +618,26 @@ const CGFloat kSeparatorInset = 10;
 - (void)removeSelectedItemsFromCollection {
   NSArray* deletedIndexPaths = self.collectionView.indexPathsForSelectedItems;
   [self.collectionView performBatchUpdates:^{
-    [self deleteItemsFromCollectionViewModelWithIndex:deletedIndexPaths];
-  }
-      completion:^(BOOL) {
-        [self updateCollectionViewAfterDeletingEntries];
-      }];
-}
+    [self collectionView:self.collectionView
+        willDeleteItemsAtIndexPaths:deletedIndexPaths];
+    [self.collectionView deleteItemsAtIndexPaths:deletedIndexPaths];
 
-- (void)deleteItemsFromCollectionViewModelWithIndex:(NSArray*)indexArray {
-  [self collectionView:self.collectionView
-      willDeleteItemsAtIndexPaths:indexArray];
-  [self.collectionView deleteItemsAtIndexPaths:indexArray];
-
-  // Remove any empty sections, except the header section.
-  for (int section = self.collectionView.numberOfSections - 1; section > 0;
-       --section) {
-    if (![self.collectionViewModel numberOfItemsInSection:section]) {
-      [self.entryInserter removeSection:section];
+    // Remove any empty sections, except the header section.
+    for (int section = self.collectionView.numberOfSections - 1; section > 0;
+         --section) {
+      if (![self.collectionViewModel numberOfItemsInSection:section]) {
+        [self.entryInserter removeSection:section];
+      }
     }
   }
+      completion:^(BOOL) {
+        // If only the header section remains, there are no history entries.
+        if ([self.collectionViewModel numberOfSections] == 1) {
+          self.entriesType = NO_ENTRIES;
+        }
+        [self updateEntriesStatusMessage];
+        [self.delegate historyCollectionViewControllerDidChangeEntries:self];
+      }];
 }
 
 - (void)filterForHistoryEntries:(NSArray*)entries {
@@ -683,6 +665,7 @@ const CGFloat kSeparatorInset = 10;
       }
     }
   }
+  [self removeSelectedItemsFromCollection];
 }
 
 - (void)addLoadingIndicator {
