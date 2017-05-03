@@ -27,10 +27,10 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

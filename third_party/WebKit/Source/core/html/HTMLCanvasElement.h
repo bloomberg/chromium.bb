@@ -30,7 +30,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMTypedArray.h"
@@ -42,6 +41,7 @@
 #include "core/html/canvas/CanvasRenderingContextHost.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "core/page/PageVisibilityObserver.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasSurfaceLayerBridge.h"

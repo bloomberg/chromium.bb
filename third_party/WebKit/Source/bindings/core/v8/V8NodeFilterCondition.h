@@ -31,8 +31,8 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
 

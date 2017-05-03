@@ -26,8 +26,8 @@
 #ifndef WebGLSharedObject_h
 #define WebGLSharedObject_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLObject.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

@@ -26,9 +26,9 @@
 #ifndef WebGLFramebuffer_h
 #define WebGLFramebuffer_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLSharedObject.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 
 namespace gpu {
 namespace gles2 {

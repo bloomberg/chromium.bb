@@ -27,7 +27,6 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
@@ -36,6 +35,7 @@
 #include "core/events/EventTarget.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/geometry/LayoutRect.h"
 #include "public/platform/WebFocusType.h"
 

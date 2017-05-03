@@ -32,13 +32,13 @@
 #define MIDIPort_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

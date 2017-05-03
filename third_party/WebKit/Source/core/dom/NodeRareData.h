@@ -22,9 +22,9 @@
 #ifndef NodeRareData_h
 #define NodeRareData_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/NodeListsNodeData.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 

@@ -31,7 +31,6 @@
 #define StyleEngine_h
 
 #include <memory>
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/css/ActiveStyleSheets.h"
 #include "core/css/CSSFontSelectorClient.h"
@@ -44,6 +43,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/StyleEngineContext.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"

@@ -30,10 +30,10 @@
 
 #include "core/dom/NodeRareData.h"
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
 #include "core/page/Page.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

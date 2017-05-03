@@ -27,10 +27,10 @@
 #ifndef PopStateEvent_h
 #define PopStateEvent_h
 
-#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/events/Event.h"
 #include "core/events/PopStateEventInit.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

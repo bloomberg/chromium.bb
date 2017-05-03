@@ -31,7 +31,7 @@
 #ifndef ScriptString_h
 #define ScriptString_h
 
-#include "bindings/core/v8/SharedPersistent.h"
+#include "platform/bindings/SharedPersistent.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"

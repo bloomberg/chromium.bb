@@ -32,10 +32,10 @@
 #define MutationObserver_h
 
 #include "base/gtest_prod_util.h"
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Vector.h"

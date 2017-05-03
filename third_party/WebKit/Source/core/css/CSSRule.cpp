@@ -21,10 +21,10 @@
 
 #include "core/css/CSSRule.h"
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
+#include "platform/bindings/ScriptWrappableVisitor.h"
 
 namespace blink {
 

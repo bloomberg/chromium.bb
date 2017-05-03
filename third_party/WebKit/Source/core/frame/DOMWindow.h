@@ -5,12 +5,12 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/Frame.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Forward.h"

@@ -27,8 +27,8 @@
 #define V8StringResource_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/StringResource.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/StringResource.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/AtomicString.h"

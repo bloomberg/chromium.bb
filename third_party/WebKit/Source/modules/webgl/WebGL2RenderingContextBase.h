@@ -5,10 +5,10 @@
 #ifndef WebGL2RenderingContextBase_h
 #define WebGL2RenderingContextBase_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
+#include <memory>
 #include "modules/webgl/WebGLExtension.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
-#include <memory>
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 

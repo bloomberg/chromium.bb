@@ -31,8 +31,8 @@
 #ifndef HTMLTemplateElement_h
 #define HTMLTemplateElement_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/html/HTMLElement.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 
