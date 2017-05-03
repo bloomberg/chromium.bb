@@ -70,6 +70,9 @@ const float kDragAndDropProxyScale = 1.5f;
 // The opacity represents that this partially disappeared item will get removed.
 const float kDraggedImageOpacity = 0.5f;
 
+// The time threshold before an item may be dragged by touch events.
+const int kTouchDragTimeThresholdMs = 300;
+
 namespace {
 
 // A class to temporarily disable a given bounds animator.
@@ -244,28 +247,7 @@ ShelfView::ShelfView(ShelfModel* model,
       wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
       view_model_(new views::ViewModel),
-      first_visible_index_(0),
-      last_visible_index_(-1),
-      overflow_button_(nullptr),
-      owner_overflow_bubble_(nullptr),
       tooltip_(this),
-      drag_pointer_(NONE),
-      drag_view_(nullptr),
-      start_drag_index_(-1),
-      context_menu_id_(0),
-      cancelling_drag_model_changed_(false),
-      last_hidden_index_(0),
-      closing_event_time_(base::TimeTicks()),
-      drag_and_drop_item_pinned_(false),
-      drag_and_drop_shelf_id_(0),
-      drag_replaced_view_(nullptr),
-      dragged_off_shelf_(false),
-      snap_back_from_rip_off_view_(nullptr),
-      overflow_mode_(false),
-      main_shelf_(nullptr),
-      dragged_off_from_overflow_to_shelf_(false),
-      is_repost_event_on_same_item_(false),
-      last_pressed_index_(-1),
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(wm_shelf_);
@@ -679,6 +661,9 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   is_repost_event_on_same_item_ =
       IsRepostEvent(event) && (last_pressed_index_ == index);
 
+  if (pointer == TOUCH)
+    touch_press_time_ = base::TimeTicks::Now();
+
   CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
   drag_view_ = static_cast<ShelfButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
@@ -693,13 +678,9 @@ void ShelfView::PointerPressedOnButton(views::View* view,
 void ShelfView::PointerDraggedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {
-  // To prepare all drag types (moving an item in the shelf and dragging off),
-  // we should check the x-axis and y-axis offset.
-  if (!dragging() && drag_view_ &&
-      ((std::abs(event.x() - drag_origin_.x()) >= kMinimumDragDistance) ||
-       (std::abs(event.y() - drag_origin_.y()) >= kMinimumDragDistance))) {
+  if (CanPrepareForDrag(pointer, event))
     PrepareForDrag(pointer, event);
-  }
+
   if (drag_pointer_ == pointer)
     ContinueDrag(event);
 }
@@ -1761,6 +1742,29 @@ int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
       bounds.y() - coordinate.y(), coordinate.x() - bounds.right(),
       bounds.x() - coordinate.x());
   return distance > 0 ? distance : 0;
+}
+
+bool ShelfView::CanPrepareForDrag(Pointer pointer,
+                                  const ui::LocatedEvent& event) {
+  // Bail if dragging has already begun, or if no item has been pressed.
+  if (dragging() || !drag_view_)
+    return false;
+
+  // Dragging only begins once the pointer has travelled a minimum distance.
+  if ((std::abs(event.x() - drag_origin_.x()) < kMinimumDragDistance) &&
+      (std::abs(event.y() - drag_origin_.y()) < kMinimumDragDistance)) {
+    return false;
+  }
+
+  // Touch dragging only begins after a dealy from the press event. This
+  // prevents accidental dragging on swipe or scroll gestures.
+  if (pointer == TOUCH &&
+      (base::TimeTicks::Now() - touch_press_time_) <
+          base::TimeDelta::FromMilliseconds(kTouchDragTimeThresholdMs)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace ash
