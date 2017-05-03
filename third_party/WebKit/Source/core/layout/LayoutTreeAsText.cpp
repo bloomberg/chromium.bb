@@ -818,13 +818,17 @@ String ExternalRepresentation(LocalFrame* frame,
     return String();
 
   PrintContext print_context(frame);
-  if (behavior & kLayoutAsTextPrintingMode) {
+  bool is_text_printing_mode = !!(behavior & kLayoutAsTextPrintingMode);
+  if (is_text_printing_mode) {
     FloatSize size(ToLayoutBox(layout_object)->Size());
     print_context.BeginPrintMode(size.Width(), size.Height());
   }
 
-  return ExternalRepresentation(ToLayoutBox(layout_object), behavior,
-                                marked_layer);
+  String representation = ExternalRepresentation(ToLayoutBox(layout_object),
+                                                 behavior, marked_layer);
+  if (is_text_printing_mode)
+    print_context.EndPrintMode();
+  return representation;
 }
 
 String ExternalRepresentation(Element* element, LayoutAsTextBehavior behavior) {

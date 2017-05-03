@@ -31,11 +31,11 @@
 namespace blink {
 
 class Element;
-class LocalFrame;
 class FloatRect;
 class FloatSize;
 class GraphicsContext;
 class IntRect;
+class LocalFrame;
 class Node;
 
 class CORE_EXPORT PrintContext
@@ -61,8 +61,6 @@ class CORE_EXPORT PrintContext
 
   // Deprecated. Page size computation is already in this class, clients
   // shouldn't be copying it.
-  // FIXME: Everyone passes |false| for the second paramer. We should remove the
-  // second parameter.
   virtual void ComputePageRectsWithPageSize(
       const FloatSize& page_size_in_pixels);
 
@@ -102,6 +100,8 @@ class CORE_EXPORT PrintContext
   DECLARE_VIRTUAL_TRACE();
 
  protected:
+  friend class PrintContextTest;
+
   void OutputLinkedDestinations(GraphicsContext&, const IntRect& page_rect);
 
   Member<LocalFrame> frame_;
@@ -111,6 +111,7 @@ class CORE_EXPORT PrintContext
   void ComputePageRectsWithPageSizeInternal(
       const FloatSize& page_size_in_pixels);
   void CollectLinkedDestinations(Node*);
+  bool IsFrameValid() const;
 
   // Used to prevent misuses of BeginPrintMode() and EndPrintMode() (e.g., call
   // EndPrintMode without BeginPrintMode).
@@ -118,6 +119,21 @@ class CORE_EXPORT PrintContext
 
   HeapHashMap<String, Member<Element>> linked_destinations_;
   bool linked_destinations_valid_;
+};
+
+class ScopedPrintContext {
+  STACK_ALLOCATED();
+
+ public:
+  explicit ScopedPrintContext(LocalFrame*);
+  ~ScopedPrintContext();
+
+  PrintContext* operator->() const { return context_.Get(); }
+
+ private:
+  Member<PrintContext> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPrintContext);
 };
 
 }  // namespace blink

@@ -27,16 +27,6 @@ namespace blink {
 const int kPageWidth = 800;
 const int kPageHeight = 600;
 
-class MockPrintContext : public PrintContext {
- public:
-  MockPrintContext(LocalFrame* frame) : PrintContext(frame) {}
-
-  void OutputLinkedDestinations(GraphicsContext& context,
-                                const IntRect& page_rect) {
-    PrintContext::OutputLinkedDestinations(context, page_rect);
-  }
-};
-
 class MockCanvas : public SkCanvas {
  public:
   enum OperationType { kDrawRect, kDrawPoint };
@@ -47,6 +37,7 @@ class MockCanvas : public SkCanvas {
   };
 
   MockCanvas() : SkCanvas(kPageWidth, kPageHeight) {}
+  ~MockCanvas() override {}
 
   void onDrawAnnotation(const SkRect& rect,
                         const char key[],
@@ -75,13 +66,14 @@ class PrintContextTest : public RenderingTest {
  protected:
   explicit PrintContextTest(LocalFrameClient* local_frame_client = nullptr)
       : RenderingTest(local_frame_client) {}
+  ~PrintContextTest() override {}
 
   void SetUp() override {
     RenderingTest::SetUp();
-    print_context_ = new MockPrintContext(GetDocument().GetFrame());
+    print_context_ = new PrintContext(GetDocument().GetFrame());
   }
 
-  MockPrintContext& PrintContext() { return *print_context_.Get(); }
+  PrintContext& GetPrintContext() { return *print_context_.Get(); }
 
   void SetBodyInnerHTML(String body_content) {
     GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
@@ -90,7 +82,7 @@ class PrintContextTest : public RenderingTest {
 
   void PrintSinglePage(MockCanvas& canvas) {
     IntRect page_rect(0, 0, kPageWidth, kPageHeight);
-    PrintContext().BeginPrintMode(page_rect.Width(), page_rect.Height());
+    GetPrintContext().BeginPrintMode(page_rect.Width(), page_rect.Height());
     GetDocument().View()->UpdateAllLifecyclePhases();
     PaintRecordBuilder builder(page_rect);
     GraphicsContext& context = builder.Context();
@@ -101,10 +93,10 @@ class PrintContextTest : public RenderingTest {
       DrawingRecorder recorder(context, *GetDocument().GetLayoutView(),
                                DisplayItem::kPrintedContentDestinationLocations,
                                page_rect);
-      PrintContext().OutputLinkedDestinations(context, page_rect);
+      GetPrintContext().OutputLinkedDestinations(context, page_rect);
     }
     builder.EndRecording()->playback(&canvas);
-    PrintContext().EndPrintMode();
+    GetPrintContext().EndPrintMode();
   }
 
   static String AbsoluteBlockHtmlForLink(int x,
@@ -139,7 +131,7 @@ class PrintContextTest : public RenderingTest {
 
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
-  Persistent<MockPrintContext> print_context_;
+  Persistent<PrintContext> print_context_;
 };
 
 class PrintContextFrameTest : public PrintContextTest {
