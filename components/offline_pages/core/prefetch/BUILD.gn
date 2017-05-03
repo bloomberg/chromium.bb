@@ -8,6 +8,8 @@ if (is_android) {
 
 static_library("prefetch") {
   sources = [
+    "prefetch_request_fetcher.cc",
+    "prefetch_request_fetcher.h",
     "prefetch_service.h",
     "prefetch_service_impl.cc",
     "prefetch_service_impl.h",
@@ -17,6 +19,7 @@ static_library("prefetch") {
     "//base",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
+    "//net:net",
     "//url",
   ]
 }
@@ -24,12 +27,15 @@ static_library("prefetch") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "prefetch_request_fetcher_unittest.cc",
     "prefetch_service_impl_unittest.cc",
   ]
 
   deps = [
     ":prefetch",
     "//components/offline_pages/core",
+    "//net:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//url",
   ]
