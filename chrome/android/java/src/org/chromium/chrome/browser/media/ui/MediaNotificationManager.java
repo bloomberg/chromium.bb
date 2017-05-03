@@ -34,6 +34,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
@@ -280,6 +281,18 @@ public class MediaNotificationManager {
         }
     }
 
+    // On O, if startForegroundService() was called, the app MUST call startForeground on the
+    // created service no matter what or it will crash. Show the minimal notification. The caller is
+    // responsible for hiding it afterwards.
+    private static void finishStartingForegroundService(ListenerService s) {
+        if (!BuildInfo.isAtLeastO()) return;
+
+        ChromeNotificationBuilder builder =
+                NotificationBuilderFactory.createChromeNotificationBuilder(
+                        true /* preferCompat */, ChannelDefinitions.CHANNEL_ID_MEDIA);
+        s.startForeground(s.getNotificationId(), builder.build());
+    }
+
     /**
      * Service used to transform intent requests triggered from the notification into
      * {@code MediaNotificationListener} callbacks. We have to create a separate derived class for
@@ -332,8 +345,12 @@ public class MediaNotificationManager {
             return START_NOT_STICKY;
         }
 
+        protected abstract int getNotificationId();
+
         @Nullable
-        protected abstract MediaNotificationManager getManager();
+        private MediaNotificationManager getManager() {
+            return MediaNotificationManager.getManager(getNotificationId());
+        }
 
         @VisibleForTesting
         void stopListenerService() {
@@ -345,11 +362,18 @@ public class MediaNotificationManager {
             if (intent == null) return false;
 
             MediaNotificationManager manager = getManager();
-            if (manager == null || manager.mMediaNotificationInfo == null) return false;
+            if (manager == null || manager.mMediaNotificationInfo == null) {
+                if (intent.getAction() == null) {
+                    // The service has been started with startForegroundService() but the
+                    // notification hasn't been shown. On O it will lead to the app crash.
+                    // So show an empty notification before stopping the service.
+                    finishStartingForegroundService(this);
+                }
+                return false;
+            }
 
             if (intent.getAction() == null) {
-                // The intent comes from {@link startService()} or
-                // {@link startForegroundService}.
+                // The intent comes from  {@link AppHooks#startForegroundService}.
                 manager.onServiceStarted(this);
             } else {
                 // The intent comes from the notification. In this case, {@link onServiceStarted()}
@@ -447,9 +471,8 @@ public class MediaNotificationManager {
         }
 
         @Override
-        @Nullable
-        protected MediaNotificationManager getManager() {
-            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        protected int getNotificationId() {
+            return NOTIFICATION_ID;
         }
 
         private BroadcastReceiver mAudioBecomingNoisyReceiver = new BroadcastReceiver() {
@@ -473,9 +496,8 @@ public class MediaNotificationManager {
         private static final int NOTIFICATION_ID = R.id.presentation_notification;
 
         @Override
-        @Nullable
-        protected MediaNotificationManager getManager() {
-            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        protected int getNotificationId() {
+            return NOTIFICATION_ID;
         }
     }
 
@@ -486,9 +508,8 @@ public class MediaNotificationManager {
         private static final int NOTIFICATION_ID = R.id.remote_notification;
 
         @Override
-        @Nullable
-        protected MediaNotificationManager getManager() {
-            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        protected int getNotificationId() {
+            return NOTIFICATION_ID;
         }
     }
 
@@ -758,7 +779,7 @@ public class MediaNotificationManager {
         if (mService == service) return;
 
         mService = service;
-        updateNotification();
+        updateNotification(true /*serviceStarting*/);
         mNotificationUmaTracker.onNotificationShown(
                 NotificationUmaTracker.MEDIA, ChannelDefinitions.CHANNEL_ID_MEDIA);
     }
@@ -813,7 +834,7 @@ public class MediaNotificationManager {
             updateNotificationBuilder();
             AppHooks.get().startForegroundService(createIntent());
         } else {
-            updateNotification();
+            updateNotification(false);
         }
     }
 
@@ -877,14 +898,28 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
-    void updateNotification() {
+    void updateNotification(boolean serviceStarting) {
         if (mService == null) return;
 
-        if (mMediaNotificationInfo == null) return;
+        if (mMediaNotificationInfo == null) {
+            if (serviceStarting) {
+                finishStartingForegroundService(mService);
+                mService.stopForeground(true /* removeNotification */);
+            }
+            return;
+        }
         updateMediaSession();
         updateNotificationBuilder();
 
         Notification notification = mNotificationBuilder.build();
+
+        // On O, finish starting the foreground service nevertheless, or Android will
+        // crash Chrome.
+        boolean foregroundedService = false;
+        if (BuildInfo.isAtLeastO() && serviceStarting) {
+            mService.startForeground(mMediaNotificationInfo.id, notification);
+            foregroundedService = true;
+        }
 
         // We keep the service as a foreground service while the media is playing. When it is not,
         // the service isn't stopped but is no longer in foreground, thus at a lower priority.
@@ -895,7 +930,7 @@ public class MediaNotificationManager {
 
             NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
             manager.notify(mMediaNotificationInfo.id, notification);
-        } else {
+        } else if (!foregroundedService) {
             mService.startForeground(mMediaNotificationInfo.id, notification);
         }
     }
