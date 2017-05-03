@@ -5,7 +5,7 @@ Number of object files: 5
 
 First columns are: running total, address, pss
  3245548 *@Group      3245548 {no path}
-             {global} (count=26)
+             {global} (count=28)
  4035476 *@Group      789928  {no path}
              chrome::mojom (count=2)
  4035676 *@Group      200     third_party/icu/ucnv_ext.c
@@ -31,7 +31,7 @@ Number of object files: 4
 
 First columns are: running total, address, pss
  3245548 *@Group      3245548 {no path}
-             {global} (count=26)
+             {global} (count=28)
  4035508 *@Group      789960  {no path}
              chrome (count=3)
  4035708 *@Group      200     third_party/icu/ucnv_ext.c
@@ -70,7 +70,7 @@ Number of object files: 4
 
 First columns are: running total, address, pss
  3245548 *@Group      3245548 {no path}
-             {global} (count=26)
+             {global} (count=28)
  4035508 *@Group      789960  {no path}
              chrome (count=3)
  4035662 *@Group      154     {no path}

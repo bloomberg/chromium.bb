@@ -41,19 +41,23 @@ Section Sizes (Total=43,785,380 bytes):
     .rodata: 5,927,652 bytes (13.5%)
     .text: 35,900,712 bytes (82.0%)
 
-Showing 41 symbols with total pss: 4036054 bytes
+Showing 43 symbols with total pss: 4036054 bytes
 .text=77.8kb     .rodata=2.52mb     other=1.25mb     total=3.85mb
 Number of object files: 10
 
 First columns are: running total, address, pss
- 2641394 r@Group      2641394 {no path}
-             ** merge strings (count=2)
- 3431298 d@0x2c17740  789904  third_party/container.c
+ 1965409 r@0x266e600  1965409 {no path}
+             ** merge strings
+ 2755313 d@0x2c17740  789904  third_party/container.c
              chrome::mojom::FieldTrialRecorderProxy [vtable]
+ 3431298 r@0x284e518  675985  {no path}
+             ** merge strings
  3500422 t@0x28f1e0   69124   third_party/icu/ucnv_ext.c
              foo_bar
- 3510180 t@Group      9758    {no path}
-             ** symbol gaps (count=2)
+ 3506140 t@0x28f000   5718    third_party/icu/ucnv_ext.c
+             ** symbol gap 0
+ 3510180 t@0x2a1000   4040    third_party/container.c
+             ** symbol gap 1
  3510628 t@0x28f000   448     third_party/icu/ucnv_ext.c
              ucnv_extMatchFromU
  3510780 d@0x2de7008  152     third_party/container.c

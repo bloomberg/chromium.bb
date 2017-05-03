@@ -29,6 +29,7 @@ import logging
 import os
 import re
 
+import cluster_symbols
 import match_util
 
 
@@ -68,27 +69,27 @@ class SizeInfo(object):
 
   Fields:
     section_sizes: A dict of section_name -> size.
-    raw_symbols: A flat list of all symbols.
-    symbols: A SymbolGroup containing raw_symbols, but with some Symbols grouped
-        into sub-SymbolGroups.
+    symbols: A SymbolGroup containing all symbols, sorted by address.
     metadata: A dict.
   """
   __slots__ = (
       'section_sizes',
-      'raw_symbols',
       'symbols',
       'metadata',
   )
 
   """Root size information."""
-  def __init__(self, section_sizes, raw_symbols, grouped_symbols=None,
-               metadata=None):
+  def __init__(self, section_sizes, symbols, metadata=None):
     self.section_sizes = section_sizes  # E.g. {'.text': 0}
-    # List of symbols sorted by address per-section.
-    self.raw_symbols = raw_symbols
-    # Root SymbolGroup. Cloned symbols grouped together within sub-SymbolGroups.
-    self.symbols = grouped_symbols
+    self.symbols = symbols
     self.metadata = metadata or {}
+
+  def Cluster(self):
+    """Returns a new SizeInfo with some symbols moved into subgroups.
+
+    See SymbolGroup.Cluster() for more details.
+    """
+    return SizeInfo(self.section_sizes, self.symbols.Cluster(), self.metadata)
 
 
 class SizeInfoDiff(object):
@@ -378,11 +379,24 @@ class SymbolGroup(BaseSymbol):
     return True
 
   def _CreateTransformed(self, symbols, filtered_symbols=None, name=None,
-                         section_name=None, is_sorted=None):
+                         full_name=None, section_name=None, is_sorted=None):
     if is_sorted is None:
       is_sorted = self.is_sorted
     return SymbolGroup(symbols, filtered_symbols=filtered_symbols, name=name,
-                       section_name=section_name, is_sorted=is_sorted)
+                       full_name=full_name, section_name=section_name,
+                       is_sorted=is_sorted)
+
+  def Cluster(self):
+    """Returns a new SymbolGroup with some symbols moved into subgroups.
+
+    Subgroups include:
+     * Symbols that have [clone] in their name (created during inlining).
+     * Star symbols (such as "** merge strings", and "** symbol gap")
+
+    To view created groups:
+      Print(clustered.Filter(lambda s: s.IsGroup()), recursive=True)
+    """
+    return self._CreateTransformed(cluster_symbols.ClusterSymbols(self))
 
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     # Default to sorting by abs(size) then name.
@@ -627,18 +641,42 @@ class SymbolDiff(SymbolGroup):
         self.unchanged_count, self.size)
 
   def _CreateTransformed(self, symbols, filtered_symbols=None, name=None,
-                         section_name=None, is_sorted=None):
-    ret = SymbolDiff.__new__(SymbolDiff)
-    # Printing sorts, so fast-path the same symbols case.
+                         full_name=None, section_name=None, is_sorted=None):
+    # Printing sorts, so short-circuit the same symbols case.
     if len(symbols) == len(self._symbols):
-      ret._added_ids = self._added_ids
-      ret._removed_ids = self._removed_ids
+      new_added_ids = self._added_ids
+      new_removed_ids = self._removed_ids
     else:
-      ret._added_ids = set(id(s) for s in symbols if self.IsAdded(s))
-      ret._removed_ids = set(id(s) for s in symbols if self.IsRemoved(s))
+      old_added_ids = self._added_ids
+      old_removed_ids = self._removed_ids
+
+      def get_status(sym):
+        obj_id = id(sym)
+        if obj_id in old_added_ids:
+          return 0
+        if obj_id in old_removed_ids:
+          return 1
+        if sym.IsGroup():
+          first_status = get_status(sym[0])
+          if all(get_status(s) == first_status for s in sym[1:]):
+            return first_status
+        return 2
+
+      new_added_ids = set()
+      new_removed_ids = set()
+      for sym in symbols:
+        status = get_status(sym)
+        if status == 0:
+          new_added_ids.add(id(sym))
+        elif status == 1:
+          new_removed_ids.add(id(sym))
+
+    ret = SymbolDiff.__new__(SymbolDiff)
+    ret._added_ids = new_added_ids
+    ret._removed_ids = new_removed_ids
     super(SymbolDiff, ret).__init__(
         symbols, filtered_symbols=filtered_symbols, name=name,
-        section_name=section_name, is_sorted=is_sorted)
+        full_name=full_name, section_name=section_name, is_sorted=is_sorted)
     return ret
 
   @property
