@@ -90,9 +90,11 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
   ~RequestCallbacks() override {}
 
   void OnSuccess(std::unique_ptr<WebCredential> web_credential) override {
-    Frame* frame =
-        ToDocument(ExecutionContext::From(resolver_->GetScriptState()))
-            ->GetFrame();
+    ExecutionContext* context =
+        ExecutionContext::From(resolver_->GetScriptState());
+    if (!context)
+      return;
+    Frame* frame = ToDocument(context)->GetFrame();
     SECURITY_CHECK(!frame || frame == frame->Tree().Top());
 
     std::unique_ptr<WebCredential> credential =
