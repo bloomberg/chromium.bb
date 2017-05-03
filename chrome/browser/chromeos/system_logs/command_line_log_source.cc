@@ -31,15 +31,15 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   base::CommandLine command(base::FilePath("/usr/bin/amixer"));
   command.AppendArg("-c0");
   command.AppendArg("contents");
-  commands.push_back(std::make_pair("alsa controls", command));
+  commands.emplace_back("alsa controls", command);
 
   command = base::CommandLine((base::FilePath("/usr/bin/cras_test_client")));
   command.AppendArg("--dump_server_info");
   command.AppendArg("--dump_audio_thread");
-  commands.push_back(std::make_pair("cras", command));
+  commands.emplace_back("cras", command);
 
   command = base::CommandLine((base::FilePath("/usr/bin/audio_diagnostics")));
-  commands.push_back(std::make_pair("audio_diagnostics", command));
+  commands.emplace_back("audio_diagnostics", command);
 
 #if 0
   // This command hangs as of R39. TODO(alhli): Make cras_test_client more
@@ -53,19 +53,19 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   command.AppendArg("--duration_seconds");
   command.AppendArg("0.01");
   command.AppendArg("--show_total_rms");
-  commands.push_back(std::make_pair("cras_rms", command));
+  commands.emplace_back("cras_rms", command);
 #endif
 
   command = base::CommandLine((base::FilePath("/usr/bin/printenv")));
-  commands.push_back(std::make_pair("env", command));
+  commands.emplace_back("env", command);
 
 #if defined(USE_X11)
   command = base::CommandLine(base::FilePath("/usr/bin/xrandr"));
   command.AppendArg("--verbose");
-  commands.push_back(std::make_pair("xrandr", command));
+  commands.emplace_back("xrandr", command);
 #elif defined(USE_OZONE)
   command = base::CommandLine(base::FilePath("/usr/bin/modetest"));
-  commands.push_back(std::make_pair("modetest", command));
+  commands.emplace_back("modetest", command);
 #endif
 
   // Get a list of file sizes for the whole system (excluding the names of the
@@ -76,8 +76,9 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
     command = base::CommandLine(base::FilePath("/bin/sh"));
     command.AppendArg("-c");
     command.AppendArg(
-        "/usr/bin/du -h / | grep -v -e \\/home\\/.*\\/Downloads\\/");
-    commands.push_back(std::make_pair("system_files", command));
+        "/usr/bin/du -h --max-depth=5 /home/ /mnt/stateful_partition/ | "
+        "grep -v -e Downloads");
+    commands.emplace_back("system_files", command);
   }
 
   // Track the list of plugged-in USB devices.
@@ -88,13 +89,13 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
 
   // Get disk space usage information
   command = base::CommandLine(base::FilePath("/bin/df"));
-  commands.push_back(std::make_pair("disk_usage", command));
+  commands.emplace_back("disk_usage", command);
 
-  for (size_t i = 0; i < commands.size(); ++i) {
-    VLOG(1) << "Executting System Logs Command: " << commands[i].first;
+  for (const auto& command : commands) {
+    VLOG(1) << "Executting System Logs Command: " << command.first;
     std::string output;
-    base::GetAppOutput(commands[i].second, &output);
-    (*response)[commands[i].first] = output;
+    base::GetAppOutput(command.second, &output);
+    response->emplace(command.first, output);
   }
 }
 
