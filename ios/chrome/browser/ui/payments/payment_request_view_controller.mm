@@ -408,8 +408,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                withPaymentItem:_paymentRequest->payment_details().total
          withTotalValueChanged:totalValueChanged];
   NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItem:_paymentSummaryItem
-                         inSectionWithIdentifier:SectionIdentifierSummary];
+      [self.collectionViewModel indexPathForItem:_paymentSummaryItem];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
@@ -417,8 +416,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self fillShippingAddressItem:_selectedShippingAddressItem
             withAutofillProfile:_paymentRequest->selected_shipping_profile()];
   NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItem:_selectedShippingAddressItem
-                         inSectionWithIdentifier:SectionIdentifierShipping];
+      [self.collectionViewModel indexPathForItem:_selectedShippingAddressItem];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
@@ -426,8 +424,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self fillShippingOptionItem:_selectedShippingOptionItem
                     withOption:_paymentRequest->selected_shipping_option()];
   NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItem:_selectedShippingOptionItem
-                         inSectionWithIdentifier:SectionIdentifierShipping];
+      [self.collectionViewModel indexPathForItem:_selectedShippingOptionItem];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
@@ -435,8 +432,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self fillPaymentMethodItem:_selectedPaymentMethodItem
                withCreditCard:_paymentRequest->selected_credit_card()];
   NSIndexPath* indexPath =
-      [self.collectionViewModel indexPathForItem:_selectedPaymentMethodItem
-                         inSectionWithIdentifier:SectionIdentifierPayment];
+      [self.collectionViewModel indexPathForItem:_selectedPaymentMethodItem];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 

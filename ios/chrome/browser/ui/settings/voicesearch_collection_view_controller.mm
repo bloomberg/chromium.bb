@@ -238,8 +238,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [switchView setOn:on animated:YES];
   }
 
-  [self reconfigureCellsForItems:modifiedItems
-         inSectionWithIdentifier:SectionIdentifierLanguages];
+  [self reconfigureCellsForItems:modifiedItems];
 }
 
 - (BOOL)currentLanguageSupportsTTS {

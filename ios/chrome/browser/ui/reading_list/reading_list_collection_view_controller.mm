@@ -418,10 +418,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     return;
   }
 
-  [self
-      deleteItemsAtIndexPaths:@[ [self.collectionViewModel
-                                         indexPathForItem:entry
-                                  inSectionWithIdentifier:sectionIdentifier] ]];
+  [self deleteItemsAtIndexPaths:@[ [self.collectionViewModel
+                                    indexPathForItem:entry] ]];
 }
 
 - (void)openEntryInNewTab:(ReadingListCollectionViewItem*)entry {
@@ -465,10 +463,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                  inSectionWithIdentifier:SectionIdentifierUnread]) {
     return;
   }
-  [self markItemsReadAtIndexPath:@[
-    [self.collectionViewModel indexPathForItem:entry
-                       inSectionWithIdentifier:SectionIdentifierUnread]
-  ]];
+  [self markItemsReadAtIndexPath:@[ [self.collectionViewModel
+                                     indexPathForItem:entry] ]];
 }
 
 - (void)markEntryUnread:(ReadingListCollectionViewItem*)entry {
@@ -476,10 +472,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                  inSectionWithIdentifier:SectionIdentifierRead]) {
     return;
   }
-  [self markItemsUnreadAtIndexPath:@[
-    [self.collectionViewModel indexPathForItem:entry
-                       inSectionWithIdentifier:SectionIdentifierRead]
-  ]];
+  [self markItemsUnreadAtIndexPath:@[ [self.collectionViewModel
+                                       indexPathForItem:entry] ]];
 }
 
 #pragma mark - Private methods
@@ -608,8 +602,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     }
     index++;
   }
-  [self reconfigureCellsForItems:itemsToReconfigure
-         inSectionWithIdentifier:sectionIdentifier];
+  [self reconfigureCellsForItems:itemsToReconfigure];
   return NO;
 }
 
@@ -658,17 +651,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
         strongItem.attributes = attributes;
 
-        for (NSNumber* sectionNumber in
-             @[ @(SectionIdentifierUnread), @(SectionIdentifierRead) ]) {
-          NSInteger sectionIdentifier = [sectionNumber integerValue];
-          if ([strongSelf.collectionViewModel
-                  hasSectionForSectionIdentifier:sectionIdentifier] &&
-              [strongSelf.collectionViewModel hasItem:strongItem
-                              inSectionWithIdentifier:sectionIdentifier]) {
-            [strongSelf reconfigureCellsForItems:@[ strongItem ]
-                         inSectionWithIdentifier:sectionIdentifier];
-            break;
-          }
+        if ([strongSelf.collectionViewModel hasItem:strongItem]) {
+          [strongSelf reconfigureCellsForItems:@[ strongItem ]];
         }
       };
 

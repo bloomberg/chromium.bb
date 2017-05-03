@@ -126,8 +126,7 @@ initWithPrefs:(PrefService*)prefs
     }
   }
 
-  [self reconfigureCellsForItems:modifiedItems
-         inSectionWithIdentifier:SectionIdentifierOptions];
+  [self reconfigureCellsForItems:modifiedItems];
 }
 
 - (void)updatePrefValue:(int)prefValue {

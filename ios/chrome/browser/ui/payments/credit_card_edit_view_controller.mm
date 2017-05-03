@@ -242,11 +242,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                 withString:newText];
     item.cardTypeIcon = [_dataSource cardTypeIconFromCardNumber:updatedText];
 
-    NSInteger sectionIdentifier = [self.collectionViewModel
-        sectionIdentifierForSection:[indexPath section]];
     // Update the cell.
-    [self reconfigureCellsForItems:@[ item ]
-           inSectionWithIdentifier:sectionIdentifier];
+    [self reconfigureCellsForItems:@[ item ]];
   }
 
   return YES;

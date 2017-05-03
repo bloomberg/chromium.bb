@@ -202,8 +202,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   NSIndexPath* CVCIndexPath =
-      [self.collectionViewModel indexPathForItem:_CVCItem
-                         inSectionWithIdentifier:SectionIdentifierMain];
+      [self.collectionViewModel indexPathForItem:_CVCItem];
   CVCCell* CVC = base::mac::ObjCCastStrict<CVCCell>(
       [self.collectionView cellForItemAtIndexPath:CVCIndexPath]);
   [self focusInputIfNeeded:CVC];
@@ -309,8 +308,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   } else {
     _statusItem.text = text;
     _statusItem.state = state;
-    [self reconfigureCellsForItems:@[ _statusItem ]
-           inSectionWithIdentifier:SectionIdentifierMain];
+    [self reconfigureCellsForItems:@[ _statusItem ]];
     [self.collectionViewLayout invalidateLayout];
   }
 }
@@ -405,8 +403,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE);
   }
 
-  [self reconfigureCellsForItems:@[ item ]
-         inSectionWithIdentifier:SectionIdentifierMain];
+  [self reconfigureCellsForItems:@[ item ]];
   [self.collectionViewLayout invalidateLayout];
 }
 
@@ -489,8 +486,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   _CVCItem.showDateInputError = NO;
   _CVCItem.showCVCInputError = NO;
 
-  [self reconfigureCellsForItems:@[ _CVCItem ]
-         inSectionWithIdentifier:SectionIdentifierMain];
+  [self reconfigureCellsForItems:@[ _CVCItem ]];
   [self.collectionViewLayout invalidateLayout];
 
   [self inputsDidChange:_CVCItem];

@@ -410,8 +410,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
     return;
   }
   clearDataItem.detailText = detailText;
-  [self reconfigureCellsForItems:@[ clearDataItem ]
-         inSectionWithIdentifier:SectionIdentifierDataTypes];
+  [self reconfigureCellsForItems:@[ clearDataItem ]];
   [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
@@ -537,8 +536,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
           [self updateCounter:itemType detailText:nil];
         }
       }
-      [self reconfigureCellsForItems:@[ clearDataItem ]
-             inSectionWithIdentifier:SectionIdentifierDataTypes];
+      [self reconfigureCellsForItems:@[ clearDataItem ]];
       break;
     }
     case ItemTypeClearBrowsingDataButton:
@@ -585,8 +583,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   // Add the new footer.
   [model addItem:footerItem
       toSectionWithIdentifier:SectionIdentifierGoogleAccount];
-  [self reconfigureCellsForItems:@[ footerItem ]
-         inSectionWithIdentifier:SectionIdentifierGoogleAccount];
+  [self reconfigureCellsForItems:@[ footerItem ]];
 
   // Relayout the cells to adapt to the new contents height.
   [self.collectionView.collectionViewLayout invalidateLayout];

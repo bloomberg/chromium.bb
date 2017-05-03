@@ -256,15 +256,23 @@ typedef NSMutableArray<CollectionViewItem*> SectionItems;
              indexOfObject:item] != NSNotFound;
 }
 
-- (NSIndexPath*)indexPathForItem:(CollectionViewItem*)item
-         inSectionWithIdentifier:(NSInteger)sectionIdentifier {
-  NSArray* itemsInSection =
-      [self itemsInSectionWithIdentifier:sectionIdentifier];
+- (BOOL)hasItem:(CollectionViewItem*)item {
+  for (NSNumber* section in _sectionIdentifiers) {
+    if ([self hasItem:item inSectionWithIdentifier:[section integerValue]])
+      return YES;
+  }
+  return NO;
+}
 
-  NSInteger section = [self sectionForSectionIdentifier:sectionIdentifier];
-  NSInteger itemIndex = [itemsInSection indexOfObject:item];
-  DCHECK_NE(NSNotFound, itemIndex);
-  return [NSIndexPath indexPathForItem:itemIndex inSection:section];
+- (NSIndexPath*)indexPathForItem:(CollectionViewItem*)item {
+  for (NSUInteger section = 0; section < _sections.count; section++) {
+    NSInteger itemIndex = [_sections[section] indexOfObject:item];
+    if (itemIndex != NSNotFound) {
+      return [NSIndexPath indexPathForItem:itemIndex inSection:section];
+    }
+  }
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark UICollectionView data sourcing

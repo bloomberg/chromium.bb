@@ -395,8 +395,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   savePasswordsItem_.get().on = [passwordManagerEnabled_ value];
 
   // Update the cell.
-  [self reconfigureCellsForItems:@[ savePasswordsItem_ ]
-         inSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+  [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
 
   // Update the rest of the UI.
   [self.editor setEditing:NO];

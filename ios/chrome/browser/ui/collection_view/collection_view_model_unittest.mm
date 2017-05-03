@@ -522,16 +522,21 @@ TEST(CollectionViewModelTest, IndexPathsForItems) {
       toSectionWithIdentifier:SectionIdentifierWeasley];
   [model addItemWithType:ItemTypeWeasleyArthur
       toSectionWithIdentifier:SectionIdentifierWeasley];
+  // Item not added.
+  CollectionViewItem* notAddedItem =
+      [[CollectionViewItem alloc] initWithType:ItemTypeCheeseGouda];
 
-  NSIndexPath* indexPath1 = [model indexPathForItem:item1
-                            inSectionWithIdentifier:SectionIdentifierWeasley];
+  EXPECT_TRUE([model hasItem:item1]);
+  NSIndexPath* indexPath1 = [model indexPathForItem:item1];
   EXPECT_EQ(0, indexPath1.section);
   EXPECT_EQ(1, indexPath1.item);
 
-  NSIndexPath* indexPath4 = [model indexPathForItem:item4
-                            inSectionWithIdentifier:SectionIdentifierWeasley];
+  EXPECT_TRUE([model hasItem:item4]);
+  NSIndexPath* indexPath4 = [model indexPathForItem:item4];
   EXPECT_EQ(0, indexPath4.section);
   EXPECT_EQ(4, indexPath4.item);
+
+  EXPECT_FALSE([model hasItem:notAddedItem]);
 }
 
 TEST(CollectionViewModelTest, Headers) {

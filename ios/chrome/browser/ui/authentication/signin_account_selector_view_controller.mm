@@ -244,8 +244,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [reloadItems addObject:accountItem];
       }
     }
-    [self reconfigureCellsForItems:reloadItems
-           inSectionWithIdentifier:SectionIdentifierAccounts];
+    [self reconfigureCellsForItems:reloadItems];
   } else if (item.type == ItemTypeAddAccount) {
     [self.delegate accountSelectorControllerDidSelectAddAccount:self];
   }
