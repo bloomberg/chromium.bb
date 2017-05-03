@@ -163,7 +163,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                            const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
-                           const GURL& url,
+                           const GURL& saved_url,
                            const base::FilePath& file_path,
                            const base::string16& title,
                            int64_t file_size);
