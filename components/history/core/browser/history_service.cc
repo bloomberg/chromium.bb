@@ -502,9 +502,9 @@ void HistoryService::AddPagesWithDetails(const URLRows& info,
                           history_backend_, info, visit_source));
 }
 
-base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
-    const std::vector<GURL>& icon_urls,
-    int icon_types,
+base::CancelableTaskTracker::TaskId HistoryService::GetFavicon(
+    const GURL& icon_url,
+    favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -515,8 +515,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicons(
       new std::vector<favicon_base::FaviconRawBitmapResult>();
   return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetFavicons, history_backend_, icon_urls,
-                 icon_types, desired_sizes, results),
+      base::Bind(&HistoryBackend::GetFavicon, history_backend_, icon_url,
+                 icon_type, desired_sizes, results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
@@ -575,8 +575,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
 base::CancelableTaskTracker::TaskId
 HistoryService::UpdateFaviconMappingsAndFetch(
     const GURL& page_url,
-    const std::vector<GURL>& icon_urls,
-    int icon_types,
+    const GURL& icon_url,
+    favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -588,8 +588,8 @@ HistoryService::UpdateFaviconMappingsAndFetch(
   return tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::UpdateFaviconMappingsAndFetch,
-                 history_backend_, page_url, icon_urls, icon_types,
-                 desired_sizes, results),
+                 history_backend_, page_url, icon_url, icon_type, desired_sizes,
+                 results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 

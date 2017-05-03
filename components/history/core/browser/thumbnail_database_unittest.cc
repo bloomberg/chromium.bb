@@ -369,8 +369,8 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
                                kBlob2));
 
   // The ones not retained should be missing.
-  EXPECT_FALSE(db.GetFaviconIDForFaviconURL(kPageUrl2, false, NULL));
-  EXPECT_FALSE(db.GetFaviconIDForFaviconURL(kPageUrl4, false, NULL));
+  EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl2, nullptr));
+  EXPECT_FALSE(db.GetIconMappingsForPageURL(kPageUrl4, nullptr));
 
   // Schema should be the same.
   EXPECT_EQ(original_schema, db.db_.GetSchema());
@@ -391,8 +391,8 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrlsExpiresRetainedFavicons) {
 
   EXPECT_TRUE(db.RetainDataForPageUrls(std::vector<GURL>(1u, kPageUrl1)));
 
-  favicon_base::FaviconID new_favicon_id = db.GetFaviconIDForFaviconURL(
-      kIconUrl1, favicon_base::FAVICON, nullptr);
+  favicon_base::FaviconID new_favicon_id =
+      db.GetFaviconIDForFaviconURL(kIconUrl1, favicon_base::FAVICON);
   ASSERT_NE(0, new_favicon_id);
   std::vector<FaviconBitmap> new_favicon_bitmaps;
   db.GetFaviconBitmaps(new_favicon_id, &new_favicon_bitmaps);

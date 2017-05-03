@@ -117,30 +117,16 @@ class FaviconService : public KeyedService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
-  // Set the favicon mappings to |page_url| for |icon_types| in the history
-  // database.
-  // Sample |icon_urls|:
-  //  { ICON_URL1 -> TOUCH_ICON, known to the database,
-  //    ICON_URL2 -> TOUCH_ICON, not known to the database,
-  //    ICON_URL3 -> TOUCH_PRECOMPOSED_ICON, known to the database }
-  // The new mappings are computed from |icon_urls| with these rules:
-  // 1) Any urls in |icon_urls| which are not already known to the database are
-  //    rejected.
-  //    Sample new mappings to |page_url|: { ICON_URL1, ICON_URL3 }
-  // 2) If |icon_types| has multiple types, the mappings are only set for the
-  //    largest icon type.
-  //    Sample new mappings to |page_url|: { ICON_URL3 }
-  // |icon_types| can only have multiple IconTypes if
-  // |icon_types| == TOUCH_ICON | TOUCH_PRECOMPOSED_ICON.
-  // The favicon bitmaps which most closely match |desired_size_in_dip|
-  // at the reosurce scale factors supported by the current platform (eg MacOS)
-  // in addition to 1x from the favicons which were just mapped to |page_url|
-  // are returned. If |desired_size_in_dip| is 0, the largest favicon bitmap is
-  // returned.
+  // Maps |page_url| to the favicon at |icon_url| if there is an entry in the
+  // database for |icon_url| and |icon_type|. This occurs when there is a
+  // mapping from a different page URL to |icon_url|. The favicon bitmaps whose
+  // edge sizes most closely match |desired_size_in_dip| from the favicons which
+  // were just mapped to |page_url| are returned. If |desired_size_in_dip| has a
+  // '0' entry, the largest favicon bitmap is returned.
   virtual base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
-      const std::vector<GURL>& icon_urls,
-      int icon_types,
+      const GURL& icon_url,
+      favicon_base::IconType icon_type,
       int desired_size_in_dip,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;

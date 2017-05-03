@@ -78,8 +78,8 @@ class MockFaviconService : public FaviconService {
   MOCK_METHOD6(UpdateFaviconMappingsAndFetch,
                base::CancelableTaskTracker::TaskId(
                    const GURL& page_url,
-                   const std::vector<GURL>& icon_urls,
-                   int icon_types,
+                   const GURL& icon_url,
+                   favicon_base::IconType icon_type,
                    int desired_size_in_dip,
                    const favicon_base::FaviconResultsCallback& callback,
                    base::CancelableTaskTracker* tracker));

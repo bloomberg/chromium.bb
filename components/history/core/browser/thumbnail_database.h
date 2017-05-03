@@ -129,16 +129,11 @@ class ThumbnailDatabase {
   bool SetFaviconOutOfDate(favicon_base::FaviconID icon_id);
 
   // Returns the id of the entry in the favicon database with the specified url
-  // and icon type. If |required_icon_type| contains multiple icon types and
-  // there are more than one matched icon in database, only one icon will be
-  // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
-  // FAVICON, and the icon type is returned in icon_type parameter if it is not
-  // NULL.
+  // and icon type.
   // Returns 0 if no entry exists for the specified url.
   favicon_base::FaviconID GetFaviconIDForFaviconURL(
       const GURL& icon_url,
-      int required_icon_type,
-      favicon_base::IconType* icon_type);
+      favicon_base::IconType icon_type);
 
   // Gets the icon_url, icon_type and sizes for the specified |icon_id|.
   bool GetFaviconHeader(favicon_base::FaviconID icon_id,
