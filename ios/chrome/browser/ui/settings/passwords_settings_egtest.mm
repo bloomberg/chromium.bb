@@ -339,7 +339,8 @@ id<GREYMatcher> CopyPasswordButton() {
 
 // Checks that attempts to copy a password provide appropriate feedback,
 // both when reauthentication succeeds and when it fails.
-- (void)testCopyPasswordToast {
+// TODO(crbug.com/718043): Re-enable test.
+- (void)DISABLED_testCopyPasswordToast {
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Saving a form is needed for using the "password details" view.
