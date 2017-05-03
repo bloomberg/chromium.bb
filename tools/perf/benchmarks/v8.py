@@ -127,7 +127,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
-@benchmark.Disabled('linux')  # crbug.com/715716
+@benchmark.Disabled('android') # Android runs V8MobileInfiniteScroll.
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
@@ -140,6 +140,7 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
     return 'v8.infinite_scroll_tbmv2'
 
 @benchmark.Disabled('all')
+@benchmark.Disabled('android') # Android runs V8MobileInfiniteScroll.
 @benchmark.Owner(emails=['mvstaton@chromium.org'])
 class V8InfiniteScrollTurbo(V8InfiniteScroll):
   """Measures V8 GC metrics using Ignition+TurboFan."""
@@ -154,6 +155,7 @@ class V8InfiniteScrollTurbo(V8InfiniteScroll):
 
 
 @benchmark.Disabled('linux')  # crbug.com/715716
+@benchmark.Disabled('android') # Android runs V8MobileInfiniteScroll.
 @benchmark.Owner(emails=['hablich@chromium.org'])
 class V8InfiniteScrollClassic(V8InfiniteScroll):
   """Measures V8 GC metrics using the Classic pipeline."""
