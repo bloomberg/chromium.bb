@@ -10,10 +10,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -25,12 +33,20 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the UsbChooserDialog class.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class UsbChooserDialogTest {
     /**
      * Works like the UsbChooserDialog class, but records calls to native methods instead of
      * calling back to C++.
      */
+
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
     static class UsbChooserDialogWithFakeNatives extends UsbChooserDialog {
         String mSelectedDeviceId = "";
 
@@ -52,21 +68,12 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
 
     private UsbChooserDialogWithFakeNatives mChooserDialog;
 
-    public UsbChooserDialogTest() {
-        super(ChromeActivity.class);
-    }
-
     // ChromeActivityTestCaseBase:
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
         mChooserDialog = createDialog();
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
     }
 
     private UsbChooserDialogWithFakeNatives createDialog() {
@@ -76,7 +83,7 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
                     public UsbChooserDialogWithFakeNatives call() {
                         UsbChooserDialogWithFakeNatives dialog =
                                 new UsbChooserDialogWithFakeNatives();
-                        dialog.show(getActivity(), "https://origin.example.com/",
+                        dialog.show(mActivityTestRule.getActivity(), "https://origin.example.com/",
                                 ConnectionSecurityLevel.SECURE);
                         return dialog;
                     }
@@ -127,17 +134,18 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
                 "</?link2>", "").replaceAll("</?link>", "");
     }
 
+    @Test
     @LargeTest
     public void testCancel() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
-        assertTrue(dialog.isShowing());
+        Assert.assertTrue(dialog.isShowing());
 
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
         // The 'Connect' button should be disabled and the list view should be hidden.
-        assertFalse(button.isEnabled());
-        assertEquals(View.GONE, items.getVisibility());
+        Assert.assertFalse(button.isEnabled());
+        Assert.assertEquals(View.GONE, items.getVisibility());
 
         dialog.dismiss();
 
@@ -149,6 +157,7 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         });
     }
 
+    @Test
     @LargeTest
     public void testSelectItem() throws InterruptedException {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
@@ -174,14 +183,14 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         // After adding items to the dialog, the help message should be showing,
         // the 'Connect' button should still be disabled (since nothing's selected),
         // and the list view should show.
-        assertEquals(removeLinkTags(getActivity().getString(
-                R.string.usb_chooser_dialog_footnote_text)),
+        Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
+                                    R.string.usb_chooser_dialog_footnote_text)),
                 statusView.getText().toString());
-        assertFalse(button.isEnabled());
-        assertEquals(View.VISIBLE, items.getVisibility());
+        Assert.assertFalse(button.isEnabled());
+        Assert.assertEquals(View.VISIBLE, items.getVisibility());
 
         selectItem(mChooserDialog, position);
 
-        assertEquals("device_id_1", mChooserDialog.mSelectedDeviceId);
+        Assert.assertEquals("device_id_1", mChooserDialog.mSelectedDeviceId);
     }
 }

@@ -6,15 +6,25 @@ package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -32,35 +42,36 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests related to the ToolbarProgressBar.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTabbedActivity> {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
+public class ToolbarProgressBarTest {
+    @Rule
+    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     static final int TEST_WAIT_TIME_MS = 60000;
     private static final String TEST_PAGE = "/chrome/test/data/android/progressbar_test.html";
 
-    public ToolbarProgressBarTest() {
-        super(ChromeTabbedActivity.class);
-    }
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     /**
      * Test that the progress bar only traverses the page a single time per navigation.
      */
+    @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
-    public void testToolbarTraversesScreenOnce()
-            throws InterruptedException, TimeoutException {
-
+    public void testToolbarTraversesScreenOnce() throws InterruptedException, TimeoutException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                getInstrumentation().getContext());
+                InstrumentationRegistry.getInstrumentation().getContext());
 
         final WebContents webContents =
-                getActivity().getActivityTab().getWebContents();
+                mActivityTestRule.getActivity().getActivityTab().getWebContents();
 
         TestWebContentsObserver observer = new TestWebContentsObserver(webContents);
         // Start and stop load events are carefully tracked; there should be two start-stop pairs
@@ -68,17 +79,19 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         OnPageStartedHelper startHelper = observer.getOnPageStartedHelper();
         OnPageFinishedHelper finishHelper = observer.getOnPageFinishedHelper();
 
-        ToolbarProgressBar progressBar =
-                getActivity().getToolbarManager().getToolbarLayout().getProgressBar();
+        ToolbarProgressBar progressBar = mActivityTestRule.getActivity()
+                                                 .getToolbarManager()
+                                                 .getToolbarLayout()
+                                                 .getProgressBar();
 
         // Reset progress bar start count in case anything else triggered it.
         progressBar.resetStartCountForTesting();
 
         // Ensure no load events have occured yet.
-        assertEquals(0, startHelper.getCallCount());
-        assertEquals(0, finishHelper.getCallCount());
+        Assert.assertEquals(0, startHelper.getCallCount());
+        Assert.assertEquals(0, finishHelper.getCallCount());
 
-        loadUrl(testServer.getURL(TEST_PAGE));
+        mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
 
         // Wait for the initial page to be loaded if it hasn't already.
         if (finishHelper.getCallCount() == 0) {
@@ -86,23 +99,23 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         }
 
         // Exactly one start load and one finish load event should have occured.
-        assertEquals(1, startHelper.getCallCount());
-        assertEquals(1, finishHelper.getCallCount());
+        Assert.assertEquals(1, startHelper.getCallCount());
+        Assert.assertEquals(1, finishHelper.getCallCount());
 
         // Load content in the iframe of the test page to trigger another load.
         JavaScriptUtils.executeJavaScript(webContents, "loadIframeInPage();");
 
         // A load start will be triggered.
         startHelper.waitForCallback(startHelper.getCallCount(), 1);
-        assertEquals(2, startHelper.getCallCount());
+        Assert.assertEquals(2, startHelper.getCallCount());
 
         // Wait for the iframe to finish loading.
         finishHelper.waitForCallback(finishHelper.getCallCount(), 1);
-        assertEquals(2, finishHelper.getCallCount());
+        Assert.assertEquals(2, finishHelper.getCallCount());
 
         // Though the page triggered two load events, the progress bar should have only appeared a
         // single time.
-        assertEquals(1, progressBar.getStartCountForTesting());
+        Assert.assertEquals(1, progressBar.getStartCountForTesting());
     }
 
     /**
@@ -110,6 +123,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
      * results in a hidden progress bar.
      * @throws InterruptedException
      */
+    @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
@@ -122,8 +136,10 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                progressBar.set(
-                        getActivity().getToolbarManager().getToolbarLayout().getProgressBar());
+                progressBar.set(mActivityTestRule.getActivity()
+                                        .getToolbarManager()
+                                        .getToolbarLayout()
+                                        .getProgressBar());
                 progressBar.get().setAlphaAnimationDuration(10);
                 progressBar.get().setHidingDelay(10);
                 progressBar.get().animate().setListener(new AnimatorListener() {
@@ -172,8 +188,8 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
             while (!animationEnded.get() && System.currentTimeMillis() < deadline) {
                 onAnimationEnd.wait(deadline - System.currentTimeMillis());
             }
-            assertEquals(1.0f, progressBar.get().getAlpha());
-            assertEquals(View.VISIBLE, progressBar.get().getVisibility());
+            Assert.assertEquals(1.0f, progressBar.get().getAlpha(), 0);
+            Assert.assertEquals(View.VISIBLE, progressBar.get().getVisibility());
         }
 
         // Clear progress and check that the progress bar is hidden.
@@ -190,8 +206,8 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeTab
             while (!animationEnded.get() && System.currentTimeMillis() < deadline) {
                 onAnimationEnd.wait(deadline - System.currentTimeMillis());
             }
-            assertEquals(0.0f, progressBar.get().getAlpha());
-            assertNotSame(View.VISIBLE, progressBar.get().getVisibility());
+            Assert.assertEquals(0.0f, progressBar.get().getAlpha(), 0);
+            Assert.assertNotSame(View.VISIBLE, progressBar.get().getVisibility());
         }
     }
 }
