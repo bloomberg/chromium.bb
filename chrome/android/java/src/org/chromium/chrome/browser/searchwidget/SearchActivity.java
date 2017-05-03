@@ -37,10 +37,25 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 /** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate {
+    /** Notified about events happening inside a SearchActivity. */
+    public interface SearchActivityObserver {
+        /** Called when {@link SearchActivity#setContentView} is done. */
+        void onSetContentView();
+
+        /** Called when {@link SearchActivity#finishNativeInitialization} is done. */
+        void onFinishNativeInitialization();
+
+        /** Called when {@link SearchActivity#finishDeferredInitialization} is done. */
+        void onFinishDeferredInitialization();
+    }
+
     private static final String TAG = "searchwidget";
 
     /** Setting this field causes the Activity to finish itself immediately for tests. */
     private static boolean sIsDisabledForTest;
+
+    /** Notified about events happening for the SearchActivity. */
+    private static SearchActivityObserver sObserver;
 
     /** Main content view. */
     private ViewGroup mContentView;
@@ -84,14 +99,15 @@ public class SearchActivity extends AsyncInitializationActivity
         mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
-        // Build the search box.
         mContentView = createContentView();
+        setContentView(mContentView);
+
+        // Build the search box.
         mSearchBox = (SearchActivityLocationBarLayout) mContentView.findViewById(
                 R.id.search_location_bar);
         mSearchBox.setDelegate(this);
         mSearchBox.setToolbarDataProvider(mSearchBoxDataProvider);
         mSearchBox.initializeControls(new WindowDelegate(getWindow()), getWindowAndroid());
-        setContentView(mContentView);
 
         // Kick off everything needed for the user to type into the box.
         // TODO(dfalcantara): We should prevent the user from doing anything while we're running the
@@ -108,6 +124,8 @@ public class SearchActivity extends AsyncInitializationActivity
                 beginLoadingLibrary();
             }
         });
+
+        if (sObserver != null) sObserver.onSetContentView();
     }
 
     @Override
@@ -139,6 +157,8 @@ public class SearchActivity extends AsyncInitializationActivity
                 }
             });
         }
+
+        if (sObserver != null) sObserver.onFinishNativeInitialization();
     }
 
     private void finishDeferredInitialization(Boolean result) {
@@ -154,6 +174,8 @@ public class SearchActivity extends AsyncInitializationActivity
         AutocompleteController.nativePrefetchZeroSuggestResults();
         CustomTabsConnection.getInstance(getApplication()).warmup(0);
         mSearchBox.onDeferredStartup(isVoiceSearchIntent());
+
+        if (sObserver != null) sObserver.onFinishDeferredInitialization();
     }
 
     @Override
@@ -241,5 +263,11 @@ public class SearchActivity extends AsyncInitializationActivity
     @VisibleForTesting
     static void disableForTests() {
         sIsDisabledForTest = true;
+    }
+
+    /** See {@link #sObserver}. */
+    @VisibleForTesting
+    static void setObserverForTests(SearchActivityObserver observer) {
+        sObserver = observer;
     }
 }
