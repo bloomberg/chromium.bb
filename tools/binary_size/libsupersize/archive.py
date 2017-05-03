@@ -38,12 +38,12 @@ def _OpenMaybeGz(path, mode=None):
   return open(path, mode or 'r')
 
 
-def _StripLinkerAddedSymbolPrefixes(symbols):
+def _StripLinkerAddedSymbolPrefixes(raw_symbols):
   """Removes prefixes sometimes added to symbol names during link
 
   Removing prefixes make symbol names match up with those found in .o files.
   """
-  for symbol in symbols:
+  for symbol in raw_symbols:
     name = symbol.name
     if name.startswith('startup.'):
       symbol.flags |= models.FLAG_STARTUP
@@ -59,9 +59,9 @@ def _StripLinkerAddedSymbolPrefixes(symbols):
       symbol.name = name[4:]
 
 
-def _UnmangleRemainingSymbols(symbols, tool_prefix):
+def _UnmangleRemainingSymbols(raw_symbols, tool_prefix):
   """Uses c++filt to unmangle any symbols that need it."""
-  to_process = [s for s in symbols if s.name.startswith('_Z')]
+  to_process = [s for s in raw_symbols if s.name.startswith('_Z')]
   if not to_process:
     return
 
@@ -161,10 +161,10 @@ def _SourcePathForObjectPath(object_path, source_mapper):
   return ''
 
 
-def _ExtractSourcePaths(symbols, source_mapper):
+def _ExtractSourcePaths(raw_symbols, source_mapper):
   """Fills in the |source_path| attribute."""
   logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
-  for symbol in symbols:
+  for symbol in raw_symbols:
     object_path = symbol.object_path
     if object_path and not symbol.source_path:
       symbol.source_path = _SourcePathForObjectPath(object_path, source_mapper)
@@ -190,12 +190,12 @@ def _ComputeAnscestorPath(path_list):
 # This must normalize object paths at the same time because normalization
 # needs to occur before finding common ancestor.
 def _ComputeAnscestorPathsAndNormalizeObjectPaths(
-    symbols, object_paths_by_name, source_mapper):
+    raw_symbols, object_paths_by_name, source_mapper):
   num_found_paths = 0
   num_unknown_names = 0
   num_path_mismatches = 0
   num_unmatched_aliases = 0
-  for symbol in symbols:
+  for symbol in raw_symbols:
     name = symbol.name
     if (symbol.IsBss() or
         not name or
@@ -244,12 +244,12 @@ def _ComputeAnscestorPathsAndNormalizeObjectPaths(
                 num_path_mismatches, num_unmatched_aliases)
 
 
-def _DiscoverMissedObjectPaths(symbols, elf_object_paths):
+def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
   # Missing object paths are caused by .a files added by -l flags, which are not
   # listed as explicit inputs within .ninja rules.
   parsed_inputs = set(elf_object_paths)
   missed_inputs = set()
-  for symbol in symbols:
+  for symbol in raw_symbols:
     path = symbol.object_path
     if path.endswith(')'):
       # Convert foo/bar.a(baz.o) -> foo/bar.a
@@ -302,115 +302,12 @@ def _CalculatePadding(symbols):
         '%r\nprev symbol: %r' % (symbol, prev_symbol))
 
 
-def _ClusterSymbols(symbols):
-  """Returns a new list of symbols with some symbols moved into groups.
-
-  Groups include:
-   * Symbols that have [clone] in their name (created by compiler optimization).
-   * Star symbols (such as "** merge strings", and "** symbol gap")
-
-  To view created groups:
-    Print(size_info.symbols.Filter(lambda s: s.IsGroup()), recursive=True)
-  """
-  # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
-  # Example name suffixes:
-  #     [clone .part.322]  # GCC
-  #     [clone .isra.322]  # GCC
-  #     [clone .constprop.1064]  # GCC
-  #     [clone .11064]  # clang
-
-  # Step 1: Create name map, find clones, collect star syms into replacements.
-  logging.debug('Creating name -> symbol map')
-  clone_indices = []
-  indices_by_full_name = {}
-  # (name, full_name) -> [(index, sym),...]
-  replacements_by_name = collections.defaultdict(list)
-  for i, symbol in enumerate(symbols):
-    if symbol.name.startswith('**'):
-      # "symbol gap 3" -> "symbol gaps"
-      name = re.sub(r'\s+\d+$', 's', symbol.name)
-      replacements_by_name[(name, None)].append((i, symbol))
-    elif symbol.full_name:
-      if symbol.full_name.endswith(']') and ' [clone ' in symbol.full_name:
-        clone_indices.append(i)
-      else:
-        indices_by_full_name[symbol.full_name] = i
-
-  # Step 2: Collect same-named clone symbols.
-  logging.debug('Grouping all clones')
-  group_names_by_index = {}
-  for i in clone_indices:
-    symbol = symbols[i]
-    # Multiple attributes could exist, so search from left-to-right.
-    stripped_name = symbol.name[:symbol.name.index(' [clone ')]
-    stripped_full_name = symbol.full_name[:symbol.full_name.index(' [clone ')]
-    name_tup = (stripped_name, stripped_full_name)
-    replacement_list = replacements_by_name[name_tup]
-
-    if not replacement_list:
-      # First occurance, check for non-clone symbol.
-      non_clone_idx = indices_by_full_name.get(stripped_name)
-      if non_clone_idx is not None:
-        non_clone_symbol = symbols[non_clone_idx]
-        replacement_list.append((non_clone_idx, non_clone_symbol))
-        group_names_by_index[non_clone_idx] = stripped_name
-
-    replacement_list.append((i, symbol))
-    group_names_by_index[i] = stripped_name
-
-  # Step 3: Undo clustering when length=1.
-  # Removing these groups means Diff() logic must know about [clone] suffix.
-  to_clear = []
-  for name_tup, replacement_list in replacements_by_name.iteritems():
-    if len(replacement_list) == 1:
-      to_clear.append(name_tup)
-  for name_tup in to_clear:
-    del replacements_by_name[name_tup]
-
-  # Step 4: Replace first symbol from each cluster with a SymbolGroup.
-  before_symbol_count = sum(len(x) for x in replacements_by_name.itervalues())
-  logging.debug('Creating %d symbol groups from %d symbols. %d clones had only '
-                'one symbol.', len(replacements_by_name), before_symbol_count,
-                len(to_clear))
-
-  len_delta = len(replacements_by_name) - before_symbol_count
-  grouped_symbols = [None] * (len(symbols) + len_delta)
-  dest_index = 0
-  src_index = 0
-  seen_names = set()
-  replacement_names_by_index = {}
-  for name_tup, replacement_list in replacements_by_name.iteritems():
-    for tup in replacement_list:
-      replacement_names_by_index[tup[0]] = name_tup
-
-  sorted_items = replacement_names_by_index.items()
-  sorted_items.sort(key=lambda tup: tup[0])
-  for index, name_tup in sorted_items:
-    count = index - src_index
-    grouped_symbols[dest_index:dest_index + count] = (
-        symbols[src_index:src_index + count])
-    src_index = index + 1
-    dest_index += count
-    if name_tup not in seen_names:
-      seen_names.add(name_tup)
-      group_symbols = [tup[1] for tup in replacements_by_name[name_tup]]
-      grouped_symbols[dest_index] = models.SymbolGroup(
-          group_symbols, name=name_tup[0], full_name=name_tup[1],
-          section_name=group_symbols[0].section_name)
-      dest_index += 1
-
-  assert len(grouped_symbols[dest_index:None]) == len(symbols[src_index:None])
-  grouped_symbols[dest_index:None] = symbols[src_index:None]
-  logging.debug('Finished making groups.')
-  return grouped_symbols
-
-
-def _AddSymbolAliases(symbols, aliases_by_address):
+def _AddSymbolAliases(raw_symbols, aliases_by_address):
   # Step 1: Create list of (index_of_symbol, name_list).
   logging.debug('Creating alias list')
   replacements = []
   num_new_symbols = 0
-  for i, s in enumerate(symbols):
+  for i, s in enumerate(raw_symbols):
     # Don't alias padding-only symbols (e.g. ** symbol gap)
     if s.size_without_padding == 0:
       continue
@@ -424,17 +321,17 @@ def _AddSymbolAliases(symbols, aliases_by_address):
 
   # Step 2: Create new symbols as siblings to each existing one.
   logging.debug('Creating %d aliases', num_new_symbols)
-  src_cursor_end = len(symbols)
-  symbols += [None] * num_new_symbols
-  dst_cursor_end = len(symbols)
+  src_cursor_end = len(raw_symbols)
+  raw_symbols += [None] * num_new_symbols
+  dst_cursor_end = len(raw_symbols)
   for src_index, name_list in reversed(replacements):
     # Copy over symbols that come after the current one.
     chunk_size = src_cursor_end - src_index - 1
     dst_cursor_end -= chunk_size
     src_cursor_end -= chunk_size
-    symbols[dst_cursor_end:dst_cursor_end + chunk_size] = (
-        symbols[src_cursor_end:src_cursor_end + chunk_size])
-    sym = symbols[src_index]
+    raw_symbols[dst_cursor_end:dst_cursor_end + chunk_size] = (
+        raw_symbols[src_cursor_end:src_cursor_end + chunk_size])
+    sym = raw_symbols[src_index]
     src_cursor_end -= 1
 
     # Create aliases (does not bother reusing the existing symbol).
@@ -445,7 +342,7 @@ def _AddSymbolAliases(symbols, aliases_by_address):
           aliases=aliases)
 
     dst_cursor_end -= len(aliases)
-    symbols[dst_cursor_end:dst_cursor_end + len(aliases)] = aliases
+    raw_symbols[dst_cursor_end:dst_cursor_end + len(aliases)] = aliases
 
   assert dst_cursor_end == src_cursor_end
 
@@ -460,13 +357,10 @@ def LoadAndPostProcessSizeInfo(path):
 
 def _PostProcessSizeInfo(size_info):
   logging.info('Normalizing symbol names')
-  _NormalizeNames(size_info.raw_symbols)
+  _NormalizeNames(size_info.symbols)
   logging.info('Calculating padding')
-  _CalculatePadding(size_info.raw_symbols)
-  logging.info('Grouping decomposed functions')
-  size_info.symbols = models.SymbolGroup(
-      _ClusterSymbols(size_info.raw_symbols))
-  logging.info('Processed %d symbols', len(size_info.raw_symbols))
+  _CalculatePadding(size_info.symbols)
+  logging.info('Processed %d symbols', len(size_info.symbols))
 
 
 def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
@@ -599,22 +493,22 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     for symbol in raw_symbols:
       symbol.object_path = _NormalizeObjectPath(symbol.object_path)
 
-  size_info = models.SizeInfo(section_sizes, raw_symbols)
+  size_info = models.SizeInfo(section_sizes, models.SymbolGroup(raw_symbols))
 
   # Name normalization not strictly required, but makes for smaller files.
   if raw_only:
     logging.info('Normalizing symbol names')
-    _NormalizeNames(size_info.raw_symbols)
+    _NormalizeNames(size_info.symbols)
   else:
     _PostProcessSizeInfo(size_info)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     # Padding is reported in size coverage logs.
     if raw_only:
-      _CalculatePadding(size_info.raw_symbols)
+      _CalculatePadding(size_info.symbols)
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.info(line)
-  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
+  logging.info('Recorded info for %d symbols', len(size_info.symbols))
   return size_info
 
 

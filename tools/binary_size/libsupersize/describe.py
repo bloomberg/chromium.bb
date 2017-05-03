@@ -220,7 +220,6 @@ class Describer(object):
 
 def DescribeSizeInfoCoverage(size_info):
   """Yields lines describing how accurate |size_info| is."""
-  symbols = models.SymbolGroup(size_info.raw_symbols)
   for section in models.SECTION_TO_SECTION_NAME:
     if section == 'd':
       expected_size = sum(v for k, v in size_info.section_sizes.iteritems()
@@ -237,7 +236,7 @@ def DescribeSizeInfoCoverage(size_info):
       return template.format(section, size_percent, actual_size, len(group),
                              expected_size - actual_size)
 
-    in_section = symbols.WhereInSection(section)
+    in_section = size_info.symbols.WhereInSection(section)
     yield one_stat(in_section)
     yield '* Padding accounts for {} bytes ({:.1%})'.format(
         in_section.padding, float(in_section.padding) / in_section.size)

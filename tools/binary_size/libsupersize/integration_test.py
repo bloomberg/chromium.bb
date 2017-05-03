@@ -121,10 +121,8 @@ class IntegrationTest(unittest.TestCase):
     expected_size_info = self._CloneSizeInfo(
         use_output_directory=use_output_directory, use_elf=use_elf)
     self.assertEquals(expected_size_info.metadata, size_info.metadata)
-    expected = list(describe.GenerateLines(
-        expected_size_info, verbose=True, recursive=True))
-    actual = list(describe.GenerateLines(
-        size_info, verbose=True, recursive=True))
+    expected = list(describe.GenerateLines(expected_size_info.Cluster()))
+    actual = list(describe.GenerateLines(size_info.Cluster()))
     self.assertEquals(expected, actual)
 
     sym_strs = (repr(sym) for sym in size_info.symbols)
@@ -185,59 +183,63 @@ class IntegrationTest(unittest.TestCase):
     return describe.GenerateLines(d, verbose=True)
 
   def test_Diff_Aliases1(self):
-    symbols1 = self._CloneSizeInfo().symbols
-    symbols2 = self._CloneSizeInfo().symbols
+    size_info1 = self._CloneSizeInfo()
+    size_info2 = self._CloneSizeInfo()
 
     # Removing 1 alias should not change the size.
-    a1, _, _ = symbols2.Filter(lambda s: s.num_aliases == 3)[0].aliases
-    symbols2 -= [a1]
+    a1, _, _ = (
+        size_info2.symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
+    size_info2.symbols -= [a1]
     a1.aliases.remove(a1)
-    d = diff.Diff(symbols1, symbols2)
-    self.assertEquals(d.size, 0)
-    self.assertEquals(d.removed_count, 1)
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals(d.symbols.size, 0)
+    self.assertEquals(d.symbols.removed_count, 1)
 
     # Adding one alias should not change size.
-    d = diff.Diff(symbols2, symbols1)
-    self.assertEquals(d.size, 0)
-    self.assertEquals(d.added_count, 1)
+    d = diff.Diff(size_info2, size_info1)
+    self.assertEquals(d.symbols.size, 0)
+    self.assertEquals(d.symbols.added_count, 1)
 
   def test_Diff_Aliases2(self):
-    symbols1 = self._CloneSizeInfo().symbols
-    symbols2 = self._CloneSizeInfo().symbols
+    size_info1 = self._CloneSizeInfo()
+    size_info2 = self._CloneSizeInfo()
 
     # Removing 2 aliases should not change the size.
-    a1, a2, _ = symbols2.Filter(lambda s: s.num_aliases == 3)[0].aliases
-    symbols2 -= [a1, a2]
+    a1, a2, _ = (
+        size_info2.symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
+    size_info2.symbols -= [a1, a2]
     a1.aliases.remove(a1)
     a1.aliases.remove(a2)
-    d = diff.Diff(symbols1, symbols2)
-    self.assertEquals(d.size, 0)
-    self.assertEquals(d.removed_count, 2)
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals(d.symbols.size, 0)
+    self.assertEquals(d.symbols.removed_count, 2)
 
     # Adding 2 aliases should not change size.
-    d = diff.Diff(symbols2, symbols1)
-    self.assertEquals(d.size, 0)
-    self.assertEquals(d.added_count, 2)
+    d = diff.Diff(size_info2, size_info1)
+    self.assertEquals(d.symbols.size, 0)
+    self.assertEquals(d.symbols.added_count, 2)
 
   def test_Diff_Aliases3(self):
-    symbols1 = self._CloneSizeInfo().symbols
-    symbols2 = self._CloneSizeInfo().symbols
+    size_info1 = self._CloneSizeInfo()
+    size_info2 = self._CloneSizeInfo()
 
     # Removing all 3 aliases should change the size.
-    a1, a2, a3 = symbols2.Filter(lambda s: s.num_aliases == 3)[0].aliases
-    symbols2 -= [a1, a2, a3]
-    d = diff.Diff(symbols1, symbols2)
-    self.assertEquals(d.size, -a1.size)
-    self.assertEquals(d.removed_count, 3)
+    a1, a2, a3 = (
+        size_info2.symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
+    size_info2.symbols -= [a1, a2, a3]
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals(d.symbols.size, -a1.size)
+    self.assertEquals(d.symbols.removed_count, 3)
 
     # Adding all 3 aliases should change size.
-    d = diff.Diff(symbols2, symbols1)
-    self.assertEquals(d.size, a1.size)
-    self.assertEquals(d.added_count, 3)
+    d = diff.Diff(size_info2, size_info1)
+    self.assertEquals(d.symbols.size, a1.size)
+    self.assertEquals(d.symbols.added_count, 3)
 
   @_CompareWithGolden()
   def test_FullDescription(self):
-    return describe.GenerateLines(self._CloneSizeInfo())
+    return describe.GenerateLines(self._CloneSizeInfo().Cluster(),
+                                  recursive=True, verbose=True)
 
   @_CompareWithGolden()
   def test_SymbolGroupMethods(self):

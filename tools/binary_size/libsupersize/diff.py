@@ -57,61 +57,47 @@ def _DiffSymbol(before_sym, after_sym, diffed_symbol_by_after_aliases,
 
 
 def _CloneUnmatched(after_symbols, diffed_symbol_by_after_aliases):
-  ret = []
-  for sym in after_symbols:
+  ret = [None] * len(after_symbols)
+  for i, sym in enumerate(after_symbols):
     cloned = sym
-    if sym.IsGroup():
-      cloned = models.SymbolDiff(
-          [], _CloneUnmatched(sym, diffed_symbol_by_after_aliases), [],
-          name=sym.name, full_name=sym.full_name, section_name=sym.section_name)
-    elif sym.aliases:
+    if sym.aliases:
       diffed_alias = diffed_symbol_by_after_aliases.get(id(sym.aliases))
       if diffed_alias:
         # At least one alias was diffed.
         cloned = _CloneAlias(sym, diffed_alias)
-    ret.append(cloned)
+    ret[i] = cloned
   return ret
 
 
 def _NegateAndClone(before_symbols, matched_before_aliases,
                     negated_symbol_by_before_aliases):
-  ret = []
-  for sym in before_symbols:
-    if sym.IsGroup():
-      cloned = models.SymbolDiff(
-          [], _NegateAndClone(sym, matched_before_aliases,
-                              negated_symbol_by_before_aliases), [],
-          name=sym.name, full_name=sym.full_name, section_name=sym.section_name)
-    else:
-      negated_alias = None
-      if sym.aliases:
-        negated_alias = negated_symbol_by_before_aliases.get(id(sym.aliases))
-        if negated_alias:
-          cloned = _CloneAlias(sym, negated_alias)
-        else:
-          all_aliases_removed = id(sym.aliases) not in matched_before_aliases
-          # If all alises are removed, then given them negative size to reflect
-          # the savings.
-          if all_aliases_removed:
-            cloned = _CloneSymbol(sym, -sym.size_without_padding)
-            cloned.padding = -sym.padding
-          else:
-            # But if only a subset of aliases are removed, do not actually treat
-            # them as aliases anymore, or else they will weigh down the PSS of
-            # the symbols that were not removed.
-            cloned = _CloneSymbol(sym, 0)
-          cloned.aliases = [cloned]
-          negated_symbol_by_before_aliases[id(sym.aliases)] = cloned
+  ret = [None] * len(before_symbols)
+  for i, sym in enumerate(before_symbols):
+    if sym.aliases:
+      negated_alias = negated_symbol_by_before_aliases.get(id(sym.aliases))
+      if negated_alias:
+        cloned = _CloneAlias(sym, negated_alias)
       else:
-        cloned = _CloneSymbol(sym, -sym.size_without_padding)
-        cloned.padding = -sym.padding
-    ret.append(cloned)
+        all_aliases_removed = id(sym.aliases) not in matched_before_aliases
+        # If all alises are removed, then given them negative size to reflect
+        # the savings.
+        if all_aliases_removed:
+          cloned = _CloneSymbol(sym, -sym.size_without_padding)
+          cloned.padding = -sym.padding
+        else:
+          # But if only a subset of aliases are removed, do not actually treat
+          # them as aliases anymore, or else they will weigh down the PSS of
+          # the symbols that were not removed.
+          cloned = _CloneSymbol(sym, 0)
+        cloned.aliases = [cloned]
+        negated_symbol_by_before_aliases[id(sym.aliases)] = cloned
+    else:
+      cloned = _CloneSymbol(sym, -sym.size_without_padding)
+      cloned.padding = -sym.padding
+    ret[i] = cloned
   return ret
 
 
-# TODO(agrieve): Diff logic does not work correctly when aliased symbols span
-#     mulitple groups. We should simplify by not allowing recursion (allow diffs
-#     only on SizeInfo, apply logic to raw_symbols, re-cluster after-the-fact.
 def _DiffSymbolGroups(before, after):
   before_symbols_by_key = collections.defaultdict(list)
   for s in before:
@@ -163,26 +149,19 @@ def _DiffSymbolGroups(before, after):
       section_name=after.section_name)
 
 
-def Diff(before, after):
-  """Diffs two SizeInfo or SymbolGroup objects.
+def Diff(before, after, cluster=True):
+  """Diffs two SizeInfo objects. Returns a SizeInfoDiff.
 
-  When diffing SizeInfos, a SizeInfoDiff is returned.
-  When diffing SymbolGroups, a SymbolDiff is returned.
-
-  Returns:
-    Returns a SizeInfo when args are of type SizeInfo.
-    Returns a SymbolDiff when args are of type SymbolGroup.
+  Args:
+    cluster: When True, calls SymbolGroup.Cluster() after diffing. This
+        generally reduces noise.
   """
-  if isinstance(after, models.SizeInfo):
-    assert isinstance(before, models.SizeInfo)
-    section_sizes = {k: after.section_sizes[k] - v
-                     for k, v in before.section_sizes.iteritems()}
-    symbol_diff = _DiffSymbolGroups(before.symbols, after.symbols)
-    return models.SizeInfoDiff(section_sizes, symbol_diff, before.metadata,
-                               after.metadata)
-
-  assert (isinstance(after, models.SymbolGroup) and
-          isinstance(before, models.SymbolGroup))
-  return _DiffSymbolGroups(before, after)
-
-
+  assert isinstance(before, models.SizeInfo)
+  assert isinstance(after, models.SizeInfo)
+  section_sizes = {k: after.section_sizes[k] - v
+                   for k, v in before.section_sizes.iteritems()}
+  symbol_diff = _DiffSymbolGroups(before.symbols, after.symbols)
+  if cluster:
+    symbol_diff = symbol_diff.Cluster()
+  return models.SizeInfoDiff(section_sizes, symbol_diff, before.metadata,
+                             after.metadata)
