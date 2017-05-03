@@ -295,11 +295,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -389,11 +386,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -462,11 +456,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -562,11 +553,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -647,11 +635,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),

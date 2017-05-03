@@ -260,11 +260,8 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
   // Otherwise, check the underlying filesystem.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .WithPriority(base::TaskPriority::USER_BLOCKING)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&IsArcCompatibleFilesystem, profile_path),
       base::Bind(&StoreCompatibilityCheckResult, account_id, callback));
 }

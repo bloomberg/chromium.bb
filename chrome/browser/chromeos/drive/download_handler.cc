@@ -382,7 +382,7 @@ void DownloadHandler::OnCreateDirectory(
   DVLOG(1) << "OnCreateDirectory " << FileErrorToString(error);
   if (error == FILE_ERROR_OK) {
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_path_),
         callback);
   } else {

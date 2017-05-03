@@ -128,9 +128,7 @@ void DMTokenStorage::EncryptAndStoreToken() {
   DCHECK(!system_salt_.empty());
   DCHECK(!dm_token_.empty());
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&EncryptToken, system_salt_, dm_token_),
       base::Bind(&DMTokenStorage::OnTokenEncrypted,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -153,9 +151,7 @@ void DMTokenStorage::LoadAndDecryptToken() {
       local_state_->GetString(prefs::kDeviceDMToken);
   if (!encrypted_dm_token.empty()) {
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        base::TaskTraits().MayBlock().WithPriority(
-            base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&DecryptToken, system_salt_, encrypted_dm_token),
         base::Bind(&DMTokenStorage::FlushRetrieveTokenCallback,
                    weak_ptr_factory_.GetWeakPtr()));

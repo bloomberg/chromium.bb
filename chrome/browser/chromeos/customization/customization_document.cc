@@ -866,10 +866,9 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
       base::Passed(std::move(applying)));
-  base::PostTaskWithTraitsAndReply(FROM_HERE,
-                                   base::TaskTraits().MayBlock().WithPriority(
-                                       base::TaskPriority::BACKGROUND),
-                                   check_file_exists, on_checked_closure);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      check_file_exists, on_checked_closure);
 }
 
 void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(

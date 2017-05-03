@@ -40,8 +40,7 @@ void WriteOnCacheFileAfterOpenFile(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_BLOCKING),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(file_io_task_callback, error, local_cache_path),
       base::Bind(&RunCloseCallbackAndReplyTask, close_callback, reply, error));
 }

@@ -108,8 +108,7 @@ void NativeProcessLauncherImpl::Core::Launch(
     const std::string& native_host_name,
     const LaunchedCallback& callback) {
   base::PostTaskWithTraits(FROM_HERE,
-                           base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::USER_VISIBLE),
+                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
                            base::BindOnce(&Core::DoLaunchOnThreadPool, this,
                                           origin, native_host_name, callback));
 }

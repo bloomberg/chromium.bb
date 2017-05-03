@@ -131,8 +131,7 @@ class NotificationPlatformBridgeLinuxImpl
       : bus_(bus) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        base::TaskTraits().MayBlock().WithPriority(
-            base::TaskPriority::USER_BLOCKING));
+        {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
     registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                    content::NotificationService::AllSources());
   }

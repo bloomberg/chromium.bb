@@ -142,8 +142,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   // the callback later when done.
   SystemLogsResponse* response_ptr = response.release();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&GetEntriesAsync, response_ptr),
       base::Bind(callback, base::Owned(response_ptr)));
 #else

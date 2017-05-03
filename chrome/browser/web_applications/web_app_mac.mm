@@ -1027,8 +1027,7 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
     return false;
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&RecordAppShimErrorAndBuildShortcutInfo,
                  command_line.GetSwitchValuePath(app_mode::kAppShimError)),
       base::Bind(&RebuildAppAndLaunch));

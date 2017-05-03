@@ -126,9 +126,7 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
 
   // Cleanup these temporary log files.
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(CleanupEventLog, base::Passed(&log_paths)));
 }
 
@@ -148,10 +146,9 @@ void OnEventLogCollected(
                  base::Passed(&log_paths));
   const base::Closure callback_closure =
       base::Bind(callback, base::Owned(response.release()));
-  base::PostTaskWithTraitsAndReply(FROM_HERE,
-                                   base::TaskTraits().MayBlock().WithPriority(
-                                       base::TaskPriority::BACKGROUND),
-                                   pack_closure, callback_closure);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      pack_closure, callback_closure);
 }
 
 // Callback for handing the outcome of GetTouchDeviceStatus().

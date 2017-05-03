@@ -205,11 +205,8 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   std::string api_key;
   // The API is private. If we don't have the official API key, don't even try.
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {

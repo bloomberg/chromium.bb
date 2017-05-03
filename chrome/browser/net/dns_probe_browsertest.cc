@@ -186,11 +186,8 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
             network_delegate,
             file_path,
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::BACKGROUND)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         should_delay_(should_delay),
         start_delayed_(false),
         destruction_callback_(destruction_callback) {}

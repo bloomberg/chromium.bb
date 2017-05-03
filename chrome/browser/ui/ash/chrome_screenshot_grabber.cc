@@ -281,11 +281,8 @@ ChromeScreenshotGrabber::ChromeScreenshotGrabber()
     : screenshot_grabber_(new ui::ScreenshotGrabber(
           this,
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::USER_VISIBLE)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)))),
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
       profile_for_test_(NULL) {
   screenshot_grabber_->AddObserver(this);
 }

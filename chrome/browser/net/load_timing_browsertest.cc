@@ -127,11 +127,8 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
             network_delegate,
             path,
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::BACKGROUND)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         load_timing_deltas_(load_timing_deltas),
         weak_factory_(this) {}
 

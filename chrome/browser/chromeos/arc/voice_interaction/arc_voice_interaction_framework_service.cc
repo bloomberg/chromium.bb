@@ -125,8 +125,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
   ui::GrabWindowSnapshotAsyncJPEG(
       window, gfx::Rect(window->bounds().size()),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::USER_BLOCKING)),
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING}),
       base::Bind(&ScreenshotCallback, callback));
 }
 
@@ -140,8 +139,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   ui::GrabWindowSnapshotAsyncJPEG(
       window, gfx::Rect(window->bounds().size()),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::USER_BLOCKING)),
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING}),
       base::Bind(&ScreenshotCallback, callback));
 }
 

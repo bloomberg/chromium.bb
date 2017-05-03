@@ -65,11 +65,8 @@ net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
   return new net::URLRequestMockHTTPJob(
       request, network_delegate, file_path,
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 
 // Parses the upload data in |request| into |request_msg|, and validates the

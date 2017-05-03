@@ -116,8 +116,7 @@ void SendLocalFileResourceWithOrigin(
   content::URLDataSource::GotDataCallback wrapper =
       base::Bind(&CheckLocalIncludes, callback);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ReadFileAndReturn, fullpath),
       base::Bind(&CallbackWithLoadedResource, origin, wrapper));
 }

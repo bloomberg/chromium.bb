@@ -374,9 +374,7 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
   const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
                  base::ConstRef(shortcut_info_ref), hwnd),
       base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,

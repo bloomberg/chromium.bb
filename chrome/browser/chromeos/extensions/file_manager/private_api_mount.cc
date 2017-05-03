@@ -101,8 +101,7 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
       // For files under downloads, change the file permission and make it
       // readable from avfs/fuse if needed.
       base::PostTaskWithTraits(
-          FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                         base::TaskPriority::USER_BLOCKING),
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
           base::Bind(&EnsureReadableFilePermissionAsync, path,
                      google_apis::CreateRelayCallback(
                          base::Bind(&FileManagerPrivateAddMountFunction::

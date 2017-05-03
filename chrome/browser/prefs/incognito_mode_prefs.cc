@@ -201,8 +201,7 @@ void IncognitoModePrefs::InitializePlatformParentalControls() {
   // TODO(fdoray): This task uses COM. Add the WithCom() trait once supported.
   // crbug.com/662122
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(
           base::IgnoreResult(&PlatformParentalControlsValue::GetInstance)));
 }

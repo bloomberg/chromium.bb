@@ -84,10 +84,7 @@ void SSLErrorAssistantComponentInstallerTraits::ComponentReady(
            << install_dir.value();
 
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .MayBlock(),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&LoadProtoFromDisk, GetInstalledPath(install_dir)));
 }
 

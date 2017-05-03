@@ -41,7 +41,7 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits().MayBlock());
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   base::FilePath store_path =
       profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);

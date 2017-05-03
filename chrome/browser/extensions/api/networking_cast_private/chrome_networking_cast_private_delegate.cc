@@ -191,9 +191,7 @@ void ChromeNetworkingCastPrivateDelegate::VerifyDestination(
     const VerifiedCallback& success_callback,
     const FailureCallback& failure_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&RunDecodeAndVerifyCredentials, base::Passed(&credentials)),
       base::Bind(&VerifyDestinationCompleted, success_callback,
                  failure_callback));
@@ -205,9 +203,7 @@ void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptCredentials(
     const DataCallback& success_callback,
     const FailureCallback& failure_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&RunVerifyAndEncryptCredentials, guid,
                  base::Passed(&credentials), success_callback,
                  failure_callback),
@@ -220,9 +216,7 @@ void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(
     const DataCallback& success_callback,
     const FailureCallback& failure_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&RunVerifyAndEncryptData, data, base::Passed(&credentials)),
       base::Bind(&VerifyAndEncryptDataCompleted, success_callback,
                  failure_callback));

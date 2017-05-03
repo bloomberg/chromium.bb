@@ -1167,12 +1167,9 @@ class ReporterRunner : public chrome::BrowserListObserver {
       base::CreateTaskRunnerWithTraits(
           // LaunchAndWaitForExitOnBackgroundThread() creates (MayBlock()) and
           // joins (WithBaseSyncPrimitives()) a process.
-          base::TaskTraits()
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .MayBlock()
-              .WithBaseSyncPrimitives());
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // This value is used to identify how long to wait before starting a new run
   // of the reporter queue. It's initialized with the default value and may be

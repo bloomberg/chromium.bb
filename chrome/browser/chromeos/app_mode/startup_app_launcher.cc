@@ -119,8 +119,7 @@ void StartupAppLauncher::StartLoadingOAuthFile() {
 
   KioskOAuthParams* auth_params = new KioskOAuthParams();
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&StartupAppLauncher::LoadOAuthFileAsync, auth_params),
       base::Bind(&StartupAppLauncher::OnOAuthFileLoaded, AsWeakPtr(),
                  base::Owned(auth_params)));

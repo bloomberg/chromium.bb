@@ -48,8 +48,7 @@ void ComputeSpaceNeedToBeFreedAfterGetMetadata(
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_BLOCKING),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
                  file_info.size),
       callback);

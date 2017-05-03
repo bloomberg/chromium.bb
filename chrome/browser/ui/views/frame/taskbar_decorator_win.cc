@@ -88,8 +88,7 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
   // TODO(robliao): Annotate this task with .WithCOM() once supported.
   // https://crbug.com/662122
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&SetOverlayIcon, hwnd, base::Passed(&bitmap)));
 }
 

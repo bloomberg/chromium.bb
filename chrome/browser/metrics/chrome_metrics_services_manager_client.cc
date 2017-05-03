@@ -64,10 +64,7 @@ const base::Feature kMetricsReportingFeature{"MetricsReporting",
 // because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .MayBlock(),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&GoogleUpdateSettings::StoreMetricsClientInfo,
                      client_info));
 }

@@ -269,8 +269,7 @@ void GaiaScreenHandler::DisableRestrictiveProxyCheckForTest() {
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&version_loader::GetVersion, version_loader::VERSION_SHORT),
       base::Bind(&GaiaScreenHandler::LoadGaiaWithVersion,
                  weak_factory_.GetWeakPtr(), context));

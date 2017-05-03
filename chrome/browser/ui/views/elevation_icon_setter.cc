@@ -62,8 +62,7 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
     : button_(button),
       weak_factory_(this) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_BLOCKING),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&GetElevationIcon),
       base::Bind(&ElevationIconSetter::SetButtonIcon,
                  weak_factory_.GetWeakPtr(), callback));

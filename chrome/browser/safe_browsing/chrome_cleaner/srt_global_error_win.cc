@@ -112,8 +112,7 @@ SRTGlobalError::SRTGlobalError(GlobalErrorService* global_error_service,
 SRTGlobalError::~SRTGlobalError() {
   if (!interacted_) {
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
   }
 }
@@ -190,8 +189,7 @@ void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
 void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   OnUserinteractionStarted(SRT_PROMPT_DENIED);
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
   OnUserinteractionDone();
 }
@@ -209,9 +207,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
   // from the global_error_service_ in the call to OnUserInteractionStarted.
   // This means that it is safe to use base::Unretained here.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(
           &MaybeExecuteSRTFromBlockingPool, downloaded_path_,
           ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
@@ -241,8 +237,7 @@ void SRTGlobalError::FallbackToDownloadPage() {
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
   OnUserinteractionDone();
 }

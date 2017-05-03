@@ -1310,8 +1310,7 @@ DeveloperPrivateRequestFileSourceFunction::Run() {
     return RespondNow(Error(kManifestKeyIsRequiredError));
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&ReadFileToString, extension->path().Append(path_suffix)),
       base::Bind(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
 

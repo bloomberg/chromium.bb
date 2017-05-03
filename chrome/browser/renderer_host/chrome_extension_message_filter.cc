@@ -247,7 +247,7 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
 
   // This blocks tab loading. Priority is inherited from the calling context.
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync,
                  this, paths_to_load, extension_id, default_locale, reply_msg));
 }

@@ -221,8 +221,7 @@ void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
   ash::WallpaperController* wc = ash::Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = wc->GetWallpaper();
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&EncodeImagePng, wallpaper), callback);
 }
 

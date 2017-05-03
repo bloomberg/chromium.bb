@@ -84,8 +84,7 @@ bool GoodiesDisplayer::Init() {
       prefs::kCanShowOobeGoodiesPage);
   if (can_show) {
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&CheckGoodiesPrefAgainstOobeTimestamp),
         base::Bind(&UpdateGoodiesPrefCantShow));
   }

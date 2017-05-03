@@ -61,8 +61,7 @@ void OpenItem(Profile* profile,
               const OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE,
-                           base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::BACKGROUND),
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
                            base::BindOnce(&VerifyAndOpenItemOnBlockingThread,
                                           full_path, item_type, callback));
 }

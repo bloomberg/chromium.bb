@@ -71,9 +71,7 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
     // task on the blocking pool.
 #if defined(OS_MACOSX)
     base::PostTaskWithTraits(
-        FROM_HERE,
-        base::TaskTraits().MayBlock().WithPriority(
-            base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));
 #else
     base::EnsureProcessTerminated(std::move(process_));
@@ -147,10 +145,8 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
 #endif
 
   scoped_refptr<base::TaskRunner> task_runner(base::CreateTaskRunnerWithTraits(
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   read_stream_.reset(new net::FileStream(std::move(read_file), task_runner));
   write_stream_.reset(new net::FileStream(std::move(write_file), task_runner));

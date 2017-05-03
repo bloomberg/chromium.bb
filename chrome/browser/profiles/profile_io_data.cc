@@ -231,11 +231,8 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
       return new net::URLRequestFileJob(
           request, network_delegate, path,
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::USER_VISIBLE)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
     return NULL;
   }
@@ -1165,11 +1162,8 @@ ProfileIOData::SetUpJobFactoryDefaults(
       url::kFileScheme,
       base::MakeUnique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::USER_VISIBLE)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1198,11 +1192,8 @@ ProfileIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       url::kContentScheme,
       content::ContentProtocolHandler::Create(base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::USER_VISIBLE)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
 #endif
 
   job_factory->SetProtocolHandler(

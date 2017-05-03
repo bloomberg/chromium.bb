@@ -68,8 +68,7 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
   Profile* profile = Profile::FromBrowserContext(context);
   base::FilePath queue_store_path =
       profile->GetPath().Append(chrome::kOfflinePageRequestQueueDirname);

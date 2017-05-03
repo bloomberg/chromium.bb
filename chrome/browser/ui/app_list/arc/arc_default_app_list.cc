@@ -129,8 +129,7 @@ ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate,
 
   // Once ready OnAppsReady is called.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ReadAppsFromFileThread),
       base::Bind(&ArcDefaultAppList::OnAppsReady,
                  weak_ptr_factory_.GetWeakPtr()));

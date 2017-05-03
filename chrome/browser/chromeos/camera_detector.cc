@@ -48,11 +48,8 @@ void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
   presence_check_in_progress_ = true;
   base::PostTaskAndReplyWithResult(
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::Bind(&CameraDetector::CheckPresence),
       base::Bind(&CameraDetector::OnPresenceCheckDone, callback));

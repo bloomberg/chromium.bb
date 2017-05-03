@@ -52,11 +52,8 @@ KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
   return new favicon::LargeIconService(
       favicon_service,
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)),
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
           base::MakeUnique<suggestions::ImageDecoderImpl>(),
           profile->GetRequestContext()));

@@ -98,8 +98,7 @@ void FileFlusher::Job::Start() {
   }
 
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&FileFlusher::Job::FlushAsync, base::Unretained(this)),
       base::Bind(&FileFlusher::Job::FinishOnUIThread, base::Unretained(this)));
 }

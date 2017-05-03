@@ -71,10 +71,9 @@ void IntersectCertificates(
   // chrome.platformKeys.selectClientCertificates extensions API. Completion
   // does not affect browser responsiveness, hence the BACKGROUND priority.
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&IntersectOnWorkerThread, certs1, certs2, intersection_ptr),
       base::Bind(callback, base::Passed(&intersection)));
 }
