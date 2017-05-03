@@ -81,12 +81,18 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
 
   void CaptureBeforeImage(const gfx::Rect& bounds) {
     Capture(bounds);
-    image_.AsBitmap().deepCopyTo(&before_bmp_);
+    if (before_bmp_.tryAllocPixels(image_.AsBitmap().info())) {
+      image_.AsBitmap().readPixels(before_bmp_.info(), before_bmp_.getPixels(),
+                                   before_bmp_.rowBytes(), 0, 0);
+    }
   }
 
   void CaptureAfterImage(const gfx::Rect& bounds) {
     Capture(bounds);
-    image_.AsBitmap().deepCopyTo(&after_bmp_);
+    if (after_bmp_.tryAllocPixels(image_.AsBitmap().info())) {
+      image_.AsBitmap().readPixels(after_bmp_.info(), after_bmp_.getPixels(),
+                                   after_bmp_.rowBytes(), 0, 0);
+    }
   }
 
   void ComputeImageStats() {

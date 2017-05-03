@@ -75,7 +75,8 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   SkBitmap temp_bitmap;
   temp_bitmap.installPixels(info, buffer, info.minRowBytes());
   SkBitmap bitmap;
-  temp_bitmap.copyTo(&bitmap);
+  if (bitmap.tryAllocPixels(info))
+    temp_bitmap.readPixels(info, bitmap.getPixels(), bitmap.rowBytes(), 0, 0);
 
   // Align the pattern with the upper corner of |align_rect|.
   SkMatrix local_matrix;

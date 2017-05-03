@@ -166,7 +166,10 @@ void HeadlessClipboard::WriteWebSmartPaste() {
 void HeadlessClipboard::WriteBitmap(const SkBitmap& bitmap) {
   // Create a dummy entry.
   GetDefaultStore().data[GetBitmapFormatType()];
-  bitmap.copyTo(&GetDefaultStore().image);
+  SkBitmap& dst = GetDefaultStore().image;
+  if (dst.tryAllocPixels(bitmap.info())) {
+    bitmap.readPixels(dst.info(), dst.getPixels(), dst.rowBytes(), 0, 0);
+  }
 }
 
 void HeadlessClipboard::WriteData(const FormatType& format,

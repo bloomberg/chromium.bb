@@ -535,7 +535,8 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   bitmap->allocN32Pixels(7, 8);
   bitmap->eraseARGB(123, 213, 77, 33);
   auto in_bitmap = base::MakeUnique<SkBitmap>();
-  bitmap->deepCopyTo(in_bitmap.get());
+  in_bitmap->allocN32Pixels(7, 8);
+  in_bitmap->eraseARGB(123, 213, 77, 33);
   auto input = CopyOutputResult::CreateBitmapResult(std::move(bitmap));
   auto size = input->size();
 

@@ -203,10 +203,14 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
   }
 
   SkBitmap bitmap;
-  if (thumbnail.colorType() == kN32_SkColorType)
+  if (thumbnail.colorType() == kN32_SkColorType) {
     bitmap = thumbnail;
-  else
-    thumbnail.copyTo(&bitmap, kN32_SkColorType);
+  } else {
+    SkImageInfo info = thumbnail.info().makeColorType(kN32_SkColorType);
+    if (bitmap.tryAllocPixels(info)) {
+      thumbnail.readPixels(info, bitmap.getPixels(), bitmap.rowBytes(), 0, 0);
+    }
+  }
 
   std::vector<uint8_t> thumbnail_data;
   if (bitmap.getPixels()) {
