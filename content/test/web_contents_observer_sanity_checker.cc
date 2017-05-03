@@ -4,6 +4,7 @@
 
 #include "content/test/web_contents_observer_sanity_checker.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -35,8 +36,9 @@ GlobalRoutingID GetRoutingPair(RenderFrameHost* host) {
 void WebContentsObserverSanityChecker::Enable(WebContents* web_contents) {
   if (web_contents->GetUserData(&kWebContentsObserverSanityCheckerKey))
     return;
-  web_contents->SetUserData(&kWebContentsObserverSanityCheckerKey,
-                            new WebContentsObserverSanityChecker(web_contents));
+  web_contents->SetUserData(
+      &kWebContentsObserverSanityCheckerKey,
+      base::WrapUnique(new WebContentsObserverSanityChecker(web_contents)));
 }
 
 void WebContentsObserverSanityChecker::RenderFrameCreated(

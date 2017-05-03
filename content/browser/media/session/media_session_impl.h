@@ -67,7 +67,7 @@ class MediaSessionAndroid;
 // work with it.
 class MediaSessionImpl : public MediaSession,
                          public WebContentsObserver,
-                         protected WebContentsUserData<MediaSessionImpl> {
+                         public WebContentsUserData<MediaSessionImpl> {
  public:
   enum class State { ACTIVE, SUSPENDED, INACTIVE };
 

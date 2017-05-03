@@ -3879,7 +3879,8 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
         mojo::MakeRequest(&interface_provider_ptr));
     render_frame_host_android =
         new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
-    SetUserData(kRenderFrameHostAndroidKey, render_frame_host_android);
+    SetUserData(kRenderFrameHostAndroidKey,
+                base::WrapUnique(render_frame_host_android));
   }
   return render_frame_host_android->GetJavaObject();
 }

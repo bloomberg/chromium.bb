@@ -26,6 +26,7 @@ class DocumentState;
 class InternalDocumentStateData : public base::SupportsUserData::Data {
  public:
   InternalDocumentStateData();
+  ~InternalDocumentStateData() override;
 
   static InternalDocumentStateData* FromDataSource(blink::WebDataSource* ds);
   static InternalDocumentStateData* FromDocumentState(DocumentState* ds);
@@ -76,9 +77,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   bool is_cache_policy_override_set() const {
     return cache_policy_override_set_;
   }
-
- protected:
-  ~InternalDocumentStateData() override;
 
  private:
   int http_status_code_;

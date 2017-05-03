@@ -5,6 +5,8 @@
 #include "content/browser/media/session/media_session_impl.h"
 
 #include <algorithm>
+
+#include "base/memory/ptr_util.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"

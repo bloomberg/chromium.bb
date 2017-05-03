@@ -751,7 +751,7 @@ class TestResourceDispatcherHostDelegate
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     if (user_data_) {
       const void* key = user_data_.get();
-      request->SetUserData(key, user_data_.release());
+      request->SetUserData(key, std::move(user_data_));
     }
 
     if (flags_ != NONE) {

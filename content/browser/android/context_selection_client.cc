@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -53,7 +54,8 @@ ContextSelectionClient::ContextSelectionClient(
       web_contents_(web_contents),
       weak_ptr_factory_(this) {
   DCHECK(!web_contents_->GetUserData(kContextSelectionClientUDKey));
-  web_contents_->SetUserData(kContextSelectionClientUDKey, new UserData(this));
+  web_contents_->SetUserData(kContextSelectionClientUDKey,
+                             base::MakeUnique<UserData>(this));
 }
 
 ContextSelectionClient::~ContextSelectionClient() {

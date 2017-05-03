@@ -4,6 +4,7 @@
 
 #include "content/renderer/mojo_bindings_controller.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -40,9 +41,9 @@ void MojoBindingsController::CreateContextState() {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
-  MojoContextStateData* data = new MojoContextStateData;
+  auto data = base::MakeUnique<MojoContextStateData>();
   data->state.reset(new MojoContextState(frame, context, bindings_type_));
-  context_data->SetUserData(kMojoContextStateKey, data);
+  context_data->SetUserData(kMojoContextStateKey, std::move(data));
 }
 
 void MojoBindingsController::DestroyContextState(
