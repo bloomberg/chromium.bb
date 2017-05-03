@@ -54,9 +54,9 @@ std::unique_ptr<UsbService> UsbService::Create(
   if (base::FeatureList::IsEnabled(kNewUsbBackend))
     return base::WrapUnique(new UsbServiceWin(blocking_task_runner));
   else
-    return base::WrapUnique(new UsbServiceImpl(blocking_task_runner));
+    return base::WrapUnique(new UsbServiceImpl());
 #elif defined(OS_MACOSX)
-  return base::WrapUnique(new UsbServiceImpl(blocking_task_runner));
+  return base::WrapUnique(new UsbServiceImpl());
 #else
   return nullptr;
 #endif
