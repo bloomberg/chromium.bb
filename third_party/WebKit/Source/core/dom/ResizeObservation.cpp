@@ -38,14 +38,15 @@ size_t ResizeObservation::TargetDepth() {
 
 LayoutSize ResizeObservation::ComputeTargetSize() const {
   if (target_) {
-    if (target_->IsSVGElement() &&
-        ToSVGElement(target_)->IsSVGGraphicsElement()) {
-      SVGGraphicsElement& svg = ToSVGGraphicsElement(*target_);
-      return LayoutSize(svg.GetBBox().Size());
+    if (LayoutObject* layout_object = target_->GetLayoutObject()) {
+      if (target_->IsSVGElement() &&
+          ToSVGElement(target_)->IsSVGGraphicsElement()) {
+        SVGGraphicsElement& svg = ToSVGGraphicsElement(*target_);
+        return LayoutSize(svg.GetBBox().Size());
+      }
+      if (layout_object->IsBox())
+        return ToLayoutBox(layout_object)->ContentSize();
     }
-    LayoutBox* layout = target_->GetLayoutBox();
-    if (layout)
-      return layout->ContentSize();
   }
   return LayoutSize();
 }
