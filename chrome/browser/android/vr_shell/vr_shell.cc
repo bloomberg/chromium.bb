@@ -208,21 +208,19 @@ void VrShell::PostToGlThreadWhenReady(const base::Closure& task) {
   gl_thread_->task_runner()->PostTask(FROM_HERE, task);
 }
 
-void VrShell::SetContentPaused(bool paused) {
-  if (content_paused_ == paused)
+void VrShell::OnContentPaused(bool paused) {
+  if (!vr_shell_enabled_)
     return;
-  content_paused_ = paused;
 
   if (!delegate_provider_->device_provider())
     return;
 
   // TODO(mthiesse): The page is no longer visible when in menu mode. We
   // should unfocus or otherwise let it know it's hidden.
-  if (paused) {
+  if (paused)
     delegate_provider_->device_provider()->Device()->OnBlur();
-  } else {
+  else
     delegate_provider_->device_provider()->Device()->OnFocus();
-  }
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -402,11 +400,6 @@ void VrShell::AppButtonGesturePerformed(UiInterface::Direction direction) {
     ui_->HandleAppButtonGesturePerformed(direction);
 }
 
-void VrShell::AppButtonPressed() {
-  if (vr_shell_enabled_)
-    ui_->HandleAppButtonClicked();
-}
-
 void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
                                            const JavaParamRef<jobject>& object,
                                            jint width,
@@ -421,16 +414,12 @@ void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
+// Note that the following code is obsolete and is here as reference for the
+// actions that need to be implemented natively.
 void VrShell::DoUiAction(const UiAction action,
                          const base::DictionaryValue* arguments) {
   // Actions that can be handled natively.
   switch (action) {
-    case SET_CONTENT_PAUSED: {
-      bool paused;
-      CHECK(arguments->GetBoolean("paused", &paused));
-      SetContentPaused(paused);
-      return;
-    }
     case HISTORY_BACK:
       if (web_contents_ && web_contents_->IsFullscreen()) {
         web_contents_->ExitFullscreen(false);

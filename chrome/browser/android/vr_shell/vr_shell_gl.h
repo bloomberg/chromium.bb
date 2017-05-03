@@ -43,6 +43,7 @@ namespace vr_shell {
 class FPSMeter;
 class MailboxToSurfaceBridge;
 class UiScene;
+class VrBrowserInterface;
 class VrController;
 class VrShell;
 class VrShellRenderer;
@@ -67,8 +68,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
     CONTENT,
   };
 
-  VrShellGl(const base::WeakPtr<VrShell>& weak_vr_shell,
-            scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+  VrShellGl(VrBrowserInterface* browser,
             gvr_context* gvr_api,
             bool initially_web_vr,
             bool reprojected_rendering,
@@ -81,6 +81,10 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void OnTriggerEvent();
   void OnPause();
   void OnResume();
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+    return task_runner_;
+  }
 
   void SetWebVrMode(bool enabled);
   void CreateOrResizeWebVRSurface(const gfx::Size& size);
@@ -225,8 +229,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   mojo::Binding<device::mojom::VRVSyncProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
-  base::WeakPtr<VrShell> weak_vr_shell_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  VrBrowserInterface* browser_;
 
   UiScene* scene_ = nullptr;
 

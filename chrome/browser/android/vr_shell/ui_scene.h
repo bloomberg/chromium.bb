@@ -68,6 +68,7 @@ class UiScene {
   float GetBackgroundDistance() const;
 
   bool GetWebVrRenderingEnabled() const;
+  void SetWebVrRenderingEnabled(bool enabled);
 
   void OnGLInitialized();
 

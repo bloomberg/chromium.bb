@@ -11,6 +11,8 @@
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
+#include "chrome/browser/android/vr_shell/vr_browser_interface.h"
+#include "chrome/browser/android/vr_shell/vr_shell.h"
 
 namespace vr_shell {
 
@@ -42,8 +44,8 @@ static constexpr float kTextureOffset = 0.01;
 
 }  // namespace
 
-UiSceneManager::UiSceneManager(UiScene* scene)
-    : scene_(scene), weak_ptr_factory_(this) {
+UiSceneManager::UiSceneManager(VrBrowserInterface* browser, UiScene* scene)
+    : browser_(browser), scene_(scene), weak_ptr_factory_(this) {
   std::unique_ptr<UiElement> element;
 
   CreateBackground();
@@ -182,6 +184,14 @@ void UiSceneManager::SetWebVRMode(bool web_vr) {
 void UiSceneManager::SetWebVRSecureOrigin(bool secure) {
   secure_origin_ = secure;
   ConfigureSecurityWarnings();
+}
+
+void UiSceneManager::OnAppButtonClicked() {
+  // Pressing the app button currenly pauses content rendering. Note: its still
+  // unclear what we want to do here and this will most likely change.
+  content_rendering_enabled_ = !content_rendering_enabled_;
+  scene_->SetWebVrRenderingEnabled(content_rendering_enabled_);
+  browser_->OnContentPaused(!content_rendering_enabled_);
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {

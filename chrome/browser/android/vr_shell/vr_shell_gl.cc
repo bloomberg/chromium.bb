@@ -20,6 +20,7 @@
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
+#include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
@@ -184,19 +185,16 @@ gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
 
 }  // namespace
 
-VrShellGl::VrShellGl(
-    const base::WeakPtr<VrShell>& weak_vr_shell,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    gvr_context* gvr_api,
-    bool initially_web_vr,
-    bool reprojected_rendering,
-    UiScene* scene)
+VrShellGl::VrShellGl(VrBrowserInterface* browser,
+                     gvr_context* gvr_api,
+                     bool initially_web_vr,
+                     bool reprojected_rendering,
+                     UiScene* scene)
     : web_vr_mode_(initially_web_vr),
       surfaceless_rendering_(reprojected_rendering),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
-      weak_vr_shell_(weak_vr_shell),
-      main_thread_task_runner_(std::move(main_thread_task_runner)),
+      browser_(browser),
       scene_(scene),
 #if DCHECK_IS_ON()
       fps_meter_(new FPSMeter()),
@@ -299,9 +297,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 void VrShellGl::CreateContentSurface() {
   content_surface_ =
       base::MakeUnique<gl::ScopedJavaSurface>(content_surface_texture_.get());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_,
-                            content_surface_->j_surface().obj()));
+  browser_->ContentSurfaceChanged(content_surface_->j_surface().obj());
 }
 
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
@@ -497,17 +493,14 @@ void VrShellGl::InitializeRenderer() {
                                            webvr_right_viewport_.get());
   webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
 
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_));
+  browser_->GvrDelegateReady();
 }
 
 void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
   controller_->UpdateState(head_direction);
   pointer_start_ = controller_->GetPointerStart();
 
-  device::GvrGamepadData pad = controller_->GetGamepadData();
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
+  browser_->UpdateGamepadData(controller_->GetGamepadData());
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
@@ -647,15 +640,11 @@ void VrShellGl::HandleControllerAppButtonActivity(
       if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
         direction =
             gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
-        main_thread_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&VrShell::AppButtonGesturePerformed,
-                                  weak_vr_shell_, direction));
+        browser_->AppButtonGesturePerformed(direction);
       }
     }
-    if (direction == UiInterface::NONE) {
-      main_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
-    }
+    if (direction == UiInterface::NONE)
+      browser_->OnAppButtonClicked();
   }
 }
 
@@ -780,9 +769,7 @@ void VrShellGl::SendInputToUiElements(UiElement* target_element) {
 
 void VrShellGl::SendGestureToContent(
     std::unique_ptr<blink::WebInputEvent> event) {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::ProcessContentGesture, weak_vr_shell_,
-                            base::Passed(std::move(event))));
+  browser_->ProcessContentGesture(std::move(event));
 }
 
 void VrShellGl::DrawFrame(int16_t frame_index) {
@@ -1324,8 +1311,7 @@ void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
 }
 
 void VrShellGl::ForceExitVr() {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
+  browser_->ForceExitVr();
 }
 
 void VrShellGl::SendVSync(base::TimeDelta time,
@@ -1353,8 +1339,7 @@ void VrShellGl::CreateVRDisplayInfo(
   device::mojom::VRDisplayInfoPtr info =
       device::GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(),
                                                webvr_surface_size_, device_id);
-  main_thread_task_runner_->PostTask(FROM_HERE,
-                                     base::Bind(callback, base::Passed(&info)));
+  browser_->RunVRDisplayInfoCallback(callback, &info);
 }
 
 }  // namespace vr_shell

@@ -1,0 +1,46 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_BROWSER_INTERFACE_H_
+#define CHROME_BROWSER_ANDROID_VR_SHELL_VR_BROWSER_INTERFACE_H_
+
+#include <memory>
+
+#include "base/android/jni_weak_ref.h"
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "device/vr/vr_service.mojom.h"
+
+namespace blink {
+class WebInputEvent;
+}
+
+namespace vr_shell {
+
+// An interface for communication with Vr Browser. Many of the functions in this
+// interface are proxies to methods on VrShell.
+class VrBrowserInterface {
+ public:
+  virtual ~VrBrowserInterface() {}
+
+  virtual void ContentSurfaceChanged(jobject surface) {}
+  virtual void GvrDelegateReady() {}
+  virtual void UpdateGamepadData(device::GvrGamepadData) {}
+  virtual void AppButtonGesturePerformed(UiInterface::Direction direction) {}
+  virtual void OnAppButtonClicked() {}
+  virtual void ProcessContentGesture(
+      std::unique_ptr<blink::WebInputEvent> event) {}
+  virtual void ForceExitVr() {}
+  virtual void RunVRDisplayInfoCallback(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      device::mojom::VRDisplayInfoPtr* info) {}
+  virtual void OnContentPaused(bool enabled) {}
+};
+
+}  // namespace vr_shell
+
+#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_BROWSER_INTERFACE_H_
