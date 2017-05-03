@@ -41,7 +41,7 @@ Other section sizes:
 2 symbols added (+), 1 changed (~), 3 removed (-), 35 unchanged (=)
 0 object files added, 0 removed
 
-Showing 41 symbols with total pss: 46 bytes
+Showing 41 symbols (41 unique) with total pss: 46 bytes
 .text=82 bytes   .rodata=0 bytes    other=-36 bytes  total=46 bytes
 Number of object files: 9
 

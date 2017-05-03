@@ -41,7 +41,7 @@ Section Sizes (Total=43,785,380 bytes):
     .rodata: 5,927,652 bytes (13.5%)
     .text: 35,900,712 bytes (82.0%)
 
-Showing 48 symbols with total pss: 44309900 bytes
+Showing 48 symbols (45 unique) with total pss: 44309900 bytes
 .text=34.2mb     .rodata=5.65mb     other=2.37mb     total=42.3mb
 Number of object files: 10
 
