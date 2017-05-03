@@ -32,6 +32,7 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastMetricsHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsActivity.java",
+    "$java_src_dir/org/chromium/chromecast/shell/LogcatExtractor.java",
   ]
 
   android_manifest = cast_shell_android_manifest
