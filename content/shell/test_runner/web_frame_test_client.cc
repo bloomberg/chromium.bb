@@ -483,10 +483,9 @@ void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
   }
 }
 
-void WebFrameTestClient::DidFinishDocumentLoad(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
+void WebFrameTestClient::DidFinishDocumentLoad() {
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, frame);
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(" - didFinishDocumentLoadForFrame\n");
   }
 }

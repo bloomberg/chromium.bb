@@ -72,7 +72,7 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   // WebFrameClient methods to support resource loading thru the 'shadow page'.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
-  void DidFinishDocumentLoad(WebLocalFrame*) override;
+  void DidFinishDocumentLoad() override;
 
   // WebDevToolsAgentClient overrides.
   void SendProtocolMessage(int session_id,

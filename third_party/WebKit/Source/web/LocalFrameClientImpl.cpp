@@ -317,7 +317,7 @@ void LocalFrameClientImpl::DispatchDidFinishDocumentLoad() {
   // destroy the fake WebLocalFrame that they create, which means that you
   // should not put any code touching `this` after the two lines below.
   if (web_frame_->Client())
-    web_frame_->Client()->DidFinishDocumentLoad(web_frame_);
+    web_frame_->Client()->DidFinishDocumentLoad();
 }
 
 void LocalFrameClientImpl::DispatchDidLoadResourceFromMemoryCache(

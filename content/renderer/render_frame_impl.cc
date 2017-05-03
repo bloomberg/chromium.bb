@@ -3947,20 +3947,18 @@ void RenderFrameImpl::DidChangeIcon(blink::WebIconURL::Type icon_type) {
   render_view_->didChangeIcon(frame_, icon_type);
 }
 
-void RenderFrameImpl::DidFinishDocumentLoad(blink::WebLocalFrame* frame) {
+void RenderFrameImpl::DidFinishDocumentLoad() {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
-  DCHECK_EQ(frame_, frame);
-
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
   for (auto& observer : render_view_->observers())
-    observer.DidFinishDocumentLoad(frame);
+    observer.DidFinishDocumentLoad(frame_);
   for (auto& observer : observers_)
     observer.DidFinishDocumentLoad();
 
   // Check whether we have new encoding name.
-  UpdateEncoding(frame, frame->View()->PageEncoding().Utf8());
+  UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {

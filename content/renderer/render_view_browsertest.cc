@@ -1877,7 +1877,6 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
 TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   blink::WebURLResponse response;
   response.SetHTTPStatusCode(503);
-  WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -1890,7 +1889,7 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
 
   // Emulate a 4xx/5xx main resource response with an empty body.
   main_frame->DidReceiveResponse(response);
-  main_frame->DidFinishDocumentLoad(web_frame);
+  main_frame->DidFinishDocumentLoad();
   main_frame->RunScriptsAtDocumentReady(true);
 
   // The error page itself is loaded asynchronously.

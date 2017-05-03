@@ -587,7 +587,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
-  void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishDocumentLoad() override;
   void RunScriptsAtDocumentReady(bool document_is_empty) override;
   void RunScriptsAtDocumentIdle() override;
   void DidHandleOnloadEvents() override;

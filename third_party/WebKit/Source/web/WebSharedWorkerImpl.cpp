@@ -173,17 +173,16 @@ void WebSharedWorkerImpl::LoadShadowPage() {
                        SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
-void WebSharedWorkerImpl::DidFinishDocumentLoad(WebLocalFrame* frame) {
-  DCHECK_EQ(frame, main_frame_);
+void WebSharedWorkerImpl::DidFinishDocumentLoad() {
   DCHECK(IsMainThread());
   DCHECK(!loading_document_);
   DCHECK(!main_script_loader_);
-  frame->DataSource()->SetServiceWorkerNetworkProvider(
+  main_frame_->DataSource()->SetServiceWorkerNetworkProvider(
       client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
   main_script_loader_->SetRequestContext(
       WebURLRequest::kRequestContextSharedWorker);
-  loading_document_ = ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument();
+  loading_document_ = main_frame_->GetFrame()->GetDocument();
 
   CrossOriginRequestPolicy cross_origin_request_policy =
       (static_cast<KURL>(url_)).ProtocolIsData() ? kAllowCrossOriginRequests

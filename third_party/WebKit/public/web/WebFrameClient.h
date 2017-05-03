@@ -416,7 +416,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // The frame's document finished loading.
   // This method may not execute JavaScript code.
-  virtual void DidFinishDocumentLoad(WebLocalFrame*) {}
+  virtual void DidFinishDocumentLoad() {}
 
   // Like |didFinishDocumentLoad|, except this method may run JavaScript
   // code (and possibly invalidate the frame).

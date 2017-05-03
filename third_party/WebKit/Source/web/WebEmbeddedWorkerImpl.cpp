@@ -321,15 +321,14 @@ void WebEmbeddedWorkerImpl::LoadShadowPage() {
                        SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
-void WebEmbeddedWorkerImpl::DidFinishDocumentLoad(WebLocalFrame* frame) {
-  DCHECK_EQ(frame, main_frame_);
+void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
   DCHECK(!main_script_loader_);
   DCHECK(main_frame_);
   DCHECK(worker_context_client_);
   DCHECK(loading_shadow_page_);
   DCHECK(!asked_to_terminate_);
   loading_shadow_page_ = false;
-  frame->DataSource()->SetServiceWorkerNetworkProvider(
+  main_frame_->DataSource()->SetServiceWorkerNetworkProvider(
       worker_context_client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = WorkerScriptLoader::Create();
   main_script_loader_->SetRequestContext(
