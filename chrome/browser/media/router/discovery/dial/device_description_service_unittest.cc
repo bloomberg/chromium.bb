@@ -100,9 +100,8 @@ class DeviceDescriptionServiceTest : public ::testing::Test {
                   const ParsedDialDeviceDescription& description_data,
                   bool expired) {
     DeviceDescriptionService::CacheEntry cache_entry;
-    cache_entry.expire_time = base::Time::Now();
-    if (!expired)
-      cache_entry.expire_time += base::TimeDelta::FromHours(12);
+    cache_entry.expire_time =
+        base::Time::Now() + (expired ? -1 : 1) * base::TimeDelta::FromHours(12);
     cache_entry.description_data = description_data;
     description_cache_[device_label] = cache_entry;
   }
@@ -247,8 +246,7 @@ TEST_F(DeviceDescriptionServiceTest,
                                                               "");
 }
 
-// Flaky: https://crbug.com/716810
-TEST_F(DeviceDescriptionServiceTest, DISABLED_TestCleanUpCacheEntries) {
+TEST_F(DeviceDescriptionServiceTest, TestCleanUpCacheEntries) {
   DialDeviceData device_data_1 = CreateDialDeviceData(1);
   DialDeviceData device_data_2 = CreateDialDeviceData(2);
   DialDeviceData device_data_3 = CreateDialDeviceData(3);
