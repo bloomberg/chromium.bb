@@ -76,11 +76,11 @@ class MediaRouteController : public mojom::MediaStatusObserver,
 
   // Media controller methods for forwarding commands to a
   // mojom::MediaControllerPtr held in |mojo_media_controller_|.
-  virtual void Play() const;
-  virtual void Pause() const;
-  virtual void Seek(base::TimeDelta time) const;
-  virtual void SetMute(bool mute) const;
-  virtual void SetVolume(float volume) const;
+  void Play();
+  void Pause();
+  void Seek(base::TimeDelta time);
+  void SetMute(bool mute);
+  void SetVolume(float volume);
 
   // mojom::MediaStatusObserver:
   // Notifies |observers_| of a status update.
@@ -96,11 +96,10 @@ class MediaRouteController : public mojom::MediaStatusObserver,
 
   MediaRoute::Id route_id() const { return route_id_; }
 
- protected:
-  ~MediaRouteController() override;
-
  private:
   friend class base::RefCounted<MediaRouteController>;
+
+  ~MediaRouteController() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
