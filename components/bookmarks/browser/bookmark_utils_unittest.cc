@@ -245,7 +245,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
     ASSERT_EQ(1U, nodes.size());
     EXPECT_TRUE(nodes[0] == node1);
     nodes.clear();
-    fields[i]->reset(original_value.release());
+    *fields[i] = std::move(original_value);
   }
 
   // Test two fields matching with one non-matching field.
@@ -255,7 +255,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
     GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
     ASSERT_EQ(0U, nodes.size());
     nodes.clear();
-    fields[i]->reset(original_value.release());
+    *fields[i] = std::move(original_value);
   }
 }
 

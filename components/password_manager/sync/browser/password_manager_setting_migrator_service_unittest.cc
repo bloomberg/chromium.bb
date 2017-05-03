@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -192,7 +194,7 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
         pref_service_syncable = factory.CreateSyncable(pref_registry.get());
     migration_service_.reset(
         new PasswordManagerSettingMigratorService(pref_service_syncable.get()));
-    pref_service_.reset(pref_service_syncable.release());
+    pref_service_ = std::move(pref_service_syncable);
   }
 
   void ExpectValuesForBothPrefValues(bool new_pref_value, bool old_pref_value) {

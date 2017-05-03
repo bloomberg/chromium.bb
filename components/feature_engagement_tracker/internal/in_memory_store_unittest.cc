@@ -5,6 +5,7 @@
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -26,7 +27,7 @@ class InMemoryStoreTest : public ::testing::Test {
   void LoadCallback(bool success, std::unique_ptr<std::vector<Event>> events) {
     load_callback_has_been_invoked_ = true;
     last_result_ = success;
-    loaded_events_.reset(events.release());
+    loaded_events_ = std::move(events);
   }
 
  protected:
