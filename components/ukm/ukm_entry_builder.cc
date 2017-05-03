@@ -17,9 +17,6 @@ UkmEntryBuilder::UkmEntryBuilder(const UkmService::AddEntryCallback& callback,
       entry_(new UkmEntry(source_id, event_name)) {}
 
 UkmEntryBuilder::~UkmEntryBuilder() {
-  if (entry_->metrics_.empty())
-    return;
-
   add_entry_callback_.Run(std::move(entry_));
 }
 

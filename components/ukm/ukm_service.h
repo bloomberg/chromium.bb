@@ -122,7 +122,7 @@ class UkmService {
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
   friend translate::TranslateRankerImpl;
-  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
                            LogsUploadedOnlyWhenHavingSourcesOrEntries);
