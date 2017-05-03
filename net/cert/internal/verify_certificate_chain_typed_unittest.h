@@ -51,18 +51,18 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, BasicConstraintsCa) {
   this->RunTest("intermediate-lacks-basic-constraints/main.test");
   this->RunTest("intermediate-basic-constraints-ca-false/main.test");
   this->RunTest("intermediate-basic-constraints-not-critical/main.test");
-  this->RunTest("unconstrained-root-lacks-basic-constraints/main.test");
-  this->RunTest("constrained-root-lacks-basic-constraints/main.test");
-  this->RunTest("unconstrained-root-basic-constraints-ca-false/main.test");
-  this->RunTest("constrained-root-basic-constraints-ca-false/main.test");
+  this->RunTest("root-lacks-basic-constraints/main.test");
+  this->RunTest("root-lacks-basic-constraints/ta-with-constraints.test");
+  this->RunTest("root-basic-constraints-ca-false/main.test");
+  this->RunTest("root-basic-constraints-ca-false/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, BasicConstraintsPathlen) {
   this->RunTest("violates-basic-constraints-pathlen-0/main.test");
   this->RunTest("basic-constraints-pathlen-0-self-issued/main.test");
   this->RunTest("target-has-pathlen-but-not-ca/main.test");
-  this->RunTest("violates-pathlen-1-constrained-root/main.test");
-  this->RunTest("violates-pathlen-1-unconstrained-root/main.test");
+  this->RunTest("violates-pathlen-1-from-root/main.test");
+  this->RunTest("violates-pathlen-1-from-root/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, UnknownExtension) {
@@ -93,8 +93,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Expired) {
   this->RunTest("expired-target/main.test");
   this->RunTest("expired-intermediate/main.test");
   this->RunTest("expired-target-notBefore/main.test");
-  this->RunTest("expired-unconstrained-root/main.test");
-  this->RunTest("expired-constrained-root/main.test");
+  this->RunTest("expired-root/main.test");
+  this->RunTest("expired-root/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetNotEndEntity) {
@@ -123,8 +123,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
   this->RunTest("intermediate-restricts-eku-ok/main.test");
   this->RunTest("intermediate-sets-eku-any/main.test");
   this->RunTest("target-sets-eku-any/main.test");
-  this->RunTest("constrained-root-bad-eku/main.test");
-  this->RunTest("unconstrained-root-bad-eku/main.test");
+  this->RunTest("root-bad-eku/main.test");
+  this->RunTest("root-bad-eku/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
@@ -135,8 +135,7 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TrustAnchorNotSelfSigned) {
   this->RunTest("non-self-signed-root/main.test");
-  this->RunTest("unconstrained-non-self-signed-root/main.test");
-  this->RunTest("constrained-non-self-signed-root/main.test");
+  this->RunTest("non-self-signed-root/ta-with-constraints.test");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyRollover) {
