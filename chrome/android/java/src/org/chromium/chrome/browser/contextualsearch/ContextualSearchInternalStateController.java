@@ -293,7 +293,12 @@ class ContextualSearchInternalStateController {
                 reset(StateChangeReason.BASE_PAGE_TAP);
                 break;
             case TAP_RECOGNIZED:
-                transitionTo(InternalState.GATHERING_SURROUNDINGS);
+                if (mPreviousState == InternalState.SHOWING_TAP_SEARCH) {
+                    // This is a second-tap on a Tap-selection.
+                    // We'll soon recognize a Long-press and show the edit pins, so nothing needed.
+                } else {
+                    transitionTo(InternalState.GATHERING_SURROUNDINGS);
+                }
                 break;
             case GATHERING_SURROUNDINGS:
                 // We gather surroundings for both Tap and Long-press in order to notify icing.
