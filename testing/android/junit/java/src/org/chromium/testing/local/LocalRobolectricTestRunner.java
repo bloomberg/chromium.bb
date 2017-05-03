@@ -14,7 +14,6 @@ import org.robolectric.internal.ManifestFactory;
  */
 public class LocalRobolectricTestRunner extends RobolectricTestRunner {
     private static final int DEFAULT_SDK = 25;
-    private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
 
     public LocalRobolectricTestRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
@@ -22,10 +21,7 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
 
     @Override
     protected Config buildGlobalConfig() {
-        String packageName =
-                System.getProperty("chromium.robolectric.package.name", DEFAULT_PACKAGE_NAME);
-
-        return new Config.Builder().setSdk(DEFAULT_SDK).setPackageName(packageName).build();
+        return new Config.Builder().setSdk(DEFAULT_SDK).build();
     }
 
     @Override
