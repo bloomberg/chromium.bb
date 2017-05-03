@@ -8,11 +8,13 @@
 Run diagnose_apk_bloat.py -h for detailed usage help.
 """
 
+import atexit
 import argparse
 import collections
 from contextlib import contextmanager
 import distutils.spawn
 import json
+import logging
 import multiprocessing
 import os
 import re
@@ -32,14 +34,6 @@ _SRC_ROOT = os.path.abspath(
 _DEFAULT_ARCHIVE_DIR = os.path.join(_SRC_ROOT, 'binary-size-bloat')
 _DEFAULT_OUT_DIR = os.path.join(_SRC_ROOT, 'out', 'diagnose-apk-bloat')
 _DEFAULT_ANDROID_TARGET = 'monochrome_public_apk'
-
-_global_restore_checkout_func = None
-
-
-def _SetRestoreFunc(subrepo):
-  branch = _GitCmd(['rev-parse', '--abbrev-ref', 'HEAD'], subrepo)
-  global _global_restore_checkout_func
-  _global_restore_checkout_func = lambda: _GitCmd(['checkout', branch], subrepo)
 
 
 _DiffResult = collections.namedtuple('DiffResult', ['name', 'value', 'units'])
@@ -76,6 +70,7 @@ class BaseDiff(object):
     raise NotImplementedError()
 
   def RunDiff(self, logfile, before_dir, after_dir):
+    logging.info('Creating: %s', self.name)
     self.ProduceDiff(before_dir, after_dir)
     self.AppendResults(logfile)
 
@@ -150,8 +145,9 @@ class ResourceSizesDiff(BaseDiff):
         if (section not in before or
             subsection not in before[section] or
             v['units'] != before[section][subsection]['units']):
-          _Print('Found differing dict structures for resource_sizes.py, '
-                 'skipping {} {}', section, subsection)
+          logging.warning(
+              'Found differing dict structures for resource_sizes.py, '
+              'skipping %s %s', section, subsection)
         else:
           diff.append(
               _DiffResult(
@@ -266,13 +262,13 @@ class _BuildHelper(object):
 
   def Run(self):
     """Run GN gen/ninja build and return the process returncode."""
-    _Print('Building: {}.', self.target)
+    logging.info('Building: %s.', self.target)
     retcode = _RunCmd(
-        self._GenGnCmd(), print_stdout=True, exit_on_failure=False)[1]
+        self._GenGnCmd(), verbose=True, exit_on_failure=False)[1]
     if retcode:
       return retcode
     return _RunCmd(
-        self._GenNinjaCmd(), print_stdout=True, exit_on_failure=False)[1]
+        self._GenNinjaCmd(), verbose=True, exit_on_failure=False)[1]
 
   def DownloadUrl(self, rev):
     return self.download_bucket + 'full-build-linux_%s.zip' % rev
@@ -294,11 +290,11 @@ class _BuildArchive(object):
     self.dir = os.path.join(base_archive_dir, rev)
     metadata_path = os.path.join(self.dir, 'metadata.txt')
     self.rev = rev
-    self.metadata = _GenerateMetadata([self], build, metadata_path, subrepo)
+    self.metadata = _Metadata([self], build, metadata_path, subrepo)
 
   def ArchiveBuildResults(self, supersize_path):
     """Save build artifacts necessary for diffing."""
-    _Print('Saving build results to: {}', self.dir)
+    logging.info('Saving build results to: %s', self.dir)
     _EnsureDirsExist(self.dir)
     build = self.build
     self._ArchiveFile(build.abs_main_lib_path)
@@ -312,15 +308,16 @@ class _BuildArchive(object):
       supersize_cmd += ['--apk-file', build.abs_apk_path]
       self._ArchiveFile(build.abs_apk_path)
 
+    logging.info('Creating .size file')
     _RunCmd(supersize_cmd)
-    _WriteMetadata(self.metadata)
+    self.metadata.Write()
 
   def Exists(self):
-    return _MetadataExists(self.metadata)
+    return self.metadata.Exists()
 
   def _ArchiveFile(self, filename):
     if not os.path.exists(filename):
-      _Die('missing expected file: {}', filename)
+      _Die('missing expected file: %s', filename)
     shutil.copy(filename, self.dir)
 
 
@@ -344,23 +341,25 @@ class _DiffArchiveManager(object):
     after = self.build_archives[after_id]
     diff_path = self._DiffFilePath(before, after)
     if not self._CanDiff(before, after):
-      _Print('Skipping diff for {} due to missing build archives.', diff_path)
+      logging.info(
+          'Skipping diff for %s due to missing build archives.', diff_path)
       return
 
     metadata_path = self._DiffMetadataPath(before, after)
-    metadata = _GenerateMetadata(
+    metadata = _Metadata(
         [before, after], self.build, metadata_path, self.subrepo)
-    if _MetadataExists(metadata):
-      _Print('Skipping diff for {} and {}. Matching diff already exists: {}',
-             before.rev, after.rev, diff_path)
+    if metadata.Exists():
+      logging.info(
+          'Skipping diff for %s and %s. Matching diff already exists: %s',
+          before.rev, after.rev, diff_path)
     else:
       if os.path.exists(diff_path):
         os.remove(diff_path)
       with open(diff_path, 'a') as diff_file:
         for d in self.diffs:
           d.RunDiff(diff_file, before.dir, after.dir)
-        _Print('\nSee detailed diff results here: {}.', diff_path)
-      _WriteMetadata(metadata)
+        logging.info('See detailed diff results here: %s.', diff_path)
+      metadata.Write()
       self._AddDiffSummaryStat(before, after)
 
   def Summarize(self):
@@ -402,71 +401,73 @@ class _DiffArchiveManager(object):
     return diff_path
 
 
+class _Metadata(object):
+
+  def __init__(self, archives, build, path, subrepo):
+    self.is_cloud = build.IsCloud()
+    self.data = {
+      'revs': [a.rev for a in archives],
+      'archive_dirs': [a.dir for a in archives],
+      'target': build.target,
+      'target_os': build.target_os,
+      'is_cloud': build.IsCloud(),
+      'subrepo': subrepo,
+      'path': path,
+      'gn_args': {
+        'extra_gn_args_str': build.extra_gn_args_str,
+        'enable_chrome_android_internal': build.enable_chrome_android_internal,
+      }
+    }
+
+  def Exists(self):
+    old_metadata = {}
+    path = self.data['path']
+    if os.path.exists(path):
+      with open(path, 'r') as f:
+        old_metadata = json.load(f)
+        # For local builds, all keys need to be the same. Differing GN args will
+        # make diffs noisy and inaccurate. GN args do not matter for --cloud
+        # since we download prebuilt build artifacts.
+        keys = self.data.keys()
+        if self.is_cloud:
+          keys.remove('gn_args')
+        return all(v == old_metadata[k]
+                   for k, v in self.data.iteritems() if k in keys)
+
+  def Write(self):
+    with open(self.data['path'], 'w') as f:
+      json.dump(self.data, f)
+
+
 def _EnsureDirsExist(path):
   if not os.path.exists(path):
     os.makedirs(path)
 
 
-def _GenerateMetadata(archives, build, path, subrepo):
-  return {
-    'revs': [a.rev for a in archives],
-    'archive_dirs': [a.dir for a in archives],
-    'target': build.target,
-    'target_os': build.target_os,
-    'is_cloud': build.IsCloud(),
-    'subrepo': subrepo,
-    'path': path,
-    'gn_args': {
-      'extra_gn_args_str': build.extra_gn_args_str,
-      'enable_chrome_android_internal': build.enable_chrome_android_internal,
-    }
-  }
-
-
-def _WriteMetadata(metadata):
-  with open(metadata['path'], 'w') as f:
-    json.dump(metadata, f)
-
-
-def _MetadataExists(metadata):
-  old_metadata = {}
-  path = metadata['path']
-  if os.path.exists(path):
-    with open(path, 'r') as f:
-      old_metadata = json.load(f)
-      ret = len(metadata) == len(old_metadata)
-      ret &= all(v == old_metadata[k]
-                 for k, v in metadata.items() if k != 'gn_args')
-      # GN args don't matter when artifacts are downloaded. For local builds
-      # they need to be the same so that diffs are accurate (differing GN args
-      # will change the final APK/native library).
-      if not metadata['is_cloud']:
-        ret &= metadata['gn_args'] == old_metadata['gn_args']
-      return ret
-  return False
-
-
-def _RunCmd(cmd, print_stdout=False, exit_on_failure=True):
+def _RunCmd(cmd, verbose=False, exit_on_failure=True):
   """Convenience function for running commands.
 
   Args:
     cmd: the command to run.
-    print_stdout: if this is True, then the stdout of the process will be
-        printed instead of returned.
+    verbose: if this is True, then the stdout and stderr of the process will be
+        printed. If it's false, the stdout will be returned.
     exit_on_failure: die if an error occurs when this is True.
 
   Returns:
     Tuple of (process stdout, process returncode).
   """
+  assert not (verbose and exit_on_failure)
   cmd_str = ' '.join(c for c in cmd)
-  _Print('Running: {}', cmd_str)
-  proc_stdout = sys.stdout if print_stdout else subprocess.PIPE
+  logging.debug('Running: %s', cmd_str)
+  proc_stdout = proc_stderr = subprocess.PIPE
+  if verbose and logging.getLogger().getEffectiveLevel() < logging.INFO:
+    proc_stdout, proc_stderr = sys.stdout, subprocess.STDOUT
 
-  proc = subprocess.Popen(cmd, stdout=proc_stdout, stderr=subprocess.PIPE)
+  proc = subprocess.Popen(cmd, stdout=proc_stdout, stderr=proc_stderr)
   stdout, stderr = proc.communicate()
 
   if proc.returncode and exit_on_failure:
-    _Die('command failed: {}\nstderr:\n{}', cmd_str, stderr)
+    _Die('command failed: %s\nstderr:\n%s', cmd_str, stderr)
 
   stdout = stdout.strip() if stdout else ''
   return stdout, proc.returncode
@@ -479,8 +480,10 @@ def _GitCmd(args, subrepo):
 def _GclientSyncCmd(rev, subrepo):
   cwd = os.getcwd()
   os.chdir(subrepo)
-  _RunCmd(['gclient', 'sync', '-r', 'src@' + rev], print_stdout=True)
+  _, retcode = _RunCmd(['gclient', 'sync', '-r', 'src@' + rev],
+                       verbose=True, exit_on_failure=False)
   os.chdir(cwd)
+  return retcode
 
 
 def _FindToolPrefix(output_directory):
@@ -499,16 +502,17 @@ def _FindToolPrefix(output_directory):
 
 
 def _SyncAndBuild(archive, build, subrepo):
+  """Sync, build and return non 0 if any commands failed."""
   # Simply do a checkout if subrepo is used.
   if subrepo != _SRC_ROOT:
     _GitCmd(['checkout',  archive.rev], subrepo)
+    return 0
   else:
     # Move to a detached state since gclient sync doesn't work with local
     # commits on a branch.
     _GitCmd(['checkout', '--detach'], subrepo)
-    _GclientSyncCmd(archive.rev, subrepo)
-  retcode = build.Run()
-  return retcode == 0
+    logging.info('Syncing to %s', archive.rev)
+    return _GclientSyncCmd(archive.rev, subrepo) or build.Run()
 
 
 def _GenerateRevList(rev, reference_rev, all_in_range, subrepo):
@@ -550,24 +554,22 @@ def _ValidateRevs(rev, reference_rev, subrepo):
 
 
 def _VerifyUserAccepts(message):
-  _Print(message + 'Do you want to proceed? [y/n]')
+  print message + 'Do you want to proceed? [y/n]'
   if raw_input('> ').lower() != 'y':
-    _global_restore_checkout_func()
     sys.exit()
 
 
 def _EnsureDirectoryClean(subrepo):
-  _Print('Checking source directory')
+  logging.info('Checking source directory')
   stdout = _GitCmd(['status', '--porcelain'], subrepo)
   # Ignore untracked files.
   if stdout and stdout[:2] != '??':
-    _Print('Failure: please ensure working directory is clean.')
+    logging.error('Failure: please ensure working directory is clean.')
     sys.exit()
 
 
-def _Die(s, *args, **kwargs):
-  _Print('Failure: ' + s, *args, **kwargs)
-  _global_restore_checkout_func()
+def _Die(s, *args):
+  logging.error('Failure: ' + s, *args)
   sys.exit(1)
 
 
@@ -592,15 +594,15 @@ def _DownloadBuildArtifacts(archive, build, supersize_path, depot_tools_path):
 
 def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   dl_dst = os.path.join(dl_dir, archive.rev)
-  _Print('Downloading build artifacts for {}', archive.rev)
+  logging.info('Downloading build artifacts for %s', archive.rev)
   # gsutil writes stdout and stderr to stderr, so pipe stdout and stderr to
   # sys.stdout.
   retcode = subprocess.call(
       [gsutil_path, 'cp', build.DownloadUrl(archive.rev), dl_dst],
       stdout=sys.stdout, stderr=subprocess.STDOUT)
   if retcode:
-      _Die('unexpected error while downloading {}. It may no longer exist on '
-           'the server or it may not have been uploaded yet (check {}). '
+      _Die('unexpected error while downloading %s. It may no longer exist on '
+           'the server or it may not have been uploaded yet (check %s). '
            'Otherwise, you may not have the correct access permissions.',
            build.DownloadUrl(archive.rev), _BUILDER_URL)
 
@@ -610,7 +612,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
     to_extract += ['build_vars.txt', build.apk_path]
   extract_dir = dl_dst + '_' + 'unzipped'
   # Storage bucket stores entire output directory including out/Release prefix.
-  _Print('Extracting build artifacts')
+  logging.info('Extracting build artifacts')
   with zipfile.ZipFile(dl_dst, 'r') as z:
     _ExtractFiles(to_extract, build.download_output_dir, extract_dir, z)
     dl_out = os.path.join(extract_dir, build.download_output_dir)
@@ -628,21 +630,17 @@ def _ExtractFiles(to_extract, prefix, dst, z):
     z.extract(f, path=dst)
 
 
-def _Print(s, *args, **kwargs):
-  print s.format(*args, **kwargs)
-
-
 def _PrintAndWriteToFile(logfile, s, *args, **kwargs):
   """Write and print |s| thottling output if |s| is a large list."""
   if isinstance(s, basestring):
     s = s.format(*args, **kwargs)
-    _Print(s)
+    print s
     logfile.write('%s\n' % s)
   else:
     for l in s[:_DIFF_DETAILS_LINES_THRESHOLD]:
-      _Print(l)
+      print l
     if len(s) > _DIFF_DETAILS_LINES_THRESHOLD:
-      _Print('\nOutput truncated, see {} for more.', logfile.name)
+      print '\nOutput truncated, see %s for more.' % logfile.name
     logfile.write('\n'.join(s))
 
 
@@ -658,6 +656,11 @@ def _TmpCopyBinarySizeDir():
     yield os.path.join(bs_dir, 'supersize')
   finally:
     shutil.rmtree(tmp_dir)
+
+
+def _SetRestoreFunc(subrepo):
+  branch = _GitCmd(['rev-parse', '--abbrev-ref', 'HEAD'], subrepo)
+  atexit.register(lambda: _GitCmd(['checkout', branch], subrepo))
 
 
 def main():
@@ -692,6 +695,9 @@ def main():
                       'will be skipped if this option is used and all git '
                       'commands will be executed from the subrepo directory. '
                       'This option doesn\'t work with --cloud.')
+  parser.add_argument('--silent',
+                      action='store_true',
+                      help='Less logging, no Ninja/GN output.')
 
   build_group = parser.add_argument_group('ninja', 'Args to use with ninja/gn')
   build_group.add_argument('-j',
@@ -725,6 +731,9 @@ def main():
     parser.print_help()
     sys.exit()
   args = parser.parse_args()
+  log_level = logging.INFO if args.silent else logging.DEBUG
+  logging.basicConfig(level=log_level,
+                      format='%(levelname).1s %(relativeCreated)6d %(message)s')
   build = _BuildHelper(args)
   if build.IsCloud() and args.subrepo:
       parser.error('--subrepo doesn\'t work with --cloud')
@@ -750,18 +759,22 @@ def main():
     consecutive_failures = 0
     for i, archive in enumerate(diff_mngr.IterArchives()):
       if archive.Exists():
-        _Print('Found matching metadata for {}, skipping build step.',
-               archive.rev)
+        step = 'download' if build.IsCloud() else 'build'
+        logging.info('Found matching metadata for %s, skipping %s step.',
+                     archive.rev, step)
       else:
         if build.IsCloud():
           _DownloadBuildArtifacts(
               archive, build, supersize_path, args.depot_tools_path)
         else:
-          build_success = _SyncAndBuild(archive, build, subrepo)
-          if not build_success:
+          build_failure = _SyncAndBuild(archive, build, subrepo)
+          if build_failure:
+            logging.info(
+                'Build failed for %s, diffs using this rev will be skipped.',
+                archive.rev)
             consecutive_failures += 1
             if consecutive_failures > _ALLOWED_CONSECUTIVE_FAILURES:
-              _Die('{} builds failed in a row, last failure was {}.',
+              _Die('%d builds failed in a row, last failure was %s.',
                    consecutive_failures, archive.rev)
           else:
             archive.ArchiveBuildResults(supersize_path)
@@ -772,7 +785,6 @@ def main():
 
     diff_mngr.Summarize()
 
-  _global_restore_checkout_func()
 
 if __name__ == '__main__':
   sys.exit(main())
