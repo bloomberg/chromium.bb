@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -325,7 +326,7 @@ void ContentViewCoreImpl::InitWebContents() {
           SetContentViewCore(this);
   DCHECK(!web_contents_->GetUserData(kContentViewUserDataKey));
   web_contents_->SetUserData(kContentViewUserDataKey,
-                             new ContentViewUserData(this));
+                             base::MakeUnique<ContentViewUserData>(this));
 }
 
 void ContentViewCoreImpl::RenderViewReady() {

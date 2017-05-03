@@ -94,9 +94,10 @@ scoped_refptr<GinJavaBridgeMessageFilter> GinJavaBridgeMessageFilter::FromHost(
   if (!filter && create_if_not_exists) {
     filter = new GinJavaBridgeMessageFilter();
     rph->AddFilter(filter.get());
-    rph->SetUserData(kGinJavaBridgeMessageFilterKey,
-                     new base::UserDataAdapter<GinJavaBridgeMessageFilter>(
-                         filter.get()));
+    rph->SetUserData(
+        kGinJavaBridgeMessageFilterKey,
+        base::MakeUnique<base::UserDataAdapter<GinJavaBridgeMessageFilter>>(
+            filter.get()));
   }
   return filter;
 }

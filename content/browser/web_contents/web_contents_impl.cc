@@ -5194,7 +5194,7 @@ WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
       static_cast<WebContentsAndroid*>(GetUserData(kWebContentsAndroidKey));
   if (!web_contents_android) {
     web_contents_android = new WebContentsAndroid(this);
-    SetUserData(kWebContentsAndroidKey, web_contents_android);
+    SetUserData(kWebContentsAndroidKey, base::WrapUnique(web_contents_android));
   }
   return web_contents_android;
 }

@@ -218,7 +218,7 @@ void AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
     // Ensure the blob and any attached shareable files survive until
     // upload completion. The |body| takes ownership of |handle|.
     const void* key = handle.get();
-    body->SetUserData(key, handle.release());
+    body->SetUserData(key, std::move(handle));
   }
 }
 

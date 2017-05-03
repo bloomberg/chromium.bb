@@ -226,7 +226,8 @@ storage::ExternalMountPoints* BrowserContext::GetMountPoints(
         storage::ExternalMountPoints::CreateRefCounted();
     context->SetUserData(
         kMountPointsKey,
-        new UserDataAdapter<storage::ExternalMountPoints>(mount_points.get()));
+        base::MakeUnique<UserDataAdapter<storage::ExternalMountPoints>>(
+            mount_points.get()));
   }
 
   return UserDataAdapter<storage::ExternalMountPoints>::Get(context,

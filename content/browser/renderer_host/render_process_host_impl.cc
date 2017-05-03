@@ -377,7 +377,7 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
       context->GetUserData(kSiteProcessMapKeyName));
   if (!map) {
     map = new SiteProcessMap();
-    context->SetUserData(kSiteProcessMapKeyName, map);
+    context->SetUserData(kSiteProcessMapKeyName, base::WrapUnique(map));
   }
   return map;
 }
@@ -2862,7 +2862,7 @@ void RenderProcessHostImpl::ReleaseOnCloseACK(
       host->GetUserData(kSessionStorageHolderKey));
   if (!holder) {
     holder = new SessionStorageHolder();
-    host->SetUserData(kSessionStorageHolderKey, holder);
+    host->SetUserData(kSessionStorageHolderKey, base::WrapUnique(holder));
   }
   holder->Hold(sessions, view_route_id);
 }

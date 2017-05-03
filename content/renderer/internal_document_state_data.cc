@@ -4,6 +4,7 @@
 
 #include "content/renderer/internal_document_state_data.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/renderer/document_state.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 
@@ -38,7 +39,7 @@ InternalDocumentStateData* InternalDocumentStateData::FromDocumentState(
       ds->GetUserData(&kUserDataKey));
   if (!data) {
     data = new InternalDocumentStateData;
-    ds->SetUserData(&kUserDataKey, data);
+    ds->SetUserData(&kUserDataKey, base::WrapUnique(data));
   }
   return data;
 }

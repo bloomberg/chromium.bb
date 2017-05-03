@@ -75,7 +75,7 @@ void FinalizeHandlerInitialization(
   if (!handler)
     return;
 
-  request->SetUserData(&kUserDataKey, handler.release());
+  request->SetUserData(&kUserDataKey, std::move(handler));
 }
 
 }  // namespace

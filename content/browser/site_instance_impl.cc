@@ -4,6 +4,7 @@
 
 #include "content/browser/site_instance_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -151,7 +152,8 @@ RenderProcessHost* SiteInstanceImpl::GetDefaultSubframeProcessHost(
           browser_context->GetUserData(&kDefaultSubframeProcessHostHolderKey));
   if (!holder) {
     holder = new DefaultSubframeProcessHostHolder(browser_context);
-    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey, holder);
+    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey,
+                                 base::WrapUnique(holder));
   }
 
   return holder->GetProcessHost(this, is_for_guests_only);

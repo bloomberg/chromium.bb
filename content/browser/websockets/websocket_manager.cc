@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,7 +70,7 @@ void WebSocketManager::CreateWebSocket(int process_id, int frame_id,
   if (!handle) {
     handle = new Handle(
         new WebSocketManager(process_id, host->GetStoragePartition()));
-    host->SetUserData(kWebSocketManagerKeyName, handle);
+    host->SetUserData(kWebSocketManagerKeyName, base::WrapUnique(handle));
     host->AddObserver(handle);
   } else {
     DCHECK(handle->manager());

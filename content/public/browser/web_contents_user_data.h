@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
 
@@ -35,7 +36,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
   static void CreateForWebContents(WebContents* contents) {
     DCHECK(contents);
     if (!FromWebContents(contents))
-      contents->SetUserData(UserDataKey(), new T(contents));
+      contents->SetUserData(UserDataKey(), base::WrapUnique(new T(contents)));
   }
 
   // Retrieves the instance of type T that was attached to the specified

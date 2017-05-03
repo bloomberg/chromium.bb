@@ -1239,7 +1239,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   if (request_data.originated_from_service_worker) {
     new_request->SetUserData(URLRequestServiceWorkerData::kUserDataKey,
-                             new URLRequestServiceWorkerData());
+                             base::MakeUnique<URLRequestServiceWorkerData>());
   }
 
   // If the request is a MAIN_FRAME request, the first-party URL gets updated on
