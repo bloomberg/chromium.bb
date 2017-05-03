@@ -5,13 +5,5 @@
 :host {
   font-family: Roboto, sans-serif;
   font-size: 13px;
-  width: 240px;
-}
-
-#container {
-  height: 100%;
-}
-
-#container select  {
- width: 100%;
+  --md-select-width: 240px;
 }
