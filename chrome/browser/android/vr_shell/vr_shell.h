@@ -91,6 +91,8 @@ class VrShell : public device::PresentingGvrDelegate,
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled);
+  bool GetWebVrMode(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);

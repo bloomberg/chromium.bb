@@ -467,6 +467,11 @@ public class VrShellImpl
     }
 
     @Override
+    public boolean getWebVrModeEnabled() {
+        return nativeGetWebVrMode(mNativeVrShell);
+    }
+
+    @Override
     public FrameLayout getContainer() {
         return this;
     }
@@ -599,6 +604,7 @@ public class VrShellImpl
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
+    private native boolean nativeGetWebVrMode(long nativeVrShell);
     private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,
             Tab[] incognitoTabs);
     private native void nativeOnTabUpdated(long nativeVrShell, boolean incognito, int id,
