@@ -16,7 +16,8 @@ TestLayerAnimationDelegate::TestLayerAnimationDelegate()
       visibility_(true),
       brightness_(0.0f),
       grayscale_(0.0f),
-      color_(SK_ColorBLACK) {
+      color_(SK_ColorBLACK),
+      temperature_(0.0f) {
   CreateCcLayer();
 }
 
@@ -26,7 +27,8 @@ TestLayerAnimationDelegate::TestLayerAnimationDelegate(
       transform_(other.GetTransformForAnimation()),
       opacity_(other.GetOpacityForAnimation()),
       visibility_(other.GetVisibilityForAnimation()),
-      color_(SK_ColorBLACK) {
+      color_(SK_ColorBLACK),
+      temperature_(0.0f) {
   CreateCcLayer();
 }
 
@@ -66,6 +68,11 @@ void TestLayerAnimationDelegate::SetColorFromAnimation(SkColor color) {
   color_ = color;
 }
 
+void TestLayerAnimationDelegate::SetTemperatureFromAnimation(
+    float temperature) {
+  temperature_ = temperature;
+}
+
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
 }
 
@@ -95,6 +102,10 @@ float TestLayerAnimationDelegate::GetGrayscaleForAnimation() const {
 
 SkColor TestLayerAnimationDelegate::GetColorForAnimation() const {
   return color_;
+}
+
+float TestLayerAnimationDelegate::GetTemperatureFromAnimation() const {
+  return temperature_;
 }
 
 float TestLayerAnimationDelegate::GetDeviceScaleFactor() const {

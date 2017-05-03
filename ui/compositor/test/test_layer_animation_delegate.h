@@ -40,6 +40,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   void SetBrightnessFromAnimation(float brightness) override;
   void SetGrayscaleFromAnimation(float grayscale) override;
   void SetColorFromAnimation(SkColor color) override;
+  void SetTemperatureFromAnimation(float temperature) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -48,6 +49,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float GetBrightnessForAnimation() const override;
   float GetGrayscaleForAnimation() const override;
   SkColor GetColorForAnimation() const override;
+  float GetTemperatureFromAnimation() const override;
   float GetDeviceScaleFactor() const override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
   cc::Layer* GetCcLayer() const override;
@@ -67,6 +69,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float brightness_;
   float grayscale_;
   SkColor color_;
+  float temperature_;
   scoped_refptr<cc::Layer> cc_layer_;
 
   // Allow copy and assign.
