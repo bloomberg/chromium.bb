@@ -19,11 +19,9 @@ namespace device {
 // instance is not created.
 class PlatformSensorAmbientLightMac : public PlatformSensor {
  public:
-  // Construct a platform sensor of |type| AMBIENT_LIGHT, given
-  // a buffer |mapping| to write the result back. |task_runner| is
-  // used to post the notification that the sensor reading has changed.
-  PlatformSensorAmbientLightMac(mojom::SensorType type,
-                                mojo::ScopedSharedBufferMapping mapping,
+  // Construct a platform sensor of AMBIENT_LIGHT, given a buffer |mapping|
+  // to write the result back.
+  PlatformSensorAmbientLightMac(mojo::ScopedSharedBufferMapping mapping,
                                 PlatformSensorProvider* provider);
 
   mojom::ReportingMode GetReportingMode() override;

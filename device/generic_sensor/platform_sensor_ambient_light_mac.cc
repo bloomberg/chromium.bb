@@ -47,14 +47,13 @@ enum LmuFunctionIndex {
 };
 
 PlatformSensorAmbientLightMac::PlatformSensorAmbientLightMac(
-    mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
     PlatformSensorProvider* provider)
-    : PlatformSensor(type, std::move(mapping), provider),
+    : PlatformSensor(mojom::SensorType::AMBIENT_LIGHT,
+                     std::move(mapping),
+                     provider),
       light_sensor_port_(nullptr),
-      current_lux_(0.0) {
-  DCHECK_EQ(type, mojom::SensorType::AMBIENT_LIGHT);
-}
+      current_lux_(0.0) {}
 
 PlatformSensorAmbientLightMac::~PlatformSensorAmbientLightMac() = default;
 
