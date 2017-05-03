@@ -1,3 +1,4 @@
+CONSOLE WARNING: -webkit-radial-gradient is deprecated. Please use radial-gradient instead.
 This test should not crash.
 
 

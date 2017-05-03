@@ -1295,13 +1295,12 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   } else if (id == CSSValueRepeatingRadialGradient) {
     result = ConsumeRadialGradient(args, context->Mode(), kRepeating);
   } else if (id == CSSValueWebkitLinearGradient) {
-    // FIXME: This should send a deprecation message.
-    context->Count(UseCounter::kDeprecatedWebKitLinearGradient);
+    context->CountDeprecation(UseCounter::kDeprecatedWebKitLinearGradient);
     result = ConsumeLinearGradient(args, context->Mode(), kNonRepeating,
                                    kCSSPrefixedLinearGradient);
   } else if (id == CSSValueWebkitRepeatingLinearGradient) {
-    // FIXME: This should send a deprecation message.
-    context->Count(UseCounter::kDeprecatedWebKitRepeatingLinearGradient);
+    context->CountDeprecation(
+        UseCounter::kDeprecatedWebKitRepeatingLinearGradient);
     result = ConsumeLinearGradient(args, context->Mode(), kRepeating,
                                    kCSSPrefixedLinearGradient);
   } else if (id == CSSValueRepeatingLinearGradient) {
@@ -1311,16 +1310,15 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
     result = ConsumeLinearGradient(args, context->Mode(), kNonRepeating,
                                    kCSSLinearGradient);
   } else if (id == CSSValueWebkitGradient) {
-    // FIXME: This should send a deprecation message.
-    context->Count(UseCounter::kDeprecatedWebKitGradient);
+    context->CountDeprecation(UseCounter::kDeprecatedWebKitGradient);
     result = ConsumeDeprecatedGradient(args, context->Mode());
   } else if (id == CSSValueWebkitRadialGradient) {
-    // FIXME: This should send a deprecation message.
-    context->Count(UseCounter::kDeprecatedWebKitRadialGradient);
+    context->CountDeprecation(UseCounter::kDeprecatedWebKitRadialGradient);
     result =
         ConsumeDeprecatedRadialGradient(args, context->Mode(), kNonRepeating);
   } else if (id == CSSValueWebkitRepeatingRadialGradient) {
-    context->Count(UseCounter::kDeprecatedWebKitRepeatingRadialGradient);
+    context->CountDeprecation(
+        UseCounter::kDeprecatedWebKitRepeatingRadialGradient);
     result = ConsumeDeprecatedRadialGradient(args, context->Mode(), kRepeating);
   } else if (id == CSSValueConicGradient) {
     result = ConsumeConicGradient(args, context->Mode(), kNonRepeating);
