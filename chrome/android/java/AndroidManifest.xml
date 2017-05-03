@@ -633,6 +633,14 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
+        <!-- Service for decoding images in a sandboxed process. -->
+        <service
+            android:description="@string/decoder_description"
+            android:name="org.chromium.chrome.browser.photo_picker.DecoderService"
+            android:exported="false"
+            android:isolatedProcess="true"
+            android:process=":decoder_service" />
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.provider.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
