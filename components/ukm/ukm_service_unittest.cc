@@ -259,7 +259,7 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   EXPECT_EQ(10, proto_entry_foo_end.value());
 }
 
-TEST_F(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics) {
+TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   UkmService service(&prefs_, &client_);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -277,17 +277,7 @@ TEST_F(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics) {
   service.Flush();
   EXPECT_EQ(1, GetPersistedLogCount());
   Report proto_report = GetPersistedReport();
-  EXPECT_EQ(0, proto_report.entries_size());
-
-  {
-    std::unique_ptr<UkmEntryBuilder> builder =
-        service.GetEntryBuilder(id, "PageLoad");
-    builder->AddMetric("FirstContentfulPaint", 300);
-  }
-  service.Flush();
-  EXPECT_EQ(2, GetPersistedLogCount());
-  Report proto_report_with_entries = GetPersistedReport();
-  EXPECT_EQ(1, proto_report_with_entries.entries_size());
+  EXPECT_EQ(1, proto_report.entries_size());
 }
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
