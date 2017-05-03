@@ -9,6 +9,10 @@
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios_internal {
 
 // Converts a UIKit size class to a size class for reporting.
@@ -89,7 +93,6 @@ void ReportHorizontalSizeClassUsed(UIUserInterfaceSizeClass sizeClass) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)horizontalSizeClassDidChange:(UIUserInterfaceSizeClass)newSizeClass {
