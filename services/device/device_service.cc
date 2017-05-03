@@ -12,9 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/battery/battery_monitor.mojom.h"
-#include "device/battery/battery_monitor_impl.h"
-#include "device/battery/battery_status_service.h"
 #include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/sensors/device_sensor_host.h"
 #include "device/wake_lock/wake_lock_context_provider.h"
@@ -22,6 +19,7 @@
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/native_widget_types.h"
@@ -33,6 +31,8 @@
 #include "services/device/android/register_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
 #else
+#include "services/device/battery/battery_monitor_impl.h"
+#include "services/device/battery/battery_status_service.h"
 #include "services/device/vibration/vibration_manager_impl.h"
 #endif
 

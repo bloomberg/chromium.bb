@@ -1,8 +1,8 @@
 "use strict";
 
 let mockBatteryMonitor = loadMojoModules('mockBatteryMonitor', [
-                           'device/battery/battery_monitor.mojom',
-                           'device/battery/battery_status.mojom',
+                           'services/device/public/interfaces/battery_monitor.mojom',
+                           'services/device/public/interfaces/battery_status.mojom',
                            'services/device/public/interfaces/constants.mojom',
                            'mojo/public/js/bindings',
                          ]).then(mojo => {

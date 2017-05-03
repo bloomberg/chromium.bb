@@ -25,7 +25,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//device/battery:mojo_bindings",
     "//device/generic_sensor",
     "//device/sensors",
     "//device/sensors/public/interfaces",
@@ -48,7 +47,7 @@ source_set("lib") {
     deps += [ ":device_service_jni_headers" ]
   } else {
     deps += [
-      "//device/battery",
+      "//services/device/battery",
       "//services/device/vibration",
     ]
   }
@@ -58,6 +57,8 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "battery/battery_status_manager_win_unittest.cc",
+    "battery/battery_status_service_unittest.cc",
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
     "vibration/vibration_manager_impl_unittest.cc",
@@ -70,8 +71,14 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//services/device/power_monitor",
     "//services/device/public/cpp/power_monitor",
+    "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_linux && !is_chromeos && use_dbus) {
+    sources += [ "battery/battery_status_manager_linux_unittest.cc" ]
+    deps += [ "//dbus:test_support" ]
+  }
 
   if (is_chromeos) {
     sources += [ "fingerprint/fingerprint_chromeos_unittest.cc" ]
@@ -83,12 +90,15 @@ source_set("tests") {
   }
 
   if (is_android) {
-    deps += [ "//services/device/vibration/android:vibration_jni_headers" ]
+    sources -= [ "battery/battery_status_service_unittest.cc" ]
+    deps += [
+      ":device_service_jni_headers",
+      "//services/device/vibration/android:vibration_jni_headers",
+    ]
   } else {
     sources += [ "battery/battery_monitor_impl_unittest.cc" ]
     deps += [
-      "//device/battery",
-      "//device/battery:mojo_bindings",
+      "//services/device/battery",
       "//services/device/vibration",
     ]
   }
@@ -152,11 +162,10 @@ if (is_android) {
     java_files = [ "android/java/src/org/chromium/services/device/InterfaceRegistrar.java" ]
     deps = [
       "//base:base_java",
-      "//device/battery:mojo_bindings_java",
-      "//device/battery/android:battery_monitor_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
+      "//services/device/battery/android:battery_monitor_java",
       "//services/device/public/interfaces:interfaces_java",
       "//services/device/screen_orientation:java",
       "//services/device/time_zone_monitor:java",

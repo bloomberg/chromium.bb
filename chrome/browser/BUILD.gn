@@ -3630,7 +3630,6 @@ split_static_library("browser") {
       "//components/cryptauth/proto",
       "//components/feedback",
       "//components/web_modal",
-      "//device/battery",
       "//net:net_browser_services",
     ]
   }

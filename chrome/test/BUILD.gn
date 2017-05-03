@@ -3605,7 +3605,6 @@ test("unit_tests") {
     sources -=
         [ "../browser/download/download_request_infobar_delegate_unittest.cc" ]
     deps += [
-      "//device/battery:mojo_bindings",
       "//ipc",
       "//third_party/libaddressinput",
     ]
