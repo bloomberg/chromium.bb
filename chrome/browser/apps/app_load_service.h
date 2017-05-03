@@ -19,10 +19,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace extensions {
-struct UnloadedExtensionInfo;
-}
-
 namespace apps {
 
 // Monitors apps being reloaded and performs app specific actions (like launch
@@ -79,14 +75,12 @@ class AppLoadService : public KeyedService,
                const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver.
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
-  bool WasUnloadedForReload(
-      const extensions::ExtensionId& extension_id,
-      const extensions::UnloadedExtensionInfo::Reason reason);
+  bool WasUnloadedForReload(const extensions::ExtensionId& extension_id,
+                            const extensions::UnloadedExtensionReason reason);
   bool HasPostReloadAction(const std::string& extension_id);
 
   // Map of extension id to reload action. Absence from the map implies

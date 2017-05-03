@@ -54,7 +54,7 @@ DeclarativeUserScriptManager::CreateDeclarativeUserScriptMaster(
 void DeclarativeUserScriptManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   for (const auto& val : declarative_user_script_masters_) {
     DeclarativeUserScriptMaster* master = val.second.get();
     if (master->host_id().id() == extension->id())

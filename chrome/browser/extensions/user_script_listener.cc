@@ -267,7 +267,7 @@ void UserScriptListener::OnExtensionLoaded(
 void UserScriptListener::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (ContentScriptsInfo::GetContentScripts(extension).empty())
     return;  // No patterns to delete for this extension.
 

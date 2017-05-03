@@ -233,7 +233,7 @@ void OmniboxAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
 
 void OmniboxAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                      const Extension* extension,
-                                     UnloadedExtensionInfo::Reason reason) {
+                                     UnloadedExtensionReason reason) {
   if (!OmniboxInfo::GetKeyword(extension).empty() && url_service_) {
     if (url_service_->loaded()) {
       url_service_->RemoveExtensionControlledTURL(

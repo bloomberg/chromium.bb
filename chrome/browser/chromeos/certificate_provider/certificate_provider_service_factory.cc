@@ -55,10 +55,9 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
       const std::string& digest) override;
 
   // extensions::ExtensionRegistryObserver:
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
  private:
   CertificateProviderService* const service_;
@@ -155,7 +154,7 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 void DefaultDelegate::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   service_->OnExtensionUnloaded(extension->id());
 }
 

@@ -36,10 +36,9 @@ class NotificationSystemObserver : public content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver override.
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
  private:

@@ -212,7 +212,7 @@ void AppsMatchChecker::OnExtensionLoaded(
 void AppsMatchChecker::OnExtensionUnloaded(
     content::BrowserContext* context,
     const extensions::Extension* extenion,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   CheckExitCondition();
 }
 

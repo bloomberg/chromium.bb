@@ -325,8 +325,8 @@ class PrinterProviderApiTest : public ShellApiTest {
       return false;
 
     extension_registry->RemoveEnabled(extension_id);
-    extension_registry->TriggerOnUnloaded(
-        extension, UnloadedExtensionInfo::REASON_TERMINATE);
+    extension_registry->TriggerOnUnloaded(extension,
+                                          UnloadedExtensionReason::TERMINATE);
     return true;
   }
 

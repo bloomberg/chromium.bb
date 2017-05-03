@@ -64,7 +64,7 @@ void NotificationSystemObserver::Observe(
 void NotificationSystemObserver::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   ui_manager_->CancelAllBySourceOrigin(extension->url());
 }
 

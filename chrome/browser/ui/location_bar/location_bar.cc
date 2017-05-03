@@ -37,7 +37,7 @@ class LocationBar::ExtensionLoadObserver
   void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override {
+      extensions::UnloadedExtensionReason reason) override {
     if (extensions::UIOverrides::RemovesBookmarkButton(extension))
       location_bar_->UpdateBookmarkStarVisibility();
   }

@@ -24,7 +24,7 @@ TEST_F(ExtensionServiceTestWithInstall, TabHelperClearsExtensionOnUnload) {
   EXPECT_EQ(extension, tab_helper->extension_app());
   EXPECT_TRUE(tab_helper->is_app());
   service()->UnloadExtension(extension->id(),
-                             UnloadedExtensionInfo::REASON_UNDEFINED);
+                             UnloadedExtensionReason::UNDEFINED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, tab_helper->extension_app());
 }

@@ -459,8 +459,7 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
-  registry->TriggerOnUnloaded(extension1,
-                              UnloadedExtensionInfo::REASON_DISABLE);
+  registry->TriggerOnUnloaded(extension1, UnloadedExtensionReason::DISABLE);
 
   ASSERT_EQ(NULL, manager_.MenuItems(MenuItem::ExtensionKey(extension1->id())));
   ASSERT_EQ(

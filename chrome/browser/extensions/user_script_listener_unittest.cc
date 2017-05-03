@@ -214,7 +214,7 @@ class UserScriptListenerTest : public testing::Test {
         ExtensionRegistry::Get(profile_)->enabled_extensions();
     ASSERT_FALSE(extensions.is_empty());
     service_->UnloadExtension((*extensions.begin())->id(),
-                              UnloadedExtensionInfo::REASON_DISABLE);
+                              UnloadedExtensionReason::DISABLE);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

@@ -119,7 +119,7 @@ void VerifyTrustAPI::Verify(std::unique_ptr<Params> params,
 void VerifyTrustAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&IOPart::OnExtensionUnloaded, base::Unretained(io_part_.get()),

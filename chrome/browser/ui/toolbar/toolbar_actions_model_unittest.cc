@@ -268,7 +268,7 @@ testing::AssertionResult ToolbarActionsModelUnitTest::RemoveExtension(
                                        << " not installed!";
   }
   service()->UnloadExtension(extension->id(),
-                             extensions::UnloadedExtensionInfo::REASON_DISABLE);
+                             extensions::UnloadedExtensionReason::DISABLE);
   if (registry()->enabled_extensions().GetByID(extension->id())) {
     return testing::AssertionFailure() << "Failed to unload extension: "
                                        << extension->name();

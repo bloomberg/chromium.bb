@@ -44,7 +44,7 @@ class DeclarativeUserScriptManager : public KeyedService,
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Creates a DeclarativeUserScriptMaster object.
   DeclarativeUserScriptMaster* CreateDeclarativeUserScriptMaster(

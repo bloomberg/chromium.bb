@@ -624,10 +624,9 @@ void ProcessManager::OnExtensionLoaded(BrowserContext* browser_context,
   }
 }
 
-void ProcessManager::OnExtensionUnloaded(
-    BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+void ProcessManager::OnExtensionUnloaded(BrowserContext* browser_context,
+                                         const Extension* extension,
+                                         UnloadedExtensionReason reason) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension->id());
   if (host != nullptr)
     CloseBackgroundHost(host);

@@ -498,8 +498,7 @@ TEST_F(IdleTest, UnloadCleanup) {
 
   // Threshold will reset after unload (and listen count == 0)
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-  registry->TriggerOnUnloaded(extension(),
-                              UnloadedExtensionInfo::REASON_UNINSTALL);
+  registry->TriggerOnUnloaded(extension(), UnloadedExtensionReason::UNINSTALL);
 
   {
     ScopedListen listen(idle_manager_, extension()->id());
@@ -516,8 +515,7 @@ TEST_F(IdleTest, UnloadCleanup) {
 // Verifies that unloading an extension with no listeners or threshold works.
 TEST_F(IdleTest, UnloadOnly) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-  registry->TriggerOnUnloaded(extension(),
-                              UnloadedExtensionInfo::REASON_UNINSTALL);
+  registry->TriggerOnUnloaded(extension(), UnloadedExtensionReason::UNINSTALL);
 }
 
 // Verifies that its ok for the unload notification to happen before all the
@@ -525,8 +523,7 @@ TEST_F(IdleTest, UnloadOnly) {
 TEST_F(IdleTest, UnloadWhileListening) {
   ScopedListen listen(idle_manager_, extension()->id());
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-  registry->TriggerOnUnloaded(extension(),
-                              UnloadedExtensionInfo::REASON_UNINSTALL);
+  registry->TriggerOnUnloaded(extension(), UnloadedExtensionReason::UNINSTALL);
 }
 
 // Verifies that re-adding a listener after a state change doesn't immediately

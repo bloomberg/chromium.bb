@@ -167,7 +167,7 @@ void FontSettingsHandler::OnExtensionLoaded(
 void FontSettingsHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   NotifyAdvancedFontSettingsAvailability();
 }
 

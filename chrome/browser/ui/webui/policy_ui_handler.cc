@@ -609,7 +609,7 @@ void PolicyUIHandler::OnExtensionLoaded(
 void PolicyUIHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   SendPolicyNames();
   SendPolicyValues();
 }

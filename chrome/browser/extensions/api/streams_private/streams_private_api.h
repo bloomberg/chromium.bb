@@ -66,7 +66,7 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

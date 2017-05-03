@@ -233,7 +233,7 @@ class EventRouter : public KeyedService,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Returns true if the given listener map contains a event listeners for
   // the given event. If |extension_id| is non-empty, we also check that that

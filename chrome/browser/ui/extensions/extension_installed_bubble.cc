@@ -95,7 +95,7 @@ class ExtensionInstalledBubbleObserver
   void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override {
+      extensions::UnloadedExtensionReason reason) override {
     if (extension == bubble_->extension()) {
       // Extension is going away.
       delete this;

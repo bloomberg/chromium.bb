@@ -525,8 +525,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
         content::NotificationService::AllSources());
     // Remove the extension. Nothing should crash.
     extension_service()->UnloadExtension(
-        extension->id(),
-        extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+        extension->id(), extensions::UnloadedExtensionReason::UNINSTALL);
     observer.Wait();
   }
 
@@ -593,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   // Remove extension 2 - there should still be one left in the overflow
   // (extension 2) and one left on the main bar (extension 1).
   extension_service()->UnloadExtension(
-      extension3->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+      extension3->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
@@ -615,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
 
   // Remove extension 2 - the remaining two should both be overflowed.
   extension_service()->UnloadExtension(
-      extension2->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+      extension2->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_FALSE(toolbar_actions_bar->popped_out_action());
@@ -632,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   EXPECT_EQ(extension3->id(),
             toolbar_actions_bar->popped_out_action()->GetId());
   extension_service()->UnloadExtension(
-      extension3->id(), extensions::UnloadedExtensionInfo::REASON_DISABLE);
+      extension3->id(), extensions::UnloadedExtensionReason::DISABLE);
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_FALSE(toolbar_actions_bar->popped_out_action());

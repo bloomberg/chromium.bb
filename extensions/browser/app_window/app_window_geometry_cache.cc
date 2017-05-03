@@ -196,7 +196,7 @@ void AppWindowGeometryCache::OnExtensionLoaded(
 void AppWindowGeometryCache::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   SyncToStorage();
   cache_.erase(extension->id());
 }

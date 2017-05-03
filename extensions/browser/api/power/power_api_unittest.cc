@@ -174,7 +174,7 @@ class PowerAPITest : public ApiUnitTest {
   void UnloadExtension(const extensions::Extension* extension) {
     PowerAPI::Get(browser_context())
         ->OnExtensionUnloaded(browser_context(), extension,
-                              UnloadedExtensionInfo::REASON_UNINSTALL);
+                              UnloadedExtensionReason::UNINSTALL);
   }
 
   std::unique_ptr<PowerSaveBlockerStubManager> manager_;

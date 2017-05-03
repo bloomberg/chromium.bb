@@ -98,7 +98,7 @@ class ExtensionRegistry : public KeyedService {
   // Invokes the observer method OnExtensionUnloaded(). The extension must not
   // be enabled at the time of the call.
   void TriggerOnUnloaded(const Extension* extension,
-                         UnloadedExtensionInfo::Reason reason);
+                         UnloadedExtensionReason reason);
 
   // If this is a fresh install then |is_update| is false and there must not be
   // any installed extension with |extension|'s ID. If this is an update then

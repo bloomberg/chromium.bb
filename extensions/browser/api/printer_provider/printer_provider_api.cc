@@ -279,7 +279,7 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
   // ExtensionRegistryObserver implementation:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Called before chrome.printerProvider.onGetPrintersRequested event is
   // dispatched to an extension. It returns whether the extension is interested
@@ -716,7 +716,7 @@ void PrinterProviderAPIImpl::OnGetUsbPrinterInfoResult(
 void PrinterProviderAPIImpl::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   pending_get_printers_requests_.FailAllForExtension(extension->id());
 
   auto print_it = pending_print_requests_.find(extension->id());

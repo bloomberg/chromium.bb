@@ -295,7 +295,7 @@ TEST_F(ActiveTabTest, Uninstalling) {
   ExtensionRegistry* registry =
       ExtensionRegistry::Get(web_contents()->GetBrowserContext());
   registry->TriggerOnUnloaded(extension.get(),
-                              UnloadedExtensionInfo::REASON_DISABLE);
+                              UnloadedExtensionReason::DISABLE);
 
   // Note: can't EXPECT_FALSE(IsAllowed) here because uninstalled extensions
   // are just that... considered to be uninstalled, and the manager might

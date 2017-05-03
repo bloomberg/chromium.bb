@@ -182,7 +182,7 @@ using extensions::Manifest;
 using extensions::MockExternalProvider;
 using extensions::PermissionSet;
 using extensions::TestExtensionSystem;
-using extensions::UnloadedExtensionInfo;
+using extensions::UnloadedExtensionReason;
 using extensions::URLPatternSet;
 
 namespace keys = extensions::manifest_keys;
@@ -4417,7 +4417,7 @@ TEST_F(ExtensionServiceTest, UninstallExtension) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   UninstallExtension(good_crx, false);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_UNINSTALL, unloaded_reason_);
+  EXPECT_EQ(UnloadedExtensionReason::UNINSTALL, unloaded_reason_);
 }
 
 TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
@@ -4425,7 +4425,7 @@ TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   UninstallExtension(good_crx, false);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_TERMINATE, unloaded_reason_);
+  EXPECT_EQ(UnloadedExtensionReason::TERMINATE, unloaded_reason_);
 }
 
 // Tests the uninstaller helper.
@@ -4433,7 +4433,7 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   UninstallExtension(good_crx, true);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_UNINSTALL, unloaded_reason_);
+  EXPECT_EQ(UnloadedExtensionReason::UNINSTALL, unloaded_reason_);
 }
 
 TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
@@ -4441,7 +4441,7 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   UninstallExtension(good_crx, true);
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_TERMINATE, unloaded_reason_);
+  EXPECT_EQ(UnloadedExtensionReason::TERMINATE, unloaded_reason_);
 }
 
 // An extension disabled because of unsupported requirements should re-enabled
@@ -6866,7 +6866,7 @@ TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_NE(UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN, unloaded_reason_);
+  EXPECT_NE(UnloadedExtensionReason::PROFILE_SHUTDOWN, unloaded_reason_);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
   EXPECT_EQ(0u, registry()->terminated_extensions().size());
@@ -6875,7 +6875,7 @@ TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   service()->Observe(chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
                      content::Source<Profile>(profile()),
                      content::NotificationService::NoDetails());
-  EXPECT_EQ(UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN, unloaded_reason_);
+  EXPECT_EQ(UnloadedExtensionReason::PROFILE_SHUTDOWN, unloaded_reason_);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
   EXPECT_EQ(0u, registry()->terminated_extensions().size());

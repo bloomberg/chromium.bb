@@ -68,7 +68,7 @@ NetworkingConfigService::~NetworkingConfigService() {
 void NetworkingConfigService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   UnregisterExtension(extension->id());
 }
 

@@ -800,7 +800,7 @@ void ManagementEventRouter::OnExtensionLoaded(
 void ManagementEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   BroadcastEvent(extension, events::MANAGEMENT_ON_DISABLED,
                  management::OnDisabled::kEventName);
 }

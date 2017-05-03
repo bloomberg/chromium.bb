@@ -34,10 +34,9 @@ class TtsEngineExtensionObserver
   void OnListenerAdded(const extensions::EventListenerInfo& details) override;
 
   // extensions::ExtensionRegistryObserver overrides.
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
  private:
   explicit TtsEngineExtensionObserver(Profile* profile);

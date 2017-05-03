@@ -182,7 +182,7 @@ void ExtensionKeybindingRegistry::OnExtensionLoaded(
 void ExtensionKeybindingRegistry::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (ExtensionMatchesFilter(extension))
     RemoveExtensionKeybinding(extension, std::string());
 }

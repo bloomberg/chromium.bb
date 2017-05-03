@@ -49,7 +49,7 @@ void RuntimeData::ClearAll() {
 
 void RuntimeData::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
+                                      UnloadedExtensionReason reason) {
   ExtensionFlagsMap::iterator iter = extension_flags_.find(extension->id());
   if (iter != extension_flags_.end())
     iter->second = iter->second & kPersistAcrossUnloadMask;

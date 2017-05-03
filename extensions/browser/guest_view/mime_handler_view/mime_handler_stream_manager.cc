@@ -154,7 +154,7 @@ std::unique_ptr<StreamContainer> MimeHandlerStreamManager::ReleaseStream(
 void MimeHandlerStreamManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   auto streams = streams_by_extension_id_.find(extension->id());
   if (streams == streams_by_extension_id_.end())
     return;

@@ -1910,7 +1910,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
 void ExtensionDownloadsEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::set<const Extension*>::iterator iter =
       shelf_disabling_extensions_.find(extension);

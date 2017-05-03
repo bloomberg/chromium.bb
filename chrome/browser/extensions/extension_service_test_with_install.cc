@@ -41,10 +41,11 @@ bool IsCrxInstallerDone(extensions::CrxInstaller** installer,
 ExtensionServiceTestWithInstall::ExtensionServiceTestWithInstall()
     : installed_(nullptr),
       was_update_(false),
-      unloaded_reason_(UnloadedExtensionInfo::REASON_UNDEFINED),
+      unloaded_reason_(UnloadedExtensionReason::UNDEFINED),
       expected_extensions_count_(0),
       override_external_install_prompt_(
-          FeatureSwitch::prompt_for_external_extensions(), false),
+          FeatureSwitch::prompt_for_external_extensions(),
+          false),
       registry_observer_(this) {}
 
 ExtensionServiceTestWithInstall::~ExtensionServiceTestWithInstall() {}
@@ -389,7 +390,7 @@ void ExtensionServiceTestWithInstall::OnExtensionLoaded(
 void ExtensionServiceTestWithInstall::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   unloaded_id_ = extension->id();
   unloaded_reason_ = reason;
   extensions::ExtensionList::iterator i =

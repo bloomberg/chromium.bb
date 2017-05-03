@@ -89,7 +89,7 @@ class PowerAPI : public BrowserContextKeyedAPI,
   // Overridden from extensions::ExtensionRegistryObserver.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<PowerAPI>;

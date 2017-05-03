@@ -38,7 +38,7 @@ KeepAliveImpl::~KeepAliveImpl() = default;
 void KeepAliveImpl::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (browser_context == context_ && extension == extension_)
     delete this;
 }

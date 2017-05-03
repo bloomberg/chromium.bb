@@ -33,7 +33,7 @@ scoped_refptr<Extension> CreateExtensionWithBackgroundPage() {
 
 class RuntimeDataTest : public testing::Test {
  public:
-  RuntimeDataTest() : registry_(NULL), runtime_data_(&registry_) {}
+  RuntimeDataTest() : registry_(nullptr), runtime_data_(&registry_) {}
   ~RuntimeDataTest() override {}
 
  protected:
@@ -82,8 +82,8 @@ TEST_F(RuntimeDataTest, OnExtensionUnloaded) {
   ASSERT_TRUE(runtime_data_.HasExtensionForTesting(extension->id()));
   runtime_data_.SetBeingUpgraded(extension->id(), true);
 
-  runtime_data_.OnExtensionUnloaded(
-      NULL, extension.get(), UnloadedExtensionInfo::REASON_DISABLE);
+  runtime_data_.OnExtensionUnloaded(nullptr, extension.get(),
+                                    UnloadedExtensionReason::DISABLE);
   EXPECT_TRUE(runtime_data_.HasExtensionForTesting(extension->id()));
   EXPECT_FALSE(runtime_data_.IsBackgroundPageReady(extension.get()));
   EXPECT_TRUE(runtime_data_.IsBeingUpgraded(extension->id()));

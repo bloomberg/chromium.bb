@@ -83,6 +83,6 @@ void ComponentToolbarActionsFactory::UnloadExtension(
   if (registry->enabled_extensions().Contains(extension_id)) {
     service->UnloadExtension(
         extension_id,
-        extensions::UnloadedExtensionInfo::REASON_MIGRATED_TO_COMPONENT);
+        extensions::UnloadedExtensionReason::MIGRATED_TO_COMPONENT);
   }
 }

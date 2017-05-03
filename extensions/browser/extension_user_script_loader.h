@@ -52,7 +52,7 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // Initiates script load when we have been waiting for the extension system
   // to be ready.

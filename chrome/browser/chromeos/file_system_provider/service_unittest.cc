@@ -367,10 +367,8 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
   ASSERT_EQ(1u, observer.mounts.size());
 
   // Directly call the observer's method.
-  service_->OnExtensionUnloaded(
-      profile_,
-      extension_.get(),
-      extensions::UnloadedExtensionInfo::REASON_DISABLE);
+  service_->OnExtensionUnloaded(profile_, extension_.get(),
+                                extensions::UnloadedExtensionReason::DISABLE);
 
   ASSERT_EQ(1u, observer.unmounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.unmounts[0].error());

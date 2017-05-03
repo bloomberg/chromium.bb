@@ -80,7 +80,7 @@ void VpnListForwarder::OnExtensionLoaded(
 void VpnListForwarder::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   if (IsVPNProvider(extension))
     UpdateVPNProviders();
 }

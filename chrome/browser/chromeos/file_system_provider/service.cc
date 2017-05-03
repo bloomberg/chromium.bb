@@ -356,10 +356,9 @@ bool Service::GetProvidingExtensionInfo(const std::string& extension_id,
   return true;
 }
 
-void Service::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+void Service::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  extensions::UnloadedExtensionReason reason) {
   // Unmount all of the provided file systems associated with this extension.
   auto it = file_system_map_.begin();
   while (it != file_system_map_.end()) {
@@ -371,7 +370,7 @@ void Service::OnExtensionUnloaded(
     if (file_system_info.extension_id() == extension->id()) {
       const base::File::Error unmount_result = UnmountFileSystem(
           file_system_info.extension_id(), file_system_info.file_system_id(),
-          reason == extensions::UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN
+          reason == extensions::UnloadedExtensionReason::PROFILE_SHUTDOWN
               ? UNMOUNT_REASON_SHUTDOWN
               : UNMOUNT_REASON_USER);
       DCHECK_EQ(base::File::FILE_OK, unmount_result);

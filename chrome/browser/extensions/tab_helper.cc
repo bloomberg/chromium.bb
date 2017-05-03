@@ -614,10 +614,9 @@ WebContents* TabHelper::GetAssociatedWebContents() const {
   return web_contents();
 }
 
-void TabHelper::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+void TabHelper::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                    const Extension* extension,
+                                    UnloadedExtensionReason reason) {
   DCHECK(extension_app_);
   if (extension == extension_app_)
     SetExtensionApp(nullptr);

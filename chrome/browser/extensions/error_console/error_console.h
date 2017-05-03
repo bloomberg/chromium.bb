@@ -144,7 +144,7 @@ class ErrorConsole : public KeyedService,
   // installed or uninstalled, we may need to turn the ErrorConsole on/off.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
   void OnExtensionInstalled(content::BrowserContext* browser_context,

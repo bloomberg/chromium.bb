@@ -665,8 +665,8 @@ void SyncFileSystemService::OnExtensionInstalled(
 void SyncFileSystemService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
-  if (reason != extensions::UnloadedExtensionInfo::REASON_DISABLE)
+    extensions::UnloadedExtensionReason reason) {
+  if (reason != extensions::UnloadedExtensionReason::DISABLE)
     return;
 
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());

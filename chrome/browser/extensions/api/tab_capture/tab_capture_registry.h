@@ -88,7 +88,7 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
   void OnRequestUpdate(int original_target_render_process_id,

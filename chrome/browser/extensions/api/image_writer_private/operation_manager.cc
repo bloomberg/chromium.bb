@@ -241,7 +241,7 @@ void OperationManager::DeleteOperation(const ExtensionId& extension_id) {
 void OperationManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   DeleteOperation(extension->id());
 }
 

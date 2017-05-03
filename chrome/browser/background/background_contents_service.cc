@@ -70,7 +70,7 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::BackgroundInfo;
 using extensions::Extension;
-using extensions::UnloadedExtensionInfo;
+using extensions::UnloadedExtensionReason;
 
 namespace {
 
@@ -509,19 +509,19 @@ void BackgroundContentsService::OnExtensionLoaded(
 void BackgroundContentsService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   switch (reason) {
-    case UnloadedExtensionInfo::REASON_DISABLE:    // Fall through.
-    case UnloadedExtensionInfo::REASON_TERMINATE:  // Fall through.
-    case UnloadedExtensionInfo::REASON_UNINSTALL:  // Fall through.
-    case UnloadedExtensionInfo::REASON_BLACKLIST:  // Fall through.
-    case UnloadedExtensionInfo::REASON_LOCK_ALL:   // Fall through.
-    case UnloadedExtensionInfo::REASON_MIGRATED_TO_COMPONENT:  // Fall through.
-    case UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN:
+    case UnloadedExtensionReason::DISABLE:                // Fall through.
+    case UnloadedExtensionReason::TERMINATE:              // Fall through.
+    case UnloadedExtensionReason::UNINSTALL:              // Fall through.
+    case UnloadedExtensionReason::BLACKLIST:              // Fall through.
+    case UnloadedExtensionReason::LOCK_ALL:               // Fall through.
+    case UnloadedExtensionReason::MIGRATED_TO_COMPONENT:  // Fall through.
+    case UnloadedExtensionReason::PROFILE_SHUTDOWN:
       ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(extension->id()));
       SendChangeNotification(Profile::FromBrowserContext(browser_context));
       return;
-    case UnloadedExtensionInfo::REASON_UPDATE: {
+    case UnloadedExtensionReason::UPDATE: {
       // If there is a manifest specified background page, then shut it down
       // here, since if the updated extension still has the background page,
       // then it will be loaded from LOADED callback. Otherwise, leave
@@ -533,12 +533,12 @@ void BackgroundContentsService::OnExtensionUnloaded(
             base::ASCIIToUTF16(extension->id()));
       }
       return;
-    case UnloadedExtensionInfo::REASON_UNDEFINED:
-      // Fall through to undefined case.
-      break;
+      case UnloadedExtensionReason::UNDEFINED:
+        // Fall through to undefined case.
+        break;
     }
   }
-  NOTREACHED() << "Undefined case " << reason;
+  NOTREACHED() << "Undefined UnloadedExtensionReason.";
   return ShutdownAssociatedBackgroundContents(
       base::ASCIIToUTF16(extension->id()));
 }

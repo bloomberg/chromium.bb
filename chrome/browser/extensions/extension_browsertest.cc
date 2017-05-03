@@ -515,7 +515,7 @@ void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
   service->UnloadExtension(extension_id,
-                           extensions::UnloadedExtensionInfo::REASON_DISABLE);
+                           extensions::UnloadedExtensionReason::DISABLE);
 }
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {

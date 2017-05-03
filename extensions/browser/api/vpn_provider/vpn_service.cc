@@ -553,7 +553,7 @@ void VpnService::OnExtensionUninstalled(
 void VpnService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    extensions::UnloadedExtensionReason reason) {
   if (browser_context != browser_context_) {
     NOTREACHED();
     return;
@@ -566,8 +566,8 @@ void VpnService::OnExtensionUnloaded(
         static_cast<uint32_t>(api_vpn::VPN_CONNECTION_STATE_FAILURE),
         base::Bind(base::DoNothing), base::Bind(DoNothingFailureCallback));
   }
-  if (reason == extensions::UnloadedExtensionInfo::REASON_DISABLE ||
-      reason == extensions::UnloadedExtensionInfo::REASON_BLACKLIST) {
+  if (reason == extensions::UnloadedExtensionReason::DISABLE ||
+      reason == extensions::UnloadedExtensionReason::BLACKLIST) {
     DestroyConfigurationsForExtension(extension);
   }
 }

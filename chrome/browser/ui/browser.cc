@@ -2081,16 +2081,15 @@ void Browser::OnExtensionLoaded(content::BrowserContext* browser_context,
   command_controller_->ExtensionStateChanged();
 }
 
-void Browser::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                  const extensions::Extension* extension,
+                                  extensions::UnloadedExtensionReason reason) {
   command_controller_->ExtensionStateChanged();
 
   // Close any tabs from the unloaded extension, unless it's terminated,
   // in which case let the sad tabs remain.
   // Also, if tab is muted and the cause is the unloaded extension, unmute it.
-  if (reason != extensions::UnloadedExtensionInfo::REASON_TERMINATE) {
+  if (reason != extensions::UnloadedExtensionReason::TERMINATE) {
     // Iterate backwards as we may remove items while iterating.
     for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
       WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);

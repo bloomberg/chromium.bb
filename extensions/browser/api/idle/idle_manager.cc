@@ -143,7 +143,7 @@ void IdleManager::Shutdown() {
 
 void IdleManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
+                                      UnloadedExtensionReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   monitors_.erase(extension->id());
 }

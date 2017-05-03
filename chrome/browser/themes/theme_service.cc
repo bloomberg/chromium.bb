@@ -59,7 +59,6 @@
 using base::UserMetricsAction;
 using content::BrowserThread;
 using extensions::Extension;
-using extensions::UnloadedExtensionInfo;
 using ui::ResourceBundle;
 
 
@@ -195,9 +194,9 @@ class ThemeService::ThemeObserver
   void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override {
-    if (reason != extensions::UnloadedExtensionInfo::REASON_UPDATE &&
-        reason != extensions::UnloadedExtensionInfo::REASON_LOCK_ALL &&
+      extensions::UnloadedExtensionReason reason) override {
+    if (reason != extensions::UnloadedExtensionReason::UPDATE &&
+        reason != extensions::UnloadedExtensionReason::LOCK_ALL &&
         extension->is_theme() &&
         extension->id() == theme_service_->GetThemeID()) {
       theme_service_->UseDefaultTheme();

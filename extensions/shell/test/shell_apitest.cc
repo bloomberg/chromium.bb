@@ -56,7 +56,7 @@ void ShellApiTest::UnloadApp(const Extension* app) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
   ASSERT_TRUE(registry->RemoveEnabled(app->id()));
 
-  UnloadedExtensionInfo::Reason reason(UnloadedExtensionInfo::REASON_DISABLE);
+  UnloadedExtensionReason reason(UnloadedExtensionReason::DISABLE);
   registry->TriggerOnUnloaded(app, reason);
 
   content::NotificationService::current()->Notify(

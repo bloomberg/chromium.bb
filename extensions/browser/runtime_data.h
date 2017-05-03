@@ -51,7 +51,7 @@ class RuntimeData : public ExtensionRegistryObserver {
   // ExtensionRegistryObserver overrides. Public for testing.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
 
  private:
   // Bitmasks for runtime states.

@@ -519,27 +519,18 @@ struct InstalledExtensionInfo {
                          const std::string& old_name);
 };
 
-struct UnloadedExtensionInfo {
-  // TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
-  enum Reason {
-    REASON_UNDEFINED,         // Undefined state used to initialize variables.
-    REASON_DISABLE,           // Extension is being disabled.
-    REASON_UPDATE,            // Extension is being updated to a newer version.
-    REASON_UNINSTALL,         // Extension is being uninstalled.
-    REASON_TERMINATE,         // Extension has terminated.
-    REASON_BLACKLIST,         // Extension has been blacklisted.
-    REASON_PROFILE_SHUTDOWN,  // Profile is being shut down.
-    REASON_LOCK_ALL,          // All extensions for the profile are blocked.
-    REASON_MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component
-                                   // action.
-  };
-
-  Reason reason;
-
-  // The extension being unloaded - this should always be non-NULL.
-  const Extension* extension;
-
-  UnloadedExtensionInfo(const Extension* extension, Reason reason);
+// TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
+enum class UnloadedExtensionReason {
+  UNDEFINED,              // Undefined state used to initialize variables.
+  DISABLE,                // Extension is being disabled.
+  UPDATE,                 // Extension is being updated to a newer version.
+  UNINSTALL,              // Extension is being uninstalled.
+  TERMINATE,              // Extension has terminated.
+  BLACKLIST,              // Extension has been blacklisted.
+  PROFILE_SHUTDOWN,       // Profile is being shut down.
+  LOCK_ALL,               // All extensions for the profile are blocked.
+  MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component
+                          // action.
 };
 
 // The details sent for EXTENSION_PERMISSIONS_UPDATED notifications.

@@ -215,7 +215,7 @@ void RulesRegistryService::OnExtensionLoaded(
 void RulesRegistryService::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded, extension);
 }
 

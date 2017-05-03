@@ -408,7 +408,7 @@ void LogPrivateAPI::RegisterTempFileOnFileResourceSequence(
 void LogPrivateAPI::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   StopNetInternalsWatch(extension->id(), base::Closure());
 }
 

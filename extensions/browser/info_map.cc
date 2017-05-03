@@ -73,12 +73,12 @@ void InfoMap::AddExtension(const Extension* extension,
 }
 
 void InfoMap::RemoveExtension(const std::string& extension_id,
-                              const UnloadedExtensionInfo::Reason reason) {
+                              const UnloadedExtensionReason reason) {
   CheckOnValidThread();
   const Extension* extension = extensions_.GetByID(extension_id);
   extra_data_.erase(extension_id);  // we don't care about disabled extra data
-  bool was_uninstalled = (reason != UnloadedExtensionInfo::REASON_DISABLE &&
-                          reason != UnloadedExtensionInfo::REASON_TERMINATE);
+  bool was_uninstalled = (reason != UnloadedExtensionReason::DISABLE &&
+                          reason != UnloadedExtensionReason::TERMINATE);
   if (extension) {
     if (!was_uninstalled)
       disabled_extensions_.Insert(extension);

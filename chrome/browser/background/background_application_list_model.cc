@@ -46,7 +46,7 @@ using extensions::ExtensionList;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
 using extensions::PermissionSet;
-using extensions::UnloadedExtensionInfo;
+using extensions::UnloadedExtensionReason;
 using extensions::UpdatedExtensionPermissionsInfo;
 
 class ExtensionNameComparator {
@@ -326,7 +326,7 @@ void BackgroundApplicationListModel::OnExtensionLoaded(
 void BackgroundApplicationListModel::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+    UnloadedExtensionReason reason) {
   if (!IsBackgroundApp(*extension, profile_))
     return;
   Update();

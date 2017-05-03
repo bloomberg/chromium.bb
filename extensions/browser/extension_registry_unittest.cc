@@ -59,7 +59,7 @@ class TestObserver : public ExtensionRegistryObserver {
 
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override {
+                           UnloadedExtensionReason reason) override {
     unloaded_.push_back(extension);
   }
 
@@ -259,8 +259,7 @@ TEST_F(ExtensionRegistryTest, Observer) {
   registry.Shutdown();
 
   registry.RemoveEnabled(extension->id());
-  registry.TriggerOnUnloaded(extension.get(),
-                             UnloadedExtensionInfo::REASON_DISABLE);
+  registry.TriggerOnUnloaded(extension.get(), UnloadedExtensionReason::DISABLE);
 
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));

@@ -339,10 +339,9 @@ class BluetoothLowEnergyEventRouter
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   // extensions::ExtensionRegistryObserver overrides:
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
 
   // Adds a mapping for a local characteristic ID to its service ID
   void AddLocalCharacteristic(const std::string& id,

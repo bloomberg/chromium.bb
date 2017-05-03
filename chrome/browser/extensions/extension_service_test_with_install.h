@@ -124,7 +124,7 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
+                           UnloadedExtensionReason reason) override;
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const Extension* extension,
                                   bool is_update,
@@ -136,7 +136,7 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
   bool was_update_;
   std::string old_name_;
   std::string unloaded_id_;
-  UnloadedExtensionInfo::Reason unloaded_reason_;
+  UnloadedExtensionReason unloaded_reason_;
 
  private:
   void InstallCRXInternal(const base::FilePath& crx_path,
