@@ -20,6 +20,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -244,8 +245,9 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& network_id,
   }
 
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      network->path(), base::Bind(&NetworkConnectImpl::OnConnectSucceeded,
-                                  weak_factory_.GetWeakPtr(), network_id),
+      network->path(),
+      base::Bind(&NetworkConnectImpl::OnConnectSucceeded,
+                 weak_factory_.GetWeakPtr(), network_id),
       base::Bind(&NetworkConnectImpl::OnConnectFailed,
                  weak_factory_.GetWeakPtr(), network_id),
       check_error_state);
@@ -386,6 +388,10 @@ void NetworkConnectImpl::ConnectToNetworkId(const std::string& network_id) {
       return;
     } else if (network->RequiresActivation()) {
       ActivateCellular(network_id);
+      return;
+    } else if (network->type() == kTypeTether &&
+               !network->tether_has_connected_to_host()) {
+      delegate_->ShowNetworkConfigure(network_id);
       return;
     }
   }
