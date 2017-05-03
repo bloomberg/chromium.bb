@@ -18,6 +18,7 @@
 
 namespace {
 
+// Test that accessory type is copied over to the cell from the item.
 TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
@@ -29,6 +30,7 @@ TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
   EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, [cell accessoryType]);
 }
 
+// Test that text properties are copied over to the cell from the item.
 TEST(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
@@ -41,6 +43,37 @@ TEST(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
   [item configureCell:cell];
   EXPECT_NSEQ(@"some text", [cell textLabel].text);
   EXPECT_NSEQ(@"some detail text", [cell detailTextLabel].text);
+}
+
+// Test that if the item has no accessibilityLabel, the cell gets one composed
+// of the text and detailText.
+TEST(CollectionViewTextItemTest, ConfigureCellDerivesAccessibilityLabel) {
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:0];
+  item.text = @"some text";
+  item.detailText = @"some detail text";
+  CollectionViewTextCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[CollectionViewTextCell class]]);
+  EXPECT_FALSE([cell textLabel].accessibilityLabel);
+  [item configureCell:cell];
+  EXPECT_NSEQ(@"some text, some detail text", [cell accessibilityLabel]);
+}
+
+// Test that if the item has a non-empty accessibilityLabel, this is copied
+// over to the cell.
+TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessibilityLabel) {
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:0];
+  item.accessibilityLabel = @"completely different label";
+  // Also set text and detailText to verify that the derived
+  // accessibilityLabel is not composed of those.
+  item.text = @"some text";
+  item.detailText = @"some detail text";
+  CollectionViewTextCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[CollectionViewTextCell class]]);
+  EXPECT_FALSE([cell textLabel].accessibilityLabel);
+  [item configureCell:cell];
+  EXPECT_NSEQ(@"completely different label", [cell accessibilityLabel]);
 }
 
 }  // namespace
