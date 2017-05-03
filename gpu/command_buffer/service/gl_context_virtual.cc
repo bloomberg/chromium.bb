@@ -51,10 +51,12 @@ bool GLContextVirtual::IsCurrent(gl::GLSurface* surface) {
   // If it's a real surface it needs to be current.
   if (surface &&
       !surface->IsOffscreen())
-    return shared_context_->IsCurrent(surface);
+    return shared_context_->IsCurrent(surface) &&
+           shared_context_->current_virtual_context_ == this;
 
   // Otherwise, only insure the context itself is current.
-  return shared_context_->IsCurrent(NULL);
+  return shared_context_->IsCurrent(NULL) &&
+         shared_context_->current_virtual_context_ == this;
 }
 
 void* GLContextVirtual::GetHandle() {

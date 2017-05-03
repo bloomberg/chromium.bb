@@ -5239,6 +5239,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
                                               const volatile void* buffer,
                                               int num_entries,
                                               int* entries_processed) {
+  DCHECK(context_->IsCurrent(surface_.get()));
   commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
   const volatile CommandBufferEntry* cmd_data =
