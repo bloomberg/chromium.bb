@@ -17,7 +17,6 @@
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/tether_connector.h"
-#include "chromeos/components/tether/tether_device_state_manager.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
@@ -83,7 +82,7 @@ void Initializer::Init(
 // static
 void Initializer::Shutdown() {
   if (instance_) {
-    PA_LOG(INFO) << "Shutting down tether feature.";
+    PA_LOG(INFO) << "Shutting down Tether feature.";
     delete instance_;
     instance_ = nullptr;
   }
@@ -168,8 +167,6 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   PA_LOG(INFO) << "Successfully set Bluetooth advertisement interval. "
                << "Initializing tether feature.";
 
-  tether_device_state_manager_ =
-      base::MakeUnique<TetherDeviceStateManager>(network_state_handler_);
   tether_host_fetcher_ =
       base::MakeUnique<TetherHostFetcher>(cryptauth_service_);
   local_device_data_provider_ =

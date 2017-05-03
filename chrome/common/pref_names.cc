@@ -975,6 +975,9 @@ const char kEnableQuickUnlockFingerprint[] =
 
 // Boolean pref indicating whether a user is allowed to use Tether.
 const char kInstantTetheringAllowed[] = "tether.allowed";
+
+// Boolean pref indicating whether a user has enabled Tether.
+const char kInstantTetheringEnabled[] = "tether.enabled";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
