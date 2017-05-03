@@ -75,8 +75,9 @@
   [super stop];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
   [self.mediator disconnect];
+  // PLACEHOLDER: Remove child coordinators here for now. This might be handled
+  // differently later on.
   for (BrowserCoordinator* child in self.children) {
-    [child stop];
     [self removeChildCoordinator:child];
   }
 }

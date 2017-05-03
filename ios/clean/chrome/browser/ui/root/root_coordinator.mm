@@ -41,10 +41,9 @@
 
 - (void)stop {
   [super stop];
-  // PLACEHOLDER: Stop child coordinators here for now. We might deal with this
+  // PLACEHOLDER: Remove child coordinators here for now. This might be handled
   // differently later on.
   for (BrowserCoordinator* child in self.children) {
-    [child stop];
     [self removeChildCoordinator:child];
   }
 }
