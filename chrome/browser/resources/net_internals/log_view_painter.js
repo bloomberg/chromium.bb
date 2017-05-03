@@ -291,9 +291,6 @@ var stripPrivacyInfo;
       case EventType.CERT_CT_COMPLIANCE_CHECKED:
       case EventType.EV_CERT_CT_COMPLIANCE_CHECKED:
         return writeParamsForCheckedCertificates;
-
-      case EventType.SSL_VERSION_FALLBACK:
-        return writeParamsForSSLVersionFallback;
     }
     return null;
   }
@@ -403,30 +400,6 @@ var stripPrivacyInfo;
       return zeroName;
 
     return matchingFlagNames.join(' | ');
-  }
-
-  /**
-   * Converts an SSL version number to a textual representation.
-   * For instance, SSLVersionNumberToName(0x0301) returns 'TLS 1.0'.
-   */
-  function SSLVersionNumberToName(version) {
-    if ((version & 0xFFFF) != version) {
-      // If the version number is more than 2 bytes long something is wrong.
-      // Print it as hex.
-      return 'SSL 0x' + version.toString(16);
-    }
-
-    // See if it is a known TLS name.
-    var kTLSNames = {0x0301: 'TLS 1.0', 0x0302: 'TLS 1.1', 0x0303: 'TLS 1.2'};
-    var name = kTLSNames[version];
-    if (name)
-      return name;
-
-    // Otherwise label it as an SSL version.
-    var major = (version & 0xFF00) >> 8;
-    var minor = version & 0x00FF;
-
-    return 'SSL ' + major + '.' + minor;
   }
 
   /**
@@ -655,26 +628,6 @@ var stripPrivacyInfo;
     if (typeof(entry.params.certificate) == 'object')
       writeCertificateParam(
           entry.params.certificate, out, consumedParams, 'certificate');
-  }
-
-  /**
-   * Outputs the SSL version fallback parameters of |entry| to |out|.
-   */
-  function writeParamsForSSLVersionFallback(entry, out, consumedParams) {
-    var params = entry.params;
-
-    if (typeof params.version_before != 'number' ||
-        typeof params.version_after != 'number') {
-      // Unrecognized params.
-      return;
-    }
-
-    var line = SSLVersionNumberToName(params.version_before) + ' ==> ' +
-        SSLVersionNumberToName(params.version_after);
-    out.writeArrowIndentedLines([line]);
-
-    consumedParams.version_before = true;
-    consumedParams.version_after = true;
   }
 
   function writeParamsForProxyConfigChanged(entry, out, consumedParams) {
