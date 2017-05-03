@@ -9722,10 +9722,7 @@ static bool SystemSupportsHardFailRevocationChecking() {
 // several tests are effected because our testing EV certificate won't be
 // recognised as EV.
 static bool SystemUsesChromiumEVMetadata() {
-#if defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
-  // http://crbug.com/117478 - OpenSSL does not support EV validation.
-  return false;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // On Android, we use the system to tell us whether a certificate is EV or not
   // and the system won't recognise our testing root.
   return false;
