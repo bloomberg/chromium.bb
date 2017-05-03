@@ -67,12 +67,17 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
   DCHECK(framework_instance);
   framework_instance->Init(binding_.CreateInterfacePtrAndBind());
 
+  // TODO(updowndota): Move the dynamic shortcuts to accelerator_controller.cc
+  // to prevent several issues.
   ash::Shell::Get()->accelerator_controller()->Register(
       {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN)}, this);
   // Temporary shortcut added to enable the metalayer experiment.
   ash::Shell::Get()->accelerator_controller()->Register(
       {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)},
       this);
+  // Temporary shortcut added for UX/PM exploration.
+  ash::Shell::Get()->accelerator_controller()->Register(
+      {ui::Accelerator(ui::VKEY_SPACE, ui::EF_COMMAND_DOWN)}, this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
