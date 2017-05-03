@@ -39,7 +39,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace*,
                                 NGBreakToken* = nullptr) override;
-  LayoutObject* GetLayoutObject() override;
+  LayoutObject* GetLayoutObject() const override;
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
@@ -67,6 +67,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   void AssertOffset(unsigned index, unsigned offset) const;
   void AssertEndOffset(unsigned index, unsigned offset) const;
+
+  String ToString() const override;
 
   DECLARE_VIRTUAL_TRACE();
 

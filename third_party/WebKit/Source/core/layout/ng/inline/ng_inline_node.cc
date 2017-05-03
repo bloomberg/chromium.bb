@@ -228,7 +228,7 @@ NGLayoutInputNode* NGInlineNode::NextSibling() {
   return next_sibling_;
 }
 
-LayoutObject* NGInlineNode::GetLayoutObject() {
+LayoutObject* NGInlineNode::GetLayoutObject() const {
   return GetLayoutBlockFlow();
 }
 
@@ -363,6 +363,10 @@ void NGInlineNode::GetLayoutTextOffsets(
     current_text->SetTextInternal(
         Text(current_offset, Data().text_content_.length()).ToString().Impl());
   }
+}
+
+String NGInlineNode::ToString() const {
+  return String::Format("NGInlineNode");
 }
 
 DEFINE_TRACE(NGInlineNode) {

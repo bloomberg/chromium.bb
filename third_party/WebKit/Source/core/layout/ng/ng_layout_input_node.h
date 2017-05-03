@@ -40,15 +40,21 @@ class CORE_EXPORT NGLayoutInputNode
   virtual NGLayoutInputNode* NextSibling() = 0;
 
   // Returns the LayoutObject which is associated with this node.
-  virtual LayoutObject* GetLayoutObject() = 0;
+  virtual LayoutObject* GetLayoutObject() const = 0;
 
   virtual MinMaxContentSize ComputeMinMaxContentSize() = 0;
 
   virtual const ComputedStyle& Style() const = 0;
 
+  virtual String ToString() const = 0;
+
   NGLayoutInputNodeType Type() const {
     return static_cast<NGLayoutInputNodeType>(type_);
   }
+
+#ifndef NDEBUG
+  void ShowNodeTree() const;
+#endif
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

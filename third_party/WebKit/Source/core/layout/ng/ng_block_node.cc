@@ -218,7 +218,7 @@ NGLayoutInputNode* NGBlockNode::NextSibling() {
   return next_sibling_;
 }
 
-LayoutObject* NGBlockNode::GetLayoutObject() {
+LayoutObject* NGBlockNode::GetLayoutObject() const {
   return layout_box_;
 }
 
@@ -274,6 +274,11 @@ bool NGBlockNode::CanUseNewLayout() const {
   if (!layout_box_->IsLayoutBlockFlow())
     return false;
   return RuntimeEnabledFeatures::layoutNGEnabled();
+}
+
+String NGBlockNode::ToString() const {
+  return String::Format("NGBlockNode: '%s'",
+                        GetLayoutObject()->DebugName().Ascii().data());
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
