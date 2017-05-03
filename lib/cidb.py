@@ -19,6 +19,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import failure_message_lib
 from chromite.lib import graphite
+from chromite.lib import hwtest_results
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import retry_stats
@@ -819,6 +820,24 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               'board': board}
     return self._Insert('buildMessageTable', values)
 
+  @minimum_schema(57)
+  def InsertHWTestResults(self, hwTestResults):
+    """Insert HWTest results.
+
+    Args:
+      hwTestResults: A list of hwtest_results.HWTestResult instances.
+
+    Returns:
+      The number of inserted rows.
+    """
+    values = []
+    for result in hwTestResults:
+      values.append({'build_id': result.build_id,
+                     'test_name': result.test_name,
+                     'status': result.status})
+
+    return self._InsertMany('hwTestResultTable', values)
+
   @minimum_schema(56)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
@@ -1557,6 +1576,24 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute('%s WHERE %s' % (self._SQL_FETCH_MESSAGES,
                                              clause)).fetchall()
     return [dict(zip(columns, values)) for values in results]
+
+  @minimum_schema(57)
+  def GetHWTestResultsForBuilds(self, build_ids):
+    """Get HWTest results for builds.
+
+    Args:
+      build_ids: A list of build_ids (strings) to get the HWTest results.
+
+    Returns:
+      A list of HWTest result dictionaries, where each dictionary contains keys
+        id, build_id, test_name and status.
+    """
+    q = ('SELECT * from hwTestResultTable WHERE build_id IN (%s)' %
+         ','.join(str(int(x)) for x in build_ids))
+    results = self._Execute(q).fetchall()
+
+    return [hwtest_results.HWTestResult(*values) for values in results]
+
 
 def _INV():
   raise AssertionError('CIDB connection factory has been invalidated.')

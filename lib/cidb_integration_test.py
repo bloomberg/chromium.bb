@@ -20,6 +20,7 @@ from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import hwtest_results
 from chromite.lib import osutils
 from chromite.lib import parallel
 
@@ -897,6 +898,49 @@ class BuildTableTest(CIDBIntegrationTest):
     build_bb_id_list = self._GetBuildToBuildbucketIdList(
         bot_db.GetSlaveStatuses(build_id, buildbucket_ids=[]))
     self.assertListEqual(build_bb_id_list, [])
+
+
+class HWTestResultTableTest(CIDBIntegrationTest):
+  """Tests for hwTestResultTable."""
+
+  def testHWTestResults(self):
+    """Test Insert and Get operations on hwTestResultTable."""
+    HWTestResult = hwtest_results.HWTestResult
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+    b_id_1 = bot_db.InsertBuild('build_name',
+                                constants.WATERFALL_INTERNAL,
+                                _random(),
+                                'build_config',
+                                'bot_hostname')
+    b_id_2 = bot_db.InsertBuild('build_name',
+                                constants.WATERFALL_INTERNAL,
+                                _random(),
+                                'build_config',
+                                'bot_hostname')
+
+    r1 = HWTestResult.FromReport(b_id_1, 'test_a', 'pass')
+    r2 = HWTestResult.FromReport(b_id_1, 'test_b', 'fail')
+    r3 = HWTestResult.FromReport(b_id_1, 'test_c', 'abort')
+    r4 = HWTestResult.FromReport(b_id_2, 'test_d', 'other')
+    bot_db.InsertHWTestResults([r1, r2, r3, r4])
+
+    expected_result_1 = [
+        HWTestResult(1, b_id_1, 'test_a', 'pass'),
+        HWTestResult(2, b_id_1, 'test_b', 'fail'),
+        HWTestResult(3, b_id_1, 'test_c', 'abort')]
+    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_1]),
+                          expected_result_1)
+
+    expected_result_2 = [HWTestResult(4, b_id_2, 'test_d', 'other')]
+    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_2]),
+                          expected_result_2)
+
+    expected_result_3 = expected_result_1 + expected_result_2
+    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([b_id_1, b_id_2]),
+                          expected_result_3)
+
+    self.assertItemsEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
 
 
 class DataSeries1Test(CIDBIntegrationTest):
