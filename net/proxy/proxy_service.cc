@@ -456,6 +456,12 @@ class ProxyService::InitProxyResolver {
     return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
   }
 
+  // This must be called before the HostResolver is torn down.
+  void OnShutdown() {
+    if (decider_)
+      decider_->OnShutdown();
+  }
+
   void set_quick_check_enabled(bool enabled) { quick_check_enabled_ = enabled; }
   bool quick_check_enabled() const { return quick_check_enabled_; }
 
@@ -1456,6 +1462,17 @@ void ProxyService::SetProxyScriptFetchers(
   dhcp_proxy_script_fetcher_ = std::move(dhcp_proxy_script_fetcher);
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();
+}
+
+void ProxyService::OnShutdown() {
+  // Order here does not matter for correctness. |init_proxy_resolver_| is first
+  // because shutting it down also cancels its requests using the fetcher.
+  if (init_proxy_resolver_)
+    init_proxy_resolver_->OnShutdown();
+  if (proxy_script_fetcher_)
+    proxy_script_fetcher_->OnShutdown();
+  if (dhcp_proxy_script_fetcher_)
+    dhcp_proxy_script_fetcher_->OnShutdown();
 }
 
 ProxyScriptFetcher* ProxyService::GetProxyScriptFetcher() const {

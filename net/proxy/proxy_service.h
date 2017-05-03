@@ -225,6 +225,11 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
       std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher);
   ProxyScriptFetcher* GetProxyScriptFetcher() const;
 
+  // Cancels all network requests, and prevents the service from creating new
+  // ones.  Must be called before the URLRequestContext the ProxyService was
+  // created with is torn down, if it's torn down before th ProxyService itself.
+  void OnShutdown();
+
   // Tells this ProxyService to start using a new ProxyConfigService to
   // retrieve its ProxyConfig from. The new ProxyConfigService will immediately
   // be queried for new config info which will be used for all subsequent

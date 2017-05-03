@@ -39,6 +39,7 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
   int Fetch(base::string16* utf16_text,
             const net::CompletionCallback& callback) override;
   void Cancel() override;
+  void OnShutdown() override;
   const GURL& GetPacURL() const override;
   std::string GetFetcherName() const override;
 
@@ -47,7 +48,6 @@ class CHROMEOS_EXPORT DhcpProxyScriptFetcherChromeos
                      net::CompletionCallback callback,
                      std::string pac_url);
 
-  net::URLRequestContext* url_request_context_;  // Weak ptr
   std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher_;
   scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
 

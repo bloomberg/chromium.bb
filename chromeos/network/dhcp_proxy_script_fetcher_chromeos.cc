@@ -33,11 +33,10 @@ std::string GetPacUrlFromDefaultNetwork() {
 
 DhcpProxyScriptFetcherChromeos::DhcpProxyScriptFetcherChromeos(
     net::URLRequestContext* url_request_context)
-    : url_request_context_(url_request_context),
-      weak_ptr_factory_(this) {
-  DCHECK(url_request_context_);
+    : weak_ptr_factory_(this) {
+  DCHECK(url_request_context);
   proxy_script_fetcher_.reset(
-      new net::ProxyScriptFetcherImpl(url_request_context_));
+      new net::ProxyScriptFetcherImpl(url_request_context));
   if (NetworkHandler::IsInitialized())
     network_handler_task_runner_ = NetworkHandler::Get()->task_runner();
 }
@@ -63,6 +62,10 @@ void DhcpProxyScriptFetcherChromeos::Cancel() {
   proxy_script_fetcher_->Cancel();
   // Invalidate any pending callbacks (i.e. calls to ContinueFetch).
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void DhcpProxyScriptFetcherChromeos::OnShutdown() {
+  proxy_script_fetcher_->OnShutdown();
 }
 
 const GURL& DhcpProxyScriptFetcherChromeos::GetPacURL() const {
