@@ -37,7 +37,7 @@ public class ContextSelectionClient implements SelectionClient {
 
     // The maximal number of characters on the left and on the right from the current selection.
     // Used for surrounding text request.
-    private static final int NUM_EXTRA_CHARS = 100;
+    private static final int NUM_EXTRA_CHARS = 240;
 
     private long mNativeContextSelectionClient;
     private ContextSelectionProvider mProvider;
