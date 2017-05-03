@@ -81,7 +81,6 @@ const CGFloat kKernAmount = 0.2;
 - (NSDictionary*)titleTextAttributes;
 @end
 
-
 @implementation BookmarkButtonCell
 
 @synthesize startingChildIndex = startingChildIndex_;
