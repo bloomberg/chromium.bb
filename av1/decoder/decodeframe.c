@@ -4049,15 +4049,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                        "Invalid frame marker");
 
   cm->profile = av1_read_profile(rb);
-#if CONFIG_HIGHBITDEPTH
-  if (cm->profile >= MAX_PROFILES)
+
+  const BITSTREAM_PROFILE MAX_SUPPORTED_PROFILE =
+      CONFIG_HIGHBITDEPTH ? MAX_PROFILES : PROFILE_2;
+
+  if (cm->profile >= MAX_SUPPORTED_PROFILE)
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
-#else
-  if (cm->profile >= PROFILE_2)
-    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                       "Unsupported bitstream profile");
-#endif
 
   cm->show_existing_frame = aom_rb_read_bit(rb);
 
