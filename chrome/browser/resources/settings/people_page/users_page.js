@@ -22,13 +22,13 @@ Polymer({
     /** @private */
     isOwner_: {
       type: Boolean,
-      value: true
+      value: true,
     },
 
     /** @private */
     isWhitelistManaged_: {
       type: Boolean,
-      value: false
+      value: false,
     },
   },
 
@@ -54,7 +54,7 @@ Polymer({
 
   /** @private */
   onAddUserDialogClose_: function() {
-    this.$$('#add-user-button a').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#add-user-button a')));
   },
 
   /**

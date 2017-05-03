@@ -52,13 +52,15 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() { return loadTimeData.getBoolean('isGuest'); }
+      value: function() {
+        return loadTimeData.getBoolean('isGuest');
+      }
     },
 
     /** @private */
     hasDriveCache_: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /** @private {settings.StorageSizeStat} */
@@ -305,6 +307,6 @@ Polymer({
 
   /** @private */
   onCloseDriveCacheDialog_: function() {
-    this.$$('#deleteButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#deleteButton')));
   },
 });

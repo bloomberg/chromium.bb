@@ -93,6 +93,6 @@ Polymer({
 
   /** @private */
   onConfirmDisableDialogClose_: function() {
-    this.$$('#remove button').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#remove button')));
   },
 });

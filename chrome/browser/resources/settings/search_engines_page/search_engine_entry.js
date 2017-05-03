@@ -106,7 +106,7 @@ Polymer({
       // previous dialog's contents are cleared.
       dialog.addEventListener('close', function() {
         this.showEditSearchEngineDialog_ = false;
-        this.$$('paper-icon-button').focus();
+        cr.ui.focusWithoutInk(assert(this.$$('paper-icon-button')));
       }.bind(this));
     }.bind(this));
   },

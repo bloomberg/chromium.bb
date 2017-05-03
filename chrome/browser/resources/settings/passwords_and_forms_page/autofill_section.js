@@ -302,7 +302,7 @@ AutofillManagerImpl.prototype = {
     /** @private */
     onAddressDialogClosed_: function() {
       this.showAddressDialog_ = false;
-      this.activeDialogAnchor_.focus();
+      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
       this.activeDialogAnchor_ = null;
     },
 
@@ -375,7 +375,7 @@ AutofillManagerImpl.prototype = {
     /** @private */
     onCreditCardDialogClosed_: function() {
       this.showCreditCardDialog_ = false;
-      this.activeDialogAnchor_.focus();
+      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
       this.activeDialogAnchor_ = null;
     },
 

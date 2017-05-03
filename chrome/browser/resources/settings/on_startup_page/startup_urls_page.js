@@ -77,7 +77,7 @@ Polymer({
     this.showStartupUrlDialog_ = false;
     this.startupUrlDialogModel_ = null;
     if (this.startupUrlDialogAnchor_) {
-      this.startupUrlDialogAnchor_.focus();
+      cr.ui.focusWithoutInk(assert(this.startupUrlDialogAnchor_));
       this.startupUrlDialogAnchor_ = null;
     }
   },

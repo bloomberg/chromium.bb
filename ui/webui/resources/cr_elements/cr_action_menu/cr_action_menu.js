@@ -151,7 +151,7 @@ Polymer({
     // Removing 'resize' and 'popstate' listeners when dialog is closed.
     this.removeListeners_();
     HTMLDialogElement.prototype.close.call(this);
-    this.anchorElement_.focus();
+    cr.ui.focusWithoutInk(assert(this.anchorElement_));
     this.anchorElement_ = null;
   },
 

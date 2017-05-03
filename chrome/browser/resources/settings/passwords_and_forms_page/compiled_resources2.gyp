@@ -22,7 +22,9 @@
       'target_name': 'autofill_section',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(EXTERNS_GYP):autofill_private',
         'address_edit_dialog',
         'credit_card_edit_dialog',
@@ -51,7 +53,9 @@
       'dependencies': [
         '../compiled_resources2.gyp:global_scroll_target_behavior',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(EXTERNS_GYP):passwords_private',
         'password_edit_dialog',
       ],

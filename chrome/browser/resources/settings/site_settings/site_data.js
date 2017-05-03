@@ -109,7 +109,7 @@ Polymer({
 
   /** @private */
   onConfirmDeleteDialogClosed_: function() {
-    this.$.removeShowingSites.focus();
+    cr.ui.focusWithoutInk(assert(this.$.removeShowingSites));
   },
 
   /**

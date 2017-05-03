@@ -121,6 +121,6 @@ Polymer({
 
   /** @private */
   onAddPrinterDialogClose_: function() {
-    this.$$('#addPrinter').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#addPrinter')));
   },
 });

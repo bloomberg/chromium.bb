@@ -51,11 +51,6 @@ Polymer({
         Polymer.dom(this).observeNodes(this.lightDomChanged_.bind(this));
   },
 
-  /** @override */
-  attached: function() {
-    this.outline_ = cr.ui.FocusOutlineManager.forDocument(document);
-  },
-
   /**
    * @param {!Event} e
    * @private
@@ -86,24 +81,11 @@ Polymer({
     var selector = this.focusConfig.get(this.previousRoute_.path);
     if (selector) {
       // neon-animatable has "display: none" until the animation finishes, so
-      // calling focus() on any of its children has no effect until
-      // "display: none" is removed. Therefore can't call focus() from within
-      // the currentRouteChanged callback. Using 'iron-select' listener which
-      // fires after the animation has finished allows focus() to work as
-      // expected.
-      var toFocus = this.querySelector(selector);
-      var suppressInk = !this.outline_.visible;
-      var origNoInk;
-
-      if (suppressInk) {
-        origNoInk = toFocus.noink;
-        toFocus.noink = true;
-      }
-
-      toFocus.focus();
-
-      if (suppressInk)
-        toFocus.noink = origNoInk;
+      // calling focus() on any of its children has no effect until "display:
+      // none" is removed. Therefore, don't set focus from within the
+      // currentRouteChanged callback. Using 'iron-select' listener which fires
+      // after the animation has finished allows setting focus to work.
+      cr.ui.focusWithoutInk(assert(this.querySelector(selector)));
     }
   },
 

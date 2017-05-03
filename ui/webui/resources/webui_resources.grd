@@ -300,6 +300,8 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_ROW"
                  file="html/cr/ui/focus_row.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_WITHOUT_INK"
+                 file="html/cr/ui/focus_without_ink.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_LIST"
                  file="html/cr/ui/list.html"
                  type="chrome_html" />
@@ -403,6 +405,8 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_ROW"
                  file="js/cr/ui/focus_row.js" type="chrome_html" />
+      <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK"
+                 file="js/cr/ui/focus_without_ink.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_LIST"
                  file="js/cr/ui/list.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_LIST_ITEM"

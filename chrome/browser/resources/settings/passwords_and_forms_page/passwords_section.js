@@ -305,7 +305,7 @@ Polymer({
   /** @private */
   onPasswordEditDialogClosed_: function() {
     this.showPasswordEditDialog_ = false;
-    this.activeDialogAnchor_.focus();
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
   },
 
