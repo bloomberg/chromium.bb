@@ -10,7 +10,6 @@
 
 #include "ash/system/network/network_list_view_base.h"
 #include "ash/system/network/vpn_list.h"
-#include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 
@@ -40,9 +39,7 @@ class NetworkStateListDetailedView;
 // attempt. Clicking on the currently connected or connecting network shows its
 // configuration dialog. Clicking on a provider shows the provider's "add
 // network" dialog.
-class VPNListView : public NetworkListViewBase,
-                    public VpnList::Observer,
-                    public ViewClickListener {
+class VPNListView : public NetworkListViewBase, public VpnList::Observer {
  public:
   explicit VPNListView(tray::NetworkStateListDetailedView* detailed_view);
   ~VPNListView() override;
@@ -53,9 +50,6 @@ class VPNListView : public NetworkListViewBase,
 
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
-
-  // ViewClickListener:
-  void OnViewClicked(views::View* sender) override;
 
  private:
   // Adds a network to the list.
