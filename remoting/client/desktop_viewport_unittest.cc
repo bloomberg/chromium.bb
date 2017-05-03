@@ -28,6 +28,8 @@ class DesktopViewportTest : public testing::Test {
                                     float offset_x,
                                     float offset_y);
 
+  ViewMatrix ReleaseReceivedTransformation();
+
   DesktopViewport viewport_;
 
  private:
@@ -72,6 +74,13 @@ void DesktopViewportTest::AssertTransformationReceived(
   }
 
   received_transformation_ = ViewMatrix();
+}
+
+ViewMatrix DesktopViewportTest::ReleaseReceivedTransformation() {
+  EXPECT_FALSE(received_transformation_.IsEmpty());
+  ViewMatrix out = received_transformation_;
+  received_transformation_ = ViewMatrix();
+  return out;
 }
 
 void DesktopViewportTest::OnTransformationChanged(const ViewMatrix& matrix) {
@@ -249,6 +258,38 @@ TEST_F(DesktopViewportTest, TestSetViewportCenter) {
   //                 +====+
   viewport_.SetViewportCenter(1000.f, 1000.f);
   AssertTransformationReceived(FROM_HERE, 1.25f, -8.f, -4.5f);
+}
+
+TEST_F(DesktopViewportTest, TestScaleDesktop) {
+  // Number in surface coordinate.
+  //
+  // +====+------+
+  // | VP | DP   |
+  // |    |      | 3
+  // +====+------+
+  //        4
+  viewport_.SetDesktopSize(8, 6);
+  viewport_.SetSurfaceSize(2, 3);
+  AssertTransformationReceived(FROM_HERE, 0.5f, 0.f, 0.f);
+
+  ViewMatrix old_transformation(0.5f, {0.f, 0.f});
+
+  ViewMatrix::Point surface_point = old_transformation.MapPoint({1.2f, 1.3f});
+
+  // Scale a little bit at a pivot point.
+  viewport_.ScaleDesktop(surface_point.x, surface_point.y, 1.1f);
+
+  ViewMatrix new_transformation = ReleaseReceivedTransformation();
+
+  // Verify the pivot point is fixed.
+  ViewMatrix::Point new_surface_point =
+      new_transformation.MapPoint({1.2f, 1.3f});
+  ASSERT_FLOAT_EQ(surface_point.x, new_surface_point.x);
+  ASSERT_FLOAT_EQ(surface_point.y, new_surface_point.y);
+
+  // Verify the scale is correct.
+  ASSERT_FLOAT_EQ(old_transformation.GetScale() * 1.1f,
+                  new_transformation.GetScale());
 }
 
 }  // namespace remoting

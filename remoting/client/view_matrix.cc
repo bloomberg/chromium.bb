@@ -35,7 +35,9 @@ float ViewMatrix::GetScale() const {
 
 void ViewMatrix::PostScale(const Point& pivot, float scale) {
   scale_ *= scale;
+  offset_.x *= scale;
   offset_.x += (1.f - scale) * pivot.x;
+  offset_.y *= scale;
   offset_.y += (1.f - scale) * pivot.y;
 }
 
