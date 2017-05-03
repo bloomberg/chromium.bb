@@ -1797,20 +1797,6 @@ static bool PointHitsRegion(const gfx::PointF& screen_space_point,
       gfx::ToRoundedPoint(hit_test_point_in_layer_space));
 }
 
-static const gfx::Transform SurfaceScreenSpaceTransform(
-    const LayerImpl* layer) {
-  const PropertyTrees* property_trees =
-      layer->layer_tree_impl()->property_trees();
-  RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
-  DCHECK(render_surface);
-  return layer->contributes_to_drawn_render_surface()
-             ? render_surface->screen_space_transform()
-             : property_trees
-                   ->ToScreenSpaceTransformWithoutSurfaceContentsScale(
-                       render_surface->TransformTreeIndex(),
-                       render_surface->EffectTreeIndex());
-}
-
 static bool PointIsClippedByAncestorClipNode(
     const gfx::PointF& screen_space_point,
     const LayerImpl* layer) {
@@ -1843,15 +1829,6 @@ static bool PointIsClippedByAncestorClipNode(
                          NULL)) {
         return true;
       }
-    }
-    const LayerImpl* clip_node_owner =
-        layer->layer_tree_impl()->LayerById(clip_node->owning_layer_id);
-    RenderSurfaceImpl* render_surface = clip_node_owner->GetRenderSurface();
-    if (render_surface &&
-        !PointHitsRect(screen_space_point,
-                       SurfaceScreenSpaceTransform(clip_node_owner),
-                       render_surface->content_rect(), NULL)) {
-      return true;
     }
   }
   return false;
