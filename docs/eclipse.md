@@ -176,9 +176,7 @@ settings below are inside Window > Preferences.
           * Select a Java 8 JRE
        * User Entries:
           * Add JARs...
-          * Select the following JAR files from `third_party/robolectric/lib`:
-             * `json-20080701.jar`
-             * `tagsoup-1.2.jar`
+          * Select the following JAR file from `third_party/robolectric/lib`:
              * `android-all-5.0.0_r2-robolectric-1.jar`
     * JRE tab:
        * Execution environment: Select the Java 8 JRE
