@@ -57,13 +57,17 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
 }
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
+    const GURL& url,
+    int frame_tree_node_id,
     bool was_cached,
     int64_t raw_body_bytes,
     int64_t original_network_content_length,
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
         data_reduction_proxy_data,
     content::ResourceType detected_resource_type)
-    : was_cached(was_cached),
+    : url(url),
+      frame_tree_node_id(frame_tree_node_id),
+      was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
       original_network_content_length(original_network_content_length),
       data_reduction_proxy_data(std::move(data_reduction_proxy_data)),
@@ -98,6 +102,12 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnRedirect(
 }
 
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle) {
+  return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;
 }

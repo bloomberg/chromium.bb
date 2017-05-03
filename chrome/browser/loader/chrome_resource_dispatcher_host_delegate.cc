@@ -367,6 +367,8 @@ void NotifyUIThreadOfRequestStarted(
 
 void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::ResourceRequestInfo::FrameTreeNodeIdGetter&
+        frame_tree_node_id_getter,
     const GURL& url,
     const content::GlobalRequestID& request_id,
     ResourceType resource_type,
@@ -401,10 +403,10 @@ void NotifyUIThreadOfRequestComplete(
       page_load_metrics::MetricsWebContentsObserver::FromWebContents(
           web_contents);
   if (metrics_observer) {
-    metrics_observer->OnRequestComplete(request_id, resource_type, was_cached,
-                                        std::move(data_reduction_proxy_data),
-                                        raw_body_bytes, original_content_length,
-                                        request_creation_time);
+    metrics_observer->OnRequestComplete(
+        url, frame_tree_node_id_getter.Run(), request_id, resource_type,
+        was_cached, std::move(data_reduction_proxy_data), raw_body_bytes,
+        original_content_length, request_creation_time);
   }
 }
 
@@ -868,9 +870,10 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NotifyUIThreadOfRequestComplete,
-                     info->GetWebContentsGetterForRequest(), url_request->url(),
-                     info->GetGlobalRequestID(), info->GetResourceType(),
-                     url_request->was_cached(),
+                     info->GetWebContentsGetterForRequest(),
+                     info->GetFrameTreeNodeIdGetterForRequest(),
+                     url_request->url(), info->GetGlobalRequestID(),
+                     info->GetResourceType(), url_request->was_cached(),
                      base::Passed(&data_reduction_proxy_data), net_error,
                      url_request->GetTotalReceivedBytes(),
                      url_request->GetRawBodyBytes(), original_content_length,
