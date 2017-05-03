@@ -349,11 +349,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
 
   // The iframe should not load |private_page|, which is not web-accessible.
   //
-  // TODO(alexmos): The failure mode differs on whether or not
-  // --isolate-extensions is used: if it is on, the request is canceled and we
-  // stay on public.html (see https://crbug.com/656752), and if it's off, the
-  // request is blocked in ExtensionNavigationThrottle, which loads an error
-  // page into the iframe.  This check handles both cases, but we should make
-  // the check stricter once --isolate-extensions is on by default.
+  // TODO(alexmos): Make this check stricter, as extensions are now fully
+  // isolated. The failure mode is that the request is canceled and we stay on
+  // public.html (see https://crbug.com/656752).
   EXPECT_NE("Private", content);
 }

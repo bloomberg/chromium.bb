@@ -102,9 +102,11 @@ class TestMemoryDetails : public MetricsMemoryDetails {
 IsolationScenarioType GetCurrentPolicy() {
   if (content::AreAllSitesIsolatedForTesting())
     return ISOLATE_ALL_SITES;
-  if (extensions::IsIsolateExtensionsEnabled())
-    return ISOLATE_EXTENSIONS;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return ISOLATE_EXTENSIONS;
+#else
   return ISOLATE_NOTHING;
+#endif
 }
 
 // This matcher takes three other matchers as arguments, and applies one of them
@@ -318,40 +320,6 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
       count++;
     }
     return count;
-  }
-
-  // Checks whether the test run is part of a field trial with |trial_name|.
-  bool IsInTrial(const std::string& trial_name) {
-    uint32_t trial = metrics::HashName(trial_name);
-
-    std::vector<variations::ActiveGroupId> synthetic_trials;
-    g_browser_process->metrics_service()
-        ->GetCurrentSyntheticFieldTrialsForTesting(&synthetic_trials);
-
-    for (const auto& entry : synthetic_trials) {
-      if (trial == entry.name)
-        return true;
-    }
-
-    return false;
-  }
-
-  // Similar to IsInTrial but checks that the correct group is present as well.
-  bool IsInTrialGroup(const std::string& trial_name,
-                      const std::string& group_name) {
-    uint32_t trial = metrics::HashName(trial_name);
-    uint32_t group = metrics::HashName(group_name);
-
-    std::vector<variations::ActiveGroupId> synthetic_trials;
-    g_browser_process->metrics_service()
-        ->GetCurrentSyntheticFieldTrialsForTesting(&synthetic_trials);
-
-    for (const auto& entry : synthetic_trials) {
-      if (trial == entry.name && group == entry.group)
-        return true;
-    }
-
-    return false;
   }
 
  private:
@@ -652,10 +620,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
               DependingOnPolicy(
                   ElementsAre(Bucket(0, 3)), ElementsAre(Bucket(0, 3)),
                   ElementsAre(Bucket(12, 1), Bucket(29, 1), Bucket(68, 1))));
-
-  // This test doesn't navigate to any extensions URLs, so it should not be
-  // in any of the field trial groups.
-  EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 // Flaky on Windows and Mac. crbug.com/671891
@@ -938,8 +902,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, MAYBE_IsolateExtensions) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 4, 4));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
-
-  EXPECT_TRUE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 // Due to http://crbug.com/612711, we are not isolating iframes from platform
@@ -990,8 +952,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 3, 3));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
-
-  EXPECT_TRUE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
 // Verifies that --isolate-extensions doesn't isolate hosted apps.
@@ -1134,43 +1094,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(1, 1, 2));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 1));
-
-  // Since hosted apps are excluded from isolation, this test should not be
-  // in any of the field trial groups.
-  EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
-}
-
-// Verifies that the client is put in the appropriate field trial group.
-IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, VerifyFieldTrialGroup) {
-  const Extension* extension = CreateExtension("Extension", false);
-  GURL tab1_url = embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b,c)");
-  ui_test_utils::NavigateToURL(browser(), tab1_url);
-  WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
-
-  // Tab navigates its second iframe to a page of the extension.
-  content::NavigateIframeToURL(tab, "child-1",
-                               extension->GetResourceURL("/blank_iframe.html"));
-
-  std::string group;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
-    group = "SitePerProcessFlag";
-  } else if (extensions::IsIsolateExtensionsEnabled()) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            extensions::switches::kIsolateExtensions)) {
-      group = "IsolateExtensionsFlag";
-    } else {
-      group = "FieldTrial";
-    }
-  } else {
-    if (base::FieldTrialList::FindFullName("SiteIsolationExtensions").empty())
-      group = "Default";
-    else
-      group = "Control";
-  }
-
-  EXPECT_TRUE(IsInTrialGroup("SiteIsolationExtensionsActive", group));
 }
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is

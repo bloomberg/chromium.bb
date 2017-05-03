@@ -499,16 +499,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   listener_result.Reset();
   listener_main2.Reply("");
   EXPECT_TRUE(listener_result.WaitUntilSatisfied());
-  if (content::AreAllSitesIsolatedForTesting() ||
-      IsIsolateExtensionsEnabled()) {
-    // With --site-per-process, the extension frame does run in the extension's
-    // process.
-    EXPECT_EQ("Intercepted requests: ?contentscript",
-              listener_result.message());
-  } else {
-    EXPECT_EQ("Intercepted requests: ?contentscript, ?framescript",
-              listener_result.message());
-  }
+
+  // The extension frame does run in the extension's process.
+  EXPECT_EQ("Intercepted requests: ?contentscript", listener_result.message());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
