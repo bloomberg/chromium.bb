@@ -177,6 +177,7 @@ struct WebContextMenuData {
     kCanDelete = 0x20,
     kCanSelectAll = 0x40,
     kCanTranslate = 0x80,
+    kCanEditRichly = 0x100,
   };
 
   // Which edit operations are available in the context.

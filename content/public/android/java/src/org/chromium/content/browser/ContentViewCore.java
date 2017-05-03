@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.ClipData;
 import android.content.ClipDescription;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -1742,17 +1741,12 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void showPastePopup(int x, int y, boolean canSelectAll) {
-        mSelectionPopupController.createAndShowPastePopup(x, y, canSelectAll);
+    private void showPastePopup(int x, int y, boolean canSelectAll, boolean canEditRichly) {
+        mSelectionPopupController.createAndShowPastePopup(x, y, canSelectAll, canEditRichly);
     }
 
     private void destroyPastePopup() {
         mSelectionPopupController.destroyPastePopup();
-    }
-
-    private boolean canPaste() {
-        return ((ClipboardManager) mContext.getSystemService(
-                Context.CLIPBOARD_SERVICE)).hasPrimaryClip();
     }
 
     @SuppressWarnings("unused")

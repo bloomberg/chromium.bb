@@ -109,6 +109,12 @@ public interface WebContents extends Parcelable {
 
     // TODO (amaralp): Only used in content. Should be moved out of public interface.
     /**
+     * Paste content from the clipboard without format.
+     */
+    void pasteAsPlainText();
+
+    // TODO (amaralp): Only used in content. Should be moved out of public interface.
+    /**
      * Replace the selected text with the {@code word}.
      */
     void replace(String word);

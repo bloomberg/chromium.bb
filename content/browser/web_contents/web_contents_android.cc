@@ -272,6 +272,13 @@ void WebContentsAndroid::Paste(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   web_contents_->Paste();
 }
 
+void WebContentsAndroid::PasteAsPlainText(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  // Paste as if user typed the characters, which should match current style of
+  // the caret location.
+  web_contents_->PasteAndMatchStyle();
+}
+
 void WebContentsAndroid::Replace(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jstring>& jstr) {

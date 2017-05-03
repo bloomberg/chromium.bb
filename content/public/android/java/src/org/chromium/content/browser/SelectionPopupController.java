@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +18,11 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.CharacterStyle;
+import android.text.style.ParagraphStyle;
+import android.text.style.UpdateAppearance;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -107,6 +113,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
     private boolean mCanSelectAllForPastePopup;
+    private boolean mCanEditRichlyForPastePopup;
 
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
@@ -261,7 +268,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return actionMode;
     }
 
-    void createAndShowPastePopup(int x, int y, boolean canSelectAll) {
+    void createAndShowPastePopup(int x, int y, boolean canSelectAll, boolean canEditRichly) {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
@@ -269,10 +276,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (!supportsFloatingActionMode() && !canPaste()) return;
         destroyPastePopup();
         mCanSelectAllForPastePopup = canSelectAll;
+        mCanEditRichlyForPastePopup = canEditRichly;
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
             public void paste() {
                 mWebContents.paste();
+                mWebContents.dismissTextHandles();
+            }
+
+            @Override
+            public void pasteAsPlainText() {
+                mWebContents.pasteAsPlainText();
                 mWebContents.dismissTextHandles();
             }
 
@@ -289,6 +303,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             @Override
             public boolean canSelectAll() {
                 return SelectionPopupController.this.canSelectAll();
+            }
+
+            @Override
+            public boolean canPasteAsPlainText() {
+                return SelectionPopupController.this.canPasteAsPlainText();
             }
         };
         Context windowContext = mWindowAndroid.getContext().get();
@@ -509,6 +528,47 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return clipMgr.hasPrimaryClip();
     }
 
+    // Check if this Spanned is formatted text.
+    private boolean hasStyleSpan(Spanned spanned) {
+        // Only check against those three classes below, which could affect text appearance, since
+        // there are other kind of classes won't affect appearance.
+        Class<?>[] styleClasses = {
+                CharacterStyle.class, ParagraphStyle.class, UpdateAppearance.class};
+        for (Class<?> clazz : styleClasses) {
+            if (spanned.nextSpanTransition(-1, spanned.length(), clazz) < spanned.length()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Check if need to show "paste as plain text" option.
+    // Don't show "paste as plain text" when "paste" and "paste as plain text" would do exactly the
+    // same.
+    @VisibleForTesting
+    public boolean canPasteAsPlainText() {
+        // String resource "paste_as_plain_text" only exist in O.
+        // Also this is an O feature, we need to make it consistant with TextView.
+        if (!BuildInfo.isAtLeastO()) return false;
+        if (!mCanEditRichlyForPastePopup) return false;
+        ClipboardManager clipMgr =
+                (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (!clipMgr.hasPrimaryClip()) return false;
+
+        ClipData clipData = clipMgr.getPrimaryClip();
+        ClipDescription description = clipData.getDescription();
+        CharSequence text = clipData.getItemAt(0).getText();
+        boolean isPlainType = description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN);
+        // On Android, Spanned could be copied to Clipboard as plain_text MIME type, but in some
+        // cases, Spanned could have text format, we need to show "paste as plain text" when
+        // that happens.
+        if (isPlainType && (text instanceof Spanned)) {
+            Spanned spanned = (Spanned) text;
+            if (hasStyleSpan(spanned)) return true;
+        }
+        return description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML);
+    }
+
     private void updateAssistMenuItem(MenuDescriptor descriptor) {
         // There is no Assist functionality before Android O.
         if (!BuildInfo.isAtLeastO() || mAssistMenuItemId == 0) return;
@@ -693,6 +753,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @VisibleForTesting
     void paste() {
         mWebContents.paste();
+    }
+
+    /**
+     * Perform a paste as plain text action.
+     */
+    @VisibleForTesting
+    void pasteAsPlainText() {
+        mWebContents.pasteAsPlainText();
     }
 
     /**
