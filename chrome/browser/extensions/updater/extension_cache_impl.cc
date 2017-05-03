@@ -32,11 +32,8 @@ ExtensionCacheImpl::ExtensionCacheImpl(
           delegate->GetMaximumCacheSize(),
           delegate->GetMaximumCacheAge(),
           base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)))),
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,

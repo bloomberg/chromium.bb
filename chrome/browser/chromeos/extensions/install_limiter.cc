@@ -69,7 +69,7 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock(), base::Bind(&GetFileSize, path),
+      FROM_HERE, {base::MayBlock()}, base::Bind(&GetFileSize, path),
       base::Bind(&InstallLimiter::AddWithSize, AsWeakPtr(), installer, path));
 }
 

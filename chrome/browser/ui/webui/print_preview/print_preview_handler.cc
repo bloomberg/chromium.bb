@@ -1390,8 +1390,7 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
   // returns and eventually FileSelected() gets called.
   if (!prompt_user) {
     base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&GetUniquePath,
                    download_prefs->SaveFilePath().Append(default_filename)),
         base::Bind(&PrintPreviewHandler::OnGotUniqueFileName,
@@ -1459,9 +1458,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&PrintToPdfCallback, data, print_to_pdf_path_,
                      pdf_file_saved_closure_));
   print_to_pdf_path_.clear();

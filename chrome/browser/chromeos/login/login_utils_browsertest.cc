@@ -110,8 +110,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
     base::RunLoop loop;
     base::string16 rlz_string;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&GetAccessPointRlzInBackgroundThread,
                    rlz::RLZTracker::ChromeHomePage(), &rlz_string),
         loop.QuitClosure());

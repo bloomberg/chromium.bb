@@ -62,11 +62,8 @@ class MockHTTPJob : public net::URLRequestMockHTTPJob {
             delegate,
             file,
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::BACKGROUND)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void set_start_callback(const base::Closure& start_callback) {
     start_callback_ = start_callback;
@@ -200,11 +197,8 @@ class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
     return new net::URLRequestMockHTTPJob(
         request, network_delegate, file_,
         base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   }
 
  private:

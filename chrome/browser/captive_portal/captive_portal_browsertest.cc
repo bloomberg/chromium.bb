@@ -482,7 +482,7 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     net::NetworkDelegate* network_delegate) const {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  const base::TaskTraits kTraits = base::TaskTraits().MayBlock();
+  const base::TaskTraits kTraits = {base::MayBlock()};
 
   // The PathService is threadsafe.
   base::FilePath root_http;

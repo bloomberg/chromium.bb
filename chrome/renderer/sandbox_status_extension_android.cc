@@ -105,7 +105,7 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
       base::MakeUnique<v8::Global<v8::Function>>(args->isolate(), callback);
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock(),
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&SandboxStatusExtension::ReadSandboxStatus, this),
       base::Bind(&SandboxStatusExtension::RunCallback, this,
                  base::Passed(&global_callback)));

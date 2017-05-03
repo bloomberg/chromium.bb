@@ -561,11 +561,8 @@ OfflinePageRequestJob::OfflinePageRequestJob(
           network_delegate,
           base::FilePath(),
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::USER_VISIBLE)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       delegate_(new DefaultDelegate()),
       previews_decider_(previews_decider),
       weak_ptr_factory_(this) {}

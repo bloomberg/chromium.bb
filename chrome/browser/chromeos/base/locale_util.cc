@@ -124,9 +124,7 @@ void SwitchLanguage(const std::string& locale,
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
-      reloader,
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND}, reloader,
       base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
 }
 

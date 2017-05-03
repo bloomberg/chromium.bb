@@ -234,11 +234,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/updates.xml"),
       test_data_dir_.AppendASCII("permissions_increase")
@@ -278,11 +275,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   net::LocalHostTestURLRequestInterceptor interceptor(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/updates.xml"),
       test_data_dir_.AppendASCII("permissions_increase")

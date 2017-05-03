@@ -348,11 +348,8 @@ void SupervisedUserCreationControllerNew::RegistrationCallback(
 
     PostTaskAndReplyWithResult(
         base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
             .get(),
         FROM_HERE,
         base::Bind(&StoreSupervisedUserFiles, creation_context_->token,

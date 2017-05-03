@@ -200,11 +200,8 @@ class PushTimesMockURLRequestJob : public net::URLRequestMockHTTPJob {
             network_delegate,
             file_path,
             base::CreateTaskRunnerWithTraits(
-                base::TaskTraits()
-                    .MayBlock()
-                    .WithPriority(base::TaskPriority::BACKGROUND)
-                    .WithShutdownBehavior(
-                        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() override {
     load_timing_info_.socket_reused = true;

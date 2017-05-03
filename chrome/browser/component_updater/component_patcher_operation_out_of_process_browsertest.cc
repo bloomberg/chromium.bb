@@ -44,8 +44,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
@@ -58,8 +57,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 

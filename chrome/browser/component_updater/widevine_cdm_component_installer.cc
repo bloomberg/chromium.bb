@@ -312,8 +312,7 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
   }
 
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&WidevineCdmComponentInstallerTraits::UpdateCdmAdapter,
                  base::Unretained(this), version, path,
                  base::Passed(&manifest)));

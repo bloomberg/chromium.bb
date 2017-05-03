@@ -1081,11 +1081,8 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
       url::kFileScheme,
       base::MakeUnique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::USER_VISIBLE)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))));
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
       url::kFtpScheme,

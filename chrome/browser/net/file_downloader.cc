@@ -44,11 +44,8 @@ FileDownloader::FileDownloader(
   } else {
     base::PostTaskAndReplyWithResult(
         base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
             .get(),
         FROM_HERE, base::Bind(&base::PathExists, local_path_),
         base::Bind(&FileDownloader::OnFileExistsCheckDone,
@@ -86,11 +83,8 @@ void FileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   base::PostTaskAndReplyWithResult(
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::Bind(&base::Move, response_path, local_path_),
       base::Bind(&FileDownloader::OnFileMoveDone,

@@ -497,8 +497,7 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     uint64_t* total_size = new uint64_t(0);
     uint64_t* remaining_size = new uint64_t(0);
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::USER_VISIBLE),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::Bind(&GetSizeStatsAsync, volume->mount_path(), total_size,
                    remaining_size),
         base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats,
@@ -573,8 +572,7 @@ bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_BLOCKING),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&GetFileNameMaxLengthAsync,
                  file_system_url.path().AsUTF8Unsafe()),
       base::Bind(&FileManagerPrivateInternalValidatePathNameLengthFunction::
@@ -1040,8 +1038,7 @@ bool FileManagerPrivateInternalGetDirectorySizeFunction::RunAsync() {
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&base::ComputeDirectorySize, root_path),
       base::Bind(&FileManagerPrivateInternalGetDirectorySizeFunction::
                      OnDirectorySizeRetrieved,

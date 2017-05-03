@@ -564,8 +564,7 @@ DownloadTargetDeterminer::Result
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock(),
-      base::Bind(&::IsAdobeReaderUpToDate),
+      FROM_HERE, {base::MayBlock()}, base::Bind(&::IsAdobeReaderUpToDate),
       base::Bind(&DownloadTargetDeterminer::DetermineIfAdobeReaderUpToDateDone,
                  weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;

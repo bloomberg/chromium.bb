@@ -64,8 +64,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   Profile* profile = static_cast<Profile*>(context);
 

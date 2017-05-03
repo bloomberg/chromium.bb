@@ -339,8 +339,8 @@ void EasyUnlockTpmKeyManager::CreateKeyInSystemSlot(
 
   // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CreateTpmKeyPairOnWorkerThread, base::Passed(&system_slot),
                  public_key, base::ThreadTaskRunnerHandle::Get(),
                  base::Bind(&EasyUnlockTpmKeyManager::OnTpmKeyCreated,
@@ -356,8 +356,8 @@ void EasyUnlockTpmKeyManager::SignDataWithSystemSlot(
 
   // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
-                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&SignDataOnWorkerThread, base::Passed(&system_slot),
                  public_key, data, base::ThreadTaskRunnerHandle::Get(),
                  base::Bind(&EasyUnlockTpmKeyManager::OnDataSigned,

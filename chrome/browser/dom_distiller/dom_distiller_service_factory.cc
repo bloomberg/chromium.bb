@@ -55,8 +55,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>> db(
       new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(

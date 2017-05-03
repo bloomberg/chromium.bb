@@ -236,13 +236,10 @@ void AutomaticRebootManager::UpdateStatusChanged(
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
-          .MayBlock(),
-      base::Bind(&SaveUpdateRebootNeededUptime));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                           base::Bind(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
   have_update_reboot_needed_time_ = true;

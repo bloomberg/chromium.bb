@@ -226,21 +226,17 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
 #endif
   // This task joins a process, hence .WithBaseSyncPrimitives().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithBaseSyncPrimitives(),
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&WaitForElevatedInstallToComplete, base::Passed(&process)));
 }
 
 void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&DoElevatedInstallRecoveryComponent, installer_path));
 }
 
@@ -372,11 +368,9 @@ bool RecoveryComponentInstaller::RunInstallCommand(
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
   // This task joins a process, hence .WithBaseSyncPrimitives().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithBaseSyncPrimitives(),
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&WaitForInstallToComplete, base::Passed(&process),
                  installer_folder, prefs_));
 

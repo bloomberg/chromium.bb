@@ -34,7 +34,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&ImageWriterUtilityClientTest::FillFile, image_, pattern),
         run_loop.QuitClosure());
 
@@ -46,7 +46,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&ImageWriterUtilityClientTest::FillFile, device_, pattern),
         run_loop.QuitClosure());
 

@@ -62,11 +62,10 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   SystemLogsResponse* response = new SystemLogsResponse;
-  base::PostTaskWithTraitsAndReply(FROM_HERE,
-                                   base::TaskTraits().MayBlock().WithPriority(
-                                       base::TaskPriority::BACKGROUND),
-                                   base::Bind(&GetTouchLogsX11, response),
-                                   base::Bind(callback, base::Owned(response)));
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&GetTouchLogsX11, response),
+      base::Bind(callback, base::Owned(response)));
 }
 
 }  // namespace system_logs

@@ -97,8 +97,7 @@ void CustomizationWallpaperDownloader::StartRequest() {
   url_fetcher_->SaveResponseToFileAtPath(
       wallpaper_temporary_file_,
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   url_fetcher_->Start();
 }
 
@@ -128,10 +127,9 @@ void CustomizationWallpaperDownloader::Start() {
   base::Closure on_created_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
-  base::PostTaskWithTraitsAndReply(FROM_HERE,
-                                   base::TaskTraits().MayBlock().WithPriority(
-                                       base::TaskPriority::BACKGROUND),
-                                   mkdir_closure, on_created_closure);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      mkdir_closure, on_created_closure);
 }
 
 void CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated(
@@ -176,10 +174,9 @@ void CustomizationWallpaperDownloader::OnURLFetchComplete(
   base::Closure on_rename_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
                  weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
-  base::PostTaskWithTraitsAndReply(FROM_HERE,
-                                   base::TaskTraits().MayBlock().WithPriority(
-                                       base::TaskPriority::BACKGROUND),
-                                   rename_closure, on_rename_closure);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      rename_closure, on_rename_closure);
 }
 
 void CustomizationWallpaperDownloader::OnTemporaryFileRenamed(

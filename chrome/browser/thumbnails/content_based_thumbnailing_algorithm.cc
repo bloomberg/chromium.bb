@@ -93,9 +93,8 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
 
   base::PostTaskWithTraits(
       FROM_HERE,
-      base::TaskTraits()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::Bind(&CreateRetargetedThumbnail, source_bitmap,
                  target_thumbnail_size, context, callback));
 }

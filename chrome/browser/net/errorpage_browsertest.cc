@@ -251,11 +251,8 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
         request, network_delegate,
         root_http.AppendASCII("mock-link-doctor.json"),
         base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   }
 
   void WaitForRequests(int requests_to_wait_for) {

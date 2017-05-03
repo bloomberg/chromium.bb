@@ -414,8 +414,7 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
 
 void BrowserTabStripController::CheckFileSupported(const GURL& url) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&FindURLMimeType, url),
       base::Bind(&BrowserTabStripController::OnFindURLMimeTypeCompleted,
                  weak_ptr_factory_.GetWeakPtr(), url));

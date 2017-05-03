@@ -134,11 +134,8 @@ AshInit::AshInit() {
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   shell->accelerator_controller()->SetImeControlDelegate(
       std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(

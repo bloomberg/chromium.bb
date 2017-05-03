@@ -906,8 +906,7 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
 
   // Remove local data on file system.
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&DeleteAppFolderFromFileThread, app_path));
 }
 
@@ -1377,8 +1376,7 @@ void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   const std::vector<uint8_t>& content_png) {
   base::FilePath icon_path = GetIconPath(app_id, scale_factor);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&InstallIconFromFileThread, app_id, scale_factor, icon_path,
                  content_png),
       base::Bind(&ArcAppListPrefs::OnIconInstalled,

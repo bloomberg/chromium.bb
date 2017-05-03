@@ -166,11 +166,8 @@ void DeleteMovedUserDataSoon() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
 }
 

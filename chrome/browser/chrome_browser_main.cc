@@ -1705,7 +1705,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // notification to the user.
   if (NetworkProfileBubble::ShouldCheckNetworkProfile(profile_)) {
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&NetworkProfileBubble::CheckNetworkProfile,
                    profile_->GetPath()));
   }

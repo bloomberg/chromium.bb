@@ -391,11 +391,8 @@ class MirrorMockJobInterceptor : public net::URLRequestInterceptor {
     return new MirrorMockURLRequestJob(
         request, network_delegate, root_http_,
         base::CreateTaskRunnerWithTraits(
-            base::TaskTraits()
-                .MayBlock()
-                .WithPriority(base::TaskPriority::BACKGROUND)
-                .WithShutdownBehavior(
-                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN)),
+            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
         report_on_ui_);
   }
 

@@ -351,8 +351,7 @@ void CloseFileDescriptor(const int file_descriptor) {
 // Deletes a temporary file |file_path|.
 void DeleteTemporaryFile(const base::FilePath& file_path) {
   base::PostTaskWithTraits(FROM_HERE,
-                           base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::BACKGROUND),
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
                            base::Bind(base::IgnoreResult(base::DeleteFile),
                                       file_path, false /* not recursive*/));
 }

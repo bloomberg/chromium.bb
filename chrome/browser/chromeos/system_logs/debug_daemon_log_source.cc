@@ -152,8 +152,7 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
     }
 
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::BACKGROUND),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&DebugDaemonLogSource::ReadUserLogFiles, user_log_files,
                    profile_dirs, response),
         base::Bind(&DebugDaemonLogSource::MergeResponse,

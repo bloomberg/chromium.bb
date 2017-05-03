@@ -37,7 +37,7 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
     // dup() is needed as the file descriptor will be closed on the client side.
     base::File* file_param = new base::File(dup(file_descriptor));
     base::PostTaskWithTraitsAndReply(
-        FROM_HERE, base::TaskTraits().MayBlock(),
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&GenerateTestLogDumpFile, test_file_,
                    base::Owned(file_param)),
         base::Bind(callback, true));

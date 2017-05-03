@@ -303,11 +303,8 @@ void SupervisedUserRegistrationUtilityImpl::Register(
 
   syncer::GetSessionName(
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       base::Bind(&SupervisedUserRegistrationUtilityImpl::FetchToken,
                  weak_ptr_factory_.GetWeakPtr()));

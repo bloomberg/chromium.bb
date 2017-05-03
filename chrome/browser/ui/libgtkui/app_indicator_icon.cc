@@ -194,8 +194,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
     g_object_unref(icon_);
     base::PostTaskWithTraits(FROM_HERE,
-                             base::TaskTraits().MayBlock().WithPriority(
-                                 base::TaskPriority::BACKGROUND),
+                             {base::MayBlock(), base::TaskPriority::BACKGROUND},
                              base::BindOnce(&DeleteTempDirectory, temp_dir_));
   }
 }
@@ -216,11 +215,9 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
   // another thread.
   SkBitmap safe_bitmap = *image.bitmap();
 
-  const base::TaskTraits kTraits =
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::USER_VISIBLE)
-          .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN);
+  const base::TaskTraits kTraits = {
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
   if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
       desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
@@ -366,8 +363,7 @@ void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
 
   if (temp_dir_ != params.parent_temp_dir) {
     base::PostTaskWithTraits(FROM_HERE,
-                             base::TaskTraits().MayBlock().WithPriority(
-                                 base::TaskPriority::BACKGROUND),
+                             {base::MayBlock(), base::TaskPriority::BACKGROUND},
                              base::BindOnce(&DeleteTempDirectory, temp_dir_));
     temp_dir_ = params.parent_temp_dir;
   }

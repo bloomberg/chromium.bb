@@ -583,8 +583,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   WallpaperManager::Get()->AddObservers();
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::Bind(&ChromeOSVersionCallback));
 

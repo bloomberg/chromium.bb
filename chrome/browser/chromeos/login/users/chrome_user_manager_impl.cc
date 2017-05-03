@@ -1353,8 +1353,7 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
     const base::Closure& on_resolved_callback,
     std::string* out_resolved_locale) const {
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(ResolveLocale, locale, base::Unretained(out_resolved_locale)),
       on_resolved_callback);
 }

@@ -173,9 +173,7 @@ void ExternalMetrics::CollectEventsAndReschedule() {
 
 void ExternalMetrics::ScheduleCollector() {
   base::PostDelayedTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&chromeos::ExternalMetrics::CollectEventsAndReschedule,
                      this),
       kExternalMetricsCollectionInterval);

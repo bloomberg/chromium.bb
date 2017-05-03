@@ -419,8 +419,7 @@ void KioskAppManager::OnReadImmutableAttributes(
       } else if (!ownership_established_) {
         bool* owner_present = new bool(false);
         base::PostTaskWithTraitsAndReply(
-            FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                           base::TaskPriority::BACKGROUND),
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
             base::Bind(&CheckOwnerFilePresence, owner_present),
             base::Bind(&KioskAppManager::OnOwnerFileChecked,
                        base::Unretained(this), callback,

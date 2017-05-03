@@ -127,8 +127,7 @@ void DeviceIDFetcher::CheckPrefsOnUIThread() {
   // Try the legacy path first for ChromeOS. We pass the new salt in as well
   // in case the legacy id doesn't exist.
   base::PostTaskWithTraits(FROM_HERE,
-                           base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::BACKGROUND),
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
                            base::Bind(&DeviceIDFetcher::LegacyComputeAsync,
                                       this, profile->GetPath(), salt));
 #else

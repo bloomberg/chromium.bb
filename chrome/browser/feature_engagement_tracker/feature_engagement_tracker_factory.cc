@@ -43,8 +43,7 @@ KeyedService* FeatureEngagementTrackerFactory::BuildServiceInstanceFor(
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits().MayBlock().WithPriority(
-              base::TaskPriority::BACKGROUND));
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
   base::FilePath storage_dir = profile->GetPath().Append(
       chrome::kFeatureEngagementTrackerStorageDirname);

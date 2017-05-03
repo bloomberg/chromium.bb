@@ -507,8 +507,7 @@ void ProfileImplIOData::InitializeInternal(
       new QuotaPolicyChannelIDStore(
           lazy_params_->channel_id_path,
           base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits().MayBlock().WithPriority(
-                  base::TaskPriority::BACKGROUND)),
+              {base::MayBlock(), base::TaskPriority::BACKGROUND}),
           lazy_params_->special_storage_policy.get());
   main_context_storage->set_channel_id_service(
       base::MakeUnique<net::ChannelIDService>(
@@ -655,9 +654,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
     channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path, base::CreateSequencedTaskRunnerWithTraits(
-                             base::TaskTraits().MayBlock().WithPriority(
-                                 base::TaskPriority::BACKGROUND)));
+        channel_id_path,
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   }
   std::unique_ptr<net::ChannelIDService> channel_id_service(
       new net::ChannelIDService(

@@ -50,9 +50,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // g_browser_process.  This happens in PreCreateThreads.
   // base::GetLinuxDistro() will initialize its value if needed.
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(base::IgnoreResult(&base::GetLinuxDistro)));
 #endif
 

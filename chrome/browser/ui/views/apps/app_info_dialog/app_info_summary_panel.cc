@@ -281,8 +281,7 @@ void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
 
 void AppInfoSummaryPanel::StartCalculatingAppSize() {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&base::ComputeDirectorySize, app_->path()),
       base::Bind(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
 }

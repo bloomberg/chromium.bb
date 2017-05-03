@@ -267,9 +267,7 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
                  base::FilePath(kCheckStoragePath)),
       base::Bind(&EncryptionMigrationScreenHandler::OnGetAvailableStorage,

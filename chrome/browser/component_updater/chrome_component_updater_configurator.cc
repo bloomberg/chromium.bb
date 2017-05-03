@@ -185,11 +185,8 @@ bool ChromeConfigurator::EnabledCupSigning() const {
 scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
   return base::CreateSequencedTaskRunnerWithTraits(
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {

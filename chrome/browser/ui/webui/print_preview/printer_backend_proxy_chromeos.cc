@@ -66,9 +66,7 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
   PrinterBasicInfo basic_info = ToBasicInfo(*printer);
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&GetSettingsOnBlockingPool, printer->id(), basic_info), cb);
 }
 

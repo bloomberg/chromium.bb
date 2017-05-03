@@ -460,19 +460,16 @@ void HelpHandler::RefreshUpdateStatus() {
 void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&chromeos::version_loader::GetVersion,
                  chromeos::version_loader::VERSION_FULL),
       base::Bind(&HelpHandler::OnOSVersion, weak_factory_.GetWeakPtr()));
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&chromeos::version_loader::GetARCVersion),
       base::Bind(&HelpHandler::OnARCVersion, weak_factory_.GetWeakPtr()));
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&HelpHandler::OnOSFirmware, weak_factory_.GetWeakPtr()));
 
@@ -515,8 +512,7 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&FindRegulatoryLabelDir),
       base::Bind(&HelpHandler::OnRegulatoryLabelDirFound,
                  weak_factory_.GetWeakPtr()));
@@ -717,8 +713,7 @@ void HelpHandler::OnRegulatoryLabelDirFound(const base::FilePath& path) {
     return;
 
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ReadRegulatoryLabelText, path),
       base::Bind(&HelpHandler::OnRegulatoryLabelTextRead,
                  weak_factory_.GetWeakPtr()));

@@ -131,8 +131,7 @@ ExternalLoader::ExternalLoader(bool async)
 
   if (async) {
     base::PostTaskWithTraits(
-        FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                       base::TaskPriority::USER_VISIBLE),
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::Bind(&ExternalLoader::Load, base::Unretained(this)));
   } else {
     Load();

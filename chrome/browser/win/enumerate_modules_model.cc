@@ -167,11 +167,8 @@ void ModuleEnumerator::NormalizeModule(Module* module) {
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
     : background_task_runner_(base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))),
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       enumerated_modules_(nullptr),
       observer_(observer),
       per_module_delay_(kDefaultPerModuleDelay) {}

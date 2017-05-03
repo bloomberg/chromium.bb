@@ -73,8 +73,7 @@ void ServiceProcessControl::ConnectInternal() {
 
   mojo::MessagePipe pipe;
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ConnectAsync, base::Passed(&pipe.handle1),
                  GetServiceProcessChannel()));
   // TODO(hclam): Handle error connecting to channel.

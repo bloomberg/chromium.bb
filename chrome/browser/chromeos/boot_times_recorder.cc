@@ -211,8 +211,7 @@ bool BootTimesRecorder::Stats::UptimeDouble(double* result) const {
 
 void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
                  base::Owned(new Stats(*this)), name));
 }
@@ -221,8 +220,7 @@ void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const std::string& name,
     const base::Closure& callback) const {
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&BootTimesRecorder::Stats::RecordStatsAsync,
                  base::Owned(new Stats(*this)), name),
       callback);

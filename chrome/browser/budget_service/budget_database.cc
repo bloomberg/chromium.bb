@@ -52,11 +52,8 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
     : profile_(profile),
       db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
           base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .MayBlock()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)))),
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseUMAName, database_dir,

@@ -755,11 +755,8 @@ void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
   blacklist_state_ = BlacklistLoadState::LOAD_STARTED;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .MayBlock()
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&base::PathExists, path),
       base::BindOnce(&SupervisedUserService::OnBlacklistFileChecked,
                      weak_ptr_factory_.GetWeakPtr(), path, url));

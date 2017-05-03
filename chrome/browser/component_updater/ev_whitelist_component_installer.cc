@@ -108,8 +108,7 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
           << install_dir.value();
 
   base::PostTaskWithTraits(FROM_HERE,
-                           base::TaskTraits().MayBlock().WithPriority(
-                               base::TaskPriority::BACKGROUND),
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
                            base::Bind(&LoadWhitelistFromDisk,
                                       GetInstalledPath(install_dir), version));
 }

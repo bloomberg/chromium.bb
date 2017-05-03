@@ -114,8 +114,7 @@ HatsNotificationController::HatsNotificationController(
       image_fetcher_(image_fetcher),
       weak_pointer_factory_(this) {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&IsNewDevice, kHatsNewDeviceThresholdDays),
       base::Bind(&HatsNotificationController::Initialize,
                  weak_pointer_factory_.GetWeakPtr()));

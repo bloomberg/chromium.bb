@@ -374,18 +374,12 @@ JumpList::JumpList(Profile* profile)
       jumplist_data_(new base::RefCountedData<JumpListData>),
       task_id_(base::CancelableTaskTracker::kBadTaskId),
       update_jumplist_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          base::TaskTraits()
-              .WithPriority(base::TaskPriority::USER_VISIBLE)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-              .MayBlock())),
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       delete_jumplisticons_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                  .MayBlock())),
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to

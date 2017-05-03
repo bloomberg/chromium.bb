@@ -441,11 +441,9 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .MayBlock()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&GenerateRSAKeyOnWorkerThread, base::Passed(&state)));
 }
 
@@ -537,11 +535,9 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .MayBlock()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)));
 }
 
@@ -607,11 +603,9 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
   state->certs_ = std::move(all_certs);
   // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .MayBlock()
-                     .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&FilterCertificatesOnWorkerThread, base::Passed(&state)));
 }
 

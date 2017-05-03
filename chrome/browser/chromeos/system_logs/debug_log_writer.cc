@@ -196,9 +196,7 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::BACKGROUND),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&AddUserLogsToArchive, user_log_dir, tar_file_path,
                  compressed_output_path, callback));
 }

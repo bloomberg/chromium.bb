@@ -74,9 +74,7 @@ void ImageSource::StartDataRequest(
   const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
   const base::FilePath image_path = asset_dir.AppendASCII(path);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits().MayBlock().WithPriority(
-          base::TaskPriority::USER_VISIBLE),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&base::PathExists, image_path),
       base::Bind(&ImageSource::StartDataRequestAfterPathExists,
                  weak_factory_.GetWeakPtr(), image_path, got_data_callback));

@@ -517,11 +517,8 @@ void SupervisedUserManagerImpl::LoadSupervisedUserToken(
       ProfileHelper::Get()->GetUserByProfile(profile)->username_hash());
   PostTaskAndReplyWithResult(
       base::CreateTaskRunnerWithTraits(
-          base::TaskTraits()
-              .MayBlock()
-              .WithPriority(base::TaskPriority::BACKGROUND)
-              .WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN))
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::Bind(&LoadSyncToken, profile_dir), callback);
 }
