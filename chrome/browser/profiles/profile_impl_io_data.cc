@@ -435,8 +435,32 @@ ProfileImplIOData::~ProfileImplIOData() {
     media_request_context_->AssertNoURLRequests();
 }
 
+std::unique_ptr<net::NetworkDelegate>
+ProfileImplIOData::ConfigureNetworkDelegate(
+    IOThread* io_thread,
+    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const {
+  if (lazy_params_->domain_reliability_monitor) {
+    // Hold on to a raw pointer to call Shutdown() in ~ProfileImplIOData.
+    domain_reliability_monitor_ =
+        lazy_params_->domain_reliability_monitor.get();
+
+    domain_reliability_monitor_->InitURLRequestContext(main_request_context());
+    domain_reliability_monitor_->AddBakedInConfigs();
+    domain_reliability_monitor_->SetDiscardUploads(
+        !GetMetricsEnabledStateOnIOThread());
+
+    chrome_network_delegate->set_domain_reliability_monitor(
+        std::move(lazy_params_->domain_reliability_monitor));
+  }
+
+  return data_reduction_proxy_io_data()->CreateNetworkDelegate(
+      io_thread->globals()->data_use_ascriber->CreateNetworkDelegate(
+          std::move(chrome_network_delegate),
+          io_thread->GetMetricsDataUseForwarder()),
+      true);
+}
+
 void ProfileImplIOData::InitializeInternal(
-    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
@@ -446,20 +470,6 @@ void ProfileImplIOData::InitializeInternal(
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
-
-  if (lazy_params_->domain_reliability_monitor) {
-    // Hold on to a raw pointer to call Shutdown() in ~ProfileImplIOData.
-    domain_reliability_monitor_ =
-        lazy_params_->domain_reliability_monitor.get();
-
-    domain_reliability_monitor_->InitURLRequestContext(main_context);
-    domain_reliability_monitor_->AddBakedInConfigs();
-    domain_reliability_monitor_->SetDiscardUploads(
-        !GetMetricsEnabledStateOnIOThread());
-
-    chrome_network_delegate->set_domain_reliability_monitor(
-        std::move(lazy_params_->domain_reliability_monitor));
-  }
 
   ApplyProfileParamsToContext(main_context);
 
@@ -474,16 +484,6 @@ void ProfileImplIOData::InitializeInternal(
       io_thread_globals->ct_policy_enforcer.get());
 
   main_context->set_net_log(io_thread->net_log());
-
-  main_context_storage->set_network_delegate(
-      data_reduction_proxy_io_data()->CreateNetworkDelegate(
-          io_thread_globals->data_use_ascriber->CreateNetworkDelegate(
-              std::move(chrome_network_delegate),
-              io_thread->GetMetricsDataUseForwarder()),
-          true));
-
-  main_context->set_host_resolver(
-      io_thread_globals->host_resolver.get());
 
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());

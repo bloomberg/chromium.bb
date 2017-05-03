@@ -449,10 +449,16 @@ class ProfileIOData {
   // Virtual interface for subtypes to implement:
   // --------------------------------------------
 
+  // Does any necessary additional configuration of the network delegate,
+  // including composing it with other NetworkDelegates, if needed. By default,
+  // just returns the input NetworkDelegate.
+  virtual std::unique_ptr<net::NetworkDelegate> ConfigureNetworkDelegate(
+      IOThread* io_thread,
+      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate) const;
+
   // Does the actual initialization of the ProfileIOData subtype. Subtypes
   // should use the static helper functions above to implement this.
   virtual void InitializeInternal(
-      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)

@@ -156,8 +156,12 @@ class ProfileImplIOData : public ProfileIOData {
   ProfileImplIOData();
   ~ProfileImplIOData() override;
 
+  std::unique_ptr<net::NetworkDelegate> ConfigureNetworkDelegate(
+      IOThread* io_thread,
+      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate)
+      const override;
+
   void InitializeInternal(
-      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)

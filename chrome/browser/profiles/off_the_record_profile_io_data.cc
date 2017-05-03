@@ -192,7 +192,6 @@ OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
 }
 
 void OffTheRecordProfileIOData::InitializeInternal(
-    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
@@ -213,11 +212,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  main_context_storage->set_network_delegate(
-      std::move(chrome_network_delegate));
-
-  main_context->set_host_resolver(
-      io_thread_globals->host_resolver.get());
   main_context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
   main_context->set_proxy_service(proxy_service());
