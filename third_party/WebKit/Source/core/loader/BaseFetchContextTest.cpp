@@ -49,9 +49,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   Settings* GetSettings() const override { return nullptr; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
-  SecurityContext* GetMainResourceSecurityContext() const override {
-    return nullptr;
-  }
+  SecurityContext* GetParentSecurityContext() const override { return nullptr; }
   bool ShouldBlockRequestByInspector(const ResourceRequest&) const override {
     return false;
   }

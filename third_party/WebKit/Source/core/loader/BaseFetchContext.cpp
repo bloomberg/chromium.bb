@@ -257,13 +257,16 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
   // subresources.
-  if (resource_request.GetFrameType() != WebURLRequest::kFrameTypeTopLevel) {
-    if (GetMainResourceSecurityContext() &&
-        SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
+  WebURLRequest::FrameType frame_type = resource_request.GetFrameType();
+  if (frame_type != WebURLRequest::kFrameTypeTopLevel) {
+    bool is_subresource = frame_type == WebURLRequest::kFrameTypeNone;
+    SecurityContext* embedding_context =
+        is_subresource ? &execution_context_->GetSecurityContext()
+                       : GetParentSecurityContext();
+    DCHECK(embedding_context);
+    if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
         !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-            GetMainResourceSecurityContext()
-                ->GetSecurityOrigin()
-                ->Protocol())) {
+            embedding_context->GetSecurityOrigin()->Protocol())) {
       CountDeprecation(UseCounter::kLegacyProtocolEmbeddedAsSubresource);
 
       // TODO(mkwst): Enabled by default in M59. Drop the runtime-enabled check

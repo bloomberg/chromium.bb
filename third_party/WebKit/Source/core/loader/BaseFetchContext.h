@@ -58,7 +58,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual ContentSettingsClient* GetContentSettingsClient() const = 0;
   virtual Settings* GetSettings() const = 0;
   virtual SubresourceFilter* GetSubresourceFilter() const = 0;
-  virtual SecurityContext* GetMainResourceSecurityContext() const = 0;
+  virtual SecurityContext* GetParentSecurityContext() const = 0;
 
   // Note: subclasses are expected to override following methods.
   // Used in the default implementation for CanRequest, CanFollowRedirect

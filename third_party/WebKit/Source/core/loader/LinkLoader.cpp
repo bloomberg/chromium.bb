@@ -34,6 +34,8 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/dom/Document.h"
+#include "core/frame/FrameConsole.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/CrossOriginAttribute.h"
@@ -128,26 +130,44 @@ enum LinkCaller {
   kLinkCalledFromMarkup,
 };
 
+static void SendMessageToConsoleForPossiblyNullDocument(
+    ConsoleMessage* console_message,
+    Document* document,
+    LocalFrame* frame) {
+  DCHECK(document || frame);
+  DCHECK(!document || document->GetFrame() == frame);
+  // Route the console message through Document if possible, so that script line
+  // numbers can be included. Otherwise, route directly to the FrameConsole, to
+  // ensure we never drop a message.
+  if (document)
+    document->AddConsoleMessage(console_message);
+  else
+    frame->Console().AddMessage(console_message);
+}
+
 static void DnsPrefetchIfNeeded(
     const LinkRelAttribute& rel_attribute,
     const KURL& href,
-    Document& document,
+    Document* document,
+    LocalFrame* frame,
     const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (rel_attribute.IsDNSPrefetch()) {
-    UseCounter::Count(document, UseCounter::kLinkRelDnsPrefetch);
+    UseCounter::Count(frame, UseCounter::kLinkRelDnsPrefetch);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(document, UseCounter::kLinkHeaderDnsPrefetch);
-    Settings* settings = document.GetSettings();
+      UseCounter::Count(frame, UseCounter::kLinkHeaderDnsPrefetch);
+    Settings* settings = frame ? frame->GetSettings() : nullptr;
     // FIXME: The href attribute of the link element can be in "//hostname"
     // form, and we shouldn't attempt to complete that as URL
     // <https://bugs.webkit.org/show_bug.cgi?id=48857>.
     if (settings && settings->GetDNSPrefetchingEnabled() && href.IsValid() &&
         !href.IsEmpty()) {
       if (settings->GetLogDnsPrefetchAndPreconnect()) {
-        document.AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, kVerboseMessageLevel,
-            String("DNS prefetch triggered for " + href.Host())));
+        SendMessageToConsoleForPossiblyNullDocument(
+            ConsoleMessage::Create(
+                kOtherMessageSource, kVerboseMessageLevel,
+                String("DNS prefetch triggered for " + href.Host())),
+            document, frame);
       }
       network_hints_interface.DnsPrefetchHost(href.Host());
     }
@@ -157,27 +177,32 @@ static void DnsPrefetchIfNeeded(
 static void PreconnectIfNeeded(
     const LinkRelAttribute& rel_attribute,
     const KURL& href,
-    Document& document,
+    Document* document,
+    LocalFrame* frame,
     const CrossOriginAttributeValue cross_origin,
     const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (rel_attribute.IsPreconnect() && href.IsValid() &&
       href.ProtocolIsInHTTPFamily()) {
-    UseCounter::Count(document, UseCounter::kLinkRelPreconnect);
+    UseCounter::Count(frame, UseCounter::kLinkRelPreconnect);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(document, UseCounter::kLinkHeaderPreconnect);
-    Settings* settings = document.GetSettings();
+      UseCounter::Count(frame, UseCounter::kLinkHeaderPreconnect);
+    Settings* settings = frame ? frame->GetSettings() : nullptr;
     if (settings && settings->GetLogDnsPrefetchAndPreconnect()) {
-      document.AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kVerboseMessageLevel,
-          String("Preconnect triggered for ") + href.GetString()));
+      SendMessageToConsoleForPossiblyNullDocument(
+          ConsoleMessage::Create(
+              kOtherMessageSource, kVerboseMessageLevel,
+              String("Preconnect triggered for ") + href.GetString()),
+          document, frame);
       if (cross_origin != kCrossOriginAttributeNotSet) {
-        document.AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, kVerboseMessageLevel,
-            String("Preconnect CORS setting is ") +
-                String((cross_origin == kCrossOriginAttributeAnonymous)
-                           ? "anonymous"
-                           : "use-credentials")));
+        SendMessageToConsoleForPossiblyNullDocument(
+            ConsoleMessage::Create(
+                kOtherMessageSource, kVerboseMessageLevel,
+                String("Preconnect CORS setting is ") +
+                    String((cross_origin == kCrossOriginAttributeAnonymous)
+                               ? "anonymous"
+                               : "use-credentials")),
+            document, frame);
       }
     }
     network_hints_interface.PreconnectHost(href, cross_origin);
@@ -380,12 +405,13 @@ static Resource* PrefetchIfNeeded(Document& document,
 void LinkLoader::LoadLinksFromHeader(
     const String& header_value,
     const KURL& base_url,
+    LocalFrame& frame,
     Document* document,
     const NetworkHintsInterface& network_hints_interface,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
     ViewportDescriptionWrapper* viewport_description_wrapper) {
-  if (!document || header_value.IsEmpty())
+  if (header_value.IsEmpty())
     return;
   LinkHeaderSet header_set(header_value);
   for (auto& header : header_set) {
@@ -403,14 +429,15 @@ void LinkLoader::LoadLinksFromHeader(
     if (url == base_url)
       continue;
     if (can_load_resources != kOnlyLoadResources) {
-      DnsPrefetchIfNeeded(rel_attribute, url, *document,
+      DnsPrefetchIfNeeded(rel_attribute, url, document, &frame,
                           network_hints_interface, kLinkCalledFromHeader);
 
-      PreconnectIfNeeded(rel_attribute, url, *document,
+      PreconnectIfNeeded(rel_attribute, url, document, &frame,
                          GetCrossOriginAttributeValue(header.CrossOrigin()),
                          network_hints_interface, kLinkCalledFromHeader);
     }
     if (can_load_resources != kDoNotLoadResources) {
+      DCHECK(document);
       bool error_occurred = false;
       ViewportDescription* viewport_description =
           (viewport_description_wrapper && viewport_description_wrapper->set)
@@ -427,7 +454,7 @@ void LinkLoader::LoadLinksFromHeader(
                        kReferrerPolicyDefault);
     }
     if (rel_attribute.IsServiceWorker()) {
-      UseCounter::Count(*document, UseCounter::kLinkHeaderServiceWorker);
+      UseCounter::Count(&frame, UseCounter::kLinkHeaderServiceWorker);
     }
     // TODO(yoav): Add more supported headers as needed.
   }
@@ -446,11 +473,12 @@ bool LinkLoader::LoadLink(
   if (!client_->ShouldLoadLink())
     return false;
 
-  DnsPrefetchIfNeeded(rel_attribute, href, document, network_hints_interface,
-                      kLinkCalledFromMarkup);
+  DnsPrefetchIfNeeded(rel_attribute, href, &document, document.GetFrame(),
+                      network_hints_interface, kLinkCalledFromMarkup);
 
-  PreconnectIfNeeded(rel_attribute, href, document, cross_origin,
-                     network_hints_interface, kLinkCalledFromMarkup);
+  PreconnectIfNeeded(rel_attribute, href, &document, document.GetFrame(),
+                     cross_origin, network_hints_interface,
+                     kLinkCalledFromMarkup);
 
   bool error_occurred = false;
   CreateLinkPreloadResourceClient(PreloadIfNeeded(
