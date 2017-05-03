@@ -341,7 +341,7 @@ void RenderSurfaceImpl::NoteAncestorPropertyChanged() {
   ancestor_property_changed_ = true;
 }
 
-gfx::Rect RenderSurfaceImpl::GetDamageRect() {
+gfx::Rect RenderSurfaceImpl::GetDamageRect() const {
   gfx::Rect damage_rect;
   bool is_valid_rect = damage_tracker_->GetDamageRectIfValid(&damage_rect);
   if (!is_valid_rect)

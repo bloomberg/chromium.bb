@@ -122,7 +122,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* root_layer_for_testing() {
     return layer_list_.empty() ? nullptr : layer_list_[0];
   }
-  RenderSurfaceImpl* RootRenderSurface() const;
+  const RenderSurfaceImpl* RootRenderSurface() const;
   bool LayerListIsEmpty() const;
   void SetRootLayerForTesting(std::unique_ptr<LayerImpl>);
   void OnCanDrawStateChangedForTree();
