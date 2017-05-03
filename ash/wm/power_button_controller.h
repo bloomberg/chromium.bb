@@ -52,6 +52,10 @@ class ASH_EXPORT PowerButtonController
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
 
+  // Resets |tablet_controller_| to hold a new object to simulate Chrome
+  // starting.
+  void ResetTabletPowerButtonControllerForTest();
+
   TabletPowerButtonController* tablet_power_button_controller_for_test() {
     return tablet_controller_.get();
   }

@@ -196,4 +196,9 @@ void PowerButtonController::PowerButtonEventReceived(
   OnPowerButtonEvent(down, timestamp);
 }
 
+void PowerButtonController::ResetTabletPowerButtonControllerForTest() {
+  tablet_controller_.reset(
+      new TabletPowerButtonController(lock_state_controller_));
+}
+
 }  // namespace ash

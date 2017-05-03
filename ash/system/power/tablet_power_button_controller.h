@@ -92,6 +92,10 @@ class ASH_EXPORT TabletPowerButtonController
   // Initializes |backlights_forced_off_|.
   void OnGotInitialBacklightsForcedOff(bool is_forced_off);
 
+  // Enables or disables the touchscreen, also writing its state to a pref in
+  // local state. The touchscreen is disabled when backlights are forced off.
+  void UpdateTouchscreenStatus();
+
   // Starts |shutdown_timer_| when the power button is pressed while in
   // tablet mode.
   void StartShutdownTimer();
