@@ -13,7 +13,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_collision_warner.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
@@ -37,8 +36,7 @@ using VideoCaptureJpegDecoderFactoryCB =
 // The owner is responsible for making sure that the instance outlives these
 // calls.
 class CAPTURE_EXPORT VideoCaptureDeviceClient
-    : public media::VideoCaptureDevice::Client,
-      public base::SupportsWeakPtr<VideoCaptureDeviceClient> {
+    : public media::VideoCaptureDevice::Client {
  public:
   VideoCaptureDeviceClient(
       std::unique_ptr<VideoFrameReceiver> receiver,
