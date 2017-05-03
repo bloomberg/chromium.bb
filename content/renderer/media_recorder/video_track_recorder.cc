@@ -129,7 +129,9 @@ CodecEnumerator::CodecEnumerator() {
     const media::VideoCodecProfile codec = supported_profile.profile;
 #if defined(OS_ANDROID)
     // TODO(mcasas): enable other codecs, https://crbug.com/638664.
-    if (codec < media::VP8PROFILE_MIN || codec > media::VP8PROFILE_MAX)
+    static_assert(media::VP8PROFILE_MAX + 1 == media::VP9PROFILE_MIN,
+                  "VP8 and VP9 VideoCodecProfiles should be contiguous");
+    if (codec < media::VP8PROFILE_MIN || codec > media::VP9PROFILE_MAX)
       continue;
 #endif
     for (auto& codec_id_and_profile : kPreferredCodecIdAndVEAProfiles) {
