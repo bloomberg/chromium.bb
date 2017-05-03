@@ -44,6 +44,7 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
 
   const char* const flash_intercept_urls[] = {
       "https://get.adobe.com/flashplayer/",
+      "http://get2.adobe.com/flashplayer/",
       "http://get.adobe.com/flash",
       "http://get.adobe.com/fr/flashplayer/",
       "http://get.adobe.com/flashplayer",

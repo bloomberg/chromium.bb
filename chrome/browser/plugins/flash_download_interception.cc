@@ -30,7 +30,7 @@ using content::NavigationThrottle;
 namespace {
 
 // Regexes matching
-const char kGetFlashURLCanonicalRegex[] = "(?i)get\\.adobe\\.com/.*flash.*";
+const char kGetFlashURLCanonicalRegex[] = "(?i)get2?\\.adobe\\.com/.*flash.*";
 const char kGetFlashURLSecondaryGoRegex[] =
     "(?i)(www\\.)?(adobe|macromedia)\\.com/go/"
     "((?i).*get[-_]?flash|getfp10android|.*fl(ash)player|.*flashpl|"
