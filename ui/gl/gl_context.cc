@@ -266,6 +266,7 @@ bool GLContext::MakeVirtuallyCurrent(
 
   DCHECK_EQ(this, GLContext::GetRealCurrent());
   DCHECK(IsCurrent(NULL));
+  DCHECK(virtual_context->IsCurrent(surface));
 
   if (switched_real_contexts || virtual_context != current_virtual_context_) {
 #if DCHECK_IS_ON()
@@ -300,7 +301,6 @@ bool GLContext::MakeVirtuallyCurrent(
     LOG(ERROR) << "Could not make GLSurface current.";
     return false;
   }
-  DCHECK(virtual_context->IsCurrent(surface));
   return true;
 }
 
