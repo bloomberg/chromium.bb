@@ -17,9 +17,9 @@ class GestureDetector {
     this.element_ = element;
 
     this.element_.addEventListener(
-        'touchstart', this.onTouchStart_.bind(this), { passive: false });
+        'touchstart', this.onTouchStart_.bind(this), { passive: true });
     this.element_.addEventListener(
-        'touchmove', this.onTouch_.bind(this), { passive: true });
+        'touchmove', this.onTouch_.bind(this), { passive: false });
     this.element_.addEventListener(
         'touchend', this.onTouch_.bind(this), { passive: true });
     this.element_.addEventListener(
@@ -64,10 +64,7 @@ class GestureDetector {
    * @param {!TouchEvent} event Touch event on the element.
    */
   onTouchStart_(event) {
-    // We must preventDefault if there is a two finger touch. By doing so
-    // native pinch-zoom does not interfere with our way of handling the event.
     if (event.touches.length == 2) {
-      event.preventDefault();
       this.pinchStartEvent_ = event;
       this.lastEvent_ = event;
       this.notify_({
@@ -102,6 +99,10 @@ class GestureDetector {
       this.notify_(endEvent);
       return;
     }
+
+    // We must preventDefault two finger touchmoves. By doing so native
+    // pinch-zoom does not interfere with our way of handling the event.
+    event.preventDefault();
 
     let scaleRatio = GestureDetector.pinchScaleRatio_(event, this.lastEvent_);
     let startScaleRatio = GestureDetector.pinchScaleRatio_(
