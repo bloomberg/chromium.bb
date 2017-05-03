@@ -97,8 +97,11 @@ bool UseOnlyLocalHeuristicsForPasswordGeneration();
 // Whether the Suggestions UI is enabled.
 bool IsSuggestionsUIEnabled();
 
-// Wether Sign-in promo is enabled.
+// Whether Sign-in promo is enabled.
 bool IsSigninPromoEnabled();
+
+// Whether Google Native App Launcher is enabled.
+bool IsNativeAppLauncherEnabled();
 
 }  // namespace experimental_flags
 

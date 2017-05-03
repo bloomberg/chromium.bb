@@ -358,8 +358,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self autoFillDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self nativeAppsDetailItem]
-      toSectionWithIdentifier:SectionIdentifierBasics];
+  if (experimental_flags::IsNativeAppLauncherEnabled()) {
+    [model addItem:[self nativeAppsDetailItem]
+        toSectionWithIdentifier:SectionIdentifierBasics];
+  }
 
   // Advanced Section
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];

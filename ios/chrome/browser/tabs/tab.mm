@@ -506,7 +506,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         initWithSnapshotManager:snapshotManager_
                             tab:self]);
 
-    [self initNativeAppNavigationController];
+    if (experimental_flags::IsNativeAppLauncherEnabled())
+      [self initNativeAppNavigationController];
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -1631,6 +1632,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
                          sourceURL:(const GURL&)sourceURL
                        linkClicked:(BOOL)linkClicked {
+  // TODO(crbug/711511): If Native App Launcher is not enabled, returning NO
+  // bypasses all Link Navigation logic. This call should eventually be
+  // eliminated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return NO;
+
   // Don't open any native app directly when prerendering or from Incognito.
   if (isPrerenderTab_ || self.browserState->IsOffTheRecord())
     return NO;
@@ -1919,6 +1926,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NativeAppNavigationController*)nativeAppNavigationController {
+  // TODO(crbug.com/711511): If Native App Launcher is not enabled, simply
+  // return nil here. This method should eventually be eliminated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return nil;
   return nativeAppNavigationController_;
 }
 
