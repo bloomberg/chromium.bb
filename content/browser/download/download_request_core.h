@@ -52,8 +52,11 @@ class CONTENT_EXPORT DownloadRequestCore
   };
 
   // All parameters are required. |request| and |delegate| must outlive
-  // DownloadRequestCore.
-  DownloadRequestCore(net::URLRequest* request, Delegate* delegate);
+  // DownloadRequestCore. The request is not the main request if
+  // |is_parallel_request| is true.
+  DownloadRequestCore(net::URLRequest* request,
+                      Delegate* delegate,
+                      bool is_parallel_request);
   ~DownloadRequestCore();
 
   // Should be called when the URLRequest::Delegate receives OnResponseStarted.

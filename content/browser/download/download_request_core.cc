@@ -180,7 +180,8 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
 }
 
 DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
-                                         Delegate* delegate)
+                                         Delegate* delegate,
+                                         bool is_parallel_request)
     : delegate_(delegate),
       request_(request),
       download_id_(DownloadItem::kInvalidId),
@@ -193,7 +194,8 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
       abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
   DCHECK(request_);
   DCHECK(delegate_);
-  RecordDownloadCount(UNTHROTTLED_COUNT);
+  if (!is_parallel_request)
+    RecordDownloadCount(UNTHROTTLED_COUNT);
   power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonOther, "Download in progress",

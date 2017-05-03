@@ -108,7 +108,7 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
 
   return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
       UrlDownloader::BeginDownload(download_manager, std::move(url_request),
-                                   params->referrer())
+                                   params->referrer(), false)
           .release());
 }
 

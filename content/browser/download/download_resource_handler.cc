@@ -106,7 +106,7 @@ void DeleteOnUIThread(
 DownloadResourceHandler::DownloadResourceHandler(net::URLRequest* request)
     : ResourceHandler(request),
       tab_info_(new DownloadTabInfo()),
-      core_(request, this) {
+      core_(request, this, false) {
   // Do UI thread initialization for tab_info_ asap after
   // DownloadResourceHandler creation since the tab could be navigated
   // before StartOnUIThread gets called.  This is safe because deletion
