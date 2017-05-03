@@ -5,26 +5,25 @@
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "services/device/device_service_test_base.h"
+#include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 
 namespace device {
 
-class FakePowerMonitorClient : public device::mojom::PowerMonitorClient {
+class MockPowerMonitorBroadcastSource : public PowerMonitorBroadcastSource {
  public:
-  FakePowerMonitorClient(device::mojom::PowerMonitorClientRequest request)
-      : binding_(this, std::move(request)),
-        power_state_changes_(0),
-        suspends_(0),
-        resumes_(0) {}
-  ~FakePowerMonitorClient() override {}
+  MockPowerMonitorBroadcastSource(service_manager::Connector* connector,
+                                  base::Closure service_connected)
+      : PowerMonitorBroadcastSource(connector),
+        service_connected_(service_connected) {}
+  ~MockPowerMonitorBroadcastSource() override = default;
 
   // Implement device::mojom::PowerMonitorClient
   void PowerStateChange(bool on_battery_power) override {
     power_state_changes_++;
+    service_connected_.Run();
   }
   void Suspend() override { suspends_++; }
   void Resume() override { resumes_++; }
@@ -35,26 +34,28 @@ class FakePowerMonitorClient : public device::mojom::PowerMonitorClient {
   int resumes() { return resumes_; }
 
  private:
-  mojo::Binding<device::mojom::PowerMonitorClient> binding_;
-  int power_state_changes_;  // Count of OnPowerStateChange notifications.
-  int suspends_;             // Count of OnSuspend notifications.
-  int resumes_;              // Count of OnResume notifications.
+  int power_state_changes_ = 0;  // Count of OnPowerStateChange notifications.
+  int suspends_ = 0;             // Count of OnSuspend notifications.
+  int resumes_ = 0;              // Count of OnResume notifications.
+  base::Closure service_connected_;
 };
 
-class PowerMonitorMessageBroadcasterTest : public testing::Test {
+class PowerMonitorMessageBroadcasterTest : public DeviceServiceTestBase {
  protected:
-  PowerMonitorMessageBroadcasterTest() {
+  PowerMonitorMessageBroadcasterTest() = default;
+  ~PowerMonitorMessageBroadcasterTest() override = default;
+
+  void SetUp() override {
+    DeviceServiceTestBase::SetUp();
+
     power_monitor_source_ = new base::PowerMonitorTestSource();
     power_monitor_.reset(new base::PowerMonitor(
         std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
-  ~PowerMonitorMessageBroadcasterTest() override {}
 
   base::PowerMonitorTestSource* source() { return power_monitor_source_; }
-  base::PowerMonitor* monitor() { return power_monitor_.get(); }
 
  private:
-  base::MessageLoop message_loop_;
   base::PowerMonitorTestSource* power_monitor_source_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
@@ -62,13 +63,14 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
 };
 
 TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
-  device::mojom::PowerMonitorClientPtr proxy;
-  FakePowerMonitorClient client(mojo::MakeRequest(&proxy));
-  PowerMonitorMessageBroadcaster broadcaster;
+  base::RunLoop run_loop;
+  MockPowerMonitorBroadcastSource client(connector(), run_loop.QuitClosure());
+  run_loop.Run();
 
-  // Calling AddClient should invoke a power state change.
-  broadcaster.AddClient(std::move(proxy));
-
+  // Above PowerMonitorBroadcastSource ctor will connect to Device Service to
+  // bind device::mojom::PowerMonitor interface, on which AddClient() will be
+  // called then, this should invoke immediatelly a power state change back to
+  // PowerMonitorBroadcastSource.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(client.power_state_changes(), 1);
 
