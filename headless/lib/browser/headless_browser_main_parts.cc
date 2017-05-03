@@ -29,7 +29,7 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
     net_log_.reset(new HeadlessNetLog(log_path));
   }
 
-  if (browser_->options()->devtools_endpoint.address().IsValid()) {
+  if (browser_->options()->DevtoolsServerEnabled()) {
     StartLocalDevToolsHttpHandler(browser_->options());
     devtools_http_handler_started_ = true;
   }

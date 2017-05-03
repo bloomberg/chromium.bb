@@ -27,6 +27,7 @@ std::string GetProductNameAndVersion() {
 Options::Options(int argc, const char** argv)
     : argc(argc),
       argv(argv),
+      devtools_socket_fd(0),
       message_pump(nullptr),
       single_process_mode(false),
       disable_sandbox(false),
@@ -48,6 +49,10 @@ Options::~Options() {}
 
 Options& Options::operator=(Options&& options) = default;
 
+bool Options::DevtoolsServerEnabled() {
+  return (devtools_endpoint.address().IsValid() || devtools_socket_fd != 0);
+}
+
 Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}
 
 Builder::Builder() : options_(0, nullptr) {}
@@ -67,6 +72,11 @@ Builder& Builder::SetUserAgent(const std::string& user_agent) {
 
 Builder& Builder::EnableDevToolsServer(const net::IPEndPoint& endpoint) {
   options_.devtools_endpoint = endpoint;
+  return *this;
+}
+
+Builder& Builder::EnableDevToolsServer(const size_t socket_fd) {
+  options_.devtools_socket_fd = socket_fd;
   return *this;
 }
 
