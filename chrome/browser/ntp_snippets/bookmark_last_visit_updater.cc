@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
@@ -38,8 +39,9 @@ void BookmarkLastVisitUpdater::MaybeCreateForWebContentsWithBookmarkModel(
   if (!bookmark_model || browser_context->IsOffTheRecord()) {
     return;
   }
-  web_contents->SetUserData(UserDataKey(), new BookmarkLastVisitUpdater(
-                                               web_contents, bookmark_model));
+  web_contents->SetUserData(UserDataKey(),
+                            base::WrapUnique(new BookmarkLastVisitUpdater(
+                                web_contents, bookmark_model)));
 }
 
 BookmarkLastVisitUpdater::BookmarkLastVisitUpdater(

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -94,7 +95,7 @@ CustomManagePasswordsUIController::CustomManagePasswordsUIController(
   // Do not silently replace an existing ManagePasswordsUIController because it
   // unregisters itself in WebContentsDestroyed().
   EXPECT_FALSE(web_contents->GetUserData(UserDataKey()));
-  web_contents->SetUserData(UserDataKey(), this);
+  web_contents->SetUserData(UserDataKey(), base::WrapUnique(this));
 }
 
 void CustomManagePasswordsUIController::WaitForState(

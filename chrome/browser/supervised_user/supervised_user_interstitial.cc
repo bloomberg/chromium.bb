@@ -53,6 +53,8 @@ namespace {
 
 class TabCloser : public content::WebContentsUserData<TabCloser> {
  public:
+  ~TabCloser() override {}
+
   static void MaybeClose(WebContents* web_contents) {
     DCHECK(web_contents);
 
@@ -75,7 +77,6 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
         FROM_HERE,
         base::Bind(&TabCloser::CloseTabImpl, weak_ptr_factory_.GetWeakPtr()));
   }
-  ~TabCloser() override {}
 
   void CloseTabImpl() {
     // On Android, FindBrowserWithWebContents and TabStripModel don't exist.

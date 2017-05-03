@@ -18,14 +18,14 @@ class NavigationTracingObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationTracingObserver> {
  public:
+  ~NavigationTracingObserver() override;
+
   static bool IsEnabled();
 
  private:
   friend class content::WebContentsUserData<NavigationTracingObserver>;
 
   explicit NavigationTracingObserver(content::WebContents* web_contents);
-
-  ~NavigationTracingObserver() override;
 
   // content::WebContentsObserver implementation.
   void DidStartNavigation(

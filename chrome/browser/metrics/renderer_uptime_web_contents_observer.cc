@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -24,7 +25,7 @@ RendererUptimeWebContentsObserver::CreateForWebContents(
   RendererUptimeWebContentsObserver* observer = FromWebContents(web_contents);
   if (!observer) {
     observer = new RendererUptimeWebContentsObserver(web_contents);
-    web_contents->SetUserData(UserDataKey(), observer);
+    web_contents->SetUserData(UserDataKey(), base::WrapUnique(observer));
   }
   return observer;
 }

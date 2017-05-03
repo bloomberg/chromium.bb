@@ -101,9 +101,10 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
           content::BrowserThread::DB),
       profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ShortcutsExtensionsManager* extensions_manager =
-      new ShortcutsExtensionsManager(profile);
-  profile->SetUserData(kShortcutsExtensionsManagerKey, extensions_manager);
+  auto extensions_manager =
+      base::MakeUnique<ShortcutsExtensionsManager>(profile);
+  profile->SetUserData(kShortcutsExtensionsManagerKey,
+                       std::move(extensions_manager));
 #endif
   return backend->Init() ? backend : nullptr;
 }

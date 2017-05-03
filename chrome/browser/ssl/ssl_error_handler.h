@@ -62,6 +62,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
  public:
   typedef base::Callback<void(content::WebContents*)> TimerStartedCallback;
 
+  ~SSLErrorHandler() override;
+
   // Events for UMA. Do not rename or remove values, add new values to the end.
   // Public for testing.
   enum UMAEvent {
@@ -142,8 +144,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const GURL& request_url,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
-
-  ~SSLErrorHandler() override;
 
   // Called when an SSL cert error is encountered. Triggers a captive portal
   // check and fires a one shot timer to wait for a "captive portal detected"

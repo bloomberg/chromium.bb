@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -33,7 +34,7 @@ DesktopSessionDurationObserver::CreateForWebContents(
   if (!observer) {
     observer = new DesktopSessionDurationObserver(
         web_contents, DesktopSessionDurationTracker::Get());
-    web_contents->SetUserData(UserDataKey(), observer);
+    web_contents->SetUserData(UserDataKey(), base::WrapUnique(observer));
   }
   return observer;
 }

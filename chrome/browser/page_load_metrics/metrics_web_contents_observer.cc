@@ -84,7 +84,7 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
   if (!metrics) {
     metrics = new MetricsWebContentsObserver(web_contents,
                                              std::move(embedder_interface));
-    web_contents->SetUserData(UserDataKey(), metrics);
+    web_contents->SetUserData(UserDataKey(), base::WrapUnique(metrics));
   }
   return metrics;
 }

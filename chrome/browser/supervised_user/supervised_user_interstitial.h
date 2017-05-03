@@ -29,6 +29,8 @@ class Profile;
 class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
                                    public SupervisedUserServiceObserver {
  public:
+  ~SupervisedUserInterstitial() override;
+
   // Interstitial type, used for testing.
   static content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
@@ -49,7 +51,6 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool initial_page_load,
       const base::Callback<void(bool)>& callback);
-  ~SupervisedUserInterstitial() override;
 
   void Init();
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/instant_io_context.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_request_info.h"
@@ -50,7 +51,8 @@ void InstantIOContext::SetUserDataOnIO(
     scoped_refptr<InstantIOContext> instant_io_context) {
   resource_context->SetUserData(
       InstantIOContext::kInstantIOContextKeyName,
-      new base::UserDataAdapter<InstantIOContext>(instant_io_context.get()));
+      base::MakeUnique<base::UserDataAdapter<InstantIOContext>>(
+          instant_io_context.get()));
 }
 
 // static

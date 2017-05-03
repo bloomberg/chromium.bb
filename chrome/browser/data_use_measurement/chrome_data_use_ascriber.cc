@@ -137,8 +137,9 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
 
     DCHECK(frame_iter != main_render_frame_data_use_map_.end());
     auto entry = frame_iter->second;
-    request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
-                         new DataUseRecorderEntryAsUserData(entry));
+    request->SetUserData(
+        DataUseRecorderEntryAsUserData::kUserDataKey,
+        base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
     entry->AddPendingURLRequest(request);
     return entry;
   }
@@ -320,8 +321,9 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
 
     for (auto* request : entry->pending_url_requests()) {
       request->RemoveUserData(DataUseRecorderEntryAsUserData::kUserDataKey);
-      request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
-                           new DataUseRecorderEntryAsUserData(old_frame_entry));
+      request->SetUserData(
+          DataUseRecorderEntryAsUserData::kUserDataKey,
+          base::MakeUnique<DataUseRecorderEntryAsUserData>(old_frame_entry));
       old_frame_entry->AddPendingURLRequest(request);
     }
 
@@ -383,8 +385,9 @@ ChromeDataUseAscriber::CreateNewDataUseRecorder(net::URLRequest* request) {
       data_use_recorders_.end());
   if (request) {
     entry->AddPendingURLRequest(request);
-    request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
-                         new DataUseRecorderEntryAsUserData(entry));
+    request->SetUserData(
+        DataUseRecorderEntryAsUserData::kUserDataKey,
+        base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
   }
   return entry;
 }

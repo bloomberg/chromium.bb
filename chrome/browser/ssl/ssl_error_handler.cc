@@ -77,14 +77,16 @@ class CommonNameMismatchRedirectObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<CommonNameMismatchRedirectObserver> {
  public:
+  ~CommonNameMismatchRedirectObserver() override {}
+
   static void AddToConsoleAfterNavigation(
       content::WebContents* web_contents,
       const std::string& request_url_hostname,
       const std::string& suggested_url_hostname) {
     web_contents->SetUserData(
         UserDataKey(),
-        new CommonNameMismatchRedirectObserver(
-            web_contents, request_url_hostname, suggested_url_hostname));
+        base::WrapUnique(new CommonNameMismatchRedirectObserver(
+            web_contents, request_url_hostname, suggested_url_hostname)));
   }
 
  private:
@@ -95,7 +97,6 @@ class CommonNameMismatchRedirectObserver
         web_contents_(web_contents),
         request_url_hostname_(request_url_hostname),
         suggested_url_hostname_(suggested_url_hostname) {}
-  ~CommonNameMismatchRedirectObserver() override {}
 
   // WebContentsObserver:
   void NavigationStopped() override {
@@ -469,7 +470,7 @@ void SSLErrorHandler::HandleSSLError(
               web_contents, ssl_info, profile, cert_error, options_mask,
               request_url, std::move(ssl_cert_reporter), callback)),
       web_contents, profile, cert_error, ssl_info, request_url, callback);
-  web_contents->SetUserData(UserDataKey(), error_handler);
+  web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
 }
 
