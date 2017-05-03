@@ -207,7 +207,7 @@ InspectorTest.clearNetworkCache = function(finishedCallback)
   // This turns cache off and then on, effectively clearning the cache.
   var networkAgent = InspectorTest.NetworkAgent;
   var promise = networkAgent.setCacheDisabled(true);
-  promise.then(networkAgent.setCacheDisabled.bind(networkAgent, false));
+  promise.then(() => networkAgent.setCacheDisabled(false));
   promise.then(finishedCallback);
 }
 

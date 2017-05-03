@@ -687,7 +687,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     callback = InspectorTest.safeWrap(callback);
     var snapshot = generator();
     var profileType = Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
-    function pushGeneratedSnapshot(reportProgress, callback2)
+    function pushGeneratedSnapshot(reportProgress)
     {
         var profile = profileType.profileBeingRecorded();
         if (reportProgress) {
@@ -696,11 +696,11 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
         }
         snapshot.snapshot.typeId = "HEAP";
         profileType._addHeapSnapshotChunk({data: JSON.stringify(snapshot)});
-        return Promise.resolve(callback2(null));
+        return Promise.resolve();
     }
     InspectorTest.override(InspectorTest.HeapProfilerAgent, "takeHeapSnapshot", pushGeneratedSnapshot);
     InspectorTest._takeAndOpenSnapshotCallback = callback;
-    profileType._takeHeapSnapshot(function() { });
+    profileType._takeHeapSnapshot();
 };
 
 InspectorTest.viewColumns = function()
