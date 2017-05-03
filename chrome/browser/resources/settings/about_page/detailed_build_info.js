@@ -94,7 +94,7 @@ Polymer({
   /** @private */
   onChannelSwitcherDialogClosed_: function() {
     this.showChannelSwitcherDialog_ = false;
-    this.$$('paper-button').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('paper-button')));
     this.updateChannelInfo_();
   },
 });

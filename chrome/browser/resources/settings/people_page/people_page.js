@@ -256,7 +256,7 @@ Polymer({
   /** @private */
   onDisconnectClosed_: function() {
     this.showDisconnectDialog_ = false;
-    this.$$('#disconnectButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
 
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
       settings.navigateToPreviousRoute();
@@ -363,7 +363,7 @@ Polymer({
   /** @private */
   onImportDataDialogClosed_: function() {
     settings.navigateToPreviousRoute();
-    this.$.importDataDialogTrigger.focus();
+    cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
 // </if>
 

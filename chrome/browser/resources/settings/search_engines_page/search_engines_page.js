@@ -96,7 +96,7 @@ Polymer({
       // previous dialog's contents are cleared.
       dialog.addEventListener('close', function() {
         this.showAddSearchEngineDialog_ = false;
-        this.$.addSearchEngine.focus();
+        cr.ui.focusWithoutInk(assert(this.$.addSearchEngine));
       }.bind(this));
     }.bind(this));
   },

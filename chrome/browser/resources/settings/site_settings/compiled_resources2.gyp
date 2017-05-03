@@ -110,7 +110,9 @@
     {
       'target_name': 'site_data',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '../settings_page/compiled_resources2.gyp:settings_subpage_search',
         'cookie_tree_behavior',
         'cookie_tree_node',
@@ -166,6 +168,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(EXTERNS_GYP):settings_private',
         'site_settings_behavior',
       ],

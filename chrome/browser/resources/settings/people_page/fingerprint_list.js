@@ -150,7 +150,7 @@ Polymer({
 
   /** @private */
   onSetupFingerprintDialogClose_: function() {
-    this.$$('#addFingerprint').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#addFingerprint')));
     this.browserProxy_.startAuthentication();
   },
 

@@ -492,6 +492,6 @@ Polymer({
 
   /** @private */
   onAllowSharedDialogClose_: function() {
-    this.$$('#allowShared').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#allowShared')));
   },
 });

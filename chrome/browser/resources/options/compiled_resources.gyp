@@ -21,6 +21,7 @@
           '../../../../ui/webui/resources/js/cr/ui/controlled_indicator.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_manager.js',
           '../../../../ui/webui/resources/js/cr/ui/focus_outline_manager.js',
+          '../../../../ui/webui/resources/js/cr/ui/focus_without_ink.js',
           '../../../../ui/webui/resources/js/cr/ui/grid.js',
           '../../../../ui/webui/resources/js/cr/ui/list.js',
           '../../../../ui/webui/resources/js/cr/ui/list_item.js',

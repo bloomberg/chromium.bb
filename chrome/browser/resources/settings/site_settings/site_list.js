@@ -222,7 +222,7 @@ Polymer({
     dialog.open(this.categorySubtype);
 
     dialog.addEventListener('close', function() {
-      this.$.addSite.focus();
+      cr.ui.focusWithoutInk(assert(this.$.addSite));
       dialog.remove();
     }.bind(this));
   },

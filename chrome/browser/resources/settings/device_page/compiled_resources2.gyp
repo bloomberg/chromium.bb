@@ -54,8 +54,10 @@
     {
       'target_name': 'display',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):system_display',
         '<(INTERFACES_GYP):system_display_interface',
@@ -116,8 +118,10 @@
       'target_name': 'storage',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

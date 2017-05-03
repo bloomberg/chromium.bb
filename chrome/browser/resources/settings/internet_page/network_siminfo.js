@@ -361,17 +361,17 @@ Polymer({
 
   /** @private */
   onEnterPinDialogClose_: function() {
-    this.$$('#simLockButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#simLockButton')));
   },
 
   /** @private */
   onChangePinDialogClose_: function() {
-    this.$$('#changePinButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#changePinButton')));
   },
 
   /** @private */
   onUnlockPinDialogClose_: function() {
-    this.$$('#unlockPinButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#unlockPinButton')));
   },
 });
 })();

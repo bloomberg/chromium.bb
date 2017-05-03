@@ -245,7 +245,7 @@ Polymer({
   /** @private */
   onDialogClosed_: function() {
     settings.navigateToPreviousRoute();
-    this.$.clearBrowsingDataTrigger.focus();
+    cr.ui.focusWithoutInk(assert(this.$.clearBrowsingDataTrigger));
   },
 
   /** @private */

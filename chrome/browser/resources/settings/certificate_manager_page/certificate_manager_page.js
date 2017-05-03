@@ -179,7 +179,7 @@ Polymer({
       var dialog = this.$$(dialogTagName);
       dialog.addEventListener('close', function() {
         this.set(domIfBooleanName, false);
-        this.activeDialogAnchor_.focus();
+        cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
       }.bind(this));
     }.bind(this));
   },

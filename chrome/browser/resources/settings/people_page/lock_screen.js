@@ -208,7 +208,7 @@ Polymer({
     if (!this.setModes_)
       settings.navigateTo(settings.Route.PEOPLE);
     else
-      this.$$('#unlockType').focus();
+      cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
   },
 
   /** @private */
@@ -218,7 +218,7 @@ Polymer({
 
   /** @private */
   onSetupPinClosed_: function() {
-    this.$$('#setupPinButton').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('#setupPinButton')));
   },
 
   /**
@@ -304,7 +304,7 @@ Polymer({
 
     // Restores focus on close to either the turn-off or set-up button,
     // whichever is being displayed.
-    this.$$('.secondary-button').focus();
+    cr.ui.focusWithoutInk(assert(this.$$('.secondary-button')));
   },
 
   /**
