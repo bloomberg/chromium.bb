@@ -7,7 +7,8 @@
 
 namespace media {
 
-AVDASurfaceBundle::AVDASurfaceBundle(int surface_id) : surface_id(surface_id) {}
+AVDASurfaceBundle::AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay)
+    : overlay(std::move(overlay)) {}
 
 AVDASurfaceBundle::~AVDASurfaceBundle() {
   // Explicitly free the surface first, just to be sure that it's deleted before

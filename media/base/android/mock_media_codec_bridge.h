@@ -6,12 +6,14 @@
 #define MEDIA_BASE_ANDROID_MOCK_MEDIA_CODEC_BRIDGE_H_
 
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/test_destruction_observable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-class MockMediaCodecBridge : public MediaCodecBridge {
+class MockMediaCodecBridge : public MediaCodecBridge,
+                             public DestructionObservable {
  public:
   MockMediaCodecBridge();
   ~MockMediaCodecBridge() override;

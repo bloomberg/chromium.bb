@@ -86,19 +86,36 @@ if (is_android) {
       "media_drm_bridge_unittest.cc",
       "media_player_bridge_unittest.cc",
       "media_service_throttler_unittest.cc",
-      "mock_media_codec_bridge.cc",
-      "mock_media_codec_bridge.h",
     ]
 
     deps = [
       "//media",
       "//media/base:test_support",
+      "//media/base/android:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/widevine/cdm:headers",
       "//ui/gfx:color_space",
     ]
     configs += [ "//media:media_config" ]
+  }
+
+  source_set("test_support") {
+    testonly = true
+    sources = [
+      "mock_android_overlay.cc",
+      "mock_android_overlay.h",
+      "mock_media_codec_bridge.cc",
+      "mock_media_codec_bridge.h",
+      "test_destruction_observable.cc",
+      "test_destruction_observable.h",
+    ]
+    deps = [
+      "//media",
+      "//media/base:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
   }
 
   generate_jni("media_jni_headers") {

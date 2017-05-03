@@ -123,7 +123,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   void StopThread(AVDACodecAllocatorClient* client);
 
   // Create and configure a MediaCodec synchronously.
-  std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
+  virtual std::unique_ptr<MediaCodecBridge> CreateMediaCodecSync(
       scoped_refptr<CodecConfig> codec_config);
 
   // Create and configure a MediaCodec asynchronously. The result is delivered
@@ -140,7 +140,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // that it outlives |media_codec|.
   // TODO(watk): Bundle the MediaCodec and surface together so you can't get
   // this pairing wrong.
-  void ReleaseMediaCodec(
+  virtual void ReleaseMediaCodec(
       std::unique_ptr<MediaCodecBridge> media_codec,
       TaskType task_type,
       const scoped_refptr<AVDASurfaceBundle>& surface_bundle);
