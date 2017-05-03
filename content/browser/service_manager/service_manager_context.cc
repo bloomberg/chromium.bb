@@ -333,12 +333,16 @@ ServiceManagerContext::ServiceManagerContext() {
   GetContentClient()
       ->browser()
       ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+
+  bool network_service_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService);
+  if (network_service_enabled) {
     unsandboxed_services.insert(
         std::make_pair(content::mojom::kNetworkServiceName,
                        base::ASCIIToUTF16("Network Service")));
   }
+
   for (const auto& service : unsandboxed_services) {
     packaged_services_connection_->AddServiceRequestHandler(
         service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
@@ -358,10 +362,12 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_->Start();
   ServiceManagerConnection::GetForProcess()->Start();
 
-  // Start the network service process as soon as possible, since it is critical
-  // to start up performance.
-  ServiceManagerConnection::GetForProcess()->GetConnector()->StartService(
-      mojom::kNetworkServiceName);
+  if (network_service_enabled) {
+    // Start the network service process as soon as possible, since it is
+    // critical to start up performance.
+    ServiceManagerConnection::GetForProcess()->GetConnector()->StartService(
+        mojom::kNetworkServiceName);
+  }
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
