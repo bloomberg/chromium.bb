@@ -88,6 +88,11 @@ enum class GpuRasterizationStatus {
   MSAA_CONTENT,
 };
 
+enum class ImplThreadPhase {
+  IDLE,
+  INSIDE_IMPL_FRAME,
+};
+
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
@@ -868,6 +873,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool has_scrolled_by_touch_;
 
   bool touchpad_and_wheel_scroll_latching_enabled_;
+
+  ImplThreadPhase impl_thread_phase_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
