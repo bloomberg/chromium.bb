@@ -268,4 +268,9 @@ bool IsSigninPromoEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+bool IsNativeAppLauncherEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:@"NativeAppLauncherEnabled"];
+}
+
 }  // namespace experimental_flags

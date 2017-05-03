@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -471,6 +472,10 @@ class TabOpenAppOffTheRecordTest : public TabOpenAppTest {
 
 // Tests the opening of matching native apps.
 TEST_F(TabOpenAppTest, testDummyURL) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
   EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
 
   GURL no_native_app_url("dummy string");
@@ -478,6 +483,11 @@ TEST_F(TabOpenAppTest, testDummyURL) {
 }
 
 TEST_F(TabOpenAppTest, testURL) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
+
   EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
 
   GURL testURL("http://www.youtube.com/");
@@ -501,6 +511,11 @@ TEST_F(TabOpenAppTest, testURL) {
 // TODO(crbug.com/330189): This test fails if Google Maps is installed (usually
 // on device).
 TEST_F(TabOpenAppTest, DISABLED_testResetShouldAutoOpenOnFailure) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
+
   EXPECT_FALSE([tab_ browserState]->IsOffTheRecord());
 
   // With a regular profile.
@@ -518,6 +533,11 @@ TEST_F(TabOpenAppTest, DISABLED_testResetShouldAutoOpenOnFailure) {
 
 // Tests the opening of matching native apps with off-the-record browser state.
 TEST_F(TabOpenAppOffTheRecordTest, testDummyURL) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
+
   EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
 
   GURL no_native_app_url("dummy string");
@@ -525,6 +545,11 @@ TEST_F(TabOpenAppOffTheRecordTest, testDummyURL) {
 }
 
 TEST_F(TabOpenAppOffTheRecordTest, testURL) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
+
   EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
 
   // With a regular chrome browser state.
@@ -547,6 +572,11 @@ TEST_F(TabOpenAppOffTheRecordTest, testURL) {
 // TODO(crbug.com/330189): This test fails if Google Maps is installed (usually
 // on device).
 TEST_F(TabOpenAppOffTheRecordTest, DISABLED_testResetShouldAutoOpenOnFailure) {
+  // TODO(crbug/711511): Remove this test when Native App Launcher has been
+  // fully deprecated.
+  if (!experimental_flags::IsNativeAppLauncherEnabled())
+    return;
+
   EXPECT_TRUE([tab_ browserState]->IsOffTheRecord());
 
   // With a regular profile.
