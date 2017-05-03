@@ -298,6 +298,16 @@ InspectorTest.evaluateInPage = function(string, callback)
     });
 };
 
+/**
+ * Evaluates expression in page.
+ * @param {string} expression
+ * @return {!Promise<?>}
+ */
+InspectorTest.evaluateInPagePromise = function(expression)
+{
+    return InspectorTest.sendCommandPromise("Runtime.evaluate", { "expression": expression, awaitPromise: false, returnByValue: true });
+};
+
 InspectorTest.evaluateInPageAsync = function(expression)
 {
     return InspectorTest.sendCommandPromise("Runtime.evaluate", { "expression": expression, awaitPromise: true, returnByValue: true }).then((message) => message.result.result.value);
