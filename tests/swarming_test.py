@@ -263,7 +263,10 @@ class TestIsolated(auto_stub.TestCase, Common):
 
       def call(cmd, env, cwd):
         self.assertEqual([sys.executable, u'main.py', u'foo', '--bar'], cmd)
-        self.assertEqual(None, env)
+        expected = os.environ.copy()
+        expected['SWARMING_TASK_ID'] = 'reproduce'
+        expected['SWARMING_BOT_ID'] = 'reproduce'
+        self.assertEqual(expected, env)
         self.assertEqual(unicode(os.path.abspath('work')), cwd)
         return 0
 
@@ -1368,11 +1371,14 @@ class TestMain(NetTestCase):
       os.chdir(self.tempdir)
 
       def call(cmd, env, cwd):
-        self.assertEqual(['foo', '--bar'], cmd)
+        w = os.path.abspath('work')
+        self.assertEqual([os.path.join(w, 'foo'), '--bar'], cmd)
         expected = os.environ.copy()
         expected['aa'] = 'bb'
+        expected['SWARMING_TASK_ID'] = 'reproduce'
+        expected['SWARMING_BOT_ID'] = 'reproduce'
         self.assertEqual(expected, env)
-        self.assertEqual(unicode(os.path.abspath('work')), cwd)
+        self.assertEqual(unicode(w), cwd)
         return 0
 
       self.mock(subprocess, 'call', call)

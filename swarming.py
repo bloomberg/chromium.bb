@@ -35,6 +35,7 @@ from utils import threading_utils
 from utils import tools
 
 import auth
+import cipd
 import isolated_format
 import isolateserver
 import run_isolated
@@ -1523,11 +1524,15 @@ def CMDreproduce(parser, args):
   if fs.isdir(workdir):
     parser.error('Please delete the directory \'work\' first')
   fs.mkdir(workdir)
+  cachedir = unicode(os.path.abspath('cipd_cache'))
+  if not fs.exists(cachedir):
+    fs.mkdir(cachedir)
 
   properties = request['properties']
-  env = None
+  env = os.environ.copy()
+  env['SWARMING_BOT_ID'] = 'reproduce'
+  env['SWARMING_TASK_ID'] = 'reproduce'
   if properties.get('env'):
-    env = os.environ.copy()
     logging.info('env: %r', properties['env'])
     for i in properties['env']:
       key = i['key'].encode('utf-8')
@@ -1536,6 +1541,7 @@ def CMDreproduce(parser, args):
       else:
         env[key] = i['value'].encode('utf-8')
 
+  command = []
   if (properties.get('inputs_ref') or {}).get('isolated'):
     # Create the tree.
     with isolateserver.get_storage(
@@ -1551,14 +1557,35 @@ def CMDreproduce(parser, args):
       if bundle.relative_cwd:
         workdir = os.path.join(workdir, bundle.relative_cwd)
       command.extend(properties.get('extra_args') or [])
-    # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
-    new_command = run_isolated.process_command(
-        command, options.output_dir, None)
-    if not options.output_dir and new_command != command:
-      parser.error('The task has outputs, you must use --output-dir')
-    command = new_command
-  else:
-    command = properties['command']
+
+  if properties.get('command'):
+    command.extend(properties['command'])
+
+  # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
+  new_command = tools.fix_python_path(command)
+  new_command = run_isolated.process_command(
+    new_command, options.output_dir, None)
+  if not options.output_dir and new_command != command:
+    parser.error('The task has outputs, you must use --output-dir')
+  command = new_command
+  file_path.ensure_command_has_abs_path(command, workdir)
+
+  if properties.get('cipd_input'):
+    ci = properties['cipd_input']
+    cp = ci['client_package']
+    client_manager = cipd.get_client(
+        ci['server'], cp['package_name'], cp['version'], cachedir)
+
+    with client_manager as client:
+      by_path = collections.defaultdict(list)
+      for pkg in ci['packages']:
+        path = pkg['path']
+        # cipd deals with 'root' as ''
+        if path == '.':
+          path = ''
+        by_path[path].append((pkg['package_name'], pkg['version']))
+      client.ensure(workdir, by_path, cache_dir=cachedir)
+
   try:
     return subprocess.call(command + extra_args, env=env, cwd=workdir)
   except OSError as e:
