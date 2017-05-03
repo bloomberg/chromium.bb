@@ -1284,8 +1284,7 @@ void InspectorNetworkAgent::getResponseBody(
     return;
   }
 
-  // XHR with ResponseTypeBlob should be returned as blob.
-  if (resource_data->XhrReplayData() && CanGetResponseBodyBlob(request_id)) {
+  if (CanGetResponseBodyBlob(request_id)) {
     GetResponseBodyBlob(request_id, std::move(callback));
     return;
   }
@@ -1321,11 +1320,6 @@ void InspectorNetworkAgent::getResponseBody(
       callback->sendSuccess(content, base64_encoded);
       return;
     }
-  }
-
-  if (CanGetResponseBodyBlob(request_id)) {
-    GetResponseBodyBlob(request_id, std::move(callback));
-    return;
   }
 
   callback->sendFailure(
