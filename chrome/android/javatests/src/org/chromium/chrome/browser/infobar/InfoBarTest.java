@@ -125,6 +125,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         InfoBarUtil.clickPrimaryButton(infoBars.get(0));
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         assertEquals("Wrong infobar count", 0, infoBars.size());
+        assertNotNull(infoBars.get(0).getSnackbarManager());
 
         // A second load should not show the infobar.
         loadUrl(mTestServer.getURL(POPUP_PAGE));
