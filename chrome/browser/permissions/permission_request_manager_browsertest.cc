@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(2, bubble_factory()->total_request_count());
+  EXPECT_EQ(2, bubble_factory()->TotalRequestCount());
 }
 
 // Requests before the load should not be bundled with a request after the load.
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(1, bubble_factory()->total_request_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 }
 
 // Navigating twice to the same URL should be equivalent to refresh. This means
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MAYBE_NavTwice) {
   bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(2, bubble_factory()->show_count());
-  EXPECT_EQ(4, bubble_factory()->total_request_count());
+  EXPECT_EQ(4, bubble_factory()->TotalRequestCount());
 }
 
 // Navigating twice to the same URL with a hash should be navigation within the
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(2, bubble_factory()->total_request_count());
+  EXPECT_EQ(2, bubble_factory()->TotalRequestCount());
 }
 
 // Bubble requests should be shown after in-page navigation.
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, InPageNavigation) {
   bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(1, bubble_factory()->total_request_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 }
 
 // Bubble requests should not be shown when the killswitch is on.
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       web_contents, "requestGeolocation();", &result));
   EXPECT_EQ("denied", result);
   EXPECT_EQ(0, bubble_factory()->show_count());
-  EXPECT_EQ(0, bubble_factory()->total_request_count());
+  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
 
   // Disable the trial.
   variations::testing::ClearAllVariationParams();
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(web_contents, "requestGeolocation();"));
   bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(1, bubble_factory()->total_request_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 }
 
 // Bubble requests should not be shown when the killswitch is on.
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       web_contents, "requestNotification();", &result));
   EXPECT_EQ("denied", result);
   EXPECT_EQ(0, bubble_factory()->show_count());
-  EXPECT_EQ(0, bubble_factory()->total_request_count());
+  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
 
   // Disable the trial.
   variations::testing::ClearAllVariationParams();
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(web_contents, "requestNotification();"));
   bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
-  EXPECT_EQ(1, bubble_factory()->total_request_count());
+  EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 }
 
 // Host wants to run flash.

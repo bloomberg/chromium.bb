@@ -17,7 +17,6 @@ MockPermissionPromptFactory::MockPermissionPromptFactory(
     : can_update_ui_(false),
       show_count_(0),
       requests_count_(0),
-      total_requests_count_(0),
       response_type_(PermissionRequestManager::NONE),
       manager_(manager) {
   manager->view_factory_ =
@@ -48,7 +47,7 @@ void MockPermissionPromptFactory::SetCanUpdateUi(bool can_update_ui) {
 void MockPermissionPromptFactory::ResetCounts() {
   show_count_ = 0;
   requests_count_ = 0;
-  total_requests_count_ = 0;
+  request_types_seen_.clear();
 }
 
 void MockPermissionPromptFactory::DocumentOnLoadCompletedInMainFrame() {
@@ -61,6 +60,15 @@ bool MockPermissionPromptFactory::is_visible() {
       return true;
   }
   return false;
+}
+
+int MockPermissionPromptFactory::TotalRequestCount() {
+  return request_types_seen_.size();
+}
+
+bool MockPermissionPromptFactory::RequestTypeSeen(PermissionRequestType type) {
+  return std::find(request_types_seen_.begin(), request_types_seen_.end(),
+                   type) != request_types_seen_.end();
 }
 
 void MockPermissionPromptFactory::WaitForPermissionBubble() {
