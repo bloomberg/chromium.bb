@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
@@ -14,8 +15,10 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -115,8 +118,18 @@ public class InfoBarContainer extends SwipableOverlayView {
         @Override
         public void onReparentingFinished(Tab tab) {
             setParentView((ViewGroup) tab.getActivity().findViewById(R.id.bottom_container));
+            setSnackbarManagerFromTab(tab);
         }
     };
+
+    private void setSnackbarManagerFromTab(Tab tab) {
+        Activity activity = tab.getActivity();
+        if (activity != null) {
+            mSnackbarManager = ((ChromeActivity) activity).getSnackbarManager();
+        } else {
+            mSnackbarManager = null;
+        }
+    }
 
     /**
      * Adds/removes the {@link InfoBarContainer} when the tab's view is attached/detached. This is
@@ -161,10 +174,14 @@ public class InfoBarContainer extends SwipableOverlayView {
     private final ObserverList<InfoBarContainerObserver> mObservers =
             new ObserverList<InfoBarContainerObserver>();
 
+    /** The snackbar manager instance used by the activity that hosts this infobar. */
+    private SnackbarManager mSnackbarManager;
+
     public InfoBarContainer(Context context, final ViewGroup parentView, Tab tab) {
         super(context, null);
         tab.addObserver(mTabObserver);
         mTabView = tab.getView();
+        setSnackbarManagerFromTab(tab);
 
         // TODO(newt): move this workaround into the infobar views if/when they're scrollable.
         // Workaround for http://crbug.com/407149. See explanation in onMeasure() below.
@@ -190,6 +207,10 @@ public class InfoBarContainer extends SwipableOverlayView {
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
         mNativeInfoBarContainer = nativeInit();
+    }
+
+    public SnackbarManager getSnackbarManager() {
+        return mSnackbarManager;
     }
 
     /**

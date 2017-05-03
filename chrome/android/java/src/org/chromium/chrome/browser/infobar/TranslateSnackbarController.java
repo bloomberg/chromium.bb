@@ -17,8 +17,8 @@ class TranslateSnackbarController implements SnackbarController {
 
     @Override
     public void onAction(Object actionData) {
-        nativeToggleTranslateOption(((Integer) actionData).intValue());
+        nativeToggleTranslateOption(((Long) actionData).longValue());
     }
 
-    private static native void nativeToggleTranslateOption(int type);
+    private native void nativeToggleTranslateOption(long nativeTranslateSnackbar);
 };

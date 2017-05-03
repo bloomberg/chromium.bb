@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 
 /**
  * The base class for all InfoBar classes.
@@ -58,6 +59,10 @@ public abstract class InfoBar implements InfoBarView {
     @CalledByNative
     protected void onNativeDestroyed() {
         mNativeInfoBarPtr = 0;
+    }
+
+    public SnackbarManager getSnackbarManager() {
+        return mContainer != null ? mContainer.getSnackbarManager() : null;
     }
 
     /**
