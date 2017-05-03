@@ -194,9 +194,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().WithShutdownBehavior(
-          base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
+      FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindBlockArc(^{
         SecTrustResultType trustResult = kSecTrustResultInvalid;
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
