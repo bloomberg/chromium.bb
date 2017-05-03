@@ -29,6 +29,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
 #include "ui/aura/mus/focus_synchronizer.h"
@@ -1302,8 +1303,18 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                       window ? window->GetWindow() : nullptr);
   }
 
-  // TODO: use |display_id| to find host and send there.
+  // If the window has already been deleted, use |event| to update event states
+  // kept in aura::Env.
   if (!window || !window->GetWindow()->GetHost()) {
+    EnvInputStateController* env_controller =
+        Env::GetInstance()->env_controller();
+    std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
+    if (mapped_event->IsMouseEvent()) {
+      env_controller->UpdateStateForMouseEvent(nullptr,
+                                               *mapped_event->AsMouseEvent());
+    } else if (mapped_event->IsTouchEvent()) {
+      env_controller->UpdateStateForTouchEvent(*mapped_event->AsTouchEvent());
+    }
     tree_->OnWindowInputEventAck(event_id, ui::mojom::EventResult::UNHANDLED);
     return;
   }
