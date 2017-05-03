@@ -431,11 +431,8 @@ std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   if (one_google_bar_service_) {
     // Allow embedding of the most visited iframe, as well as the account
     // switcher and the notifications dropdown from the One Google Bar.
-    // TODO(treib): Figure out a way to also allow staging instances.
-    return base::StringPrintf(
-        "child-src %s https://accounts.google.com/ https://docs.google.com "
-        "https://notifications.google.com;",
-        chrome::kChromeSearchMostVisitedUrl);
+    return base::StringPrintf("child-src %s https://*.google.com/;",
+                              chrome::kChromeSearchMostVisitedUrl);
   }
   // Allow embedding of the most visited iframe.
   return base::StringPrintf("child-src %s;",
