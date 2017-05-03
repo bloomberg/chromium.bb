@@ -149,6 +149,10 @@ void FetchParameters::SetAllowImagePlaceholder() {
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
       resource_request_.HttpMethod() != "GET" ||
       !resource_request_.HttpHeaderField("range").IsNull()) {
+    // Make sure that the request isn't marked as using Client Lo-Fi, since
+    // without loading an image placeholder, Client Lo-Fi isn't really in use.
+    resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() &
+                                       ~(WebURLRequest::kClientLoFiOn));
     return;
   }
 

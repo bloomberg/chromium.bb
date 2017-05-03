@@ -602,6 +602,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeThemeColor() override;
   void DispatchLoad() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
+  bool ShouldUseClientLoFiForRequest(const blink::WebURLRequest&) override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
@@ -1366,9 +1367,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // The PreviewsState of this RenderFrame that indicates which Previews can
   // be used. The PreviewsState is a bitmask of potentially several Previews
   // optimizations.
+  // TODO(sclittle): Consider moving this into Blink to be owned and managed by
+  // LocalFrame or another class around there.
   PreviewsState previews_state_;
 
   // Effective connection type when the document of this frame was fetched.
+  // TODO(sclittle): Consider moving this into Blink to be owned and managed by
+  // LocalFrame or another class around there.
   blink::WebEffectiveConnectionType effective_connection_type_;
 
   // Whether or not this RenderFrame is currently pasting.

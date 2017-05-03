@@ -967,6 +967,15 @@ WebEffectiveConnectionType LocalFrameClientImpl::GetEffectiveConnectionType() {
   return WebEffectiveConnectionType::kTypeUnknown;
 }
 
+bool LocalFrameClientImpl::ShouldUseClientLoFiForRequest(
+    const ResourceRequest& request) {
+  if (web_frame_->Client()) {
+    return web_frame_->Client()->ShouldUseClientLoFiForRequest(
+        WrappedResourceRequest(request));
+  }
+  return false;
+}
+
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {
   return WebLocalFrameImpl::FromFrame(web_frame_->GetFrame()->LocalFrameRoot())
       ->DevToolsAgentImpl();

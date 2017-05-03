@@ -55,6 +55,7 @@ class Element;
 template <typename Strategy>
 class EphemeralRangeTemplate;
 class EventHandler;
+class FetchParameters;
 class FloatSize;
 class FrameConsole;
 class FrameSelection;
@@ -227,6 +228,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   PluginData* GetPluginData() const;
 
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
+
+  // Convenience function to allow loading image placeholders for the request if
+  // either the flag in Settings() for using image placeholders is set, or if
+  // the embedder decides that Client Lo-Fi should be used for this request.
+  void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
   using FrameInitCallback = void (*)(LocalFrame*);
   // Allows for the registration of a callback that is invoked whenever a new

@@ -25,12 +25,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebString;
+using blink::WebURLRequest;
 
 namespace {
 const int32_t kSubframeRouteId = 20;
@@ -426,4 +428,122 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
 }
 #endif
 
-}  // namespace
+TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
+  const struct {
+    PreviewsState frame_previews_state;
+    WebURLRequest::PreviewsState initial_request_previews_state;
+    WebURLRequest::PreviewsState expected_final_request_previews_state;
+  } tests[] = {
+      // With no previews enabled for the frame, no previews should be
+      // activated.
+      {PREVIEWS_UNSPECIFIED, WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kPreviewsOff},
+
+      // If the request already has a previews state set, then it shouldn't be
+      // overridden.
+      {SERVER_LOFI_ON, WebURLRequest::kPreviewsNoTransform,
+       WebURLRequest::kPreviewsNoTransform},
+      {SERVER_LOFI_ON, WebURLRequest::kPreviewsOff,
+       WebURLRequest::kPreviewsOff},
+
+      // Server Lo-Fi and Server Lite Pages should be enabled for the request
+      // when they're enabled for the frame.
+      {SERVER_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kServerLoFiOn},
+      {SERVER_LITE_PAGE_ON, WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kServerLitePageOn},
+      {SERVER_LITE_PAGE_ON | SERVER_LOFI_ON,
+       WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kServerLitePageOn | WebURLRequest::kServerLoFiOn},
+
+      // The CLIENT_LOFI_ON frame flag should be ignored at this point in the
+      // request.
+      {CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kPreviewsOff},
+      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
+       WebURLRequest::kServerLoFiOn},
+
+      // A request that's using Client Lo-Fi should continue using Client Lo-Fi.
+      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
+       WebURLRequest::kClientLoFiOn},
+      {CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
+       WebURLRequest::kClientLoFiOn},
+      {SERVER_LITE_PAGE_ON, WebURLRequest::kClientLoFiOn,
+       WebURLRequest::kClientLoFiOn},
+  };
+
+  for (const auto& test : tests) {
+    SetPreviewsState(frame(), test.frame_previews_state);
+
+    WebURLRequest request;
+    request.SetURL(GURL("http://example.com"));
+    request.SetPreviewsState(test.initial_request_previews_state);
+
+    frame()->WillSendRequest(request);
+
+    EXPECT_EQ(test.expected_final_request_previews_state,
+              request.GetPreviewsState())
+        << (&test - tests);
+  }
+}
+
+TEST_F(RenderFrameImplTest, ShouldUseClientLoFiForRequest) {
+  const struct {
+    PreviewsState frame_previews_state;
+    bool is_https;
+    WebURLRequest::PreviewsState initial_request_previews_state;
+    bool expected_should_use_client_lo_fi_for_request;
+  } tests[] = {
+      // With no previews enabled for the frame, no previews should be
+      // activated.
+      {PREVIEWS_UNSPECIFIED, false, WebURLRequest::kPreviewsUnspecified, false},
+
+      // If the request already has a previews state set, then Client Lo-Fi
+      // should only be used if the request already has that bit set.
+      {CLIENT_LOFI_ON, false, WebURLRequest::kServerLoFiOn, false},
+      {PREVIEWS_UNSPECIFIED, false, WebURLRequest::kClientLoFiOn, true},
+      {CLIENT_LOFI_ON, false, WebURLRequest::kClientLoFiOn, true},
+
+      // If Client Lo-Fi isn't enabled for the frame, then it shouldn't be used
+      // for any requests.
+      {SERVER_LOFI_ON, true, WebURLRequest::kPreviewsUnspecified, false},
+
+      // SERVER_LITE_PAGE_ON, PREVIEWS_NO_TRANSFORM, and PREVIEWS_OFF should
+      // take precedence over Client Lo-Fi.
+      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, false,
+       WebURLRequest::kPreviewsUnspecified, false},
+      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, true,
+       WebURLRequest::kPreviewsUnspecified, false},
+      {CLIENT_LOFI_ON | PREVIEWS_NO_TRANSFORM, false,
+       WebURLRequest::kPreviewsUnspecified, false},
+      {CLIENT_LOFI_ON | PREVIEWS_OFF, false,
+       WebURLRequest::kPreviewsUnspecified, false},
+
+      // If both Server Lo-Fi and Client Lo-Fi are enabled for the frame, then
+      // only https:// requests should use Client Lo-Fi.
+      {CLIENT_LOFI_ON | SERVER_LOFI_ON, false,
+       WebURLRequest::kPreviewsUnspecified, false},
+      {CLIENT_LOFI_ON | SERVER_LOFI_ON, true,
+       WebURLRequest::kPreviewsUnspecified, true},
+
+      // Otherwise, if Client Lo-Fi is enabled on its own, then requests should
+      // use Client Lo-Fi.
+      {CLIENT_LOFI_ON, false, WebURLRequest::kPreviewsUnspecified, true},
+      {CLIENT_LOFI_ON, true, WebURLRequest::kPreviewsUnspecified, true},
+  };
+
+  for (const auto& test : tests) {
+    SetPreviewsState(frame(), test.frame_previews_state);
+
+    WebURLRequest request;
+    request.SetURL(
+        GURL(test.is_https ? "https://example.com" : "http://example.com"));
+    request.SetPreviewsState(test.initial_request_previews_state);
+
+    EXPECT_EQ(test.expected_should_use_client_lo_fi_for_request,
+              frame()->ShouldUseClientLoFiForRequest(request))
+        << (&test - tests);
+  }
+}
+
+}  // namespace content
