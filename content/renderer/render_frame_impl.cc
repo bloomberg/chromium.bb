@@ -3362,6 +3362,12 @@ void RenderFrameImpl::SetHasReceivedUserGesture() {
   Send(new FrameHostMsg_SetHasReceivedUserGesture(routing_id_));
 }
 
+void RenderFrameImpl::SetDevToolsFrameId(
+    const blink::WebString& devtools_frame_id) {
+  Send(new FrameHostMsg_SetDevToolsFrameId(routing_id_,
+                                           devtools_frame_id.Utf8()));
+}
+
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(

@@ -100,6 +100,14 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
     return window_tree_host_.get();
   }
 
+  // Returns the devtools frame id corresponding to the |frame_tree_node_id|, if
+  // any.  Note this relies on an IPC sent from blink during navigation.
+  std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
+      int process_id,
+      int frame_tree_node_id) const;
+
+  int GetMainFrameRenderProcessId() const;
+
  private:
   // Takes ownership of |web_contents|.
   HeadlessWebContentsImpl(content::WebContents* web_contents,
@@ -121,6 +129,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::unique_ptr<HeadlessTabSocketImpl> headless_tab_socket_;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
+  // TODO(alexclarke): With OOPIF there may be more than one renderer, we need
+  // to fix this. See crbug.com/715924
   content::RenderProcessHost* render_process_host_;  // Not owned.
 
   using ObserverMap =

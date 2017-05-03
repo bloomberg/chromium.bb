@@ -323,6 +323,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void SetHasReceivedUserGesture(bool received_previously) {}
 
+  virtual void SetDevToolsFrameId(const String& devtools_frame_id) {}
+
   virtual void AbortClientNavigation() {}
 
   virtual TextCheckerClient& GetTextCheckerClient() const = 0;
