@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/search_answer_web_contents_delegate.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -20,15 +22,61 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
+
+namespace {
+
+enum class SearchAnswerRequestResult {
+  REQUEST_RESULT_ANOTHER_REQUEST_STARTED = 0,
+  REQUEST_RESULT_REQUEST_FAILED = 1,
+  REQUEST_RESULT_NO_ANSWER = 2,
+  REQUEST_RESULT_RECEIVED_ANSWER = 3,
+  REQUEST_RESULT_MAX = 4
+};
+
+void RecordRequestResult(SearchAnswerRequestResult request_result) {
+  UMA_HISTOGRAM_ENUMERATION("SearchAnswer.RequestResult", request_result,
+                            SearchAnswerRequestResult::REQUEST_RESULT_MAX);
+}
+
+class SearchAnswerWebView : public views::WebView {
+ public:
+  SearchAnswerWebView(content::BrowserContext* browser_context)
+      : WebView(browser_context) {}
+
+  // views::WebView overrides:
+  void VisibilityChanged(View* starting_from, bool is_visible) override {
+    WebView::VisibilityChanged(starting_from, is_visible);
+
+    if (GetWidget()->IsVisible() && IsDrawn()) {
+      if (shown_time_.is_null())
+        shown_time_ = base::TimeTicks::Now();
+    } else {
+      if (!shown_time_.is_null()) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("SearchAnswer.AnswerVisibleTime",
+                                   base::TimeTicks::Now() - shown_time_);
+        shown_time_ = base::TimeTicks();
+      }
+    }
+  }
+
+ private:
+  // Time when the answer became visible to the user.
+  base::TimeTicks shown_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
+};
+
+}  // namespace
 
 SearchAnswerWebContentsDelegate::SearchAnswerWebContentsDelegate(
     Profile* profile,
     app_list::AppListModel* model)
     : profile_(profile),
       model_(model),
-      web_view_(base::MakeUnique<views::WebView>(profile)),
+      web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
       web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,
@@ -65,6 +113,7 @@ void SearchAnswerWebContentsDelegate::Update() {
   received_answer_ = false;
   model_->SetSearchAnswerAvailable(false);
   current_request_url_ = GURL();
+  server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
   if (model_->search_box()->is_voice_query()) {
     // No need to send a server request and show a card because launcher
@@ -93,6 +142,7 @@ void SearchAnswerWebContentsDelegate::Update() {
   load_params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
   load_params.should_clear_history_list = true;
   web_contents_->GetController().LoadURLWithParams(load_params);
+  server_request_start_time_ = base::TimeTicks::Now();
 
   // We are going to call WebContents::GetPreferredSize().
   web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
@@ -102,6 +152,10 @@ void SearchAnswerWebContentsDelegate::UpdatePreferredSize(
     content::WebContents* web_contents,
     const gfx::Size& pref_size) {
   web_view_->SetPreferredSize(pref_size);
+  if (!answer_loaded_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("SearchAnswer.ResizeAfterLoadTime",
+                        base::TimeTicks::Now() - answer_loaded_time_);
+  }
 }
 
 content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
@@ -127,6 +181,8 @@ content::WebContents* SearchAnswerWebContentsDelegate::OpenURLFromTab(
 
   chrome::Navigate(&new_tab_params);
 
+  base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
+
   return new_tab_params.target_contents;
 }
 
@@ -138,11 +194,16 @@ bool SearchAnswerWebContentsDelegate::HandleContextMenu(
 
 void SearchAnswerWebContentsDelegate::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->GetURL() != current_request_url_)
+  if (navigation_handle->GetURL() != current_request_url_) {
+    RecordRequestResult(
+        SearchAnswerRequestResult::REQUEST_RESULT_ANOTHER_REQUEST_STARTED);
     return;
+  }
 
   if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
       !navigation_handle->IsInMainFrame()) {
+    RecordRequestResult(
+        SearchAnswerRequestResult::REQUEST_RESULT_REQUEST_FAILED);
     return;
   }
 
@@ -150,10 +211,15 @@ void SearchAnswerWebContentsDelegate::DidFinishNavigation(
       navigation_handle->GetResponseHeaders();
   if (!headers || headers->response_code() != net::HTTP_OK ||
       !headers->HasHeaderValue("has_answer", "true")) {
+    RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
     return;
   }
 
   received_answer_ = true;
+  UMA_HISTOGRAM_TIMES("SearchAnswer.NavigationTime",
+                      base::TimeTicks::Now() - server_request_start_time_);
+  RecordRequestResult(
+      SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER);
 }
 
 void SearchAnswerWebContentsDelegate::DidStopLoading() {
@@ -161,6 +227,15 @@ void SearchAnswerWebContentsDelegate::DidStopLoading() {
     return;
 
   model_->SetSearchAnswerAvailable(true);
+  answer_loaded_time_ = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("SearchAnswer.LoadingTime",
+                      answer_loaded_time_ - server_request_start_time_);
+  base::RecordAction(base::UserMetricsAction("SearchAnswer_StoppedLoading"));
+}
+
+void SearchAnswerWebContentsDelegate::DidGetUserInteraction(
+    const blink::WebInputEvent::Type type) {
+  base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
 }
 
 void SearchAnswerWebContentsDelegate::OnSearchEngineIsGoogleChanged(

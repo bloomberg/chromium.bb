@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/app_list/app_list_model_observer.h"
@@ -59,6 +60,7 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
   // AppListModelObserver overrides:
   void OnSearchEngineIsGoogleChanged(bool is_google) override;
@@ -85,6 +87,12 @@ class SearchAnswerWebContentsDelegate : public content::WebContentsDelegate,
 
   // URL of the current answer server request.
   GURL current_request_url_;
+
+  // Time when the current server request started.
+  base::TimeTicks server_request_start_time_;
+
+  // Time when the current server response loaded.
+  base::TimeTicks answer_loaded_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebContentsDelegate);
 };
