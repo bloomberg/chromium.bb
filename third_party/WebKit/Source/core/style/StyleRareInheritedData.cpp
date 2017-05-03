@@ -197,9 +197,9 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          visited_link_caret_color_ == o.visited_link_caret_color_ &&
          tap_highlight_color == o.tap_highlight_color &&
          ShadowDataEquivalent(o) && highlight == o.highlight &&
-         DataEquivalent(cursor_data.Get(), o.cursor_data.Get()) &&
-         indent == o.indent && effective_zoom_ == o.effective_zoom_ &&
-         widows == o.widows && orphans == o.orphans &&
+         DataEquivalent(cursor_data, o.cursor_data) && indent == o.indent &&
+         effective_zoom_ == o.effective_zoom_ && widows == o.widows &&
+         orphans == o.orphans &&
          text_stroke_color_is_current_color_ ==
              o.text_stroke_color_is_current_color_ &&
          text_fill_color_is_current_color_ ==
@@ -246,7 +246,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          text_underline_position_ == o.text_underline_position_ &&
          text_decoration_skip_ == o.text_decoration_skip_ &&
          ruby_position_ == o.ruby_position_ &&
-         DataEquivalent(list_style_image.Get(), o.list_style_image.Get()) &&
+         DataEquivalent(list_style_image, o.list_style_image) &&
          DataEquivalent(applied_text_decorations, o.applied_text_decorations) &&
          DataEquivalent(variables, o.variables) &&
          text_size_adjust_ == o.text_size_adjust_;
@@ -254,7 +254,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
 
 bool StyleRareInheritedData::ShadowDataEquivalent(
     const StyleRareInheritedData& o) const {
-  return DataEquivalent(text_shadow.Get(), o.text_shadow.Get());
+  return DataEquivalent(text_shadow, o.text_shadow);
 }
 
 bool StyleRareInheritedData::QuotesDataEquivalent(
