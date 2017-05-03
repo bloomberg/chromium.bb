@@ -224,6 +224,27 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
         assertEquals(null, destinationStore_.selectedDestination);
       });
     }
+
+    test('CloudKioskPrinter', function() {
+      var printerId = 'cloud-printer-id';
+
+      // Create cloud destination.
+      var cloudDest = new print_preview.Destination(printerId,
+          print_preview.Destination.Type.GOOGLE,
+          print_preview.Destination.Origin.DEVICE,
+          "displayName",
+          print_preview.Destination.ConnectionStatus.ONLINE);
+      cloudDest.capabilities = getCaps();
+
+      // Place destination in the local list as happens for Kiosk printers.
+      destinationSearch_.localList_.updateDestinations([cloudDest]);
+      var dest = destinationSearch_.localList_.getDestinationItem(printerId);
+      // Simulate a click.
+      dest.onActivate_();
+
+      // Verify that the destination has been selected.
+      assertEquals(printerId, destinationStore_.selectedDestination.id);
+    });
   });
 
   mocha.run();
