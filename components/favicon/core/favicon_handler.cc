@@ -516,10 +516,8 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
       // 2. If the favicon exists in the database, this updates the database to
       //    include the mapping between the page url and the favicon url.
       // This is asynchronous. The history service will call back when done.
-      // TODO(pkotwicz): pass in all of |image_urls_| to
-      // UpdateFaviconMappingsAndFetch().
       service_->UpdateFaviconMappingsAndFetch(
-          url_, {icon_url}, icon_type, preferred_icon_size(),
+          url_, icon_url, icon_type, preferred_icon_size(),
           base::Bind(&FaviconHandler::OnFaviconData, base::Unretained(this)),
           &cancelable_task_tracker_);
     }

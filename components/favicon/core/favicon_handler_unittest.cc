@@ -264,13 +264,12 @@ class FakeFaviconService {
 
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
       const GURL& page_url,
-      const std::vector<GURL>& icon_urls,
-      int icon_types,
+      const GURL& icon_url,
+      favicon_base::IconType icon_type,
       int desired_size_in_dip,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) {
-    CHECK_EQ(1U, icon_urls.size()) << "Multi-icon lookup not implemented";
-    return GetFaviconForPageOrIconURL(icon_urls.front(), callback, tracker);
+    return GetFaviconForPageOrIconURL(icon_url, callback, tracker);
   }
 
  private:
@@ -410,9 +409,9 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
 // Test that UpdateFaviconsAndFetch() is called with the appropriate parameters
 // when there is data in the database for neither the page URL nor the icon URL.
 TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
-  EXPECT_CALL(favicon_service_, UpdateFaviconMappingsAndFetch(
-                                    kPageURL, URLVector{kIconURL16x16}, FAVICON,
-                                    /*desired_size_in_dip=*/16, _, _));
+  EXPECT_CALL(favicon_service_,
+              UpdateFaviconMappingsAndFetch(kPageURL, kIconURL16x16, FAVICON,
+                                            /*desired_size_in_dip=*/16, _, _));
 
   RunHandlerWithSimpleFaviconCandidates({kIconURL16x16});
 }
