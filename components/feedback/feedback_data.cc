@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "components/feedback/feedback_util.h"
 #include "components/feedback/tracing_manager.h"
@@ -63,8 +64,11 @@ void FeedbackData::SetAndCompressSystemInfo(
   if (sys_info) {
     ++pending_op_count_;
     AddLogs(std::move(sys_info));
-    BrowserThread::PostBlockingPoolTaskAndReply(
-        FROM_HERE, base::Bind(&FeedbackData::CompressLogs, this),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE,
+        base::TaskTraits().MayBlock().WithPriority(
+            base::TaskPriority::BACKGROUND),
+        base::Bind(&FeedbackData::CompressLogs, this),
         base::Bind(&FeedbackData::OnCompressComplete, this));
   }
 }
@@ -76,8 +80,10 @@ void FeedbackData::SetAndCompressHistograms(
   if (!histograms)
     return;
   ++pending_op_count_;
-  BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
       base::Bind(&FeedbackData::CompressFile, this,
                  base::FilePath(kHistogramsFilename), kHistogramsAttachmentName,
                  base::Passed(&histograms)),
@@ -93,9 +99,12 @@ void FeedbackData::AttachAndCompressFileData(
   ++pending_op_count_;
   base::FilePath attached_file =
                   base::FilePath::FromUTF8Unsafe(attached_filename_);
-  BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&FeedbackData::CompressFile, this, attached_file,
-                            std::string(), base::Passed(&attached_filedata)),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
+      base::Bind(&FeedbackData::CompressFile, this, attached_file,
+                 std::string(), base::Passed(&attached_filedata)),
       base::Bind(&FeedbackData::OnCompressComplete, this));
 }
 
