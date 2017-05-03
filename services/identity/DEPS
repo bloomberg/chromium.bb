@@ -1,6 +1,10 @@
 include_rules = [
   "+components/signin/core/account_id",
   "+components/signin/core/browser/account_info.h",
+  "+components/signin/core/browser/account_tracker_service.h",
   "+components/signin/core/browser/signin_manager_base.h",
+  "+components/signin/core/browser/fake_signin_manager.h",
+  "+components/signin/core/browser/test_signin_client.h",
   "+components/signin/public",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
 ]
