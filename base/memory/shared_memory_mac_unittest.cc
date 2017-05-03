@@ -247,8 +247,7 @@ MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryClient) {
   // The next mach port should be for a memory object.
   mach_port_t memory_object = ReceiveMachPort(client_port.get());
   SharedMemoryHandle shm(memory_object,
-                         SharedMemoryMacMultiProcessTest::s_memory_size,
-                         GetCurrentProcId());
+                         SharedMemoryMacMultiProcessTest::s_memory_size);
   SharedMemory shared_memory(shm, false);
   shared_memory.Map(SharedMemoryMacMultiProcessTest::s_memory_size);
   const char* start = static_cast<const char*>(shared_memory.memory());
@@ -287,8 +286,7 @@ MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryWithOffsetClient) {
   // The next mach port should be for a memory object.
   mach_port_t memory_object = ReceiveMachPort(client_port.get());
   SharedMemoryHandle shm(memory_object,
-                         SharedMemoryMacMultiProcessTest::s_memory_size,
-                         GetCurrentProcId());
+                         SharedMemoryMacMultiProcessTest::s_memory_size);
   SharedMemory shared_memory(shm, false);
   size_t page_size = SysInfo::VMAllocationGranularity();
   shared_memory.MapAt(page_size, 2 * page_size);

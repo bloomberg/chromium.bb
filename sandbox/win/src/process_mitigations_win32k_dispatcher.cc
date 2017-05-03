@@ -28,7 +28,7 @@ base::SharedMemoryHandle GetSharedMemoryHandle(const ClientInfo& client_info,
                          &result_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
     result_handle = nullptr;
   }
-  return base::SharedMemoryHandle(result_handle, ::GetCurrentProcessId());
+  return base::SharedMemoryHandle(result_handle);
 }
 
 }  // namespace

@@ -709,8 +709,7 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
     return false;
 
   *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
-                                static_cast<size_t>(size),
-                                base::GetCurrentProcId());
+                                static_cast<size_t>(size));
   return true;
 }
 
@@ -723,60 +722,49 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
 #elif defined(OS_WIN)
 void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* s,
                                                     const param_type& p) {
-  GetParamSize(s, p.NeedsBrokering());
-  if (p.NeedsBrokering()) {
+  GetParamSize(s, p.IsValid());
+  if (p.IsValid())
     GetParamSize(s, p.GetHandle());
-  } else {
-    GetParamSize(s, HandleToLong(p.GetHandle()));
-  }
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
-  m->WriteBool(p.NeedsBrokering());
+  const bool valid = p.IsValid();
+  WriteParam(m, valid);
 
-  if (p.NeedsBrokering()) {
-    HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
-    ParamTraits<HandleWin>::Write(m, handle_win);
+  if (!valid)
+    return;
 
-    // If the caller intended to pass ownership to the IPC stack, release a
-    // reference.
-    if (p.OwnershipPassesToIPC() && p.BelongsToCurrentProcess())
-      p.Close();
-  } else {
-    m->WriteInt(HandleToLong(p.GetHandle()));
-  }
+  HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
+  ParamTraits<HandleWin>::Write(m, handle_win);
+
+  // If the caller intended to pass ownership to the IPC stack, release a
+  // reference.
+  if (p.OwnershipPassesToIPC())
+    p.Close();
 }
 
 bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
                                                  base::PickleIterator* iter,
                                                  param_type* r) {
-  bool needs_brokering;
-  if (!iter->ReadBool(&needs_brokering))
-    return false;
+  *r = base::SharedMemoryHandle();
 
-  if (needs_brokering) {
-    HandleWin handle_win;
-    if (!ParamTraits<HandleWin>::Read(m, iter, &handle_win))
-      return false;
-    *r = base::SharedMemoryHandle(handle_win.get_handle(),
-                                  base::GetCurrentProcId());
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+  if (!valid)
     return true;
-  }
 
-  int handle_int;
-  if (!iter->ReadInt(&handle_int))
+  HandleWin handle_win;
+  if (!ParamTraits<HandleWin>::Read(m, iter, &handle_win))
     return false;
-  HANDLE handle = LongToHandle(handle_int);
-  *r = base::SharedMemoryHandle(handle, base::GetCurrentProcId());
+  *r = base::SharedMemoryHandle(handle_win.get_handle());
   return true;
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
                                                 std::string* l) {
   LogParam(p.GetHandle(), l);
-  l->append(" needs brokering: ");
-  LogParam(p.NeedsBrokering(), l);
 }
 #elif defined(OS_POSIX)
 void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* sizer,

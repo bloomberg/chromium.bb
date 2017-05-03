@@ -156,7 +156,6 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
       memory_(NULL),
       read_only_(read_only),
       requested_size_(0) {
-  DCHECK(!handle.IsValid() || handle.BelongsToCurrentProcess());
   mapped_file_.Set(handle.GetHandle());
 }
 
@@ -334,8 +333,7 @@ SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
                          FILE_MAP_READ | SECTION_QUERY, FALSE, 0)) {
     return SharedMemoryHandle();
   }
-  SharedMemoryHandle handle =
-      SharedMemoryHandle(result, base::GetProcId(process));
+  SharedMemoryHandle handle = SharedMemoryHandle(result);
   handle.SetOwnershipPassesToIPC(true);
   return handle;
 }
@@ -345,11 +343,11 @@ void SharedMemory::Close() {
 }
 
 SharedMemoryHandle SharedMemory::handle() const {
-  return SharedMemoryHandle(mapped_file_.Get(), base::GetCurrentProcId());
+  return SharedMemoryHandle(mapped_file_.Get());
 }
 
 SharedMemoryHandle SharedMemory::TakeHandle() {
-  SharedMemoryHandle handle(mapped_file_.Take(), base::GetCurrentProcId());
+  SharedMemoryHandle handle(mapped_file_.Take());
   handle.SetOwnershipPassesToIPC(true);
   memory_ = nullptr;
   mapped_size_ = 0;

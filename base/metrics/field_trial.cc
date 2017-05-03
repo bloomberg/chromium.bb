@@ -1137,7 +1137,7 @@ bool FieldTrialList::CreateTrialsFromHandleSwitch(
     const std::string& handle_switch) {
   int field_trial_handle = std::stoi(handle_switch);
   HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
-  SharedMemoryHandle shm_handle(handle, GetCurrentProcId());
+  SharedMemoryHandle shm_handle(handle);
   return FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
 }
 #endif

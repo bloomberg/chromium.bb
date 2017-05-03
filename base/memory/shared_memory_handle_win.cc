@@ -9,14 +9,13 @@
 namespace base {
 
 SharedMemoryHandle::SharedMemoryHandle()
-    : handle_(nullptr), pid_(kNullProcessId), ownership_passes_to_ipc_(false) {}
+    : handle_(nullptr), ownership_passes_to_ipc_(false) {}
 
-SharedMemoryHandle::SharedMemoryHandle(HANDLE h, base::ProcessId pid)
-    : handle_(h), pid_(pid), ownership_passes_to_ipc_(false) {}
+SharedMemoryHandle::SharedMemoryHandle(HANDLE h)
+    : handle_(h), ownership_passes_to_ipc_(false) {}
 
 SharedMemoryHandle::SharedMemoryHandle(const SharedMemoryHandle& handle)
     : handle_(handle.handle_),
-      pid_(handle.pid_),
       ownership_passes_to_ipc_(handle.ownership_passes_to_ipc_) {}
 
 SharedMemoryHandle& SharedMemoryHandle::operator=(
@@ -25,14 +24,12 @@ SharedMemoryHandle& SharedMemoryHandle::operator=(
     return *this;
 
   handle_ = handle.handle_;
-  pid_ = handle.pid_;
   ownership_passes_to_ipc_ = handle.ownership_passes_to_ipc_;
   return *this;
 }
 
 void SharedMemoryHandle::Close() const {
   DCHECK(handle_ != nullptr);
-  DCHECK(BelongsToCurrentProcess());
   ::CloseHandle(handle_);
 }
 
@@ -41,7 +38,6 @@ bool SharedMemoryHandle::IsValid() const {
 }
 
 SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
-  DCHECK(BelongsToCurrentProcess());
   HANDLE duped_handle;
   ProcessHandle process = GetCurrentProcess();
   BOOL success = ::DuplicateHandle(process, handle_, process, &duped_handle, 0,
@@ -49,25 +45,13 @@ SharedMemoryHandle SharedMemoryHandle::Duplicate() const {
   if (!success)
     return SharedMemoryHandle();
 
-  base::SharedMemoryHandle handle(duped_handle, GetCurrentProcId());
+  base::SharedMemoryHandle handle(duped_handle);
   handle.SetOwnershipPassesToIPC(true);
   return handle;
 }
 
-bool SharedMemoryHandle::BelongsToCurrentProcess() const {
-  return pid_ == base::GetCurrentProcId();
-}
-
-bool SharedMemoryHandle::NeedsBrokering() const {
-  return BelongsToCurrentProcess();
-}
-
 HANDLE SharedMemoryHandle::GetHandle() const {
   return handle_;
-}
-
-base::ProcessId SharedMemoryHandle::GetPID() const {
-  return pid_;
 }
 
 void SharedMemoryHandle::SetOwnershipPassesToIPC(bool ownership_passes) {

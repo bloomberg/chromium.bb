@@ -129,8 +129,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       if (unwrap_result != MOJO_RESULT_OK)
         return false;
 #if defined(OS_WIN)
-      out->handle =
-          base::SharedMemoryHandle(platform_file, base::GetCurrentProcId());
+      out->handle = base::SharedMemoryHandle(platform_file);
 #else
       out->handle =
           base::SharedMemoryHandle(base::FileDescriptor(platform_file, true));
