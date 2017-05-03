@@ -475,6 +475,9 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
        ++current_index) {
     cached_item = &current_paint_artifact_.GetDisplayItemList()[current_index];
     DCHECK(cached_item->HasValidClient());
+    // TODO(chrishtr); remove this hack once crbug.com/712660 is resolved.
+    if (!cached_item->HasValidClient())
+      continue;
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     CHECK(cached_item->Client().IsAlive());
 #endif
