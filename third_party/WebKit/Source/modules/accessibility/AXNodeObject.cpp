@@ -1862,7 +1862,10 @@ String AXNodeObject::TextAlternative(bool recursive,
   text_alternative =
       NativeTextAlternative(visited, name_from, related_objects, name_sources,
                             &found_text_alternative);
-  if (!text_alternative.IsEmpty() && !name_sources)
+  const bool has_text_alternative =
+      !text_alternative.IsEmpty() ||
+      name_from == kAXNameFromAttributeExplicitlyEmpty;
+  if (has_text_alternative && !name_sources)
     return text_alternative;
 
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
@@ -2631,12 +2634,14 @@ String AXNodeObject::NativeTextAlternative(
   if (input_element &&
       input_element->getAttribute(typeAttr) == InputTypeNames::image) {
     // alt attr
-    name_from = kAXNameFromAttribute;
+    const AtomicString& alt = input_element->getAttribute(altAttr);
+    const bool is_empty = alt.IsEmpty() && !alt.IsNull();
+    name_from =
+        is_empty ? kAXNameFromAttributeExplicitlyEmpty : kAXNameFromAttribute;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, altAttr));
       name_sources->back().type = name_from;
     }
-    const AtomicString& alt = input_element->getAttribute(altAttr);
     if (!alt.IsNull()) {
       text_alternative = alt;
       if (name_sources) {
@@ -2778,12 +2783,14 @@ String AXNodeObject::NativeTextAlternative(
   if (isHTMLImageElement(GetNode()) || isHTMLAreaElement(GetNode()) ||
       (GetLayoutObject() && GetLayoutObject()->IsSVGImage())) {
     // alt
-    name_from = kAXNameFromAttribute;
+    const AtomicString& alt = GetAttribute(altAttr);
+    const bool is_empty = alt.IsEmpty() && !alt.IsNull();
+    name_from =
+        is_empty ? kAXNameFromAttributeExplicitlyEmpty : kAXNameFromAttribute;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, altAttr));
       name_sources->back().type = name_from;
     }
-    const AtomicString& alt = GetAttribute(altAttr);
     if (!alt.IsNull()) {
       text_alternative = alt;
       if (name_sources) {

@@ -607,6 +607,7 @@
   enum AXNameFrom {
     uninitialized,
     attribute,
+    attribute_explicitly_empty,
     contents,
     placeholder,
     related_element,

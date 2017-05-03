@@ -51,9 +51,14 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   AtkObject* atk_object = acc_obj->GetAtkObject();
   AtkRole role = acc_obj->atk_role();
   if (role != ATK_ROLE_UNKNOWN)
-    dict->SetString("role", atk_role_get_name(role));
-  dict->SetString("name", atk_object_get_name(atk_object));
-  dict->SetString("description", atk_object_get_description(atk_object));
+    dict->SetString("role", std::string(atk_role_get_name(role)));
+  const gchar* name = atk_object_get_name(atk_object);
+  if (name)
+    dict->SetString("name", std::string(name));
+  const gchar* description = atk_object_get_description(atk_object);
+  if (description)
+    dict->SetString("description", std::string(description));
+
   AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
   base::ListValue* states = new base::ListValue;
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
@@ -74,9 +79,9 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ToString(
   }
 
   std::string name_value;
-  node.GetString("name", &name_value);
-  WriteAttribute(true, base::StringPrintf("name='%s'", name_value.c_str()),
-                 &line);
+  if (node.GetString("name", &name_value))
+    WriteAttribute(true, base::StringPrintf("name='%s'", name_value.c_str()),
+                   &line);
 
   std::string description_value;
   node.GetString("description", &description_value);

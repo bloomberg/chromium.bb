@@ -1,9 +1,6 @@
 rootWebArea
 ++group
-++++link name='unread '
-++++++staticText name='unread '
-++++++++inlineTextBox name='unread '
-++++link name='read'
-++++++image
-++++++staticText name='read'
-++++++++inlineTextBox name='read'
+++++image name=''
+++++image name=''
+++++image
+++++image name='full'

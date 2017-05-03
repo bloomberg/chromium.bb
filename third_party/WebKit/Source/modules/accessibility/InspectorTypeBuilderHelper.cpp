@@ -170,6 +170,7 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
 String ValueSourceType(AXNameFrom name_from) {
   switch (name_from) {
     case kAXNameFromAttribute:
+    case kAXNameFromAttributeExplicitlyEmpty:
     case kAXNameFromTitle:
     case kAXNameFromValue:
       return AXValueSourceTypeEnum::Attribute;

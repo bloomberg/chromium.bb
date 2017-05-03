@@ -484,6 +484,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accName(
     *name = SysAllocString(str.c_str());
     DCHECK(*name);
   }
+
   return result;
 }
 
@@ -1205,9 +1206,6 @@ HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
   base::string16 str;
 
   if (!GetString16Attribute(attribute, &str))
-    return S_FALSE;
-
-  if (str.empty())
     return S_FALSE;
 
   *value_bstr = SysAllocString(str.c_str());

@@ -171,7 +171,8 @@ void AccessibilityTreeFormatterWin::AddProperties(
   dict->SetString("role", IAccessible2RoleToString(ax_object->ia2_role()));
 
   base::win::ScopedBstr temp_bstr;
-  if (SUCCEEDED(ax_object->get_accName(variant_self, temp_bstr.Receive()))) {
+  // If S_FALSE it means there is no name
+  if (S_OK == ax_object->get_accName(variant_self, temp_bstr.Receive())) {
     base::string16 name = base::string16(temp_bstr, temp_bstr.Length());
 
     // Ignore a JAWS workaround where the name of a document is " ".

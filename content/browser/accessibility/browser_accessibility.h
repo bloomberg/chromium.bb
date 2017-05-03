@@ -378,6 +378,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Indicates if this object is at the root of a rich edit text control.
   bool IsRichTextControl() const;
 
+  // Return true if the accessible name was explicitly set to "" by the author
+  bool HasExplicitlyEmptyName() const;
+
   // If an object is focusable but has no accessible name, use this
   // to compute a name from its descendants.
   std::string ComputeAccessibleNameFromDescendants();

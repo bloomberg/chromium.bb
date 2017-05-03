@@ -408,7 +408,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     }
   }
 
-  if (text.empty() && (IsLink() || GetRole() == ui::AX_ROLE_IMAGE)) {
+  if (text.empty() && (IsLink() || GetRole() == ui::AX_ROLE_IMAGE) &&
+      !HasExplicitlyEmptyName()) {
     base::string16 url = GetString16Attribute(ui::AX_ATTR_URL);
     text = ui::AXSnapshotNodeAndroid::AXUrlBaseText(url);
   }

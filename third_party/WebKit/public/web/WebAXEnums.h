@@ -323,6 +323,7 @@ enum WebAXTextStyle {
 enum WebAXNameFrom {
   kWebAXNameFromUninitialized = -1,
   kWebAXNameFromAttribute = 0,
+  kWebAXNameFromAttributeExplicitlyEmpty,
   kWebAXNameFromCaption,
   kWebAXNameFromContents,
   kWebAXNameFromPlaceholder,
