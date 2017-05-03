@@ -63,10 +63,8 @@ void FakePermissionBrokerClient::OpenPath(const std::string& path,
                                           const OpenPathCallback& callback,
                                           const ErrorCallback& error_callback) {
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits()
-                     .WithShutdownBehavior(
-                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-                     .MayBlock(),
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&chromeos::OpenPath, path, callback, error_callback,
                  base::ThreadTaskRunnerHandle::Get()));
 }

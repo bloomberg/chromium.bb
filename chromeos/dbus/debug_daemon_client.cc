@@ -55,8 +55,8 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
   explicit PipeReaderWrapper(const DebugDaemonClient::GetLogsCallback& callback)
       : pipe_reader_(base::CreateTaskRunnerWithTraits(
-                         base::TaskTraits().MayBlock().WithShutdownBehavior(
-                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+                         {base::MayBlock(),
+                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
                      base::Bind(&PipeReaderWrapper::OnIOComplete, AsWeakPtr())),
         callback_(callback) {}
 

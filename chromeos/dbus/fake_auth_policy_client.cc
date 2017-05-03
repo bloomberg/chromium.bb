@@ -153,11 +153,8 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
   // Drop file for SessionManagerClientStubImpl to read.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WritePolicyFile, policy_path, payload,
                      "google/chromeos/device"),
       std::move(callback));
@@ -189,11 +186,8 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
   // Drop file for SessionManagerClientStubImpl to read.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .WithPriority(base::TaskPriority::BACKGROUND)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WritePolicyFile, policy_path, payload,
                      "google/chromeos/user"),
       std::move(callback));

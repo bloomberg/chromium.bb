@@ -516,10 +516,7 @@ void ClientCertResolver::ResolveNetworks(
   resolve_task_running_ = true;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits()
-          .WithShutdownBehavior(
-              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
-          .MayBlock(),
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&FindCertificateMatches, CertLoader::Get()->all_certs(),
                  CertLoader::Get()->system_certs(),
                  base::Owned(networks_to_resolve.release()), Now()),

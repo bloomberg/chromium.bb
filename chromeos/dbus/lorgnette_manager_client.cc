@@ -106,8 +106,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       CHECK(!pipe_reader_.get());
       pipe_reader_.reset(new chromeos::PipeReaderForString(
           base::CreateTaskRunnerWithTraits(
-              base::TaskTraits().MayBlock().WithShutdownBehavior(
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
+              {base::MayBlock(),
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
           base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
                      base::Unretained(this))));
       *fd = pipe_reader_->StartIO();
