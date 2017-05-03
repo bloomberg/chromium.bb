@@ -101,7 +101,12 @@ class Manager(object):
         running_all_tests = False
 
         self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
-        WPTManifest.ensure_manifest(self._port.host)
+
+        try:
+            _log.info('run-webkit-tests - calling ensure_manifest')
+            WPTManifest.ensure_manifest(self._port.host)
+        finally:
+            _log.info('run-webkit-tests - completed ensure_manfiest')
 
         try:
             paths, all_test_names, running_all_tests = self._collect_tests(args)
