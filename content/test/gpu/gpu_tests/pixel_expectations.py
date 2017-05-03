@@ -57,3 +57,13 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(jbauman): Fix this.
     self.Fail('Pixel_DirectComposition_Video_MP4', ['win', 'intel'], bug=704389)
+
+    # Failures on Haswell GPUs on macOS after upgrade to 10.12.4.
+    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker',
+              ['mac', ('intel', 0x0a2e)], bug=718183)
+    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
+              ['mac', ('intel', 0x0a2e)], bug=718183)
+    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
+              ['mac', ('intel', 0x0a2e)], bug=718183)
+    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
+              ['mac', ('intel', 0x0a2e)], bug=718183)
