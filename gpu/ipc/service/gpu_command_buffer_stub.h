@@ -70,6 +70,9 @@ class GPU_EXPORT GpuCommandBufferStub
   typedef base::Callback<void(const std::vector<ui::LatencyInfo>&)>
       LatencyInfoCallback;
 
+  // This must leave the GL context associated with the newly-created
+  // GpuCommandBufferStub current, so the GpuChannel can initialize
+  // the gpu::Capabilities.
   static std::unique_ptr<GpuCommandBufferStub> Create(
       GpuChannel* channel,
       GpuCommandBufferStub* share_group,

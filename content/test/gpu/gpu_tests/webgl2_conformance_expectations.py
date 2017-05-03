@@ -719,12 +719,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['linux', ('nvidia', 0x104a)], bug=714207)
 
-    # Any of these tests become flaky if they follow
-    # conformance2/samplers/samplers.html and if virtualized GL
-    # contexts are being used.
-    self.Flaky('conformance2/textures/canvas_sub_rectangle/*',
-        ['linux', 'nvidia'], bug=694359)
-
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
