@@ -102,13 +102,12 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 
 class MockTabManagerDelegate : public TabManagerDelegate {
  public:
-  MockTabManagerDelegate()
-      : TabManagerDelegate(nullptr),
-        always_return_true_from_is_recently_killed_(false) {}
+  MockTabManagerDelegate(): TabManagerDelegate(nullptr) {
+  }
 
   explicit MockTabManagerDelegate(TabManagerDelegate::MemoryStat* mem_stat)
-      : TabManagerDelegate(nullptr, mem_stat),
-        always_return_true_from_is_recently_killed_(false) {}
+      : TabManagerDelegate(nullptr, mem_stat) {
+  }
 
   // unit test.
   std::vector<int> GetKilledArcProcesses() {
@@ -124,20 +123,6 @@ class MockTabManagerDelegate : public TabManagerDelegate {
   void Clear() {
     killed_arc_processes_.clear();
     killed_tabs_.clear();
-  }
-
-  // unit test.
-  void set_always_return_true_from_is_recently_killed(
-      bool always_return_true_from_is_recently_killed) {
-    always_return_true_from_is_recently_killed_ =
-        always_return_true_from_is_recently_killed;
-  }
-
-  bool IsRecentlyKilledArcProcess(const std::string& process_name,
-                                  const base::TimeTicks& now) override {
-    if (always_return_true_from_is_recently_killed_)
-      return true;
-    return TabManagerDelegate::IsRecentlyKilledArcProcess(process_name, now);
   }
 
  protected:
@@ -159,7 +144,6 @@ class MockTabManagerDelegate : public TabManagerDelegate {
   chromeos::FakeDebugDaemonClient debugd_client_;
   std::vector<int> killed_arc_processes_;
   std::vector<int64_t> killed_tabs_;
-  bool always_return_true_from_is_recently_killed_;
 };
 
 class MockMemoryStat : public TabManagerDelegate::MemoryStat {
@@ -247,75 +231,6 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   EXPECT_EQ(650, oom_score_map[30]);
 }
 
-TEST_F(TabManagerDelegateTest, IsRecentlyKilledArcProcess) {
-  constexpr char kProcessName1[] = "org.chromium.arc.test1";
-  constexpr char kProcessName2[] = "org.chromium.arc.test2";
-
-  // Not owned.
-  MockMemoryStat* memory_stat = new MockMemoryStat();
-  // Instantiate the mock instance.
-  MockTabManagerDelegate tab_manager_delegate(memory_stat);
-
-  // When the process name is not in the map, IsRecentlyKilledArcProcess should
-  // return false.
-  const base::TimeTicks now = base::TimeTicks::Now();
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName2, now));
-
-  // Update the map to tell the manager that the process was killed very
-  // recently.
-  tab_manager_delegate.recently_killed_arc_processes_[kProcessName1] = now;
-  EXPECT_TRUE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName2, now));
-  tab_manager_delegate.recently_killed_arc_processes_[kProcessName1] =
-      now - base::TimeDelta::FromMicroseconds(1);
-  EXPECT_TRUE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName2, now));
-  tab_manager_delegate.recently_killed_arc_processes_[kProcessName1] =
-      now - TabManagerDelegate::GetArcRespawnKillDelay();
-  EXPECT_TRUE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName2, now));
-
-  // Update the map to tell the manager that the process was killed
-  // (GetArcRespawnKillDelay() + 1) seconds ago. In this case,
-  // IsRecentlyKilledArcProcess(kProcessName1) should return false.
-  tab_manager_delegate.recently_killed_arc_processes_[kProcessName1] =
-      now - TabManagerDelegate::GetArcRespawnKillDelay() -
-      base::TimeDelta::FromSeconds(1);
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
-  EXPECT_FALSE(
-      tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName2, now));
-}
-
-TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
-  // Not owned.
-  MockMemoryStat* memory_stat = new MockMemoryStat();
-
-  // Instantiate the mock instance.
-  MockTabManagerDelegate tab_manager_delegate(memory_stat);
-  tab_manager_delegate.set_always_return_true_from_is_recently_killed(true);
-
-  std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(
-      1, 10, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
-
-  memory_stat->SetTargetMemoryToFreeKB(250000);
-  memory_stat->SetProcessPss(30, 10000);
-  tab_manager_delegate.LowMemoryKillImpl({} /* tab_list */, arc_processes);
-
-  auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
-  EXPECT_EQ(0U, killed_arc_processes.size());
-}
-
 TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // Not owned.
   MockMemoryStat* memory_stat = new MockMemoryStat();
@@ -398,13 +313,6 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   EXPECT_EQ(2, killed_tabs[0]);
   EXPECT_EQ(5, killed_tabs[1]);
   EXPECT_EQ(1, killed_tabs[2]);
-
-  // Check that killed apps are in the map.
-  const TabManagerDelegate::KilledArcProcessesMap& processes_map =
-      tab_manager_delegate.recently_killed_arc_processes_;
-  EXPECT_EQ(2U, processes_map.size());
-  EXPECT_EQ(1U, processes_map.count("service"));
-  EXPECT_EQ(1U, processes_map.count("not-visible"));
 }
 
 }  // namespace memory
