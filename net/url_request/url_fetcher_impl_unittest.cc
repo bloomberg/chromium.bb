@@ -524,8 +524,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 TEST_F(URLFetcherTest, SequencedTaskTest) {
   base::test::ScopedTaskScheduler scoped_task_scheduler(
       base::MessageLoop::current());
-  auto sequenced_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+  auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 
   auto delegate = base::MakeUnique<WaitingURLFetcherDelegate>();
   sequenced_task_runner->PostTask(
