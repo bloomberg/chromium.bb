@@ -312,8 +312,6 @@ static int file_is_raw(struct AvxInputContext *input) {
   int is_raw = 0;
   aom_codec_stream_info_t si;
 
-  si.sz = sizeof(si);
-
   if (fread(buf, 1, 32, input->file) == 32) {
     int i;
 
