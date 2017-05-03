@@ -117,6 +117,7 @@ extern const base::Feature kMaterialDesignSettings;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const base::Feature kMediaRemoting;
+extern const base::Feature kMediaRouterUIRouteController;
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 extern const base::Feature kModalPermissionPrompts;
