@@ -76,8 +76,10 @@ void CreateChromeApplicationShortcutView::InitControls() {
   quick_launch_check_box_ = nullptr;
 
 #if defined(OS_WIN)
+  base::win::Version version = base::win::GetVersion();
   // Do not allow creating shortcuts on the Start Screen for Windows 8.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+  if (version != base::win::VERSION_WIN8 &&
+      version != base::win::VERSION_WIN8_1) {
     menu_check_box_ = AddCheckbox(
         l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
         profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
@@ -87,10 +89,10 @@ void CreateChromeApplicationShortcutView::InitControls() {
   // that option from the dialog.
   if (base::win::CanPinShortcutToTaskbar()) {
     quick_launch_check_box_ = AddCheckbox(
-        (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
-          l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX) :
-          l10n_util::GetStringUTF16(
-              IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
+        (version >= base::win::VERSION_WIN7)
+            ? l10n_util::GetStringUTF16(IDS_PIN_TO_TASKBAR_CHKBOX)
+            : l10n_util::GetStringUTF16(
+                  IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
         profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));
   }
 #elif defined(OS_POSIX)
