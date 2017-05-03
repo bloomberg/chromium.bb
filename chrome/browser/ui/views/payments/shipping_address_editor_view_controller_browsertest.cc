@@ -141,7 +141,6 @@ class PaymentRequestShippingAddressEditorTest
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
-  OpenShippingAddressSectionScreen();
 
   // No shipping profiles are available.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
@@ -183,7 +182,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
-  OpenShippingAddressSectionScreen();
 
   test_region_data_loader_.set_synchronous_callback(false);
   OpenShippingAddressEditorScreen();
@@ -229,7 +227,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        SwitchingCountryUpdatesViewAndKeepsValues) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
-  OpenShippingAddressSectionScreen();
 
   test_region_data_loader_.set_synchronous_callback(false);
   OpenShippingAddressEditorScreen();
@@ -327,7 +324,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FailToLoadRegionData) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
-  OpenShippingAddressSectionScreen();
 
   // The synchronous callback is made with no data, which causes a failure.
   test_region_data_loader_.set_synchronous_callback(true);
@@ -364,7 +360,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        TimingOutRegionData) {
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
-  OpenShippingAddressSectionScreen();
 
   test_region_data_loader_.set_synchronous_callback(false);
   OpenShippingAddressEditorScreen();

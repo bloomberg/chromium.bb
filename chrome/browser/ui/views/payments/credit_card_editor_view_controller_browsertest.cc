@@ -54,8 +54,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
   EXPECT_EQ(0U, request->state()->available_instruments().size());
   EXPECT_EQ(nullptr, request->state()->selected_instrument());
 
-  OpenPaymentMethodScreen();
-
   OpenCreditCardEditorScreen();
 
   SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
@@ -97,8 +95,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
   InvokePaymentRequestUI();
 
-  OpenPaymentMethodScreen();
-
   OpenCreditCardEditorScreen();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -113,8 +109,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   test_clock.SetNow(kJune2017);
 
   InvokePaymentRequestUI();
-
-  OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
 
@@ -146,8 +140,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   test_clock.SetNow(kJune2017);
 
   InvokePaymentRequestUI();
-
-  OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
 
@@ -183,8 +175,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
   InvokePaymentRequestUI();
 
-  OpenPaymentMethodScreen();
-
   OpenCreditCardEditorScreen();
 
   SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
@@ -215,8 +205,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   test_clock.SetNow(kJune2017);
 
   InvokePaymentRequestUI();
-
-  OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
 
@@ -250,8 +238,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   test_clock.SetNow(kJune2017);
 
   InvokePaymentRequestUI();
-
-  OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
 
@@ -373,8 +359,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
   InvokePaymentRequestUI();
-
-  OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
 

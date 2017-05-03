@@ -23,16 +23,6 @@ class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewControllerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EmptyList) {
-  InvokePaymentRequestUI();
-  OpenPaymentMethodScreen();
-
-  views::View* list_view = dialog_view()->GetViewByID(
-      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
-  EXPECT_TRUE(list_view);
-  EXPECT_FALSE(list_view->has_children());
-}
-
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
   const autofill::CreditCard card = autofill::test::GetCreditCard();
   AddCreditCard(card);

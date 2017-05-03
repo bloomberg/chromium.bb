@@ -55,13 +55,16 @@ namespace {
 constexpr int kFirstTagValue = static_cast<int>(
     payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
 
+// Tags for the buttons in the payment sheet
 enum class PaymentSheetViewControllerTags {
-  // The tag for the button that navigates to the Order Summary sheet.
-  SHOW_ORDER_SUMMARY_BUTTON = kFirstTagValue,
-  SHOW_SHIPPING_BUTTON,
-  SHOW_PAYMENT_METHOD_BUTTON,
-  SHOW_CONTACT_INFO_BUTTON,
-  SHOW_SHIPPING_OPTION_BUTTON,
+  SHOW_ORDER_SUMMARY_BUTTON = kFirstTagValue,  // Navigate to order summary
+  SHOW_SHIPPING_BUTTON,         // Navigate to the shipping address screen
+  ADD_SHIPPING_BUTTON,          // Navigate to the shipping address editor
+  SHOW_PAYMENT_METHOD_BUTTON,   // Navigate to the payment method screen
+  ADD_PAYMENT_METHOD_BUTTON,    // Navigate to the payment method editor
+  SHOW_CONTACT_INFO_BUTTON,     // Navigate to the contact info screen
+  ADD_CONTACT_INFO_BUTTON,      // Navigate to the contact info editor
+  SHOW_SHIPPING_OPTION_BUTTON,  // Navigate to the shipping options screen
   PAY_BUTTON
 };
 
@@ -485,14 +488,39 @@ void PaymentSheetViewController::ButtonPressed(
       dialog()->ShowShippingProfileSheet();
       break;
 
+    case static_cast<int>(PaymentSheetViewControllerTags::ADD_SHIPPING_BUTTON):
+      dialog()->ShowShippingAddressEditor(
+          /*on_edited=*/base::OnceClosure(),  // This is always an add.
+          /*on_added=*/
+          base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
+                         base::Unretained(state()), /*selected=*/true),
+          nullptr);
+      break;
+
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON):
       dialog()->ShowPaymentMethodSheet();
       break;
 
     case static_cast<int>(
+        PaymentSheetViewControllerTags::ADD_PAYMENT_METHOD_BUTTON):
+      dialog()->ShowCreditCardEditor(
+          /*on_edited=*/base::OnceClosure(),  // This is always an add.
+          /*on_added=*/
+          base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
+                         base::Unretained(state()), /*selected=*/true),
+          /*credit_card=*/nullptr);
+
+      break;
+
+    case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON):
       dialog()->ShowContactProfileSheet();
+      break;
+
+    case static_cast<int>(
+        PaymentSheetViewControllerTags::ADD_CONTACT_INFO_BUTTON):
+      dialog()->ShowContactInfoEditor();
       break;
 
     case static_cast<int>(
@@ -626,11 +654,12 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
     return builder.CreateWithChevron(CreateShippingSectionContent(), nullptr);
   } else {
     builder.Id(DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON);
-    base::string16 button_string = state()->shipping_profiles().size()
-                                       ? l10n_util::GetStringUTF16(IDS_CHOOSE)
-                                       : l10n_util::GetStringUTF16(IDS_ADD);
     if (state()->shipping_profiles().empty()) {
-      return builder.CreateWithButton(base::ASCIIToUTF16(""), button_string,
+      // If the button is "Add", clicking it should navigate to the editor
+      // instead of the list.
+      builder.Tag(PaymentSheetViewControllerTags::ADD_SHIPPING_BUTTON);
+      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+                                      l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->shipping_profiles().size() == 1) {
       base::string16 truncated_content =
@@ -641,7 +670,8 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
                   autofill::ADDRESS_HOME_COUNTRY,
               },
               6, state()->GetApplicationLocale());
-      return builder.CreateWithButton(truncated_content, button_string,
+      return builder.CreateWithButton(truncated_content,
+                                      l10n_util::GetStringUTF16(IDS_CHOOSE),
                                       /*button_enabled=*/true);
     } else {
       base::string16 format = l10n_util::GetPluralStringFUTF16(
@@ -655,9 +685,10 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
                   autofill::ADDRESS_HOME_COUNTRY,
               },
               6, state()->GetApplicationLocale());
-      return builder.CreateWithButton(
-          label, format, state()->shipping_profiles().size() - 1, button_string,
-          /*button_enabled=*/true);
+      return builder.CreateWithButton(label, format,
+                                      state()->shipping_profiles().size() - 1,
+                                      l10n_util::GetStringUTF16(IDS_CHOOSE),
+                                      /*button_enabled=*/true);
     }
   }
 }
@@ -711,16 +742,16 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
         .CreateWithChevron(std::move(content_view), std::move(card_icon_view));
   } else {
     builder.Id(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON);
-    base::string16 button_string = state()->available_instruments().size()
-                                       ? l10n_util::GetStringUTF16(IDS_CHOOSE)
-                                       : l10n_util::GetStringUTF16(IDS_ADD);
-
     if (state()->available_instruments().empty()) {
-      return builder.CreateWithButton(base::ASCIIToUTF16(""), button_string,
+      // If the button is "Add", navigate to the editor directly.
+      builder.Tag(PaymentSheetViewControllerTags::ADD_PAYMENT_METHOD_BUTTON);
+      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+                                      l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->available_instruments().size() == 1) {
       return builder.CreateWithButton(
-          state()->available_instruments()[0]->label(), button_string,
+          state()->available_instruments()[0]->label(),
+          l10n_util::GetStringUTF16(IDS_CHOOSE),
           /*button_enabled=*/true);
     } else {
       base::string16 format = l10n_util::GetPluralStringFUTF16(
@@ -728,7 +759,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
           state()->available_instruments().size() - 1);
       return builder.CreateWithButton(
           state()->available_instruments()[0]->label(), format,
-          state()->available_instruments().size() - 1, button_string,
+          state()->available_instruments().size() - 1,
+          l10n_util::GetStringUTF16(IDS_CHOOSE),
           /*button_enabled=*/true);
     }
   }
@@ -764,12 +796,11 @@ PaymentSheetViewController::CreateContactInfoRow() {
         .CreateWithChevron(CreateContactInfoSectionContent(), nullptr);
   } else {
     builder.Id(DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON);
-    base::string16 button_string = state()->contact_profiles().size()
-                                       ? l10n_util::GetStringUTF16(IDS_CHOOSE)
-                                       : l10n_util::GetStringUTF16(IDS_ADD);
-
     if (state()->contact_profiles().empty()) {
-      return builder.CreateWithButton(base::ASCIIToUTF16(""), button_string,
+      // If the button is "Add", navigate directly to the editor.
+      builder.Tag(PaymentSheetViewControllerTags::ADD_CONTACT_INFO_BUTTON);
+      return builder.CreateWithButton(base::ASCIIToUTF16(""),
+                                      l10n_util::GetStringUTF16(IDS_ADD),
                                       /*button_enabled=*/true);
     } else if (state()->contact_profiles().size() == 1) {
       base::string16 truncated_content =
@@ -780,7 +811,8 @@ PaymentSheetViewController::CreateContactInfoRow() {
                   autofill::ADDRESS_HOME_COUNTRY,
               },
               6, state()->GetApplicationLocale());
-      return builder.CreateWithButton(truncated_content, button_string,
+      return builder.CreateWithButton(truncated_content,
+                                      l10n_util::GetStringUTF16(IDS_CHOOSE),
                                       /*button_enabled=*/true);
     } else {
       base::string16 preview =
@@ -794,9 +826,9 @@ PaymentSheetViewController::CreateContactInfoRow() {
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,
           state()->contact_profiles().size() - 1);
-      return builder.CreateWithButton(preview, format,
-                                      state()->contact_profiles().size() - 1,
-                                      button_string, /*button_enabled=*/true);
+      return builder.CreateWithButton(
+          preview, format, state()->contact_profiles().size() - 1,
+          l10n_util::GetStringUTF16(IDS_CHOOSE), /*button_enabled=*/true);
     }
   }
 }
