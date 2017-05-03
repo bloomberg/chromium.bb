@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/mock_media_router.h"
-#include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
@@ -35,21 +34,10 @@ using content::WebContents;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
-using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
 
 namespace media_router {
-
-class MockMediaRouterWebUIMessageHandler
-    : public MediaRouterWebUIMessageHandler {
- public:
-  explicit MockMediaRouterWebUIMessageHandler(MediaRouterUI* media_router_ui)
-      : MediaRouterWebUIMessageHandler(media_router_ui) {}
-  ~MockMediaRouterWebUIMessageHandler() override {}
-
-  MOCK_METHOD1(UpdateMediaRouteStatus, void(const MediaStatus& status));
-};
 
 class PresentationRequestCallbacks {
  public:
@@ -100,9 +88,9 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     web_ui_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile)));
     web_ui_.set_web_contents(web_ui_contents_.get());
-    media_router_ui_ = base::MakeUnique<MediaRouterUI>(&web_ui_);
-    message_handler_ = base::MakeUnique<MockMediaRouterWebUIMessageHandler>(
-        media_router_ui_.get());
+    media_router_ui_.reset(new MediaRouterUI(&web_ui_));
+    message_handler_.reset(
+        new MediaRouterWebUIMessageHandler(media_router_ui_.get()));
     EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
         .WillRepeatedly(Invoke([this](MediaSinksObserver* observer) {
           this->media_sinks_observers_.push_back(observer);
@@ -123,34 +111,13 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     return sink;
   }
 
-  // Notifies MediaRouterUI that a route details view has been opened. Expects
-  // MediaRouterUI to request a MediaRouteController, and gives it a mock
-  // controller. Returns a reference to the mock controller.
-  scoped_refptr<MockMediaRouteController> OpenUIDetailsView(
-      const MediaRoute::Id& route_id) {
-    MediaSource media_source("mediaSource");
-    MediaRoute route(route_id, media_source, "sinkId", "", true, "", true);
-    mojom::MediaControllerPtr mojo_media_controller;
-    mojo::MakeRequest(&mojo_media_controller);
-    scoped_refptr<MockMediaRouteController> controller =
-        new MockMediaRouteController(route_id, std::move(mojo_media_controller),
-                                     &mock_router_);
-
-    media_router_ui_->OnRoutesUpdated({route}, std::vector<MediaRoute::Id>());
-    EXPECT_CALL(mock_router_, GetRouteController(route_id))
-        .WillOnce(Return(controller));
-    media_router_ui_->OnMediaControllerUIAvailable(route_id);
-
-    return controller;
-  }
-
  protected:
   MockMediaRouter mock_router_;
   content::TestWebUI web_ui_;
   std::unique_ptr<WebContents> web_ui_contents_;
   std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
   std::unique_ptr<MediaRouterUI> media_router_ui_;
-  std::unique_ptr<MockMediaRouterWebUIMessageHandler> message_handler_;
+  std::unique_ptr<MediaRouterWebUIMessageHandler> message_handler_;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
 };
 
@@ -631,34 +598,6 @@ TEST_F(MediaRouterUITest, RecordDesktopMirroringCastModeSelection) {
   media_router_ui_->RecordCastModeSelection(MediaCastMode::DESKTOP_MIRROR);
   // Selecting desktop mirroring should not change the recorded preferences.
   EXPECT_TRUE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
-}
-
-TEST_F(MediaRouterUITest, OpenAndCloseUIDetailsView) {
-  const std::string route_id = "routeId";
-  CreateMediaRouterUI(profile());
-  OpenUIDetailsView(route_id);
-
-  // When the route details view is closed, the route controller observer should
-  // be destroyed, also triggering the destruction of the controller.
-  EXPECT_CALL(mock_router_, DetachRouteController(route_id, _));
-  media_router_ui_->OnMediaControllerUIClosed();
-
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_router_));
-}
-
-TEST_F(MediaRouterUITest, SendMediaStatusUpdate) {
-  MediaStatus status;
-  status.title = "test title";
-  CreateMediaRouterUI(profile());
-  scoped_refptr<MockMediaRouteController> controller =
-      OpenUIDetailsView("routeId");
-
-  // The route controller observer held by MediaRouterUI should send the status
-  // update to the message handler.
-  EXPECT_CALL(*message_handler_, UpdateMediaRouteStatus(status));
-  controller->OnMediaStatusUpdated(status);
-
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_router_));
 }
 
 }  // namespace media_router
