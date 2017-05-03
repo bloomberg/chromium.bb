@@ -70,8 +70,7 @@ class UsbDeviceImpl : public UsbDevice {
   // Called by UsbServiceImpl only;
   UsbDeviceImpl(scoped_refptr<UsbContext> context,
                 PlatformUsbDevice platform_device,
-                const libusb_device_descriptor& descriptor,
-                scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+                const libusb_device_descriptor& descriptor);
 
   ~UsbDeviceImpl() override;
 
@@ -84,9 +83,13 @@ class UsbDeviceImpl : public UsbDevice {
 
  private:
   void GetAllConfigurations();
-  void OpenOnBlockingThread(const OpenCallback& callback);
+  void OpenOnBlockingThread(
+      const OpenCallback& callback,
+      scoped_refptr<base::TaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   void Opened(PlatformUsbDeviceHandle platform_handle,
-              const OpenCallback& callback);
+              const OpenCallback& callback,
+              scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   base::ThreadChecker thread_checker_;
   PlatformUsbDevice platform_device_;
@@ -94,9 +97,6 @@ class UsbDeviceImpl : public UsbDevice {
 
   // Retain the context so that it will not be released before UsbDevice.
   scoped_refptr<UsbContext> context_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceImpl);
 };

@@ -13,10 +13,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
@@ -168,7 +168,7 @@ class UsbDeviceHandleImpl::InterfaceClaimer
   int alternate_setting_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ResultCallback release_callback_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceClaimer);
 };
@@ -183,7 +183,7 @@ UsbDeviceHandleImpl::InterfaceClaimer::InterfaceClaimer(
       task_runner_(task_runner) {}
 
 UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   int rc = libusb_release_interface(handle_->handle(), interface_number_);
   if (rc != LIBUSB_SUCCESS) {
     USB_LOG(DEBUG) << "Failed to release interface: "
