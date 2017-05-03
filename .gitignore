@@ -269,6 +269,8 @@ vs-chromium-project.txt
 /sql/sql_unittests_run.xml
 /sync/sync.xml
 /sync_testserver.log
+/testing/gmock
+/testing/gtest
 /testserver.log
 /tools/luci-go/linux64/isolate
 /tools/luci-go/mac64/isolate
