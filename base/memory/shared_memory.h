@@ -241,10 +241,7 @@ class BASE_EXPORT SharedMemory {
   // before being mapped.
   bool external_section_;
   std::wstring       name_;
-  win::ScopedHandle  mapped_file_;
 #else
-  // The OS primitive that backs the shared memory region.
-  SharedMemoryHandle shm_;
 
   // If valid, points to the same memory region as shm_, but with readonly
   // permissions.
@@ -256,6 +253,9 @@ class BASE_EXPORT SharedMemory {
   // |nullptr|.
   SharedMemoryHandle::Type mapped_memory_mechanism_;
 #endif
+
+  // The OS primitive that backs the shared memory region.
+  SharedMemoryHandle shm_;
 
   size_t             mapped_size_;
   void*              memory_;

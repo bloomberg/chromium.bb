@@ -37,7 +37,6 @@ SharedMemory::SharedMemory()
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : shm_(handle),
-
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
