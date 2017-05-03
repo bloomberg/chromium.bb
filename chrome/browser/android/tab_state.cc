@@ -286,37 +286,26 @@ bool ExtractNavigationEntries(
 };  // anonymous namespace
 
 ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
-    JNIEnv* env, TabAndroid* tab) {
+    JNIEnv* env,
+    TabAndroid* tab) {
   Profile* profile = tab->GetProfile();
   if (!profile)
     return ScopedJavaLocalRef<jobject>();
 
   content::NavigationController& controller =
       tab->web_contents()->GetController();
-  const int pending_index = controller.GetPendingEntryIndex();
-  int entry_count = controller.GetEntryCount();
-  if (entry_count == 0 && pending_index == 0)
-    entry_count++;
-
+  const int entry_count = controller.GetEntryCount();
   if (entry_count == 0)
     return ScopedJavaLocalRef<jobject>();
 
-  int current_entry = controller.GetLastCommittedEntryIndex();
-  if (current_entry == -1 && entry_count > 0)
-    current_entry = 0;
-
   std::vector<content::NavigationEntry*> navigations(entry_count);
   for (int i = 0; i < entry_count; ++i) {
-    content::NavigationEntry* entry = (i == pending_index) ?
-        controller.GetPendingEntry() : controller.GetEntryAtIndex(i);
-    navigations[i] = entry;
+    navigations[i] = controller.GetEntryAtIndex(i);
   }
 
   return WebContentsState::WriteNavigationsAsByteBuffer(
-      env,
-      profile->IsOffTheRecord(),
-      navigations,
-      current_entry);
+      env, profile->IsOffTheRecord(), navigations,
+      controller.GetLastCommittedEntryIndex());
 }
 
 // Common implementation for GetContentsStateAsByteBuffer() and
