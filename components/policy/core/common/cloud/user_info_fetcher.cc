@@ -13,6 +13,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -41,10 +42,33 @@ UserInfoFetcher::~UserInfoFetcher() {
 }
 
 void UserInfoFetcher::Start(const std::string& access_token) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("user_info_fetcher", R"(
+        semantics {
+          sender: "Cloud Policy"
+          description:
+            "Calls to the Google Account service to check if the signed-in "
+            "user is managed."
+          trigger: "User signing in to Chrome."
+          data: "OAuth2 token."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be controlled by Chrome settings, but users "
+            "can sign out of Chrome to disable it."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   // Create a URLFetcher and start it.
   url_fetcher_ =
       net::URLFetcher::Create(0, GaiaUrls::GetInstance()->oauth_user_info_url(),
-                              net::URLFetcher::GET, this);
+                              net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::POLICY);
   url_fetcher_->SetRequestContext(context_);

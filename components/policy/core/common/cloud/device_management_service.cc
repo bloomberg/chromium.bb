@@ -18,6 +18,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -589,9 +590,41 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   GURL url = job->GetURL(GetServerUrl());
   DCHECK(url.is_valid()) << "Maybe invalid --device-management-url was passed?";
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("device_management_service", R"(
+        semantics {
+          sender: "Cloud Policy"
+          description:
+            "Communication with the Cloud Policy backend, used to check for "
+            "the existence of cloud policy for the signed-in account, and to "
+            "load/update cloud policy if it exists."
+          trigger:
+            "Sign in to Chrome, also periodic refreshes."
+          data:
+            "During initial signin or device enrollment, auth data is sent up "
+            "as part of registration. After initial signin/enrollment, if the "
+            "session or device is managed, a unique device or profile ID is "
+            "sent with every future request. On Chrome OS, other diagnostic "
+            "information can be sent up for managed sessions, including which "
+            "users have used the device, device hardware status, connected "
+            "networks, CPU usage, etc."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be controlled by Chrome settings, but users "
+            "can sign out of Chrome to disable it."
+          chrome_policy {
+            SigninAllowed {
+              policy_options {mode: MANDATORY}
+              SigninAllowed: false
+            }
+          }
+        })");
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(kURLFetcherID, std::move(url),
-                              net::URLFetcher::POST, this)
+                              net::URLFetcher::POST, this, traffic_annotation)
           .release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::POLICY);
