@@ -51,13 +51,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private long mUrlRequestAdapter;
 
     @GuardedBy("mUrlRequestAdapterLock")
-    private boolean mStarted = false;
+    private boolean mStarted;
     @GuardedBy("mUrlRequestAdapterLock")
-    private boolean mWaitingOnRedirect = false;
+    private boolean mWaitingOnRedirect;
     @GuardedBy("mUrlRequestAdapterLock")
-    private boolean mWaitingOnRead = false;
-    @GuardedBy("mUrlRequestAdapterLock")
-    private RequestFinishedInfo.Metrics mMetrics;
+    private boolean mWaitingOnRead;
 
     /*
      * Synchronize access to mUrlRequestAdapter, mStarted, mWaitingOnRedirect,
@@ -81,9 +79,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
-    @RequestFinishedInfoImpl.FinishedReason
-    private int mFinishedReason;
-    private CronetException mException;
     private final boolean mDisableCache;
     private final boolean mDisableConnectionMigration;
 
@@ -91,12 +86,20 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     private UrlResponseInfoImpl mResponseInfo;
 
+    // These three should only be updated once with mUrlRequestAdapterLock held. They are read on
+    // UrlRequest.Callback's and RequestFinishedInfo.Listener's executors after the last update.
+    @RequestFinishedInfoImpl.FinishedReason
+    private int mFinishedReason;
+    private CronetException mException;
+    private CronetMetrics mMetrics;
+
     /*
      * Listener callback is repeatedly invoked when each read is completed, so it
      * is cached as a member variable.
      */
     private OnReadCompletedRunnable mOnReadCompletedTask;
 
+    @GuardedBy("mUrlRequestAdapterLock")
     private Runnable mOnDestroyedCallbackForTesting;
 
     private static final class HeadersList extends ArrayList<Map.Entry<String, String>> {}
@@ -234,9 +237,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
                     return;
                 }
             } catch (RuntimeException e) {
-                // If there's an exception, cleanup and then throw the
-                // exception to the caller.
-                destroyRequestAdapter(false);
+                // If there's an exception, cleanup and then throw the exception to the caller.
+                // start() is synchronized so we do not acquire mUrlRequestAdapterLock here.
+                destroyRequestAdapterLocked(RequestFinishedInfo.FAILED);
                 throw e;
             }
             mStarted = true;
@@ -298,7 +301,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
             if (isDoneLocked() || !mStarted) {
                 return;
             }
-            destroyRequestAdapter(true);
+            destroyRequestAdapterLocked(RequestFinishedInfo.CANCELED);
         }
     }
 
@@ -335,7 +338,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @VisibleForTesting
     public void setOnDestroyedCallbackForTesting(Runnable onDestroyedCallbackForTesting) {
-        mOnDestroyedCallbackForTesting = onDestroyedCallbackForTesting;
+        synchronized (mUrlRequestAdapterLock) {
+            mOnDestroyedCallbackForTesting = onDestroyedCallbackForTesting;
+        }
     }
 
     @VisibleForTesting
@@ -410,18 +415,22 @@ public final class CronetUrlRequest extends UrlRequestBase {
         }
     }
 
-    private void destroyRequestAdapter(boolean sendOnCanceled) {
-        synchronized (mUrlRequestAdapterLock) {
-            if (mUrlRequestAdapter == 0) {
-                return;
-            }
-            nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
-            mRequestContext.onRequestDestroyed();
-            mUrlRequestAdapter = 0;
-            if (mOnDestroyedCallbackForTesting != null) {
-                mOnDestroyedCallbackForTesting.run();
-            }
+    /**
+     * Helper method to set final status of CronetUrlRequest and clean up the
+     * native request adapter.
+     */
+    @GuardedBy("mUrlRequestAdapterLock")
+    private void destroyRequestAdapterLocked(
+            @RequestFinishedInfoImpl.FinishedReason int finishedReason) {
+        assert mException == null || finishedReason == RequestFinishedInfo.FAILED;
+        mFinishedReason = finishedReason;
+        if (mUrlRequestAdapter == 0) {
+            return;
         }
+        mRequestContext.onRequestDestroyed();
+        // Posts a task to destroy the native adapter.
+        nativeDestroy(mUrlRequestAdapter, finishedReason == RequestFinishedInfo.CANCELED);
+        mUrlRequestAdapter = 0;
     }
 
     /**
@@ -447,31 +456,18 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     /**
-     * Fails the request with an exception. Can be called on any thread.
+     * Fails the request with an exception on any thread.
      */
     private void failWithException(final CronetException exception) {
-        mException = exception;
         synchronized (mUrlRequestAdapterLock) {
             if (isDoneLocked()) {
                 return;
             }
-            destroyRequestAdapter(false);
+            assert mException == null;
+            mException = exception;
+            destroyRequestAdapterLocked(RequestFinishedInfo.FAILED);
         }
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, exception);
-                } catch (Exception e) {
-                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", e);
-                }
-            }
-        };
-        try {
-            mExecutor.execute(task);
-        } catch (RejectedExecutionException e) {
-            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor", e);
-        }
+        // onFailed will be invoked from onNativeAdapterDestroyed() to ensure metrics collection.
     }
 
     ////////////////////////////////////////////////
@@ -600,7 +596,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onSucceeded(long receivedByteCount) {
-        mFinishedReason = RequestFinishedInfo.SUCCEEDED;
         mResponseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects + receivedByteCount);
         Runnable task = new Runnable() {
             @Override
@@ -611,12 +606,13 @@ public final class CronetUrlRequest extends UrlRequestBase {
                     }
                     // Destroy adapter first, so request context could be shut
                     // down from the listener.
-                    destroyRequestAdapter(false);
+                    destroyRequestAdapterLocked(RequestFinishedInfo.SUCCEEDED);
                 }
                 try {
                     mCallback.onSucceeded(CronetUrlRequest.this, mResponseInfo);
+                    maybeReportMetrics();
                 } catch (Exception e) {
-                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onComplete method", e);
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", e);
                 }
             }
         };
@@ -637,7 +633,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @CalledByNative
     private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
             long receivedByteCount) {
-        mFinishedReason = RequestFinishedInfo.FAILED;
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedByteCount(mReceivedByteCountFromRedirects + receivedByteCount);
         }
@@ -657,12 +652,12 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onCanceled() {
-        mFinishedReason = RequestFinishedInfo.CANCELED;
         Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
                     mCallback.onCanceled(CronetUrlRequest.this, mResponseInfo);
+                    maybeReportMetrics();
                 } catch (Exception e) {
                     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", e);
                 }
@@ -689,7 +684,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     /**
-     * Called by the native code to report metrics.
+     * Called by the native code on the network thread to report metrics. Happens before
+     * onSucceeded, onError and onCanceled.
      */
     @SuppressWarnings("unused")
     @CalledByNative
@@ -707,12 +703,42 @@ public final class CronetUrlRequest extends UrlRequestBase {
                     pushEndMs, responseStartMs, requestEndMs, socketReused, sentByteCount,
                     receivedByteCount);
         }
-        mRequestContext.reportFinished(getRequestFinishedInfo());
+        // Metrics are reported to RequestFinishedListener when the final UrlRequest.Callback has
+        // been invoked.
     }
 
-    private RequestFinishedInfo getRequestFinishedInfo() {
-        return new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, mMetrics,
-                mFinishedReason, mResponseInfo, mException);
+    /**
+     * Called when the native adapter is destroyed.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onNativeAdapterDestroyed() {
+        synchronized (mUrlRequestAdapterLock) {
+            if (mOnDestroyedCallbackForTesting != null) {
+                mOnDestroyedCallbackForTesting.run();
+            }
+            // mException is set when an error is encountered (in native code via onError or in
+            // Java code). If mException is not null, notify the mCallback and report metrics.
+            if (mException == null) {
+                return;
+            }
+        }
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mCallback.onFailed(CronetUrlRequest.this, mResponseInfo, mException);
+                    maybeReportMetrics();
+                } catch (Exception e) {
+                    Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", e);
+                }
+            }
+        };
+        try {
+            mExecutor.execute(task);
+        } catch (RejectedExecutionException e) {
+            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor", e);
+        }
     }
 
     /** Enforces prohibition of direct execution. */
@@ -749,6 +775,15 @@ public final class CronetUrlRequest extends UrlRequestBase {
             default:
                 Log.e(CronetUrlRequestContext.LOG_TAG, "Unknown error code: " + errorCode);
                 return errorCode;
+        }
+    }
+
+    // Maybe report metrics. This method should only be called on Callback's executor thread and
+    // after Callback's onSucceeded, onFailed and onCanceled.
+    private void maybeReportMetrics() {
+        if (mMetrics != null) {
+            mRequestContext.reportFinished(new RequestFinishedInfoImpl(mInitialUrl,
+                    mRequestAnnotations, mMetrics, mFinishedReason, mResponseInfo, mException));
         }
     }
 
