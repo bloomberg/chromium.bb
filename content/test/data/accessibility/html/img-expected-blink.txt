@@ -1,0 +1,5 @@
+rootWebArea
+++group
+++++image name='pipe'
+++++image name=''
+++++image name='  '

@@ -563,6 +563,8 @@ ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from) {
       return ui::AX_NAME_FROM_UNINITIALIZED;
     case blink::kWebAXNameFromAttribute:
       return ui::AX_NAME_FROM_ATTRIBUTE;
+    case blink::kWebAXNameFromAttributeExplicitlyEmpty:
+      return ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY;
     case blink::kWebAXNameFromCaption:
       return ui::AX_NAME_FROM_RELATED_ELEMENT;
     case blink::kWebAXNameFromContents:

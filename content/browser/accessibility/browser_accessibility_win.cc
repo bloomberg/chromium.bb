@@ -4285,9 +4285,6 @@ HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
   if (!GetString16Attribute(attribute, &str))
     return S_FALSE;
 
-  if (str.empty())
-    return S_FALSE;
-
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
 

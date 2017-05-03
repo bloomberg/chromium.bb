@@ -267,6 +267,7 @@
   enum NameFromType {
     uninitialized,
     attribute,
+    attributeExplicitlyEmpty,
     contents,
     placeholder,
     relatedElement,

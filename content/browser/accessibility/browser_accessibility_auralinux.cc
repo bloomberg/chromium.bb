@@ -471,6 +471,10 @@ static const gchar* browser_accessibility_get_name(AtkObject* atk_object) {
   if (!obj)
     return NULL;
 
+  if (obj->GetStringAttribute(ui::AX_ATTR_NAME).empty() &&
+      !obj->HasExplicitlyEmptyName())
+    return NULL;
+
   return obj->GetStringAttribute(ui::AX_ATTR_NAME).c_str();
 }
 

@@ -860,7 +860,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   // Given an image where there's no other title, return the base part
   // of the filename as the description.
   if ([[self role] isEqualToString:NSAccessibilityImageRole]) {
-    if (browserAccessibility_->HasStringAttribute(ui::AX_ATTR_NAME))
+    if (browserAccessibility_->HasExplicitlyEmptyName())
       return @"";
     if ([self titleUIElement])
       return @"";

@@ -405,7 +405,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   blink::WebAXNameFrom nameFrom;
   blink::WebVector<blink::WebAXObject> nameObjects;
   blink::WebString web_name = src.GetName(nameFrom, nameObjects);
-  if (!web_name.IsEmpty()) {
+  if ((!web_name.IsEmpty() && !web_name.IsNull()) ||
+      nameFrom == blink::kWebAXNameFromAttributeExplicitlyEmpty) {
     dst->AddStringAttribute(ui::AX_ATTR_NAME, web_name.Utf8());
     dst->AddIntAttribute(ui::AX_ATTR_NAME_FROM, AXNameFromFromBlink(nameFrom));
     AddIntListAttributeFromWebObjects(

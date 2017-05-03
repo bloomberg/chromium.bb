@@ -362,6 +362,7 @@ class AXSparseAttributeClient {
 enum AXNameFrom {
   kAXNameFromUninitialized = -1,
   kAXNameFromAttribute = 0,
+  kAXNameFromAttributeExplicitlyEmpty,
   kAXNameFromCaption,
   kAXNameFromContents,
   kAXNameFromPlaceholder,

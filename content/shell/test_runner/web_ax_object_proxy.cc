@@ -1628,6 +1628,8 @@ std::string WebAXObjectProxy::NameFrom() {
       return "";
     case blink::kWebAXNameFromAttribute:
       return "attribute";
+    case blink::kWebAXNameFromAttributeExplicitlyEmpty:
+      return "attributeExplicitlyEmpty";
     case blink::kWebAXNameFromCaption:
       return "caption";
     case blink::kWebAXNameFromContents:

@@ -1023,6 +1023,11 @@ bool BrowserAccessibility::IsRichTextControl() const {
           !PlatformGetParent()->HasState(ui::AX_STATE_RICHLY_EDITABLE));
 }
 
+bool BrowserAccessibility::HasExplicitlyEmptyName() const {
+  return GetIntAttribute(ui::AX_ATTR_NAME_FROM) ==
+         ui::AX_NAME_FROM_ATTRIBUTE_EXPLICITLY_EMPTY;
+}
+
 std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {
   std::string name;
   for (size_t i = 0; i < InternalChildCount(); ++i) {

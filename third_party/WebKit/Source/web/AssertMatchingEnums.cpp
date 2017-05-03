@@ -404,6 +404,8 @@ STATIC_ASSERT_ENUM(kWebAXTextStyleLineThrough, kTextStyleLineThrough);
 
 STATIC_ASSERT_ENUM(kWebAXNameFromUninitialized, kAXNameFromUninitialized);
 STATIC_ASSERT_ENUM(kWebAXNameFromAttribute, kAXNameFromAttribute);
+STATIC_ASSERT_ENUM(kWebAXNameFromAttributeExplicitlyEmpty,
+                   kAXNameFromAttributeExplicitlyEmpty);
 STATIC_ASSERT_ENUM(kWebAXNameFromCaption, kAXNameFromCaption);
 STATIC_ASSERT_ENUM(kWebAXNameFromContents, kAXNameFromContents);
 STATIC_ASSERT_ENUM(kWebAXNameFromPlaceholder, kAXNameFromPlaceholder);
