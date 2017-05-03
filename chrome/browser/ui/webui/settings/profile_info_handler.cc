@@ -209,7 +209,7 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
     // TODO(crbug.com/710660): return chrome://theme/IDR_PROFILE_AVATAR_*
     // and update theme_source.cc to get high res avatar icons. This does less
     // work here, sends less over IPC, and is more stable with returned results.
-    constexpr int kAvatarIconSize = 40;
+    int kAvatarIconSize = 40.f * web_ui()->GetDeviceScaleFactor();
     gfx::Image icon = profiles::GetSizedAvatarIcon(
         entry->GetAvatarIcon(), true, kAvatarIconSize, kAvatarIconSize);
     icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
