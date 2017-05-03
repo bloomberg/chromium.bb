@@ -417,7 +417,8 @@ void StringifyAndParseMethodSpecificData(
   // Serialize payment method specific data to be sent to the payment apps. The
   // payment apps are responsible for validating and processing their method
   // data asynchronously. Do not throw exceptions here.
-  if (supported_methods.Contains("https://android.com/pay")) {
+  if (supported_methods.Contains("https://android.com/pay") ||
+      supported_methods.Contains("https://google.com/pay")) {
     SetAndroidPayMethodData(input, output, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
