@@ -532,23 +532,6 @@ bool BrowserThreadImpl::PostTaskHelper(
 }
 
 // static
-bool BrowserThread::PostBlockingPoolTask(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task) {
-  return g_globals.Get().blocking_pool->PostWorkerTask(from_here,
-                                                       std::move(task));
-}
-
-// static
-bool BrowserThread::PostBlockingPoolTaskAndReply(
-    const tracked_objects::Location& from_here,
-    base::OnceClosure task,
-    base::OnceClosure reply) {
-  return g_globals.Get().blocking_pool->PostTaskAndReply(
-      from_here, std::move(task), std::move(reply));
-}
-
-// static
 bool BrowserThread::PostBlockingPoolSequencedTask(
     const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
