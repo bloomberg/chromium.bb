@@ -83,6 +83,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
@@ -293,6 +295,14 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public boolean isCustomTab() {
         return true;
+    }
+
+    @Override
+    protected void recordIntentToCreationTime(long timeMs) {
+        super.recordIntentToCreationTime(timeMs);
+
+        RecordHistogram.recordTimesHistogram(
+                "MobileStartup.IntentToCreationTime.CustomTabs", timeMs, TimeUnit.MILLISECONDS);
     }
 
     @Override

@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.support.annotation.CallSuper;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -973,6 +974,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 if (MultiWindowUtils.getInstance().isInMultiWindowMode(ChromeActivity.this)) {
                     onDeferredStartupForMultiWindowMode();
                 }
+
+                long intentTimestamp = IntentHandler.getTimestampFromIntent(getIntent());
+                if (intentTimestamp != -1) {
+                    recordIntentToCreationTime(getOnCreateTimestampMs() - intentTimestamp);
+                }
             }
         });
 
@@ -1001,6 +1007,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // width.
         recordMultiWindowModeChangedUserAction(true);
         recordMultiWindowModeScreenWidth();
+    }
+
+    /**
+     * Records the time it takes from creating an intent for {@link ChromeActivity} to activity
+     * creation, including time spent in the framework.
+     * @param timeMs The time from creating an intent to activity creation.
+     */
+    @CallSuper
+    protected void recordIntentToCreationTime(long timeMs) {
+        RecordHistogram.recordTimesHistogram(
+                "MobileStartup.IntentToCreationTime", timeMs, TimeUnit.MILLISECONDS);
     }
 
     @Override

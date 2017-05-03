@@ -10,6 +10,7 @@ import android.os.SystemClock;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -20,6 +21,8 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * An Activity is designed for WebAPKs (native Android apps) and displays a webapp in a nearly
@@ -128,6 +131,14 @@ public class WebApkActivity extends WebappActivity {
     public void onResume() {
         super.onResume();
         mStartTime = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    protected void recordIntentToCreationTime(long timeMs) {
+        super.recordIntentToCreationTime(timeMs);
+
+        RecordHistogram.recordTimesHistogram(
+                "MobileStartup.IntentToCreationTime.WebApk", timeMs, TimeUnit.MILLISECONDS);
     }
 
     @Override
