@@ -120,7 +120,7 @@ def method_context(interface, method, is_visible=True):
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
     if is_call_with_script_state or is_call_with_this_value:
-        includes.add('bindings/core/v8/ScriptState.h')
+        includes.add('platform/bindings/ScriptState.h')
 
     # [CheckSecurity]
     is_cross_origin = 'CrossOrigin' in extended_attributes

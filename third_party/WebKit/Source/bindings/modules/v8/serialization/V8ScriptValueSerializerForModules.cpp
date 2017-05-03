@@ -4,12 +4,12 @@
 
 #include "bindings/modules/v8/serialization/V8ScriptValueSerializerForModules.h"
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
 #include "platform/FileSystemType.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoKey.h"

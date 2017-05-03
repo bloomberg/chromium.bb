@@ -52,7 +52,7 @@ from v8_utilities import (cpp_name_or_partial, cpp_name, has_extended_attribute_
 INTERFACE_H_INCLUDES = frozenset([
     'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/NativeValueTraits.h',
-    'bindings/core/v8/ScriptWrappable.h',
+    'platform/bindings/ScriptWrappable.h',
     'bindings/core/v8/ToV8ForCore.h',
     'bindings/core/v8/V8BindingForCore.h',
     'bindings/core/v8/V8DOMWrapper.h',
@@ -138,7 +138,7 @@ def origin_trial_features(interface, constants, attributes, methods):
         feature['needs_instance'] = reduce(or_, (member.get('on_instance', False) for member in members))
 
     if features:
-        includes.add('bindings/core/v8/ScriptState.h')
+        includes.add('platform/bindings/ScriptState.h')
         includes.add('core/origin_trials/OriginTrials.h')
     return sorted(features)
 

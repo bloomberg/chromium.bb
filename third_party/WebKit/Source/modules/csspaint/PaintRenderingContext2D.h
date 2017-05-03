@@ -5,11 +5,11 @@
 #ifndef PaintRenderingContext2D_h
 #define PaintRenderingContext2D_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include <memory>
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/ImageBuffer.h"
-#include <memory>
 
 namespace blink {
 

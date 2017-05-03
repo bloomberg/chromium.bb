@@ -5,9 +5,9 @@
 #ifndef DetectedBarcode_h
 #define DetectedBarcode_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/imagecapture/Point2D.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

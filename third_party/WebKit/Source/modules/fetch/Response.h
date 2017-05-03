@@ -7,12 +7,12 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchResponseData.h"
 #include "modules/fetch/Headers.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"

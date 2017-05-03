@@ -34,7 +34,7 @@ namespace blink {
 {% if not is_typed_array_type %}
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& {{cpp_class}}::wrapper_type_info_ = {{v8_class}}::wrapperTypeInfo;
 {% endif %}
 

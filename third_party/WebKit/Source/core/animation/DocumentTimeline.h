@@ -31,9 +31,9 @@
 #ifndef DocumentTimeline_h
 #define DocumentTimeline_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationTimeline.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

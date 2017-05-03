@@ -31,10 +31,10 @@
 #ifndef LocalWindowProxy_h
 #define LocalWindowProxy_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"

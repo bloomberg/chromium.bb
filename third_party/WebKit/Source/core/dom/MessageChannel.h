@@ -27,7 +27,7 @@
 #ifndef MessageChannel_h
 #define MessageChannel_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

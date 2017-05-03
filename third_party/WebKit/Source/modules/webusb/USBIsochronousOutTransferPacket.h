@@ -5,7 +5,7 @@
 #ifndef USBIsochronousOutTransferPacket_h
 #define USBIsochronousOutTransferPacket_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/wtf/text/WTFString.h"
 

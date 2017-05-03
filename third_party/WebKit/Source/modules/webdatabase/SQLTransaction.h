@@ -29,13 +29,13 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
+#include <memory>
 #include "bindings/core/v8/Nullable.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/webdatabase/SQLStatement.h"
 #include "modules/webdatabase/SQLTransactionStateMachine.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 

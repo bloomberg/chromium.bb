@@ -30,7 +30,6 @@
 
 #include "core/inspector/WorkerThreadDebugger.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
@@ -45,6 +44,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/bindings/ScriptState.h"
 #include "v8/include/v8.h"
 
 namespace blink {

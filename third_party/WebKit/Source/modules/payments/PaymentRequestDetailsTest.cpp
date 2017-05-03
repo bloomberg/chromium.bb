@@ -6,13 +6,13 @@
 
 #include <ostream>  // NOLINT
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/payments/PaymentDetailsInit.h"
 #include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentTestHelper.h"
+#include "platform/bindings/ScriptState.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

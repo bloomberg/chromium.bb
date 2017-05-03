@@ -36,7 +36,7 @@ const WrapperTypeInfo V8TestInterfaceSecureContext::wrapperTypeInfo = { gin::kEm
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceSecureContext.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceSecureContext::wrapper_type_info_ = V8TestInterfaceSecureContext::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

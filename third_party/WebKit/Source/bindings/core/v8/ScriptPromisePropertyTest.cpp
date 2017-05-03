@@ -8,7 +8,6 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
@@ -18,6 +17,7 @@
 #include "core/testing/GCObservation.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"

@@ -34,7 +34,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventListener.h"
@@ -45,6 +44,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Deque.h"

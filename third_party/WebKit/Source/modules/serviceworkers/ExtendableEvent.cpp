@@ -30,8 +30,8 @@
 
 #include "modules/serviceworkers/ExtendableEvent.h"
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

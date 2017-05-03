@@ -5,10 +5,10 @@
 #ifndef DOMArrayBufferView_h
 #define DOMArrayBufferView_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/typed_arrays/ArrayBufferView.h"
 
 namespace blink {

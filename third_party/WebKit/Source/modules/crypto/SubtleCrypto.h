@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
 #include "bindings/modules/v8/DictionaryOrString.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 

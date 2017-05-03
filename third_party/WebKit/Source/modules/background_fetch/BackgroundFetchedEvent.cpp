@@ -5,7 +5,6 @@
 #include "modules/background_fetch/BackgroundFetchedEvent.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "modules/EventModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
@@ -13,6 +12,7 @@
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
 
 namespace blink {

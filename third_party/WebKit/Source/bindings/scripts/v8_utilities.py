@@ -430,7 +430,7 @@ def origin_trial_enabled_function_name(definition_or_member):
                         % definition_or_member.name)
 
     if is_feature_policy_enabled:
-        includes.add('bindings/core/v8/ScriptState.h')
+        includes.add('platform/bindings/ScriptState.h')
         includes.add('platform/feature_policy/FeaturePolicy.h')
 
         trial_name = extended_attributes['FeaturePolicy']

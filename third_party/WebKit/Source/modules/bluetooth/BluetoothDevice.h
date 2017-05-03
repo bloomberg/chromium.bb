@@ -6,10 +6,10 @@
 #define BluetoothDevice_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"

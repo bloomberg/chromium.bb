@@ -25,7 +25,7 @@
 #ifndef RTCLegacyStatsReport_h
 #define RTCLegacyStatsReport_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"

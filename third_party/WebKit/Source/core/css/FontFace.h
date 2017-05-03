@@ -33,12 +33,12 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/wtf/text/WTFString.h"
 

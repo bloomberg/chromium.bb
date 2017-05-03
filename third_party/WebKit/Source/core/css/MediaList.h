@@ -22,10 +22,10 @@
 #ifndef MediaList_h
 #define MediaList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/MediaQuery.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"

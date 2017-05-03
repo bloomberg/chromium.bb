@@ -39,7 +39,7 @@ const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedde
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceDocument.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceDocument::wrapper_type_info_ = V8TestInterfaceDocument::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

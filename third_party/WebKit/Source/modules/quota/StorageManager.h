@@ -5,7 +5,7 @@
 #ifndef StorageManager_h
 #define StorageManager_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 

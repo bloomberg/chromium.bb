@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMException.h"
@@ -40,6 +39,7 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"

@@ -31,9 +31,9 @@
 #ifndef FileWriterSync_h
 #define FileWriterSync_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/FileWriterBase.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
 

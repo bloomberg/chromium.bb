@@ -6,9 +6,9 @@
 #define BluetoothRemoteGATTService_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "modules/bluetooth/BluetoothDevice.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/text/WTFString.h"

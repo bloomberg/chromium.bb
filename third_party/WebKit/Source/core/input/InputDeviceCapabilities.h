@@ -5,9 +5,9 @@
 #ifndef InputDeviceCapabilities_h
 #define InputDeviceCapabilities_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/input/InputDeviceCapabilitiesInit.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

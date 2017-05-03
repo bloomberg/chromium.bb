@@ -30,10 +30,10 @@
 #define PeriodicWave_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/audio/AudioArray.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
 

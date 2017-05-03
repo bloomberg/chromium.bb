@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedTransformList_h
 #define SVGAnimatedTransformList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGTransformListTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

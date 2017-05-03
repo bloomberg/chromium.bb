@@ -26,7 +26,7 @@
 #ifndef WebGLActiveInfo_h
 #define WebGLActiveInfo_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {

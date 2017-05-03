@@ -34,7 +34,7 @@ const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin:
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCustomConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = V8TestInterfaceCustomConstructor::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

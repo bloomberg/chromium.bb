@@ -4,11 +4,11 @@
 
 #include "core/frame/HostsUsingFeatures.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

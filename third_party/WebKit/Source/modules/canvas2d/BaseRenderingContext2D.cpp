@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
@@ -24,6 +23,7 @@
 #include "modules/canvas2d/Path2D.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"

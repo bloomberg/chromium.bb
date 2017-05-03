@@ -21,7 +21,6 @@
 #include "bindings/core/v8/ElementSequenceOrByteStringDoubleOrStringRecord.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/StringOrStringSequence.h"
@@ -35,6 +34,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "bindings/tests/idls/core/TestObject.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

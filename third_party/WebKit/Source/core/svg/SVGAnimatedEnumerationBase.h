@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedEnumerationBase_h
 #define SVGAnimatedEnumerationBase_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGEnumeration.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

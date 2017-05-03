@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedLength_h
 #define SVGAnimatedLength_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGLengthTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

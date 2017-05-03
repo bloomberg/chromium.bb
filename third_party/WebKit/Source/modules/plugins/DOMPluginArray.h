@@ -21,9 +21,9 @@
 #ifndef DOMPluginArray_h
 #define DOMPluginArray_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/plugins/DOMPlugin.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 

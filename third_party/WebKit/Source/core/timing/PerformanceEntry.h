@@ -32,9 +32,9 @@
 #ifndef PerformanceEntry_h
 #define PerformanceEntry_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMHighResTimeStamp.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

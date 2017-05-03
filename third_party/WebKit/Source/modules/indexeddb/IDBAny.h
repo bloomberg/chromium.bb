@@ -26,11 +26,11 @@
 #ifndef IDBAny_h
 #define IDBAny_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/WTFString.h"
 

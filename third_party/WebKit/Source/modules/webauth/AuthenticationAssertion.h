@@ -5,9 +5,9 @@
 #ifndef AuthenticationAssertion_h
 #define AuthenticationAssertion_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/webauth/ScopedCredential.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

@@ -4,13 +4,13 @@
 
 #include "modules/payments/PaymentAppRequestConversion.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "modules/payments/PaymentAppRequest.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentDetailsModifier.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentMethodData.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "public/platform/modules/payments/WebPaymentMethodData.h"
 

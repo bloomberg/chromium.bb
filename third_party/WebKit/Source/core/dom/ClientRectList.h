@@ -27,9 +27,9 @@
 #ifndef ClientRectList_h
 #define ClientRectList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ClientRect.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
 

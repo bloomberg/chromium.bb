@@ -5,12 +5,12 @@
 #ifndef Bluetooth_h
 #define Bluetooth_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/bluetooth/BluetoothDevice.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
-#include <memory>
 
 namespace blink {
 

@@ -5,7 +5,6 @@
 #include "core/mojo/MojoHandle.h"
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExecutionContext.h"
@@ -20,6 +19,7 @@
 #include "core/mojo/MojoWatcher.h"
 #include "core/mojo/MojoWriteDataOptions.h"
 #include "core/mojo/MojoWriteDataResult.h"
+#include "platform/bindings/ScriptState.h"
 
 // Mojo messages typically do not contain many handles. In fact most
 // messages do not contain any handle. An inline capacity of 4 should avoid

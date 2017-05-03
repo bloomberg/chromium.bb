@@ -32,9 +32,9 @@
 #define ScriptValue_h
 
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"

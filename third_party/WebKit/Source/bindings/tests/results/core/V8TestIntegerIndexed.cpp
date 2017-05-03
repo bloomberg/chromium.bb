@@ -37,7 +37,7 @@ const WrapperTypeInfo V8TestIntegerIndexed::wrapperTypeInfo = { gin::kEmbedderBl
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestIntegerIndexed.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestIntegerIndexed::wrapper_type_info_ = V8TestIntegerIndexed::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

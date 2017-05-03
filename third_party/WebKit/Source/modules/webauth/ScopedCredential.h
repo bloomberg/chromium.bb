@@ -5,8 +5,8 @@
 #ifndef ScopedCredential_h
 #define ScopedCredential_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

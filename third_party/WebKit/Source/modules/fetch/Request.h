@@ -6,12 +6,12 @@
 #define Request_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/RequestOrUSVString.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Headers.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"

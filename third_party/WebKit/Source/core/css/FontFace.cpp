@@ -31,7 +31,6 @@
 #include "core/css/FontFace.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
@@ -64,6 +63,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

@@ -26,9 +26,9 @@
 #ifndef SpeechRecognitionResult_h
 #define SpeechRecognitionResult_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechRecognitionAlternative.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

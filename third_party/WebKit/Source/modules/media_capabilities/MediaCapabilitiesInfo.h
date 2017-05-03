@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
 
 namespace blink {

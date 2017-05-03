@@ -26,10 +26,10 @@
 #ifndef WebGLExtension_h
 #define WebGLExtension_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/webgl/WebGLExtensionName.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

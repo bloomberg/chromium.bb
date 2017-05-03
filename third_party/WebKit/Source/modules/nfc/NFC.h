@@ -6,13 +6,13 @@
 #define NFC_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/StringOrArrayBufferOrNFCMessage.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/nfc/nfc.mojom-blink.h"
 #include "modules/nfc/MessageCallback.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/HashMap.h"
 
 namespace blink {

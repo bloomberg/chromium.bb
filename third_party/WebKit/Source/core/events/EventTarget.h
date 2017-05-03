@@ -33,7 +33,6 @@
 #define EventTarget_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/EventNames.h"
 #include "core/EventTargetNames.h"
@@ -42,6 +41,7 @@
 #include "core/events/EventDispatchResult.h"
 #include "core/events/EventListenerMap.h"
 #include "core/frame/UseCounter.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/AtomicString.h"

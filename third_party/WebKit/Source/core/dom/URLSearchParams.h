@@ -8,8 +8,8 @@
 #include <base/gtest_prod_util.h>
 #include <utility>
 #include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/wtf/Forward.h"

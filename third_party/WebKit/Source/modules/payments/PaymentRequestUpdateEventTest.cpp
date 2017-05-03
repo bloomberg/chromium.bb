@@ -7,12 +7,12 @@
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/EventTypeNames.h"
 #include "modules/payments/PaymentRequest.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "modules/payments/PaymentUpdater.h"
+#include "platform/bindings/ScriptState.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

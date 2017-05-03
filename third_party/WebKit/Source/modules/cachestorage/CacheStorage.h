@@ -7,11 +7,11 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/cachestorage/Cache.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "modules/fetch/GlobalFetch.h"
+#include "platform/bindings/ScriptState.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"

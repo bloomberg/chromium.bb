@@ -31,9 +31,9 @@
 #ifndef SVGStringListTearOff_h
 #define SVGStringListTearOff_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

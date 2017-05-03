@@ -5,7 +5,7 @@
 #ifndef RTCRtpContributingSource_h
 #define RTCRtpContributingSource_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/Visitor.h"

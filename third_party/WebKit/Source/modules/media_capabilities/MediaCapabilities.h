@@ -5,7 +5,7 @@
 #ifndef MediaCapabilities_h
 #define MediaCapabilities_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Visitor.h"
 
 namespace blink {

@@ -25,11 +25,11 @@
 #define DataTransfer_h
 
 #include <memory>
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/DragActions.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

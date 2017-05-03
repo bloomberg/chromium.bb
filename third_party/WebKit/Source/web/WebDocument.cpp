@@ -31,7 +31,6 @@
 #include "public/web/WebDocument.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ElementRegistrationOptions.h"
 #include "core/css/StyleSheetContents.h"
@@ -55,6 +54,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebDistillability.h"

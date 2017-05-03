@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/DecodeErrorCallback.h"
 #include "bindings/modules/v8/DecodeSuccessCallback.h"
 #include "core/dom/DOMException.h"
@@ -74,6 +73,7 @@
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/audio/IIRFilter.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 

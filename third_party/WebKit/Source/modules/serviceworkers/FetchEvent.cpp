@@ -4,7 +4,6 @@
 
 #include "modules/serviceworkers/FetchEvent.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
@@ -15,6 +14,7 @@
 #include "modules/serviceworkers/FetchRespondWithObserver.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/wtf/PtrUtil.h"

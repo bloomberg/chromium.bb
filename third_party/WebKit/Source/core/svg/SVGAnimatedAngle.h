@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedAngle_h
 #define SVGAnimatedAngle_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

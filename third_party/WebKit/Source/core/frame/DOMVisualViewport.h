@@ -31,9 +31,9 @@
 #ifndef DOMVisualViewport_h
 #define DOMVisualViewport_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 

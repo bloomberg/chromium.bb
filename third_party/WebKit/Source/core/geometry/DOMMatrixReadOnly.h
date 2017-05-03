@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
 

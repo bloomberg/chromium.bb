@@ -32,12 +32,12 @@
 #define Blob_h
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/html/URLRegistry.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PassRefPtr.h"

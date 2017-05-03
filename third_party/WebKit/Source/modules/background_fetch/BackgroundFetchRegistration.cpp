@@ -4,10 +4,10 @@
 
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

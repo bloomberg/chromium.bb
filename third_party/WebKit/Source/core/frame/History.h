@@ -27,10 +27,10 @@
 #define History_h
 
 #include "base/gtest_prod_util.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 

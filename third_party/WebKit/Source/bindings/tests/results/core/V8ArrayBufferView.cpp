@@ -48,7 +48,7 @@ const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = { gin::kEmbedderBlink
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestArrayBufferView.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+// platform/bindings/ScriptWrappable.h.
 const WrapperTypeInfo& TestArrayBufferView::wrapper_type_info_ = V8ArrayBufferView::wrapperTypeInfo;
 
 // not [ActiveScriptWrappable]

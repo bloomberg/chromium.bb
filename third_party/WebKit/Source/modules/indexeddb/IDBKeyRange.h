@@ -26,9 +26,9 @@
 #ifndef IDBKeyRange_h
 #define IDBKeyRange_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

@@ -8,9 +8,9 @@
 #include <deque>
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/page/scrolling/ScrollStateInit.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/scroll/ScrollStateData.h"
 #include "platform/wtf/Forward.h"
 

@@ -5,12 +5,12 @@
 #include "core/fileapi/URLFileAPI.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

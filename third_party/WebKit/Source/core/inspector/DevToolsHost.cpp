@@ -29,7 +29,6 @@
 
 #include "core/inspector/DevToolsHost.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/clipboard/Pasteboard.h"
@@ -53,6 +52,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"

@@ -6,13 +6,13 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/RequestOrUSVString.h"
 #include "bindings/modules/v8/RequestOrUSVStringOrRequestOrUSVStringSequence.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/fetch/Request.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

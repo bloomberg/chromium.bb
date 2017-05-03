@@ -27,10 +27,10 @@
 #ifndef ElementShadowV0_h
 #define ElementShadowV0_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 

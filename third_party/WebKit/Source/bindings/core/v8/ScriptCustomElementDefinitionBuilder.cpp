@@ -8,12 +8,12 @@
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

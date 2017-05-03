@@ -6,7 +6,7 @@
 #define BackgroundFetchRegistration_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"

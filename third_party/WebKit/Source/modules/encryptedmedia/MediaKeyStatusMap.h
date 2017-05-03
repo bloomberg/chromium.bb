@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayPiece.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {

@@ -6,7 +6,6 @@
 #define ScriptPromiseResolver_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
@@ -14,6 +13,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "v8/include/v8.h"

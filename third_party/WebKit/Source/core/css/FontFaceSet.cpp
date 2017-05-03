@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceCache.h"
@@ -41,6 +40,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/Histogram.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

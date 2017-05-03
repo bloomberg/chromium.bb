@@ -5,11 +5,11 @@
 #ifndef BluetoothRemoteGATTServer_h
 #define BluetoothRemoteGATTServer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"

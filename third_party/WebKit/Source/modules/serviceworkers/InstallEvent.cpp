@@ -4,10 +4,10 @@
 
 #include "modules/serviceworkers/InstallEvent.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {

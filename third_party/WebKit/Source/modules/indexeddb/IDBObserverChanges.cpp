@@ -5,13 +5,13 @@
 #include "modules/indexeddb/IDBObserverChanges.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBObservation.h"
+#include "platform/bindings/ScriptState.h"
 #include "public/platform/modules/indexeddb/WebIDBObservation.h"
 
 namespace blink {

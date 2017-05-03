@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
@@ -16,6 +15,7 @@
 #include "core/dom/Document.h"
 #include "core/streams/ReadableStreamController.h"
 #include "core/streams/UnderlyingSourceBase.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

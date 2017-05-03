@@ -8,10 +8,10 @@
 #include "bindings/core/v8/CSSStyleValueOrCSSStyleValueSequence.h"
 #include "bindings/core/v8/CSSStyleValueOrCSSStyleValueSequenceOrString.h"
 #include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

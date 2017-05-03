@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedNumber_h
 #define SVGAnimatedNumber_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

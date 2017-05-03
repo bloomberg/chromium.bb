@@ -6,12 +6,12 @@
 #define USB_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "device/usb/public/interfaces/chooser_service.mojom-blink.h"
 #include "device/usb/public/interfaces/device_manager.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

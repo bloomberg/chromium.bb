@@ -31,8 +31,8 @@
 #ifndef VTTRegion_h
 #define VTTRegion_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/Timer.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"

@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -19,6 +18,7 @@
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"

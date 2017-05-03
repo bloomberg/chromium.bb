@@ -5,9 +5,9 @@
 #ifndef IntersectionObserverEntry_h
 #define IntersectionObserverEntry_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/DOMHighResTimeStamp.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 

@@ -8,7 +8,6 @@
 #include <utility>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/modules/v8/V8AndroidPayMethodData.h"
 #include "bindings/modules/v8/V8BasicCardRequest.h"
@@ -40,6 +39,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UUID.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/InterfaceProvider.h"

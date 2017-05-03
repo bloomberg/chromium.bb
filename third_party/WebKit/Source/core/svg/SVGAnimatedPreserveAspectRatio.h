@@ -31,9 +31,9 @@
 #ifndef SVGAnimatedPreserveAspectRatio_h
 #define SVGAnimatedPreserveAspectRatio_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGPreserveAspectRatioTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 

@@ -5,14 +5,14 @@
 #ifndef WorkletGlobalScope_h
 #define WorkletGlobalScope_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include <memory>
 
 namespace blink {
 

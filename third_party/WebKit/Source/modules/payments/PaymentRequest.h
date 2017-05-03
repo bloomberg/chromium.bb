@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "components/payments/mojom/payment_request.mojom-blink.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
@@ -18,6 +17,7 @@
 #include "modules/payments/PaymentUpdater.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Noncopyable.h"

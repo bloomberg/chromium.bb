@@ -26,12 +26,12 @@
 #include "bindings/core/v8/V8MutationCallback.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8MutationObserver.h"
 #include "bindings/core/v8/V8MutationRecord.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

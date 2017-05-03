@@ -4,10 +4,10 @@
 
 #include "modules/payments/PaymentTestHelper.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentMethodData.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {

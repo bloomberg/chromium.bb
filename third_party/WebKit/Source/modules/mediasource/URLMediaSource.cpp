@@ -30,11 +30,11 @@
 
 #include "modules/mediasource/URLMediaSource.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "modules/mediasource/MediaSource.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 

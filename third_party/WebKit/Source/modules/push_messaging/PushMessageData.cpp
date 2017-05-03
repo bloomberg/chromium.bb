@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrUSVString.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/TextEncoding.h"

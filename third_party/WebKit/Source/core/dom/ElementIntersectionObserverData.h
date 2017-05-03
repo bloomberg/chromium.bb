@@ -5,8 +5,8 @@
 #ifndef ElementIntersectionObserverData_h
 #define ElementIntersectionObserverData_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -31,9 +31,9 @@
 #ifndef SVGMatrixTearOff_h
 #define SVGMatrixTearOff_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 

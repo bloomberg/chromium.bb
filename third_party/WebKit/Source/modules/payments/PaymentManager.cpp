@@ -5,12 +5,12 @@
 #include "modules/payments/PaymentManager.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "modules/payments/PaymentAppManifest.h"
 #include "modules/payments/PaymentAppOption.h"
 #include "modules/payments/PaymentInstruments.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"

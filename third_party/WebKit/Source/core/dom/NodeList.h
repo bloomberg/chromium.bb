@@ -24,8 +24,8 @@
 #ifndef NodeList_h
 #define NodeList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
