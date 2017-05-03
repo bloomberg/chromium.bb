@@ -795,7 +795,8 @@ TEST_F(AudioAndroidOutputTest, OpenAndCloseOutputStream) {
 
 // Start input streaming using default input parameters and ensure that the
 // callback sequence is sane.
-TEST_P(AudioAndroidInputTest, StartInputStreamCallbacks) {
+// Flaky, see crbug.com/683408.
+TEST_P(AudioAndroidInputTest, DISABLED_StartInputStreamCallbacks) {
   AudioParameters native_params = GetInputStreamParameters();
   StartInputStreamCallbacks(native_params);
 }
@@ -803,7 +804,9 @@ TEST_P(AudioAndroidInputTest, StartInputStreamCallbacks) {
 // Start input streaming using non default input parameters and ensure that the
 // callback sequence is sane. The only change we make in this test is to select
 // a 10ms buffer size instead of the default size.
-TEST_P(AudioAndroidInputTest, StartInputStreamCallbacksNonDefaultParameters) {
+// Flaky, see crbug.com/683408.
+TEST_P(AudioAndroidInputTest,
+       DISABLED_StartInputStreamCallbacksNonDefaultParameters) {
   AudioParameters params = GetInputStreamParameters();
   params.set_frames_per_buffer(params.sample_rate() / 100);
   StartInputStreamCallbacks(params);
