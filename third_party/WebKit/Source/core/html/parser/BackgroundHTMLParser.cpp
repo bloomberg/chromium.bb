@@ -128,7 +128,6 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
       starting_script_(false),
-      last_bytes_received_time_(0.0),
       should_coalesce_chunks_(config->should_coalesce_chunks) {
   DCHECK_GT(outstanding_token_limit_, 0u);
   DCHECK_GT(pending_token_limit_, 0u);
@@ -141,7 +140,6 @@ void BackgroundHTMLParser::AppendRawBytesFromMainThread(
     std::unique_ptr<Vector<char>> buffer,
     double bytes_received_time) {
   DCHECK(decoder_);
-  last_bytes_received_time_ = bytes_received_time;
   DEFINE_STATIC_LOCAL(CustomCountHistogram, queue_delay,
                       ("Parser.AppendBytesDelay", 1, 5000, 50));
   queue_delay.Count(MonotonicallyIncreasingTimeMS() - bytes_received_time);
@@ -192,7 +190,6 @@ void BackgroundHTMLParser::ResumeFrom(std::unique_ptr<Checkpoint> checkpoint) {
   preload_scanner_->RewindTo(checkpoint->preload_scanner_checkpoint);
   starting_script_ = false;
   tokenized_chunk_queue_->Clear();
-  last_bytes_received_time_ = MonotonicallyIncreasingTimeMS();
   PumpTokenizer();
 }
 
@@ -328,19 +325,11 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
   CheckThatXSSInfosAreSafeToSendToAnotherThread(pending_xss_infos_);
 #endif
 
-  double chunk_start_time = MonotonicallyIncreasingTimeMS();
   std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk =
       WTF::WrapUnique(new HTMLDocumentParser::TokenizedChunk);
   TRACE_EVENT_WITH_FLOW0("blink,loading",
                          "BackgroundHTMLParser::sendTokensToMainThread",
                          chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
-
-  if (!pending_preloads_.IsEmpty()) {
-    double delay = MonotonicallyIncreasingTimeMS() - last_bytes_received_time_;
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, preload_tokenize_delay,
-                        ("Parser.PreloadTokenizeDelay", 1, 10000, 50));
-    preload_tokenize_delay.Count(delay);
-  }
 
   chunk->preloads.swap(pending_preloads_);
   if (viewport_description_.set)
@@ -360,10 +349,6 @@ bool BackgroundHTMLParser::QueueChunkForMainThread() {
       HTMLDocumentParser::TokenizedChunk::kNoPendingToken;
 
   bool is_empty = tokenized_chunk_queue_->Enqueue(std::move(chunk));
-
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, chunk_enqueue_time,
-                      ("Parser.ChunkEnqueueTime", 1, 10000, 50));
-  chunk_enqueue_time.Count(MonotonicallyIncreasingTimeMS() - chunk_start_time);
 
   pending_tokens_ = WTF::WrapUnique(new CompactHTMLTokenStream);
   return is_empty;
