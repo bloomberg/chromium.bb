@@ -442,6 +442,4 @@ static const TXFM_2D_CFG inv_txfm_2d_cfg_adst_dct_32 = {
   TXFM_TYPE_DCT32
 };  // .txfm_type_row
 
-extern const TXFM_2D_CFG *inv_txfm_cfg_ls[TX_TYPES][TX_SIZES];
-
 #endif  // AV1_INV_TXFM2D_CFG_H_
