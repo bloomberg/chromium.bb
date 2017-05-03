@@ -5,6 +5,7 @@
 #include "services/resource_coordinator/public/cpp/memory/memory_instrumentation_struct_traits.h"
 
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/process_memory_totals.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
 
@@ -111,6 +112,21 @@ bool StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
 }
 
 // static
+bool StructTraits<
+    memory_instrumentation::mojom::PlatformPrivateFootprintDataView,
+    base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint>::
+    Read(
+        memory_instrumentation::mojom::PlatformPrivateFootprintDataView input,
+        base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint* out) {
+  out->phys_footprint_bytes = input.phys_footprint_bytes();
+  out->internal_bytes = input.internal_bytes();
+  out->compressed_bytes = input.compressed_bytes();
+  out->rss_anon_bytes = input.rss_anon_bytes();
+  out->vm_swap_bytes = input.vm_swap_bytes();
+  return true;
+}
+
+// static
 bool StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
                   base::trace_event::MemoryDumpCallbackResult::ChromeMemDump>::
     Read(memory_instrumentation::mojom::ChromeMemDumpDataView input,
@@ -128,6 +144,8 @@ bool StructTraits<memory_instrumentation::mojom::OSMemDumpDataView,
     Read(memory_instrumentation::mojom::OSMemDumpDataView input,
          base::trace_event::MemoryDumpCallbackResult::OSMemDump* out) {
   out->resident_set_kb = input.resident_set_kb();
+  if (!input.ReadPlatformPrivateFootprint(&out->platform_private_footprint))
+    return false;
   return true;
 }
 

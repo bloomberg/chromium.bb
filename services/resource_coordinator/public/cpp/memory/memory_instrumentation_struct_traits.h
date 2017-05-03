@@ -7,6 +7,7 @@
 
 #include "base/process/process_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/process_memory_totals.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/cpp/memory/memory_export.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
@@ -54,6 +55,40 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
 };
 
 template <>
+struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT StructTraits<
+    memory_instrumentation::mojom::PlatformPrivateFootprintDataView,
+    base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint> {
+  static uint64_t phys_footprint_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.phys_footprint_bytes;
+  }
+  static uint64_t internal_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.internal_bytes;
+  }
+  static uint64_t compressed_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.compressed_bytes;
+  }
+  static uint64_t rss_anon_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.rss_anon_bytes;
+  }
+  static uint64_t vm_swap_bytes(
+      const base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint&
+          args) {
+    return args.vm_swap_bytes;
+  }
+  static bool Read(
+      memory_instrumentation::mojom::PlatformPrivateFootprintDataView input,
+      base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint* out);
+};
+
+template <>
 struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
     StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
                  base::trace_event::MemoryDumpCallbackResult::ChromeMemDump> {
@@ -85,6 +120,11 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_EXPORT
   static uint32_t resident_set_kb(
       const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
     return args.resident_set_kb;
+  }
+  static base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint
+  platform_private_footprint(
+      const base::trace_event::MemoryDumpCallbackResult::OSMemDump& args) {
+    return args.platform_private_footprint;
   }
   static bool Read(memory_instrumentation::mojom::OSMemDumpDataView input,
                    base::trace_event::MemoryDumpCallbackResult::OSMemDump* out);
