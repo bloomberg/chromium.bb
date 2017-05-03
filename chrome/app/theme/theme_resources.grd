@@ -285,12 +285,6 @@
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="common/pageinfo_bad.png" />
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="common/pageinfo_good.png" />
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_INFO" file="common/pageinfo_info.png" />
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MAJOR" file="common/pageinfo_warning_major.png" />
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MINOR" file="common/pageinfo_warning_minor.png" />
-      <structure type="chrome_scaled_image" name="IDR_PAGEINFO_ENTERPRISE_MANAGED" file="common/pageinfo_enterprise_managed.png" />
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
       <if expr="chromeos">

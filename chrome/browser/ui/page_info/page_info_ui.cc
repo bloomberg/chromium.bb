@@ -27,7 +27,9 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/android_theme_resources.h"
+#else
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -387,6 +389,7 @@ const gfx::Image& PageInfoUI::GetChosenObjectIcon(
                                         : object.ui_info.allowed_icon_id);
 }
 
+#if defined(OS_ANDROID)
 // static
 int PageInfoUI::GetIdentityIconID(PageInfo::SiteIdentityStatus status) {
   int resource_id = IDR_PAGEINFO_INFO;
@@ -421,13 +424,6 @@ int PageInfoUI::GetIdentityIconID(PageInfo::SiteIdentityStatus status) {
 }
 
 // static
-const gfx::Image& PageInfoUI::GetIdentityIcon(
-    PageInfo::SiteIdentityStatus status) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(GetIdentityIconID(status));
-}
-
-// static
 int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
   int resource_id = IDR_PAGEINFO_INFO;
   switch (status) {
@@ -451,15 +447,7 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
   }
   return resource_id;
 }
-
-// static
-const gfx::Image& PageInfoUI::GetConnectionIcon(
-    PageInfo::SiteConnectionStatus status) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(GetConnectionIconID(status));
-}
-
-#if !defined(OS_ANDROID)
+#else  // !defined(OS_ANDROID)
 // static
 const gfx::ImageSkia PageInfoUI::GetCertificateIcon() {
   return gfx::CreateVectorIcon(kCertificateIcon, 16, gfx::kChromeIconGrey);
