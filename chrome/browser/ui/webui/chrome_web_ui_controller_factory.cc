@@ -181,7 +181,7 @@
 #include "chrome/browser/ui/webui/sandbox_internals_ui.h"
 #endif
 
-#if (defined(USE_NSS_CERTS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
+#if defined(USE_NSS_CERTS) && defined(USE_AURA)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
@@ -571,14 +571,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ConstrainedWebDialogUI>;
   }
 #endif
-#if (defined(USE_NSS_CERTS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
+#if defined(USE_NSS_CERTS) && defined(USE_AURA)
   if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #if defined(OS_CHROMEOS)
   if (url.host_piece() == chrome::kChromeUICertificateViewerDialogHost)
     return &NewWebUI<CertificateViewerModalDialogUI>;
 #endif
-#endif  // (USE_NSS_CERTS || USE_OPENSSL_CERTS) && USE_AURA
+#endif  // USE_NSS_CERTS && USE_AURA
 
   if (url.host_piece() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
