@@ -1,0 +1,15 @@
+{
+  "name": "resource_coordinator",
+  "display_name": "Global Resource Coordinator",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "coordination_unit": [ "resource_coordinator::mojom::CoordinationUnitProvider"],
+        "tests": [ "*" ]
+      },
+      "requires": {
+        "service_manager": [ "service_manager:all_users" ]
+      }
+    }
+  }
+}
