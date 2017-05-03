@@ -162,17 +162,18 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const {
 }
 
 FloatRect SVGGraphicsElement::GetBBox() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  // FIXME: Eventually we should support getBBox for detached elements.
-  if (!GetLayoutObject())
-    return FloatRect();
-
+  DCHECK(GetLayoutObject());
   return GetLayoutObject()->ObjectBoundingBox();
 }
 
 SVGRectTearOff* SVGGraphicsElement::getBBoxFromJavascript() {
-  return SVGRectTearOff::Create(SVGRect::Create(GetBBox()), 0,
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // FIXME: Eventually we should support getBBox for detached elements.
+  FloatRect boundingBox;
+  if (GetLayoutObject())
+    boundingBox = GetBBox();
+  return SVGRectTearOff::Create(SVGRect::Create(boundingBox), 0,
                                 kPropertyIsNotAnimVal);
 }
 

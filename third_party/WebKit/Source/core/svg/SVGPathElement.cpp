@@ -151,8 +151,6 @@ void SVGPathElement::RemovedFrom(ContainerNode* root_parent) {
 }
 
 FloatRect SVGPathElement::GetBBox() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
   // We want the exact bounds.
   return SVGPathElement::AsPath().BoundingRect(Path::BoundsType::kExact);
 }

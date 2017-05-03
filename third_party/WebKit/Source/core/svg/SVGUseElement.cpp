@@ -676,11 +676,7 @@ bool SVGUseElement::SelfHasRelativeLengths() const {
 }
 
 FloatRect SVGUseElement::GetBBox() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (!GetLayoutObject())
-    return FloatRect();
-
+  DCHECK(GetLayoutObject());
   LayoutSVGTransformableContainer& transformable_container =
       ToLayoutSVGTransformableContainer(*GetLayoutObject());
   // Don't apply the additional translation if the oBB is invalid.
