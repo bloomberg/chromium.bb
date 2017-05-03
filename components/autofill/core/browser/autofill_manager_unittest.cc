@@ -184,10 +184,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   void AddFullServerCreditCard(const CreditCard& credit_card) override {
-    std::unique_ptr<CreditCard> server_credit_card =
-        base::MakeUnique<CreditCard>(credit_card);
-    server_credit_card->set_modification_date(base::Time::Now());
-    server_credit_cards_.push_back(std::move(server_credit_card));
+    AddServerCreditCard(credit_card);
   }
 
   void RecordUseOf(const AutofillDataModel& data_model) override {
@@ -225,6 +222,13 @@ class TestPersonalDataManager : public PersonalDataManager {
   void ClearCreditCards() {
     local_credit_cards_.clear();
     server_credit_cards_.clear();
+  }
+
+  void AddServerCreditCard(const CreditCard& credit_card) {
+    std::unique_ptr<CreditCard> server_credit_card =
+        base::MakeUnique<CreditCard>(credit_card);
+    server_credit_card->set_modification_date(base::Time::Now());
+    server_credit_cards_.push_back(std::move(server_credit_card));
   }
 
   // Create Elvis card with whitespace in the credit card number.
@@ -4658,6 +4662,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
 
   base::HistogramTester histogram_tester;
 
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 
@@ -5609,6 +5614,50 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_UploadDetailsFails) {
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
+}
+
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_DuplicateMaskedCreditCard DISABLED_DuplicatedMaskedCreditCard
+#else
+#define MAYBE_DuplicateMaskedCreditCard DuplicateMaskedCreditCard
+#endif
+TEST_F(AutofillManagerTest, MAYBE_DuplicateMaskedCreditCard) {
+  personal_data_.ClearAutofillProfiles();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+  autofill_manager_->set_app_locale("en-US");
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
+  // below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // The save prompt should be shown.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and

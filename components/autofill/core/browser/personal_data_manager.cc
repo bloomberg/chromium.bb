@@ -442,13 +442,16 @@ void PersonalDataManager::RemoveObserver(
 bool PersonalDataManager::ImportFormData(
     const FormStructure& form,
     bool should_return_local_card,
-    std::unique_ptr<CreditCard>* imported_credit_card) {
+    std::unique_ptr<CreditCard>* imported_credit_card,
+    bool* imported_credit_card_matches_masked_server_credit_card) {
   // We try the same |form| for both credit card and address import/update.
   // - ImportCreditCard may update an existing card, or fill
   //   |imported_credit_card| with an extracted card. See .h for details of
-  //   |should_return_local_card|.
+  //   |should_return_local_card| and
+  //   |imported_credit_card_matches_masked_server_credit_card|.
   bool cc_import =
-      ImportCreditCard(form, should_return_local_card, imported_credit_card);
+      ImportCreditCard(form, should_return_local_card, imported_credit_card,
+                       imported_credit_card_matches_masked_server_credit_card);
   // - ImportAddressProfiles may eventually save or update one or more address
   //   profiles.
   bool address_import = ImportAddressProfiles(form);
@@ -1497,8 +1500,10 @@ bool PersonalDataManager::ImportAddressProfileForSection(
 bool PersonalDataManager::ImportCreditCard(
     const FormStructure& form,
     bool should_return_local_card,
-    std::unique_ptr<CreditCard>* imported_credit_card) {
+    std::unique_ptr<CreditCard>* imported_credit_card,
+    bool* imported_credit_card_matches_masked_server_credit_card) {
   DCHECK(!imported_credit_card->get());
+  *imported_credit_card_matches_masked_server_credit_card = false;
 
   // The candidate for credit card import. There are many ways for the candidate
   // to be rejected (see everywhere this function returns false, below).
@@ -1561,7 +1566,8 @@ bool PersonalDataManager::ImportCreditCard(
   // have already saved this card number, unless |should_return_local_card| is
   // true which indicates that upload is enabled. In this case, it's useful to
   // present the upload prompt to the user to promote the card from a local card
-  // to a synced server card.
+  // to a synced server card, provided we don't have a masked server card with
+  // the same |TypeAndLastFourDigits|.
   for (const auto& card : local_credit_cards_) {
     // Make a local copy so that the data in |local_credit_cards_| isn't
     // modified directly by the UpdateFromImportedCard() call.
@@ -1578,14 +1584,22 @@ bool PersonalDataManager::ImportCreditCard(
     }
   }
 
-  // Also don't offer to save if we already have this stored as a server card.
-  // We only check the number because if the new card has the same number as the
-  // server card, upload is guaranteed to fail. There's no mechanism for entries
-  // with the same number but different names or expiration dates as there is
-  // for local cards.
+  // Also don't offer to save if we already have this stored as a full server
+  // card. We only check the number because if the new card has the same number
+  // as the server card, upload is guaranteed to fail. There's no mechanism for
+  // entries with the same number but different names or expiration dates as
+  // there is for local cards.
+  // We can offer to save locally even if we already have this stored another
+  // masked server card with the same |TypeAndLastFourDigits| so that the user
+  // can enter the full card number without having to unmask the card.
   for (const auto& card : server_credit_cards_) {
-    if (candidate_credit_card.HasSameNumberAs(*card))
-      return false;
+    if (candidate_credit_card.HasSameNumberAs(*card)) {
+      if (card->record_type() == CreditCard::FULL_SERVER_CARD)
+        return false;
+      DCHECK_EQ(card->record_type(), CreditCard::MASKED_SERVER_CARD);
+      *imported_credit_card_matches_masked_server_credit_card = true;
+      break;
+    }
   }
 
   imported_credit_card->reset(new CreditCard(candidate_credit_card));
