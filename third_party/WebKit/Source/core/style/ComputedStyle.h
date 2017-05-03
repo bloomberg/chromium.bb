@@ -37,7 +37,6 @@
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/SVGComputedStyle.h"
-#include "core/style/StyleBackgroundData.h"
 #include "core/style/StyleBoxData.h"
 #include "core/style/StyleContentAlignmentData.h"
 #include "core/style/StyleDeprecatedFlexibleBoxData.h"
@@ -181,6 +180,35 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   friend class StyleBuilderConverter;
   friend class StyleResolverState;
   friend class StyleResolver;
+
+ private:
+  class StyleBackgroundData : public RefCountedCopyable<StyleBackgroundData> {
+   public:
+    static PassRefPtr<StyleBackgroundData> Create() {
+      return AdoptRef(new StyleBackgroundData);
+    }
+    PassRefPtr<StyleBackgroundData> Copy() const {
+      return AdoptRef(new StyleBackgroundData(*this));
+    }
+
+    bool operator==(const StyleBackgroundData& other) const {
+      return background_ == other.background_ &&
+             background_color_ == other.background_color_;
+    }
+    bool operator!=(const StyleBackgroundData& other) const {
+      return !(*this == other);
+    }
+
+    FillLayer background_;
+    StyleColor background_color_;
+
+   private:
+    StyleBackgroundData()
+        : background_(FillLayer(kBackgroundFillLayer, true)),
+          background_color_(Color::kTransparent) {}
+
+    StyleBackgroundData(const StyleBackgroundData&) = default;
+  };
 
  protected:
   // non-inherited attributes
