@@ -215,7 +215,7 @@ void TaskTracker::Shutdown() {
 
 void TaskTracker::Flush() {
   AutoSchedulerLock auto_lock(flush_lock_);
-  while (subtle::NoBarrier_Load(&num_pending_undelayed_tasks_) != 0 &&
+  while (subtle::Acquire_Load(&num_pending_undelayed_tasks_) != 0 &&
          !IsShutdownComplete()) {
     flush_cv_->Wait();
   }
@@ -484,7 +484,7 @@ void TaskTracker::OnBlockingShutdownTasksComplete() {
 
 void TaskTracker::DecrementNumPendingUndelayedTasks() {
   const auto new_num_pending_undelayed_tasks =
-      subtle::NoBarrier_AtomicIncrement(&num_pending_undelayed_tasks_, -1);
+      subtle::Barrier_AtomicIncrement(&num_pending_undelayed_tasks_, -1);
   DCHECK_GE(new_num_pending_undelayed_tasks, 0);
   if (new_num_pending_undelayed_tasks == 0) {
     AutoSchedulerLock auto_lock(flush_lock_);
